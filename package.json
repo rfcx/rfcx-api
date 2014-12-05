@@ -19,7 +19,7 @@
     "knox": "*",
     "pagerduty": "*",
     "serve-favicon": "~2.1.3",
-    "debug": "~2.0.0",
+    "debug": "~2.1.0",
     "jade": "~1.6.0"
   }
 }
