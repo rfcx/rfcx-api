@@ -19,7 +19,13 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var port = process.env.PORT || 8080; 
+var port = process.env.PORT || 8080;
+
+// Sequelize Database ORM Initialization
+var Sequelize = require("sequelize");
+var modelNames = [ "source" , "spectrum", "diagnostic", "version", "audio", "message", "alert", "user"];
+var db = require("./config/sequelize.js").createConnection(Sequelize,process.env);
+var Model = require("./model/_all.js").createModel(db,Sequelize,modelNames);
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -30,8 +36,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
+app.use(favicon(__dirname + "/public/cdn/img/logo/favicon.ico"));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
