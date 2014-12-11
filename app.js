@@ -36,6 +36,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.set("title", "Rainforest Connection API");
 app.use(favicon(__dirname + "/public/cdn/img/logo/favicon.ico"));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -43,25 +44,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ROUTES FOR OUR API
-// =============================================================================
-var router = express.Router();              // get an instance of the express Router
+//routes
+var api_v1 = express.Router();
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });   
+api_v1.get('/', function(req, res) {
+    res.json({ message: 'This is the Rainforest Connection web API. For more information, please visit https://rfcx.org/' });   
 });
 
-// more routes for our API will happen here
 
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
-app.use('/api', router);
+app.use('/v1', api_v1);
 
-// START THE SERVER
-// =============================================================================
 app.listen(port);
-console.log('Magic happens on port ' + port);
+console.log(
+    app.get("title")+" (port "+port+") ("+process.env.NODE_ENV+")"
+    +((process.env.NODE_ENV=== "production") ? (" ("+process.env.productionVersionId+")") : "")
+);
 
 // app.use('/', routes);
 // app.use('/users', users);
