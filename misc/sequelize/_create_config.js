@@ -9,7 +9,7 @@ if (fs.existsSync(__dirname+"/../../config/env_vars.js")) {
 var file = __dirname+"/../../config/config.json";
 
 var configCustom = '"username": "'+process.env.RDS_USERNAME+'", "password": "'+process.env.RDS_PASSWORD+'", "database": "'+process.env.RDS_DB_NAME+'", "host": "'+process.env.RDS_HOSTNAME+'"';
-var configGeneric = '"dialect": "mysql", "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }';
+var configGeneric = '"dialect": "mysql", "logging": false, "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }';
 
 var str = '{ '
   +'\n"development": { '

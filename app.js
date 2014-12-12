@@ -19,11 +19,11 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var port = process.env.PORT || 8080;
-
+//var port = process.env.PORT || 8080;
 var app = express();
 
 app.set("title", "Rainforest Connection API");
+app.set("port", process.env.PORT || 8080);
 app.use(favicon(__dirname + "/public/cdn/img/logo/favicon.ico"));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -31,18 +31,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-//routes
+// Initialize Routes
 var api_v1 = {
     users: require("./routes/v1/users"),
-    guardians: require("./routes/v1/guardians")
+    guardians: require("./routes/v1/guardians"),
+    mapping: require("./routes/v1/mapping")
 };
 for (routeName in api_v1) { app.use("/v1/"+routeName, api_v1[routeName]); }
 
-app.listen(port);
-console.log(
-    app.get("title")+" (port "+port+") ("+process.env.NODE_ENV+")"
-    +((process.env.NODE_ENV=== "production") ? (" ("+process.env.productionVersionId+")") : "")
-);
+// app.listen(port);
+// console.log(
+//     app.get("title")+" (port "+port+") ("+process.env.NODE_ENV+")"
+//     +((process.env.NODE_ENV=== "production") ? (" ("+process.env.productionVersionId+")") : "")
+// );
 
 // stock error handlers
 

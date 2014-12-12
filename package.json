@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node ./bin/www",
-    "test": "./node_modules/.bin/mocha -u tdd"
+    "test": "./node_modules/.bin/mocha -u tdd",
+    "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
   "dependencies": {
     "body-parser": "~1.8.1",

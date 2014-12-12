@@ -1,18 +1,24 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var Guardian = sequelize.define("Guardian", {
+  var MappingUser = sequelize.define("MappingUser", {
     guid: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+      }
+    },
+    username: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
       }
     },
-    shortname: {
+    email: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
       validate: {
       }
     },
@@ -23,27 +29,10 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
-    latitude: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        isFloat: true,
-        min: -90,
-        max: 90
-      }
-    },
-    longitude: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        isFloat: true,
-        min: -180,
-        max: 180
-      }
-    },
-    phone_number: {
+    carrier: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
+      unique: true,
       validate: {
       }
     }
@@ -55,5 +44,5 @@ module.exports = function(sequelize, DataTypes) {
     }
   });
 
-  return Guardian;
+  return MappingUser;
 };
