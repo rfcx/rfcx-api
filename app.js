@@ -39,13 +39,12 @@ var api_v1 = {
 };
 for (routeName in api_v1) { app.use("/v1/"+routeName, api_v1[routeName]); }
 
-// app.listen(port);
-// console.log(
-//     app.get("title")+" (port "+port+") ("+process.env.NODE_ENV+")"
-//     +((process.env.NODE_ENV=== "production") ? (" ("+process.env.productionVersionId+")") : "")
-// );
-
-// stock error handlers
+//health check
+app.get("/health_check",function(req,res){
+  var sendString = "rfcx";
+  if (req.query.headers==="1") { sendString += "<br />"+JSON.stringify(req.headers); }
+  res.send(sendString);
+});
 
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
