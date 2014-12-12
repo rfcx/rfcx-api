@@ -4,15 +4,15 @@ module.exports = function(sequelize, DataTypes) {
   var MappingUser = sequelize.define("MappingUser", {
     guid: {
       type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
+      allowNull: false,
+      unique: false,
       validate: {
       }
     },
-    username: {
+    name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: false,
       validate: {
       }
     },
@@ -31,7 +31,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     carrier: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: true,
       validate: {
       }
