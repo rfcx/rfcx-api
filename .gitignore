@@ -4,6 +4,7 @@
 
 .ebextensions/env_vars.config
 config/env_vars.js
+config/config.json
 
 # Logs
 logs
