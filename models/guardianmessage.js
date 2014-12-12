@@ -1,32 +1,28 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var User = sequelize.define("User", {
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-      }
-    },
+  var GuardianMessage = sequelize.define("GuardianMessage", {
     guid: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
-      validate: {
-      }
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4
     },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
-    last_check_in: {
+    received_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
+      }
+    },
+    origin: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+    body: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
       }
     }
   }, {
@@ -37,6 +33,5 @@ module.exports = function(sequelize, DataTypes) {
     }
   });
 
-  return User;
+  return GuardianMessage;
 };
-

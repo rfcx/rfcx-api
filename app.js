@@ -22,13 +22,10 @@ var bodyParser = require('body-parser');
 var port = process.env.PORT || 8080;
 
 // Sequelize Database ORM Initialization
-var Sequelize = require("sequelize");
-// var modelNames = [ "source" , "spectrum", "diagnostic", "version", "audio", "message", "alert", "user"];
-var db = require("./config/sequelize.js").createConnection(Sequelize,process.env);
-// var Model = require("./model/_all.js").createModel(db,Sequelize,modelNames);
+// var Sequelize = require("sequelize");
+// var db = require("./config/sequelize.js").createConnection(Sequelize,process.env);
+//var models = require("./models")
 
-// var routes = require('./routes/index');
-// var users = require('./routes/users');
 
 var app = express();
 
@@ -45,26 +42,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //routes
-
 var api_v1 = {
-    users: require("./routes/v1/users")
+    users: require("./routes/v1/users"),
+    guardians: require("./routes/v1/guardians")
 };
 for (routeName in api_v1) {
     app.use("/v1/"+routeName, api_v1[routeName]);
 }
-
-// for (m in middleware_v1) { api_v1.use(middleware_v1[m]); }
-
-// api_v1.get('/', function(req, res) {
-//     res.json({ message: 'This is the Rainforest Connection web API. For more information, please visit https://rfcx.org/' });   
-// });
-
-// api_v1.route("/users").post(function(req,res){
-//     var user = new User();
-
-// });
-
-// app.use('/v1', api_v1);
 
 app.listen(port);
 console.log(

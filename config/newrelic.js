@@ -8,7 +8,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name : ['rfcx.org'],
+  app_name : ['api.rfcx.org'],
   /**
    * Your New Relic license key.
    */

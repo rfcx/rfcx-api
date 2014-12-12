@@ -2,16 +2,16 @@ exports.getAssoc = function() {
 
   var Assoc = { 
     hasOne: [
-    ], 
+//      { parent: "Guardian", child: "GuardianSoftware", as: "SoftwareVersion" }
+      { parent: "GuardianCheckIn", child: "GuardianSoftware", as: "SoftwareVersion" }
+    ],
+    belongsTo: [
+      { child: "GuardianCheckIn", parent: "Guardian", as: "Guardian" },
+      { child: "GuardianAudio", parent: "GuardianCheckIn", as: "CheckIn" },
+      { child: "Guardian", parent: "GuardianSoftware", as: "SoftwareVersion" }
+    ],
     hasMany: [
-      { parent: "Source", child: "Spectrum", as: "Spectrum" },
-      { parent: "Source", child: "Diagnostic", as: "Diagnostic" },
-      { parent: "Source", child: "Message", as: "Message" },
-      { parent: "Source", child: "Alert", as: "Alert" },
-      { parent: "Version", child: "Source", as: "Source" },
-      { parent: "Version", child: "Diagnostic", as: "Checkin" },
-      { parent: "Diagnostic", child: "Spectrum", as: "Spectrum" },
-      { parent: "Diagnostic", child: "Message", as: " Message" }
+      { parent: "Guardian", child: "GuardianMessage", as: "Message" }
     ]
   };
 
