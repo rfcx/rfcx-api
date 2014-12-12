@@ -1,5 +1,5 @@
-exports.createConnection = function(Sequelize, Env) {
-  console.log("Database: "+Env.RDS_HOSTNAME);
+
+function returnConnection(Sequelize, Env) {
   return new Sequelize(
     Env.RDS_DB_NAME,
     Env.RDS_USERNAME,
@@ -22,4 +22,19 @@ exports.createConnection = function(Sequelize, Env) {
       logging: false
     }
   );
+};
+
+exports.createConnection = function(Sequelize, Env) {
+  var db = returnConnection(Sequelize, Env);
+
+  db.authenticate()
+    .complete(function(err) {
+      if (!!err) {
+        console.log('Failed to connect to database: ', err);
+      } else {
+        console.log("Successfully connected to database: "+Env.RDS_HOSTNAME);
+      }
+    });
+
+  return db;
 };
