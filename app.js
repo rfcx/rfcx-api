@@ -21,17 +21,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var port = process.env.PORT || 8080;
 
-// Sequelize Database ORM Initialization
-// var Sequelize = require("sequelize");
-// var db = require("./config/sequelize.js").createConnection(Sequelize,process.env);
-//var models = require("./models")
-
-
 var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
 app.set("title", "Rainforest Connection API");
 app.use(favicon(__dirname + "/public/cdn/img/logo/favicon.ico"));
@@ -46,9 +36,7 @@ var api_v1 = {
     users: require("./routes/v1/users"),
     guardians: require("./routes/v1/guardians")
 };
-for (routeName in api_v1) {
-    app.use("/v1/"+routeName, api_v1[routeName]);
-}
+for (routeName in api_v1) { app.use("/v1/"+routeName, api_v1[routeName]); }
 
 app.listen(port);
 console.log(
@@ -56,39 +44,30 @@ console.log(
     +((process.env.NODE_ENV=== "production") ? (" ("+process.env.productionVersionId+")") : "")
 );
 
-// app.use('/', routes);
-// app.use('/users', users);
+// stock error handlers
 
-// catch 404 and forward to error handler
-// app.use(function(req, res, next) {
-//     var err = new Error('Not Found');
-//     err.status = 404;
-//     next(err);
-// });
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
 
-// error handlers
+if (app.get('env') === 'development') {
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  });
+}
 
-// development error handler
-// will print stacktrace
-// if (app.get('env') === 'development') {
-//     app.use(function(err, req, res, next) {
-//         res.status(err.status || 500);
-//         res.render('error', {
-//             message: err.message,
-//             error: err
-//         });
-//     });
-// }
-
-// production error handler
-// no stacktraces leaked to user
-// app.use(function(err, req, res, next) {
-//     res.status(err.status || 500);
-//     res.render('error', {
-//         message: err.message,
-//         error: {}
-//     });
-// });
-
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
+});
 
 module.exports = app;
