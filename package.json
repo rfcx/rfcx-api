@@ -1,13 +1,13 @@
 {
-  "name": "rfcx-api-express",
+  "name": "rfcx-api",
   "version": "0.2.0",
   "private": false,
   "repository": {
     "type": "git",
-    "url": "http://github.com/rfcx/rfcx-api-express.git"
+    "url": "http://github.com/rfcx/rfcx-api.git"
   },
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "node ./bin/setup; node ./bin/www;",
     "test": "./node_modules/.bin/mocha -u tdd",
     "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
