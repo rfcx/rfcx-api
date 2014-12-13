@@ -40,11 +40,7 @@ var api_v1 = {
 for (routeName in api_v1) { app.use("/v1/"+routeName, api_v1[routeName]); }
 
 //health check
-app.get("/health_check",function(req,res){
-  var sendString = "rfcx";
-  if (req.query.headers==="1") { sendString += "<br />"+JSON.stringify(req.headers); }
-  res.send(sendString);
-});
+app.get("/health_check",function(req,res){ res.status(200).json({rfcx:"awesome"});});
 
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
