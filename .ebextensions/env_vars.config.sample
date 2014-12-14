@@ -4,7 +4,7 @@ option_settings:
     value: production
 
   - option_name: UPLOAD_CACHE_DIRECTORY
-    value: /tmp/rfcx-api/
+    value: /tmp/rfcx-api/uploads
 
   - option_name: NEW_RELIC_KEY
     value: 
