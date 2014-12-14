@@ -10,9 +10,6 @@ if (process.env.NODE_ENV === "production") {
   process.env.NEW_RELIC_HOME = __dirname+"/config"; require("newrelic");
 }
 
-// Load Production Version ID
-process.env.productionVersionId = require("./config/version.js").productionVersionId;
-
 var express = require("express");
 var path = require("path");
 var favicon = require("serve-favicon");

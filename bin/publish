@@ -1,12 +1,26 @@
-#!/usr/bin/env node
+#!/usr/bin/env bash
 
-var exec = require('child_process').exec;
-var fs = require("fs");
-
-if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
-  var env = require(__dirname+"/../config/env_vars.js").env;
-  for (i in env) { process.env[i] = env[i]; }
-}
-
-// some publish scripts here...
-console.log("publishing...");
+node _publish-prep.js;
+cd ../;
+npm test;
+read -p "Are you sure you would like to push this version to prod? (y/n): " -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+  read -p "You chose 'yes'. Would you like to deploy to the 'staging' or 'production' environment? (s/p, default: staging): " -n 1 -r
+  if [[ $REPLY =~ ^[Pp]$ ]]
+    echo -e "\nDeploying to production.\n"
+    git checkout deploy;
+    git merge master -m "Merging with master branch.";
+    eb deploy rfcx-api-production;
+  else
+    echo -e "\nDeploying to staging.\n"
+    git checkout deploy;
+    git merge master -m "Merging with master branch.";
+    eb deploy rfcx-api-staging;
+  fi
+  git checkout master;
+  eb status;
+else
+  echo -e "\n...NOT deploying to AWS.\n";
+  git checkout master;
+fi
