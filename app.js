@@ -26,7 +26,7 @@ app.set("title", "Rainforest Connection API");
 app.set("port", process.env.PORT || 8080);
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(logger("dev"));
-app.use(multer({ dest: "/Users/Shared/" }));
+app.use(multer(require("./config/multer").config));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(passport.initialize());
 
