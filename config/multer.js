@@ -1,5 +1,5 @@
 exports.config = {
 
-  dest: "/Users/Shared/"
+  dest: "/tmp/"
 
 };
