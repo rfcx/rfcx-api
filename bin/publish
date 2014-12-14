@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+
+var exec = require('child_process').exec;
+var fs = require("fs");
+
+if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
+  var env = require(__dirname+"/../config/env_vars.js").env;
+  for (i in env) { process.env[i] = env[i]; }
+}
+
+// some publish scripts here...
+console.log("publishing...");

@@ -7,7 +7,7 @@
     "url": "http://github.com/rfcx/rfcx-api.git"
   },
   "scripts": {
-    "start": "node ./bin/setup; node ./bin/www;",
+    "start": "node ./bin/setup; node ./bin/start;",
     "test": "./node_modules/.bin/mocha -u tdd",
     "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
