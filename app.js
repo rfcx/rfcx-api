@@ -24,7 +24,7 @@ var app = express();
 
 app.set("title", "Rainforest Connection API");
 app.set("port", process.env.PORT || 8080);
-app.use(favicon(__dirname + "/public/cdn/img/logo/favicon.ico"));
+app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
