@@ -19,7 +19,6 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-//var port = process.env.PORT || 8080;
 var app = express();
 
 app.set("title", "Rainforest Connection API");
