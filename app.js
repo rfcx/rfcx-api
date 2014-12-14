@@ -56,7 +56,7 @@ for (apiVersion in routes) {
   }
 }
 
-//health check
+// Health Check Endpoint
 app.get("/health_check",function(req,res){ res.status(200).json({rfcx:"awesome"});});
 
 // Catch & Report Various HTTP Errors (needs some work)
