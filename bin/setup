@@ -39,20 +39,17 @@ function generateSequelizeConfigJson() {
 }
 
 function purgeFilesInUploadCacheDirectory() {
-
   try {
-    fs.readdir(process.env.UPLOAD_CACHE_DIRECTORY, function (err, uploads) {
-      uploads.forEach(function (uploadFileName) {
-        fs.unlink(process.env.UPLOAD_CACHE_DIRECTORY+uploadFileName,function(err){
-           if (err) throw err;
-        });
-      }); 
-    });
+    if (fs.existsSync(process.env.UPLOAD_CACHE_DIRECTORY)) {
+      fs.readdir(process.env.UPLOAD_CACHE_DIRECTORY, function (err, uploads) {
+        uploads.forEach(function (uploadFileName) {
+          fs.unlink(process.env.UPLOAD_CACHE_DIRECTORY+uploadFileName,function(err){
+             if (err) throw err;
+          });
+        }); 
+      });
+    }
   } catch(err) {
     console.error(err);
   }
-
-
-
-
-} 
+}
