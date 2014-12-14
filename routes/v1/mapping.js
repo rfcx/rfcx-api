@@ -19,30 +19,7 @@ router.route("/register")
           lastCheckIn: dbMappingUser.last_check_in,
           carrier: dbMappingUser.carrier
         });
-        // } else {
-        //   res.status(500).json({message: "failure"});
-        // }
-    
-      // .create({
-      //   name: reqMappingUser.name
-      // }).complete(function(err,dbMappingUser){
-      // if (!!err) {
-      //   console.log(err);
-      //   
-      // } else {
-      //   res.status(200).json({message: "success"});
-      // }
     });
-    // models.MappingUser
-    //   .findOrCreate({ name: reqMappingUser.name }).complete(function(err,dbMappingUser){
-    //     if (!!err) {
-    //       console.log("yes!");
-    //       res.send({message:"good"}, 200);
-    //     } else {
-    //       console.log(e);
-    //       res.send({message:"error"}, 500);
-    //     }
-    //   });
   })
 ;
 
