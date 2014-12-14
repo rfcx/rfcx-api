@@ -2,7 +2,7 @@ exports.env = {
 
   NODE_ENV: "development",
 
-  UPLOAD_CACHE_DIRECTORY: "/tmp/",
+  UPLOAD_CACHE_DIRECTORY: "/tmp/rfcx-api/",
 
   NEW_RELIC_KEY: "",
 
