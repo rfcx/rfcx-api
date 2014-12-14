@@ -3,7 +3,7 @@
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 cd $SCRIPT_DIR/../;
 #npm test;
-read -p "Are you sure you would like to push this version to prod? (y/n): " -n 1 -r
+read -p "Are you sure you want to deplay this version to AWS? (y/n): " -n 1 -r
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo -e "\nYou chose 'yes'.\n";
@@ -23,6 +23,6 @@ then
   git checkout master;
   eb status;
 else
-  echo -e "\n...NOT deploying to AWS.\n";
+  echo -e "\nYou chose NOT to deploy the application to AWS.\n";
   git checkout master;
 fi
