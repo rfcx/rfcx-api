@@ -11,12 +11,12 @@ then
     echo -e "\nDeploying to production.\n"
     git checkout deploy;
     git merge master -m "Merging with master branch.";
-    eb deploy rfcx-api-production;
+    echo "eb deploy rfcx-api-production";
   else
     echo -e "\nDeploying to staging.\n"
     git checkout deploy;
     git merge master -m "Merging with master branch.";
-    eb deploy rfcx-api-staging;
+    echo "eb deploy rfcx-api-staging";
   fi
   git checkout master;
   eb status;
