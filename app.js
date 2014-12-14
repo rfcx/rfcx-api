@@ -32,12 +32,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize Routes
-var api_v1 = {
+var routes = {
+  "v1": {
     users: require("./routes/v1/users"),
     guardians: require("./routes/v1/guardians"),
     mapping: require("./routes/v1/mapping")
+  }
 };
-for (routeName in api_v1) { app.use("/v1/"+routeName, api_v1[routeName]); }
+for (apiVersion in routes) {
+  for (routeName in routes[apiVersion]) {
+    app.use("/"+apiVersion+"/"+routeName, routes[apiVersion][routeName]);
+  }
+}
 
 //health check
 app.get("/health_check",function(req,res){ res.status(200).json({rfcx:"awesome"});});
