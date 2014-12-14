@@ -6,7 +6,7 @@ cd $SCRIPT_DIR/../;
 read -p "Are you sure you would like to push this version to prod? (y/n): " -n 1 -r
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-  echo "\nYou chose 'yes'.\n";
+  echo -e "\nYou chose 'yes'.\n";
   read -p "Would you like to deploy to the 'staging' or 'production' environment? (s/p, default: staging): " -n 1 -r
   if [[ $REPLY =~ ^[Pp]$ ]]
   then
