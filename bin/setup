@@ -23,6 +23,7 @@ function generateSequelizeConfigJson() {
   var configJsonContent = '{ '
     +'\n"development": { '+configCustom+', '+configGeneric+' }, '
     +'\n"test": { '+configCustom+', '+configGeneric+' }, '
+    +'\n"staging": { '+configCustom+', '+configGeneric+' }, '
     +'\n"production": { '+configCustom+', '+configGeneric+' } '
   +'\n}';
 

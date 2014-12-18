@@ -28,6 +28,11 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true,
         min: 0
       }
+    },
+    sqs_ingestion_request_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
     }
   }, {
     classMethods: {
