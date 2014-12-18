@@ -15,10 +15,10 @@ option_settings:
   - option_name: AWS_SECRET_KEY
     value: 
 
-  - option_name: AWS_S3_BUCKET_AUDIO
+  - option_name: AWS_REGION_ID
     value: 
 
-  - option_name: SQS_QUEUE_INGESTION
+  - option_name: AWS_S3_BUCKET_AUDIO
     value: 
 
   - option_name: SEQUELIZE_VERBOSE
