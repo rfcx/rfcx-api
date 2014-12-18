@@ -18,6 +18,9 @@ option_settings:
   - option_name: AWS_S3_BUCKET_AUDIO
     value: 
 
+  - option_name: SQS_QUEUE_INGESTION
+    value: 
+
   - option_name: SEQUELIZE_VERBOSE
     value: false
     
