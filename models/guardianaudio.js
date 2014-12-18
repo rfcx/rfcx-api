@@ -29,8 +29,8 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
-    sqs_ingestion_request_id: {
-      type: DataTypes.STRING,
+    ingestion_sqs_msg_id: {
+      type: DataTypes.UUID,
       allowNull: true,
       unique: true
     }

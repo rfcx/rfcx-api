@@ -5,9 +5,9 @@ module.exports = {
 
     migration.addColumn(
       'GuardianAudio',
-      'sqs_ingestion_request_id',
+      'ingestion_sqs_msg_id',
       {
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
         allowNull: true,
         unique: true
       }
@@ -18,7 +18,7 @@ module.exports = {
 
   down: function(migration, DataTypes, done) {
 
-    migration.removeColumn('GuardianAudio', 'sqs_ingestion_request_id');
+    migration.removeColumn('GuardianAudio', 'ingestion_sqs_msg_id');
 
     done();
   }
