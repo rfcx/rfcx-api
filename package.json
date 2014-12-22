@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "./bin/setup; ./bin/start;",
-    "test": "./node_modules/.bin/mocha -u tdd",
+    "test": "./bin/setup; ./node_modules/.bin/mocha -u tdd",
     "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
   "dependencies": {
