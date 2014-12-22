@@ -8,7 +8,7 @@ router.route("/")
   .post(function(req, res) {
     if (!!req.files.audio) {
       var fileInfo = {
-        guardian_id: "abcdef",
+        guardian_id: "fedcba",
         checkin_id: "ghijkl",
         created_at: new Date()
       };
