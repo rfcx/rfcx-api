@@ -50,6 +50,15 @@ function purgeFilesInUploadCacheDirectory() {
         }); 
       });
     }
+    if (fs.existsSync(process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/")) {
+      fs.readdir(process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/", function (err, uploads) {
+        uploads.forEach(function (uploadFileName) {
+          fs.unlink(process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/"+uploadFileName,function(err){
+             if (err) throw err;
+          });
+        }); 
+      });
+    }
   } catch(err) {
     console.error(err);
   }
