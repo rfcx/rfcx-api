@@ -45,6 +45,12 @@ function saveCheckInAudio(req, res, fileInfo, callback) {
   function(err, s3Res){
     var s3Info = {  };
     if (200 == s3Res.statusCode) {
+      
+      // var expires = new Date();
+      // expires.setMinutes(expires.getMinutes() + 10000);
+      // var url =  aws.s3("rfcx-ark").signedUrl(fileInfo.s3Path, expires);
+      // console.log(url);
+      
       callback(req, res, fileInfo);
     } else {
       res.status(500).json({msg:"error saving audio"});
@@ -52,18 +58,33 @@ function saveCheckInAudio(req, res, fileInfo, callback) {
   });
 }
 
+// function addAudioToIngestionQueue(req, res, fileInfo, callback) {
+//   console.log("adding job to ingestion queue");
+//   fileInfo.created_at = fileInfo.created_at.toISOString();
+//   console.log(fileInfo);
+//   aws.sqs("rfcx-ingestion").sendMessage(fileInfo)
+//     .then(function(sqsResponse) {    
+//       console.log(sqsResponse);
+//       callback(req, res, fileInfo);
+// //      res.json(messageArray);
+//     }).catch(function(err){
+//       res.status(500).json({msg:"error adding audio to ingestion queue"});
+//     });
+// }
+
 function addAudioToIngestionQueue(req, res, fileInfo, callback) {
-  console.log("adding job to ingestion queue");
+  console.log("adding job to sns/sqs ingestion queue");
   fileInfo.created_at = fileInfo.created_at.toISOString();
-  console.log(fileInfo);
-  aws.sqs("rfcx-ingestion").sendMessage(fileInfo)
-    .then(function(sqsResponse) {    
-      console.log(sqsResponse);
-      callback(req, res, fileInfo);
-//      res.json(messageArray);
-    }).catch(function(err){
-      res.status(500).json({msg:"error adding audio to ingestion queue"});
-    });
+  
+  aws.sns().publish({ TopicArn: aws.snsTopicArn("rfcx-ingestion-"+process.env.NODE_ENV),
+      Message: JSON.stringify(fileInfo)
+    }, function(err, data) {
+      if (!!err) {
+        res.status(500).json({msg:"error adding audio to ingestion queue"});
+      } else {
+        callback(req, res, fileInfo);
+      }
+  });
 }
 
 

@@ -18,6 +18,9 @@ option_settings:
   - option_name: AWS_REGION_ID
     value: 
 
+  - option_name: AWS_ACCOUNT_ID
+    value: 
+
   - option_name: AWS_S3_BUCKET_AUDIO
     value: 
 
