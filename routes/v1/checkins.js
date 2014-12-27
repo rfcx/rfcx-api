@@ -76,7 +76,7 @@ function addAudioToIngestionQueue(req, res, fileInfo, callback) {
   console.log("adding job to sns/sqs ingestion queue");
   fileInfo.created_at = fileInfo.created_at.toISOString();
   
-  aws.sns().publish({ TopicArn: aws.snsTopicArn("rfcx-ingestion-"+process.env.NODE_ENV),
+  aws.sns().publish({ TopicArn: aws.snsTopicArn("rfcx-ingestion"),
       Message: JSON.stringify(fileInfo)
     }, function(err, data) {
       if (!!err) {

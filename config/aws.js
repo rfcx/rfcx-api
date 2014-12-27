@@ -47,8 +47,8 @@ exports.aws = function() {
     },
 
     snsTopicArn: function(topicName) {
-      return "arn:aws:sns:"+process.env.AWS_REGION_ID+":"+process.env.AWS_ACCOUNT_ID+":"+topicName;
-    },
+      return "arn:aws:sns:"+process.env.AWS_REGION_ID+":"+process.env.AWS_ACCOUNT_ID+":"+topicName+"-"+process.env.NODE_ENV;
+    }
 
   };
 };
