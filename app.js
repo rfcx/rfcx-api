@@ -19,7 +19,7 @@ var passport = require("passport");
 var middleware = {};
 var app = express();
 
-app.set("title", "Rainforest Connection API");
+app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(logger("dev"));
@@ -54,7 +54,7 @@ for (apiVersion in routes) {
 }
 
 // Health Check Endpoint
-app.get("/health_check",function(req,res){ res.status(200).json({rfcx:"awesome"});});
+app.get("/health_check",function(req,res){ res.status(200).json({app:app.get("title")});});
 
 // Catch & Report Various HTTP Errors (needs some work)
 
