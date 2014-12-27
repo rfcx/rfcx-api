@@ -29,6 +29,12 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
+    sha1_checksum: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     ingestion_sqs_msg_id: {
       type: DataTypes.UUID,
       allowNull: true,
