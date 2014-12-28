@@ -30,10 +30,10 @@ app.use(passport.initialize());
 // Define/Load Routes
 var routes = {
   "v1": {
-    "users": require("./routes/v1/users"),
-    "mapping": require("./routes/v1/mapping"),
-    "guardians": require("./routes/v1/guardians"),
-    "checkins": require("./routes/v1/checkins")
+    "users": [ require("./routes/v1/users") ],
+    "mapping": [ require("./routes/v1/mapping") ],
+    "guardians": [ require("./routes/v1/guardians"), require("./routes/v1/guardiansoftware") ],
+    "checkins": [ require("./routes/v1/checkins") ]
   },
   "v2": {
   }
@@ -49,7 +49,9 @@ for (apiVersion in routes) {
 // Initialize Routes
 for (apiVersion in routes) {
   for (routeName in routes[apiVersion]) {
-    app.use("/"+apiVersion+"/"+routeName, routes[apiVersion][routeName]);
+    for (var i = 0; i < routes[apiVersion][routeName].length; i++) {
+      app.use("/"+apiVersion+"/"+routeName, routes[apiVersion][routeName][i]);
+    }
   }
 }
 

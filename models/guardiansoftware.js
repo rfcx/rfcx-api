@@ -27,6 +27,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
       }
+    },
+    url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
     }
   }, {
     classMethods: {
