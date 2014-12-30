@@ -10,7 +10,7 @@ router.route("/:guardian_id/software/latest")
   .get(function(req,res) {
 
     models.GuardianSoftware
-      .findAll({ where: { is_available: true }, order: "number DESC", limit: 1 })
+      .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 1 })
       .then(function(dSoftware){
         res.status(200).json({
           versionNumber: dSoftware[0].number,
