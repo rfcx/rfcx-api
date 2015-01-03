@@ -1,7 +1,6 @@
 var SQS = require("aws-sqs-promises");
-//var S3 = (process.env.NODE_ENV === "production") ? require("knox") : require("faux-knox");
-var S3 = require("knox");
 var AWS = require("aws-sdk");
+var S3 = useMock() ? require("faux-knox") : require("knox");
 
 exports.aws = function() {
 
@@ -30,8 +29,22 @@ exports.aws = function() {
         key: process.env.AWS_ACCESS_KEY_ID,
         secret: process.env.AWS_SECRET_KEY,
         region: process.env.AWS_REGION_ID,
-        bucket: bucketName//(process.env.NODE_ENV === "production") ? bucketName : process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/"
+        bucket: getBucket(bucketName)
       });
+
+    },
+
+    s3SignedUrl: function(bucketName,filePath,linkExpirationInMinutes) {
+
+      // Returns a signed url as a string.
+      // See documentation here:
+      // https://www.npmjs.com/package/knox
+      return S3.createClient({
+        key: process.env.AWS_ACCESS_KEY_ID,
+        secret: process.env.AWS_SECRET_KEY,
+        region: process.env.AWS_REGION_ID,
+        bucket: getBucket(bucketName)
+      }).signedUrl(filePath,signedUrlExpiration);
 
     },
 
@@ -52,3 +65,11 @@ exports.aws = function() {
 
   };
 };
+
+function useMock() {
+  return (process.env.NODE_ENV === "development") || (process.env.NODE_ENV === "test");
+}
+
+function getBucket(bucketName) {
+  return useMock() ? process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/" : bucketName;
+}
