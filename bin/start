@@ -5,9 +5,9 @@ var models = require("../models");
 
 models.sequelize.sync().then(function() {
 
-  models.sequelize.getMigrator({
-    path: process.cwd()+'/migrations'
-  }).migrate({ method: 'up'}).success(function(){
+  // models.sequelize.getMigrator({
+  //   path: process.cwd()+'/migrations'
+  // }).migrate({ method: 'up'}).success(function(){
 
     var server = app.listen(app.get('port'), function(){
       console.log(
@@ -15,6 +15,6 @@ models.sequelize.sync().then(function() {
       );
     });
 
-  });
+//  });
 
 });

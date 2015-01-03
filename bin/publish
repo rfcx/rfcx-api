@@ -7,7 +7,7 @@ read -p "Are you sure you want to deplay this version to AWS? (y/n): " -n 1 -r
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo -e "\nYou chose 'yes'.\n";
-  read -p "Would you like to deploy to the 'staging' or 'production' environment? (s/p, default: staging): " -n 1 -r
+  read -p "Would you like to deploy to the (s)taging or (p)roduction environment? (s/p): " -n 1 -r
   if [[ $REPLY =~ ^[Pp]$ ]]
   then
     echo -e "\nYou chose to deploy to 'production'.\n"
