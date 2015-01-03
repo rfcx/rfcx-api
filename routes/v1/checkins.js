@@ -42,7 +42,7 @@ function saveCheckInAudio(req, res, fileInfo, callback) {
     +"-"+fileInfo.created_at.toISOString().substr(0,19).replace(/:/g,"-")
     +req.files.audio.originalname.substr(req.files.audio.originalname.indexOf("."));
 
-  fileInfo.sha1_checksum = hash.fileSha1(req.files.audio.path);
+  fileInfo.sha1Hash = hash.fileSha1(req.files.audio.path);
   
   console.log("uploading file to s3");
   aws.s3("rfcx-ark").putFile(
