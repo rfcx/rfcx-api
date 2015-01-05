@@ -9,17 +9,28 @@ var aws = require("../../config/aws.js").aws();
 router.route("/:guardian_id/software/latest")
   .get(function(req,res) {
 
-    models.GuardianSoftware
-      .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 1 })
-      .then(function(dSoftware){
-        res.status(200).json({
-          versionNumber: dSoftware[0].number,
-          releaseDate: dSoftware[0].release_date.toISOString(),
-          sha1: dSoftware[0].sha1_checksum,
-          url: dSoftware[0].url
-        });
-      }).catch(function(err){
-        res.status(500).json({msg:"error"});
+    models.Guardian
+      .findOrCreate({ where: { guid: req.params.guardian_id } })
+      .spread(function(dbGuardian, wasCreated){
+      
+        models.GuardianSoftware
+          .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 2 })
+          .then(function(dSoftware){
+            console.log("software version check by guardian '"+dbGuardian.guid+"'");
+            var softwareJson = [];
+            for (i in dSoftware) {
+              softwareJson[i] = {
+                versionNumber: dSoftware[i].number,
+                releaseDate: dSoftware[i].release_date.toISOString(),
+                sha1: dSoftware[i].sha1_checksum,
+                url: dSoftware[i].url
+              };
+            }
+            res.status(200).json(softwareJson);
+          }).catch(function(err){
+            res.status(500).json({msg:"error finding latest software version"});
+          });
+
       });
   })
 ;
