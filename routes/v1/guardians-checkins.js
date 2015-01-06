@@ -1,6 +1,8 @@
+var verbose_logging = (process.env.NODE_ENV !== "production");
 var models  = require('../../models');
 var express = require('express');
 var router = express.Router();
+var fs = require("fs");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
 
@@ -10,26 +12,82 @@ router.route("/:guardian_id/checkins")
     models.Guardian
       .findOrCreate({ where: { guid: req.params.guardian_id } })
       .spread(function(dbGuardian, wasCreated){
-        dbGuardian.last_check_in = new Date();
-        dbGuardian.save();
 
-        models.GuardianCheckIn.create({
-          
-        })
+      var temporarily_hardcoded_check_in_info = {
+        version: "0.4.12",
+        measured_at: new Date()
+      }; var check_in = temporarily_hardcoded_check_in_info;
 
-        if (!!req.files.audio) {
-          console.log("received checkin request with file");
-          var fileInfo = {
-            guardian_id: dbGuardian.guid,
-            checkin_id: "ghijkl",
-            created_at: new Date()
-          };
-          saveCheckInAudio(req, res, fileInfo, function(req, res, fileInfo){
-            addAudioToIngestionQueue(req, res, fileInfo, function(req, res, fileInfo){
-              res.json(fileInfo);
-            });
+      models.GuardianSoftware
+        .findAll({ where: { number: check_in.version } })
+        .spread(function(dSoftware){
+          dbGuardian.last_check_in = new Date();
+          dbGuardian.check_in_count = dbGuardian.check_in_count+1;
+          dbGuardian.version_id = dSoftware.id;
+          dbGuardian.save();
+
+          models.GuardianCheckIn.create({
+            guardian_id: dbGuardian.id,
+  //          cpu_percent: 40,
+  //          cpu_clock: 100,
+  //          battery_percent: 100,
+  //          battery_temperature:
+  //          network_search_time:
+  //          internal_luminosity: 
+  //          network_transmit_time:
+            measured_at: check_in.measured_at
+          }).then(function(dbCheckIn){
+
+            if (!!req.files.audio) {
+
+
+              var temporarily_hardcoded_measured_at = new Date();
+              var audioInfo = {
+                guardian_id: dbGuardian.guid,
+                checkin_id: dbCheckIn.guid,
+                sha1Hash: hash.fileSha1(req.files.audio.path),
+                measured_at: temporarily_hardcoded_measured_at,
+                s3Path: "/"+process.env.NODE_ENV
+                        +"/guardians/"+dbGuardian.guid
+                        +"/"+temporarily_hardcoded_measured_at.toISOString().substr(0,10).replace(/-/g,"/")
+                        +"/"+dbGuardian.guid
+                        +"-"+temporarily_hardcoded_measured_at.toISOString().substr(0,19).replace(/:/g,"-")
+                        +req.files.audio.originalname.substr(req.files.audio.originalname.indexOf("."))
+              };
+
+              models.GuardianAudio.create({
+                guardian_id: dbGuardian.id,
+                check_in_id: dbCheckIn.id,
+                sha1_checksum: audioInfo.sha1Hash,
+                url: "s3://rfcx-ark"+audioInfo.s3Path,
+                size: fs.statSync(req.files.audio.path).size,
+        //        length: null,
+                measured_at: audioInfo.measured_at
+              }).then(function(dbAudio){
+                audioInfo.guid = dbAudio.guid;
+
+                saveCheckInAudio(req, res, audioInfo, function(req, res, audioInfo){
+                  addAudioToIngestionQueue(req, res, audioInfo, function(req, res, audioInfo){
+                    res.status(200).json(audioInfo);
+                  });
+                });
+
+              }).catch(function(err){
+                console.log(err);
+                res.status(500).json({msg:"error adding audio to database"});
+              });
+
+            }
+
+          }).catch(function(err){
+            console.log(err);
+            res.status(500).json({msg:"error adding checkin to database"});
           });
-        }
+
+
+        }).catch(function(err){
+          console.log("failed to update version of guardian");
+        });
 
     });
   })
@@ -45,43 +103,32 @@ module.exports = router;
 
 // Special Callbacks
 
-function saveCheckInAudio(req, res, fileInfo, callback) {
-  
-  fileInfo.s3Path = 
-    "/"+process.env.NODE_ENV
-    +"/guardians/"+fileInfo.guardian_id
-    +"/"+fileInfo.created_at.toISOString().substr(0,10).replace(/-/g,"/")
-    +"/"+fileInfo.guardian_id
-    +"-"+fileInfo.created_at.toISOString().substr(0,19).replace(/:/g,"-")
-    +req.files.audio.originalname.substr(req.files.audio.originalname.indexOf("."));
-
-  fileInfo.sha1Hash = hash.fileSha1(req.files.audio.path);
-  
+function saveCheckInAudio(req, res, audioInfo, callback) {  
   console.log("uploading file to s3");
   aws.s3("rfcx-ark").putFile(
-    req.files.audio.path, fileInfo.s3Path, 
+    req.files.audio.path, audioInfo.s3Path, 
     function(err, s3Res){
       s3Res.resume();
       if (200 == s3Res.statusCode) {
-        callback(req, res, fileInfo);
+          callback(req, res, audioInfo);
       } else {
         res.status(500).json({msg:"error saving audio"});
       }
     });
 }
 
-function addAudioToIngestionQueue(req, res, fileInfo, callback) {
+function addAudioToIngestionQueue(req, res, audioInfo, callback) {
   console.log("adding job to sns/sqs ingestion queue");
-  fileInfo.created_at = fileInfo.created_at.toISOString();
+  audioInfo.measured_at = audioInfo.measured_at.toISOString();
   
   aws.sns().publish({
       TopicArn: aws.snsTopicArn("rfcx-ingestion"),
-      Message: JSON.stringify(fileInfo)
+      Message: JSON.stringify(audioInfo)
     }, function(err, data) {
       if (!!err) {
         res.status(500).json({msg:"error adding audio to ingestion queue"});
       } else {
-        callback(req, res, fileInfo);
+        callback(req, res, audioInfo);
       }
   });
 }

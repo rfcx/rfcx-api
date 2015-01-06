@@ -35,6 +35,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     ingestion_sqs_msg_id: {
       type: DataTypes.UUID,
       allowNull: true,
@@ -43,7 +49,8 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        // associations can be defined here
+        GuardianAudio.belongsTo(models.GuardianCheckIn, {as: 'CheckIn'});
+        GuardianAudio.belongsTo(models.Guardian, {as: 'Guardian'});
       }
     },
     tableName: "GuardianAudio"

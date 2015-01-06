@@ -46,11 +46,19 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
       }
-    }
+    },
+    check_in_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
   }, {
     classMethods: {
       associate: function(models) {
-        // associations can be defined here
+        Guardian.belongsTo(models.GuardianSoftware, {as: 'Version'});
       }
     }
   });
