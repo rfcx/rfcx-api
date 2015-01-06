@@ -64,11 +64,16 @@ router.route("/:guardian_id/checkins")
         //        length: null,
                 measured_at: audioInfo.measured_at
               }).then(function(dbAudio){
-                audioInfo.guid = dbAudio.guid;
+                audioInfo.audio_id = dbAudio.guid;
 
                 saveCheckInAudio(req, res, audioInfo, function(req, res, audioInfo){
                   addAudioToIngestionQueue(req, res, audioInfo, function(req, res, audioInfo){
+
+                    dbAudio.ingestion_sqs_msg_id = audioInfo.ingestion_sqs_msg_id;
+                    dbAudio.save();
+
                     res.status(200).json(audioInfo);
+                  
                   });
                 });
 
@@ -109,11 +114,13 @@ function saveCheckInAudio(req, res, audioInfo, callback) {
     req.files.audio.path, audioInfo.s3Path, 
     function(err, s3Res){
       s3Res.resume();
+      fs.unlink(req.files.audio.path,function(err){ if (err) throw err; });
       if (200 == s3Res.statusCode) {
           callback(req, res, audioInfo);
       } else {
         res.status(500).json({msg:"error saving audio"});
       }
+
     });
 }
 
@@ -128,6 +135,7 @@ function addAudioToIngestionQueue(req, res, audioInfo, callback) {
       if (!!err) {
         res.status(500).json({msg:"error adding audio to ingestion queue"});
       } else {
+        audioInfo.ingestion_sqs_msg_id = data.MessageId;
         callback(req, res, audioInfo);
       }
   });

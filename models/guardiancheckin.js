@@ -81,6 +81,7 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         // associations can be defined here
         GuardianCheckIn.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianCheckIn.belongsTo(models.GuardianSoftware, {as: 'Version'});
       }
     }
   });
