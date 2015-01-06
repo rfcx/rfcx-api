@@ -12,7 +12,9 @@ router.route("/:guardian_id/software/latest")
     models.Guardian
       .findOrCreate({ where: { guid: req.params.guardian_id } })
       .spread(function(dbGuardian, wasCreated){
-      
+        dbGuardian.last_check_in = new Date();
+        dbGuardian.save();
+
         models.GuardianSoftware
           .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 2 })
           .then(function(dSoftware){
