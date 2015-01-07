@@ -12,7 +12,8 @@ router.route("/:guardian_id/software/latest")
     models.Guardian
       .findOrCreate({ where: { guid: req.params.guardian_id } })
       .spread(function(dbGuardian, wasCreated){
-        dbGuardian.last_check_in = new Date();
+        dbGuardian.last_update_check_in = new Date();
+        dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
         dbGuardian.save();
 
         models.GuardianSoftware
