@@ -70,9 +70,11 @@ router.route("/:guardian_id/checkins")
                   addAudioToIngestionQueue(req, res, audioInfo, function(req, res, audioInfo){
 
                     dbAudio.ingestion_sqs_msg_id = audioInfo.ingestion_sqs_msg_id;
-                    dbAudio.save();
-
-                    res.status(200).json(audioInfo);
+                    dbAudio.save().then(function(){
+                      res.status(200).json(audioInfo);
+                    }).catch(function(err){
+                      res.status(500).json(audioInfo);
+                    });
                   
                   });
                 });
@@ -81,19 +83,14 @@ router.route("/:guardian_id/checkins")
                 console.log(err);
                 res.status(500).json({msg:"error adding audio to database"});
               });
-
             }
-
           }).catch(function(err){
             console.log(err);
             res.status(500).json({msg:"error adding checkin to database"});
           });
-
-
         }).catch(function(err){
           console.log("failed to update version of guardian");
         });
-
     });
   })
 ;
@@ -140,5 +137,7 @@ function addAudioToIngestionQueue(req, res, audioInfo, callback) {
       }
   });
 }
+
+
 
 
