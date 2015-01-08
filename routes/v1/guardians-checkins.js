@@ -88,6 +88,7 @@ router.route("/:guardian_id/checkins")
                           s3SuccessCounter.push(true);
                           asyncHttpResponseSetter(req, res, audioInfo, s3SuccessCounter, (i == (req.files.audio.length-1)));
                         }).catch(function(err){
+                          console.log(err);
                           s3SuccessCounter.push(false);
                           asyncHttpResponseSetter(req, res, audioInfo, s3SuccessCounter, (i == (req.files.audio.length-1)));
                         });
@@ -104,6 +105,7 @@ router.route("/:guardian_id/checkins")
               }
             } else {
               console.log("no audio files detected");
+              res.status(200).json(dbCheckIn);
             }
           }).catch(function(err){
             console.log("error adding checkin to database | "+err);
@@ -130,10 +132,12 @@ function asyncHttpResponseSetter(req, res, audioInfo, s3SuccessCounter, isLastLo
     if (s3SuccessCounter.indexOf(false) == -1) {
       res.status(200).json(audioInfo);
     } else {
+      console.log({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
       res.status(500).json({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
     }
   } else if (isLastLoop) {
     res.status(500).json({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
+    console.log({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
   }
 }
 
@@ -164,7 +168,7 @@ function addAudioToAnalysisQueue(req, res, audioInfo, callback) {
       if (!!err) {
         res.status(500).json({msg:"error adding audio to ingestion queue"});
       } else {
-        audioInfo.ingestion_sqs_msg_id = data.MessageId;
+        audioInfo.analysis_sqs_msg_id = data.MessageId;
         callback(req, res, audioInfo);
       }
   });
