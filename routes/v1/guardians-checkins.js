@@ -61,6 +61,7 @@ router.route("/:guardian_id/checkins")
                     checkin_id: dbCheckIn.guid,
                     sha1Hash: hash.fileSha1(req.files.audio[i].path),
                     measured_at: audioMeta[i][1],
+                    battery_temperature: dbCheckIn.battery_temperature,
                     s3Path: "/"+process.env.NODE_ENV
                             +"/guardians/"+dbGuardian.guid
                             +"/"+audioMeta[i][1].toISOString().substr(0,10).replace(/-/g,"/")
@@ -81,8 +82,8 @@ router.route("/:guardian_id/checkins")
                     audioInfo.audio_id = dbAudio.guid;
 
                     saveCheckInAudio(req, res, audioInfo, function(req, res, audioInfo){
-                      addAudioToIngestionQueue(req, res, audioInfo, function(req, res, audioInfo){
-                        dbAudio.ingestion_sqs_msg_id = audioInfo.ingestion_sqs_msg_id;
+                      addAudioToAnalysisQueue(req, res, audioInfo, function(req, res, audioInfo){
+                        dbAudio.analysis_sqs_msg_id = audioInfo.analysis_sqs_msg_id;
                         dbAudio.save().then(function(){
                           s3SuccessCounter.push(true);
                           asyncHttpResponseSetter(req, res, audioInfo, s3SuccessCounter, (i == (req.files.audio.length-1)));
@@ -152,12 +153,12 @@ function saveCheckInAudio(req, res, audioInfo, callback) {
     });
 }
 
-function addAudioToIngestionQueue(req, res, audioInfo, callback) {
+function addAudioToAnalysisQueue(req, res, audioInfo, callback) {
   console.log("adding job to sns/sqs ingestion queue");
   audioInfo.measured_at = audioInfo.measured_at.toISOString();
   
   aws.sns().publish({
-      TopicArn: aws.snsTopicArn("rfcx-ingestion"),
+      TopicArn: aws.snsTopicArn("rfcx-analysis"),
       Message: JSON.stringify(audioInfo)
     }, function(err, data) {
       if (!!err) {

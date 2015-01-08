@@ -44,7 +44,7 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    ingestion_sqs_msg_id: {
+    analysis_sqs_msg_id: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
