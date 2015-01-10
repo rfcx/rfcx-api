@@ -47,7 +47,6 @@ module.exports = function(sequelize, DataTypes) {
     analysis_sqs_msg_id: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
       validate: {
       }
     }

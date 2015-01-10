@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     release_date: {
       type: DataTypes.DATE,
-      defaultValue: null,
+      defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
       }
@@ -19,7 +19,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       validate: {
-        isBoolean: true
       }
     },
     sha1_checksum: {

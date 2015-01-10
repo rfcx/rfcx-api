@@ -21,10 +21,8 @@ router.route("/:guardian_id/checkins")
       console.log("matched to guardian: "+dbGuardian.guid);
 
       models.GuardianSoftware
-        .findAll({
-          where: { number: json.software_version }/*,
-          defaults: { number: json.software_version, is_available: false }*/
-          }).spread(function(dSoftware){
+        .findAll( { where: { number: json.software_version } })
+        .spread(function(dSoftware){
           console.log("matched to software version: "+dSoftware.number);
 
           dbGuardian.last_check_in = new Date();
@@ -47,21 +45,31 @@ router.route("/:guardian_id/checkins")
           }).then(function(dbCheckIn){
             console.log("check-in created: "+dbCheckIn.guid);
 
+            if (json.messages != "") {
+              console.log("NEED TO SAVE MESSAGES HERE");
+              console.log(json.messages);
+            }
+
             if (!!req.files.audio) {
               if (!util.isArray(req.files.audio)) { req.files.audio = [req.files.audio]; }
               var audioMeta = json.audio.split("|");
               if (audioMeta.length == req.files.audio.length) {
-              console.log(req.files.audio.length + " audio files to ingest...");
-              var s3SuccessCounter = [];
+                console.log(req.files.audio.length + " audio files to ingest...");
+                var audioInfo = {};
                 for (i in req.files.audio) {
                   audioMeta[i] = audioMeta[i].split("*");
+                  var timeStamp = audioMeta[i][1]; 
                   audioMeta[i][1] = new Date(parseInt(audioMeta[i][1]));
-                  var audioInfo = {
+                  audioInfo[timeStamp] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
-                    sha1Hash: hash.fileSha1(req.files.audio[i].path),
-                    measured_at: audioMeta[i][1],
                     battery_temperature: dbCheckIn.battery_temperature,
+                    sha1Hash: hash.fileSha1(req.files.audio[i].path),
+                    localPath: req.files.audio[i].path,
+                    size: fs.statSync(req.files.audio[i].path).size,
+                    timeStamp: timeStamp,
+                    measured_at: audioMeta[i][1],
+                    isSaved: { db: false, s3: false, sqs: false },
                     s3Path: "/"+process.env.NODE_ENV
                             +"/guardians/"+dbGuardian.guid
                             +"/"+audioMeta[i][1].toISOString().substr(0,10).replace(/-/g,"/")
@@ -69,33 +77,75 @@ router.route("/:guardian_id/checkins")
                                 +audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-")
                                 +req.files.audio[i].originalname.substr(req.files.audio[i].originalname.indexOf("."))
                   };
+                }
+
+                for (j in audioInfo) {
 
                   models.GuardianAudio.create({
                     guardian_id: dbGuardian.id,
                     check_in_id: dbCheckIn.id,
-                    sha1_checksum: audioInfo.sha1Hash,
-                    url: "s3://rfcx-ark"+audioInfo.s3Path,
-                    size: fs.statSync(req.files.audio[i].path).size,
-            //        length: null,
-                    measured_at: audioInfo.measured_at
+                    sha1_checksum: audioInfo[j].sha1Hash,
+                    url: "s3://rfcx-ark"+audioInfo[j].s3Path,
+                    size: audioInfo[j].size,
+                    measured_at: audioInfo[j].measured_at
                   }).then(function(dbAudio){
-                    audioInfo.audio_id = dbAudio.guid;
 
-                    saveCheckInAudio(req, res, audioInfo, function(req, res, audioInfo){
-                      addAudioToAnalysisQueue(req, res, audioInfo, function(req, res, audioInfo){
-                        dbAudio.analysis_sqs_msg_id = audioInfo.analysis_sqs_msg_id;
-                        dbAudio.save().then(function(){
-                          s3SuccessCounter.push(true);
-                          asyncHttpResponseSetter(req, res, audioInfo, s3SuccessCounter, (i == (req.files.audio.length-1)));
-                        }).catch(function(err){
-                          console.log(err);
-                          s3SuccessCounter.push(false);
-                          asyncHttpResponseSetter(req, res, audioInfo, s3SuccessCounter, (i == (req.files.audio.length-1)));
+                    for (k in audioInfo) {
+                      if (audioInfo[k].sha1Hash === dbAudio.sha1_checksum) {
+                        
+                        audioInfo[k].isSaved.db = true;
+                        audioInfo[k].audio_id = dbAudio.guid;
+
+                        console.log("uploading file to s3: "+audioInfo[k].audio_id);
+
+                        aws.s3("rfcx-ark").putFile(
+                          audioInfo[k].localPath, audioInfo[k].s3Path, 
+                          function(err, s3Res){
+                            s3Res.resume();
+                            if (!!err) {
+                              console.log(err);
+                            } else if (200 == s3Res.statusCode) {
+                              for (l in audioInfo) {
+                                if (s3Res.req.url.indexOf(audioInfo[l].s3Path) >= 0) {
+                                  audioInfo[l].isSaved.s3 = true;
+
+                                  console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
+                                  audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
+                                  
+                                  aws.sns().publish({
+                                      TopicArn: aws.snsTopicArn("rfcx-analysis"),
+                                      Message: JSON.stringify(audioInfo[l])
+                                    }, function(err, data) {
+                                      if (!!err) {
+                                        console.log(err);
+                                      } else {
+                                        var isComplete = true, 
+                                          returnJson = {
+                                            checkin_id: audioInfo[l].checkin_id,
+                                            audio: []
+                                          };
+                                        for (m in audioInfo) {
+                                          if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
+                                          returnJson.audio.push({
+                                            id: m,
+                                            guid: audioInfo[m].audio_id
+                                          });         
+                                        }
+                                        if (isComplete) {
+                                          if (verbose_logging) { console.log(returnJson); }
+                                          res.status(200).json(returnJson);
+                                          for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
+                                        }
+                                      }
+                                  });
+                                  fs.unlink(audioInfo[l].localPath,function(e){if(e){console.log(e);}});
+                                  audioInfo[l].isSaved.sqs = true;
+                                }
+                              }
+                            }
                         });
-                      
-                      });
-                    });
-
+                      }
+                    }
                   }).catch(function(err){
                     console.log("error adding audio to database | "+err);
                   });
@@ -125,63 +175,20 @@ router.route("/:guardian_id/checkins/:checkin_id")
 
 module.exports = router;
 
-// Special Callbacks
-
-function asyncHttpResponseSetter(req, res, audioInfo, s3SuccessCounter, isLastLoop) {
-  if (isLastLoop && (req.files.audio.length == s3SuccessCounter.length)) {
-    if (s3SuccessCounter.indexOf(false) == -1) {
-      res.status(200).json(audioInfo);
-    } else {
-      console.log({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
-      res.status(500).json({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
-    }
-  } else if (isLastLoop) {
-    res.status(500).json({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
-    console.log({"s3Saving": s3SuccessCounter, "audioInfo": audioInfo});
-  }
-}
-
-function saveCheckInAudio(req, res, audioInfo, callback) {  
-  console.log("uploading file to s3");
-  aws.s3("rfcx-ark").putFile(
-    req.files.audio[i].path, audioInfo.s3Path, 
-    function(err, s3Res){
-      s3Res.resume();
-      fs.unlink(req.files.audio[i].path,function(err){ if (err) throw err; });
-      if (200 == s3Res.statusCode) {
-          callback(req, res, audioInfo);
-      } else {
-        res.status(500).json({msg:"error saving audio"});
-      }
-
-    });
-}
-
-function addAudioToAnalysisQueue(req, res, audioInfo, callback) {
-  console.log("adding job to sns/sqs ingestion queue");
-  audioInfo.measured_at = audioInfo.measured_at.toISOString();
-  
-  aws.sns().publish({
-      TopicArn: aws.snsTopicArn("rfcx-analysis"),
-      Message: JSON.stringify(audioInfo)
-    }, function(err, data) {
-      if (!!err) {
-        res.status(500).json({msg:"error adding audio to ingestion queue"});
-      } else {
-        audioInfo.analysis_sqs_msg_id = data.MessageId;
-        callback(req, res, audioInfo);
-      }
-  });
-}
-
+// Special Functions
 
 function strArrToAvg(str,delim) {
   if (str == null) { return null; }
-  var ttl = 0, arr = str.split(delim);
-  if (arr.length > 0) {
-    for (i in arr) { ttl = ttl + parseInt(arr[i]); }
-    return Math.round(ttl/arr.length);
-  } else {
+  try {
+    var ttl = 0, arr = str.split(delim);
+    if (arr.length > 0) {
+      for (i in arr) { ttl = ttl + parseInt(arr[i]); }
+      return Math.round(ttl/arr.length);
+    } else {
+      return null;
+    }
+  } catch(e) {
+    console.log(e);
     return null;
   }
 }

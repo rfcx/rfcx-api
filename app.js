@@ -33,7 +33,8 @@ var routes = {
   "users": [ require("./routes/v1/users") ],
   "guardians": [  require("./routes/v1/guardians"),
                   require("./routes/v1/guardians-software"), 
-                  require("./routes/v1/guardians-checkins")
+                  require("./routes/v1/guardians-checkins"), 
+                  require("./routes/v1/guardians-alerts")
                 ],
   "mapping": [ require("./routes/v1/mapping") ]
   },
