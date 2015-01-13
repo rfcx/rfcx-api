@@ -63,6 +63,7 @@ router.route("/:guardian_id/checkins")
                   audioInfo[timeStamp] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
+                    version: dSoftware.id,
                     battery_temperature: dbCheckIn.battery_temperature,
                     sha1Hash: hash.fileSha1(req.files.audio[i].path),
                     localPath: req.files.audio[i].path,
@@ -148,10 +149,12 @@ router.route("/:guardian_id/checkins")
                     }
                   }).catch(function(err){
                     console.log("error adding audio to database | "+err);
+                    if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
                   });
                 }
               } else {
                 console.log("couldn't match audio meta to uploaded content | "+audioMeta);
+                if (!!err) { res.status(500).json({msg:"couldn't match audio meta to uploaded content"}); }
               }
             } else {
               console.log("no audio files detected");
@@ -159,9 +162,11 @@ router.route("/:guardian_id/checkins")
             }
           }).catch(function(err){
             console.log("error adding checkin to database | "+err);
+            if (!!err) { res.status(500).json({msg:"error adding checkin to database"}); }
           });
         }).catch(function(err){
           console.log("failed to update version of guardian | "+err);
+          if (!!err) { res.status(500).json({msg:"failed to update version of guardian"}); }
         });
     });
   })
@@ -169,7 +174,16 @@ router.route("/:guardian_id/checkins")
 
 router.route("/:guardian_id/checkins/:checkin_id")
   .get(function(req, res) {
-    res.json({name:"one checkin: "+req.params.checkin_id});
+
+    models.Guardian
+      .findAll( { where: { guid: req.params.guardian_id } })
+      .spread(function(dbGuardian){
+
+        res.status(200).json(dbGuardian);
+    
+    }).catch(function(err){
+        console.log("failed to find guardian | "+err);
+    });
   })
 ;
 
