@@ -63,7 +63,7 @@ router.route("/:guardian_id/checkins")
                   audioInfo[timeStamp] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
-                    version: dSoftware.id,
+                    version: dSoftware.number,
                     battery_temperature: dbCheckIn.battery_temperature,
                     sha1Hash: hash.fileSha1(req.files.audio[i].path),
                     localPath: req.files.audio[i].path,

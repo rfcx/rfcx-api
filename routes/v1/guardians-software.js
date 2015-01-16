@@ -48,47 +48,46 @@ router.route("/software")
   .post(function(req,res) {
 
 
-//    var version = querystring.parse("all="+req.body.version).all;
+   var version = querystring.parse("all="+req.body.version).all;
 
-    // models.GuardianSoftware
-    //   .findOrCreate({ where: { number: req.params.software_version } })
-    //   .spread(function(dbSoftware, wasCreated){
+    models.GuardianSoftware
+      .findOrCreate({ where: { number: req.params.software_version } })
+      .spread(function(dbSoftware, wasCreated){
 
-    //     console.log("matched to version: "+dbSoftware.software_version);
+        console.log("matched to version: "+dbSoftware.software_version);
 
-    //     if (!!req.files.software) {
+        if (!!req.files.software) {
 
-    //       dbSoftware.release_date = new Date();
-    //       dbSoftware.is_available = true;
-    //       dbSoftware.sha1_checksum = hash.fileSha1(req.files.software.path);
-    //       dbSoftware.url = "https://static.rfcx.org/dl/guardian-android/"+dbSoftware.software_version+".apk";
-    //       dbSoftware.save();
+          dbSoftware.release_date = new Date();
+          dbSoftware.is_available = true;
+          dbSoftware.sha1_checksum = hash.fileSha1(req.files.software.path);
+          dbSoftware.url = "https://static.rfcx.org/dl/guardian-android/"+dbSoftware.software_version+".apk";
+          dbSoftware.save();
 
-        console.log(req.files.software);
 
-          aws.s3("rfcx-ark").putFile(
-            req.files.software.path, "/dl/guardian-android/"+"0.4.19"+".apk", 
-            function(err, s3Res){
-              s3Res.resume();
-              if (!!err) {
-                console.log(err);
-              } else if (200 == s3Res.statusCode) {
+          // aws.s3("rfcx-ark").putFile(
+          //   req.files.software.path, "/dl/guardian-android/"+"0.4.19"+".apk", 
+          //   function(err, s3Res){
+          //     s3Res.resume();
+          //     if (!!err) {
+          //       console.log(err);
+          //     } else if (200 == s3Res.statusCode) {
 
-                console.log("asdfasdfasdf");
-                res.status(200).json({msg:"success"});
+          //       console.log("asdfasdfasdf");
+          //       res.status(200).json({msg:"success"});
 
-                fs.unlink(req.files.software.path,function(e){if(e){console.log(e);}});
-              }
-          });
-
+          //       fs.unlink(req.files.software.path,function(e){if(e){console.log(e);}});
+          //     }
+          // });
 
 
 
-    //     }
 
-    //   }).catch(function(err){
-    //     res.status(500).json({msg:"error"});
-    //   });
+        }
+
+      }).catch(function(err){
+        res.status(500).json({msg:"error"});
+      });
   })
 ;
 
