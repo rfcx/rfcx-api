@@ -42,53 +42,66 @@ router.route("/:guardian_id/software/latest")
   })
 ;
 
+router.route("/software")
+  .get(function(req,res) {
+  })
+;
+
 // submit a new APK guardian software file
 // (primarily for admin use, when releasing a new software version)
 router.route("/software")
   .post(function(req,res) {
 
-
-   var version = querystring.parse("all="+req.body.version).all;
-
-    models.GuardianSoftware
-      .findOrCreate({ where: { number: req.params.software_version } })
-      .spread(function(dbSoftware, wasCreated){
-
-        console.log("matched to version: "+dbSoftware.software_version);
-
-        if (!!req.files.software) {
-
-          dbSoftware.release_date = new Date();
-          dbSoftware.is_available = true;
-          dbSoftware.sha1_checksum = hash.fileSha1(req.files.software.path);
-          dbSoftware.url = "https://static.rfcx.org/dl/guardian-android/"+dbSoftware.software_version+".apk";
-          dbSoftware.save();
+  if (req.files.software) {
 
 
-          // aws.s3("rfcx-ark").putFile(
-          //   req.files.software.path, "/dl/guardian-android/"+"0.4.19"+".apk", 
-          //   function(err, s3Res){
-          //     s3Res.resume();
-          //     if (!!err) {
-          //       console.log(err);
-          //     } else if (200 == s3Res.statusCode) {
+    res.status(200).json({});
 
-          //       console.log("asdfasdfasdf");
-          //       res.status(200).json({msg:"success"});
+    // models.GuardianSoftware
+    //   .findOrCreate({ where: { number: req.params.software_version } })
+    //   .spread(function(dbSoftware, wasCreated){
 
-          //       fs.unlink(req.files.software.path,function(e){if(e){console.log(e);}});
-          //     }
-          // });
+    //     console.log("matched to version: "+dbSoftware.software_version);
+
+    //     if (!!req.files.software) {
+
+    //       dbSoftware.release_date = new Date();
+    //       dbSoftware.is_available = true;
+    //       dbSoftware.sha1_checksum = hash.fileSha1(req.files.software.path);
+    //       dbSoftware.url = "https://static.rfcx.org/dl/guardian-android/"+dbSoftware.software_version+".apk";
+    //       dbSoftware.save();
+
+
+    //       // aws.s3("rfcx-ark").putFile(
+    //       //   req.files.software.path, "/dl/guardian-android/"+"0.4.19"+".apk", 
+    //       //   function(err, s3Res){
+    //       //     s3Res.resume();
+    //       //     if (!!err) {
+    //       //       console.log(err);
+    //       //     } else if (200 == s3Res.statusCode) {
+
+    //       //       console.log("asdfasdfasdf");
+    //       //       res.status(200).json({msg:"success"});
+
+    //       //       fs.unlink(req.files.software.path,function(e){if(e){console.log(e);}});
+    //       //     }
+    //       // });
 
 
 
 
-        }
 
-      }).catch(function(err){
-        res.status(500).json({msg:"error"});
-      });
+    //   }).catch(function(err){
+    //     res.status(500).json({msg:"error"});
+    //   });
+    
+    }
+
+    res.status(200).json({msg:"no file"});
+
   })
 ;
+
+
 
 module.exports = router;

@@ -21,8 +21,8 @@ router.route("/:guardian_id/checkins")
       console.log("matched to guardian: "+dbGuardian.guid);
 
       models.GuardianSoftware
-        .findAll( { where: { number: json.software_version } })
-        .spread(function(dSoftware){
+        .findOrCreate( { where: { number: json.software_version } })
+        .spread(function(dSoftware, wasCreated){
           console.log("matched to software version: "+dSoftware.number);
 
           dbGuardian.last_check_in = new Date();
