@@ -6,6 +6,8 @@
 config/env_vars.js
 config/config.json
 
+public/apk/
+
 # Logs
 logs
 *.log
