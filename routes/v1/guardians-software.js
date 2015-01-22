@@ -30,7 +30,9 @@ router.route("/:guardian_id/software/latest")
                 versionNumber: dSoftware[i].number,
                 releaseDate: dSoftware[i].release_date.toISOString(),
                 sha1: dSoftware[i].sha1_checksum,
-                url: dSoftware[i].url
+                url: 
+                  (process.env.NODE_ENV !== "development") ? dSoftware[i].url : "http://192.168.0.62:8080/apk/"+dSoftware[i].number+".apk"
+                
               };
             }
             res.status(200).json(softwareJson);
