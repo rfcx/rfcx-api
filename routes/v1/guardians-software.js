@@ -7,6 +7,8 @@ var util = require("util");
 var querystring = require("querystring");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
+var guardianSoftware = require("../../data_storage/guardian-software.js");
+var fileKeeper = require("../../file_storage/file-keeper.js");
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)
@@ -42,66 +44,44 @@ router.route("/:guardian_id/software/latest")
   })
 ;
 
-router.route("/software")
+router.route("/upload/software")
   .get(function(req,res) {
-  })
+})
 ;
 
 // submit a new APK guardian software file
 // (primarily for admin use, when releasing a new software version)
-router.route("/software")
+router.route("/upload/software")
   .post(function(req,res) {
-
-  if (req.files.software) {
-
-
-    res.status(200).json({});
-
-    // models.GuardianSoftware
-    //   .findOrCreate({ where: { number: req.params.software_version } })
-    //   .spread(function(dbSoftware, wasCreated){
-
-    //     console.log("matched to version: "+dbSoftware.software_version);
-
-    //     if (!!req.files.software) {
-
-    //       dbSoftware.release_date = new Date();
-    //       dbSoftware.is_available = true;
-    //       dbSoftware.sha1_checksum = hash.fileSha1(req.files.software.path);
-    //       dbSoftware.url = "https://static.rfcx.org/dl/guardian-android/"+dbSoftware.software_version+".apk";
-    //       dbSoftware.save();
-
-
-    //       // aws.s3("rfcx-ark").putFile(
-    //       //   req.files.software.path, "/dl/guardian-android/"+"0.4.19"+".apk", 
-    //       //   function(err, s3Res){
-    //       //     s3Res.resume();
-    //       //     if (!!err) {
-    //       //       console.log(err);
-    //       //     } else if (200 == s3Res.statusCode) {
-
-    //       //       console.log("asdfasdfasdf");
-    //       //       res.status(200).json({msg:"success"});
-
-    //       //       fs.unlink(req.files.software.path,function(e){if(e){console.log(e);}});
-    //       //     }
-    //       // });
-
-
-
-
-
-    //   }).catch(function(err){
-    //     res.status(500).json({msg:"error"});
-    //   });
-    
-    }
-
-    res.status(200).json({msg:"no file"});
-
+  	if(!req.body.software_version){
+  	  res.status(500).json({msg:"a software version must be specified"});
+  	  return;
+  	}
+  	hash.fileSha1Async(req.files.software ? req.files.software.path : null)
+  	.then(function(fileHash){
+      return guardianSoftware.upsertGuardianSoftware(req.body.software_version, fileHash)
+    })
+    .then(function(gs) {
+      //if a file was uploaded
+      if(req.files.software && req.files.software.path) {
+  		  fileKeeper.putFile(req.files.software.path, "rfcx-development", req.body.software_version+".apk")
+  		  .then(function(fkRes){
+      	  //remove temporarily uploaded file
+      	  fs.unlink(req.files.software.path,function(e){if(e){console.log(e);}});
+      	  if (200 == fkRes.statusCode) {
+      	    res.status(200).json({msg:"success"}); 
+      	  } else {
+      	    res.status(500).json({msg:"file keeper error storing guardian software file: " + fkRes.msg});
+      	  }
+      	})
+      	.done()
+    	} else {
+    	  res.status(200).json({msg:"success"});
+    	}
+  	}).catch(function(err){
+      res.status(500).json({msg:"error submitting guardian software file: " + err.message});
+    });
   })
-;
-
-
+;   
 
 module.exports = router;

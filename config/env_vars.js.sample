@@ -2,7 +2,11 @@ exports.env = {
 
   NODE_ENV: "development",
 
-  UPLOAD_CACHE_DIRECTORY: "/tmp/rfcx-api/uploads/",
+  UPLOAD_CACHE_DIRECTORY: "./tmp/rfcx-api/uploads/",
+  GUARDIAN_DOWNLOAD_PATH: "https://static.rfcx.org/dl/guardian-android/", 
+  GUARDIAN_UPLOAD_DIRECTORY: "/dl/guardian-android/",
+  
+  TEST_ASSET_DIRECTORY: "./tmp/test/",
 
   NEW_RELIC_KEY: "",
 

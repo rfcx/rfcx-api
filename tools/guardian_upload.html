@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>Guardian Software Upload</title>
+<style type="text/css">
+
+label{
+float: left;
+width: 150px;
+font-weight: bold;
+}
+
+input{
+width: 180px;
+margin-bottom: 5px;
+}
+
+#submitbutton{
+margin-left: 21	0px;
+margin-top: 5px;
+width: 120px;
+}
+
+br{
+clear: left;
+}
+
+</style>
+</head>
+<body>
+<form id        =  "uploadForm"
+     enctype   =  "multipart/form-data"
+     action    =  "http://127.0.0.1:8080/v1/guardians/upload/software"
+     method    =  "post"
+>
+	<p>
+		<label for="software_version">Software Version</label>
+		<input type="text" name="software_version" /><br />
+		
+		<label for="software">Software Location</label>
+		<input type="file" name="software" /><br />
+		
+		<input type="submit" value="Upload Software" name="submitbutton" id="submitbutton"/>
+	</p>
+</form>
+</body>
+</html>
