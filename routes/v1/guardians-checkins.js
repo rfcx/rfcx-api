@@ -46,13 +46,15 @@ router.route("/:guardian_id/checkins")
             console.log("check-in created: "+dbCheckIn.guid);
 
             if (json.messages != "") {
-              console.log("NEED TO SAVE MESSAGES HERE");
+              var smsMsgs = json.messages.split("|");
+
               console.log(json.messages);
             }
 
             if (!!req.files.audio) {
               if (!util.isArray(req.files.audio)) { req.files.audio = [req.files.audio]; }
-              var audioMeta = json.audio.split("|");
+              var audioMeta = [];
+              if (json.audio != null) { audioMeta = json.audio.split("|"); }
               if (audioMeta.length == req.files.audio.length) {
                 console.log(req.files.audio.length + " audio files to ingest...");
                 var audioInfo = {};
