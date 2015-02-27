@@ -11,6 +11,8 @@ var aws = require("../../config/aws.js").aws();
 router.route("/:guardian_id/checkins")
   .post(function(req, res) {
 
+    var requestStartTime = (new Date()).valueOf();
+
     var json = JSON.parse(querystring.parse("all="+req.body.json).all);
 
     if (verbose_logging) { console.log(json); }
@@ -45,12 +47,35 @@ router.route("/:guardian_id/checkins")
           }).then(function(dbCheckIn){
             console.log("check-in created: "+dbCheckIn.guid);
 
+            var returnJson = {
+              checkin_id: dbCheckIn.guid,
+              audio: [],
+              screenShot: []
+            };
+
+            // save sms messages
             if (json.messages != "") {
               var smsMsgs = json.messages.split("|");
 
               console.log(json.messages);
             }
 
+            // if included, update previous checkIn info
+            if (json.last_checkin_id != null) {
+              if (json.last_checkin_duration != null) {
+
+                models.GuardianCheckIn
+                  .findAll({ where: { guid: json.last_checkin_id } })
+                  .spread(function(dLastCheckIn){
+                    dLastCheckIn.request_latency_guardian = json.last_checkin_duration;
+                    dLastCheckIn.save();
+                  }).catch(function(err){
+                    console.log("error finding/updating last checkin id: "+json.last_checkin_id);
+                  });
+              }
+            }
+
+            // save screenshot files
             if (!!req.files.screenshot) {
               if (!util.isArray(req.files.screenshot)) { req.files.screenshot = [req.files.screenshot]; }
                 console.log(req.files.screenshot.length + " screenshot files to ingest...");
@@ -94,6 +119,7 @@ router.route("/:guardian_id/checkins")
                 }
             }
 
+            // save audio files
             if (!!req.files.audio) {
               if (!util.isArray(req.files.audio)) { req.files.audio = [req.files.audio]; }
               var audioMeta = [];
@@ -165,12 +191,8 @@ router.route("/:guardian_id/checkins")
                                       if (!!err) {
                                         console.log(err);
                                       } else {
-                                        var isComplete = true, 
-                                          returnJson = {
-                                            checkin_id: audioInfo[l].checkin_id,
-                                            audio: [],
-                                            screenShot: []
-                                          };
+                                        var isComplete = true;
+                                          
                                         for (m in audioInfo) {
                                           if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
                                           returnJson.audio.push({
@@ -186,8 +208,13 @@ router.route("/:guardian_id/checkins")
                                           }         
                                         }
                                         if (isComplete) {
+
+                                          dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+                                          dbCheckIn.save();
+
                                           if (verbose_logging) { console.log(returnJson); }
                                           res.status(200).json(returnJson);
+                                          
                                           for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
                                         }
                                       }
@@ -211,7 +238,9 @@ router.route("/:guardian_id/checkins")
               }
             } else {
               console.log("no audio files detected");
-              res.status(200).json(dbCheckIn);
+              dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+              dbCheckIn.save();
+              res.status(200).json(returnJson);
             }
 
           }).catch(function(err){
