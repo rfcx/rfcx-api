@@ -51,6 +51,49 @@ router.route("/:guardian_id/checkins")
               console.log(json.messages);
             }
 
+            if (!!req.files.screenshot) {
+              if (!util.isArray(req.files.screenshot)) { req.files.screenshot = [req.files.screenshot]; }
+                console.log(req.files.screenshot.length + " screenshot files to ingest...");
+                var screenShotInfo = {};
+                for (i in req.files.screenshot) {
+                  var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
+                  screenShotInfo[timeStamp] = {
+                     guardian_id: dbGuardian.guid,
+                     checkin_id: dbCheckIn.guid,
+                     version: dSoftware.number,
+                     sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
+                     localPath: req.files.screenshot[i].path,
+                     size: fs.statSync(req.files.screenshot[i].path).size,
+                     timeStamp: new Date(parseInt(timeStamp)),
+                     isSaved: false,
+                     s3Path: "/"+process.env.NODE_ENV
+                              +"/guardians/"+dbGuardian.guid
+                              +"/screenshot"
+                              +"/"+dbGuardian.guid+"-"
+                                +(new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-")
+                              +".png"
+                  };
+
+                }
+                for (j in screenShotInfo) {
+                  aws.s3("rfcx-ark").putFile(
+                    screenShotInfo[j].localPath, screenShotInfo[j].s3Path, 
+                    function(err, s3Res){
+                      s3Res.resume();
+                      if (!!err) {
+                        console.log(err);
+                      } else if (200 == s3Res.statusCode) {
+                        for (l in screenShotInfo) {
+                          if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
+                            screenShotInfo[l].isSaved = true;
+                            console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
+                          }
+                        }                        
+                      }
+                  });
+                }
+            }
+
             if (!!req.files.audio) {
               if (!util.isArray(req.files.audio)) { req.files.audio = [req.files.audio]; }
               var audioMeta = [];
@@ -125,7 +168,8 @@ router.route("/:guardian_id/checkins")
                                         var isComplete = true, 
                                           returnJson = {
                                             checkin_id: audioInfo[l].checkin_id,
-                                            audio: []
+                                            audio: [],
+                                            screenShot: []
                                           };
                                         for (m in audioInfo) {
                                           if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
@@ -133,6 +177,13 @@ router.route("/:guardian_id/checkins")
                                             id: m,
                                             guid: audioInfo[m].audio_id
                                           });         
+                                        }
+                                        for (n in screenShotInfo) {
+                                          if (screenShotInfo[n].isSaved) {
+                                            returnJson.screenShot.push({
+                                              id: n
+                                            });
+                                          }         
                                         }
                                         if (isComplete) {
                                           if (verbose_logging) { console.log(returnJson); }
@@ -162,6 +213,7 @@ router.route("/:guardian_id/checkins")
               console.log("no audio files detected");
               res.status(200).json(dbCheckIn);
             }
+
           }).catch(function(err){
             console.log("error adding checkin to database | "+err);
             if (!!err) { res.status(500).json({msg:"error adding checkin to database"}); }
