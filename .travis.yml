@@ -2,7 +2,4 @@
   node_js:
     - "0.10"
   env: NODE_ENV=test
-
-  before_script:
-    - mysql -e 'create database rfcx_api_travis;'
-    - mysql -e 'grant all on rfcx_api_travis.* to "rfcx"@"localhost" identified by "password";'
+  env: UPLOAD_CACHE_DIRECTORY=/tmp/rfcx-api/uploads/
