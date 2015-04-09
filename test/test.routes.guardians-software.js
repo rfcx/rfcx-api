@@ -56,7 +56,7 @@ describe('post /v1/guardians/upload/software', function(){
     request(app)
       .post('/v1/guardians/upload/software')
       .field( 'software_version', '-0.0.1')
-      .attach('software', 'readme.md')
+      .attach('software', 'README.md')
       .end(function(err, res) {
           expect(err).not.exist();
           expect(res).to.have.property('status',200);
@@ -74,7 +74,7 @@ describe('post /v1/guardians/upload/software', function(){
     request(app)
       .post('/v1/guardians/upload/software')
       .field( 'software_version', '-0.0.1')
-      .attach('software', 'readme.md')
+      .attach('software', 'README.md')
       .end(function(err, res) {
           expect(err).not.exist();
           expect(res).to.have.property('status',500);
