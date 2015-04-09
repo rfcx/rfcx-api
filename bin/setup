@@ -7,6 +7,11 @@ if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
   for (i in env) { process.env[i] = env[i]; }
 }
 
+// create ./tmp directory to support tests
+if (!fs.existsSync(__dirname+"/../tmp")) {
+  fs.mkdirSync(__dirname+"/../tmp");
+}
+
 // run the setup script(s)
 generateSequelizeConfigJson();
 purgeFilesInUploadCacheDirectory();
