@@ -61,17 +61,17 @@ router.route("/:guardian_id/checkins")
             }
 
             // if included, update previous checkIn info
-            if (json.last_checkin_id != null) {
-              if (json.last_checkin_duration != null) {
-
-                models.GuardianCheckIn
-                  .findAll({ where: { guid: json.last_checkin_id } })
-                  .spread(function(dLastCheckIn){
-                    dLastCheckIn.request_latency_guardian = json.last_checkin_duration;
-                    dLastCheckIn.save();
-                  }).catch(function(err){
-                    console.log("error finding/updating last checkin id: "+json.last_checkin_id);
-                  });
+            if (json.previous_checkins != null) {
+              var previousCheckIns = json.previous_checkins.split("|"); 
+              for (checkInIndex in previousCheckIns) {
+                // models.GuardianCheckIn
+                //   .findAll({ where: { guid: json.last_checkin_id } })
+                //   .spread(function(dLastCheckIn){
+                //     dLastCheckIn.request_latency_guardian = json.last_checkin_duration;
+                //     dLastCheckIn.save();
+                //   }).catch(function(err){
+                //     console.log("error finding/updating last checkin id: "+json.last_checkin_id);
+                //   });
               }
             }
 
