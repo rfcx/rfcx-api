@@ -10,9 +10,6 @@ exports.env = {
 
   NEW_RELIC_KEY: "",
 
-  SEGMENT_IO_SECRET: "",
-  SEGMENT_IO_CLIENT_ID: "",
-
   AWS_ACCESS_KEY_ID: "",
   AWS_SECRET_KEY: "",
   AWS_REGION_ID: "",

@@ -3,20 +3,5 @@
     - "0.10"
   env:
     - NODE_ENV=test
-    - UPLOAD_CACHE_DIRECTORY=/tmp/rfcx-api/uploads/
-    - NEW_RELIC_KEY=x
-    - SEGMENT_IO_SECRET=x
-    - SEGMENT_IO_CLIENT_ID=x
-    - AWS_ACCESS_KEY_ID=x
-    - AWS_SECRET_KEY=x
-    - AWS_REGION_ID=x
-    - AWS_ACCOUNT_ID=x
-    - AWS_S3_BUCKET_AUDIO=x
-    - RDS_HOSTNAME=localhost
-    - RDS_DB_NAME=test
-    - RDS_USERNAME=travis
-    - RDS_PASSWORD=
-    - RDS_PORT=3306,
-    - SEQUELIZE_VERBOSE=false
   before_script:
     - mysql -e 'create database test;'
