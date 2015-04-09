@@ -4,4 +4,5 @@
   env: NODE_ENV=test
 
   before_script:
-    - mysql -e 'create database rfcx_api_test; grant all on rfcx_api_test.* to \'rfcx\'@\'localhost\' identified by \'password\';'
+    - mysql -e 'create database rfcx_api_travis;'
+    - mysql -e 'grant all on rfcx_api_travis.* to "rfcx"@"localhost" identified by "password";'
