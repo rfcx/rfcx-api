@@ -1,7 +1,7 @@
 // could move requirements to an api which is injected to everything
 
-var models  = require('../../models');
-var express = require('express');
+var models  = require("../../models");
+var express = require("express");
 var router = express.Router();
 
 

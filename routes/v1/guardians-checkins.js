@@ -1,15 +1,17 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require('../../models');
-var express = require('express');
+var models  = require("../../models");
+var express = require("express");
 var router = express.Router();
+var querystring = require("querystring");
 var fs = require("fs");
 var util = require("util");
-var querystring = require("querystring");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
 
 router.route("/:guardian_id/checkins")
   .post(function(req, res) {
+
+    var requestStartTime = (new Date()).valueOf();
 
     var json = JSON.parse(querystring.parse("all="+req.body.json).all);
 
@@ -45,12 +47,79 @@ router.route("/:guardian_id/checkins")
           }).then(function(dbCheckIn){
             console.log("check-in created: "+dbCheckIn.guid);
 
+            var returnJson = {
+              checkin_id: dbCheckIn.guid,
+              audio: [],
+              screenShot: []
+            };
+
+            // save sms messages
             if (json.messages != "") {
               var smsMsgs = json.messages.split("|");
 
               console.log(json.messages);
             }
 
+            // if included, update previous checkIn info
+            if (json.previous_checkins != null) {
+              var previousCheckIns = json.previous_checkins.split("|"); 
+              for (checkInIndex in previousCheckIns) {
+                // models.GuardianCheckIn
+                //   .findAll({ where: { guid: json.last_checkin_id } })
+                //   .spread(function(dLastCheckIn){
+                //     dLastCheckIn.request_latency_guardian = json.last_checkin_duration;
+                //     dLastCheckIn.save();
+                //   }).catch(function(err){
+                //     console.log("error finding/updating last checkin id: "+json.last_checkin_id);
+                //   });
+              }
+            }
+
+            // save screenshot files
+            if (!!req.files.screenshot) {
+              if (!util.isArray(req.files.screenshot)) { req.files.screenshot = [req.files.screenshot]; }
+                console.log(req.files.screenshot.length + " screenshot files to ingest...");
+                var screenShotInfo = {};
+                for (i in req.files.screenshot) {
+                  var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
+                  screenShotInfo[timeStamp] = {
+                     guardian_id: dbGuardian.guid,
+                     checkin_id: dbCheckIn.guid,
+                     version: dSoftware.number,
+                     sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
+                     localPath: req.files.screenshot[i].path,
+                     size: fs.statSync(req.files.screenshot[i].path).size,
+                     timeStamp: new Date(parseInt(timeStamp)),
+                     isSaved: false,
+                     s3Path: "/"+process.env.NODE_ENV
+                              +"/guardians/"+dbGuardian.guid
+                              +"/screenshot"
+                              +"/"+dbGuardian.guid+"-"
+                                +(new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-")
+                              +".png"
+                  };
+
+                }
+                for (j in screenShotInfo) {
+                  aws.s3("rfcx-ark").putFile(
+                    screenShotInfo[j].localPath, screenShotInfo[j].s3Path, 
+                    function(err, s3Res){
+                      s3Res.resume();
+                      if (!!err) {
+                        console.log(err);
+                      } else if (200 == s3Res.statusCode) {
+                        for (l in screenShotInfo) {
+                          if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
+                            screenShotInfo[l].isSaved = true;
+                            console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
+                          }
+                        }                        
+                      }
+                  });
+                }
+            }
+
+            // save audio files
             if (!!req.files.audio) {
               if (!util.isArray(req.files.audio)) { req.files.audio = [req.files.audio]; }
               var audioMeta = [];
@@ -122,11 +191,8 @@ router.route("/:guardian_id/checkins")
                                       if (!!err) {
                                         console.log(err);
                                       } else {
-                                        var isComplete = true, 
-                                          returnJson = {
-                                            checkin_id: audioInfo[l].checkin_id,
-                                            audio: []
-                                          };
+                                        var isComplete = true;
+                                          
                                         for (m in audioInfo) {
                                           if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
                                           returnJson.audio.push({
@@ -134,9 +200,21 @@ router.route("/:guardian_id/checkins")
                                             guid: audioInfo[m].audio_id
                                           });         
                                         }
+                                        for (n in screenShotInfo) {
+                                          if (screenShotInfo[n].isSaved) {
+                                            returnJson.screenShot.push({
+                                              id: n
+                                            });
+                                          }         
+                                        }
                                         if (isComplete) {
+
+                                          dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+                                          dbCheckIn.save();
+
                                           if (verbose_logging) { console.log(returnJson); }
                                           res.status(200).json(returnJson);
+                                          
                                           for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
                                         }
                                       }
@@ -160,8 +238,11 @@ router.route("/:guardian_id/checkins")
               }
             } else {
               console.log("no audio files detected");
-              res.status(200).json(dbCheckIn);
+              dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+              dbCheckIn.save();
+              res.status(200).json(returnJson);
             }
+
           }).catch(function(err){
             console.log("error adding checkin to database | "+err);
             if (!!err) { res.status(500).json({msg:"error adding checkin to database"}); }
