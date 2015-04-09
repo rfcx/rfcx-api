@@ -9,7 +9,7 @@ describe('misc/hash',function(){
   describe('fileSha1Async',function(){
   
     it('should take a file path and return a hash asynchronously',function(done){
-      hash.fileSha1Async("README.MD")
+      hash.fileSha1Async("README.md")
       .then(function(fileHash){
         expect(fileHash).to.not.be.empty();
         expect(fileHash).to.match(sha1Regex);
@@ -42,7 +42,7 @@ describe('misc/hash',function(){
   describe('fileSha1',function(){
 
     it('should take a file path and return a hash',function(){
-      var fileHash = hash.fileSha1("README.MD");
+      var fileHash = hash.fileSha1("README.md");
       expect(fileHash).to.not.be.empty();
       expect(fileHash).to.match(sha1Regex);
     });
