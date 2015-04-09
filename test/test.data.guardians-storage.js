@@ -9,7 +9,7 @@ describe('data_storage/guardian-storage',function(){
 
     before(function(done){
       //create a new guardian software record
-      guardianSoftware.upsertGuardianSoftware(softwareVersion, "")
+      guardianSoftware.upsertGuardianSoftware(softwareVersion, null)
       .done(done);
     });
 
