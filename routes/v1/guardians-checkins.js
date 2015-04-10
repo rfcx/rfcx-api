@@ -50,7 +50,11 @@ router.route("/:guardian_id/checkins")
             var returnJson = {
               checkin_id: dbCheckIn.guid,
               audio: [],
-              screenShot: []
+              screenShot: [],
+              settings: {
+ //               verbose_logging: true,
+ //               api_domain:
+              }
             };
 
             // save sms messages
