@@ -11,6 +11,3 @@ var dir = './tmp/test';
 if (!fs_test.existsSync(dir)){
     fs_test.mkdirSync(dir);
 }
-
-var models = require("../models");
-models.sequelize.sync().then(function(){});
