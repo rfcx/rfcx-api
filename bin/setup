@@ -13,11 +13,11 @@ generateSequelizeConfigJson();
 setupTmpDirectory();
 
 // sequelize sync
-models.sequelize.sync().then(function() {
-  // run sequelize-cli migrations from command line
-  var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
-  exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){ console.log(sOut); console.log(sErr); });
-});
+// models.sequelize.sync().then(function() {
+//   // run sequelize-cli migrations from command line
+//   var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
+//   exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){ console.log(sOut); console.log(sErr); });
+// });
 
 
 function generateSequelizeConfigJson() {
