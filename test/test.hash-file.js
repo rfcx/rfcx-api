@@ -1,4 +1,4 @@
-require('./init-test').expect;
+require('./test.000.init.js').expect;
 var expect = require('chai').expect;
 var hash = require("../misc/hash.js").hash;
 
