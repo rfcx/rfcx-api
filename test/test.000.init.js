@@ -8,8 +8,3 @@ if (fs.existsSync("../config/env_vars.js")) {
 if (process.env.NODE_ENV === "production"){
   throw Error("unit tests cannot be run in production!")
 }
-
-var dir = './tmp/test';
-if (!fs.existsSync(dir)){
-    fs.mkdirSync(dir);
-}

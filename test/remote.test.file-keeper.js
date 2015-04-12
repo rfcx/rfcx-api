@@ -14,10 +14,10 @@ describe('file_storage/fileKeeper',function(){
     before(function(done){
       fileName = 'readme' + Date.now() + '.md';
       //copy readme.md file to tmp folder under a different name
-      fs.createReadStream('./readme.md').pipe(fs.createWriteStream(process.env.TEST_ASSET_DIRECTORY + fileName))
+      fs.createReadStream('./readme.md').pipe(fs.createWriteStream(process.cwd()+"/tmp/test-assets/" + fileName))
       .on('finish', function(){
         //put a file with a random name in storage
-        fileKeeper.putFile(process.env.TEST_ASSET_DIRECTORY + fileName, testBucket, testFolder+fileName)
+        fileKeeper.putFile(process.cwd()+"/tmp/test-assets/" + fileName, testBucket, testFolder+fileName)
         .then(function(fkRes){
           if(fkRes.statusCode != "200"){
            throw new Error("operation not completed successfully. Status Code: " + fkRes.statusCode);
@@ -36,7 +36,7 @@ describe('file_storage/fileKeeper',function(){
     });
      
     after(function(done){
-      fs.unlink(process.env.TEST_ASSET_DIRECTORY + fileName,function(e){if(e){console.log(e);}});
+      fs.unlink(process.cwd()+"/tmp/test-assets/" + fileName,function(e){if(e){console.log(e);}});
       fileKeeper.deleteFile(testFolder+fileName, testBucket)
       .then(function(fkRes) {
         if(204 != fkRes.statusCode) {

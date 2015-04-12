@@ -8,14 +8,9 @@ if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
   for (i in env) { process.env[i] = env[i]; }
 }
 
-// create ./tmp directory to support tests
-if (!fs.existsSync(__dirname+"/../tmp")) {
-  fs.mkdirSync(__dirname+"/../tmp");
-}
-
 // run the setup script(s)
 generateSequelizeConfigJson();
-purgeFilesInUploadCacheDirectory();
+setupTmpDirectory();
 
 // sequelize sync
 models.sequelize.sync().then(function() {
@@ -51,26 +46,43 @@ function generateSequelizeConfigJson() {
   });
 }
 
-function purgeFilesInUploadCacheDirectory() {
+function setupTmpDirectory() {
+  
+  var tmpDir = process.cwd()+"/tmp";
+  if (!fs.existsSync(tmpDir)) { fs.mkdirSync(tmpDir); }
+
   try {
-    if (fs.existsSync(process.env.UPLOAD_CACHE_DIRECTORY)) {
-      fs.readdir(process.env.UPLOAD_CACHE_DIRECTORY, function (err, uploads) {
+
+    if (fs.existsSync(tmpDir+"/uploads")) {
+      fs.readdir(tmpDir+"/uploads", function (err, uploads) {
         uploads.forEach(function (uploadFileName) {
-          fs.unlink(process.env.UPLOAD_CACHE_DIRECTORY+uploadFileName,function(err){
+          fs.unlink(tmpDir+"/uploads/"+uploadFileName,function(err){
              if (err) throw err;
           });
         }); 
       });
-    }
-    if (fs.existsSync(process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/")) {
-      fs.readdir(process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/", function (err, uploads) {
+    } else { fs.mkdirSync(tmpDir+"/uploads"); }
+
+    if (fs.existsSync(tmpDir+"/test-assets")) {
+      fs.readdir(tmpDir+"/test-assets", function (err, uploads) {
         uploads.forEach(function (uploadFileName) {
-          fs.unlink(process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/"+uploadFileName,function(err){
+          fs.unlink(tmpDir+"/test-assets/"+uploadFileName,function(err){
              if (err) throw err;
           });
         }); 
       });
-    }
+    } else { fs.mkdirSync(tmpDir+"/test-assets"); }
+
+    if (fs.existsSync(tmpDir+"/faux-knox")) {
+      fs.readdir(tmpDir+"/faux-knox/", function (err, uploads) {
+        uploads.forEach(function (uploadFileName) {
+          fs.unlink(tmpDir+"/faux-knox/"+uploadFileName,function(err){
+             if (err) throw err;
+          });
+        }); 
+      });
+    } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
+
   } catch(err) {
     console.error(err);
   }

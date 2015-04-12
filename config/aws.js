@@ -71,5 +71,5 @@ function useMock() {
 }
 
 function getBucket(bucketName) {
-  return useMock() ? process.env.UPLOAD_CACHE_DIRECTORY+"../faux-knox/" : bucketName;
+  return useMock() ? process.cwd()+"/tmp/faux-knox/" : bucketName;
 }
