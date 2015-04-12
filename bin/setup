@@ -9,18 +9,10 @@ if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
 }
 
 // run the setup script(s)
-generateSequelizeConfigJson();
 setupTmpDirectory();
+initializeSequelize();
 
-// sequelize sync
-// models.sequelize.sync().then(function() {
-//   // run sequelize-cli migrations from command line
-//   var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
-//   exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){ console.log(sOut); console.log(sErr); });
-// });
-
-
-function generateSequelizeConfigJson() {
+function initializeSequelize() {
 
   var configJsonFile = __dirname+"/../config/config.json";
 
@@ -37,10 +29,19 @@ function generateSequelizeConfigJson() {
   fs.unlink(configJsonFile,function(e){
     fs.writeFile(configJsonFile, configJsonContent, function(e){
       if (!e) {
+
         exec( "echo 'sequelize config.json has been [re]generated.'; "
               ,function(err,stdout,stderr){
           console.log(stdout);
         });
+
+        // sequelize sync
+        models.sequelize.sync().then(function() {
+          // run sequelize-cli migrations from command line
+          var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
+          exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){ console.log(sErr); });
+        });
+
       }
     });
   });
