@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var GuardianAudio = sequelize.define("GuardianAudio", {
+  var GuardianEvent = sequelize.define("GuardianEvent", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -10,47 +10,43 @@ module.exports = function(sequelize, DataTypes) {
     measured_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+      allowNull: true,
       validate: {
         isDate: true
       }
     },
-    analyzed_at: {
-      type: DataTypes.DATE,
-      validate: {
-        isDate: true
-      }
-    },
-    size: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
-    length: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
-    sha1_checksum: {
+    classification: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
+      unique: false,
       validate: {
       }
     },
-    url: {
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: -90,
+        max: 90
+      }
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: -180,
+        max: 180
+      }
+    },
+    service_key: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
       validate: {
       }
     },
-    analysis_sqs_msg_id: {
+    incident_key: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
@@ -59,12 +55,12 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        GuardianAudio.belongsTo(models.GuardianCheckIn, {as: 'CheckIn'});
-        GuardianAudio.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianEvent.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianEvent.belongsTo(models.GuardianAudio, {as: 'GuardianAudio'});
       }
     },
-    tableName: "GuardianAudio"
+    tableName: "GuardianEvents"
   });
 
-  return GuardianAudio;
+  return GuardianEvent;
 };

@@ -2,19 +2,18 @@
 var debug = require('debug')('rfcx-api');
 var app = require('../app');
 var models = require("../models");
+var exec = require("child_process").exec;
 
 models.sequelize.sync().then(function() {
 
-  // models.sequelize.getMigrator({
-  //   path: process.cwd()+'/migrations'
-  // }).migrate({ method: 'up'}).success(function(){
+  // run sequelize-cli migrations from command line
+  var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
+  exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){ console.log(sErr); });
 
-    var server = app.listen(app.get('port'), function(){
-      console.log(
-        app.get("title")+" (port "+app.get('port')+") ("+process.env.NODE_ENV+")"
-      );
-    });
-
-// });
+  var server = app.listen(app.get('port'), function(){
+    console.log(
+      app.get("title")+" (port "+app.get('port')+") ("+process.env.NODE_ENV+")"
+    );
+  });
 
 });

@@ -35,7 +35,7 @@ var routes = {
                   require("./routes/v1/guardians-software"), 
                   require("./routes/v1/guardians-checkins"), 
                   require("./routes/v1/guardians-checkins-audio"), 
-                  require("./routes/v1/guardians-alerts")
+                  require("./routes/v1/guardians-events")
                 ],
   "mapping": [ require("./routes/v1/mapping") ]
   },

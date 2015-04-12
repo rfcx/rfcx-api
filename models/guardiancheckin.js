@@ -4,7 +4,8 @@ module.exports = function(sequelize, DataTypes) {
   var GuardianCheckIn = sequelize.define("GuardianCheckIn", {
     guid: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4
+      defaultValue: DataTypes.UUIDV4,
+      unique: true
     },
     measured_at: {
       type: DataTypes.DATE,

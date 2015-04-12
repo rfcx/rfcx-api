@@ -9,6 +9,7 @@ var aws = require("../../config/aws.js").aws();
 router.route("/:guardian_id/alerts")
   .post(function(req,res) {
 
+    console.log(req.body);
     try {
         var json = JSON.parse(querystring.parse("all="+req.body.json).all);
         if (verbose_logging) { console.log(json); }

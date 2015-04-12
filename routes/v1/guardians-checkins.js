@@ -68,6 +68,7 @@ router.route("/:guardian_id/checkins")
             if (json.previous_checkins != null) {
               var previousCheckIns = json.previous_checkins.split("|"); 
               for (checkInIndex in previousCheckIns) {
+                var previousCheckIn = previousCheckIns[checkInIndex].split("*"); 
                 // models.GuardianCheckIn
                 //   .findAll({ where: { guid: json.last_checkin_id } })
                 //   .spread(function(dLastCheckIn){
