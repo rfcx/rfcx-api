@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 var exec = require('child_process').exec;
 var fs = require("fs");
-var models = require("../models");
 
 if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
   var env = require(__dirname+"/../config/env_vars.js").env;
@@ -35,6 +34,8 @@ function initializeSequelize() {
           console.log(stdout);
         });
 
+        var models = require("../models");
+        
         // sequelize sync
         models.sequelize.sync().then(function() {
           // run sequelize-cli migrations from command line
