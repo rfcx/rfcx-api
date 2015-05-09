@@ -97,6 +97,7 @@ router.route("/:guardian_id/checkins")
                      sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
                      localPath: req.files.screenshot[i].path,
                      size: fs.statSync(req.files.screenshot[i].path).size,
+                     origin_id: timeStamp,
                      timeStamp: new Date(parseInt(timeStamp)),
                      isSaved: false,
                      s3Path: "/"+process.env.NODE_ENV
@@ -117,6 +118,7 @@ router.route("/:guardian_id/checkins")
                         for (l in screenShotInfo) {
                           if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
                             screenShotInfo[l].isSaved = true;
+                            returnJson.screenShot.push({ id: screenShotInfo[l].origin_id, guid: null });
                             console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
                           }
                         }                        
