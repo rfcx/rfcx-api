@@ -24,14 +24,23 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
                 dbAudio.analysis_sqs_msg_id = null; // need to add real sqs id once it gets added/sent to/from the analysis script request logic
                 dbAudio.save();
 
-                fs.readFile(req.files.json.path, 'utf8', function(err, data) {
-                  if (err) throw err;
-                  var audioEvents = JSON.parse(data);
-                  for (eventInd in audioEvents) {
-                    var audioEvent = audioEvents[eventInd];
-
-                  }
-                });
+                    // This is not ideal... currently the python-based analysis sends a JSON array of detected events
+                    // in a separate text file. This file must thereby be downloaded into the temporary uploads directory
+                    // and then opened, parsed, and deleted afterward. It would obviously be better to have this same
+                    // JSON array sent along as a string in a POST field instead.
+                    fs.readFile(req.files.json.path, 'utf8', function(readFileError, data) {
+                      if (readFileError) throw readFileError;
+                      var events = JSON.parse(data);
+                      if (events.length > 0) {
+                          for (eventInd in events) {
+                            var event = audioEvents[eventInd];
+                            var eventTime = new Date(event.incident_time.replace(/ /g,"T")+".000Z");
+                            var audioStartTime = new Date(event.recording_start);
+                            var audioEventTime = eventTime.valueOf()-audioStartTime.valueOf();
+                          }
+                      }
+                      fs.unlink(req.files.json.path,function(e){if(e){console.log(e);}});
+                    });
 
               }).catch(function(err){
                 console.log("failed to find audio reference | "+err);
