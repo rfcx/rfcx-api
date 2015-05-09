@@ -36,12 +36,12 @@ router.route("/:guardian_id/checkins")
           models.GuardianCheckIn.create({
             guardian_id: dbGuardian.id,
             version_id: dSoftware.id,
-            cpu_percent: strArrToAvg(json.cpu_percent,","),
-            cpu_clock: strArrToAvg(json.cpu_clock,","),
-            battery_percent: strArrToAvg(json.battery_percent,","),
-            battery_temperature: strArrToAvg(json.battery_temperature,","),
-            network_search_time: strArrToAvg(json.network_search_time,","),
-            internal_luminosity: strArrToAvg(json.internal_luminosity,","),
+            cpu_percent: strArrToAvg(json.cpu_percent,"|","*"),
+            cpu_clock: strArrToAvg(json.cpu_clock,"|","*"),
+            battery_percent: strArrToAvg(json.battery_percent,"|","*"),
+            battery_temperature: strArrToAvg(json.battery_temperature,"|","*"),
+            network_search_time: strArrToAvg(json.network_search_time,"|","*"),
+            internal_luminosity: strArrToAvg(json.internal_luminosity,"|","*"),
             network_transmit_time: null,
             measured_at: Date.parse(json.measured_at)
           }).then(function(dbCheckIn){
@@ -68,15 +68,15 @@ router.route("/:guardian_id/checkins")
             if (json.previous_checkins != null) {
               var previousCheckIns = json.previous_checkins.split("|"); 
               for (checkInIndex in previousCheckIns) {
-                var previousCheckIn = previousCheckIns[checkInIndex].split("*"); 
-                // models.GuardianCheckIn
-                //   .findAll({ where: { guid: json.last_checkin_id } })
-                //   .spread(function(dLastCheckIn){
-                //     dLastCheckIn.request_latency_guardian = json.last_checkin_duration;
-                //     dLastCheckIn.save();
-                //   }).catch(function(err){
-                //     console.log("error finding/updating last checkin id: "+json.last_checkin_id);
-                //   });
+                var previousCheckIn = previousCheckIns[checkInIndex].split("*");
+                models.GuardianCheckIn
+                  .findAll({ where: { guid: previousCheckIn[0] } })
+                  .spread(function(dPreviousCheckIn){
+                    dPreviousCheckIn.request_latency_guardian = previousCheckIn[1];
+                    dPreviousCheckIn.save();
+                  }).catch(function(err){
+                    console.log("error finding/updating previous checkin id: "+previousCheckIn[0]);
+                  });
               }
             }
 
@@ -279,12 +279,14 @@ module.exports = router;
 
 // Special Functions
 
-function strArrToAvg(str,delim) {
+function strArrToAvg(str,delimA,delimB) {
   if (str == null) { return null; }
   try {
-    var ttl = 0, arr = str.split(delim);
+    var ttl = 0, arr = str.split(delimA);
     if (arr.length > 0) {
-      for (i in arr) { ttl = ttl + parseInt(arr[i]); }
+      for (i in arr) {
+        ttl = ttl + parseInt(arr[i].split(delimB)[1]);
+      }
       return Math.round(ttl/arr.length);
     } else {
       return null;
