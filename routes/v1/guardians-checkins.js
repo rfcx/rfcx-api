@@ -87,6 +87,7 @@ router.route("/:guardian_id/checkins")
                 var screenShotInfo = {};
                 for (i in req.files.screenshot) {
                   var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
+                  var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
                   screenShotInfo[timeStamp] = {
                      guardian_id: dbGuardian.guid,
                      checkin_id: dbCheckIn.guid,
@@ -97,16 +98,14 @@ router.route("/:guardian_id/checkins")
                      timeStamp: new Date(parseInt(timeStamp)),
                      isSaved: false,
                      s3Path: "/"+process.env.NODE_ENV
-                              +"/guardians/"+dbGuardian.guid
-                              +"/screenshot"
-                              +"/"+dbGuardian.guid+"-"
-                                +(new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-")
-                              +".png"
+                              +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
+                              +"/"+dbGuardian.guid
+                              +"/"+dbGuardian.guid+"-"+dateString+".png"
                   };
 
                 }
                 for (j in screenShotInfo) {
-                  aws.s3("rfcx-ark").putFile(
+                  aws.s3("rfcx-meta").putFile(
                     screenShotInfo[j].localPath, screenShotInfo[j].s3Path, 
                     function(err, s3Res){
                       s3Res.resume();
@@ -136,6 +135,7 @@ router.route("/:guardian_id/checkins")
                   audioMeta[i] = audioMeta[i].split("*");
                   var timeStamp = audioMeta[i][1]; 
                   audioMeta[i][1] = new Date(parseInt(audioMeta[i][1]));
+                  var dateString = audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-");
                   audioInfo[timeStamp] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
@@ -148,10 +148,9 @@ router.route("/:guardian_id/checkins")
                     measured_at: audioMeta[i][1],
                     isSaved: { db: false, s3: false, sqs: false },
                     s3Path: "/"+process.env.NODE_ENV
-                            +"/guardians/"+dbGuardian.guid
-                            +"/"+audioMeta[i][1].toISOString().substr(0,10).replace(/-/g,"/")
-                            +"/"+dbGuardian.guid+"-"
-                                +audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-")
+                            +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
+                            +"/"+dbGuardian.guid
+                            +"/"+dbGuardian.guid+"-"+dateString
                                 +req.files.audio[i].originalname.substr(req.files.audio[i].originalname.indexOf("."))
                   };
                 }
