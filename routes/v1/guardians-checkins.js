@@ -51,17 +51,19 @@ router.route("/:guardian_id/checkins")
               checkin_id: dbCheckIn.guid,
               audio: [],
               screenShot: [],
+              message: [],
               settings: {
  //               verbose_logging: true,
  //               api_domain:
               }
             };
 
-            // save sms messages
-            if (json.messages != "") {
-              var smsMsgs = json.messages.split("|");
-
-              console.log(json.messages);
+            // parse, review and save sms messages
+            var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
+            if (util.isArray(messages)) {
+              for (msgInd in messages) {
+                console.log(messages[msgInd]);
+              }
             }
 
             // if included, update previous checkIn info
