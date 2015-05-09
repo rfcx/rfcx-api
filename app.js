@@ -62,6 +62,9 @@ for (apiVersion in routes) {
 // Health Check Endpoint
 app.get("/health_check",function(req,res){ res.status(200).json({app:app.get("title")});});
 
+// No endpoint
+app.get("/",function(req,res){ res.status(200).json({app:app.get("title")});});
+
 // Catch & Report Various HTTP Errors (needs some work)
 
 app.use(function(req, res, next) {
