@@ -50,10 +50,9 @@ router.route("/:guardian_id/checkins")
             var returnJson = {
               checkin_id: dbCheckIn.guid,
               audio: [],
-              screenShot: [],
-              message: [],
+              screenshots: [],
+              messages: [],
               settings: {
- //               verbose_logging: true,
  //               api_domain:
               }
             };
@@ -61,8 +60,26 @@ router.route("/:guardian_id/checkins")
             // parse, review and save sms messages
             var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
             if (util.isArray(messages)) {
+              console.log(messages.length + " messages to store...");
+              var messageInfo = {};
               for (msgInd in messages) {
-                console.log(messages[msgInd]);
+                var digest = messages[msgInd].digest;
+                messageInfo[digest] = {
+                     guardian_id: dbGuardian.guid,
+                     checkin_id: dbCheckIn.guid,
+                     version: dSoftware.number,
+                     digest: messages[msgInd].digest,
+                     number: messages[msgInd].number,
+                     body: messages[msgInd].body,
+                     timeStamp: new Date(parseInt(messages[msgInd].received_at)),
+                     isSaved: false
+                  };
+              }
+              for (msgInfoInd in messageInfo) {
+                // ... save the messages into a database
+                // if all goes well, then...
+                messageInfo[msgInfoInd].isSaved = true;
+                console.log("message saved: "+messageInfo[msgInfoInd].timeStamp);
               }
             }
 
@@ -118,7 +135,6 @@ router.route("/:guardian_id/checkins")
                         for (l in screenShotInfo) {
                           if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
                             screenShotInfo[l].isSaved = true;
-                            returnJson.screenShot.push({ id: screenShotInfo[l].origin_id, guid: null });
                             console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
                           }
                         }                        
@@ -210,8 +226,17 @@ router.route("/:guardian_id/checkins")
                                         }
                                         for (n in screenShotInfo) {
                                           if (screenShotInfo[n].isSaved) {
-                                            returnJson.screenShot.push({
-                                              id: n
+                                            returnJson.screenshots.push({
+                                              id: n,
+                                              guid: null
+                                            });
+                                          }         
+                                        }
+                                        for (o in messageInfo) {
+                                          if (messageInfo[o].isSaved) {
+                                            returnJson.messages.push({
+                                              digest: messageInfo[o].digest,
+                                              guid: null
                                             });
                                           }         
                                         }
