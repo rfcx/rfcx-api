@@ -23,9 +23,8 @@ router.route("/:guardian_id/software/latest")
         dbGuardian.save();
 
         models.GuardianSoftware
-          .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 2 })
+          .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 1 })
           .then(function(dSoftware){
-            console.log("software version check by guardian '"+dbGuardian.guid+"'");
             var softwareJson = [];
             for (i in dSoftware) {
               softwareJson[i] = {
