@@ -52,8 +52,9 @@ router.route("/:guardian_id/checkins")
               audio: [],
               screenshots: [],
               messages: [],
-              settings: {
- //               api_domain:
+              instructions: {
+                prefs: {},
+                messages: []
               }
             };
 
