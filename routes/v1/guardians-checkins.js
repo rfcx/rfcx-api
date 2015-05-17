@@ -43,9 +43,28 @@ router.route("/:guardian_id/checkins")
             network_search_time: strArrToAvg(json.network_search_time,"|","*"),
             internal_luminosity: strArrToAvg(json.internal_luminosity,"|","*"),
             network_transmit_time: null,
-            measured_at: Date.parse(json.measured_at)
+            measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset)
           }).then(function(dbCheckIn){
             console.log("check-in created: "+dbCheckIn.guid);
+
+            // save guardian meta data
+
+            // save guardian meta data transfer
+            var metaDataTransfer = strArrToJSArr(json.data_transfer,"|","*");
+            for (dtInd in metaDataTransfer) {
+              models.GuardianMetaDataTransfer.create({
+                  guardian_id: dbGuardian.id,
+                  check_in_id: dbCheckIn.id,
+                  started_at: new Date(metaDataTransfer[dtInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  ended_at: new Date(metaDataTransfer[dtInd][1].replace(/ /g,"T")+json.timezone_offset),
+                  bytes_received: parseInt(metaDataTransfer[dtInd][2]),
+                  bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
+                  total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
+                  total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
+                }).then(function(dbGuardianMetaDataTransfer){
+                }).catch(function(err){
+                });
+            }
 
             var returnJson = {
               checkin_id: dbCheckIn.guid,
@@ -323,6 +342,24 @@ function strArrToAvg(str,delimA,delimB) {
   } catch(e) {
     console.log(e);
     return null;
+  }
+}
+
+function strArrToJSArr(str,delimA,delimB) {
+  if (str == null) { return []; }
+  try {
+    var rtrnArr = [], arr = str.split(delimA);
+    if (arr.length > 0) {
+      for (i in arr) {
+        rtrnArr.push(arr[i].split(delimB));
+      }
+      return rtrnArr;
+    } else {
+      return [];
+    }
+  } catch(e) {
+    console.log(e);
+    return [];
   }
 }
 
