@@ -15,14 +15,6 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
-    network_search_time: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
     internal_luminosity: {
       type: DataTypes.INTEGER,
       allowNull: true,
