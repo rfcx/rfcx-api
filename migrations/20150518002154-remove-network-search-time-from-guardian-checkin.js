@@ -5,6 +5,8 @@ module.exports = {
 
     migration.removeColumn('GuardianCheckIns', 'network_search_time');
 
+    done();
+    
   },
 
   down: function(migration, DataTypes, done) {
@@ -22,6 +24,8 @@ module.exports = {
         }
       }
     );
+
+    done();
 
   }
 };

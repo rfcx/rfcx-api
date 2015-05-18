@@ -9,6 +9,8 @@ module.exports = {
     migration.removeColumn('GuardianCheckIns', 'battery_temperature');
     migration.removeColumn('GuardianCheckIns', 'network_transmit_time');
 
+    done();
+    
   },
 
   down: function(migration, DataTypes, done) {
@@ -82,6 +84,7 @@ module.exports = {
       }
     );
 
+    done();
 
   }
 };
