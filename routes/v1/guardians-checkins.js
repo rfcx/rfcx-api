@@ -73,7 +73,7 @@ router.route("/:guardian_id/checkins")
             }
 
             // save guardian meta battery
-            var metaBattery = strArrToJSArr(json.cpu,"|","*");
+            var metaBattery = strArrToJSArr(json.battery,"|","*");
             for (battInd in metaBattery) {
               models.GuardianMetaBattery.create({
                   guardian_id: dbGuardian.id,
