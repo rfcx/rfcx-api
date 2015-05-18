@@ -96,6 +96,18 @@ router.route("/:guardian_id/checkins")
                 }).then(function(dbGuardianMetaPower){ }).catch(function(err){ });
             }
 
+            // save guardian meta network
+            var metaNetwork = strArrToJSArr(json.network,"|","*");
+            for (ntwkInd in metaNetwork) {
+              models.GuardianMetaNetwork.create({
+                  guardian_id: dbGuardian.id,
+                  check_in_id: dbCheckIn.id,
+                  measured_at: new Date(metaNetwork[ntwkInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  signal_strength: parseInt(metaNetwork[ntwkInd][1]),
+                  carrier_name: metaNetwork[ntwkInd][2]
+                }).then(function(dbGuardianMetaNetwork){ }).catch(function(err){ });
+            }
+
             var returnJson = {
               checkin_id: dbCheckIn.guid,
               audio: [],
