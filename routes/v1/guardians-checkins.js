@@ -128,8 +128,18 @@ router.route("/:guardian_id/checkins")
               for (msgInfoInd in messageInfo) {
                 // ... save the messages into a database
                 // if all goes well, then...
-                messageInfo[msgInfoInd].isSaved = true;
-                console.log("message saved: "+messageInfo[msgInfoInd].timeStamp);
+
+                models.GuardianMessage.create({
+                    guardian_id: messageInfo[msgInfoInd].guardian_id,
+                    check_in_id: messageInfo[msgInfoInd].checkin_id,
+                    received_at: messageInfo[msgInfoInd].timeStamp,
+                    number: messageInfo[msgInfoInd].number,
+                    body: messageInfo[msgInfoInd].body,
+                    digest: messageInfo[msgInfoInd].digest
+                  }).then(function(dbGuardianMessage){
+                    messageInfo[dbGuardianMessage.digest].isSaved = true;
+                    console.log("message saved: "+messageInfo[dbGuardianMessage.digest].timeStamp);
+                  }).catch(function(err){ });
               }
             }
 

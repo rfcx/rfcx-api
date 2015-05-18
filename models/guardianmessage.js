@@ -8,18 +8,31 @@ module.exports = function(sequelize, DataTypes) {
     },
     received_at: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      allowNull: true,
       validate: {
         isDate: true
       }
     },
-    origin: {
+    sent_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      validate: {
+        isDate: true
+      }
+    },
+    number: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
       }
     },
     body: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+    digest: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
