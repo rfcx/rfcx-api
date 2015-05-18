@@ -84,6 +84,18 @@ router.route("/:guardian_id/checkins")
                 }).then(function(dbGuardianMetaBattery){ }).catch(function(err){ });
             }
 
+            // save guardian meta power
+            var metaPower = strArrToJSArr(json.power,"|","*");
+            for (pwrInd in metaPower) {
+              models.GuardianMetaPower.create({
+                  guardian_id: dbGuardian.id,
+                  check_in_id: dbCheckIn.id,
+                  measured_at: new Date(metaPower[pwrInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  is_powered: (metaPower[pwrInd][1] === "true") ? true : false,
+                  is_charged: (metaPower[pwrInd][2] === "true") ? true : false
+                }).then(function(dbGuardianMetaPower){ }).catch(function(err){ });
+            }
+
             var returnJson = {
               checkin_id: dbCheckIn.guid,
               audio: [],

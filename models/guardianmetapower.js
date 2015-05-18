@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaCharger = sequelize.define('GuardianMetaCharger', {
+  var GuardianMetaPower = sequelize.define('GuardianMetaPower', {
     measured_at: {
       type: DataTypes.DATE,
       validate: {
@@ -16,11 +16,11 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        GuardianMetaCharger.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianMetaCharger.belongsTo(models.GuardianCheckIn, {as: 'CheckIn'});
+        GuardianMetaPower.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianMetaPower.belongsTo(models.GuardianCheckIn, {as: 'CheckIn'});
       }
     },
-    tableName: "GuardianMetaCharger"
+    tableName: "GuardianMetaPower"
   });
-  return GuardianMetaCharger;
+  return GuardianMetaPower;
 };
