@@ -36,10 +36,6 @@ router.route("/:guardian_id/checkins")
           models.GuardianCheckIn.create({
             guardian_id: dbGuardian.id,
             version_id: dSoftware.id,
-            cpu_percent: strArrToAvg(json.cpu_percent,"|","*"),
-            cpu_clock: strArrToAvg(json.cpu_clock,"|","*"),
-            battery_percent: strArrToAvg(json.battery_percent,"|","*"),
-            battery_temperature: strArrToAvg(json.battery_temperature,"|","*"),
             network_search_time: strArrToAvg(json.network_search_time,"|","*"),
             internal_luminosity: strArrToAvg(json.internal_luminosity,"|","*"),
             network_transmit_time: null,
@@ -61,9 +57,31 @@ router.route("/:guardian_id/checkins")
                   bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
                   total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
                   total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
-                }).then(function(dbGuardianMetaDataTransfer){
-                }).catch(function(err){
-                });
+                }).then(function(dbGuardianMetaDataTransfer){ }).catch(function(err){ });
+            }
+
+            // save guardian meta CPU
+            var metaCPU = strArrToJSArr(json.cpu,"|","*");
+            for (cpuInd in metaCPU) {
+              models.GuardianMetaCPU.create({
+                  guardian_id: dbGuardian.id,
+                  check_in_id: dbCheckIn.id,
+                  measured_at: new Date(metaCPU[cpuInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  cpu_percent: parseInt(metaCPU[cpuInd][1]),
+                  cpu_clock: parseInt(metaCPU[cpuInd][2])
+                }).then(function(dbGuardianMetaCPU){ }).catch(function(err){ });
+            }
+
+            // save guardian meta battery
+            var metaBattery = strArrToJSArr(json.cpu,"|","*");
+            for (battInd in metaBattery) {
+              models.GuardianMetaBattery.create({
+                  guardian_id: dbGuardian.id,
+                  check_in_id: dbCheckIn.id,
+                  measured_at: new Date(metaBattery[battInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  battery_percent: parseInt(metaBattery[battInd][1]),
+                  battery_temperature: parseInt(metaBattery[battInd][2])
+                }).then(function(dbGuardianMetaBattery){ }).catch(function(err){ });
             }
 
             var returnJson = {
