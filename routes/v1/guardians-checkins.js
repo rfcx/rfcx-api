@@ -142,6 +142,13 @@ router.route("/:guardian_id/checkins")
               }
             };
 
+            // add prefs instructions as set in database
+            for (guardianInd in dbGuardian) {
+              if ((guardianInd.substr(0,6) === "prefs_") && (dbGuardian[guardianInd] != null)) {
+                returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian[guardianInd];
+              }
+            }
+
             // parse, review and save sms messages
             var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
             if (util.isArray(messages)) {
