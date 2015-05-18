@@ -36,7 +36,6 @@ router.route("/:guardian_id/checkins")
           models.GuardianCheckIn.create({
             guardian_id: dbGuardian.id,
             version_id: dSoftware.id,
-            network_search_time: strArrToAvg(json.network_search_time,"|","*"),
             internal_luminosity: strArrToAvg(json.internal_luminosity,"|","*"),
             measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset)
           }).then(function(dbCheckIn){
@@ -105,6 +104,18 @@ router.route("/:guardian_id/checkins")
                   signal_strength: parseInt(metaNetwork[ntwkInd][1]),
                   carrier_name: metaNetwork[ntwkInd][2]
                 }).then(function(dbGuardianMetaNetwork){ }).catch(function(err){ });
+            }
+
+            // save guardian meta offline periods
+            var metaOffline = strArrToJSArr(json.offline,"|","*");
+            for (offlInd in metaOffline) {
+              models.GuardianMetaOffline.create({
+                  guardian_id: dbGuardian.id,
+                  check_in_id: dbCheckIn.id,
+                  ended_at: new Date(metaOffline[offlInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  offline_duration: parseInt(metaOffline[offlInd][1]),
+                  carrier_name: metaOffline[offlInd][2]
+                }).then(function(dbGuardianMetaOffline){ }).catch(function(err){ });
             }
 
             var returnJson = {
