@@ -38,7 +38,6 @@ router.route("/:guardian_id/checkins")
             version_id: dSoftware.id,
             network_search_time: strArrToAvg(json.network_search_time,"|","*"),
             internal_luminosity: strArrToAvg(json.internal_luminosity,"|","*"),
-            network_transmit_time: null,
             measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset)
           }).then(function(dbCheckIn){
             console.log("check-in created: "+dbCheckIn.guid);
@@ -232,7 +231,7 @@ router.route("/:guardian_id/checkins")
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
                     version: dSoftware.number,
-                    battery_temperature: dbCheckIn.battery_temperature,
+                    battery_temperature: null,
                     sha1Hash: hash.fileSha1(req.files.audio[i].path),
                     localPath: req.files.audio[i].path,
                     size: fs.statSync(req.files.audio[i].path).size,
