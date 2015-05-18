@@ -36,7 +36,6 @@ router.route("/:guardian_id/checkins")
           models.GuardianCheckIn.create({
             guardian_id: dbGuardian.id,
             version_id: dSoftware.id,
-            internal_luminosity: strArrToAvg(json.internal_luminosity,"|","*"),
             measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset)
           }).then(function(dbCheckIn){
             console.log("check-in created: "+dbCheckIn.guid);
@@ -118,6 +117,18 @@ router.route("/:guardian_id/checkins")
                 }).then(function(dbGuardianMetaOffline){ }).catch(function(err){ });
             }
 
+            // save guardian meta light meter
+            var metaLightMeter = strArrToJSArr(json.lightmeter,"|","*");
+            for (lmInd in metaLightMeter) {
+              models.GuardianMetaLightMeter.create({
+                  guardian_id: dbGuardian.id,
+                  check_in_id: dbCheckIn.id,
+                  measured_at: new Date(metaLightMeter[lmInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  luminosity: parseInt(metaLightMeter[lmInd][1])
+                }).then(function(dbGuardianMetaLightMeter){ }).catch(function(err){ });
+            }
+
+            // template for json return... to be populated as we progress
             var returnJson = {
               checkin_id: dbCheckIn.guid,
               audio: [],

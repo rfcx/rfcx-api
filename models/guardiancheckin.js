@@ -15,15 +15,6 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
-    internal_luminosity: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0,
-        max: 65536
-      }
-    },
     request_latency_api: {
       type: DataTypes.INTEGER,
       allowNull: true,
