@@ -22,6 +22,14 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    duration: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+          isInt: true,
+          min: 1
+      }
+    },
     latitude: {
       type: DataTypes.FLOAT,
       allowNull: true,
