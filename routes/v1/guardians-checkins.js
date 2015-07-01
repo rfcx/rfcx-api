@@ -263,9 +263,11 @@ router.route("/:guardian_id/checkins")
                     checkin_id: dbCheckIn.guid,
                     version: dSoftware.number,
                     battery_temperature: null,
+                    guardianSha1Hash: audioMeta[i][3],
                     sha1Hash: hash.fileSha1(req.files.audio[i].path),
                     localPath: req.files.audio[i].path,
                     size: fs.statSync(req.files.audio[i].path).size,
+                    duration: (audioMeta[i].length >= 5) ? parseInt(audioMeta[i][4]) : null,
                     timeStamp: timeStamp,
                     measured_at: audioMeta[i][1],
                     isSaved: { db: false, s3: false, sqs: false },
@@ -279,93 +281,100 @@ router.route("/:guardian_id/checkins")
 
                 for (j in audioInfo) {
 
-                  models.GuardianAudio.create({
-                    guardian_id: dbGuardian.id,
-                    check_in_id: dbCheckIn.id,
-                    sha1_checksum: audioInfo[j].sha1Hash,
-                    url: "s3://rfcx-ark"+audioInfo[j].s3Path,
-                    size: audioInfo[j].size,
-                    measured_at: audioInfo[j].measured_at
-                  }).then(function(dbAudio){
+                  if (audioInfo[j].sha1Hash === audioInfo[j].guardianSha1Hash) {
 
-                    for (k in audioInfo) {
-                      if (audioInfo[k].sha1Hash === dbAudio.sha1_checksum) {
-                        
-                        audioInfo[k].isSaved.db = true;
-                        audioInfo[k].audio_id = dbAudio.guid;
+                    models.GuardianAudio.create({
+                      guardian_id: dbGuardian.id,
+                      check_in_id: dbCheckIn.id,
+                      sha1_checksum: audioInfo[j].sha1Hash,
+                      url: "s3://rfcx-ark"+audioInfo[j].s3Path,
+                      size: audioInfo[j].size,
+                      length: audioInfo[j].duration,
+                      measured_at: audioInfo[j].measured_at
+                    }).then(function(dbAudio){
 
-                        console.log("uploading file to s3: "+audioInfo[k].audio_id);
+                      for (k in audioInfo) {
+                        if (audioInfo[k].sha1Hash === dbAudio.sha1_checksum) {
+                          
+                          audioInfo[k].isSaved.db = true;
+                          audioInfo[k].audio_id = dbAudio.guid;
 
-                        aws.s3("rfcx-ark").putFile(
-                          audioInfo[k].localPath, audioInfo[k].s3Path, 
-                          function(err, s3Res){
-                            s3Res.resume();
-                            if (!!err) {
-                              console.log(err);
-                            } else if (200 == s3Res.statusCode) {
-                              for (l in audioInfo) {
-                                if (s3Res.req.url.indexOf(audioInfo[l].s3Path) >= 0) {
-                                  audioInfo[l].isSaved.s3 = true;
+                          console.log("uploading file to s3: "+audioInfo[k].audio_id);
 
-                                  console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
-                                  audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
-                                  
-                                  aws.sns().publish({
-                                      TopicArn: aws.snsTopicArn("rfcx-analysis"),
-                                      Message: JSON.stringify(audioInfo[l])
-                                    }, function(err, data) {
-                                      if (!!err) {
-                                        console.log(err);
-                                      } else {
-                                        var isComplete = true;
-                                          
-                                        for (m in audioInfo) {
-                                          if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
-                                          returnJson.audio.push({
-                                            id: m,
-                                            guid: audioInfo[m].audio_id
-                                          });         
+                          aws.s3("rfcx-ark").putFile(
+                            audioInfo[k].localPath, audioInfo[k].s3Path, 
+                            function(err, s3Res){
+                              s3Res.resume();
+                              if (!!err) {
+                                console.log(err);
+                              } else if (200 == s3Res.statusCode) {
+                                for (l in audioInfo) {
+                                  if (s3Res.req.url.indexOf(audioInfo[l].s3Path) >= 0) {
+                                    audioInfo[l].isSaved.s3 = true;
+
+                                    console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
+                                    audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
+                                    
+                                    aws.sns().publish({
+                                        TopicArn: aws.snsTopicArn("rfcx-analysis"),
+                                        Message: JSON.stringify(audioInfo[l])
+                                      }, function(err, data) {
+                                        if (!!err) {
+                                          console.log(err);
+                                        } else {
+                                          var isComplete = true;
+                                            
+                                          for (m in audioInfo) {
+                                            if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
+                                            returnJson.audio.push({
+                                              id: m,
+                                              guid: audioInfo[m].audio_id
+                                            });         
+                                          }
+                                          for (n in screenShotInfo) {
+                                            if (screenShotInfo[n].isSaved) {
+                                              returnJson.screenshots.push({
+                                                id: n,
+                                                guid: null
+                                              });
+                                            }         
+                                          }
+                                          for (o in messageInfo) {
+                                            if (messageInfo[o].isSaved) {
+                                              returnJson.messages.push({
+                                                digest: messageInfo[o].digest,
+                                                guid: null
+                                              });
+                                            }         
+                                          }
+                                          if (isComplete) {
+
+                                            dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+                                            dbCheckIn.save();
+
+                                            if (verbose_logging) { console.log(returnJson); }
+                                            res.status(200).json(returnJson);
+                                            
+                                            for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
+                                          }
                                         }
-                                        for (n in screenShotInfo) {
-                                          if (screenShotInfo[n].isSaved) {
-                                            returnJson.screenshots.push({
-                                              id: n,
-                                              guid: null
-                                            });
-                                          }         
-                                        }
-                                        for (o in messageInfo) {
-                                          if (messageInfo[o].isSaved) {
-                                            returnJson.messages.push({
-                                              digest: messageInfo[o].digest,
-                                              guid: null
-                                            });
-                                          }         
-                                        }
-                                        if (isComplete) {
-
-                                          dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
-                                          dbCheckIn.save();
-
-                                          if (verbose_logging) { console.log(returnJson); }
-                                          res.status(200).json(returnJson);
-                                          
-                                          for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
-                                        }
-                                      }
-                                  });
-                                  fs.unlink(audioInfo[l].localPath,function(e){if(e){console.log(e);}});
-                                  audioInfo[l].isSaved.sqs = true;
+                                    });
+                                    fs.unlink(audioInfo[l].localPath,function(e){if(e){console.log(e);}});
+                                    audioInfo[l].isSaved.sqs = true;
+                                  }
                                 }
                               }
-                            }
-                        });
+                          });
+                        }
                       }
-                    }
-                  }).catch(function(err){
-                    console.log("error adding audio to database | "+err);
-                    if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
-                  });
+                    }).catch(function(err){
+                      console.log("error adding audio to database | "+err);
+                      if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
+                    });
+                  } else {
+                    console.log("checksum mismatch on uploaded audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash);
+                    res.status(500).json({msg:"checksum mismatch on uploaded audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash});
+                  }
                 }
               } else {
                 console.log("couldn't match audio meta to uploaded content | "+audioMeta);
