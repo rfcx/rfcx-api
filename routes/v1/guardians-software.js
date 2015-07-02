@@ -22,6 +22,11 @@ router.route("/:guardian_id/software/latest")
         dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
         dbGuardian.save();
 
+        models.GuardianMetaUpdateCheckIn.create({
+          guardian_id: dbGuardian.id,
+          version_id: dbGuardian.version_id
+        }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
+
         models.GuardianSoftware
           .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 1 })
           .then(function(dSoftware){
