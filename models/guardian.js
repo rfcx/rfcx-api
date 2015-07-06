@@ -16,6 +16,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    is_certfied: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      validate: {
+      }
+    },
     latitude: {
       type: DataTypes.FLOAT,
       allowNull: true,
