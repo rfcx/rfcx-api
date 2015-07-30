@@ -422,24 +422,6 @@ module.exports = router;
 
 // Special Functions
 
-function strArrToAvg(str,delimA,delimB) {
-  if (str == null) { return null; }
-  try {
-    var ttl = 0, arr = str.split(delimA);
-    if (arr.length > 0) {
-      for (i in arr) {
-        ttl = ttl + parseInt(arr[i].split(delimB)[1]);
-      }
-      return Math.round(ttl/arr.length);
-    } else {
-      return null;
-    }
-  } catch(e) {
-    console.log(e);
-    return null;
-  }
-}
-
 function strArrToJSArr(str,delimA,delimB) {
   if (str == null) { return []; }
   try {
