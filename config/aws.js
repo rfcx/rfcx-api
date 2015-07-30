@@ -44,7 +44,7 @@ exports.aws = function() {
         secret: process.env.AWS_SECRET_KEY,
         region: process.env.AWS_REGION_ID,
         bucket: getBucket(bucketName)
-      }).signedUrl(filePath,signedUrlExpiration);
+      }).signedUrl(filePath,new Date((new Date()).valueOf()+(1000*60*linkExpirationInMinutes)));
 
     },
 

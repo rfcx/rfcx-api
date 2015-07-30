@@ -31,7 +31,6 @@ router.route("/:guardian_id/checkins")
           dbGuardian.check_in_count = 1+dbGuardian.check_in_count;          
           dbGuardian.version_id = dSoftware.id;
           dbGuardian.save();
-          console.log("software version saved to guardian: "+dSoftware.number);
 
           models.GuardianCheckIn.create({
             guardian_id: dbGuardian.id,
@@ -153,7 +152,6 @@ router.route("/:guardian_id/checkins")
             // parse, review and save sms messages
             var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
             if (util.isArray(messages)) {
-              console.log(messages.length + " messages to store...");
               var messageInfo = {};
               for (msgInd in messages) {
                 var digest = messages[msgInd].digest;
@@ -209,7 +207,6 @@ router.route("/:guardian_id/checkins")
             // save screenshot files
             if (!!req.files.screenshot) {
               if (!util.isArray(req.files.screenshot)) { req.files.screenshot = [req.files.screenshot]; }
-                console.log(req.files.screenshot.length + " screenshot files to ingest...");
                 var screenShotInfo = {};
                 for (i in req.files.screenshot) {
                   var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
@@ -256,7 +253,6 @@ router.route("/:guardian_id/checkins")
               var audioMeta = [];
               if (json.audio != null) { audioMeta = json.audio.split("|"); }
               if (audioMeta.length == req.files.audio.length) {
-                console.log(req.files.audio.length + " audio files to ingest...");
                 var audioInfo = {};
                 for (i in req.files.audio) {
                   audioMeta[i] = audioMeta[i].split("*");
@@ -304,7 +300,7 @@ router.route("/:guardian_id/checkins")
                           audioInfo[k].isSaved.db = true;
                           audioInfo[k].audio_id = dbAudio.guid;
 
-                          console.log("uploading file to s3: "+audioInfo[k].audio_id);
+                          console.log("uploading audio to s3: "+audioInfo[k].audio_id);
 
                           aws.s3("rfcx-ark").putFile(
                             audioInfo[k].localPath, audioInfo[k].s3Path, 
