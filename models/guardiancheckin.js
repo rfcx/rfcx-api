@@ -30,7 +30,42 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true,
         min: 0
       }
+    },
+    guardian_skipped_checkins: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    guardian_queued_checkins: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    location_latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: -90,
+        max: 90
+      }
+    },
+    location_longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: -180,
+        max: 180
+      }
     }
+
   }, {
     classMethods: {
       associate: function(models) {

@@ -16,7 +16,7 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    is_certfied: {
+    is_certified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       validate: {
@@ -74,6 +74,22 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: 0
+      }
+    },
+    prefs_audio_capture_interval: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 1
+      }
+    },
+    prefs_service_monitor_interval: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 1
       }
     },
   }, {

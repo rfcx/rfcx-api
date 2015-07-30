@@ -157,14 +157,15 @@ router.route("/:guardian_id/checkins")
               for (msgInd in messages) {
                 var digest = messages[msgInd].digest;
                 messageInfo[digest] = {
-                     guardian_id: dbGuardian.guid,
-                     checkin_id: dbCheckIn.guid,
-                     version: dSoftware.number,
-                     digest: messages[msgInd].digest,
-                     number: messages[msgInd].number,
-                     body: messages[msgInd].body,
-                     timeStamp: new Date(parseInt(messages[msgInd].received_at)),
-                     isSaved: false
+                  guid: null,
+                  guardian_id: dbGuardian.id,
+                  checkin_id: dbCheckIn.id,
+                  version: dSoftware.number,
+                  digest: messages[msgInd].digest,
+                  number: messages[msgInd].number,
+                  body: messages[msgInd].body,
+                  timeStamp: new Date(messages[msgInd].received_at.replace(/ /g,"T")+json.timezone_offset),
+                  isSaved: false
                   };
               }
               for (msgInfoInd in messageInfo) {
@@ -180,8 +181,11 @@ router.route("/:guardian_id/checkins")
                     digest: messageInfo[msgInfoInd].digest
                   }).then(function(dbGuardianMessage){
                     messageInfo[dbGuardianMessage.digest].isSaved = true;
-                    console.log("message saved: "+messageInfo[dbGuardianMessage.digest].timeStamp);
-                  }).catch(function(err){ });
+                    messageInfo[dbGuardianMessage.digest].guid = dbGuardianMessage.guid;
+                    console.log("message saved: "+dbGuardianMessage.guid);
+                  }).catch(function(err){
+                    console.log("error saving message: "+messageInfo[msgInfoInd].digest+", "+messageInfo[msgInfoInd].body+", "+err);
+                  });
               }
             }
 
@@ -343,7 +347,7 @@ router.route("/:guardian_id/checkins")
                                             if (messageInfo[o].isSaved) {
                                               returnJson.messages.push({
                                                 digest: messageInfo[o].digest,
-                                                guid: null
+                                                guid: messageInfo[o].guid
                                               });
                                             }         
                                           }
