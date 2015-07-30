@@ -38,7 +38,8 @@ router.route("/:guardian_id/checkins")
             version_id: dSoftware.id,
             measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
             guardian_queued_checkins: parseInt(json.queued_checkins),
-            guardian_skipped_checkins: parseInt(json.skipped_checkins)
+            guardian_skipped_checkins: parseInt(json.skipped_checkins),
+            is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
             console.log("check-in created: "+dbCheckIn.guid);
 

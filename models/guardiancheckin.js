@@ -15,6 +15,12 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
+    is_certified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      validate: {
+      }
+    },
     request_latency_api: {
       type: DataTypes.INTEGER,
       allowNull: true,
