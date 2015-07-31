@@ -400,17 +400,27 @@ router.route("/:guardian_id/checkins")
   })
 ;
 
-router.route("/:guardian_id/checkins/:checkin_id")
+router.route("/:guardian_id/checkins/latest")
   .get(function(req, res) {
 
     models.Guardian
-      .findAll( { where: { guid: req.params.guardian_id } })
-      .spread(function(dbGuardian){
+      .findOne( { where: { guid: req.params.guardian_id } })
+      .then(function(dbGuardian){
 
-        res.status(200).json(dbGuardian);
+        models.GuardianCheckIn
+          .findAll({ where: { guardian_id: dbGuardian.id }, order: "measured_at DESC", limit: 1 })
+          .then(function(dbCheckIn){
+
+              res.status(200).json(dbCheckIn);
+
+          }).catch(function(err){
+            console.log("failed to find checkins | "+err);
+            if (!!err) { res.status(500).json({msg:"failed to find checkins"}); }
+          });
     
     }).catch(function(err){
         console.log("failed to find guardian | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to find guardian"}); }
     });
   })
 ;

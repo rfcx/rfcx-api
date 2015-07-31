@@ -38,6 +38,7 @@ var routes = {
                   require("./routes/v1/guardians-events"),
                   require("./routes/v1/guardians-audio")
                 ],
+  "audio": [ require("./routes/v1/audio") ],
   "mapping": [ require("./routes/v1/mapping") ]
   },
   "v2": {
