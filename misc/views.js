@@ -2,7 +2,29 @@ var aws = require("../config/aws.js").aws();
 
 exports.views = {
 
-  guardianAudio: function(dbGuardianAudio) {
+  guardian: function(dbGuardian) {
+    return {
+      guid: dbGuardian.guid
+    }
+  },
+
+  guardianCheckIn: function(dbGuardianCheckIn) {
+    return {
+      guid: dbGuardianCheckIn.guid,
+      measured_at: dbGuardianCheckIn.measured_at,
+      created_at: dbGuardianCheckIn.created_at,
+      request_latency: {
+        api: dbGuardianCheckIn.request_latency_api,
+        guardian: dbGuardianCheckIn.request_latency_guardian,
+      },
+      location: {
+        latitude: parseFloat(dbGuardianCheckIn.latitude),
+        longitude: parseFloat(dbGuardianCheckIn.longitude)
+      }
+    }
+  },
+
+  guardianAudio: function(req,res,dbGuardianAudio) {
     
     var aud = dbGuardianAudio;
 
@@ -13,14 +35,15 @@ exports.views = {
       size: aud.size,
       length: aud.length,
       sha1_checksum: aud.sha1_checksum,
-      url: "https://api.rfcx.org/v1/audio/"+aud.guid+"."+aud.url.substr(1+aud.url.lastIndexOf(".")),
-      guardian: aud.Guardian,
-      checkin: aud.CheckIn
+      url: process.env.apiUrl+"/v1/audio/"+aud.guid+"."+aud.url.substr(1+aud.url.lastIndexOf(".")),
+      guardian: this.guardian(aud.Guardian),
+      checkin: this.guardianCheckIn(aud.CheckIn),
+      events: []
     };
   
   },
 
-  guardianAudioFile: function(dbGuardianAudio,res) {
+  guardianAudioFile: function(req,res,dbGuardianAudio) {
 
     var aud = dbGuardianAudio,
       s3NoProtocol = aud.url.substr(aud.url.indexOf("://")+3),
