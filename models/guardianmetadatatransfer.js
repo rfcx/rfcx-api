@@ -49,7 +49,6 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         GuardianMetaDataTransfer.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianMetaDataTransfer.belongsTo(models.GuardianCheckIn, {as: 'CheckIn'});
       }
     },
     tableName: "GuardianMetaDataTransfer"

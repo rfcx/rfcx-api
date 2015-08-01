@@ -7,6 +7,7 @@ var fs = require("fs");
 var util = require("util");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
+var views = require("../../misc/views.js").views;
 
 router.route("/:guardian_id/checkins")
   .post(function(req, res) {
@@ -404,24 +405,35 @@ router.route("/:guardian_id/checkins/latest")
   .get(function(req, res) {
 
     models.Guardian
-      .findOne( { where: { guid: req.params.guardian_id } })
-      .then(function(dbGuardian){
+      .findOne({ 
+        where: { guid: req.params.guardian_id }
+      }).then(function(dbGuardian){
 
         models.GuardianCheckIn
-          .findAll({ where: { guardian_id: dbGuardian.id }, order: "measured_at DESC", limit: 1 })
-          .then(function(dbCheckIn){
-
-              res.status(200).json(dbCheckIn);
+          .findAll({ 
+            where: { guardian_id: dbGuardian.id }, 
+            include: [{ all: true }], 
+            order: "measured_at DESC"
+            // Had to add this and comment out below 
+            // because there seems to be a bug in sequelize
+            // the invokes the LIMIT prior to the ORDER
+            // This should be fixed later
+              +" LIMIT "+req.rfcx.count
+        //    limit: req.rfcx.count
+          }).then(function(dbCheckIn){
+       
+            res.status(200).json(views.guardianCheckIn(req,res,dbCheckIn));
 
           }).catch(function(err){
-            console.log("failed to find checkins | "+err);
-            if (!!err) { res.status(500).json({msg:"failed to find checkins"}); }
+            console.log("failed to find checkin reference | "+err);
+            if (!!err) { res.status(500).json({msg:"failed to find checkin reference"}); }
           });
-    
-    }).catch(function(err){
-        console.log("failed to find guardian | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to find guardian"}); }
-    });
+
+      }).catch(function(err){
+        console.log("failed to find guardian reference | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to find guardian reference"}); }
+      });
+
   })
 ;
 

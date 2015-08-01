@@ -59,7 +59,6 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        GuardianAudio.belongsTo(models.GuardianCheckIn, {as: 'CheckIn'});
         GuardianAudio.belongsTo(models.Guardian, {as: 'Guardian'});
       }
     },

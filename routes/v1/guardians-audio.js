@@ -7,8 +7,6 @@ var views = require("../../misc/views.js").views;
 router.route("/:guardian_id/audio/latest")
   .get(function(req,res) {
 
-    var count = (req.param("count") == null) ? 1 : parseInt(req.param("count"));
-
     models.Guardian
       .findOne({ 
         where: { guid: req.params.guardian_id }
@@ -18,15 +16,16 @@ router.route("/:guardian_id/audio/latest")
           .findAll({ 
             where: { guardian_id: dbGuardian.id }, 
             include: [{ all: true }], 
-            order: "measured_at DESC", 
-            limit: count
+            order: "measured_at DESC"
+            // Had to add this and comment out below 
+            // because there seems to be a bug in sequelize
+            // the invokes the LIMIT prior to the ORDER
+            // This should be fixed later
+              +" LIMIT "+req.rfcx.count
+        //    limit: req.rfcx.count
           }).then(function(dbAudio){
-            
-            var audioJson = [];
-            for (i in dbAudio) {
-              audioJson.push(views.guardianAudio(req,res,dbAudio[i]));
-            }
-            res.status(200).json(audioJson);
+
+            res.status(200).json(views.guardianAudio(req,res,dbAudio));
 
           }).catch(function(err){
             console.log("failed to find audio reference | "+err);

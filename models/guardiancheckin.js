@@ -76,8 +76,19 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-        GuardianCheckIn.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianCheckIn.belongsTo(models.GuardianSoftware, {as: 'Version'});
+        GuardianCheckIn.belongsTo(models.Guardian, {as: "Guardian"});
+        GuardianCheckIn.belongsTo(models.GuardianSoftware, {as: "Version"});
+        GuardianCheckIn.hasMany(models.GuardianAudio, {as: "Audio", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaCPU, {as: "MetaCPU", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaBattery, {as: "MetaBattery", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaDataTransfer, {as: "MetaDataTransfer", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaLightMeter, {as: "MetaLightMeter", foreignKey: "check_in_id"});
+        
+        GuardianCheckIn.hasMany(models.GuardianMetaNetwork, {as: "MetaNetwork", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaOffline, {as: "MetaOffline", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaPower, {as: "MetaPower", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMessage, {as: "Message", foreignKey: "check_in_id"});
+
       }
     }
   });

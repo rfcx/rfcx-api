@@ -4,21 +4,19 @@ var express = require("express");
 var router = express.Router();
 var views = require("../../misc/views.js").views;
 
-router.route("/:audio_id")
+router.route("/:audio_id.:content_type")
   .get(function(req,res) {
-    var audio_id = req.params.audio_id,
-        contentType = ((audio_id.lastIndexOf(".") >= 0) ? audio_id.substr(1+audio_id.lastIndexOf(".")) : "json"),
-        guid = ((audio_id.lastIndexOf(".") >= 0) ? audio_id.substr(0,audio_id.lastIndexOf(".")) : audio_id);
+
     models.GuardianAudio
       .findOne({ 
-        where: { guid: guid }, 
+        where: { guid: req.params.audio_id }, 
         include: [{ all: true }]
       }).then(function(dbAudio){
 
-        if (contentType === "m4a") {
+        if (req.params.content_type === "m4a") {
           views.guardianAudioFile(req,res,dbAudio);
         } else {
-          res.status(200).json([views.guardianAudio(req,res,dbAudio)]);
+          res.status(200).json(views.guardianAudio(req,res,dbAudio));
         }
         
       }).catch(function(err){

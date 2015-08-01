@@ -24,7 +24,6 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         GuardianMetaNetwork.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianMetaNetwork.belongsTo(models.GuardianCheckIn, {as: 'CheckIn'});
       }
     },
     tableName: "GuardianMetaNetwork"
