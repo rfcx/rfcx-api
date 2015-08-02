@@ -3,9 +3,24 @@ var aws = require("../../../config/aws.js").aws();
 exports.views = {
 
   guardian: function(req,res,dbGuardian) {
+
+    var dbRow = dbGuardian;
+
     return {
-  //    real_id: dbGuardian.id,
-      guid: dbGuardian.guid
+      guid: dbRow.guid,
+      shortname: dbRow.shortname,
+      software_version: dbRow.version_id,
+      is_certified: dbRow.is_certified,
+      checkins: {
+        guardian: {
+          count: dbRow.check_in_count,
+          last_checkin_at: dbRow.last_check_in
+        },
+        updater: {
+          count: dbRow.update_check_in_count,
+          last_checkin_at: dbRow.last_update_check_in
+        }
+      }
     }
   },
 
@@ -21,6 +36,7 @@ exports.views = {
         guid: dbRow.guid,
         measured_at: dbRow.measured_at,
         created_at: dbRow.created_at,
+        is_certified: dbRow.is_certified,
         request_latency: {
           api: dbRow.request_latency_api,
           guardian: dbRow.request_latency_guardian,
