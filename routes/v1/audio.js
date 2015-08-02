@@ -2,7 +2,7 @@ var verbose_logging = (process.env.NODE_ENV !== "production");
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-var views = require("../../misc/views.js").views;
+var views = require("../../views/v1/models/_all.js").views;
 
 router.route("/:audio_id.:content_type")
   .get(function(req,res) {

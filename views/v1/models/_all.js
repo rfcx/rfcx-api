@@ -1,4 +1,4 @@
-var aws = require("../config/aws.js").aws();
+var aws = require("../../../config/aws.js").aws();
 
 exports.views = {
 

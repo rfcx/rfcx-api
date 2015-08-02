@@ -7,7 +7,7 @@ var fs = require("fs");
 var util = require("util");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
-var views = require("../../misc/views.js").views;
+var views = require("../../views/v1/models/_all.js").views;
 
 router.route("/:guardian_id/checkins")
   .post(function(req, res) {
