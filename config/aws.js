@@ -1,24 +1,9 @@
-var SQS = require("aws-sqs-promises");
 var AWS = require("aws-sdk");
-var S3 = useMock() ? require("faux-knox") : require("knox");
+var S3 = useS3Mock() ? require("faux-knox") : require("knox");
 
 exports.aws = function() {
 
   return {
-
-    sqs: function(queueName) {
-
-      // Returns a 'aws-sqs-promise' object.
-      // See documentation here:
-      // https://www.npmjs.com/package/aws-sqs-promises
-      return new SQS({
-        name: queueName+"-"+process.env.NODE_ENV,
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_KEY,
-        region: process.env.AWS_REGION_ID
-      });
-
-    },
 
     s3: function(bucketName) {
 
@@ -66,10 +51,10 @@ exports.aws = function() {
   };
 };
 
-function useMock() {
+function useS3Mock() {
   return /*(process.env.NODE_ENV === "development") ||*/ (process.env.NODE_ENV === "test");
 }
 
 function getBucket(bucketName) {
-  return useMock() ? process.cwd()+"/tmp/faux-knox/" : bucketName;
+  return useS3Mock() ? process.cwd()+"/tmp/faux-knox/" : bucketName;
 }
