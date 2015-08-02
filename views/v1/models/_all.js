@@ -6,10 +6,9 @@ exports.views = {
 
     var dbRow = dbGuardian;
 
-    return {
+    var guardian = {
       guid: dbRow.guid,
       shortname: dbRow.shortname,
-      software_version: dbRow.version_id,
       is_certified: dbRow.is_certified,
       checkins: {
         guardian: {
@@ -21,7 +20,11 @@ exports.views = {
           last_checkin_at: dbRow.last_update_check_in
         }
       }
-    }
+    };
+
+    if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
+
+    return guardian;
   },
 
   guardianCheckIn: function(req,res,dbCheckIn) {
@@ -49,6 +52,7 @@ exports.views = {
       };
 
       if (dbRow.Guardian != null) { checkIn.guardian = this.guardian(req,res,dbRow.Guardian); }
+      if (dbRow.Version != null) { checkIn.software_version = dbRow.Version.number; }
       if (dbRow.Audio != null) { checkIn.audio = this.guardianAudio(req,res,dbRow.Audio); }
       if (dbRow.Messages != null) { checkIn.messages = this.guardianMessages(req,res,dbRow.Messages); }
 
