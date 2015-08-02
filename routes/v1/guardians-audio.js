@@ -15,14 +15,9 @@ router.route("/:guardian_id/audio/latest")
         models.GuardianAudio
           .findAll({ 
             where: { guardian_id: dbGuardian.id }, 
-            include: [{ all: true }], 
-            order: "measured_at DESC"
-            // Had to add this and comment out below 
-            // because there seems to be a bug in sequelize
-            // the invokes the LIMIT prior to the ORDER
-            // This should be fixed later
-              +" LIMIT "+req.rfcx.count
-        //    limit: req.rfcx.count
+            include: [ { all: true } ], 
+            order: [ ["measured_at", "DESC"] ],
+            limit: req.rfcx.count
           }).then(function(dbAudio){
 
             res.status(200).json(views.guardianAudio(req,res,dbAudio));

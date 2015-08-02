@@ -12,34 +12,37 @@ exports.views = {
   guardianCheckIn: function(req,res,dbCheckIn) {
 
     var jsonArray = [];
+
     for (i in dbCheckIn) {
-    
+      
+      var dbRow = dbCheckIn[i];
+
       var checkIn = {
-        guid: dbCheckIn[i].guid,
-        measured_at: dbCheckIn[i].measured_at,
-        created_at: dbCheckIn[i].created_at,
+        guid: dbRow.guid,
+        measured_at: dbRow.measured_at,
+        created_at: dbRow.created_at,
         request_latency: {
-          api: dbCheckIn[i].request_latency_api,
-          guardian: dbCheckIn[i].request_latency_guardian,
+          api: dbRow.request_latency_api,
+          guardian: dbRow.request_latency_guardian,
         },
         location: {
-          latitude: parseFloat(dbCheckIn[i].latitude),
-          longitude: parseFloat(dbCheckIn[i].longitude)
+          latitude: parseFloat(dbRow.latitude),
+          longitude: parseFloat(dbRow.longitude)
         },
         meta: {}
       };
 
-      if (dbCheckIn[i].Guardian != null) { checkIn.guardian = this.guardian(req,res,dbCheckIn[i].Guardian); }
-      if (dbCheckIn[i].Audio != null) { checkIn.audio = this.guardianAudio(req,res,dbCheckIn[i].Audio); }
-      if (dbCheckIn[i].Messages != null) { checkIn.messages = this.guardianMessages(req,res,dbCheckIn[i].Messages); }
+      if (dbRow.Guardian != null) { checkIn.guardian = this.guardian(req,res,dbRow.Guardian); }
+      if (dbRow.Audio != null) { checkIn.audio = this.guardianAudio(req,res,dbRow.Audio); }
+      if (dbRow.Messages != null) { checkIn.messages = this.guardianMessages(req,res,dbRow.Messages); }
 
-      if (dbCheckIn[i].MetaCPU != null) { checkIn.meta.cpu = this.guardianMetaCPU(req,res,dbCheckIn[i].MetaCPU); }
-      if (dbCheckIn[i].MetaDataTransfer != null) { checkIn.meta.data_transfer = this.guardianMetaDataTransfer(req,res,dbCheckIn[i].MetaDataTransfer); }
-      if (dbCheckIn[i].MetaBattery != null) { checkIn.meta.battery = this.guardianMetaBattery(req,res,dbCheckIn[i].MetaBattery); }
-      if (dbCheckIn[i].MetaLightMeter != null) { checkIn.meta.light_meter = this.guardianMetaLightMeter(req,res,dbCheckIn[i].MetaLightMeter); }
-      if (dbCheckIn[i].MetaNetwork != null) { checkIn.meta.network = this.guardianMetaNetwork(req,res,dbCheckIn[i].MetaNetwork); }
-      if (dbCheckIn[i].MetaOffline != null) { checkIn.meta.offline = this.guardianMetaOffline(req,res,dbCheckIn[i].MetaOffline); }
-      if (dbCheckIn[i].MetaPower != null) { checkIn.meta.power = this.guardianMetaPower(req,res,dbCheckIn[i].MetaPower); }
+      if (dbRow.MetaCPU != null) { checkIn.meta.cpu = this.guardianMetaCPU(req,res,dbRow.MetaCPU); }
+      if (dbRow.MetaDataTransfer != null) { checkIn.meta.data_transfer = this.guardianMetaDataTransfer(req,res,dbRow.MetaDataTransfer); }
+      if (dbRow.MetaBattery != null) { checkIn.meta.battery = this.guardianMetaBattery(req,res,dbRow.MetaBattery); }
+      if (dbRow.MetaLightMeter != null) { checkIn.meta.light_meter = this.guardianMetaLightMeter(req,res,dbRow.MetaLightMeter); }      
+      if (dbRow.MetaNetwork != null) { checkIn.meta.network = this.guardianMetaNetwork(req,res,dbRow.MetaNetwork); }
+      if (dbRow.MetaOffline != null) { checkIn.meta.offline = this.guardianMetaOffline(req,res,dbRow.MetaOffline); }
+      if (dbRow.MetaPower != null) { checkIn.meta.power = this.guardianMetaPower(req,res,dbRow.MetaPower); }
 
       jsonArray.push(checkIn);
     }
@@ -50,23 +53,26 @@ exports.views = {
   guardianAudio: function(req,res,dbAudio) {
 
     var jsonArray = [];
+
     for (i in dbAudio) {
 
+      var dbRow = dbAudio[i];
+
       var audio = {
-        guid: dbAudio[i].guid,
-        measured_at: dbAudio[i].measured_at,
-        analyzed_at: dbAudio[i].analyzed_at,
-        size: dbAudio[i].size,
-        length: dbAudio[i].length,
-        sha1_checksum: dbAudio[i].sha1_checksum,
-        url: req.rfcx.api_url+"/v1/audio/"+dbAudio[i].guid+"."+dbAudio[i].url.substr(1+dbAudio[i].url.lastIndexOf(".")),
-//        guardian: this.guardian(req,res,dbAudio[i].Guardian),
+        guid: dbRow.guid,
+        measured_at: dbRow.measured_at,
+        analyzed_at: dbRow.analyzed_at,
+        size: dbRow.size,
+        length: dbRow.length,
+        sha1_checksum: dbRow.sha1_checksum,
+        url: req.rfcx.api_url+"/v1/audio/"+dbRow.guid+"."+dbRow.url.substr(1+dbRow.url.lastIndexOf(".")),
+//        guardian: this.guardian(req,res,dbRow.Guardian),
 //        checkin: ,
         events: []
       };
 
-      if (dbAudio[i].Guardian != null) { audio.guardian = this.guardian(req,res,dbAudio[i].Guardian); }
-      if (dbAudio[i].CheckIn != null) { audio.checkin = this.guardianCheckIn(req,res,dbAudio[i].CheckIn); }
+      if (dbRow.Guardian != null) { audio.guardian = this.guardian(req,res,dbRow.Guardian); }
+      if (dbRow.CheckIn != null) { audio.checkin = this.guardianCheckIn(req,res,dbRow.CheckIn); }
 
       jsonArray.push(audio);
     }
@@ -93,11 +99,15 @@ exports.views = {
   guardianMetaCPU: function(req,res,dbCPU) {
 
     var jsonArray = [];
+
     for (i in dbCPU) {
+
+      var dbRow = dbCPU[i];
+
       jsonArray.push({
-        measured_at: dbCPU[i].measured_at,
-        percent_usage: dbCPU[i].cpu_percent,
-        clock_speed: dbCPU[i].cpu_clock
+        measured_at: dbRow.measured_at,
+        percent_usage: dbRow.cpu_percent,
+        clock_speed: dbRow.cpu_clock
       });
     }
     return jsonArray;
@@ -107,14 +117,18 @@ exports.views = {
   guardianMetaDataTransfer: function(req,res,dbDataTransfer) {
 
     var jsonArray = [];
+
     for (i in dbDataTransfer) {
+
+      var dbRow = dbDataTransfer[i];
+
       jsonArray.push({
-        started_at: dbDataTransfer[i].started_at,
-        ended_at: dbDataTransfer[i].ended_at,
-        bytes_received: dbDataTransfer[i].bytes_received,
-        bytes_sent: dbDataTransfer[i].bytes_sent,
-        total_bytes_received: dbDataTransfer[i].total_bytes_received,
-        total_bytes_sent: dbDataTransfer[i].total_bytes_sent
+        started_at: dbRow.started_at,
+        ended_at: dbRow.ended_at,
+        bytes_received: dbRow.bytes_received,
+        bytes_sent: dbRow.bytes_sent,
+        total_bytes_received: dbRow.total_bytes_received,
+        total_bytes_sent: dbRow.total_bytes_sent
       });
     }
     return jsonArray;
@@ -124,11 +138,15 @@ exports.views = {
   guardianMetaBattery: function(req,res,dbBattery) {
 
     var jsonArray = [];
+
     for (i in dbBattery) {
+
+      var dbRow = dbBattery[i];
+
       jsonArray.push({
-        measured_at: dbBattery[i].measured_at,
-        percent_charged: dbBattery[i].battery_percent,
-        temperature: dbBattery[i].battery_temperature
+        measured_at: dbRow.measured_at,
+        percent_charged: dbRow.battery_percent,
+        temperature: dbRow.battery_temperature
       });
     }
     return jsonArray;
@@ -138,10 +156,14 @@ exports.views = {
   guardianMetaLightMeter: function(req,res,dbLightMeter) {
 
     var jsonArray = [];
+
     for (i in dbLightMeter) {
+
+      var dbRow = dbLightMeter[i];
+
       jsonArray.push({
-        measured_at: dbLightMeter[i].measured_at,
-        luminosity: dbLightMeter[i].luminosity
+        measured_at: dbRow.measured_at,
+        luminosity: dbRow.luminosity
       });
     }
     return jsonArray;
@@ -151,11 +173,15 @@ exports.views = {
   guardianMetaNetwork: function(req,res,dbNetwork) {
 
     var jsonArray = [];
+
     for (i in dbNetwork) {
+
+      var dbRow = dbNetwork[i];
+
       jsonArray.push({
-        measured_at: dbNetwork[i].measured_at,
-        signal_strength: dbNetwork[i].signal_strength,
-        carrier_name: dbNetwork[i].carrier_name
+        measured_at: dbRow.measured_at,
+        signal_strength: dbRow.signal_strength,
+        carrier_name: dbRow.carrier_name
       });
     }
     return jsonArray;
@@ -165,11 +191,15 @@ exports.views = {
   guardianMetaOffline: function(req,res,dbOffline) {
 
     var jsonArray = [];
+
     for (i in dbOffline) {
+
+      var dbRow = dbOffline[i];
+
       jsonArray.push({
-        measured_at: dbOffline[i].measured_at,
-        offline_duration: dbOffline[i].offline_duration,
-        carrier_name: dbOffline[i].carrier_name
+        measured_at: dbRow.measured_at,
+        offline_duration: dbRow.offline_duration,
+        carrier_name: dbRow.carrier_name
       });
     }
     return jsonArray;
@@ -179,11 +209,15 @@ exports.views = {
   guardianMetaPower: function(req,res,dbPower) {
 
     var jsonArray = [];
+
     for (i in dbPower) {
+
+      var dbRow = dbPower[i];
+
       jsonArray.push({
-        measured_at: dbPower[i].measured_at,
-        is_powered: dbPower[i].is_powered,
-        is_charged: dbPower[i].is_charged
+        measured_at: dbRow.measured_at,
+        is_powered: dbRow.is_powered,
+        is_charged: dbRow.is_charged
       });
     }
     return jsonArray;
@@ -193,14 +227,18 @@ exports.views = {
   guardianMessages: function(req,res,dbMessages) {
 
     var jsonArray = [];
+    
     for (i in dbMessages) {
+
+      var dbRow = dbMessages[i];
+
       jsonArray.push({
-        guid: dbMessages[i].guid,
-        received_at: dbMessages[i].received_at,
-        sent_at: dbMessages[i].sent_at,
-        number: dbMessages[i].number,
-        body: dbMessages[i].body,
-        digest: dbMessages[i].digest
+        guid: dbRow.guid,
+        received_at: dbRow.received_at,
+        sent_at: dbRow.sent_at,
+        number: dbRow.number,
+        body: dbRow.body,
+        digest: dbRow.digest
       });
     }
     return jsonArray;

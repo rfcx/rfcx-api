@@ -87,6 +87,7 @@ router.route("/:guardian_id/checkins")
             // save guardian meta power
             var metaPower = strArrToJSArr(json.power,"|","*");
             for (pwrInd in metaPower) {
+              console.log(metaPower[pwrInd]);
               models.GuardianMetaPower.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
@@ -412,16 +413,11 @@ router.route("/:guardian_id/checkins/latest")
         models.GuardianCheckIn
           .findAll({ 
             where: { guardian_id: dbGuardian.id }, 
-            include: [{ all: true }], 
-            order: "measured_at DESC"
-            // Had to add this and comment out below 
-            // because there seems to be a bug in sequelize
-            // the invokes the LIMIT prior to the ORDER
-            // This should be fixed later
-              +" LIMIT "+req.rfcx.count
-        //    limit: req.rfcx.count
+            include: [ { all: true } ], 
+            order: [ ["measured_at", "DESC"] ],
+            limit: req.rfcx.count
           }).then(function(dbCheckIn){
-       
+            
             res.status(200).json(views.guardianCheckIn(req,res,dbCheckIn));
 
           }).catch(function(err){
