@@ -5,27 +5,36 @@ exports.views = {
 
   guardian: function(req,res,dbGuardian) {
 
-    var dbRow = dbGuardian;
+    if (!util.isArray(dbGuardian)) { dbGuardian = [dbGuardian]; }
+    
+    var jsonArray = [];
 
-    var guardian = {
-      guid: dbRow.guid,
-      shortname: dbRow.shortname,
-      is_certified: dbRow.is_certified,
-      checkins: {
-        guardian: {
-          count: dbRow.check_in_count,
-          last_checkin_at: dbRow.last_check_in
-        },
-        updater: {
-          count: dbRow.update_check_in_count,
-          last_checkin_at: dbRow.last_update_check_in
+    for (i in dbGuardian) {
+
+      var dbRow = dbGuardian[i];
+
+      var guardian = {
+        guid: dbRow.guid,
+        shortname: dbRow.shortname,
+        is_certified: dbRow.is_certified,
+        checkins: {
+          guardian: {
+            count: dbRow.check_in_count,
+            last_checkin_at: dbRow.last_check_in
+          },
+          updater: {
+            count: dbRow.update_check_in_count,
+            last_checkin_at: dbRow.last_update_check_in
+          }
         }
-      }
-    };
+      };
 
-    if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
+      if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
 
-    return guardian;
+      jsonArray.push(guardian);
+    }
+    return jsonArray;
+
   },
 
   guardianCheckIn: function(req,res,dbCheckIn) {
@@ -54,7 +63,7 @@ exports.views = {
         meta: {}
       };
 
-      if (dbRow.Guardian != null) { checkIn.guardian = this.guardian(req,res,dbRow.Guardian); }
+      if (dbRow.Guardian != null) { checkIn.guardian = this.guardian(req,res,dbRow.Guardian)[0]; }
       if (dbRow.Version != null) { checkIn.software_version = dbRow.Version.number; }
       if (dbRow.Audio != null) { checkIn.audio = this.guardianAudio(req,res,dbRow.Audio); }
       if (dbRow.Messages != null) { checkIn.messages = this.guardianMessages(req,res,dbRow.Messages); }
@@ -96,7 +105,7 @@ exports.views = {
         events: []
       };
 
-      if (dbRow.Guardian != null) { audio.guardian = this.guardian(req,res,dbRow.Guardian); }
+      if (dbRow.Guardian != null) { audio.guardian = this.guardian(req,res,dbRow.Guardian)[0]; }
       if (dbRow.CheckIn != null) { audio.checkin = this.guardianCheckIn(req,res,dbRow.CheckIn); }
 
       jsonArray.push(audio);
