@@ -12,10 +12,10 @@ exports.middleware = {
     var paramCount = (req.query.count == null) ? 1 : parseInt(req.query.count);
     var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
 
-    var paramStart = (req.query.start == null) ? null : (new Date(""+req.query.start));
-    var paramEnd = (req.query.end == null) ? null : (new Date(""+req.query.end));
+    var paramDateStart = (req.query.start == null) ? null : (new Date(""+req.query.start));
+    var paramDateEnd = (req.query.end == null) ? null : (new Date(""+req.query.end));
 
-    var contentType = path.extname(req.path).trim().substr(1);
+    var contentType = path.extname(req.path).trim().substr(1);    
     if (contentType.trim().length == 0) { contentType = "json"; }
     req.url = req.url.replace("."+contentType,"");
 
@@ -23,8 +23,8 @@ exports.middleware = {
       api_url: apiUrl,
       count: paramCount,
       offset: paramOffset,
-      start: paramStart,
-      end: paramEnd,
+      date_start: paramDateStart,
+      date_end: paramDateEnd,
       content_type: contentType
     };
 
