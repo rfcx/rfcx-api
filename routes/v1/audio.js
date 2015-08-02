@@ -4,7 +4,7 @@ var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1/models/_all.js").views;
 
-router.route("/:audio_id.:content_type")
+router.route("/:audio_id")
   .get(function(req,res) {
 
     models.GuardianAudio
@@ -13,7 +13,7 @@ router.route("/:audio_id.:content_type")
         include: [{ all: true }]
       }).then(function(dbAudio){
 
-        if (req.params.content_type === "m4a") {
+        if (req.rfcx.content_type === "m4a") {
           views.guardianAudioFile(req,res,dbAudio);
         } else {
           res.status(200).json(views.guardianAudio(req,res,dbAudio));

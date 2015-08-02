@@ -4,7 +4,7 @@ var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1/models/_all.js").views;
 
-router.route("/:checkin_id.:content_type")
+router.route("/:checkin_id")
   .get(function(req,res) {
 
     models.GuardianCheckIn
@@ -13,7 +13,7 @@ router.route("/:checkin_id.:content_type")
         include: [ { all: true } ]
       }).then(function(dbCheckIn){
         
-        res.status(200).json(views.guardianCheckIn(req,res,[dbCheckIn]));
+        res.status(200).json(views.guardianCheckIn(req,res,dbCheckIn));
 
       }).catch(function(err){
         console.log("failed to return checkin | "+err);

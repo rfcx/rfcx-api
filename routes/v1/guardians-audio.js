@@ -22,14 +22,14 @@ router.route("/:guardian_id/audio/latest")
 
             res.status(200).json(views.guardianAudio(req,res,dbAudio));
 
-          }).catch(function(err){
-            console.log("failed to find audio reference | "+err);
-            if (!!err) { res.status(500).json({msg:"failed to find audio reference"}); }
-          });
+        }).catch(function(err){
+          console.log("failed to return audio | "+err);
+          if (!!err) { res.status(500).json({msg:"failed to return audio"}); }
+        });
 
       }).catch(function(err){
-        console.log("failed to find guardian reference | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to find guardian reference"}); }
+        console.log("failed to find guardian | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to find guardian"}); }
       });
 
   })

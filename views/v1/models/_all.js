@@ -1,3 +1,4 @@
+var util = require("util");
 var aws = require("../../../config/aws.js").aws();
 
 exports.views = {
@@ -28,6 +29,8 @@ exports.views = {
   },
 
   guardianCheckIn: function(req,res,dbCheckIn) {
+
+    if (!util.isArray(dbCheckIn)) { dbCheckIn = [dbCheckIn]; }
 
     var jsonArray = [];
 
@@ -72,6 +75,8 @@ exports.views = {
 
   guardianAudio: function(req,res,dbAudio) {
 
+    if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
+
     var jsonArray = [];
 
     for (i in dbAudio) {
@@ -102,14 +107,15 @@ exports.views = {
 
   guardianAudioFile: function(req,res,dbAudio) {
 
-    var s3NoProtocol = dbAudio.url.substr(dbAudio.url.indexOf("://")+3),
+    var dbRow = dbAudio,
+        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
         s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
 
       aws.s3(s3Bucket).getFile(s3Path, function(err, result){
         if(err) { return next(err); }   
 
-        res.setHeader("Content-disposition", "filename="+dbAudio.guid+s3Path.substr(s3Path.lastIndexOf(".")));
+        res.setHeader("Content-disposition", "filename="+dbRow.guid+s3Path.substr(s3Path.lastIndexOf(".")));
         res.setHeader("Content-type", "audio/mp4");
 
         result.pipe(res);           
@@ -117,6 +123,8 @@ exports.views = {
   },
 
   guardianMetaCPU: function(req,res,dbCPU) {
+
+    if (!util.isArray(dbCPU)) { dbCPU = [dbCPU]; }
 
     var jsonArray = [];
 
@@ -135,6 +143,8 @@ exports.views = {
   },
 
   guardianMetaDataTransfer: function(req,res,dbDataTransfer) {
+
+    if (!util.isArray(dbDataTransfer)) { dbDataTransfer = [dbDataTransfer]; }
 
     var jsonArray = [];
 
@@ -157,6 +167,8 @@ exports.views = {
 
   guardianMetaBattery: function(req,res,dbBattery) {
 
+    if (!util.isArray(dbBattery)) { dbBattery = [dbBattery]; }
+
     var jsonArray = [];
 
     for (i in dbBattery) {
@@ -175,6 +187,8 @@ exports.views = {
 
   guardianMetaLightMeter: function(req,res,dbLightMeter) {
 
+    if (!util.isArray(dbLightMeter)) { dbLightMeter = [dbLightMeter]; }
+
     var jsonArray = [];
 
     for (i in dbLightMeter) {
@@ -191,6 +205,8 @@ exports.views = {
   },
 
   guardianMetaNetwork: function(req,res,dbNetwork) {
+
+    if (!util.isArray(dbNetwork)) { dbNetwork = [dbNetwork]; }
 
     var jsonArray = [];
 
@@ -210,6 +226,8 @@ exports.views = {
 
   guardianMetaOffline: function(req,res,dbOffline) {
 
+    if (!util.isArray(dbOffline)) { dbOffline = [dbOffline]; }
+
     var jsonArray = [];
 
     for (i in dbOffline) {
@@ -228,6 +246,8 @@ exports.views = {
 
   guardianMetaPower: function(req,res,dbPower) {
 
+    if (!util.isArray(dbPower)) { dbPower = [dbPower]; }
+
     var jsonArray = [];
 
     for (i in dbPower) {
@@ -245,6 +265,8 @@ exports.views = {
   },
 
   guardianMessages: function(req,res,dbMessages) {
+
+    if (!util.isArray(dbMessages)) { dbMessages = [dbMessages]; }
 
     var jsonArray = [];
     
