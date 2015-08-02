@@ -20,8 +20,8 @@ router.route("/:audio_id.:content_type")
         }
         
       }).catch(function(err){
-        console.log("failed to find audio reference | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to find audio reference"}); }
+        console.log("failed to return audio | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return audio"}); }
       });
 
   })

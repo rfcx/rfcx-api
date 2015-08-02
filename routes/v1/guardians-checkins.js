@@ -418,13 +418,13 @@ router.route("/:guardian_id/checkins/latest")
             res.status(200).json(views.guardianCheckIn(req,res,dbCheckIn));
 
           }).catch(function(err){
-            console.log("failed to find checkin reference | "+err);
+            console.log("failed to return checkin | "+err);
             if (!!err) { res.status(500).json({msg:"failed to find checkin reference"}); }
           });
 
       }).catch(function(err){
-        console.log("failed to find guardian reference | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to find guardian reference"}); }
+        console.log("failed to find guardian | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to find guardian"}); }
       });
 
   })
