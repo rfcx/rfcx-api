@@ -87,13 +87,12 @@ router.route("/:guardian_id/checkins")
             // save guardian meta power
             var metaPower = strArrToJSArr(json.power,"|","*");
             for (pwrInd in metaPower) {
-              console.log(metaPower[pwrInd]);
               models.GuardianMetaPower.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
                   measured_at: new Date(metaPower[pwrInd][0].replace(/ /g,"T")+json.timezone_offset),
-                  is_powered: (metaPower[pwrInd][1] === "true") ? true : false,
-                  is_charged: (metaPower[pwrInd][2] === "true") ? true : false
+                  is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
+                  is_charged: (metaPower[pwrInd][2] === "1") ? true : false
                 }).then(function(dbGuardianMetaPower){ }).catch(function(err){ });
             }
 
