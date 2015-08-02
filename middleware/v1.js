@@ -9,8 +9,11 @@ exports.middleware = {
   setApiParams: function(req, res, next) {
 
     var apiUrl = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol)+"://"+req.headers.host;
-    var rtrnCount = (req.query.count == null) ? 1 : parseInt(req.query.count);
-    var rtrnOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
+    var paramCount = (req.query.count == null) ? 1 : parseInt(req.query.count);
+    var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
+
+    var paramStart = (req.query.start == null) ? null : (new Date(""+req.query.start));
+    var paramEnd = (req.query.end == null) ? null : (new Date(""+req.query.end));
 
     var contentType = path.extname(req.path).trim().substr(1);
     if (contentType.trim().length == 0) { contentType = "json"; }
@@ -18,8 +21,10 @@ exports.middleware = {
 
     req.rfcx = {
       api_url: apiUrl,
-      count: rtrnCount,
-      offset: rtrnOffset,
+      count: paramCount,
+      offset: paramOffset,
+      start: paramStart,
+      end: paramEnd,
       content_type: contentType
     };
 
