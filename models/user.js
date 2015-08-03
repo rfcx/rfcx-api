@@ -22,13 +22,55 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    last_check_in: {
+    auth_password_salt: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+      }
+    },
+    auth_password_hash: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+      }
+    },
+    auth_password_updated_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
       }
-    }
+    },
+    auth_token_salt: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+      }
+    },
+    auth_token_hash: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+      }
+    },
+    auth_token_updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
+    auth_token_expires_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
   }, {
     classMethods: {
       associate: function(models) {

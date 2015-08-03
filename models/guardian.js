@@ -76,11 +76,32 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
-    auth_salt: {
+    auth_token_salt: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
       validate: {
+      }
+    },
+    auth_token_hash: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+      }
+    },
+    auth_token_updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
+    auth_token_expires_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
       }
     },
     prefs_audio_capture_interval: {
