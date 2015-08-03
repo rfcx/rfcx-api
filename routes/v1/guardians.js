@@ -2,7 +2,8 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1/models/_all.js").views;
-
+var passport = require("passport");
+passport.use(require("../../misc/passport.js").passport.tokenStrategy);
 
 router.route("/")
   .get(function(req,res) {
@@ -26,14 +27,14 @@ router.route("/")
 ;
 
 router.route("/:guardian_id")
-  .get(function(req,res) {
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
       .findOne({ 
         where: { guid: req.params.guardian_id },
         include: [ { all: true } ], 
       }).then(function(dbGuardian){
-
+        
         res.status(200).json(views.guardian(req,res,dbGuardian));
 
       }).catch(function(err){

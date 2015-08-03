@@ -124,7 +124,6 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         Guardian.belongsTo(models.GuardianSoftware, {as: "Version"});
-        Guardian.hasMany(models.AuthToken, {as: "AuthToken", foreignKey: "guardian_id"});
       }
     }
   });

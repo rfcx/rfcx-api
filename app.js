@@ -67,7 +67,7 @@ for (apiVersion in routes) {
 
 // Auth Check Endpoint
 // Should remove later...
-app.get("/auth_check", passport.authenticate("token",{session:false}), function(req,res){ res.status(200).json({user:req.user,app:app.get("title")});});
+//app.get("/auth_check", passport.authenticate("token",{session:false}), function(req,res){ res.status(200).json({user:req.user,app:app.get("title")});});
 
 // Health Check Endpoint
 app.get("/health_check", function(req,res){ res.status(200).json({app:app.get("title")});});

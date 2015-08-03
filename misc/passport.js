@@ -25,20 +25,24 @@ exports.passport = {
                 where: { guid: userGuid }
               }).then(function(dbGuardian){
                 var dbRow = dbGuardian;
-                if (dbRow.auth_token_hash == hash.hashedCredentials(dbRow.auth_token_salt,token)) {
-                  return done(null,{
-                    type: "guardian",
-                    id: dbRow.id,
-                    guid: dbRow.guid,
-                    name: dbRow.shortname
-                  });
+                if  (   (dbRow != null)
+                    &&  (dbRow.auth_token_hash == hash.hashedCredentials(dbRow.auth_token_salt,token))
+                    ) {
+                      return 
+                        done(null,{
+                            type: "guardian",
+                            id: dbRow.id,
+                            guid: dbRow.guid,
+                            name: dbRow.shortname
+                          }
+                        );
                 } else {
-                  console.log("failed to match token with salted hash | "+err);
+                  console.log("failed to match token with salted hash");
                   return done(null, false);
                 }
               }).catch(function(err){
                 console.log("failed to find guardian | "+err);
-                return done(null, err);
+                return done(err);
               });
           } else {
 
