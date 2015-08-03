@@ -16,7 +16,6 @@ var favicon = require("serve-favicon");
 var logger = require("morgan");
 var multer = require("multer");
 var passport = require("passport");
-var middleware = {};
 var app = express();
 
 app.set("title", "rfcx-api");
@@ -47,6 +46,7 @@ var routes = {
 };
 
 // Initialize Version-Specific Middleware
+var middleware = {};
 for (apiVersion in routes) {
   middleware[apiVersion] = require("./middleware/"+apiVersion+".js").middleware;
   for (middlewareFunc in middleware[apiVersion]) {
