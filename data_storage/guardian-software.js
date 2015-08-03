@@ -13,7 +13,7 @@ module.exports = {
 	 */
 	upsertGuardianSoftware: function(softwareVersion, fileHash) {
     return models.GuardianSoftware
-      .findOrCreate({ where: { number: softwareVersion } })
+      .findOrCreate({ where: { number: softwareVersion, package: "guardian" } })
       .spread(function(dbSoftware, wasCreated){
         if (!!fileHash) {
           dbSoftware.release_date = new Date();
@@ -35,7 +35,7 @@ module.exports = {
   */
   deleteGuardianSoftware: function(softwareVersion) {
     return models.GuardianSoftware
-      .destroy({ where: { number: softwareVersion } });
+      .destroy({ where: { number: softwareVersion, package: "guardian" } });
   },
 
   /**
@@ -47,6 +47,6 @@ module.exports = {
   */
   findGuardianSoftware: function(softwareVersion) {
     return models.GuardianSoftware
-      .find({ where: { number: softwareVersion } });
+      .find({ where: { number: softwareVersion, package: "guardian" } });
   }
 };

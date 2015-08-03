@@ -2,6 +2,12 @@
 
 module.exports = function(sequelize, DataTypes) {
   var GuardianSoftware = sequelize.define("GuardianSoftware", {
+    package: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+      }
+    },
     number: {
       type: DataTypes.STRING,
       allowNull: false,

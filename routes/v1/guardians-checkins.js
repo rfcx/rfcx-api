@@ -23,7 +23,7 @@ router.route("/:guardian_id/checkins")
       .spread(function(dbGuardian, wasCreated){
 
       models.GuardianSoftware
-        .findOrCreate( { where: { number: json.software_version } })
+        .findOrCreate( { where: { number: json.software_version, package: "guardian" } })
         .spread(function(dSoftware, wasCreated){
 
           dbGuardian.last_check_in = new Date();
@@ -39,7 +39,7 @@ router.route("/:guardian_id/checkins")
             guardian_skipped_checkins: parseInt(json.skipped_checkins),
             is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
-            console.log("check-in created: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+dSoftware.number+")");
+            console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+dSoftware.number+")");
 
             // save guardian meta data
 
