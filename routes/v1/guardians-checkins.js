@@ -143,8 +143,8 @@ router.route("/:guardian_id/checkins")
 
             // add prefs instructions as set in database
             for (guardianInd in dbGuardian) {
+              console.log("***"+guardianInd+"***"+dbGuardian[guardianInd]+"***");
               if ((guardianInd.substr(0,6) === "prefs_") && (dbGuardian[guardianInd] != null)) {
-                console.log(guardianInd);
                 returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian[guardianInd];
               }
             }
