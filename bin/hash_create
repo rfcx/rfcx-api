@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+var args = process.argv.slice(2);
+var hash = require("../misc/hash.js").hash;
+
+console.log("\n");
+
+var guid = args[0].trim();
+console.log("guid: "+guid);
+
+var token = args[1].trim();
+console.log("token: "+token);
+
+var salt = hash.randomHash(320);
+console.log("salt: "+salt);
+
+var newHash = hash.hashedCredentials(salt,token);
+console.log("hash: "+newHash);
+
+console.log("\n");
+
+console.log("UPDATE Guardians SET auth_token_salt='"+salt+"', auth_token_hash='"+newHash+"', auth_token_updated_at=NOW(), auth_token_expires_at=NOW() WHERE guid='"+guid+"';");
+
+console.log("\n");

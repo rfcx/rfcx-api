@@ -27,6 +27,7 @@ exports.passport = {
         }
 
         if (authUser.type === "guardian") {
+
           models.Guardian
             .findOne({ 
               where: { guid: authUser.guid }
@@ -41,6 +42,7 @@ exports.passport = {
                           guid: dbGuardian.guid,
                           name: dbGuardian.shortname
                         };
+                    console.log("authenticated as guardian "+userObj.guid);
                     return done(null,userObj);
               } else {
                 console.log("failed to match token with salted hash");
