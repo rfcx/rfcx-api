@@ -29,7 +29,6 @@ app.use(passport.initialize());
 // Define/Load Routes
 var routes = {
   "v1": {
-  "users": [ require("./routes/v1/users") ],
   "guardians": [  require("./routes/v1/guardians"),
                   require("./routes/v1/guardians-software"), 
                   require("./routes/v1/guardians-checkins"), 
@@ -39,6 +38,7 @@ var routes = {
                 ],
   "checkins": [ require("./routes/v1/checkins") ],
   "audio": [ require("./routes/v1/audio") ],
+  "users": [ require("./routes/v1/users") ],
   "mapping": [ require("./routes/v1/mapping") ]
   },
   "v2": {
