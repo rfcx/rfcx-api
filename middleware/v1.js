@@ -12,8 +12,8 @@ exports.middleware = {
     var paramCount = (req.query.count == null) ? 1 : parseInt(req.query.count);
     var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
 
-    var paramDateStart = (req.query.start == null) ? null : (new Date(""+req.query.start));
-    var paramDateEnd = (req.query.end == null) ? null : (new Date(""+req.query.end));
+    var paramBefore = (req.query.before_timestamp == null) ? null : (new Date(""+req.query.before_timestamp));
+    var paramAfter = (req.query.after_timestamp == null) ? null : (new Date(""+req.query.after_timestamp));
 
     var contentType = path.extname(req.path).trim().substr(1);    
     if (contentType.trim().length == 0) { contentType = "json"; }
@@ -27,8 +27,8 @@ exports.middleware = {
       api_url: apiUrl,
       count: paramCount,
       offset: paramOffset,
-      date_start: paramDateStart,
-      date_end: paramDateEnd,
+      before_timestamp: paramBefore,
+      after_timestamp: paramAfter,
       content_type: contentType,
       auth_user: authUser
     };
