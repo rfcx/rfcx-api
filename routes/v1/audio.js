@@ -3,6 +3,8 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1/models/_all.js").views;
+var passport = require("passport");
+passport.use(require("../../misc/passport.js").passport.tokenStrategy);
 
 router.route("/:audio_id")
   .get(function(req,res) {

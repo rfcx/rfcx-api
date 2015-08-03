@@ -8,9 +8,11 @@ var util = require("util");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
 var views = require("../../views/v1/models/_all.js").views;
+var passport = require("passport");
+passport.use(require("../../misc/passport.js").passport.tokenStrategy);
 
 router.route("/:guardian_id/checkins")
-  .post(function(req, res) {
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
 
     var requestStartTime = (new Date()).valueOf();
 
@@ -400,7 +402,7 @@ router.route("/:guardian_id/checkins")
 ;
 
 router.route("/:guardian_id/checkins/latest")
-  .get(function(req, res) {
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
       .findOne({ 

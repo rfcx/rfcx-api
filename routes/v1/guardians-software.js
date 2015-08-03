@@ -10,6 +10,8 @@ var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
 var guardianSoftware = require("../../data_storage/guardian-software.js");
 var fileKeeper = require("../../file_storage/file-keeper.js");
+var passport = require("passport");
+passport.use(require("../../misc/passport.js").passport.tokenStrategy);
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)

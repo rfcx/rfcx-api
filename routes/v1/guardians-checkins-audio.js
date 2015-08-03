@@ -4,6 +4,8 @@ var express = require("express");
 var router = express.Router();
 var querystring = require("querystring");
 var fs = require("fs");
+var passport = require("passport");
+passport.use(require("../../misc/passport.js").passport.tokenStrategy);
 
 router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
   .post(function(req, res) {

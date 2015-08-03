@@ -8,63 +8,56 @@ exports.passport = {
   tokenStrategy:
     new TokenStrategy({
         tokenHeader: "x-auth-token",
-        tokenField: "auth-token",
+        tokenField: "auth_token",
+        tokenParams: "auth_token",
+        tokenQuery: "auth_token",
         passReqToCallback: true
       },
       function (req, token, done) {
 
-        if (req.headers["x-auth-user"] != null) {
-
-          var xAuthUser = req.headers["x-auth-user"];
-          var userType = xAuthUser.split("/")[0];
-          var userGuid = xAuthUser.split("/")[1];
-
-          if (userType === "guardian") {
-            models.Guardian
-              .findOne({ 
-                where: { guid: userGuid }
-              }).then(function(dbGuardian){
-                var dbRow = dbGuardian;
-                if  (   (dbRow != null)
-                    &&  (dbRow.auth_token_hash == hash.hashedCredentials(dbRow.auth_token_salt,token))
-                    ) {
-                      return 
-                        done(null,{
-                            type: "guardian",
-                            id: dbRow.id,
-                            guid: dbRow.guid,
-                            name: dbRow.shortname
-                          }
-                        );
-                } else {
-                  console.log("failed to match token with salted hash");
-                  return done(null, false);
-                }
-              }).catch(function(err){
-                console.log("failed to find guardian | "+err);
-                return done(err);
-              });
-          } else {
-
+        // parses auth_user from req.rfcx...
+        // the way this is being done should probably be consolidated or re-considered
+        var authUser = { type: null, guid: null };
+        for (i in req.rfcx.auth_user) {
+          if ((req.rfcx.auth_user[i] != null) && (req.rfcx.auth_user[i].indexOf("/") > 0 )) {
+            authUser = {
+              type: req.rfcx.auth_user[i].split("/")[0].toLowerCase(),
+              guid: req.rfcx.auth_user[i].split("/")[1].toLowerCase()
+            }; break;
           }
         }
 
-   //     return done(null, false);
-        
-          // User.findOne({token: token}, function (err, user) {
-              // if (err) {
-              //     return done(err);
-              // }
+        if (authUser.type === "guardian") {
+          models.Guardian
+            .findOne({ 
+              where: { guid: authUser.guid }
+            }).then(function(dbGuardian){
+              var dbRow = dbGuardian;
+              if  (   (dbGuardian != null)
+                  &&  (dbGuardian.auth_token_hash == hash.hashedCredentials(dbGuardian.auth_token_salt,token))
+                  ) {
+                    var userObj = {
+                          type: "guardian",
+                          id: dbGuardian.id,
+                          guid: dbGuardian.guid,
+                          name: dbGuardian.shortname
+                        };
+                    return done(null,userObj);
+              } else {
+                console.log("failed to match token with salted hash");
+                return done(null, false, {message:"invalid user/token combination"});
+              }
+            }).catch(function(err){
+              console.log("failed to find guardian | "+err);
+              return done(err);
+            });
 
-              // if (!user) {
-              //     return done(null, false);
-              // }
+        } else {
 
-              // if (!user.verifyToken(token)) {
-              //     return done(null, false);
-              // }
-              
-          // });
+          // to be filled with other types of authenticating types, like Users / Workers, etc
+          return done(null, false);
+        }
+
       }
     )
 

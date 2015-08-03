@@ -6,7 +6,7 @@ var passport = require("passport");
 passport.use(require("../../misc/passport.js").passport.tokenStrategy);
 
 router.route("/")
-  .get(function(req,res) {
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
       .findAll({ 

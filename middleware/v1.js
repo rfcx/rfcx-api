@@ -19,13 +19,18 @@ exports.middleware = {
     if (contentType.trim().length == 0) { contentType = "json"; }
     req.url = req.url.replace("."+contentType,"");
 
+    var authUser = { header: null, query: null, body: null };
+    if (req.headers["x-auth-user"] != null) { authUser.header = req.headers["x-auth-user"]; }
+    if (req.query["auth_user"] != null) { authUser.query = req.query["auth_user"]; }
+
     req.rfcx = {
       api_url: apiUrl,
       count: paramCount,
       offset: paramOffset,
       date_start: paramDateStart,
       date_end: paramDateEnd,
-      content_type: contentType
+      content_type: contentType,
+      auth_user: authUser
     };
 
     next();
