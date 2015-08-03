@@ -1,5 +1,5 @@
 var util = require("util");
-var aws = require("../../../config/aws.js").aws();
+var aws = require("../../../misc/aws.js").aws();
 
 exports.views = {
 

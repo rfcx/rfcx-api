@@ -6,7 +6,7 @@ var querystring = require("querystring");
 var fs = require("fs");
 var util = require("util");
 var hash = require("../../misc/hash.js").hash;
-var aws = require("../../config/aws.js").aws();
+var aws = require("../../misc/aws.js").aws();
 var views = require("../../views/v1/models/_all.js").views;
 var passport = require("passport");
 passport.use(require("../../misc/passport-token.js").strategy());

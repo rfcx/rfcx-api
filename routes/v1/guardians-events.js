@@ -4,7 +4,7 @@ var express = require("express");
 var router = express.Router();
 var querystring = require("querystring");
 var hash = require("../../misc/hash.js").hash;
-var aws = require("../../config/aws.js").aws();
+var aws = require("../../misc/aws.js").aws();
 
 router.route("/:guardian_id/alerts")
   .post(function(req,res) {
