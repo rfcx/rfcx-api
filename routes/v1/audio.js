@@ -4,7 +4,7 @@ var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1/models/_all.js").views;
 var passport = require("passport");
-passport.use(require("../../misc/passport.js").passport.tokenStrategy);
+passport.use(require("../../misc/passport-token.js").strategy());
 
 router.route("/:audio_id")
   .get(function(req,res) {

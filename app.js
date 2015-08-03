@@ -18,8 +18,6 @@ var multer = require("multer");
 var passport = require("passport");
 var app = express();
 
-// passport.use(require(__dirname+"/misc/passport.js").passport.tokenStrategy);
-
 app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));

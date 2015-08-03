@@ -9,7 +9,7 @@ var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
 var views = require("../../views/v1/models/_all.js").views;
 var passport = require("passport");
-passport.use(require("../../misc/passport.js").passport.tokenStrategy);
+passport.use(require("../../misc/passport-token.js").strategy());
 
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
