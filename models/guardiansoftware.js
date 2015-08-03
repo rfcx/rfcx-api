@@ -2,10 +2,11 @@
 
 module.exports = function(sequelize, DataTypes) {
   var GuardianSoftware = sequelize.define("GuardianSoftware", {
-    package: {
+    role: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
+        isIn: [["installer", "updater", "system", "audio", "admin", "api", "carrier", "hardware", "xguardian" ]], 
       }
     },
     number: {
@@ -21,6 +22,7 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
+    
     is_available: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

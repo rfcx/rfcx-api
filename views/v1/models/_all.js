@@ -294,10 +294,30 @@ exports.views = {
     }
     return jsonArray;
   
-  }
+  },
 
 
+  guardianSoftware: function(req,res,dbSoftware) {
 
+    if (!util.isArray(dbSoftware)) { dbSoftware = [dbSoftware]; }
+
+    var jsonArray = [];
+    
+    for (i in dbSoftware) {
+
+      var dbRow = dbSoftware[i];
+
+      jsonArray.push({
+        role: dbRow.role,
+        version: dbRow.number,
+        released: dbRow.release_date.toISOString(),
+        sha1: dbRow.sha1_checksum,
+        url: dbRow.url
+      });
+    }
+    return jsonArray;
+  
+  },
 
   
 

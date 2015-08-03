@@ -10,17 +10,20 @@ var hash = require("../../misc/hash.js").hash;
 var aws = require("../../misc/aws.js").aws();
 var guardianSoftware = require("../../data_storage/guardian-software.js");
 var fileKeeper = require("../../file_storage/file-keeper.js");
+var views = require("../../views/v1/models/_all.js").views;
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)
-router.route("/:guardian_id/software/latest")
+router.route("/:guardian_id/software/:software_role/latest")
   .get(function(req,res) {
 
     models.Guardian
-      .findOrCreate({ where: { guid: req.params.guardian_id } })
-      .spread(function(dbGuardian, wasCreated){
+      .findOne({
+        where: { guid: req.params.guardian_id }
+      }).then(function(dbGuardian){
+
         dbGuardian.last_update_check_in = new Date();
         dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
         dbGuardian.save();
@@ -31,22 +34,15 @@ router.route("/:guardian_id/software/latest")
         }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
 
         models.GuardianSoftware
-          .findAll({ where: { is_available: true }, order: "release_date DESC", limit: 1 })
-          .then(function(dSoftware){
-            var softwareJson = [];
-            for (i in dSoftware) {
-              softwareJson[i] = {
-                versionNumber: dSoftware[i].number,
-                releaseDate: dSoftware[i].release_date.toISOString(),
-                sha1: dSoftware[i].sha1_checksum,
-                url: 
-                  (process.env.NODE_ENV !== "development") ? dSoftware[i].url : "http://192.168.0.62:8080/apk/"+dSoftware[i].number+".apk"
-                
-              };
-            }
-            res.status(200).json(softwareJson);
+          .findAll({ 
+            where: { is_available: true }, 
+            include: [ { all: true } ], 
+            order: [ ["release_date", "DESC"] ],
+            limit: req.rfcx.count
+          }).then(function(dSoftware){
+            res.status(200).json(views.guardianSoftware(req,res,dSoftware));
           }).catch(function(err){
-            res.status(500).json({msg:"error finding latest software version"});
+            res.status(500).json({msg:"error finding latest software version | "+err});
           });
 
       });
