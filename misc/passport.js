@@ -1,4 +1,3 @@
-
 var models  = require("../models");
 var hash = require("../misc/hash.js").hash;
 var TokenStrategy   = require("passport-accesstoken").Strategy;
