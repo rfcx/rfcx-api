@@ -19,6 +19,8 @@ exports.middleware = {
     if (contentType.trim().length == 0) { contentType = "json"; }
     req.url = req.url.replace("."+contentType,"");
 
+    console.log(req.headers);
+
     req.rfcx = {
       api_url: apiUrl,
       count: paramCount,
