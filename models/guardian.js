@@ -76,6 +76,13 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
+    auth_salt: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      validate: {
+      }
+    },
     prefs_audio_capture_interval: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -95,7 +102,8 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Guardian.belongsTo(models.GuardianSoftware, {as: 'Version'});
+        Guardian.belongsTo(models.GuardianSoftware, {as: "Version"});
+        Guardian.hasMany(models.AuthToken, {as: "AuthToken", foreignKey: "guardian_id"});
       }
     }
   });

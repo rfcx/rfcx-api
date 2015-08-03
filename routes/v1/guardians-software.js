@@ -5,6 +5,7 @@ var router = express.Router();
 var fs = require("fs");
 var util = require("util");
 var querystring = require("querystring");
+var passport = require("passport");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../config/aws.js").aws();
 var guardianSoftware = require("../../data_storage/guardian-software.js");

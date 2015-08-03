@@ -9,18 +9,24 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    token: {
+    auth_hash: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
       }
-    }
+    },
+    expires_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      validate: {
+        isDate: true
+      }
+    },
   }, {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-         AuthToken.belongsTo(models.User);
       }
     }
   });

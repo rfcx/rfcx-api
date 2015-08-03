@@ -1,5 +1,7 @@
 var crypto = require("crypto");
 var Promise = require("bluebird");
+var csprng = require("csprng");
+var sha = require("sha.js");
 var fs = require("fs");
 var pfs = Promise.promisifyAll(require("fs"));
 
@@ -50,7 +52,31 @@ exports.hash = {
     .then(function (data) {
       return self.hashData(data);
     });
-  }
+  },
+
+  /**
+   * return a CSPRNG random 'hash' string
+   *
+   * @param {Integer} bits
+   * @return {String} hash
+   * @api private
+   */
+  randomHash: function(bits) {
+    return csprng(bits,36);
+  },
+
+  /**
+   * return a SHA256 hash of salted password/token
+   *
+   * @param {String} salt
+   * @param {String} secret
+   * @return {String} hash
+   * @api private
+   */
+  hashedCredentials: function(salt,secret) {
+    var sha256 = sha("sha256");
+    return sha256.update(salt+secret,"utf8").digest("hex");
+  },
 
 };
 

@@ -30,7 +30,8 @@ router.route("/:guardian_id")
 
     models.Guardian
       .findOne({ 
-        where: { guid: req.params.guardian_id }
+        where: { guid: req.params.guardian_id },
+        include: [ { all: true } ], 
       }).then(function(dbGuardian){
 
         res.status(200).json(views.guardian(req,res,dbGuardian));

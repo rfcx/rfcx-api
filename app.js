@@ -18,6 +18,8 @@ var multer = require("multer");
 var passport = require("passport");
 var app = express();
 
+passport.use(require(__dirname+"/misc/passport.js").passport.tokenStrategy);
+
 app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
@@ -62,8 +64,13 @@ for (apiVersion in routes) {
   }
 }
 
+
+// Auth Check Endpoint
+// Should remove later...
+app.get("/auth_check", passport.authenticate("token"), function(req,res){ res.status(200).json({app:app.get("title")});});
+
 // Health Check Endpoint
-app.get("/health_check",function(req,res){ res.status(200).json({app:app.get("title")});});
+app.get("/health_check", function(req,res){ res.status(200).json({app:app.get("title")});});
 
 // No endpoint
 app.get("/",function(req,res){ res.status(200).json({app:app.get("title")});});
