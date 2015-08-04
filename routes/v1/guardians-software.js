@@ -35,7 +35,7 @@ router.route("/:guardian_id/software/:software_role/latest")
 
         models.GuardianSoftware
           .findAll({ 
-            where: { is_available: true }, 
+            where: { is_available: true, role: req.params.software_role }, 
             include: [ { all: true } ], 
             order: [ ["release_date", "DESC"] ],
             limit: req.rfcx.count
