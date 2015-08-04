@@ -49,6 +49,38 @@ router.route("/:guardian_id/software/:software_role/latest")
   })
 ;
 
+// legacy endpoint for logging update requests from stranded guardians
+router.route("/:guardian_id/software/latest")
+  .get(function(req,res) {
+
+    models.Guardian
+      .findOne({
+        where: { guid: req.params.guardian_id }
+      }).then(function(dbGuardian){
+
+        dbGuardian.last_update_check_in = new Date();
+        dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
+        dbGuardian.save();
+
+        models.GuardianMetaUpdateCheckIn.create({
+            guardian_id: dbGuardian.id,
+            version_id: dbGuardian.version_id
+          }).then(function(dbGuardianMetaUpdateCheckIn){
+            
+            res.status(200).json({
+              versionNumber: "0.5.0",
+              releaseDate: (new Date()),
+              sha1: "x",
+              url: "x"
+            });
+
+          }).catch(function(err){
+            res.status(500).json({msg:"error finding latest software version | "+err});
+          });
+      });
+})
+;
+
 router.route("/upload/software")
   .get(function(req,res) {
 })
