@@ -19,6 +19,8 @@ passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 router.route("/:guardian_id/software/:software_role/latest")
   .get(function(req,res) {
 
+    var softwareRole = req.params.software_role;
+
     models.Guardian
       .findOne({
         where: { guid: req.params.guardian_id }
@@ -33,16 +35,35 @@ router.route("/:guardian_id/software/:software_role/latest")
           version_id: dbGuardian.version_id
         }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
 
+        // var queryOptions = {
+        //   where: {
+        //     is_available: true,
+
+        //   }
+        // };
+
+
         models.GuardianSoftware
-          .findAll({ 
-            where: { is_available: true, role: req.params.software_role }, 
-            include: [ { all: true } ], 
-            order: [ ["release_date", "DESC"] ],
-            limit: req.rfcx.count
+          .findAll({
+            where: { is_available: true },
+            order: [ ["release_date", "DESC"] ]
           }).then(function(dSoftware){
-            res.status(200).json(views.guardianSoftware(req,res,dSoftware));
+
+            var roles = [], rowList = [];
+            for (i in dSoftware) {
+              if (
+                  (roles.indexOf(dSoftware[i].role) == -1)
+              &&  ((softwareRole === "all") || (softwareRole === dSoftware[i].role))
+              ) {
+                roles.push(dSoftware[i].role);
+                rowList.push(dSoftware[i]);
+              }
+            }
+
+            res.status(200).json(views.guardianSoftware(req,res,rowList));
+
           }).catch(function(err){
-            res.status(500).json({msg:"error finding latest software version | "+err});
+            res.status(500).json({msg:"error finding latest software versions | "+err});
           });
 
       });
