@@ -35,21 +35,15 @@ router.route("/:guardian_id/software/:software_role/latest")
           version_id: dbGuardian.version_id
         }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
 
-        // var queryOptions = {
-        //   where: {
-        //     is_available: true,
-
-        //   }
-        // };
-
-
         models.GuardianSoftware
           .findAll({
             where: { is_available: true },
             order: [ ["release_date", "DESC"] ]
           }).then(function(dSoftware){
 
-            var roles = [], rowList = [];
+            var roles = [], outputArray = [],
+              excludeUnlessSpecified = ["guardian", "cputuner"];
+            
             for (i in dSoftware) {
               if (
                   (roles.indexOf(dSoftware[i].role) == -1)
@@ -58,13 +52,13 @@ router.route("/:guardian_id/software/:software_role/latest")
 
 
                 if (dSoftware[i].role != "guardian") {
-                roles.push(dSoftware[i].role);
-                rowList.push(dSoftware[i]);
+                  roles.push(dSoftware[i].role);
+                outputArray.push(dSoftware[i]);
                 }
               }
             }
 
-            res.status(200).json(views.guardianSoftware(req,res,rowList));
+            res.status(200).json(views.guardianSoftware(req,res,outputArray));
 
           }).catch(function(err){
             res.status(500).json({msg:"error finding latest software versions | "+err});
