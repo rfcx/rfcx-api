@@ -55,8 +55,12 @@ router.route("/:guardian_id/software/:software_role/latest")
                   (roles.indexOf(dSoftware[i].role) == -1)
               &&  ((softwareRole === "all") || (softwareRole === dSoftware[i].role))
               ) {
+
+
+                if (dSoftware[i].role != "guardian") {
                 roles.push(dSoftware[i].role);
                 rowList.push(dSoftware[i]);
+                }
               }
             }
 
