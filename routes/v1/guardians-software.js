@@ -17,7 +17,7 @@ passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)
 router.route("/:guardian_id/software/:software_role/latest")
-  .get(function(req,res) {
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     var softwareRole = req.params.software_role;
 
