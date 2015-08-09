@@ -35,7 +35,7 @@ router.route("/:guardian_id/checkins")
 
           models.GuardianCheckIn.create({
             guardian_id: dbGuardian.id,
-            version_id: dSoftware.id,
+    //        version_id: dSoftware.id,
             measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
             guardian_queued_checkins: parseInt(json.queued_checkins),
             guardian_skipped_checkins: parseInt(json.skipped_checkins),
