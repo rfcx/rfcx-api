@@ -24,13 +24,13 @@ router.route("/:guardian_id/checkins")
       .findOrCreate({ where: { guid: req.params.guardian_id } })
       .spread(function(dbGuardian, wasCreated){
 
-      models.GuardianSoftware
-        .findOrCreate( { where: { number: json.software_version, package: "guardian" } })
-        .spread(function(dSoftware, wasCreated){
+      // models.GuardianSoftware
+      //   .findOrCreate( { where: { number: json.software_version, package: "guardian" } })
+      //   .spread(function(dSoftware, wasCreated){
 
           dbGuardian.last_check_in = new Date();
-          dbGuardian.check_in_count = 1+dbGuardian.check_in_count;          
-          dbGuardian.version_id = dSoftware.id;
+          dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
+//          dbGuardian.version_id = dSoftware.id;
           dbGuardian.save();
 
           models.GuardianCheckIn.create({
@@ -393,10 +393,10 @@ router.route("/:guardian_id/checkins")
             console.log("error adding checkin to database | "+err);
             if (!!err) { res.status(500).json({msg:"error adding checkin to database"}); }
           });
-        }).catch(function(err){
-          console.log("failed to update version of guardian | "+err);
-          if (!!err) { res.status(500).json({msg:"failed to update version of guardian"}); }
-        });
+        // }).catch(function(err){
+        //   console.log("failed to update version of guardian | "+err);
+        //   if (!!err) { res.status(500).json({msg:"failed to update version of guardian"}); }
+        // });
     });
   })
 ;

@@ -22,6 +22,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    software_versions: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     latitude: {
       type: DataTypes.FLOAT,
       allowNull: true,
@@ -123,7 +129,6 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Guardian.belongsTo(models.GuardianSoftware, {as: "Version"});
       }
     }
   });
