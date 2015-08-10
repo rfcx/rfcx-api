@@ -104,7 +104,7 @@ router.route("/:guardian_id/checkins")
                   check_in_id: dbCheckIn.id,
                   measured_at: new Date(metaNetwork[ntwkInd][0].replace(/ /g,"T")+json.timezone_offset),
                   signal_strength: parseInt(metaNetwork[ntwkInd][1]),
-                  network_type: parseInt(metaNetwork[ntwkInd][2]),
+                  network_type: metaNetwork[ntwkInd][2],
                   carrier_name: metaNetwork[ntwkInd][3]
                 }).then(function(dbGuardianMetaNetwork){ }).catch(function(err){ });
             }
