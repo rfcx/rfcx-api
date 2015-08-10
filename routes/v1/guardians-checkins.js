@@ -24,7 +24,7 @@ router.route("/:guardian_id/checkins")
 
         var json = JSON.parse(zLibBuffer.toString());
         if (verbose_logging) { /*console.log(json);*/ }
-          console.log("json length: "+req.body.meta.length+" "+json.length);
+          console.log("json length: "+req.body.meta.length+" vs "+zLibBuffer.toString().length);
       
         models.Guardian
           .findOne({ 
@@ -284,7 +284,8 @@ router.route("/:guardian_id/checkins")
                             +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
                             +"/"+dbGuardian.guid
                             +"/"+dbGuardian.guid+"-"+dateString
-                                +req.files.audio[i].originalname.substr(req.files.audio[i].originalname.indexOf("."))
+                                +"."+audioMeta[i][2]
+                                //+req.files.audio[i].originalname.substr(req.files.audio[i].originalname.indexOf("."))
                   };
                 }
 
