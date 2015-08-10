@@ -4,6 +4,7 @@ var express = require("express");
 var router = express.Router();
 var querystring = require("querystring");
 var fs = require("fs");
+var zlib = require("zlib");
 var util = require("util");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../misc/aws.js").aws();
@@ -16,30 +17,34 @@ router.route("/:guardian_id/checkins")
 
     var requestStartTime = (new Date()).valueOf();
 
-    var json = JSON.parse(querystring.parse("all="+req.body.json).all);
+    zlib.unzip(
+      new Buffer(querystring.parse("gzipped="+req.body.meta).gzipped,"base64"),
+      function(zLibError,zLibBuffer){
+      if (!zLibError) {
 
-    if (verbose_logging) { console.log(json); }
-
-    models.Guardian
-      .findOrCreate({ where: { guid: req.params.guardian_id } })
-      .spread(function(dbGuardian, wasCreated){
-
-      // models.GuardianSoftware
-      //   .findOrCreate( { where: { number: json.software_version, package: "guardian" } })
-      //   .spread(function(dSoftware, wasCreated){
+        var json = JSON.parse(zLibBuffer.toString());
+        if (verbose_logging) { console.log(json); }
+      
+        models.Guardian
+          .findOne({ 
+            where: { guid: req.params.guardian_id }
+        }).then(function(dbGuardian){
 
           dbGuardian.last_check_in = new Date();
           dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
-//          dbGuardian.version_id = dSoftware.id;
           dbGuardian.save();
 
-          models.GuardianCheckIn.create({
-            guardian_id: dbGuardian.id,
-    //        version_id: dSoftware.id,
-            measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
-            guardian_queued_checkins: parseInt(json.queued_checkins),
-            guardian_skipped_checkins: parseInt(json.skipped_checkins),
-            is_certified: dbGuardian.is_certified
+          var metaVersionArr = strArrToJSArr(json.software_version,"|","*"), versionJson = {};
+          for (vInd in metaVersionArr) { versionJson[metaVersionArr[vInd][0]] = metaVersionArr[vInd][1]; }
+
+          models.GuardianCheckIn
+            .create({
+              guardian_id: dbGuardian.id,
+              software_versions: JSON.stringify(versionJson),
+              measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
+              guardian_queued_checkins: parseInt(json.queued_checkins),
+              guardian_skipped_checkins: parseInt(json.skipped_checkins),
+              is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
             console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+"TBD"+")");
 
@@ -394,10 +399,14 @@ router.route("/:guardian_id/checkins")
             console.log("error adding checkin to database | "+err);
             if (!!err) { res.status(500).json({msg:"error adding checkin to database"}); }
           });
-        // }).catch(function(err){
-        //   console.log("failed to update version of guardian | "+err);
-        //   if (!!err) { res.status(500).json({msg:"failed to update version of guardian"}); }
-        // });
+      }).catch(function(err){
+        console.log("failed to find guardian | "+err);
+        if (!!err) { res.status(404).json({msg:"failed to find guardian"}); }
+      });
+    } else {
+      console.log("failed to parse gzipped json | "+zLibError);
+      if (!!zLibError) { res.status(500).json({msg:"failed to parse gzipped json"}); }
+    }
     });
   })
 ;
