@@ -41,7 +41,7 @@ router.route("/:guardian_id/checkins")
             guardian_skipped_checkins: parseInt(json.skipped_checkins),
             is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
-            console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+dSoftware.number+")");
+            console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+"TBD"+")");
 
             // save guardian meta data
 
@@ -160,7 +160,7 @@ router.route("/:guardian_id/checkins")
                   guid: null,
                   guardian_id: dbGuardian.id,
                   checkin_id: dbCheckIn.id,
-                  version: dSoftware.number,
+                  version: null,//dSoftware.number,
                   digest: messages[msgInd].digest,
                   number: messages[msgInd].number,
                   body: messages[msgInd].body,
@@ -215,7 +215,7 @@ router.route("/:guardian_id/checkins")
                   screenShotInfo[timeStamp] = {
                      guardian_id: dbGuardian.guid,
                      checkin_id: dbCheckIn.guid,
-                     version: dSoftware.number,
+                     version: null,//dSoftware.number,
                      sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
                      localPath: req.files.screenshot[i].path,
                      size: fs.statSync(req.files.screenshot[i].path).size,
@@ -263,7 +263,7 @@ router.route("/:guardian_id/checkins")
                   audioInfo[timeStamp] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
-                    version: dSoftware.number,
+                    version: null,//dSoftware.number,
                     battery_temperature: null,
                     guardianSha1Hash: audioMeta[i][3],
                     sha1Hash: hash.fileSha1(req.files.audio[i].path),
