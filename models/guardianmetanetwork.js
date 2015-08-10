@@ -14,6 +14,12 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true
       }
     },
+    network_type: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     carrier_name: {
       type: DataTypes.STRING,
       allowNull: true,
