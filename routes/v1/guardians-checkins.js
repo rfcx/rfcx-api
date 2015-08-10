@@ -224,7 +224,7 @@ router.route("/:guardian_id/checkins")
                      checkin_id: dbCheckIn.guid,
                      version: null,//dSoftware.number,
                      sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
-                     localPath: req.files.screenshot[i].path,
+                     uploadLocalPath: req.files.screenshot[i].path,
                      size: fs.statSync(req.files.screenshot[i].path).size,
                      origin_id: timeStamp,
                      timeStamp: new Date(parseInt(timeStamp)),
@@ -238,7 +238,7 @@ router.route("/:guardian_id/checkins")
                 }
                 for (j in screenShotInfo) {
                   aws.s3("rfcx-meta").putFile(
-                    screenShotInfo[j].localPath, screenShotInfo[j].s3Path, 
+                    screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
                     function(err, s3Res){
                       s3Res.resume();
                       if (!!err) {
@@ -248,6 +248,7 @@ router.route("/:guardian_id/checkins")
                           if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
                             screenShotInfo[l].isSaved = true;
                             console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
+                            fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
                           }
                         }                        
                       }
@@ -270,12 +271,13 @@ router.route("/:guardian_id/checkins")
                   audioInfo[timeStamp] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
-                    version: null,//dSoftware.number,
+                    version: null, // to be decided whether this is important to include here...
                     battery_temperature: null,
                     guardianSha1Hash: audioMeta[i][3],
-                    sha1Hash: hash.fileSha1(req.files.audio[i].path),
-                    localPath: req.files.audio[i].path,
-                    size: fs.statSync(req.files.audio[i].path).size,
+                    uploadLocalPath: req.files.audio[i].path,
+                    unzipLocalPath: req.files.audio[i].path.substr(0,req.files.audio[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
+                    size: null, // to be calculated following the uncompression
+                    sha1Hash: null, // to be calculated following the uncompression
                     duration: (audioMeta[i].length >= 5) ? parseInt(audioMeta[i][4]) : null,
                     timeStamp: timeStamp,
                     measured_at: audioMeta[i][1],
@@ -283,108 +285,120 @@ router.route("/:guardian_id/checkins")
                     s3Path: "/"+process.env.NODE_ENV
                             +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
                             +"/"+dbGuardian.guid
-                            +"/"+dbGuardian.guid+"-"+dateString
-                                +"."+audioMeta[i][2]
-                                //+req.files.audio[i].originalname.substr(req.files.audio[i].originalname.indexOf("."))
+                            +"/"+dbGuardian.guid+"-"+dateString+"."+audioMeta[i][2]
                   };
                 }
 
                 for (j in audioInfo) {
+                  
+                  // unzip uploaded audio file into upload directory
+                  audioInfo[j].unZipStream = fs.createWriteStream(audioInfo[j].unzipLocalPath);
+                  fs.createReadStream(audioInfo[j].uploadLocalPath).pipe(zlib.createGunzip()).pipe(audioInfo[j].unZipStream);
+                  // when the output stream closes, proceed asynchronously...
+                  audioInfo[j].unZipStream.on("close", function(){
+                    // fill in the file info on the unzipped audio file
+                    audioInfo[j].sha1Hash = hash.fileSha1(audioInfo[j].unzipLocalPath);
+                    audioInfo[j].size = fs.statSync(audioInfo[j].unzipLocalPath).size;
+                    // compare to checksum received from guardian
+                    if (audioInfo[j].sha1Hash === audioInfo[j].guardianSha1Hash) {
+                      // if it matches, add the audio to the database
+                      models.GuardianAudio.create({
+                        guardian_id: dbGuardian.id,
+                        check_in_id: dbCheckIn.id,
+                        sha1_checksum: audioInfo[j].sha1Hash,
+                        url: "s3://rfcx-ark"+audioInfo[j].s3Path,
+                        size: audioInfo[j].size,
+                        length: audioInfo[j].duration,
+                        measured_at: audioInfo[j].measured_at
+                      }).then(function(dbAudio){
+                        // because the callback is asynchronous...
+                        // cycle through all uploaded audio options and match the checksum
+                        // ...in order to refind our place
+                        for (k in audioInfo) {
+                          if (audioInfo[k].sha1Hash === dbAudio.sha1_checksum) {
+                            
+                            // inform other async processes that this one has been saved to database
+                            audioInfo[k].isSaved.db = true;
+                            audioInfo[k].audio_id = dbAudio.guid;
 
-                  if (audioInfo[j].sha1Hash === audioInfo[j].guardianSha1Hash) {
+                            console.log("uploading audio to s3: "+audioInfo[k].audio_id);
 
-                    models.GuardianAudio.create({
-                      guardian_id: dbGuardian.id,
-                      check_in_id: dbCheckIn.id,
-                      sha1_checksum: audioInfo[j].sha1Hash,
-                      url: "s3://rfcx-ark"+audioInfo[j].s3Path,
-                      size: audioInfo[j].size,
-                      length: audioInfo[j].duration,
-                      measured_at: audioInfo[j].measured_at
-                    }).then(function(dbAudio){
+                            aws.s3("rfcx-ark").putFile(
+                              audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 
+                              function(err, s3Res){
+                                s3Res.resume();
+                                if (!!err) {
+                                  console.log(err);
+                                } else if (200 == s3Res.statusCode) {
+                                  for (l in audioInfo) {
+                                    if (s3Res.req.url.indexOf(audioInfo[l].s3Path) >= 0) {
+                                      audioInfo[l].isSaved.s3 = true;
 
-                      for (k in audioInfo) {
-                        if (audioInfo[k].sha1Hash === dbAudio.sha1_checksum) {
-                          
-                          audioInfo[k].isSaved.db = true;
-                          audioInfo[k].audio_id = dbAudio.guid;
+                                      console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
+                                      audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
+                                      
+                                      aws.sns().publish({
+                                          TopicArn: aws.snsTopicArn("rfcx-analysis"),
+                                          Message: JSON.stringify(audioInfo[l])
+                                        }, function(err, data) {
+                                          if (!!err) {
+                                            console.log(err);
+                                          } else {
+                                            var isComplete = true;
+                                              
+                                            for (m in audioInfo) {
+                                              if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
+                                              returnJson.audio.push({
+                                                id: m,
+                                                guid: audioInfo[m].audio_id
+                                              });         
+                                            }
+                                            for (n in screenShotInfo) {
+                                              if (screenShotInfo[n].isSaved) {
+                                                returnJson.screenshots.push({
+                                                  id: n,
+                                                  guid: null
+                                                });
+                                              }         
+                                            }
+                                            for (o in messageInfo) {
+                                              if (messageInfo[o].isSaved) {
+                                                returnJson.messages.push({
+                                                  digest: messageInfo[o].digest,
+                                                  guid: messageInfo[o].guid
+                                                });
+                                              }         
+                                            }
+                                            if (isComplete) {
 
-                          console.log("uploading audio to s3: "+audioInfo[k].audio_id);
+                                              dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+                                              dbCheckIn.save();
 
-                          aws.s3("rfcx-ark").putFile(
-                            audioInfo[k].localPath, audioInfo[k].s3Path, 
-                            function(err, s3Res){
-                              s3Res.resume();
-                              if (!!err) {
-                                console.log(err);
-                              } else if (200 == s3Res.statusCode) {
-                                for (l in audioInfo) {
-                                  if (s3Res.req.url.indexOf(audioInfo[l].s3Path) >= 0) {
-                                    audioInfo[l].isSaved.s3 = true;
-
-                                    console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
-                                    audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
-                                    
-                                    aws.sns().publish({
-                                        TopicArn: aws.snsTopicArn("rfcx-analysis"),
-                                        Message: JSON.stringify(audioInfo[l])
-                                      }, function(err, data) {
-                                        if (!!err) {
-                                          console.log(err);
-                                        } else {
-                                          var isComplete = true;
-                                            
-                                          for (m in audioInfo) {
-                                            if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
-                                            returnJson.audio.push({
-                                              id: m,
-                                              guid: audioInfo[m].audio_id
-                                            });         
+                                              if (verbose_logging) { console.log(returnJson); }
+                                              res.status(200).json(returnJson);
+                                              
+                                              for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
+                                            }
                                           }
-                                          for (n in screenShotInfo) {
-                                            if (screenShotInfo[n].isSaved) {
-                                              returnJson.screenshots.push({
-                                                id: n,
-                                                guid: null
-                                              });
-                                            }         
-                                          }
-                                          for (o in messageInfo) {
-                                            if (messageInfo[o].isSaved) {
-                                              returnJson.messages.push({
-                                                digest: messageInfo[o].digest,
-                                                guid: messageInfo[o].guid
-                                              });
-                                            }         
-                                          }
-                                          if (isComplete) {
-
-                                            dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
-                                            dbCheckIn.save();
-
-                                            if (verbose_logging) { console.log(returnJson); }
-                                            res.status(200).json(returnJson);
-                                            
-                                            for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
-                                          }
-                                        }
-                                    });
-                                    fs.unlink(audioInfo[l].localPath,function(e){if(e){console.log(e);}});
-                                    audioInfo[l].isSaved.sqs = true;
+                                      });
+                                      fs.unlink(audioInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
+                                      fs.unlink(audioInfo[l].unzipLocalPath,function(e){if(e){console.log(e);}});
+                                      audioInfo[l].isSaved.sqs = true;
+                                    }
                                   }
                                 }
-                              }
-                          });
+                            });
+                          }
                         }
-                      }
-                    }).catch(function(err){
-                      console.log("error adding audio to database | "+err);
-                      if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
-                    });
-                  } else {
-                    console.log("checksum mismatch on uploaded audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash);
-                    res.status(500).json({msg:"checksum mismatch on uploaded audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash});
-                  }
+                      }).catch(function(err){
+                        console.log("error adding audio to database | "+err);
+                        if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
+                      });
+                    } else {
+                      console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash);
+                      res.status(500).json({msg:"checksum mismatch on uploaded audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash});
+                    }
+                  });
                 }
               } else {
                 console.log("couldn't match audio meta to uploaded content | "+audioMeta);
