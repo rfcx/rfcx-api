@@ -23,7 +23,8 @@ router.route("/:guardian_id/checkins")
       if (!zLibError) {
 
         var json = JSON.parse(zLibBuffer.toString());
-        if (verbose_logging) { console.log(json); }
+        if (verbose_logging) { /*console.log(json);*/ }
+          console.log("json length: "+req.body.meta.length+" "+json.length);
       
         models.Guardian
           .findOne({ 
@@ -46,7 +47,7 @@ router.route("/:guardian_id/checkins")
               guardian_skipped_checkins: parseInt(json.skipped_checkins),
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
-            console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+"TBD"+")");
+            console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+versionJson.api+")");
 
             // save guardian meta data
 
