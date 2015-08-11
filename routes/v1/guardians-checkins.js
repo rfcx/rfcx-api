@@ -171,7 +171,9 @@ router.route("/:guardian_id/checkins")
             }
 
             // parse, review and save sms messages
-            var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
+       //     var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
+            var messages = JSON.parse(json.messages);
+            console.log("messages: "+json.messages+" | "+messages.length);
             if (util.isArray(messages)) {
               var messageInfo = {};
               for (msgInd in messages) {
