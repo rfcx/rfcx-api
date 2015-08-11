@@ -23,8 +23,7 @@ router.route("/:guardian_id/checkins")
       if (!zLibError) {
 
         var json = JSON.parse(zLibBuffer.toString());
-        if (verbose_logging) { /*console.log(json);*/ }
-          console.log("json length: "+req.body.meta.length+" vs "+zLibBuffer.toString().length);
+        if (verbose_logging) { console.log(json); }
       
         models.Guardian
           .findOne({ 
@@ -63,7 +62,9 @@ router.route("/:guardian_id/checkins")
                   bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
                   total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
                   total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
-                }).then(function(dbGuardianMetaDataTransfer){ }).catch(function(err){ });
+                }).then(function(dbGuardianMetaDataTransfer){ }).catch(function(err){
+                  console.log("failed to create GuardianMetaDataTransfer | "+err);
+                });
             }
 
             // save guardian meta CPU
@@ -75,7 +76,9 @@ router.route("/:guardian_id/checkins")
                   measured_at: new Date(metaCPU[cpuInd][0].replace(/ /g,"T")+json.timezone_offset),
                   cpu_percent: parseInt(metaCPU[cpuInd][1]),
                   cpu_clock: parseInt(metaCPU[cpuInd][2])
-                }).then(function(dbGuardianMetaCPU){ }).catch(function(err){ });
+                }).then(function(dbGuardianMetaCPU){ }).catch(function(err){
+                  console.log("failed to create GuardianMetaCPU | "+err);
+                });
             }
 
             // save guardian meta battery
@@ -87,7 +90,9 @@ router.route("/:guardian_id/checkins")
                   measured_at: new Date(metaBattery[battInd][0].replace(/ /g,"T")+json.timezone_offset),
                   battery_percent: parseInt(metaBattery[battInd][1]),
                   battery_temperature: parseInt(metaBattery[battInd][2])
-                }).then(function(dbGuardianMetaBattery){ }).catch(function(err){ });
+                }).then(function(dbGuardianMetaBattery){ }).catch(function(err){
+                  console.log("failed to create GuardianMetaBattery | "+err);
+                });
             }
 
             // save guardian meta power
@@ -99,7 +104,9 @@ router.route("/:guardian_id/checkins")
                   measured_at: new Date(metaPower[pwrInd][0].replace(/ /g,"T")+json.timezone_offset),
                   is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
                   is_charged: (metaPower[pwrInd][2] === "1") ? true : false
-                }).then(function(dbGuardianMetaPower){ }).catch(function(err){ });
+                }).then(function(dbGuardianMetaPower){ }).catch(function(err){
+                  console.log("failed to create GuardianMetaPower | "+err);
+                });
             }
 
             // save guardian meta network
@@ -112,7 +119,9 @@ router.route("/:guardian_id/checkins")
                   signal_strength: parseInt(metaNetwork[ntwkInd][1]),
                   network_type: metaNetwork[ntwkInd][2],
                   carrier_name: metaNetwork[ntwkInd][3]
-                }).then(function(dbGuardianMetaNetwork){ }).catch(function(err){ });
+                }).then(function(dbGuardianMetaNetwork){ }).catch(function(err){
+                  console.log("failed to create GuardianMetaNetwork | "+err);
+                });
             }
 
             // save guardian meta offline periods
@@ -124,7 +133,9 @@ router.route("/:guardian_id/checkins")
                   ended_at: new Date(metaOffline[offlInd][0].replace(/ /g,"T")+json.timezone_offset),
                   offline_duration: parseInt(metaOffline[offlInd][1]),
                   carrier_name: metaOffline[offlInd][2]
-                }).then(function(dbGuardianMetaOffline){ }).catch(function(err){ });
+                }).then(function(dbGuardianMetaOffline){ }).catch(function(err){
+                  console.log("failed to create GuardianMetaOffline | "+err);
+                });
             }
 
             // save guardian meta light meter
@@ -135,7 +146,9 @@ router.route("/:guardian_id/checkins")
                   check_in_id: dbCheckIn.id,
                   measured_at: new Date(metaLightMeter[lmInd][0].replace(/ /g,"T")+json.timezone_offset),
                   luminosity: parseInt(metaLightMeter[lmInd][1])
-                }).then(function(dbGuardianMetaLightMeter){ }).catch(function(err){ });
+                }).then(function(dbGuardianMetaLightMeter){ }).catch(function(err){
+                  console.log("failed to create GuardianMetaLightMeter | "+err);
+                });
             }
 
             // template for json return... to be populated as we progress
