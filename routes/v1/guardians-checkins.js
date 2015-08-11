@@ -229,8 +229,9 @@ router.route("/:guardian_id/checkins")
 
             // save screenshot files
             if (!!req.files.screenshot) {
+              var screenshots = JSON.parse(json.screenshots);
+              var screenShotInfo = {};
               if (!util.isArray(req.files.screenshot)) { req.files.screenshot = [req.files.screenshot]; }
-                var screenShotInfo = {};
                 for (i in req.files.screenshot) {
                   var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
                   var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
