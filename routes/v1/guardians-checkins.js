@@ -171,8 +171,6 @@ router.route("/:guardian_id/checkins")
             }
 
             // parse, review and save sms messages
-       //     var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
-       //     var messages = JSON.parse(json.messages);
             if (util.isArray(json.messages)) {
               var messageInfo = {};
               for (msgInd in json.messages) {
@@ -239,9 +237,9 @@ router.route("/:guardian_id/checkins")
                      checkin_id: dbCheckIn.guid,
                      version: null, // to be decided whether this is important to include here...
                      uploadLocalPath: req.files.screenshot[i].path,
-                     unzipLocalPath: req.files.screenshot[i].path.substr(0,req.files.screenshot[i].path.lastIndexOf("."))+".png",
-                     size: null, //fs.statSync(req.files.screenshot[i].path).size,
-                     sha1Hash: null, //hash.fileSha1(req.files.screenshot[i].path),
+                     //unzipLocalPath: req.files.screenshot[i].path.substr(0,req.files.screenshot[i].path.lastIndexOf("."))+".png",
+                     size: fs.statSync(req.files.screenshot[i].path).size,
+                     sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
                      origin_id: timeStamp,
                      timeStamp: new Date(parseInt(timeStamp)),
                      isSaved: false,
@@ -254,14 +252,14 @@ router.route("/:guardian_id/checkins")
                 }
                 for (j in screenShotInfo) {
 
-                  // unzip uploaded screenshot file into upload directory
-                  screenShotInfo[j].unZipStream = fs.createWriteStream(screenShotInfo[j].unzipLocalPath);
-                  fs.createReadStream(screenShotInfo[j].uploadLocalPath).pipe(zlib.createGunzip()).pipe(screenShotInfo[j].unZipStream);
-                  // when the output stream closes, proceed asynchronously...
-                  screenShotInfo[j].unZipStream.on("close", function(){
-                    // fill in the file info on the unzipped screenshot file
-                    screenShotInfo[j].sha1Hash = hash.fileSha1(screenShotInfo[j].unzipLocalPath);
-                    screenShotInfo[j].size = fs.statSync(screenShotInfo[j].unzipLocalPath).size;
+                  // // unzip uploaded screenshot file into upload directory
+                  // screenShotInfo[j].unZipStream = fs.createWriteStream(screenShotInfo[j].unzipLocalPath);
+                  // fs.createReadStream(screenShotInfo[j].uploadLocalPath).pipe(zlib.createGunzip()).pipe(screenShotInfo[j].unZipStream);
+                  // // when the output stream closes, proceed asynchronously...
+                  // screenShotInfo[j].unZipStream.on("close", function(){
+                  //   // fill in the file info on the unzipped screenshot file
+                  //   screenShotInfo[j].sha1Hash = hash.fileSha1(screenShotInfo[j].unzipLocalPath);
+                  //   screenShotInfo[j].size = fs.statSync(screenShotInfo[j].unzipLocalPath).size;
 
 
                     aws.s3("rfcx-meta").putFile(
@@ -282,7 +280,7 @@ router.route("/:guardian_id/checkins")
                     });
 
 
-                  });
+       //           });
                 }
             }
 
