@@ -172,20 +172,20 @@ router.route("/:guardian_id/checkins")
 
             // parse, review and save sms messages
        //     var messages = JSON.parse(querystring.parse("all="+req.body.messages).all);
-            var messages = JSON.parse(json.messages);
-            if (util.isArray(messages)) {
+       //     var messages = JSON.parse(json.messages);
+            if (util.isArray(json.messages)) {
               var messageInfo = {};
-              for (msgInd in messages) {
-                var digest = messages[msgInd].digest;
+              for (msgInd in json.messages) {
+                var digest = json.messages[msgInd].digest;
                 messageInfo[digest] = {
                   guid: null,
                   guardian_id: dbGuardian.id,
                   checkin_id: dbCheckIn.id,
                   version: null,//dSoftware.number,
-                  digest: messages[msgInd].digest,
-                  number: messages[msgInd].number,
-                  body: messages[msgInd].body,
-                  timeStamp: new Date(messages[msgInd].received_at.replace(/ /g,"T")+json.timezone_offset),
+                  digest: json.messages[msgInd].digest,
+                  number: json.messages[msgInd].number,
+                  body: json.messages[msgInd].body,
+                  timeStamp: new Date(json.messages[msgInd].received_at.replace(/ /g,"T")+json.timezone_offset),
                   isSaved: false
                   };
               }
@@ -237,10 +237,11 @@ router.route("/:guardian_id/checkins")
                   screenShotInfo[timeStamp] = {
                      guardian_id: dbGuardian.guid,
                      checkin_id: dbCheckIn.guid,
-                     version: null,//dSoftware.number,
-                     sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
+                     version: null, // to be decided whether this is important to include here...
                      uploadLocalPath: req.files.screenshot[i].path,
-                     size: fs.statSync(req.files.screenshot[i].path).size,
+                     unzipLocalPath: req.files.screenshot[i].path.substr(0,req.files.screenshot[i].path.lastIndexOf("."))+".png",
+                     size: null, //fs.statSync(req.files.screenshot[i].path).size,
+                     sha1Hash: null, //hash.fileSha1(req.files.screenshot[i].path),
                      origin_id: timeStamp,
                      timeStamp: new Date(parseInt(timeStamp)),
                      isSaved: false,
@@ -252,21 +253,35 @@ router.route("/:guardian_id/checkins")
 
                 }
                 for (j in screenShotInfo) {
-                  aws.s3("rfcx-meta").putFile(
-                    screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
-                    function(err, s3Res){
-                      s3Res.resume();
-                      if (!!err) {
-                        console.log(err);
-                      } else if (200 == s3Res.statusCode) {
-                        for (l in screenShotInfo) {
-                          if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
-                            screenShotInfo[l].isSaved = true;
-                            console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
-                            fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
-                          }
-                        }                        
-                      }
+
+                  // unzip uploaded screenshot file into upload directory
+                  screenShotInfo[j].unZipStream = fs.createWriteStream(screenShotInfo[j].unzipLocalPath);
+                  fs.createReadStream(screenShotInfo[j].uploadLocalPath).pipe(zlib.createGunzip()).pipe(screenShotInfo[j].unZipStream);
+                  // when the output stream closes, proceed asynchronously...
+                  screenShotInfo[j].unZipStream.on("close", function(){
+                    // fill in the file info on the unzipped screenshot file
+                    screenShotInfo[j].sha1Hash = hash.fileSha1(screenShotInfo[j].unzipLocalPath);
+                    screenShotInfo[j].size = fs.statSync(screenShotInfo[j].unzipLocalPath).size;
+
+
+                    aws.s3("rfcx-meta").putFile(
+                      screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
+                      function(err, s3Res){
+                        s3Res.resume();
+                        if (!!err) {
+                          console.log(err);
+                        } else if (200 == s3Res.statusCode) {
+                          for (l in screenShotInfo) {
+                            if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
+                              screenShotInfo[l].isSaved = true;
+                              console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
+                              fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
+                            }
+                          }                        
+                        }
+                    });
+
+
                   });
                 }
             }
