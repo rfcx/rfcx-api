@@ -174,13 +174,12 @@ router.route("/:guardian_id/checkins")
             if (util.isArray(json.messages)) {
               var messageInfo = {};
               for (msgInd in json.messages) {
-                var digest = json.messages[msgInd].digest;
-                messageInfo[digest] = {
+                messageInfo[json.messages[msgInd].id] = {
+                  id: json.messages[msgInd].id,
                   guid: null,
                   guardian_id: dbGuardian.id,
                   checkin_id: dbCheckIn.id,
                   version: null,//dSoftware.number,
-                  digest: json.messages[msgInd].digest,
                   number: json.messages[msgInd].number,
                   body: json.messages[msgInd].body,
                   timeStamp: new Date(json.messages[msgInd].received_at.replace(/ /g,"T")+json.timezone_offset),
@@ -197,13 +196,13 @@ router.route("/:guardian_id/checkins")
                     received_at: messageInfo[msgInfoInd].timeStamp,
                     number: messageInfo[msgInfoInd].number,
                     body: messageInfo[msgInfoInd].body,
-                    digest: messageInfo[msgInfoInd].digest
+                    digest: messageInfo[msgInfoInd].id // we're saving the original sms id in digest... this should be changed
                   }).then(function(dbGuardianMessage){
                     messageInfo[dbGuardianMessage.digest].isSaved = true;
                     messageInfo[dbGuardianMessage.digest].guid = dbGuardianMessage.guid;
                     console.log("message saved: "+dbGuardianMessage.guid);
                   }).catch(function(err){
-                    console.log("error saving message: "+messageInfo[msgInfoInd].digest+", "+messageInfo[msgInfoInd].body+", "+err);
+                    console.log("error saving message: "+messageInfo[msgInfoInd].id+", "+messageInfo[msgInfoInd].body+", "+err);
                   });
               }
             }
@@ -391,7 +390,7 @@ router.route("/:guardian_id/checkins")
                                             for (o in messageInfo) {
                                               if (messageInfo[o].isSaved) {
                                                 returnJson.messages.push({
-                                                  digest: messageInfo[o].digest,
+                                                  id: messageInfo[o].id,
                                                   guid: messageInfo[o].guid
                                                 });
                                               }         
