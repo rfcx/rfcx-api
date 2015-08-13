@@ -174,35 +174,34 @@ router.route("/:guardian_id/checkins")
             if (util.isArray(json.messages)) {
               var messageInfo = {};
               for (msgInd in json.messages) {
-                messageInfo[json.messages[msgInd].id] = {
-                  id: json.messages[msgInd].id,
+                messageInfo[json.messages[msgInd].android_id] = {
+                  android_id: json.messages[msgInd].android_id,
                   guid: null,
                   guardian_id: dbGuardian.id,
                   checkin_id: dbCheckIn.id,
                   version: null,//dSoftware.number,
-                  number: json.messages[msgInd].number,
+                  address: json.messages[msgInd].address,
                   body: json.messages[msgInd].body,
                   timeStamp: new Date(json.messages[msgInd].received_at.replace(/ /g,"T")+json.timezone_offset),
                   isSaved: false
-                  };
+                };
               }
               for (msgInfoInd in messageInfo) {
-                // ... save the messages into a database
-                // if all goes well, then...
-
+                // save each message into a database
                 models.GuardianMessage.create({
                     guardian_id: messageInfo[msgInfoInd].guardian_id,
                     check_in_id: messageInfo[msgInfoInd].checkin_id,
                     received_at: messageInfo[msgInfoInd].timeStamp,
-                    number: messageInfo[msgInfoInd].number,
+                    address: messageInfo[msgInfoInd].address,
                     body: messageInfo[msgInfoInd].body,
-                    digest: messageInfo[msgInfoInd].id // we're saving the original sms id in digest... this should be changed
+                    android_id: messageInfo[msgInfoInd].android_id
                   }).then(function(dbGuardianMessage){
+                    // if all goes well, then report it on the "global" object...
                     messageInfo[dbGuardianMessage.digest].isSaved = true;
                     messageInfo[dbGuardianMessage.digest].guid = dbGuardianMessage.guid;
                     console.log("message saved: "+dbGuardianMessage.guid);
                   }).catch(function(err){
-                    console.log("error saving message: "+messageInfo[msgInfoInd].id+", "+messageInfo[msgInfoInd].body+", "+err);
+                    console.log("error saving message: "+messageInfo[msgInfoInd].android_id+", "+messageInfo[msgInfoInd].body+", "+err);
                   });
               }
             }
@@ -390,7 +389,7 @@ router.route("/:guardian_id/checkins")
                                             for (o in messageInfo) {
                                               if (messageInfo[o].isSaved) {
                                                 returnJson.messages.push({
-                                                  id: messageInfo[o].id,
+                                                  id: messageInfo[o].android_id,
                                                   guid: messageInfo[o].guid
                                                 });
                                               }         

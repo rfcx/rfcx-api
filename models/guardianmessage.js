@@ -20,7 +20,7 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
-    number: {
+    address: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
