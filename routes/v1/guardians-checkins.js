@@ -197,8 +197,8 @@ router.route("/:guardian_id/checkins")
                     android_id: messageInfo[msgInfoInd].android_id
                   }).then(function(dbGuardianMessage){
                     // if all goes well, then report it on the "global" object...
-                    messageInfo[dbGuardianMessage.digest].isSaved = true;
-                    messageInfo[dbGuardianMessage.digest].guid = dbGuardianMessage.guid;
+                    messageInfo[dbGuardianMessage.android_id].isSaved = true;
+                    messageInfo[dbGuardianMessage.android_id].guid = dbGuardianMessage.guid;
                     console.log("message saved: "+dbGuardianMessage.guid);
                   }).catch(function(err){
                     console.log("error saving message: "+messageInfo[msgInfoInd].android_id+", "+messageInfo[msgInfoInd].body+", "+err);
