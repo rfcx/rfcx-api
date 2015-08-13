@@ -226,10 +226,12 @@ router.route("/:guardian_id/checkins")
 
             // save screenshot files
             if (!!req.files.screenshot) {
-              var screenshots = JSON.parse(json.screenshots);
               var screenShotInfo = {};
               if (!util.isArray(req.files.screenshot)) { req.files.screenshot = [req.files.screenshot]; }
                 for (i in req.files.screenshot) {
+                  // this next line assumes there is only one screenshot attached
+                  // ...so this should probably be updated to work like the rest of this section
+                  var screenShotMeta = json.screenshots.split("|")[0].split("*");
                   var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
                   var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
                   screenShotInfo[timeStamp] = {
@@ -237,9 +239,9 @@ router.route("/:guardian_id/checkins")
                      checkin_id: dbCheckIn.guid,
                      version: null, // to be decided whether this is important to include here...
                      uploadLocalPath: req.files.screenshot[i].path,
-                     //unzipLocalPath: req.files.screenshot[i].path.substr(0,req.files.screenshot[i].path.lastIndexOf("."))+".png",
                      size: fs.statSync(req.files.screenshot[i].path).size,
                      sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
+                     guardianSha1Hash: screenShotMeta[3],
                      origin_id: timeStamp,
                      timeStamp: new Date(parseInt(timeStamp)),
                      isSaved: false,
@@ -252,15 +254,7 @@ router.route("/:guardian_id/checkins")
                 }
                 for (j in screenShotInfo) {
 
-                  // // unzip uploaded screenshot file into upload directory
-                  // screenShotInfo[j].unZipStream = fs.createWriteStream(screenShotInfo[j].unzipLocalPath);
-                  // fs.createReadStream(screenShotInfo[j].uploadLocalPath).pipe(zlib.createGunzip()).pipe(screenShotInfo[j].unZipStream);
-                  // // when the output stream closes, proceed asynchronously...
-                  // screenShotInfo[j].unZipStream.on("close", function(){
-                  //   // fill in the file info on the unzipped screenshot file
-                  //   screenShotInfo[j].sha1Hash = hash.fileSha1(screenShotInfo[j].unzipLocalPath);
-                  //   screenShotInfo[j].size = fs.statSync(screenShotInfo[j].unzipLocalPath).size;
-
+                  if (screenShotInfo[j].sha1Hash === screenShotInfo[j].guardianSha1Hash) {
 
                     aws.s3("rfcx-meta").putFile(
                       screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
@@ -279,8 +273,13 @@ router.route("/:guardian_id/checkins")
                         }
                     });
 
+                  } else {
+                    // even if checksum fails, we still (at least for now) want
+                    // to direct to the guardian to delete the screenshot and move on
+                    screenShotInfo[j].isSaved = true;
+                    fs.unlink(screenShotInfo[j].uploadLocalPath,function(e){if(e){console.log(e);}});
+                  }
 
-       //           });
                 }
             }
 
