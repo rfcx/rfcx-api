@@ -32,10 +32,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    digest: {
-      type: DataTypes.STRING,
+    android_id: {
+      type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
+        isInt: true,
+        min: 0
       }
     }
   }, {
