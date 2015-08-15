@@ -163,13 +163,6 @@ router.route("/:guardian_id/checkins")
               }
             };
 
-            // add prefs instructions as set in database
-            for (guardianInd in dbGuardian.dataValues) {
-              if ((guardianInd.substr(0,6) === "prefs_") && (dbGuardian.dataValues[guardianInd] != null)) {
-                returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
-              }
-            }
-
             // parse, review and save sms messages
             if (util.isArray(json.messages)) {
               var messageInfo = {};
@@ -280,6 +273,20 @@ router.route("/:guardian_id/checkins")
 
                 }
             }
+
+            // add prefs instructions as set in database
+            for (guardianInd in dbGuardian.dataValues) {
+              if ((guardianInd.substr(0,6) === "prefs_") && (dbGuardian.dataValues[guardianInd] != null)) {
+                returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
+              }
+            }
+
+            // add messages instructions
+            returnJson.instructions.messages.push({
+              body: "Testing "+dbCheckIn.guid,
+              address: "+14153359205",
+              guid: "guid goes here"
+            });
 
             // save audio files
             if (!!req.files.audio) {

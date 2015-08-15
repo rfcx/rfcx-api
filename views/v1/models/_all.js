@@ -287,9 +287,8 @@ exports.views = {
         guid: dbRow.guid,
         received_at: dbRow.received_at,
         sent_at: dbRow.sent_at,
-        number: dbRow.number,
-        body: dbRow.body,
-        digest: dbRow.digest
+        address: dbRow.address,
+        body: dbRow.body
       });
     }
     return jsonArray;
