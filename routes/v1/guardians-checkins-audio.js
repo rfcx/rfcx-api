@@ -8,7 +8,7 @@ var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
 router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
-  .post(function(req, res) {
+  .post(passport.authenticate("token",{session:false}), function(req, res) {
 
     models.Guardian
       .findOne( { where: { guid: req.params.guardian_id } })

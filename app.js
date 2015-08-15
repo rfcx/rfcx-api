@@ -38,8 +38,7 @@ var routes = {
                 ],
   "checkins": [ require("./routes/v1/checkins") ],
   "audio": [ require("./routes/v1/audio") ],
-  "users": [ require("./routes/v1/users") ],
-  "mapping": [ require("./routes/v1/mapping") ]
+  "users": [ require("./routes/v1/users") ]
   },
   "v2": {
   }
@@ -65,8 +64,15 @@ for (apiVersion in routes) {
 // Health Check Endpoint
 app.get("/health_check", function(req,res){ res.status(200).json({app:app.get("title")});});
 
-// No endpoint
-app.get("/",function(req,res){ res.status(200).json({app:app.get("title")});});
+// Default Endpoint
+app.get("/",function(req,res){
+  res.status(200).json({
+    name: "Rainforest Connection (RFCx)",
+    message: "Access to this API requires authentication. "
+            +"Please send requests for access by email to contact@rfcx.org",
+    info: "https://rfcx.org/"
+  });
+});
 
 // Catch & Report Various HTTP Errors (needs some work)
 

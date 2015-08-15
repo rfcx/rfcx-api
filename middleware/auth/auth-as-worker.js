@@ -1,29 +1,29 @@
 var models  = require("../../models");
 var hash = require("../../misc/hash.js").hash;
 
-exports.authAsGuardian = function(req,token,done,authUser){
+exports.authAsWorker = function(req,token,done,authUser){
 
-  models.Guardian
+  models.MiscAuthToken
     .findOne({ 
       where: { guid: authUser.guid }
-    }).then(function(dbGuardian){
-      if  (   (dbGuardian != null)
-          &&  (dbGuardian.auth_token_hash == hash.hashedCredentials(dbGuardian.auth_token_salt,token))
+    }).then(function(dbToken){
+      if  (   (dbToken != null)
+          &&  (dbToken.auth_token_hash == hash.hashedCredentials(dbToken.auth_token_salt,token))
           ) {
             var userObj = {
                   type: "guardian",
-                  id: dbGuardian.id,
-                  guid: dbGuardian.guid,
-                  name: dbGuardian.shortname
+                  id: dbToken.id,
+                  guid: dbToken.guid,
+                  name: null
                 };
-            console.log("authenticated as guardian "+userObj.guid);
+            console.log("authenticated as worker using token with guid "+userObj.guid);
             return done(null,userObj);
       } else {
         console.log("failed to match token with salted hash");
         return done(null, false, {message:"invalid user/token combination"});
       }
     }).catch(function(err){
-      console.log("failed to find guardian | "+err);
+      console.log("failed to find misc token | "+err);
       return done(err);
     });
 };

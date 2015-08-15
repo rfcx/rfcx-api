@@ -1,18 +1,12 @@
-// could move requirements to an api which is injected to everything
-
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-
-
-router.route("/")
-  .get(function(req, res) {
-    res.json({name:"list users"});
-  })
-;
+var views = require("../../views/v1/models/_all.js").views;
+var passport = require("passport");
+passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
 router.route("/:user_id")
-  .get(function(req, res) {
+  .get(passport.authenticate("token",{session:false}), function(req, res) {
     res.json({name:"one user: "+req.params.user_id});
   });
 

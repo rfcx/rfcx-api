@@ -5,25 +5,27 @@ var router = express.Router();
 var querystring = require("querystring");
 var hash = require("../../misc/hash.js").hash;
 var aws = require("../../misc/aws.js").aws();
+var passport = require("passport");
+passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
 router.route("/:guardian_id/alerts")
-  .post(function(req,res) {
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
 
     console.log(req.body);
-    try {
-        var json = JSON.parse(querystring.parse("all="+req.body.json).all);
-        if (verbose_logging) { console.log(json); }
-    } catch (e) {
-        console.log(e);
-    }
+    // try {
+    //     var json = JSON.parse(querystring.parse("all="+req.body.json).all);
+    //     if (verbose_logging) { console.log(json); }
+    // } catch (e) {
+    //     console.log(e);
+    // }
 
-    models.Guardian
-      .findOrCreate({ where: { guid: req.params.guardian_id } })
-      .spread(function(dbGuardian, wasCreated){
+    // models.Guardian
+    //   .findOrCreate({ where: { guid: req.params.guardian_id } })
+    //   .spread(function(dbGuardian, wasCreated){
         
-        console.log(dbGuardian.guid);
+    //     console.log(dbGuardian.guid);
 
-        res.status(200).json(dbGuardian);
+        res.status(200).json({msg:"nothing happens at this endpoint for the moment"});
 
         // models.GuardianAlert
         //   .findOrCreate({ where: { incident_key: req.params.guardian_id } })
@@ -43,7 +45,7 @@ router.route("/:guardian_id/alerts")
         //     res.status(500).json({msg:"error finding latest software version"});
         //   });
 
-      });
+ //     });
   })
 ;
 
