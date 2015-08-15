@@ -3,11 +3,9 @@
 module.exports = function(sequelize, DataTypes) {
   var MiscAuthToken = sequelize.define("MiscAuthToken", {
     guid: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-      }
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      unique: true
     },
     type: {
       type: DataTypes.STRING,

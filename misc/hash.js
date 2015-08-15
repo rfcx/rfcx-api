@@ -66,6 +66,17 @@ exports.hash = {
   },
 
   /**
+   * return a CSPRNG random 'token' string
+   *
+   * @param {String} length
+   * @return {String} token
+   * @api private
+   */
+  randomToken: function(length) {
+    return this.randomHash(320).substr(0,length);
+  },
+
+  /**
    * return a SHA256 hash of salted password/token
    *
    * @param {String} salt
@@ -77,6 +88,8 @@ exports.hash = {
     var sha256 = sha("sha256");
     return sha256.update(salt+secret,"utf8").digest("hex");
   },
+
+  
 
 };
 

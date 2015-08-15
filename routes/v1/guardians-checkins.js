@@ -7,6 +7,7 @@ var fs = require("fs");
 var zlib = require("zlib");
 var util = require("util");
 var hash = require("../../misc/hash.js").hash;
+var token = require("../../misc/token.js").token;
 var aws = require("../../misc/aws.js").aws();
 var views = require("../../views/v1/models/_all.js").views;
 var passport = require("passport");
@@ -313,6 +314,9 @@ router.route("/:guardian_id/checkins")
                     duration: (audioMeta[i].length >= 5) ? parseInt(audioMeta[i][4]) : null,
                     timeStamp: timeStamp,
                     measured_at: audioMeta[i][1],
+                    api_token_guid: null,
+                    api_token: null,
+                    api_token_expires: null,
                     isSaved: { db: false, s3: false, sqs: false },
                     s3Path: "/"+process.env.NODE_ENV
                             +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
@@ -369,53 +373,68 @@ router.route("/:guardian_id/checkins")
                                       console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
                                       audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
                                       
-                                      aws.sns().publish({
-                                          TopicArn: aws.snsTopicArn("rfcx-analysis"),
-                                          Message: JSON.stringify(audioInfo[l])
-                                        }, function(err, data) {
-                                          if (!!err) {
-                                            console.log(err);
-                                          } else {
-                                            var isComplete = true;
-                                              
-                                            for (m in audioInfo) {
-                                              if (!audioInfo[m].isSaved.sqs) { isComplete = false; }
-                                              returnJson.audio.push({
-                                                id: m,
-                                                guid: audioInfo[m].audio_id
-                                              });         
-                                            }
-                                            for (n in screenShotInfo) {
-                                              if (screenShotInfo[n].isSaved) {
-                                                returnJson.screenshots.push({
-                                                  id: n,
-                                                  guid: null
-                                                });
-                                              }         
-                                            }
-                                            for (o in messageInfo) {
-                                              if (messageInfo[o].isSaved) {
-                                                returnJson.messages.push({
-                                                  id: messageInfo[o].android_id,
-                                                  guid: messageInfo[o].guid
-                                                });
-                                              }         
-                                            }
-                                            if (isComplete) {
+                                      token.createAuthToken(audioInfo[l].audio_id,"analysis",1).then(function(tokenInfo){
+                                        for (m in audioInfo) {
+                                          if (audioInfo[m].audio_id == tokenInfo.id) {
 
-                                              dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
-                                              dbCheckIn.save();
+                                            audioInfo[m].api_token_guid = tokenInfo.token_guid;
+                                            audioInfo[m].api_token = tokenInfo.token;
+                                            audioInfo[m].api_token_expires = tokenInfo.token_expires_at;
 
-                                              if (verbose_logging) { console.log(returnJson); }
-                                              res.status(200).json(returnJson);
-                                              
-                                              for (m in audioInfo) { audioInfo[m].isSaved.sqs = false; }
-                                            }
-                                          }
+                                            aws.sns().publish({
+                                                TopicArn: aws.snsTopicArn("rfcx-analysis"),
+                                                Message: JSON.stringify(audioInfo[l])
+                                              }, function(err, data) {
+                                                if (!!err) {
+                                                  console.log(err);
+                                                } else {
+                                                  var isComplete = true;
+                                                    
+                                                  for (n in audioInfo) {
+                                                    if (!audioInfo[n].isSaved.sqs) { isComplete = false; }
+                                                    returnJson.audio.push({
+                                                      id: n,
+                                                      guid: audioInfo[n].audio_id
+                                                    });         
+                                                  }
+                                                  for (o in screenShotInfo) {
+                                                    if (screenShotInfo[o].isSaved) {
+                                                      returnJson.screenshots.push({
+                                                        id: o,
+                                                        guid: null
+                                                      });
+                                                    }         
+                                                  }
+                                                  for (p in messageInfo) {
+                                                    if (messageInfo[p].isSaved) {
+                                                      returnJson.messages.push({
+                                                        id: messageInfo[p].android_id,
+                                                        guid: messageInfo[p].guid
+                                                      });
+                                                    }         
+                                                  }
+                                                  if (isComplete) {
+
+                                                    dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+                                                    dbCheckIn.save();
+
+                                                    if (verbose_logging) { console.log(returnJson); }
+                                                    res.status(200).json(returnJson);
+                                                    
+                                                    for (q in audioInfo) { audioInfo[q].isSaved.sqs = false; }
+                                                  }
+                                                }
+                                            });
+                                            fs.unlink(audioInfo[m].uploadLocalPath,function(e){if(e){console.log(e);}});
+                                            fs.unlink(audioInfo[m].unzipLocalPath,function(e){if(e){console.log(e);}});
+                                            audioInfo[m].isSaved.sqs = true;
+
+                                          }  
+                                        }
+                                      }).catch(function(err){
+                                        console.log("error creating access token for analysis worker | "+err);
+                                        if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
                                       });
-                                      fs.unlink(audioInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
-                                      fs.unlink(audioInfo[l].unzipLocalPath,function(e){if(e){console.log(e);}});
-                                      audioInfo[l].isSaved.sqs = true;
                                     }
                                   }
                                 }
