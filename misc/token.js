@@ -7,12 +7,13 @@ exports.token = {
   /**
 	 * generate an access token, and register in database
 	 *
+   * @param {String} reference_id
    * @param {String} type
 	 * @param {Integer} number_of_uses
-	 * @return {Object} token_guid and token
+	 * @return {Object} tokenInfo
 	 * @api private
 	 */
-  createAuthToken: function(reference_id,type,number_of_uses) {
+  createAuthToken: function(reference_id, type, number_of_uses) {
     var token = hash.randomToken(40),
         salt = hash.randomHash(320),
         tokenHash = hash.hashedCredentials(salt,token),
