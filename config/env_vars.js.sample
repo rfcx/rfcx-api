@@ -2,7 +2,7 @@ exports.env = {
 
   NODE_ENV: "development",
 
-  UPLOAD_CACHE_DIRECTORY: "/tmp/rfcx-api/uploads/",
+  UPLOAD_CACHE_DIRECTORY: process.cwd()+"/tmp/uploads/",
 
   NEW_RELIC_KEY: "",
 
@@ -10,7 +10,6 @@ exports.env = {
   AWS_SECRET_KEY: "",
   AWS_REGION_ID: "",
   AWS_ACCOUNT_ID: "",
-  AWS_S3_BUCKET_AUDIO: "",
 
   RDS_HOSTNAME: "",
   RDS_DB_NAME: "",
@@ -19,8 +18,5 @@ exports.env = {
   RDS_PORT: 3306,
 
   SEQUELIZE_VERBOSE: false
-
-  GUARDIAN_DOWNLOAD_PATH: "https://static.rfcx.org/dl/guardian-android/", 
-  GUARDIAN_UPLOAD_DIRECTORY: "/dl/guardian-android/",
   
 }
