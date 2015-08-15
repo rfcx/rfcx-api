@@ -383,7 +383,21 @@ router.route("/:guardian_id/checkins")
 
                                             aws.sns().publish({
                                                 TopicArn: aws.snsTopicArn("rfcx-analysis"),
-                                                Message: JSON.stringify(audioInfo[l])
+                                                Message: JSON.stringify({
+                                                    guardian_id: audioInfo[m].guardian_id,
+                                                    checkin_id: audioInfo[m].checkin_id,
+                                                    audio_id: audioInfo[m].audio_id,
+                                                    battery_temperature: null,
+                                                    size: audioInfo[m].size,
+                                                    sha1Hash: audioInfo[m].sha1Hash,
+                                                    duration: null,
+                                                    timeStamp: audioInfo[m].timeStamp,
+                                                    measured_at: audioInfo[m].measured_at,
+                                                    api_token_guid: audioInfo[m].api_token_guid,
+                                                    api_token: audioInfo[m].api_token,
+                                                    api_token_expires: audioInfo[m].api_token_expires,
+                                                    s3Path: audioInfo[m].s3Path
+                                                  })
                                               }, function(err, data) {
                                                 if (!!err) {
                                                   console.log(err);
