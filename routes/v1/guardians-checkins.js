@@ -282,11 +282,11 @@ router.route("/:guardian_id/checkins")
             }
 
             // add messages instructions
-            returnJson.instructions.messages.push({
-              body: "Testing "+dbCheckIn.guid,
-              address: "+14153359205",
-              guid: "guid goes here"
-            });
+            // returnJson.instructions.messages.push({
+            //   body: "Testing "+dbCheckIn.guid,
+            //   address: "+14153359205",
+            //   guid: "guid goes here"
+            // });
 
             // save audio files
             if (!!req.files.audio) {
