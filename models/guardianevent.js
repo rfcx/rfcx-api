@@ -65,7 +65,13 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         GuardianEvent.belongsTo(models.Guardian, {as: 'Guardian'});
         GuardianEvent.belongsTo(models.GuardianAudio, {as: 'GuardianAudio'});
-      }
+      },
+      indexes: [
+        {
+          unique: true,
+          fields: ["guid"]
+        }
+      ]
     },
     tableName: "GuardianEvents"
   });

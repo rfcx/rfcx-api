@@ -60,7 +60,13 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         GuardianAudio.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
+      },
+      indexes: [
+        {
+          unique: true,
+          fields: ["guid"]
+        }
+      ]
     },
     tableName: "GuardianAudio"
   });
