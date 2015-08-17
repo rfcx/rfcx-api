@@ -7,19 +7,19 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.UUIDV4,
       unique: true
     },
+    classification: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
     measured_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
         isDate: true
-      }
-    },
-    classification: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: false,
-      validate: {
       }
     },
     duration: {
@@ -46,18 +46,6 @@ module.exports = function(sequelize, DataTypes) {
         isFloat: true,
         min: -180,
         max: 180
-      }
-    },
-    service_key: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
-    incident_key: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
       }
     }
   }, {
