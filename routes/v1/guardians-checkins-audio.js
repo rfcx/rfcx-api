@@ -49,7 +49,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
                         .create({
                           guardian_id: dbGuardian.id, 
                           check_in_id: dbCheckIn.id, 
-                          audio_id: dbGuardianAudio.id, 
+                          audio_id: dbAudio.id, 
                           measured_at: eventTime, 
                           classification: audioEvent.snd_classification, 
                           duration: Math.round(parseFloat(audioEvent.incident_duration)*1000),
