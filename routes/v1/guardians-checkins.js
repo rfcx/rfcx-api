@@ -400,11 +400,9 @@ router.route("/:guardian_id/checkins")
                                                 if (!!snsErr) {
                                                   console.log(snsErr);
                                                 } else {
-
-                                                  console.log(snsData)
-
+                                                  
                                                   var isComplete = true;
-                                                    
+
                                                   for (n in audioInfo) {
                                                     if (!audioInfo[n].isSaved.sqs) { isComplete = false; }
                                                     returnJson.audio.push({
