@@ -396,10 +396,13 @@ router.route("/:guardian_id/checkins")
                                                     api_token_expires: audioInfo[m].api_token_expires,
                                                     s3Path: audioInfo[m].s3Path
                                                   })
-                                              }, function(err, data) {
-                                                if (!!err) {
-                                                  console.log(err);
+                                              }, function(snsErr, snsData) {
+                                                if (!!snsErr) {
+                                                  console.log(snsErr);
                                                 } else {
+
+                                                  console.log(snsData)
+
                                                   var isComplete = true;
                                                     
                                                   for (n in audioInfo) {
