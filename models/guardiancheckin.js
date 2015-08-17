@@ -94,6 +94,8 @@ module.exports = function(sequelize, DataTypes) {
         GuardianCheckIn.hasMany(models.GuardianMetaPower, {as: "MetaPower", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMessage, {as: "Message", foreignKey: "check_in_id"});
 
+        GuardianCheckIn.hasMany(models.GuardianEvent, {as: "Event", foreignKey: "check_in_id"});
+
       },
       indexes: [
         {
