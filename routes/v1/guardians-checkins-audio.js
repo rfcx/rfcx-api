@@ -34,9 +34,11 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
                   
                   var audioEvents = JSON.parse(data);
 
+                  fs.unlink(req.files.json.path,function(e){if(e){console.log(e);}});
+
                   if (audioEvents.length > 0) {
                     console.log(audioEvents.length+" events to be saved...");
-
+                    var savedEvents = [];
                     for (eventInd in audioEvents) {
                       var audioEvent = audioEvents[eventInd];
                       var eventTime = new Date(audioEvent.incident_time.replace(/ /g,"T")+".000Z");
@@ -56,17 +58,19 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
                         }).then(function(dbGuardianEvent){
 
                           console.log("event saved: "+dbGuardianEvent.guid);
+                          savedEvents.push(dbGuardianEvent.guid);
+                          if (savedEvents.length == audioEvents.length) {
+                            res.status(200).json(savedEvents);
+                          }
 
                         }).catch(function(err){
-                          console.log("failed to find or create event | "+err);
+                          console.log("failed to create event | "+err);
+                          res.status(500).json({msg:"failed to create event"});
                         });
-
                     }
-
+                  } else {
+                    res.status(200).json([]);
                   }
-
-                  fs.unlink(req.files.json.path,function(e){if(e){console.log(e);}});
-                  res.status(200).json({msg:"done"});
                 });
 
               }).catch(function(err){
