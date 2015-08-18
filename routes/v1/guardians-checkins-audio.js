@@ -7,7 +7,7 @@ var fs = require("fs");
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
-router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
+router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
   .post(passport.authenticate("token",{session:false}), function(req, res) {
 
     models.Guardian
