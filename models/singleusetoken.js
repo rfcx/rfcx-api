@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var MiscAuthToken = sequelize.define("MiscAuthToken", {
+  var SingleUseToken = sequelize.define("SingleUseToken", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -62,5 +62,5 @@ module.exports = function(sequelize, DataTypes) {
     }
   });
 
-  return MiscAuthToken;
+  return SingleUseToken;
 };

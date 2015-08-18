@@ -3,11 +3,10 @@ var hash = require("../../misc/hash.js").hash;
 
 exports.authWithMiscToken = function(req,token,done,authUser){
 
-  models.MiscAuthToken
+  models.SingleUseToken
     .findOne({ 
       where: {
         guid: authUser.guid,
-        remaining_uses: { $gt: 0 },
   //      auth_token_expires_at: 
       }
     }).then(function(dbToken){

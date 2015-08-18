@@ -13,7 +13,7 @@ exports.token = {
 	 * @return {Object} tokenInfo
 	 * @api private
 	 */
-  createAuthToken: function(reference_id, type, number_of_uses) {
+  createAuthToken: function(reference_id, type) {
     var token = hash.randomToken(40),
         salt = hash.randomHash(320),
         tokenHash = hash.hashedCredentials(salt,token),
@@ -25,13 +25,11 @@ exports.token = {
           };
     
     return new Promise(function(resolve,reject){
-      models.MiscAuthToken
+      models.SingleUseToken
         .create({
           type: type,
-          remaining_uses: number_of_uses,
           auth_token_salt: salt,
           auth_token_hash: tokenHash,
-          auth_token_updated_at: new Date(),
           auth_token_expires_at: new Date()
         }).then(function(dbToken){
           try {
