@@ -26,10 +26,10 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id")
                 dbAudio.save();
 
                 // This is not ideal... currently the python-based analysis sends a JSON array of detected events
-                // in a separate text file. This file must thereby be downloaded into the temporary uploads directory
+                // as a separate text file. This file must therefore be downloaded into the temporary uploads directory
                 // and then opened, parsed, and deleted afterward. It would obviously be better to have this same
                 // JSON array sent along as a string in a POST field instead.
-                fs.readFile(req.files.json.path, 'utf8', function(readFileError, data) {
+                fs.readFile(req.files.json.path, "utf8", function(readFileError, data) {
                   if (readFileError) throw readFileError;
                   
                   var audioEvents = JSON.parse(data);
