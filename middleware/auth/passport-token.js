@@ -1,8 +1,8 @@
 var TokenStrategy = require("passport-accesstoken").Strategy;
 
 var authenticateAs = {
-  Guardian: require("./auth-as-guardian.js").authAsGuardian,
-  MiscToken: require("./auth-as-misc-token.js").authWithMiscToken
+  Guardian: require("./auth-as-guardian.js").authenticateAs,
+  SingleUseToken: require("./auth-with-single-use-token.js").authenticateAs
 };
 
 exports.TokenStrategy = 
@@ -29,8 +29,8 @@ exports.TokenStrategy =
 
         if (authUser.type === "guardian") {
           return authenticateAs.Guardian(req,token,done,authUser);
-        } else if (authUser.type === "worker") {
-          return authenticateAs.MiscToken(req,token,done,authUser);
+        } else if (authUser.type === "single-use") {
+          return authenticateAs.SingleUseToken(req,token,done,authUser);
         } else {
           // to be filled with other types of authenticating types, like Users / Workers, etc
           return done(null, false);

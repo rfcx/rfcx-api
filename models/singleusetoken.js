@@ -13,6 +13,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    only_allow_access_to: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     auth_token_salt: {
       type: DataTypes.STRING,
       allowNull: true,

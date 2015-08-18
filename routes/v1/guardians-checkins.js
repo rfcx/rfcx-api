@@ -202,16 +202,16 @@ router.route("/:guardian_id/checkins")
 
             // if included, update previous checkIn info
             if (json.previous_checkins != null) {
-              var previousCheckIns = json.previous_checkins.split("|"); 
-              for (checkInIndex in previousCheckIns) {
-                var previousCheckIn = previousCheckIns[checkInIndex].split("*");
+              var previousCheckIns = strArrToJSArr(json.previous_checkins,"|","*");
+              for (prvChkInInd in previousCheckIns) {
                 models.GuardianCheckIn
-                  .findAll({ where: { guid: previousCheckIn[0] } })
-                  .spread(function(dPreviousCheckIn){
-                    dPreviousCheckIn.request_latency_guardian = previousCheckIn[1];
+                  .findOne({
+                    where: { guid: previousCheckIns[prvChkInInd][0] }
+                  }).then(function(dPreviousCheckIn){
+                    dPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1];
                     dPreviousCheckIn.save();
                   }).catch(function(err){
-                    console.log("error finding/updating previous checkin id: "+previousCheckIn[0]);
+                    console.log("error finding/updating previous checkin id: "+previousCheckIns[prvChkInInd][0]);
                   });
               }
             }
@@ -373,9 +373,15 @@ router.route("/:guardian_id/checkins")
                                       console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
                                       audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
                                       
-                                      token.createAuthToken(audioInfo[l].audio_id,"analysis").then(function(tokenInfo){
+                                      token.createAuthToken({
+                                        reference_id: audioInfo[l].audio_id,
+                                        token_type: "worker-analysis",
+                                        minutes_until_expiration: 30,
+                                        only_allow_access_to: null
+                                      }).then(function(tokenInfo){
+
                                         for (m in audioInfo) {
-                                          if (audioInfo[m].audio_id == tokenInfo.id) {
+                                          if (audioInfo[m].audio_id == tokenInfo.reference_id) {
 
                                             audioInfo[m].api_token_guid = tokenInfo.token_guid;
                                             audioInfo[m].api_token = tokenInfo.token;

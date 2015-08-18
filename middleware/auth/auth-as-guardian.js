@@ -1,7 +1,7 @@
 var models  = require("../../models");
 var hash = require("../../misc/hash.js").hash;
 
-exports.authAsGuardian = function(req,token,done,authUser){
+exports.authenticateAs = function(req,token,done,authUser){
 
   models.Guardian
     .findOne({ 

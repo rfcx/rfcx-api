@@ -6,7 +6,11 @@ var token = require("../misc/token.js").token;
 // console.log("\n");
 
 
-var another = token.createAuthToken("blah","worker").then(function(tokenInfo){ console.log(tokenInfo); }).done();
+var another = token.createAuthToken({
+                        //  reference_id: "owner_id",
+                          token_type: "worker-analysis",
+                          minutes_until_expiration: 5
+                        }).then(function(tokenInfo){ console.log(tokenInfo); }).done();
 
 // var guid = args[0].trim();
 // console.log("guid: "+guid);
