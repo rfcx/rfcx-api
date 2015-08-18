@@ -2,16 +2,20 @@
 
 module.exports = function(sequelize, DataTypes) {
   var User = sequelize.define("User", {
-    name: {
+    guid: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      unique: true
+    },
+    type: {
       type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
+      allowNull: true,
       validate: {
       }
     },
-    guid: {
+    username: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
       unique: true,
       validate: {
       }
@@ -19,6 +23,12 @@ module.exports = function(sequelize, DataTypes) {
     email: {
       type: DataTypes.STRING,
       allowNull: true,
+      validate: {
+      }
+    },
+    is_email_validated: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
       validate: {
       }
     },

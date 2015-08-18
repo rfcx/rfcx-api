@@ -3,14 +3,20 @@ var args = process.argv.slice(2);
 var hash = require("../misc/hash.js").hash;
 var token = require("../misc/token.js").token;
 
-// console.log("\n");
 
+var reference_id = args[args.indexOf("--reference_id")+1];
+var token_type = args[args.indexOf("--token_type")+1];
+var minutes_until_expiration = args[args.indexOf("--minutes_until_expiration")+1];
+var created_by = args[args.indexOf("--created_by")+1];
 
-var another = token.createAuthToken({
-                        //  reference_id: "owner_id",
-                          token_type: "worker-analysis",
-                          minutes_until_expiration: 5
-                        }).then(function(tokenInfo){ console.log(tokenInfo); }).done();
+var another = token.createSingleUseToken({
+                  reference_id: reference_id,
+                  token_type: token_type,
+                  minutes_until_expiration: parseInt(minutes_until_expiration),
+                  created_by: created_by
+                }).then(function(tokenInfo){
+                  console.log(tokenInfo);
+                }).done();
 
 // var guid = args[0].trim();
 // console.log("guid: "+guid);

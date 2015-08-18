@@ -375,9 +375,10 @@ router.route("/:guardian_id/checkins")
                                       console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
                                       audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
                                       
-                                      token.createAuthToken({
+                                      token.createSingleUseToken({
                                         reference_id: audioInfo[l].audio_id,
                                         token_type: "worker-analysis",
+                                        created_by: "guardian-checkin",
                                         minutes_until_expiration: 30,
                                         only_allow_access_to: null
                                       }).then(function(tokenInfo){

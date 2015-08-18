@@ -19,6 +19,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    created_by: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     auth_token_salt: {
       type: DataTypes.STRING,
       allowNull: true,
