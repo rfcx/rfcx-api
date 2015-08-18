@@ -13,14 +13,6 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    remaining_uses: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
     auth_token_salt: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -33,13 +25,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: true,
       validate: {
-      }
-    },
-    auth_token_updated_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      validate: {
-        isDate: true
       }
     },
     auth_token_expires_at: {

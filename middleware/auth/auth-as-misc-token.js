@@ -21,12 +21,14 @@ exports.authWithMiscToken = function(req,token,done,authUser){
                   name: null
                 };
 
-            console.log("authenticated as "+authUser.type+" using token with token guid "+userObj.guid);
+            console.log("authenticated with single-use token: "+userObj.guid);
 
-            dbToken.remaining_uses = dbToken.remaining_uses - 1;
-            dbToken.save();
-
-            return done(null,userObj);
+            dbToken.destroy().then(function(){
+              return done(null,userObj);
+            }).catch(function(err){
+              console.log("failed to delete single-use token, but proceeding with login anyway... | "+err);
+              return done(null,userObj);
+            });
 
       } else {
         console.log("failed to match token with salted hash");
