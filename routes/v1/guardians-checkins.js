@@ -45,6 +45,8 @@ router.route("/:guardian_id/checkins")
               measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
               guardian_skipped_checkins: parseInt(json.skipped_checkins),
+              location_latitude: 3.6141375, // this needs to be a real values from the guardian, or otherwise...
+              location_longitude: 14.2108033, // this needs to be a real values from the guardian, or otherwise...
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
             console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+versionJson.api+")");
@@ -394,12 +396,13 @@ router.route("/:guardian_id/checkins")
                                                     checkin_id: audioInfo[m].checkin_id,
                                                     audio_id: audioInfo[m].audio_id,
                                                     sha1Hash: audioInfo[m].sha1Hash,
-                                                    latLng: [ 3.6141375, 14.2108033 ],
+                                                    latLng: [ dbCheckIn.location_latitude, dbCheckIn.location_longitude ],
                                                     timeStamp: audioInfo[m].timeStamp,
                                                     measured_at: audioInfo[m].measured_at,
                                                     api_token_guid: audioInfo[m].api_token_guid,
                                                     api_token: audioInfo[m].api_token,
                                                     api_token_expires: audioInfo[m].api_token_expires,
+                                                    audioUrl: aws.s3SignedUrl("rfcx-ark", audioInfo[m].s3Path, 30),
                                                     s3Path: audioInfo[m].s3Path
                                                   })
                                               }, function(snsErr, snsData) {
