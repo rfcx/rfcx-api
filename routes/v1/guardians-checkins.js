@@ -156,13 +156,13 @@ router.route("/:guardian_id/checkins")
 
             // template for json return... to be populated as we progress
             var returnJson = {
-              checkin_id: dbCheckIn.guid,
-              audio: [],
-              screenshots: [],
-              messages: [],
+              checkin_id: dbCheckIn.guid, // unique guid of the check-in
+              audio: [], // array of audio files successfully ingested
+              screenshots: [], // array of screenshot images successfully ingested
+              messages: [], // array of sms messages successfully ingested
               instructions: {
                 prefs: {},
-                messages: []
+                messages: [] // array of sms messages that the guardian should send
               }
             };
 
@@ -269,7 +269,7 @@ router.route("/:guardian_id/checkins")
 
                   } else {
                     // even if checksum fails, we still (at least for now) want
-                    // to direct to the guardian to delete the screenshot and move on
+                    // to instruct to the guardian to delete the screenshot and move on
                     screenShotInfo[j].isSaved = true;
                     fs.unlink(screenShotInfo[j].uploadLocalPath,function(e){if(e){console.log(e);}});
                   }
