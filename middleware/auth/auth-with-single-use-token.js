@@ -23,12 +23,12 @@ exports.authenticateAs = function(req,token,done,authUser){
 
             console.log("authenticated with single-use token: "+userObj.guid);
 
-      //      dbToken.destroy().then(function(){
+           dbToken.destroy().then(function(){
               return done(null,userObj);
-      //      }).catch(function(err){
-      //        console.log("failed to delete single-use token, but proceeding with login anyway... | "+err);
-      //        return done(null,userObj);
-      //      });
+           }).catch(function(err){
+             console.log("failed to delete single-use token, but proceeding with login anyway... | "+err);
+             return done(null,userObj);
+           });
 
       } else {
         console.log("failed to match token with salted hash");
