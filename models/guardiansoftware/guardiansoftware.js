@@ -9,35 +9,15 @@ module.exports = function(sequelize, DataTypes) {
         isIn: [["installer", "updater", "cycle", "system", "audio", "connect", "api", "carrier", "hardware", "guardian", "spectrogram" ]], 
       }
     },
-    number: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-      }
-    },
-    release_date: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      validate: {
-        isDate: true
-      }
-    },
-    
     is_available: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       validate: {
       }
     },
-    sha1_checksum: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
-    url: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    is_updatable: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
       validate: {
       }
     }

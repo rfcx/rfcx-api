@@ -29,7 +29,7 @@ exports.views = {
         }
       };
 
-      if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
+//      if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
 
       jsonArray.push(guardian);
     }
@@ -64,7 +64,7 @@ exports.views = {
       };
 
       if (dbRow.Guardian != null) { checkIn.guardian = this.guardian(req,res,dbRow.Guardian)[0]; }
-      if (dbRow.Version != null) { checkIn.software_version = dbRow.Version.number; }
+//      if (dbRow.Version != null) { checkIn.software_version = dbRow.Version.number; }
       if (dbRow.Audio != null) { checkIn.audio = this.guardianAudio(req,res,dbRow.Audio); }
       if (dbRow.Messages != null) { checkIn.messages = this.guardianMessages(req,res,dbRow.Messages); }
 
@@ -308,10 +308,10 @@ exports.views = {
 
       var software = {
         role: dbRow.role,
-        version: dbRow.number,
-        released: dbRow.release_date.toISOString(),
-        sha1: dbRow.sha1_checksum,
-        url: dbRow.url
+        version: null,
+        released: null,
+        sha1: null,
+        url: null
       };
 
       if (dbRow.CurrentVersion != null) {

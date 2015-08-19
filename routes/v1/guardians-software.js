@@ -32,29 +32,33 @@ router.route("/:guardian_id/software/:software_role/latest")
 
         models.GuardianMetaUpdateCheckIn.create({
           guardian_id: dbGuardian.id,
-          version_id: dbGuardian.version_id
+ //         version_id: dbGuardian.version_id
         }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
+
+        var dbSearchFilter = { is_available: true };
+        if (softwareRole === "all") {
+          dbSearchFilter.is_updatable = true;
+       }  else {
+          dbSearchFilter.role = softwareRole;
+        }
 
         models.GuardianSoftware
           .findAll({
-            where: { is_available: true },
+            where: dbSearchFilter,
             include: [ { all: true } ], 
-            order: [ ["release_date", "DESC"] ]
+            order: [ ["current_version_id", "ASC"] ]
           }).then(function(dSoftware){
 
-            var roles = [], outputArray = [],
-              excludeUnlessSpecified = ["guardian", "sentinel", "carrier", "cputuner","spectrogram"];
+            var outputArray = [];
             
             for (i in dSoftware) {
-              if (
-                  (roles.indexOf(dSoftware[i].role) == -1)
-                  &&  (   ((softwareRole === "all") && (excludeUnlessSpecified.indexOf(dSoftware[i].role) == -1))
-                      ||  (softwareRole === dSoftware[i].role)
-                      )
-              ) {
-                roles.push(dSoftware[i].role);
+              // console.log(dSoftware[i].role+" - "+dSoftware[i].is_updatable);
+              // if (  (softwareRole === "all") && (dSoftware[i].is_updatable)
+              //       ||  (softwareRole === dSoftware[i].role)
+                      
+              // ) {
                 outputArray.push(dSoftware[i]);
-              }
+              // }
             }
 
             res.status(200).json(views.guardianSoftware(req,res,outputArray));
