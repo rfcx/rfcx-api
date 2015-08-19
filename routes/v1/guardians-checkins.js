@@ -408,11 +408,12 @@ router.route("/:guardian_id/checkins")
                                                   })
                                               }, function(snsErr, snsData) {
 
-                                                console.log(snsData);
-
                                                 if (!!snsErr) {
                                                   console.log(snsErr);
                                                 } else {
+
+                                                  dbAudio.analysis_aws_queue_id = snsData.MessageId;
+                                                  dbAudio.save();
                                                   
                                                   var isComplete = true;
 
