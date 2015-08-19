@@ -407,6 +407,9 @@ router.route("/:guardian_id/checkins")
                                                     s3Path: audioInfo[m].s3Path
                                                   })
                                               }, function(snsErr, snsData) {
+
+                                                console.log(snsData);
+
                                                 if (!!snsErr) {
                                                   console.log(snsErr);
                                                 } else {

@@ -50,8 +50,10 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    analysis_sqs_msg_id: {
-      type: DataTypes.STRING,
+    analysis_aws_queue_id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      unique: false,
       allowNull: true,
       validate: {
       }
