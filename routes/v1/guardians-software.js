@@ -31,14 +31,14 @@ router.route("/:guardian_id/software/:software_role/latest")
         dbGuardian.save();
 
         models.GuardianMetaUpdateCheckIn.create({
-          guardian_id: dbGuardian.id,
- //         version_id: dbGuardian.version_id
+ //       version_id: dbGuardian.version_id,
+          guardian_id: dbGuardian.id
         }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
 
         var dbSearchFilter = { is_available: true };
         if (softwareRole === "all") {
           dbSearchFilter.is_updatable = true;
-       }  else {
+        }  else {
           dbSearchFilter.role = softwareRole;
         }
 
@@ -49,19 +49,7 @@ router.route("/:guardian_id/software/:software_role/latest")
             order: [ ["current_version_id", "ASC"] ]
           }).then(function(dSoftware){
 
-            var outputArray = [];
-            
-            for (i in dSoftware) {
-              // console.log(dSoftware[i].role+" - "+dSoftware[i].is_updatable);
-              // if (  (softwareRole === "all") && (dSoftware[i].is_updatable)
-              //       ||  (softwareRole === dSoftware[i].role)
-                      
-              // ) {
-                outputArray.push(dSoftware[i]);
-              // }
-            }
-
-            res.status(200).json(views.guardianSoftware(req,res,outputArray));
+            res.status(200).json(views.guardianSoftware(req,res,dSoftware));
 
           }).catch(function(err){
             res.status(500).json({msg:"error finding latest software versions | "+err});

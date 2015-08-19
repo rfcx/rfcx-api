@@ -4,34 +4,34 @@ var hash = require("../misc/hash.js").hash;
 var token = require("../misc/token.js").token;
 
 
-var reference_id = args[args.indexOf("--reference_id")+1];
-var token_type = args[args.indexOf("--token_type")+1];
-var minutes_until_expiration = args[args.indexOf("--minutes_until_expiration")+1];
-var created_by = args[args.indexOf("--created_by")+1];
+// var reference_id = args[args.indexOf("--reference_id")+1];
+// var token_type = args[args.indexOf("--token_type")+1];
+// var minutes_until_expiration = args[args.indexOf("--minutes_until_expiration")+1];
+// var created_by = args[args.indexOf("--created_by")+1];
 
-var another = token.createSingleUseToken({
-                  reference_id: reference_id,
-                  token_type: token_type,
-                  minutes_until_expiration: parseInt(minutes_until_expiration),
-                  created_by: created_by
-                }).then(function(tokenInfo){
-                  console.log(tokenInfo);
-                }).done();
+// var another = token.createSingleUseToken({
+//                   reference_id: reference_id,
+//                   token_type: token_type,
+//                   minutes_until_expiration: parseInt(minutes_until_expiration),
+//                   created_by: created_by
+//                 }).then(function(tokenInfo){
+//                   console.log(tokenInfo);
+//                 }).done();
 
-// var guid = args[0].trim();
-// console.log("guid: "+guid);
+var guid = args[0].trim();
+console.log("guid: "+guid);
 
-// var token = args[1].trim();
-// console.log("token: "+token);
+var token = args[1].trim();
+console.log("token: "+token);
 
-// var salt = hash.randomHash(320);
-// console.log("salt: "+salt);
+var salt = hash.randomHash(320);
+console.log("salt: "+salt);
 
-// var newHash = hash.hashedCredentials(salt,token);
-// console.log("hash: "+newHash);
+var newHash = hash.hashedCredentials(salt,token);
+console.log("hash: "+newHash);
 
-// console.log("\n");
+console.log("\n");
 
-// console.log("UPDATE Guardians SET auth_token_salt='"+salt+"', auth_token_hash='"+newHash+"', auth_token_updated_at=NOW(), auth_token_expires_at=NOW() WHERE guid='"+guid+"';");
+console.log("UPDATE Guardians SET auth_token_salt='"+salt+"', auth_token_hash='"+newHash+"', auth_token_updated_at=NOW(), auth_token_expires_at=NOW() WHERE guid='"+guid+"';");
 
-// console.log("\n");
+console.log("\n");
