@@ -45,7 +45,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-        GuardianSoftware.hasMany(models.GuardianSoftwareVersion, {as: "Versions", foreignKey: "software_role_id"});
+        GuardianSoftware.belongsTo(models.GuardianSoftwareVersion, {as: "CurrentVersion", foreignKey: "current_version_id"});
       }
     },
     tableName: "GuardianSoftware"

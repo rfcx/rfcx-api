@@ -314,11 +314,11 @@ exports.views = {
         url: dbRow.url
       };
 
-      if (dbRow.Versions.length > 0) {
-        software.version = dbRow.Versions[0].version;
-        software.released = dbRow.Versions[0].release_date.toISOString();
-        software.sha1 = dbRow.Versions[0].sha1_checksum;
-        software.url = dbRow.Versions[0].url;
+      if (dbRow.CurrentVersion != null) {
+        software.version = dbRow.CurrentVersion.version;
+        software.released = dbRow.CurrentVersion.release_date.toISOString();
+        software.sha1 = dbRow.CurrentVersion.sha1_checksum;
+        software.url = dbRow.CurrentVersion.url;
       }
 
       jsonArray.push(software);

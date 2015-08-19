@@ -28,15 +28,22 @@ exports.TokenStrategy =
           }
         }
 
-        if (authUser.type === "guardian") {
-          return authenticateAs.Guardian(req,token,done,authUser);
-        } else if (authUser.type === "user") {
-          return authenticateAs.User(req,token,done,authUser);
-        } else if (authUser.type === "single-use") {
-          return authenticateAs.SingleUseToken(req,token,done,authUser);
-        } else {
-          // to be filled with other types of authenticating types, like Users / Workers, etc
-          return done(null, false);
+        switch(authUser.type) {
+
+          case "guardian":
+            return authenticateAs.Guardian(req,token,done,authUser);
+            break;
+
+          case "user":
+            return authenticateAs.User(req,token,done,authUser);
+            break;
+          
+          case "single-use":
+            return authenticateAs.SingleUseToken(req,token,done,authUser);
+            break;
+          
+          default:
+            return done(null, false)
         }
 
     });
