@@ -43,7 +43,7 @@ router.route("/:guardian_id/software/:software_role/latest")
           }).then(function(dSoftware){
 
             var roles = [], outputArray = [],
-              excludeUnlessSpecified = ["guardian", "cputuner","spectrogram"];
+              excludeUnlessSpecified = ["guardian", "sentinel", "carrier", "cputuner","spectrogram"];
             
             for (i in dSoftware) {
               if (
