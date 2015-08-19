@@ -306,13 +306,22 @@ exports.views = {
 
       var dbRow = dbSoftware[i];
 
-      jsonArray.push({
+      var software = {
         role: dbRow.role,
         version: dbRow.number,
         released: dbRow.release_date.toISOString(),
         sha1: dbRow.sha1_checksum,
         url: dbRow.url
-      });
+      };
+
+      if (dbRow.Versions.length > 0) {
+        software.version = dbRow.Versions[0].version;
+        software.released = dbRow.Versions[0].release_date.toISOString();
+        software.sha1 = dbRow.Versions[0].sha1_checksum;
+        software.url = dbRow.Versions[0].url;
+      }
+
+      jsonArray.push(software);
     }
     return jsonArray;
   

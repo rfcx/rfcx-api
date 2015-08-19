@@ -38,6 +38,7 @@ router.route("/:guardian_id/software/:software_role/latest")
         models.GuardianSoftware
           .findAll({
             where: { is_available: true },
+            include: [ { all: true } ], 
             order: [ ["release_date", "DESC"] ]
           }).then(function(dSoftware){
 

@@ -1,15 +1,8 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var GuardianSoftware = sequelize.define("GuardianSoftware", {
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        isIn: [["installer", "updater", "cycle", "system", "audio", "connect", "api", "carrier", "hardware", "guardian", "spectrogram" ]], 
-      }
-    },
-    number: {
+  var GuardianSoftwareVersion = sequelize.define("GuardianSoftwareVersion", {
+    version: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -22,7 +15,6 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
-    
     is_available: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -47,8 +39,8 @@ module.exports = function(sequelize, DataTypes) {
         // associations can be defined here
       }
     },
-    tableName: "GuardianSoftware"
+    tableName: "GuardianSoftwareVersions"
   });
 
-  return GuardianSoftware;
+  return GuardianSoftwareVersion;
 };
