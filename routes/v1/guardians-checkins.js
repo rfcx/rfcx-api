@@ -347,12 +347,7 @@ router.route("/:guardian_id/checkins")
                     if (audioInfo[j].sha1Hash === audioInfo[j].guardianSha1Hash) {
 
                       // test exiftool
-                      fs.readFile(audioInfo[j].unzipLocalPath,
-                        [ "-audioSampleRate", 
-                          "-avgBitrate", 
-                          "-audioFormat", 
-                          "-duration"
-                        ],function(err,audioFileData){
+                      fs.readFile(audioInfo[j].unzipLocalPath,function(err,audioFileData){
                         if (!!err) {
                           console.log(err);
                         } else {
@@ -360,7 +355,12 @@ router.route("/:guardian_id/checkins")
                             if (!!err) {
                               console.log(err);
                             } else {
-                              console.log(audioFileExifData);
+                              console.log(
+                                audioFileExifData.avgBitrate+" - "
+                                +audioFileExifData.audioSampleRate+" - "
+                                +audioFileExifData.audioFormat+" - "
+                                +audioFileExifData.duration
+                                );
                             }
                           });
                         }
