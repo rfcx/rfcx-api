@@ -5,6 +5,7 @@ var router = express.Router();
 var querystring = require("querystring");
 var fs = require("fs");
 var zlib = require("zlib");
+var exifTool = require("exiftool");
 var util = require("util");
 var hash = require("../../misc/hash.js").hash;
 var token = require("../../misc/token.js").token;
@@ -344,6 +345,22 @@ router.route("/:guardian_id/checkins")
                     audioInfo[j].size = fs.statSync(audioInfo[j].unzipLocalPath).size;
                     // compare to checksum received from guardian
                     if (audioInfo[j].sha1Hash === audioInfo[j].guardianSha1Hash) {
+
+                      // test exiftool
+                      fs.readFile(audioInfo[j].unzipLocalPath,function(err,audioFileData){
+                        if (!!err) {
+                          console.log(err);
+                        } else {
+                          exifTool.metadata(audioFileData,function(err,audioFileExifData){
+                            if (!!err) {
+                              console.log(err);
+                            } else {
+                              console.log(audioFileExifData);
+                            }
+                          });
+                        }
+                      });
+
                       // if it matches, add the audio to the database
                       models.GuardianAudio.create({
                         guardian_id: dbGuardian.id,
