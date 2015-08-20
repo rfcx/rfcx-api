@@ -49,7 +49,6 @@ router.route("/:guardian_id/checkins")
               location_longitude: 14.2108033, // this needs to be a real values from the guardian, or otherwise...
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
-            console.log("check-in: "+dbCheckIn.guid+" (guardian: "+dbGuardian.guid+") (version: "+versionJson.api+")");
 
             // save guardian meta data
 
@@ -291,6 +290,12 @@ router.route("/:guardian_id/checkins")
             //   guid: "guid goes here"
             // });
 
+            console.log("check-in: "+dbCheckIn.guid+", "
+                        +"guardian: "+dbGuardian.guid+", "
+                        +"version: "+versionJson.api+", "
+                        );
+
+
             // save audio files
             if (!!req.files.audio) {
               if (!util.isArray(req.files.audio)) { req.files.audio = [req.files.audio]; }
@@ -359,8 +364,6 @@ router.route("/:guardian_id/checkins")
                             audioInfo[k].isSaved.db = true;
                             audioInfo[k].audio_id = dbAudio.guid;
 
-                            console.log("uploading audio to s3: "+audioInfo[k].audio_id);
-
                             aws.s3("rfcx-ark").putFile(
                               audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 
                               function(err, s3Res){
@@ -372,7 +375,6 @@ router.route("/:guardian_id/checkins")
                                     if (s3Res.req.url.indexOf(audioInfo[l].s3Path) >= 0) {
                                       audioInfo[l].isSaved.s3 = true;
 
-                                      console.log("adding job to sns/sqs ingestion queue: "+audioInfo[l].audio_id);
                                       audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
                                       
                                       token.createSingleUseToken({
@@ -411,6 +413,8 @@ router.route("/:guardian_id/checkins")
                                                 if (!!snsErr) {
                                                   console.log(snsErr);
                                                 } else {
+
+                                                  console.log("audio: "+audioInfo[l].audio_id+" (sqs: "+snsData.MessageId+")");
 
                                                   dbAudio.analysis_aws_queue_id = snsData.MessageId;
                                                   dbAudio.save();
