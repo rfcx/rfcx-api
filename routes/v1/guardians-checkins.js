@@ -318,7 +318,7 @@ router.route("/:guardian_id/checkins")
                     unzipLocalPath: req.files.audio[i].path.substr(0,req.files.audio[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
                     size: null, // to be calculated following the uncompression
                     sha1Hash: null, // to be calculated following the uncompression
-                    duration: (audioMeta[i].length >= 5) ? parseInt(audioMeta[i][4]) : null,
+                    duration: null,
                     timeStamp: timeStamp,
                     measured_at: audioMeta[i][1],
                     api_token_guid: null,
@@ -351,7 +351,7 @@ router.route("/:guardian_id/checkins")
                         sha1_checksum: audioInfo[j].sha1Hash,
                         url: "s3://rfcx-ark"+audioInfo[j].s3Path,
                         size: audioInfo[j].size,
-                        length: audioInfo[j].duration,
+                        duration: audioInfo[j].duration,
                         measured_at: audioInfo[j].measured_at
                       }).then(function(dbAudio){
                         // because the callback is asynchronous...

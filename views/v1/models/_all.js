@@ -97,7 +97,7 @@ exports.views = {
         measured_at: dbRow.measured_at,
         analyzed_at: dbRow.analyzed_at,
         size: dbRow.size,
-        length: dbRow.length,
+        duration: dbRow.duration,
         sha1_checksum: dbRow.sha1_checksum,
         url: req.rfcx.api_url+"/v1/audio/"+dbRow.guid+"."+dbRow.url.substr(1+dbRow.url.lastIndexOf(".")),
 //        guardian: this.guardian(req,res,dbRow.Guardian),
