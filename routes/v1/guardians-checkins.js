@@ -356,10 +356,12 @@ router.route("/:guardian_id/checkins")
                               console.log(err);
                             } else {
                               console.log(
-                                Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0," kbps"))*1000)+" - "
+                                Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000)+" - "
                                 +parseInt(audioFileExifData.audioSampleRate)+" - "
                                 +audioFileExifData.audioFormat+" - "
-                              //  +audioFileExifData.duration.split(":")
+                                +parseInt(audioFileExifData.duration.split(":")[0])
+                                  +"-"+parseInt(audioFileExifData.duration.split(":")[1])
+                                  +"-"+parseInt(audioFileExifData.duration.split(":")[2])
                                 );
                             }
                           });
