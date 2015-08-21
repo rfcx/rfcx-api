@@ -358,9 +358,26 @@ router.route("/:guardian_id/checkins")
                       }).then(function(dbAudio){
                         // because the callback is asynchronous...
                         // cycle through all uploaded audio options and match the checksum
-                        // ...in order to refind our place
+                        // ...in order to re-find our place
                         for (k in audioInfo) {
                           if (audioInfo[k].sha1Hash === dbAudio.sha1_checksum) {
+
+                            // parse exif data from file and save to db
+                            fs.readFile(audioInfo[k].unzipLocalPath,function(err,audioFileData){
+                              if (!!err) { throw err;
+                              } else {
+                                exifTool.metadata(audioFileData,function(err,audioFileExifData){
+                                  if (!!err) { throw err;
+                                  } else {
+                                    dbAudio.duration = (((parseInt(audioFileExifData.duration.split(":")[0])*3600)+(parseInt(audioFileExifData.duration.split(":")[1])*60)+parseInt(audioFileExifData.duration.split(":")[2]))*1000);
+                                    dbAudio.capture_format = audioFileExifData.audioFormat;
+                                    dbAudio.capture_bitrate = Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000);
+                                    dbAudio.capture_sample_rate = parseInt(audioFileExifData.audioSampleRate);
+                                    dbAudio.save();
+                                  }
+                                });
+                              }
+                            });
                             
                             // inform other async processes that this one has been saved to database
                             audioInfo[k].isSaved.db = true;
@@ -419,23 +436,6 @@ router.route("/:guardian_id/checkins")
                                                   console.log("audio: "+audioInfo[l].audio_id+" (sqs: "+snsData.MessageId+")");
 
                                                   dbAudio.analysis_aws_queue_id = snsData.MessageId;
-                                                  
-                                                  // parse exif data from file
-                                                  fs.readFile(audioInfo[l].unzipLocalPath,function(err,audioFileData){
-                                                    if (!!err) { throw err;
-                                                    } else {
-                                                      exifTool.metadata(audioFileData,function(err,audioFileExifData){
-                                                        if (!!err) { throw err;
-                                                        } else {
-                                                          dbAudio.duration = (((parseInt(audioFileExifData.duration.split(":")[0])*3600)+(parseInt(audioFileExifData.duration.split(":")[1])*60)+parseInt(audioFileExifData.duration.split(":")[2]))*1000);
-                                                          dbAudio.capture_format = audioFileExifData.audioFormat;
-                                                          dbAudio.capture_bitrate = Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000);
-                                                          dbAudio.capture_sample_rate = parseInt(audioFileExifData.audioSampleRate);
-                                                          dbAudio.save();
-                                                        }
-                                                      });
-                                                    }
-                                                  });
                                                   
                                                   var isComplete = true;
 
