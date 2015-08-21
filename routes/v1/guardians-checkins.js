@@ -346,30 +346,6 @@ router.route("/:guardian_id/checkins")
                     // compare to checksum received from guardian
                     if (audioInfo[j].sha1Hash === audioInfo[j].guardianSha1Hash) {
 
-                      // test exiftool
-                      fs.readFile(audioInfo[j].unzipLocalPath,function(err,audioFileData){
-                        if (!!err) {
-                          console.log(err);
-                        } else {
-                          exifTool.metadata(audioFileData,function(err,audioFileExifData){
-                            if (!!err) {
-                              console.log(err);
-                            } else {
-                              console.log(
-                                Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000)+" - "
-                                +parseInt(audioFileExifData.audioSampleRate)+" - "
-                                +audioFileExifData.audioFormat+" - "
-                                +((
-                                  (parseInt(audioFileExifData.duration.split(":")[0])*3600)
-                                  +(parseInt(audioFileExifData.duration.split(":")[1])*60)
-                                  +parseInt(audioFileExifData.duration.split(":")[2])
-                                  )*1000)
-                                );
-                            }
-                          });
-                        }
-                      });
-
                       // if it matches, add the audio to the database
                       models.GuardianAudio.create({
                         guardian_id: dbGuardian.id,
@@ -443,7 +419,23 @@ router.route("/:guardian_id/checkins")
                                                   console.log("audio: "+audioInfo[l].audio_id+" (sqs: "+snsData.MessageId+")");
 
                                                   dbAudio.analysis_aws_queue_id = snsData.MessageId;
-                                                  dbAudio.save();
+                                                  
+                                                  // parse exif data from file
+                                                  fs.readFile(audioInfo[l].unzipLocalPath,function(err,audioFileData){
+                                                    if (!!err) { throw err;
+                                                    } else {
+                                                      exifTool.metadata(audioFileData,function(err,audioFileExifData){
+                                                        if (!!err) { throw err;
+                                                        } else {
+                                                          dbAudio.duration = (((parseInt(audioFileExifData.duration.split(":")[0])*3600)+(parseInt(audioFileExifData.duration.split(":")[1])*60)+parseInt(audioFileExifData.duration.split(":")[2]))*1000);
+                                                          dbAudio.capture_format = audioFileExifData.audioFormat;
+                                                          dbAudio.capture_bitrate = Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000);
+                                                          dbAudio.capture_sample_rate = parseInt(audioFileExifData.audioSampleRate);
+                                                          dbAudio.save();
+                                                        }
+                                                      });
+                                                    }
+                                                  });
                                                   
                                                   var isComplete = true;
 
