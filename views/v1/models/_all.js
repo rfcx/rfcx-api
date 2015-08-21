@@ -1,5 +1,6 @@
 var util = require("util");
 var aws = require("../../../misc/aws.js").aws();
+var https = require("https");
 
 exports.views = {
 
@@ -90,7 +91,16 @@ exports.views = {
 
     for (i in dbAudio) {
 
-      var dbRow = dbAudio[i];
+      var dbRow = dbAudio[i],
+        audioFileExtension = dbRow.url.substr(1+dbRow.url.lastIndexOf(".")),
+        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
+        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
+        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+        linkExpirationInMinutes = 30,
+        s3SignedUrl = aws.s3SignedUrl(s3Bucket, s3Path, linkExpirationInMinutes),
+        audioFileUrlExpiresAt = new Date((new Date()).valueOf()+(1000*60*linkExpirationInMinutes)),
+        audioFileUrlParams = s3SignedUrl.substr(s3SignedUrl.indexOf("?"))
+        ;
 
       var audio = {
         guid: dbRow.guid,
@@ -99,7 +109,8 @@ exports.views = {
         size: dbRow.size,
         duration: dbRow.duration,
         sha1_checksum: dbRow.sha1_checksum,
-        url: req.rfcx.api_url+"/v1/audio/"+dbRow.guid+"."+dbRow.url.substr(1+dbRow.url.lastIndexOf(".")),
+        url: req.rfcx.api_url+"/v1/audio/"+dbRow.guid+"."+audioFileExtension+audioFileUrlParams,
+        url_expires_at: audioFileUrlExpiresAt,
 //        guardian: this.guardian(req,res,dbRow.Guardian),
 //        checkin: ,
         events: []
@@ -119,16 +130,27 @@ exports.views = {
     var dbRow = dbAudio,
         s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
+        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+        url = "https://"+s3Bucket+".s3-"+process.env.AWS_REGION_ID+".amazonaws.com"+s3Path,
+        urlAccessParams = "?Expires="+req.query.Expires+"&AWSAccessKeyId="+req.query.AWSAccessKeyId+"&Signature="+req.query.Signature
+        ;
 
-      aws.s3(s3Bucket).getFile(s3Path, function(err, result){
-        if(err) { return next(err); }   
+    https.get(url+urlAccessParams,function(result){
+      res.setHeader("Content-disposition", "filename="+dbRow.guid+s3Path.substr(s3Path.lastIndexOf(".")));
+      res.setHeader("Content-type", "audio/mp4");
+      result.pipe(res);
+    }).on("error",function(err){
+      console.error(err);
+    });
 
-        res.setHeader("Content-disposition", "filename="+dbRow.guid+s3Path.substr(s3Path.lastIndexOf(".")));
-        res.setHeader("Content-type", "audio/mp4");
+      // aws.s3(s3Bucket).getFile(s3Path, function(err, result){
+      //   if(err) { return next(err); }   
 
-        result.pipe(res);           
-      });
+      //   res.setHeader("Content-disposition", "filename="+dbRow.guid+s3Path.substr(s3Path.lastIndexOf(".")));
+      //   res.setHeader("Content-type", "audio/mp4");
+
+      //   result.pipe(res);           
+      // });
   },
 
   guardianMetaCPU: function(req,res,dbCPU) {
