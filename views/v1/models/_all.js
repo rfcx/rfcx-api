@@ -132,7 +132,9 @@ exports.views = {
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
         s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
         url = "https://"+s3Bucket+".s3-"+process.env.AWS_REGION_ID+".amazonaws.com"+s3Path,
-        urlAccessParams = "?Expires="+req.query.Expires+"&AWSAccessKeyId="+req.query.AWSAccessKeyId+"&Signature="+req.query.Signature
+        urlAccessParams = "?Expires="+req.query.Expires
+                          +"&AWSAccessKeyId="+req.query.AWSAccessKeyId
+                          +"&Signature="+req.query.Signature
         ;
 
     https.get(url+urlAccessParams,function(result){

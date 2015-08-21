@@ -22,9 +22,16 @@ exports.middleware = {
     var authUser = { header: null, query: null, body: null };
     if (req.headers["x-auth-user"] != null) { authUser.header = req.headers["x-auth-user"]; }
     if (req.query["auth_user"] != null) { authUser.query = req.query["auth_user"]; }
+    if (req.body["auth_user"] != null) { authUser.body = req.body["auth_user"]; }
+
+    var apiVersion = { header: null, query: null, body: null };
+    if (req.headers["x-rfcx-version"] != null) { apiVersion.header = req.headers["x-rfcx-version"]; }
+    if (req.query["rfcx_version"] != null) { apiVersion.query = req.query["rfcx_version"]; }
+    if (req.body["rfcx_version"] != null) { apiVersion.body = req.body["rfcx_version"]; }
 
     req.rfcx = {
       api_url: apiUrl,
+      api_version: apiVersion,
       count: paramCount,
       offset: paramOffset,
       before_timestamp: paramBefore,
