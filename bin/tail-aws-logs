@@ -1,0 +1,11 @@
+#!/usr/bin/expect
+
+set timeout 120
+set instance_number [lindex $argv 0]
+spawn eb ssh rfcx-api-production
+match_max 100000
+expect "*?default is 1)*"
+send -- "$instance_number\r"
+expect "*?ec2-user@ip"
+send -- "tail -f /var/log/nodejs/nodejs.log\r"
+expect eof
