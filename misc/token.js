@@ -61,6 +61,7 @@ exports.token = {
           auth_token_expires_at: expires_at,
           only_allow_access_to: only_allow_access_to,
           max_uses: max_uses,
+          remaining_uses: max_uses,
           created_by: created_by
         }).then(function(dbToken){
           try {

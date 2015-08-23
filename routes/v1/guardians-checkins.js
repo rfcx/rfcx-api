@@ -401,7 +401,8 @@ router.route("/:guardian_id/checkins")
                                         token_type: "worker-analysis",
                                         created_by: "guardian-checkin",
                                         minutes_until_expiration: 30,
-                                        only_allow_access_to: null
+                                        max_uses: 1,
+                                        only_allow_access_to: null // might as well make this super specific... eventually
                                       }).then(function(tokenInfo){
 
                                         for (m in audioInfo) {
