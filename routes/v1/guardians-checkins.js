@@ -396,7 +396,7 @@ router.route("/:guardian_id/checkins")
 
                                       audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
                                       
-                                      token.createSingleUseToken({
+                                      token.createAnonymousToken({
                                         reference_id: audioInfo[l].audio_id,
                                         token_type: "worker-analysis",
                                         created_by: "guardian-checkin",

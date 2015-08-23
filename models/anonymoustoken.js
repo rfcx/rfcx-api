@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var SingleUseToken = sequelize.define("SingleUseToken", {
+  var AnonymousToken = sequelize.define("AnonymousToken", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -17,6 +17,22 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
+      }
+    },
+    max_uses: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
+      validate: {
+        isInt: true,
+        min: 1
+      }
+    },
+    remaining_uses: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        isInt: true,
+        min: 0
       }
     },
     created_by: {
@@ -59,5 +75,5 @@ module.exports = function(sequelize, DataTypes) {
     }
   });
 
-  return SingleUseToken;
+  return AnonymousToken;
 };

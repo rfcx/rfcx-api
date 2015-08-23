@@ -3,7 +3,7 @@ var TokenStrategy = require("passport-accesstoken").Strategy;
 var authenticateAs = {
   Guardian: require("./auth-as-guardian.js").authenticateAs,
   User: require("./auth-as-user.js").authenticateAs,
-  SingleUseToken: require("./auth-with-single-use-token.js").authenticateAs
+  AnonymousToken: require("./auth-with-anonymous-token.js").authenticateAs
 };
 
 exports.TokenStrategy = 
@@ -38,8 +38,8 @@ exports.TokenStrategy =
             return authenticateAs.User(req,token,done,authUser);
             break;
           
-          case "single-use":
-            return authenticateAs.SingleUseToken(req,token,done,authUser);
+          case "token":
+            return authenticateAs.AnonymousToken(req,token,done,authUser);
             break;
           
           default:

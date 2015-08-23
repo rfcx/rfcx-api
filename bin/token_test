@@ -9,7 +9,7 @@ var token = require("../misc/token.js").token;
 // var minutes_until_expiration = args[args.indexOf("--minutes_until_expiration")+1];
 // var created_by = args[args.indexOf("--created_by")+1];
 
-// var another = token.createSingleUseToken({
+// var another = token.createAnonymousToken({
 //                   reference_id: reference_id,
 //                   token_type: token_type,
 //                   minutes_until_expiration: parseInt(minutes_until_expiration),

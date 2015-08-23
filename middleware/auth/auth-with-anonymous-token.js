@@ -3,7 +3,7 @@ var hash = require("../../misc/hash.js").hash;
 
 exports.authenticateAs = function(req,token,done,authUser){
 
-  models.SingleUseToken
+  models.AnonymousToken
     .findOne({ 
       where: {
         guid: authUser.guid,
@@ -21,12 +21,12 @@ exports.authenticateAs = function(req,token,done,authUser){
                   name: null
                 };
 
-            console.log("authenticated with single-use token: "+userObj.guid);
+            console.log("authenticated with anonymous token: "+userObj.guid);
 
            dbToken.destroy().then(function(){
               return done(null,userObj);
            }).catch(function(err){
-             console.log("failed to delete single-use token, but proceeding with login anyway... | "+err);
+             console.log("failed to delete anonymous token, but proceeding with login anyway... | "+err);
              return done(null,userObj);
            });
 
