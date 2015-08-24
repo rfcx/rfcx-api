@@ -132,7 +132,7 @@ exports.views = {
 
                 if (dbRow.Guardian != null) { audio.guardian = viewsObj.guardian(req,res,dbRow.Guardian)[0]; }
                 if (dbRow.CheckIn != null) { audio.checkin = viewsObj.guardianCheckIn(req,res,dbRow.CheckIn); }
-                if (dbRow.Event != null) { audio.events = [dbRow.Event.length]; } //
+                if (dbRow.Event != null) { audio.events = viewsObj.guardianEvents(req,res,dbRow.Event); }
 
                 jsonArray.push(audio);
 
@@ -168,6 +168,35 @@ exports.views = {
 
         result.pipe(res);           
       });
+  },
+
+  guardianEvents: function(req,res,dbEvents) {
+
+    if (!util.isArray(dbEvents)) { dbEvents = [dbEvents]; }
+    
+    var jsonArray = [];
+
+    for (i in dbEvents) {
+
+      var dbRow = dbEvents[i];
+
+      var guardianEvent = {
+        guid: dbRow.guid,
+        classification: dbRow.classification,
+        measured_at: dbRow.measured_at,
+        duration: dbRow.duration,
+        location: {
+          latitude: parseFloat(dbRow.latitude),
+          longitude: parseFloat(dbRow.longitude)
+        }
+      };
+
+//      if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
+
+      jsonArray.push(guardianEvent);
+    }
+    return jsonArray;
+
   },
 
   guardianMetaCPU: function(req,res,dbCPU) {
