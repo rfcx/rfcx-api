@@ -1,7 +1,4 @@
 var util = require("util");
-var Promise = require("bluebird");
-var aws = require("../../../misc/aws.js").aws();
-var token = require("../../../misc/token.js").token;
 function loadViews() { return require("../../../views/v1"); }
 
 exports.models = {
