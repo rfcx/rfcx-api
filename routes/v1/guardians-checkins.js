@@ -290,10 +290,12 @@ router.route("/:guardian_id/checkins")
             //   address: "+14153359205",
             //   guid: "guid goes here"
             // });
-
+            
+            var softwareVersions = [];
+            for (versionInd in versionJson) { softwareVersions.push(versionInd+"-"+versionJson[versionInd]); }
             console.log("check-in: "+dbCheckIn.guid+", "
                         +"guardian: "+dbGuardian.guid+", "
-                        +"version: "+versionJson.api+", "
+                        +"version: "+softwareVersions.join(", ")
                         );
 
 
