@@ -10,7 +10,7 @@ var hash = require("../../misc/hash.js").hash;
 var aws = require("../../misc/aws.js").aws();
 var guardianSoftware = require("../../data_storage/guardian-software.js");
 var fileKeeper = require("../../file_storage/file-keeper.js");
-var views = require("../../views/v1/models/_all.js").views;
+var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
@@ -68,7 +68,7 @@ router.route("/:guardian_id/software/:software_role/latest")
             order: [ ["current_version_id", "ASC"] ]
           }).then(function(dSoftware){
 
-            res.status(200).json(views.guardianSoftware(req,res,dSoftware));
+            res.status(200).json(views.models.guardianSoftware(req,res,dSoftware));
 
           }).catch(function(err){
             res.status(500).json({msg:"error finding latest software versions | "+err});

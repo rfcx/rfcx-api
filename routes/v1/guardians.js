@@ -1,7 +1,7 @@
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-var views = require("../../views/v1/models/_all.js").views;
+var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
@@ -16,7 +16,7 @@ router.route("/")
         limit: req.rfcx.count
       }).then(function(dbGuardian){
         
-        res.status(200).json(views.guardian(req,res,dbGuardian));
+        res.status(200).json(views.models.guardian(req,res,dbGuardian));
 
       }).catch(function(err){
         console.log("failed to return guardians | "+err);
@@ -35,7 +35,7 @@ router.route("/:guardian_id")
         include: [ { all: true } ], 
       }).then(function(dbGuardian){
         
-        res.status(200).json(views.guardian(req,res,dbGuardian));
+        res.status(200).json(views.models.guardian(req,res,dbGuardian));
 
       }).catch(function(err){
         console.log("failed to return guardian | "+err);

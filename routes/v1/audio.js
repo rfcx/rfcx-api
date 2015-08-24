@@ -2,7 +2,7 @@ var verbose_logging = (process.env.NODE_ENV !== "production");
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-var views = require("../../views/v1/models/_all.js").views;
+var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
@@ -16,9 +16,9 @@ router.route("/:audio_id")
       }).then(function(dbAudio){
 
         if (req.rfcx.content_type === "m4a") {
-          views.guardianAudioFile(req,res,dbAudio);
+          views.models.guardianAudioFile(req,res,dbAudio);
         } else {
-          res.status(200).json(views.guardianAudio(req,res,dbAudio));
+          res.status(200).json(views.models.guardianAudio(req,res,dbAudio));
         }
         
       }).catch(function(err){

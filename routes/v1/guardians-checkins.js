@@ -10,7 +10,7 @@ var util = require("util");
 var hash = require("../../misc/hash.js").hash;
 var token = require("../../misc/token.js").token;
 var aws = require("../../misc/aws.js").aws();
-var views = require("../../views/v1/models/_all.js").views;
+var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
@@ -546,7 +546,7 @@ router.route("/:guardian_id/checkins/latest")
             limit: req.rfcx.count
           }).then(function(dbCheckIn){
             
-            res.status(200).json(views.guardianCheckIn(req,res,dbCheckIn));
+            res.status(200).json(views.models.guardianCheckIns(req,res,dbCheckIn));
 
           }).catch(function(err){
             console.log("failed to return checkin | "+err);

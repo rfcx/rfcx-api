@@ -2,7 +2,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var hash = require("../../misc/hash.js").hash;
-var views = require("../../views/v1/models/_all.js").views;
+var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 
