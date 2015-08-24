@@ -7,7 +7,7 @@ exports.authenticateAs = function(req,token,done,authUser){
     .findOne({ 
       where: {
         guid: authUser.guid,
-  //      auth_token_expires_at: 
+        auth_token_expires_at: { $gt: new Date() }
       }
     }).then(function(dbToken){
       if  (   (dbToken != null)
@@ -23,12 +23,19 @@ exports.authenticateAs = function(req,token,done,authUser){
 
             console.log("authenticated with anonymous token: "+userObj.guid);
 
-           dbToken.destroy().then(function(){
+            dbToken.remaining_uses--;
+            dbToken.save();
+
+            if (dbToken.remaining_uses == 0) {
+              dbToken.destroy().then(function(){
+                return done(null,userObj);
+              }).catch(function(err){
+               console.log("failed to delete anonymous token, but proceeding with login anyway... | "+err);
+                return done(null,userObj);
+              });
+            } else {
               return done(null,userObj);
-           }).catch(function(err){
-             console.log("failed to delete anonymous token, but proceeding with login anyway... | "+err);
-             return done(null,userObj);
-           });
+            }
 
       } else {
         console.log("failed to match token with salted hash");

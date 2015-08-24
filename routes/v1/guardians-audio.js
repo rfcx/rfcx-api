@@ -22,7 +22,12 @@ router.route("/:guardian_id/audio/latest")
             limit: req.rfcx.count
           }).then(function(dbAudio){
 
-            res.status(200).json(views.guardianAudio(req,res,dbAudio));
+            views.guardianAudio(req,res,dbAudio)
+              .then(function(audioJson){
+                res.status(200).json(audioJson);
+            });
+
+            
 
         }).catch(function(err){
           console.log("failed to return audio | "+err);
