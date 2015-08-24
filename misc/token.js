@@ -8,14 +8,15 @@ exports.token = {
 	 * generate an access token, and register in database
 	 *
    * @param {Object}  options:
-   *                  {String} reference_id 
+   *                  {Integer} token_length
+   *                  {String} reference_tag
    *                  {String} token_type
    *                  {Integer} minutes_until_expiration
    *                  {Integer} max_uses
    *                  {String} only_allow_access_to
    *                  {String} created_by
 	 * @return {Object} access_token
-   *                  {String} reference_id
+   *                  {String} reference_tag
    *                  {String} token_type
    *                  {Date} token_expires_at
    *                  {String} only_allow_access_to
@@ -27,12 +28,9 @@ exports.token = {
 	 */
   createAnonymousToken: function(options) {
     
-    var token = hash.randomToken(40),
-        salt = hash.randomHash(320),
-        tokenHash = hash.hashedCredentials(salt,token),
-        
-        // validate inputs and set certain defaults
-        reference_id = ((options.reference_id == null) ? null : options.reference_id),
+    var // validate inputs and set certain defaults
+        token_length = ((options.token_length == null) ? 40 : options.token_length),
+        reference_tag = ((options.reference_tag == null) ? null : options.reference_tag),
         token_type = ((options.token_type == null) ? null : options.token_type),
         only_allow_access_to = ((options.only_allow_access_to == null) ? null : options.only_allow_access_to),
         created_by = ((options.created_by == null) ? null : options.created_by),
@@ -41,8 +39,13 @@ exports.token = {
         minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration)),
         expires_at = new Date((new Date()).valueOf()+(1000*60*minutes_until_expiration)),
 
+        token = hash.randomToken(token_length),
+        salt = hash.randomHash(320),
+        tokenHash = hash.hashedCredentials(salt,token),
+
+
         access_token = {
-            reference_id: reference_id,
+            reference_tag: reference_tag,
             token_type: token_type,
             token_guid: null, 
             token: token, 

@@ -15,7 +15,7 @@ router.route("/:checkin_id")
         include: [ { all: true } ]
       }).then(function(dbCheckIn){
         
-        res.status(200).json(views.guardianCheckIn(req,res,dbCheckIn));
+        res.status(200).json(views.models.guardianCheckIns(req,res,dbCheckIn));
 
       }).catch(function(err){
         console.log("failed to return checkin | "+err);

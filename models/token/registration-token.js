@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var User = sequelize.define("User", {
+  var RegistrationToken = sequelize.define("RegistrationToken", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -9,54 +9,62 @@ module.exports = function(sequelize, DataTypes) {
     },
     type: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
-    username: {
-      type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
       validate: {
       }
     },
-    email: {
+    only_allow_access_to: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
       }
     },
-    is_email_validated: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+    max_uses: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
+      validate: {
+        isInt: true,
+        min: 1
+      }
+    },
+    remaining_uses: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    created_by: {
+      type: DataTypes.STRING,
+      allowNull: true,
       validate: {
       }
     },
-    auth_password_salt: {
+    auth_token_salt: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
       validate: {
       }
     },
-    auth_password_hash: {
+    auth_token_hash: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
       validate: {
       }
     },
-    auth_password_updated_at: {
+    auth_token_expires_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
       }
-    }
+    },
   }, {
     classMethods: {
       associate: function(models) {
-        User.hasMany(models.UserToken, {as: "Token", foreignKey: "user_id"});
       },
       indexes: [
         {
@@ -67,6 +75,5 @@ module.exports = function(sequelize, DataTypes) {
     }
   });
 
-  return User;
+  return RegistrationToken;
 };
-

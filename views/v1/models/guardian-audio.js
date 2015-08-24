@@ -36,7 +36,7 @@ exports.models = {
         for (dbAudioIndex in dbAudio) {
 
           token.createAnonymousToken({
-            reference_id: dbAudioIndex,
+            reference_tag: dbAudioIndex,
             token_type: "audio-stream",
             minutes_until_expiration: 15,
             max_uses: 4,
@@ -45,7 +45,7 @@ exports.models = {
           }).then(function(tokenInfo){
               try {
 
-                var dbRow = dbAudio[tokenInfo.reference_id],
+                var dbRow = dbAudio[tokenInfo.reference_tag],
                 audioFileExtension = dbRow.url.substr(1+dbRow.url.lastIndexOf(".")),
                 s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
                 s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),

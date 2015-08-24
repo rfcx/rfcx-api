@@ -4,13 +4,13 @@ var hash = require("../misc/hash.js").hash;
 var token = require("../misc/token.js").token;
 
 
-// var reference_id = args[args.indexOf("--reference_id")+1];
+// var reference_tag = args[args.indexOf("--reference_tag")+1];
 // var token_type = args[args.indexOf("--token_type")+1];
 // var minutes_until_expiration = args[args.indexOf("--minutes_until_expiration")+1];
 // var created_by = args[args.indexOf("--created_by")+1];
 
 // var another = token.createAnonymousToken({
-//                   reference_id: reference_id,
+//                   reference_tag: reference_tag,
 //                   token_type: token_type,
 //                   minutes_until_expiration: parseInt(minutes_until_expiration),
 //                   created_by: created_by

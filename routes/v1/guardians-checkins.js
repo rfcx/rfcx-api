@@ -399,7 +399,7 @@ router.route("/:guardian_id/checkins")
                                       audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
                                       
                                       token.createAnonymousToken({
-                                        reference_id: audioInfo[l].audio_id,
+                                        reference_tag: audioInfo[l].audio_id,
                                         token_type: "worker-analysis",
                                         created_by: "guardian-checkin",
                                         minutes_until_expiration: 30,
@@ -408,7 +408,7 @@ router.route("/:guardian_id/checkins")
                                       }).then(function(tokenInfo){
 
                                         for (m in audioInfo) {
-                                          if (audioInfo[m].audio_id == tokenInfo.reference_id) {
+                                          if (audioInfo[m].audio_id == tokenInfo.reference_tag) {
 
                                             audioInfo[m].api_token_guid = tokenInfo.token_guid;
                                             audioInfo[m].api_token = tokenInfo.token;
