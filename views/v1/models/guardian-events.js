@@ -1,5 +1,4 @@
 var util = require("util");
-function loadViews() { return require("../../../views/v1"); }
 
 exports.models = {
 

@@ -1,11 +1,11 @@
 var util = require("util");
-function loadViews() { return require("../../../views/v1"); }
+function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
   guardianCheckIns: function(req,res,dbCheckIn) {
 
-    var views = loadViews();
+    var views = getAllViews();
 
     if (!util.isArray(dbCheckIn)) { dbCheckIn = [dbCheckIn]; }
 

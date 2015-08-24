@@ -2,7 +2,7 @@ var util = require("util");
 var Promise = require("bluebird");
 var aws = require("../../../misc/aws.js").aws();
 var token = require("../../../misc/token.js").token;
-function loadViews() { return require("../../../views/v1"); }
+function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
@@ -11,22 +11,22 @@ exports.models = {
     var dbRow = dbAudio,
         s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"))
+        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
+        audioContentType = "audio/mp4"
         ;
 
       aws.s3(s3Bucket).getFile(s3Path, function(err, result){
-        if(err) { return next(err); }   
-
-        res.setHeader("Content-disposition", "filename="+dbRow.guid+s3Path.substr(s3Path.lastIndexOf(".")));
-        res.setHeader("Content-type", "audio/mp4");
-
+        if(err) { return next(err); }
+        res.setHeader("Content-disposition", "filename="+dbRow.guid+"."+audioFileExtension);
+        res.setHeader("Content-type", audioContentType);
         result.pipe(res);           
       });
   },
 
   guardianAudio: function(req,res,dbAudio) {
 
-    var views = loadViews();
+    var views = getAllViews();
 
     if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
     var jsonArray = [];
@@ -38,9 +38,9 @@ exports.models = {
           token.createAnonymousToken({
             reference_id: dbAudioIndex,
             token_type: "audio-stream",
-            created_by: null,
             minutes_until_expiration: 15,
             max_uses: 4,
+            created_by: null,
             only_allow_access_to: null
           }).then(function(tokenInfo){
               try {
