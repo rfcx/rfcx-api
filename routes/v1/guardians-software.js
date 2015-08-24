@@ -20,6 +20,8 @@ router.route("/:guardian_id/software/:software_role/latest")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     var softwareRole = req.params.software_role;
+    var inquiringSoftwareRole = req.query.role;
+    var inquiringSoftwareVersion = req.query.version;
 
     models.Guardian
       .findOne({
@@ -30,10 +32,27 @@ router.route("/:guardian_id/software/:software_role/latest")
         dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
         dbGuardian.save();
 
-        models.GuardianMetaUpdateCheckIn.create({
- //       version_id: dbGuardian.version_id,
-          guardian_id: dbGuardian.id
-        }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
+        models.GuardianSoftware
+          .findOne({
+            where: { 
+              role: req.query.role
+            }
+          }).then(function(dbSoftware){
+            models.GuardianSoftwareVersion
+              .findOne({
+                where: { 
+                  software_role_id: dbSoftware.id, 
+                  version: req.query.version
+                }
+              }).then(function(dbSoftwareVersion){
+                models.GuardianMetaUpdateCheckIn
+                  .create({
+                    guardian_id: dbGuardian.id,
+                    version_id: dbSoftwareVersion.id
+                  }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
+              }).catch(function(err){ });
+          }).catch(function(err){ });
+      
 
         var dbSearchFilter = { is_available: true };
         if (softwareRole === "all") {

@@ -6,7 +6,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         GuardianMetaUpdateCheckIn.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianMetaUpdateCheckIn.belongsTo(models.GuardianSoftware, {as: 'Version'});
+        GuardianMetaUpdateCheckIn.belongsTo(models.GuardianSoftwareVersion, {as: 'Version'});
       }
     },
     tableName: "GuardianMetaUpdateCheckIns"
