@@ -10,16 +10,16 @@ var db        = {};
 
 // get file listing in 'models' directory, filtered by those we know to ignore...
 fs.readdirSync(__dirname).filter(function(file) {
-    return (file.indexOf(".") !== 0) && (file !== "index.js") && !fs.statSync(__dirname+"/"+file).isDirectory();
+    return (file.indexOf(".") !== 0) && (file !== "index.js") && !fs.statSync(path.join(__dirname,file)).isDirectory();
   }).forEach(function(file) { importSequelizeModelFile(file); });
 
 // get file listings from inner directories in models
 fs.readdirSync(__dirname).filter(function(file) {
-    return (file.indexOf(".") !== 0) && fs.statSync(__dirname+"/"+file).isDirectory();
+    return (file.indexOf(".") !== 0) && fs.statSync(path.join(__dirname,file)).isDirectory();
   }).forEach(function(file) { 
-    fs.readdirSync(__dirname+"/"+file).filter(function(fileInDir) {
+    fs.readdirSync(path.join(__dirname,file)).filter(function(fileInDir) {
       return (fileInDir.indexOf(".") !== 0);
-    }).forEach(function(fileInDir) { importSequelizeModelFile(file+"/"+fileInDir); });
+    }).forEach(function(fileInDir) { importSequelizeModelFile(path.join(file,fileInDir)); });
   });
 
 Object.keys(db).forEach(function(modelName) {
