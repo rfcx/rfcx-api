@@ -98,8 +98,8 @@ exports.views = {
             reference_id: dbAudioIndex,
             token_type: "audio-stream",
             created_by: null,
-            minutes_until_expiration: 20,
-            max_uses: 10,
+            minutes_until_expiration: 15,
+            max_uses: 4,
             only_allow_access_to: null
           }).then(function(tokenInfo){
               try {
@@ -126,6 +126,7 @@ exports.views = {
                     +"&auth_user=token/"+tokenInfo.token_guid
                     +"&auth_token="+tokenInfo.token,
                   url_expires_at: tokenInfo.token_expires_at,
+                  url_remaining_uses: tokenInfo.remaining_uses,
                   events: []
                 };
 
