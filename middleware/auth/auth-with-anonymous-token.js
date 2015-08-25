@@ -9,7 +9,6 @@ exports.authenticateAs = function(req,token,done,authUser){
         guid: authUser.guid
       }
     }).then(function(dbToken){
-
       if (dbToken == null) {
         
         return done(null, false, {message:"invalid user/token combination"});
@@ -25,7 +24,7 @@ exports.authenticateAs = function(req,token,done,authUser){
 
       } else if (   (dbToken.auth_token_hash == hash.hashedCredentials(dbToken.auth_token_salt,token)) 
                 &&  (   (dbToken.only_allow_access_to == null)
-                    ||  (dbToken.only_allow_access_to.split("|").indexOf(req._parsedOriginalUrl.pathname) > -1)
+                    ||  (dbToken.only_allow_access_to.split("|").indexOf(req.rfcx.url_path) > -1)
                     )
                 ) {
 

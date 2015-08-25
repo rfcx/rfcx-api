@@ -29,17 +29,17 @@ exports.TokenStrategy =
         }
 
         switch(authUser.type) {
-
-          case "guardian":
-            return authenticateAs.Guardian(req,token,done,authUser);
+          
+          case "token":
+            return authenticateAs.AnonymousToken(req,token,done,authUser);
             break;
 
           case "user":
             return authenticateAs.User(req,token,done,authUser);
             break;
-          
-          case "token":
-            return authenticateAs.AnonymousToken(req,token,done,authUser);
+            
+          case "guardian":
+            return authenticateAs.Guardian(req,token,done,authUser);
             break;
           
           default:

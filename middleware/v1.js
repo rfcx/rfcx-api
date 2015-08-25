@@ -1,4 +1,5 @@
 var path = require("path");
+var url = require("url");
 
 exports.middleware = {
 
@@ -17,6 +18,7 @@ exports.middleware = {
 
     var contentType = path.extname(req.path).trim().substr(1);    
     if (contentType.trim().length == 0) { contentType = "json"; }
+    var urlPath = "/v1"+url.parse(req.url).pathname;
     req.url = req.url.replace("."+contentType,"");
 
     var authUser = { header: null, query: null, body: null };
@@ -32,6 +34,7 @@ exports.middleware = {
     req.rfcx = {
       api_url: apiUrl,
       api_version: apiVersion,
+      url_path: urlPath,
       count: paramCount,
       offset: paramOffset,
       before_timestamp: paramBefore,
