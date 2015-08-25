@@ -33,14 +33,17 @@ exports.models = {
 
     return new Promise(function(resolve,reject){
 
-        for (dbAudioIndex in dbAudio) {
+        for (dbAudInd in dbAudio) {
 
           token.createAnonymousToken({
-            reference_tag: dbAudioIndex,
-            token_type: "audio-stream",
+            reference_tag: dbAudInd,
+            token_type: "audio-file",
             minutes_until_expiration: 15,
             created_by: null,
-            only_allow_access_to: null
+            allow_garbage_collection: false,
+            only_allow_access_to: [ // the generated token will only be usable for the specific audio file url
+              "/v1/audio/"+dbAudio[dbAudInd].guid+"."+dbAudio[dbAudInd].url.substr(1+dbAudio[dbAudInd].url.lastIndexOf("."))
+              ]
           }).then(function(tokenInfo){
               try {
 

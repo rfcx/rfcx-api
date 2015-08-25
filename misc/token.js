@@ -24,6 +24,7 @@ exports.token = {
    *                  {Integer} minutes_until_expiration
    *                  {String} only_allow_access_to
    *                  {String} created_by
+   *                  {Boolean} allow_garbage_collection
 	 * @return {Object} output_token
    *                  {String} token
    *                  {String} reference_tag
@@ -41,8 +42,9 @@ exports.token = {
         reference_tag = ((options.reference_tag == null) ? null : options.reference_tag),
         owner_primary_key = ((options.owner_primary_key == null) ? null : options.owner_primary_key),
         token_type = ((options.token_type == null) ? null : options.token_type),
-        only_allow_access_to = ((options.only_allow_access_to == null) ? null : options.only_allow_access_to),
+        only_allow_access_to = ((options.only_allow_access_to == null) ? null : options.only_allow_access_to.join("|")),
         created_by = ((options.created_by == null) ? null : options.created_by),
+        allow_garbage_collection = ((options.allow_garbage_collection == null) ? false : options.allow_garbage_collection),
 
         minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration)),
         expires_at = new Date((new Date()).valueOf()+(1000*60*minutes_until_expiration)),
@@ -77,6 +79,8 @@ exports.token = {
         dbTokenAttributes.user_id = owner_primary_key;
       }
 
+      if (allow_garbage_collection) { this.destroyExpiredTokens(what_kind_of_token); }
+
       return this.saveToken(what_kind_of_token, dbTokenAttributes, output_token);
 
   },
@@ -107,7 +111,7 @@ exports.token = {
               resolve(returnTokenObj);
             } catch (e) { reject(e); }
           }).catch(function(err){
-            console.log("failed to create anonymous token | "+err);
+            console.log("failed to create user token | "+err);
             reject(new Error(err));
           });
 
@@ -116,6 +120,27 @@ exports.token = {
         reject(new Error());
       }
     });
+
+  },
+
+  destroyExpiredTokens: function(what_kind_of_token) {
+    
+    if (what_kind_of_token === "anonymous") {
+        models.AnonymousToken
+          .destroy({ 
+            where: { auth_token_expires_at: { $lt: new Date() } }
+          }).then(function(dbAffectedRows){
+            console.log("deleted expired 'anonymous' tokens");
+          }).catch(function(err){ console.log(err); });
+
+    } else if (what_kind_of_token === "user") {
+        models.UserToken
+          .destroy({ 
+            where: { auth_token_expires_at: { $lt: new Date() } }
+          }).then(function(dbAffectedRows){
+            console.log("deleted expired 'user' tokens");
+          }).catch(function(err){ console.log(err); });
+    }
 
   }
   
