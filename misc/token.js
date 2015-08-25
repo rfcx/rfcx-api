@@ -8,6 +8,10 @@ exports.token = {
     return this.createToken("anonymous", options);
   },
 
+  createUserToken: function(options) {
+    return this.createToken("user", options);
+  },
+
   /**
 	 * generate an access token, and register in database
 	 *
@@ -73,7 +77,7 @@ exports.token = {
         dbTokenAttributes.user_id = owner_primary_key;
       }
 
-      return saveToken(what_kind_of_token, dbTokenAttributes, output_token);
+      return this.saveToken(what_kind_of_token, dbTokenAttributes, output_token);
 
   },
 
