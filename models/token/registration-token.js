@@ -3,9 +3,12 @@
 module.exports = function(sequelize, DataTypes) {
   var RegistrationToken = sequelize.define("RegistrationToken", {
     guid: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      unique: true
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+   //     len: [4,6]
+      }
     },
     type: {
       type: DataTypes.STRING,
@@ -15,7 +18,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     only_allow_access_to: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
       validate: {
       }
     },

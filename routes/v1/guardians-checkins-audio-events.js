@@ -57,7 +57,6 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                           duration: Math.round(parseFloat(audioEvent.incident_duration)*1000)
                         }).then(function(dbGuardianEvent){
 
-                          console.log("event saved: "+dbGuardianEvent.guid);
                           savedEvents.push(dbGuardianEvent.guid);
                           if (savedEvents.length == audioEvents.length) {
                             res.status(200).json(savedEvents);
@@ -75,17 +74,17 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
 
               }).catch(function(err){
                 console.log("failed to find audio reference | "+err);
-                if (!!err) { res.status(500).json({msg:"failed to find audio reference"}); }
+                if (!!err) { res.status(404).json({ message: "failed to find audio reference", error: { status: 404 } }); }
               });
 
           }).catch(function(err){
             console.log("failed to find checkIn reference | "+err);
-            if (!!err) { res.status(500).json({msg:"failed to find checkIn reference"}); }
+            if (!!err) { res.status(404).json({ message: "failed to find checkIn reference", error: { status: 404 } }); }
           });
 
       }).catch(function(err){
         console.log("failed to find guardian reference | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to find guardian reference"}); }
+        if (!!err) { res.status(404).json({ message: "failed to find guardian reference", error: { status: 404 } }); }
       });
 
   })

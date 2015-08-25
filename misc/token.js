@@ -13,6 +13,11 @@ exports.token = {
     return this.createToken("user", options);
   },
 
+  createRegistrationToken: function(options) {
+    options.token_length = 4;
+    return this.createToken("registration", options);
+  },
+
   /**
 	 * generate an access token, and register in database
 	 *
@@ -78,6 +83,8 @@ exports.token = {
         dbTokenAttributes.created_by = created_by;
       } else if (what_kind_of_token === "user") {
         dbTokenAttributes.user_id = owner_primary_key;
+      } else if (what_kind_of_token === "registration") {
+        dbTokenAttributes.guid = hash.randomString(token_length);
       }
 
       if (  allow_garbage_collection
@@ -120,6 +127,18 @@ exports.token = {
             reject(new Error(err));
           });
 
+      } else if (what_kind_of_token === "registration") {
+        // create token in db
+        models.RegistrationToken
+          .create(dbTokenAttributes).then(function(dbToken){
+            try {
+              resolve(returnTokenObj);
+            } catch (e) { reject(e); }
+          }).catch(function(err){
+            console.log("failed to create registration token | "+err);
+            reject(new Error(err));
+          });
+
       } else {
         // no type specified, so reject
         reject(new Error());
@@ -144,6 +163,14 @@ exports.token = {
             where: { auth_token_expires_at: { $lt: new Date() } }
           }).then(function(dbAffectedRows){
             console.log("deleted expired 'user' tokens");
+          }).catch(function(err){ console.log(err); });
+
+    } else if (what_kind_of_token === "registration") {
+        models.RegistrationToken
+          .destroy({ 
+            where: { auth_token_expires_at: { $lt: new Date() } }
+          }).then(function(dbAffectedRows){
+            console.log("deleted expired 'registration' tokens");
           }).catch(function(err){ console.log(err); });
     }
 

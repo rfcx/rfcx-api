@@ -34,6 +34,13 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    last_login_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
     auth_password_salt: {
       type: DataTypes.STRING,
       allowNull: true,

@@ -3,6 +3,7 @@ var TokenStrategy = require("passport-accesstoken").Strategy;
 var authenticateAs = {
   Guardian: require("./auth-as-guardian.js").authenticateAs,
   User: require("./auth-as-user.js").authenticateAs,
+  RegistrationToken: require("./auth-with-registration-token.js").authenticateAs,
   AnonymousToken: require("./auth-with-anonymous-token.js").authenticateAs
 };
 
@@ -40,6 +41,10 @@ exports.TokenStrategy =
             
           case "guardian":
             return authenticateAs.Guardian(req,token,done,authUser);
+            break;
+            
+          case "register":
+            return authenticateAs.RegistrationToken(req,token,done,authUser);
             break;
           
           default:
