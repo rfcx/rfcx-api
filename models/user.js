@@ -3,9 +3,11 @@
 module.exports = function(sequelize, DataTypes) {
   var User = sequelize.define("User", {
     guid: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      unique: true
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+      }
     },
     type: {
       type: DataTypes.STRING,
@@ -23,6 +25,7 @@ module.exports = function(sequelize, DataTypes) {
     email: {
       type: DataTypes.STRING,
       allowNull: true,
+      unique: true,
       validate: {
       }
     },

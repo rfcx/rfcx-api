@@ -19,22 +19,6 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    max_uses: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1,
-      validate: {
-        isInt: true,
-        min: 1
-      }
-    },
-    remaining_uses: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
     created_by: {
       type: DataTypes.STRING,
       allowNull: true,

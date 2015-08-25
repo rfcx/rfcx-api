@@ -39,7 +39,6 @@ exports.models = {
             reference_tag: dbAudioIndex,
             token_type: "audio-stream",
             minutes_until_expiration: 15,
-            max_uses: 4,
             created_by: null,
             only_allow_access_to: null
           }).then(function(tokenInfo){
@@ -67,7 +66,6 @@ exports.models = {
                     +"&auth_user=token/"+tokenInfo.token_guid
                     +"&auth_token="+tokenInfo.token,
                   url_expires_at: tokenInfo.token_expires_at,
-                  url_remaining_uses: tokenInfo.remaining_uses,
                   events: []
                 };
 
