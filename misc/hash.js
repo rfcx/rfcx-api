@@ -72,7 +72,7 @@ exports.hash = {
    * @return {String} token
    * @api private
    */
-  randomToken: function(length) {
+  randomString: function(length) {
     return this.randomHash(320).substr(0,length);
   },
 

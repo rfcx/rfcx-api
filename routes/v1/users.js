@@ -32,7 +32,7 @@ router.route("/register")
           dbUser.auth_password_updated_at = new Date();
           dbUser.save();
 
-          var token = hash.randomToken(40);
+          var token = hash.randomString(40);
           var token_salt = hash.randomHash(320);
           dbUser.auth_token_salt = token_salt;
           dbUser.auth_token_hash = hash.hashedCredentials(token_salt,token);

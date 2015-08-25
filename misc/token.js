@@ -47,7 +47,7 @@ exports.token = {
         minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration)),
         expires_at = new Date((new Date()).valueOf()+(1000*60*minutes_until_expiration)),
 
-        token = ((options.token == null) ? hash.randomToken(token_length) : options.token),
+        token = ((options.token == null) ? hash.randomString(token_length) : options.token),
         salt = hash.randomHash(320),
         tokenHash = hash.hashedCredentials(salt,token),
 
