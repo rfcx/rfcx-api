@@ -403,7 +403,7 @@ router.route("/:guardian_id/checkins")
                                         token_type: "worker-analysis",
                                         created_by: "guardian-checkin",
                                         minutes_until_expiration: 20,
-                                        allow_garbage_collection: true,
+                                        allow_garbage_collection: false,
                                         only_allow_access_to: ["/v1/guardians/"+audioInfo[l].guardian_id+"/checkins/"+audioInfo[l].checkin_id+"/audio/"+audioInfo[l].audio_id+"/events"]
                                       }).then(function(tokenInfo){
 

@@ -44,7 +44,7 @@ exports.authenticateAs = function(req,token,done,authUser){
         return done(null, false, {message:"invalid user/token combination"});
       }
     }).catch(function(err){
-      console.log("failed to find misc token | "+err);
+      console.log("failed to find anonymous token | "+err);
       return done(err);
     });
 };

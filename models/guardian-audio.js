@@ -71,6 +71,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: true,
       validate: {
+        isUrl: true
       }
     },
     analysis_aws_queue_id: {

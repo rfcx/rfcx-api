@@ -2,6 +2,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var hash = require("../../misc/hash.js").hash;
+var token = require("../../misc/token.js").token;
 var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
@@ -9,19 +10,20 @@ passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
 router.route("/register")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
-    var user_username = req.body.username,
+    var user_email = req.body.email,
         user_password = req.body.password,
-        user_email = req.body.email,
         user_type = req.body.type
         ;
 
     models.User 
       .findOrCreate({
-        where: { email: user_email, username: user_username }
+        where: { email: user_email }
       }).spread(function(dbUser, wasCreated){
 
         if (!wasCreated) {
-          res.status(500).json({msg:"user already exists"});
+          res.status(409).json({ 
+            message: "A user with that username or email already exists", error: { status: 409 }
+          });
         } else {
 
           dbUser.type = user_type;
@@ -32,20 +34,28 @@ router.route("/register")
           dbUser.auth_password_updated_at = new Date();
           dbUser.save();
 
-          var token = hash.randomString(40);
-          var token_salt = hash.randomHash(320);
-          dbUser.auth_token_salt = token_salt;
-          dbUser.auth_token_hash = hash.hashedCredentials(token_salt,token);
-          dbUser.auth_token_updated_at = new Date();
-          dbUser.auth_token_expires_at = new Date(); // needs to be a real expiration date
-          dbUser.save();
+          token.createUserToken({
+            token_type: "user-registration",
+            created_by: "user-registration",
+            reference_tag: dbUser.guid,
+            owner_primary_key: dbUser.id,
+            minutes_until_expiration: 1440
+          }).then(function(tokenInfo){
 
-          res.status(200).json({
+            res.status(200).json({
+              guid: dbUser.guid,
+              token: tokenInfo.token
+            });
 
           });
+
         }
       }).catch(function(err){
-        res.status(500).json({msg:"error creating user" + err});
+        console.log(err);
+        res.status(500).json({
+          message: err.message, error: { status: 500 }
+        });
+//        res.status(409).json({ message: "A user with that username or email already exists", error: { status: 409 } });
       });
 
   

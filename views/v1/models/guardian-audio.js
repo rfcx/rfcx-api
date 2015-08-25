@@ -66,9 +66,9 @@ exports.models = {
                   sample_rate: dbRow.capture_sample_rate,
                   sha1_checksum: dbRow.sha1_checksum,
                   url: req.rfcx.api_url+"/v1/audio/"+dbRow.guid+"."+audioFileExtension
-                    +"?auth_expires_at="+tokenInfo.token_expires_at.toISOString()
-                    +"&auth_user=token/"+tokenInfo.token_guid
-                    +"&auth_token="+tokenInfo.token,
+                    +"?auth_user=token/"+tokenInfo.token_guid
+                    +"&auth_token="+tokenInfo.token
+                    +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString(),
                   url_expires_at: tokenInfo.token_expires_at,
                   events: []
                 };
