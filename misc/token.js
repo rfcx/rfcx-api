@@ -1,3 +1,4 @@
+var util = require("util");
 var hash = require("../misc/hash.js").hash;
 var Promise = require("bluebird");
 var models  = require("../models");
@@ -42,7 +43,7 @@ exports.token = {
         reference_tag = ((options.reference_tag == null) ? null : options.reference_tag),
         owner_primary_key = ((options.owner_primary_key == null) ? null : options.owner_primary_key),
         token_type = ((options.token_type == null) ? null : options.token_type),
-        only_allow_access_to = ((options.only_allow_access_to == null) ? null : options.only_allow_access_to.join("|")),
+        only_allow_access_to = ((options.only_allow_access_to == null) ? null : ((!util.isArray(options.only_allow_access_to)) ? [options.only_allow_access_to] : options.only_allow_access_to)),
         created_by = ((options.created_by == null) ? null : options.created_by),
         allow_garbage_collection = ((options.allow_garbage_collection == null) ? false : options.allow_garbage_collection),
 
@@ -70,7 +71,7 @@ exports.token = {
             auth_token_salt: salt,
             auth_token_hash: tokenHash,
             auth_token_expires_at: expires_at,
-            only_allow_access_to: only_allow_access_to
+            only_allow_access_to: ((only_allow_access_to == null) ? null : only_allow_access_to.join("|"))
       };
 
       if (what_kind_of_token === "anonymous") {
@@ -79,7 +80,11 @@ exports.token = {
         dbTokenAttributes.user_id = owner_primary_key;
       }
 
-      if (allow_garbage_collection) { this.destroyExpiredTokens(what_kind_of_token); }
+      if (  allow_garbage_collection
+        &&  (Math.random() < 0.1 ? true : false) // only do garbage collection ~10% of the time it's allowed
+        ) {
+        this.destroyExpiredTokens(what_kind_of_token);
+      }
 
       return this.saveToken(what_kind_of_token, dbTokenAttributes, output_token);
 
