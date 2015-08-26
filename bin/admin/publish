@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
-cd $SCRIPT_DIR/../;
+cd $SCRIPT_DIR/../../;
 
 read -p "Are you sure you want to deploy this version to AWS? (y/n): " -n 1 -r
 if [[ $REPLY =~ ^[Yy]$ ]]
