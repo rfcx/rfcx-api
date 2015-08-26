@@ -31,15 +31,14 @@ exports.authenticateAs = function(req,token,done,authUser){
                         )
                     ) {
 
-            var userObj = {
-                  type: "user",
-                  id: dbUser.id,
-                  guid: dbUser.guid,
-                  name: dbUser.username
-                };
+            req.rfcx.auth_token_info = {
+              type: "user",
+              id: dbUser.Token[i].id,
+              guid: dbUser.guid
+            };
 
-            console.log("authenticated as user "+userObj.guid);
-            return done(null,userObj);
+            console.log("authenticated as user "+req.rfcx.auth_token_info.guid);
+            return done(null,req.rfcx.auth_token_info);
           }
         }
       }

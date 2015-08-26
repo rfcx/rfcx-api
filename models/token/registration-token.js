@@ -31,6 +31,15 @@ module.exports = function(sequelize, DataTypes) {
         min: 1
       }
     },
+    total_redemptions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     created_by: {
       type: DataTypes.STRING,
       allowNull: true,

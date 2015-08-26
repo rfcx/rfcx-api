@@ -33,16 +33,15 @@ exports.authenticateAs = function(req,token,done,authUser){
                     )
                 ) {
 
-        var userObj = {
-              type: authUser.type,
-              id: dbToken.id,
-              guid: inviteGuid,
-              name: null
-            };
+        req.rfcx.auth_token_info = {
+          type: "registration",
+          id: dbToken.id,
+          guid: dbToken.guid
+        };
 
-        console.log("authenticated with registration code/token: "+userObj.guid);
+        console.log("authenticated with registration code/token: "+req.rfcx.auth_token_info.guid);
         
-        return done(null,userObj);
+        return done(null,req.rfcx.auth_token_info);
             
       } else {
         console.log("failed to match token with salted hash");

@@ -24,14 +24,14 @@ exports.authenticateAs = function(req,token,done,authUser){
                 &&  (only_allow_access_to.indexOf(req.rfcx.url_path) > -1)
           ) {
 
-            var userObj = {
-                  type: "guardian",
-                  id: dbGuardian.id,
-                  guid: dbGuardian.guid,
-                  name: dbGuardian.shortname
-                };
-            console.log("authenticated as guardian "+userObj.guid);
-            return done(null,userObj);
+            req.rfcx.auth_token_info = {
+              type: "guardian",
+              id: dbGuardian.id,
+              guid: dbGuardian.guid
+            };
+
+            console.log("authenticated as guardian "+req.rfcx.auth_token_info.guid);
+            return done(null,req.rfcx.auth_token_info);
 
       } else {
         console.log("failed to match token with salted hash");

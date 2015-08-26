@@ -107,6 +107,8 @@ router.route("/register")
               token_expires_at: tokenInfo.token_expires_at
             };
 
+            console.log(req.rfcx);
+
             res.status(200).json(views.models.users(req,res,dbUser));
 
           }).catch(function(err){

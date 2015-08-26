@@ -28,16 +28,15 @@ exports.authenticateAs = function(req,token,done,authUser){
                     )
                 ) {
 
-        var userObj = {
-              type: authUser.type,
-              id: dbToken.id,
-              guid: dbToken.guid,
-              name: null
-            };
+        req.rfcx.auth_token_info = {
+          type: "anonymous",
+          id: dbToken.id,
+          guid: dbToken.guid
+        };
 
-        console.log("authenticated with anonymous token: "+userObj.guid);
+        console.log("authenticated with anonymous token: "+req.rfcx.auth_token_info.guid);
         
-        return done(null,userObj);
+        return done(null,req.rfcx.auth_token_info);
             
       } else {
         console.log("failed to match token with salted hash");
