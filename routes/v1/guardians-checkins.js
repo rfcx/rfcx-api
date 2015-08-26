@@ -487,6 +487,8 @@ router.route("/:guardian_id/checkins")
                                         }
                                       }).catch(function(err){
                                         console.log("error creating access token for analysis worker | "+err);
+                                        dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
+                                        dbAudio.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
                                         if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
                                       });
                                     }
@@ -497,16 +499,19 @@ router.route("/:guardian_id/checkins")
                         }
                       }).catch(function(err){
                         console.log("error adding audio to database | "+err);
+                        dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
                         if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
                       });
                     } else {
                       console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash);
+                      dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
                       res.status(500).json({msg:"checksum mismatch on uploaded audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash});
                     }
                   });
                 }
               } else {
                 console.log("couldn't match audio meta to uploaded content | "+audioMeta);
+                dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
                 if (!!err) { res.status(500).json({msg:"couldn't match audio meta to uploaded content"}); }
               }
             } else {
