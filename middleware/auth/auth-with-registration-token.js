@@ -27,6 +27,10 @@ exports.authenticateAs = function(req,token,done,authUser){
           return done(null, false, {message:"code/token is expired"});
         });
 
+      } else if (dbToken.total_redemptions >= dbToken.allowed_redemptions) {
+
+        return done(null, false, {message:"invitation code has already been redeemed "+dbToken.total_redemptions+" time(s)"});
+
       } else if (   (dbToken.auth_token_hash == hash.hashedCredentials(dbToken.auth_token_salt,inviteToken)) 
                 &&  (   (dbToken.only_allow_access_to == null)
                     ||  (dbToken.only_allow_access_to.split("|").indexOf(req.rfcx.url_path) > -1)
@@ -41,6 +45,8 @@ exports.authenticateAs = function(req,token,done,authUser){
 
         console.log("authenticated with registration code/token: "+req.rfcx.auth_token_info.guid);
         
+        dbToken.increment("total_redemptions", { by: 1 });
+
         return done(null,req.rfcx.auth_token_info);
             
       } else {
