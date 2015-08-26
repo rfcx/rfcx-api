@@ -29,6 +29,13 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    cartodb_map_id: {
+      type: DataTypes.UUID,
+      unique: false,
+      allowNull: true,
+      validate: {
+      }
+    }
   }, {
     classMethods: {
       associate: function(models) {
