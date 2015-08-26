@@ -30,7 +30,9 @@ for (i in possibleParams) {
   }
 }
 
-console.log( [ "type", "guid", "token", "expires_at" ].join("\t") );
+var columns = [ "type", "guid", "token", "expires_at" ];
+if (finalParams.what_kind_of_token === "registration") { columns = [ "type", "code", "expires_at" ]; }
+console.log( columns.join("\t") );
 
 for (var i = 0; i < howManyTokens; i++) {
 
@@ -50,7 +52,7 @@ for (var i = 0; i < howManyTokens; i++) {
       
     case "registration":
       token.createRegistrationToken(finalParams).then(function(tkn){
-          console.log( [ finalParams.what_kind_of_token, tkn.token_guid, tkn.token, tkn.token_expires_at.toISOString()].join("\t") );
+          console.log( [ finalParams.what_kind_of_token, (tkn.token_guid+tkn.token).toUpperCase(), tkn.token_expires_at.toISOString()].join("\t") );
         }).done();
       break;
     

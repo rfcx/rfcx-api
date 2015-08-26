@@ -102,11 +102,12 @@ router.route("/register")
             minutes_until_expiration: 1440
           }).then(function(tokenInfo){
 
-            res.status(200).json({
-              guid: dbUser.guid,
+            dbUser.VisibleToken = {
               token: tokenInfo.token,
               token_expires_at: tokenInfo.token_expires_at
-            });
+            };
+
+            res.status(200).json(views.models.users(req,res,dbUser));
 
           }).catch(function(err){
             console.log(err);

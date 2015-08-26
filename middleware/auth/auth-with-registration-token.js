@@ -5,8 +5,8 @@ exports.authenticateAs = function(req,token,done,authUser){
 
   // The input 'token' (invite code) is actually the guid and token, concatenated.
   // These two should be the same length, so we break the token in half and use each part.
-  var inviteGuid = token.substr(0,Math.floor(token.length/2)),
-      inviteToken = token.substr(Math.floor(token.length/2));
+  var inviteGuid = token.substr(0,Math.floor(token.length/2)).toLowerCase(),
+      inviteToken = token.substr(Math.floor(token.length/2)).toLowerCase();
 
   models.RegistrationToken
     .findOne({
