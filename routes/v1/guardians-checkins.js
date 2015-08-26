@@ -42,6 +42,7 @@ router.route("/:guardian_id/checkins")
           models.GuardianCheckIn
             .create({
               guardian_id: dbGuardian.id,
+              site_id: dbGuardian.site_id,
               software_versions: JSON.stringify(versionJson),
               measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
@@ -351,6 +352,7 @@ router.route("/:guardian_id/checkins")
                       // if it matches, add the audio to the database
                       models.GuardianAudio.create({
                         guardian_id: dbGuardian.id,
+                        site_id: dbGuardian.site_id,
                         check_in_id: dbCheckIn.id,
                         sha1_checksum: audioInfo[j].sha1Hash,
                         url: "s3://rfcx-ark"+audioInfo[j].s3Path,

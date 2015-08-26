@@ -29,16 +29,17 @@ app.use(passport.initialize());
 // Define/Load Routes
 var routes = {
   "v1": {
-  "guardians": [  require("./routes/v1/guardians"),
-                  require("./routes/v1/guardians-software"), 
-                  require("./routes/v1/guardians-checkins"), 
-                  require("./routes/v1/guardians-checkins-audio-events"), 
-                  require("./routes/v1/guardians-events"),
-                  require("./routes/v1/guardians-audio")
-                ],
-  "checkins": [ require("./routes/v1/checkins") ],
-  "audio": [ require("./routes/v1/audio") ],
-  "users": [ require("./routes/v1/users") ]
+    "guardians": [  require("./routes/v1/guardians"),
+                    require("./routes/v1/guardians-software"), 
+                    require("./routes/v1/guardians-checkins"), 
+                    require("./routes/v1/guardians-checkins-audio-events"), 
+                    require("./routes/v1/guardians-events"),
+                    require("./routes/v1/guardians-audio")
+                  ],
+    "checkins": [ require("./routes/v1/checkins") ],
+    "audio": [ require("./routes/v1/audio") ],
+    "sites": [ require("./routes/v1/sites") ],
+    "users": [ require("./routes/v1/users") ]
   },
   "v2": {
   }

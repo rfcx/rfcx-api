@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+
+export DB_URL_API=`cat $SCRIPT_DIR/private/rfcx-db-uri-api.txt;`;
+export DB_PSWD_API=`cat $SCRIPT_DIR/private/rfcx-db-pswd-api.txt;`;
+export DB_PSWD_LOCAL=`cat $SCRIPT_DIR/private/rfcx-db-pswd-local.txt;`;
+
+export WORK_DIR="$SCRIPT_DIR/../../tmp/admin";
+
+if [ ! -d $WORK_DIR ]; then
+  echo "creating tmp admin directory";
+  mkdir -p $WORK_DIR;
+fi
+
+cd $WORK_DIR;
+
+$SCRIPT_DIR/helper_scripts/database_clone_expect_mysqldump $DB_URL_API $DB_PSWD_API;
+scp rfcx-proxy:rfcx-db.sql.gz $WORK_DIR/rfcx-db.sql.gz;
+ssh rfcx-proxy "rm rfcx-db.sql.gz rfcx-db.sql;";
+tar -xzf $WORK_DIR/rfcx-db.sql.gz;
+sed 's/`ebdb`/`rfcx_api`/g' $WORK_DIR/rfcx-db.sql > $WORK_DIR/rfcx-db_.sql
+chmod a+r $WORK_DIR/rfcx-db_.sql;
+mysql -hlocalhost -urfcx -p$DB_PSWD_LOCAL -P3306 rfcx_api < $WORK_DIR/rfcx-db_.sql;
+rm $WORK_DIR/rfcx-db.sql $WORK_DIR/rfcx-db_.sql $WORK_DIR/rfcx-db.sql.gz
+
+echo 'finished';
