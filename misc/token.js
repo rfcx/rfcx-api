@@ -22,7 +22,7 @@ exports.token = {
 	 * generate an access token, and register in database
 	 *
    * @param {Object}  options:
-   *                  {String} token
+   *                  {String} use_this_token_value
    *                  {Integer} token_length
    *                  {String} reference_tag
    *                  {Integer} owner_primary_key
@@ -55,7 +55,7 @@ exports.token = {
         minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration)),
         expires_at = new Date((new Date()).valueOf()+(1000*60*minutes_until_expiration)),
 
-        token = ((options.token == null) ? hash.randomString(token_length) : options.token),
+        token = ((options.use_this_token_value == null) ? hash.randomString(token_length) : options.use_this_token_value),
         salt = hash.randomHash(320),
         tokenHash = hash.hashedCredentials(salt,token),
 
@@ -84,7 +84,8 @@ exports.token = {
       } else if (what_kind_of_token === "user") {
         dbTokenAttributes.user_id = owner_primary_key;
       } else if (what_kind_of_token === "registration") {
-        dbTokenAttributes.guid = hash.randomString(token_length);
+        output_token.token_guid = hash.randomString(token_length);
+        dbTokenAttributes.guid = output_token.token_guid;
       }
 
       if (  allow_garbage_collection

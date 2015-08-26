@@ -17,15 +17,19 @@ exports.TokenStrategy =
         passReqToCallback: true
       }, function(req,token,done){
 
+        var user_auth_types = [ "token", "user", "guardian", "register" ];
+
         // parses auth_user from req.rfcx...
         // the way this is being done should probably be consolidated or re-considered
         var authUser = { type: null, guid: null };
         for (i in req.rfcx.auth_user) {
-          if ((req.rfcx.auth_user[i] != null) && (req.rfcx.auth_user[i].indexOf("/") > 0 )) {
-            authUser = {
-              type: req.rfcx.auth_user[i].split("/")[0].toLowerCase(),
-              guid: req.rfcx.auth_user[i].split("/")[1].toLowerCase()
-            }; break;
+          if (  (req.rfcx.auth_user[i] != null) && (req.rfcx.auth_user[i].indexOf("/") > 0 )) {
+            authUser.type = req.rfcx.auth_user[i].split("/")[0].toLowerCase();
+            authUser.guid = req.rfcx.auth_user[i].split("/")[1].toLowerCase();
+            break;
+          } else if (req.rfcx.auth_user[i] != null) {
+            authUser.type = req.rfcx.auth_user[i];
+            break;
           }
         }
 
