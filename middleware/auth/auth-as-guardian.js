@@ -6,7 +6,10 @@ exports.authenticateAs = function(req,token,done,authUser){
   var only_allow_access_to = [
       "/v1/guardians/"+authUser.guid+"/checkins",
       "/v1/guardians/"+authUser.guid+"/software/all/latest",
-      "/v1/guardians/"+authUser.guid+"/software/updater/latest"
+      "/v1/guardians/"+authUser.guid+"/software/updater/latest",
+      "/v1/guardians/"+authUser.guid+"/software/cputuner/latest",
+      "/v1/guardians/"+authUser.guid+"/software/spectrogram/latest",
+      "/v1/guardians/"+authUser.guid+"/software/moduleloader/latest"
     ];
 
   models.Guardian

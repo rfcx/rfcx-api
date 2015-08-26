@@ -3,8 +3,10 @@ var hash = require("../../misc/hash.js").hash;
 
 exports.authenticateAs = function(req,token,done,authUser){
 
-  var inviteGuid = token.substr(0,4),
-      inviteToken = token.substr(4);
+  // The input 'token' (invite code) is actually the guid and token, concatenated.
+  // These two should be the same length, so we break the token in half and use each part.
+  var inviteGuid = token.substr(0,Math.floor(token.length/2)),
+      inviteToken = token.substr(Math.floor(token.length/2));
 
   models.RegistrationToken
     .findOne({
