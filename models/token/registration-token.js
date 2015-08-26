@@ -22,7 +22,22 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    allowed_redemptions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
+      validate: {
+        isInt: true,
+        min: 1
+      }
+    },
     created_by: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+    created_for: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {

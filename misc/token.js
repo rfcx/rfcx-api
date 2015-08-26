@@ -14,7 +14,7 @@ exports.token = {
   },
 
   createRegistrationToken: function(options) {
-    options.token_length = 4;
+    options.token_length = ((options.token_length == null) ? 4 : options.token_length);
     return this.createToken("registration", options);
   },
 
@@ -30,6 +30,8 @@ exports.token = {
    *                  {Integer} minutes_until_expiration
    *                  {String} only_allow_access_to
    *                  {String} created_by
+   *                  {String} created_for
+   *                  {Integer} allowed_redemptions
    *                  {Boolean} allow_garbage_collection
 	 * @return {Object} output_token
    *                  {String} token
@@ -38,6 +40,8 @@ exports.token = {
    *                  {Date} token_expires_at
    *                  {String} only_allow_access_to
    *                  {String} created_by
+   *                  {String} created_for
+   *                  {Integer} allowed_redemptions
    *                  {String} token_guid
 	 * @api private
 	 */
@@ -50,6 +54,8 @@ exports.token = {
         token_type = ((options.token_type == null) ? null : options.token_type),
         only_allow_access_to = ((options.only_allow_access_to == null) ? null : ((!util.isArray(options.only_allow_access_to)) ? [options.only_allow_access_to] : options.only_allow_access_to)),
         created_by = ((options.created_by == null) ? null : options.created_by),
+        created_for = ((options.created_for == null) ? null : options.created_for), // only for registration tokens
+        allowed_redemptions = ((options.allowed_redemptions == null) ? null : options.allowed_redemptions), // only for registration tokens
         allow_garbage_collection = ((options.allow_garbage_collection == null) ? false : options.allow_garbage_collection),
 
         minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration)),
@@ -67,6 +73,8 @@ exports.token = {
             token: token, 
             token_expires_at: expires_at,
             only_allow_access_to: only_allow_access_to,
+            created_for: created_for,
+            allowed_redemptions: allowed_redemptions,
             created_by: created_by
           };
 
@@ -86,6 +94,8 @@ exports.token = {
       } else if (what_kind_of_token === "registration") {
         output_token.token_guid = hash.randomString(token_length);
         dbTokenAttributes.guid = output_token.token_guid;
+        dbTokenAttributes.created_for = output_token.created_for;
+        dbTokenAttributes.allowed_redemptions = output_token.allowed_redemptions;
       }
 
       if (  allow_garbage_collection
