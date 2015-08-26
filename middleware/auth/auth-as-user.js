@@ -3,6 +3,9 @@ var hash = require("../../misc/hash.js").hash;
 
 exports.authenticateAs = function(req,token,done,authUser){
 
+  // TO DO 
+  // need to specify how to exclude access to many irrelevant endpoints (like those intended for guardians)
+
   models.User
     .findOne({
         where: { guid: authUser.guid }, 
