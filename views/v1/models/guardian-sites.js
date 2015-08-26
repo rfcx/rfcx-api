@@ -19,6 +19,7 @@ exports.models = {
         guid: dbRow.guid,
         name: dbRow.name,
         description: dbRow.description,
+        cartodb_map_id: dbRow.cartodb_map_id,
         is_active: dbRow.is_active
       };
 
