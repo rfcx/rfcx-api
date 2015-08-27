@@ -1,5 +1,6 @@
 var models  = require("../../models");
 var hash = require("../../utils/hash.js").hash;
+var misc = require("../../utils/misc.js");
 
 exports.authenticateAs = function(req,token,done,authUser){
 
@@ -27,7 +28,7 @@ exports.authenticateAs = function(req,token,done,authUser){
             });
           } else if (   (dbUser.Token[i].auth_token_hash == hash.hashedCredentials(dbUser.Token[i].auth_token_salt,token)) 
                     &&  (   (dbUser.Token[i].only_allow_access_to == null)
-                        ||  (dbUser.Token[i].only_allow_access_to.split("|").indexOf(req.rfcx.url_path) > -1)
+                        ||  (misc.regExIndexOf(req.rfcx.url_path, JSON.parse(dbUser.Token[i].only_allow_access_to)) > -1)
                         )
                     ) {
 

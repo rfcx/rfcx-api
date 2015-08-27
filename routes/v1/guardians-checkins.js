@@ -406,7 +406,9 @@ router.route("/:guardian_id/checkins")
                                         created_by: "guardian-checkin",
                                         minutes_until_expiration: 20,
                                         allow_garbage_collection: true,
-                                        only_allow_access_to: ["/v1/guardians/"+audioInfo[l].guardian_id+"/checkins/"+audioInfo[l].checkin_id+"/audio/"+audioInfo[l].audio_id+"/events"]
+                                        only_allow_access_to: [
+                                          "^/v1/guardians/"+audioInfo[l].guardian_id+"/checkins/"+audioInfo[l].checkin_id+"/audio/"+audioInfo[l].audio_id+"/events$"
+                                          ]
                                       }).then(function(tokenInfo){
 
                                         for (m in audioInfo) {

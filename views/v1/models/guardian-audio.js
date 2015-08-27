@@ -43,7 +43,7 @@ exports.models = {
             allow_garbage_collection: false,
             only_allow_access_to: [
               // the generated token will only be usable for the specific audio file url
-              "/v1/audio/"+dbAudio[dbAudInd].guid+"."+dbAudio[dbAudInd].url.substr(1+dbAudio[dbAudInd].url.lastIndexOf("."))
+              "^/v1/audio/"+dbAudio[dbAudInd].guid+"."+dbAudio[dbAudInd].url.substr(1+dbAudio[dbAudInd].url.lastIndexOf("."))+"$"
               ]
           }).then(function(tokenInfo){
               try {

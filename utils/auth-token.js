@@ -28,7 +28,7 @@ exports.token = {
    *                  {Integer} owner_primary_key
    *                  {String} token_type
    *                  {Integer} minutes_until_expiration
-   *                  {String} only_allow_access_to
+   *                  {Array} only_allow_access_to
    *                  {String} created_by
    *                  {String} created_for
    *                  {Integer} allowed_redemptions
@@ -38,7 +38,7 @@ exports.token = {
    *                  {String} reference_tag
    *                  {String} token_type
    *                  {Date} token_expires_at
-   *                  {String} only_allow_access_to
+   *                  {Array} only_allow_access_to
    *                  {String} created_by
    *                  {String} created_for
    *                  {Integer} allowed_redemptions
@@ -84,7 +84,7 @@ exports.token = {
             auth_token_salt: salt,
             auth_token_hash: tokenHash,
             auth_token_expires_at: expires_at,
-            only_allow_access_to: ((only_allow_access_to == null) ? null : only_allow_access_to.join("|"))
+            only_allow_access_to: ((only_allow_access_to == null) ? null : JSON.stringify(only_allow_access_to))
       };
 
       if (what_kind_of_token === "anonymous") {
