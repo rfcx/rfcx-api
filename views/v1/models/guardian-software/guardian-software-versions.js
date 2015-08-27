@@ -12,11 +12,8 @@ exports.models = {
 
       var dbRow = dbSoftwareVersion[i];
 
-      jsonArray.push({
-        // measured_at: dbRow.measured_at,
-        // offline_duration: dbRow.offline_duration,
-        // carrier_name: dbRow.carrier_name
-      });
+      // jsonArray.push({
+      // });
     }
     return jsonArray;
   

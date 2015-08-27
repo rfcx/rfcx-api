@@ -1,7 +1,12 @@
 var models  = require("../../models");
 var hash = require("../../utils/hash.js").hash;
+var miscUtils = require("../../utils/misc.js");
 
 exports.authenticateAs = function(req,token,done,authUser){
+
+  if (typeof Array.prototype.regExIndexOf === "undefined") {
+    Array.prototype.regExIndexOf = miscUtils.regExIndexOf;
+  }
 
   var only_allow_access_to = [
       "/v1/guardians/"+authUser.guid+"/checkins",
