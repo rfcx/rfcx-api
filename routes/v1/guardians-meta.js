@@ -28,7 +28,6 @@ router.route("/:guardian_id/meta/:meta_type/latest")
         }).then(function(dbGuardian){
 
             var dbSearchFilter = { guardian_id: dbGuardian.id };
-            var record_limit = 20;//req.rfcx.count;
             // if (softwareRole === "all") {
             //   dbSearchFilter.is_updatable = true;
             // }  else {
@@ -39,7 +38,7 @@ router.route("/:guardian_id/meta/:meta_type/latest")
                 .findAll({
                     where: dbSearchFilter,
                     order: [ [modelLookUp[meta_type][2], "DESC"] ],
-                    limit: record_limit
+                    limit: req.rfcx.count
                 }).then(function(dbMeta){
 
                     res.status(200).json(views.models[modelLookUp[meta_type][1]](req,res,dbMeta));
