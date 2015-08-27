@@ -185,18 +185,18 @@ router.route("/:guardian_id/checkins")
               }
               for (msgInfoInd in messageInfo) {
                 // save each message into a database
-                models.GuardianMessage.create({
+                models.GuardianMetaMessage.create({
                     guardian_id: messageInfo[msgInfoInd].guardian_id,
                     check_in_id: messageInfo[msgInfoInd].checkin_id,
                     received_at: messageInfo[msgInfoInd].timeStamp,
                     address: messageInfo[msgInfoInd].address,
                     body: messageInfo[msgInfoInd].body,
                     android_id: messageInfo[msgInfoInd].android_id
-                  }).then(function(dbGuardianMessage){
+                  }).then(function(dbGuardianMetaMessage){
                     // if all goes well, then report it on the "global" object...
-                    messageInfo[dbGuardianMessage.android_id].isSaved = true;
-                    messageInfo[dbGuardianMessage.android_id].guid = dbGuardianMessage.guid;
-                    console.log("message saved: "+dbGuardianMessage.guid);
+                    messageInfo[dbGuardianMetaMessage.android_id].isSaved = true;
+                    messageInfo[dbGuardianMetaMessage.android_id].guid = dbGuardianMetaMessage.guid;
+                    console.log("message saved: "+dbGuardianMetaMessage.guid);
                   }).catch(function(err){
                     console.log("error saving message: "+messageInfo[msgInfoInd].android_id+", "+messageInfo[msgInfoInd].body+", "+err);
                   });

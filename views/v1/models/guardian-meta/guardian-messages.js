@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMessages: function(req,res,dbMessages) {
+  guardianMetaMessages: function(req,res,dbMessages) {
 
     if (!util.isArray(dbMessages)) { dbMessages = [dbMessages]; }
 

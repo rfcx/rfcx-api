@@ -92,7 +92,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianCheckIn.hasMany(models.GuardianMetaNetwork, {as: "MetaNetwork", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaOffline, {as: "MetaOffline", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaPower, {as: "MetaPower", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMessage, {as: "Message", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaMessage, {as: "MetaMessages", foreignKey: "check_in_id"});
 
         GuardianCheckIn.hasMany(models.GuardianEvent, {as: "Event", foreignKey: "check_in_id"});
 

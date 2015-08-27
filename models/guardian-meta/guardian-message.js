@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var GuardianMessage = sequelize.define("GuardianMessage", {
+  var GuardianMetaMessage = sequelize.define("GuardianMetaMessage", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4
@@ -44,7 +44,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-        GuardianMessage.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianMetaMessage.belongsTo(models.Guardian, {as: 'Guardian'});
       },
       indexes: [
         {
@@ -55,5 +55,5 @@ module.exports = function(sequelize, DataTypes) {
     }
   });
 
-  return GuardianMessage;
+  return GuardianMetaMessage;
 };

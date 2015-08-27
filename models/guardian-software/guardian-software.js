@@ -6,7 +6,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isIn: [["installer", "updater", "cycle", "system", "audio", "connect", "api", "carrier", "hardware", "guardian", "spectrogram" ]], 
       }
     },
     is_available: {

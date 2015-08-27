@@ -34,7 +34,7 @@ exports.models = {
       if (dbRow.Guardian != null) { checkIn.guardian = views.models.guardian(req,res,dbRow.Guardian)[0]; }
 //      if (dbRow.Version != null) { checkIn.software_version = dbRow.Version.number; }
       if (dbRow.Audio != null) { checkIn.audio = views.models.guardianAudio(req,res,dbRow.Audio); }
-      if (dbRow.Messages != null) { checkIn.messages = views.models.guardianMessages(req,res,dbRow.Messages); }
+      if (dbRow.MetaMessages != null) { checkIn.messages = views.models.guardianMetaMessages(req,res,dbRow.MetaMessages); }
 
       if (dbRow.MetaCPU != null) { checkIn.meta.cpu = views.models.guardianMetaCPU(req,res,dbRow.MetaCPU); }
       if (dbRow.MetaDataTransfer != null) { checkIn.meta.data_transfer = views.models.guardianMetaDataTransfer(req,res,dbRow.MetaDataTransfer); }
