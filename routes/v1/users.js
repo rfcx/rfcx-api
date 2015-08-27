@@ -1,11 +1,11 @@
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-var hash = require("../../misc/hash.js").hash;
-var token = require("../../misc/token.js").token;
+var hash = require("../../utils/hash.js").hash;
+var token = require("../../utils/auth-token.js").token;
 var views = require("../../views/v1");
 var passport = require("passport");
-passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
+passport.use(require("../../middleware/passport-token").TokenStrategy);
 
 router.route("/login")
   .post(function(req,res) {

@@ -4,7 +4,7 @@ var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
 var passport = require("passport");
-passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
+passport.use(require("../../middleware/passport-token").TokenStrategy);
 
 router.route("/:checkin_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {

@@ -5,7 +5,7 @@ var router = express.Router();
 var querystring = require("querystring");
 var fs = require("fs");
 var passport = require("passport");
-passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
+passport.use(require("../../middleware/passport-token").TokenStrategy);
 
 router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
   .post(passport.authenticate("token",{session:false}), function(req, res) {

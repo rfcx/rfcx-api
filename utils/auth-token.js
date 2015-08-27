@@ -1,5 +1,5 @@
 var util = require("util");
-var hash = require("../misc/hash.js").hash;
+var hash = require("../utils/hash.js").hash;
 var Promise = require("bluebird");
 var models  = require("../models");
 

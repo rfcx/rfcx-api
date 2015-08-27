@@ -1,5 +1,5 @@
 var models  = require("../../models");
-var hash = require("../../misc/hash.js").hash;
+var hash = require("../../utils/hash.js").hash;
 
 exports.authenticateAs = function(req,token,done,authUser){
 

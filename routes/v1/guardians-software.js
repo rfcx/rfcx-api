@@ -6,13 +6,13 @@ var fs = require("fs");
 var util = require("util");
 var querystring = require("querystring");
 var passport = require("passport");
-var hash = require("../../misc/hash.js").hash;
-var aws = require("../../misc/aws.js").aws();
+var hash = require("../../utils/hash.js").hash;
+var aws = require("../../utils/external/aws.js").aws();
 var guardianSoftware = require("../../data_storage/guardian-software.js");
 var fileKeeper = require("../../file_storage/file-keeper.js");
 var views = require("../../views/v1");
 var passport = require("passport");
-passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
+passport.use(require("../../middleware/passport-token").TokenStrategy);
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)

@@ -4,8 +4,6 @@ exports.env = {
 
   UPLOAD_CACHE_DIRECTORY: process.cwd()+"/tmp/uploads/",
 
-  NEW_RELIC_KEY: "",
-
   AWS_ACCESS_KEY_ID: "",
   AWS_SECRET_KEY: "",
   AWS_REGION_ID: "",
@@ -16,6 +14,9 @@ exports.env = {
   RDS_USERNAME: "",
   RDS_PASSWORD: "",
   RDS_PORT: 3306,
+
+  NEW_RELIC_KEY: "",
+  CARTODB_KEY: "",
 
   SEQUELIZE_VERBOSE: false
   

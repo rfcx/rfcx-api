@@ -7,12 +7,12 @@ var fs = require("fs");
 var zlib = require("zlib");
 var exifTool = require("exiftool");
 var util = require("util");
-var hash = require("../../misc/hash.js").hash;
-var token = require("../../misc/token.js").token;
-var aws = require("../../misc/aws.js").aws();
+var hash = require("../../utils/hash.js").hash;
+var token = require("../../utils/auth-token.js").token;
+var aws = require("../../utils/external/aws.js").aws();
 var views = require("../../views/v1");
 var passport = require("passport");
-passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
+passport.use(require("../../middleware/passport-token").TokenStrategy);
 
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {

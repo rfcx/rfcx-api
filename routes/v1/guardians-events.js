@@ -3,10 +3,10 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var querystring = require("querystring");
-var hash = require("../../misc/hash.js").hash;
-var aws = require("../../misc/aws.js").aws();
+var hash = require("../../utils/hash.js").hash;
+var aws = require("../../utils/external/aws.js").aws();
 var passport = require("passport");
-passport.use(require("../../middleware/auth/passport-token.js").TokenStrategy);
+passport.use(require("../../middleware/passport-token").TokenStrategy);
 
 router.route("/:guardian_id/alerts")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
