@@ -70,7 +70,7 @@ router.route("/register")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
     var userInput = {
-      type: req.body.type.toLowerCase(),
+      type: ((req.body.type == null) ? "unspecified" : req.body.type.toLowerCase()),
       email: req.body.email.toLowerCase(),
       pswd: req.body.password
     };
