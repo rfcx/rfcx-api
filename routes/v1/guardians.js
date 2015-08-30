@@ -13,7 +13,8 @@ router.route("/")
 //        where: { guardian_id: dbGuardian.id }, 
         include: [ { all: true } ], 
         order: [ ["last_check_in", "DESC"] ],
-        limit: req.rfcx.count
+        limit: req.rfcx.limit,
+        offset: req.rfcx.offset
       }).then(function(dbGuardian){
         
         res.status(200).json(views.models.guardian(req,res,dbGuardian));

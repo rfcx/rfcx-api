@@ -6,7 +6,7 @@ var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
-router.route("/:guardian_id/meta/:meta_type/latest")
+router.route("/:guardian_id/meta/:meta_type")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
         var meta_type = req.params.meta_type;
@@ -27,18 +27,18 @@ router.route("/:guardian_id/meta/:meta_type/latest")
             where: { guid: req.params.guardian_id }
         }).then(function(dbGuardian){
 
-            var dbSearchFilter = { guardian_id: dbGuardian.id };
-            // if (softwareRole === "all") {
-            //   dbSearchFilter.is_updatable = true;
-            // }  else {
-            //   dbSearchFilter.role = softwareRole;
-            // }
+            var dbQuery = { guardian_id: dbGuardian.id };
+            var dateClmn = modelLookUp[meta_type][2];
+            if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
+            if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
+            if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
             models[modelLookUp[meta_type][0]]
                 .findAll({
-                    where: dbSearchFilter,
-                    order: [ [modelLookUp[meta_type][2], "DESC"] ],
-                    limit: req.rfcx.count
+                    where: dbQuery,
+                    order: [ [dateClmn, "DESC"] ],
+                    limit: req.rfcx.limit,
+                    offset: req.rfcx.offset
                 }).then(function(dbMeta){
 
                     res.status(200).json(views.models[modelLookUp[meta_type][1]](req,res,dbMeta));

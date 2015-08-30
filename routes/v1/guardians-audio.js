@@ -14,12 +14,19 @@ router.route("/:guardian_id/audio/latest")
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
+        var dbQuery = { guardian_id: dbGuardian.id };
+        var dateClmn = "measured_at";
+        if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
+        if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
+        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
+
         models.GuardianAudio
           .findAll({ 
-            where: { guardian_id: dbGuardian.id }, 
+            where: dbQuery, 
             include: [ { all: true } ], 
-            order: [ ["measured_at", "DESC"] ],
-            limit: req.rfcx.count
+            order: [ [dateClmn, "DESC"] ],
+            limit: req.rfcx.limit,
+            offset: req.rfcx.offset
           }).then(function(dbAudio){
 
             views.models.guardianAudio(req,res,dbAudio)

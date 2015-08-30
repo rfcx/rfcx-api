@@ -10,11 +10,11 @@ exports.middleware = {
   setApiParams: function(req, res, next) {
 
     var apiUrl = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol)+"://"+req.headers.host;
-    var paramCount = (req.query.count == null) ? 1 : parseInt(req.query.count);
+    var paramLimit = (req.query.limit == null) ? 20 : parseInt(req.query.limit);
     var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
 
-    var paramBefore = (req.query.before_timestamp == null) ? null : (new Date(""+req.query.before_timestamp));
-    var paramAfter = (req.query.after_timestamp == null) ? null : (new Date(""+req.query.after_timestamp));
+    var paramAfter = (req.query.starting_after == null) ? null : (new Date(""+req.query.starting_after));
+    var paramBefore = (req.query.ending_before == null) ? null : (new Date(""+req.query.ending_before));
 
     var contentType = path.extname(req.path).trim().substr(1);    
     if (contentType.trim().length == 0) { contentType = "json"; }
@@ -35,10 +35,10 @@ exports.middleware = {
       api_url: apiUrl,
       api_version: apiVersion,
       url_path: urlPath,
-      count: paramCount,
+      limit: paramLimit,
       offset: paramOffset,
-      before_timestamp: paramBefore,
-      after_timestamp: paramAfter,
+      starting_after: paramAfter,
+      ending_before: paramBefore,
       content_type: contentType,
       auth_user: authUser
     };
