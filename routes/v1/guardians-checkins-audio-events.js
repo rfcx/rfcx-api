@@ -50,6 +50,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                           guardian_id: dbGuardian.id, 
                           check_in_id: dbCheckIn.id, 
                           audio_id: dbAudio.id, 
+                          site_id: dbGuardian.site_id,
                           measured_at: eventTime, 
                           classification: audioEvent.snd_classification, 
                           latitude: parseFloat(audioEvent.lat_lng[0]),
