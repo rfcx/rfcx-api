@@ -11,7 +11,7 @@ router.route("/login")
   .post(function(req,res) {
 
     var userInput = {
-      email: req.body.email.toLowerCase(),
+      email: (req.body.email != null) ? req.body.email.toLowerCase() : null,
       pswd: req.body.password
     };
 
