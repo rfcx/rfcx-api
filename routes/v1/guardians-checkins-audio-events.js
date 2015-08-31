@@ -71,6 +71,8 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                   } else {
                     res.status(200).json([]);
                   }
+                }).catch(function(err){
+                  console.log(err);
                 });
 
               }).catch(function(err){
