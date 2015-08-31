@@ -10,17 +10,19 @@ if (process.env.NODE_ENV === "production") {
   process.env.NEW_RELIC_HOME = __dirname+"/config"; require("newrelic");
 }
 
-var express = require("express");
-var path = require("path");
-var favicon = require("serve-favicon");
-var logger = require("morgan");
-var multer = require("multer");
-var passport = require("passport");
-var app = express();
+var express = require("express"),
+    path = require("path"),
+    favicon = require("serve-favicon"),
+    logger = require("morgan"),
+    multer = require("multer"),
+    passport = require("passport"),
+    cors = require("cors"),
+    app = express();
 
 app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
+app.use(cors()); // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
 app.use(logger("dev"));
 app.use(multer(require("./config/multer").config(process.env)));
 app.use(express.static(path.join(__dirname, "public")));
