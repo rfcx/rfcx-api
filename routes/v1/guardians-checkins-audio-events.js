@@ -71,9 +71,6 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                   } else {
                     res.status(200).json([]);
                   }
-                }).catch(function(err){
-                  console.log("failed to find handle json blob | "+err);
-                  if (!!err) { res.status(500).json({ message: "failed to find handle json blob", error: { status: 500 } }); }
                 });
 
               }).catch(function(err){
