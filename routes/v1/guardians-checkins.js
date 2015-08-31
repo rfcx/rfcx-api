@@ -539,7 +539,7 @@ router.route("/:guardian_id/checkins")
   })
 ;
 
-router.route("/:guardian_id/checkins/latest")
+router.route("/:guardian_id/checkins")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian

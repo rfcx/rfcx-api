@@ -6,7 +6,7 @@ var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
-router.route("/:guardian_id/audio/latest")
+router.route("/:guardian_id/audio")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian

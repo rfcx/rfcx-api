@@ -80,6 +80,72 @@ router.route("/:guardian_id/software/:software_role/latest")
   })
 ;
 
+// get the latest released version of the guardian software
+// (primarily for guardians who are checking for updates)
+router.route("/:guardian_id/software/:software_role")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    var softwareRole = req.params.software_role;
+    var inquiringSoftwareRole = req.query.role;
+    var inquiringSoftwareVersion = req.query.version;
+
+    models.Guardian
+      .findOne({
+        where: { guid: req.params.guardian_id }
+      }).then(function(dbGuardian){
+
+        dbGuardian.last_update_check_in = new Date();
+        dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
+        dbGuardian.save();
+
+        models.GuardianSoftware
+          .findOne({
+            where: { 
+              role: req.query.role
+            }
+          }).then(function(dbSoftware){
+            models.GuardianSoftwareVersion
+              .findOne({
+                where: { 
+                  software_role_id: dbSoftware.id, 
+                  version: req.query.version
+                }
+              }).then(function(dbSoftwareVersion){
+                models.GuardianMetaUpdateCheckIn
+                  .create({
+                    guardian_id: dbGuardian.id,
+                    version_id: dbSoftwareVersion.id
+                  }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
+              }).catch(function(err){ });
+          }).catch(function(err){ });
+      
+
+        var dbQuery = { is_available: true };
+        if (softwareRole === "all") {
+          dbQuery.is_updatable = true;
+        } else if (softwareRole === "extra") {
+          dbQuery.is_extra = true;
+        } else {
+          dbQuery.role = softwareRole;
+        }
+
+        models.GuardianSoftware
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ], 
+            order: [ ["current_version_id", "ASC"] ]
+          }).then(function(dSoftware){
+
+            res.status(200).json(views.models.guardianSoftware(req,res,dSoftware));
+
+          }).catch(function(err){
+            res.status(500).json({msg:"error finding latest software versions | "+err});
+          });
+
+      });
+  })
+;
+
 
 // submit a new APK guardian software file
 // (primarily for admin use, when releasing a new software version)
