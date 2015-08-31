@@ -54,16 +54,18 @@ router.route("/:guardian_id/software/:software_role/latest")
           }).catch(function(err){ });
       
 
-        var dbSearchFilter = { is_available: true };
+        var dbQuery = { is_available: true };
         if (softwareRole === "all") {
-          dbSearchFilter.is_updatable = true;
-        }  else {
-          dbSearchFilter.role = softwareRole;
+          dbQuery.is_updatable = true;
+        } else if (softwareRole === "extra") {
+          dbQuery.is_extra = true;
+        } else {
+          dbQuery.role = softwareRole;
         }
 
         models.GuardianSoftware
           .findAll({
-            where: dbSearchFilter,
+            where: dbQuery,
             include: [ { all: true } ], 
             order: [ ["current_version_id", "ASC"] ]
           }).then(function(dSoftware){
@@ -78,42 +80,6 @@ router.route("/:guardian_id/software/:software_role/latest")
   })
 ;
 
-// legacy endpoint for logging update requests from stranded guardians
-router.route("/:guardian_id/software/latest")
-  .get(function(req,res) {
-
-    models.Guardian
-      .findOne({
-        where: { guid: req.params.guardian_id }
-      }).then(function(dbGuardian){
-
-        dbGuardian.last_update_check_in = new Date();
-        dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
-        dbGuardian.save();
-
-        models.GuardianMetaUpdateCheckIn.create({
-            guardian_id: dbGuardian.id,
-            version_id: dbGuardian.version_id
-          }).then(function(dbGuardianMetaUpdateCheckIn){
-            
-            res.status(200).json({
-              versionNumber: "0.5.0",
-              releaseDate: (new Date()),
-              sha1: "x",
-              url: "x"
-            });
-
-          }).catch(function(err){
-            res.status(500).json({msg:"error finding latest software version | "+err});
-          });
-      });
-})
-;
-
-router.route("/upload/software")
-  .get(function(req,res) {
-})
-;
 
 // submit a new APK guardian software file
 // (primarily for admin use, when releasing a new software version)

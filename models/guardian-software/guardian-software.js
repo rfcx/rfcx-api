@@ -19,6 +19,12 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: true,
       validate: {
       }
+    },
+    is_extra: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      validate: {
+      }
     }
   }, {
     classMethods: {
