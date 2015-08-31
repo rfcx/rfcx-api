@@ -404,7 +404,7 @@ router.route("/:guardian_id/checkins")
                                         reference_tag: audioInfo[l].audio_id,
                                         token_type: "worker-analysis",
                                         created_by: "guardian-checkin",
-                                        minutes_until_expiration: 20,
+                                        minutes_until_expiration: 60,
                                         allow_garbage_collection: true,
                                         only_allow_access_to: [
                                           "^/v1/guardians/"+audioInfo[l].guardian_id+"/checkins/"+audioInfo[l].checkin_id+"/audio/"+audioInfo[l].audio_id+"/events$"
