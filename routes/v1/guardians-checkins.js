@@ -440,14 +440,13 @@ router.route("/:guardian_id/checkins")
                                                   console.log(snsErr);
                                                 } else {
 
-                                                  console.log("audio: "+audioInfo[l].audio_id+" (sqs: "+snsData.MessageId+")");
-
                                                   dbAudio.analysis_aws_queue_id = snsData.MessageId;
                                                   
                                                   var isComplete = true;
 
                                                   for (n in audioInfo) {
                                                     if (!audioInfo[n].isSaved.sqs) { isComplete = false; }
+                                                    console.log("audio: "+audioInfo[n].audio_id+" (sqs: "+snsData.MessageId+")");
                                                     returnJson.audio.push({
                                                       id: n,
                                                       guid: audioInfo[n].audio_id
