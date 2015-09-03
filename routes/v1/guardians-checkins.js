@@ -431,7 +431,7 @@ router.route("/:guardian_id/checkins")
                                                     api_token_guid: audioInfo[m].api_token_guid,
                                                     api_token: audioInfo[m].api_token,
                                                     api_token_expires: audioInfo[m].api_token_expires,
-                                                    audioUrl: aws.s3SignedUrl("rfcx-ark", audioInfo[m].s3Path, 30),
+                                                    audioUrl: aws.s3SignedUrl("rfcx-ark", audioInfo[m].s3Path, 60),
                                                     s3Path: audioInfo[m].s3Path
                                                   })
                                               }, function(snsErr, snsData) {
