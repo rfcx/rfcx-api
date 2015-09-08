@@ -11,4 +11,4 @@
 #--certificate-chain file://certificate_chain_file 
 #--certificate-chain file://chain.pem
 
-aws iam upload-server-certificate --server-certificate-name rfcx-org-ucc-20141213 --certificate-body file://rfcx_org.crt --private-key file://rfcx_org.pem --certificate-chain file://chain.pem --path /cloudfront/rfcx-org/
+aws iam upload-server-certificate --server-certificate-name rfcx-org-ucc-20150910-cloudfront --certificate-body file://rfcx_org.crt --private-key file://rfcx_org.key --certificate-chain file://chain.pem --path /cloudfront/rfcx-org/
