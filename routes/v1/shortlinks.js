@@ -6,7 +6,7 @@ var router = express.Router();
 router.route("/:shortlink_id")
   .get(function(req,res) {
 
-    res.status(200).json({msg:"success!"});
+    res.status(200).json({ shortlink: req.params.shortlink_id });
 
     // models.GuardianSite
     //   .findOne({ 
