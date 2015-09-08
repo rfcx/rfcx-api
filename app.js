@@ -45,7 +45,8 @@ var routes = {
               ],
     "audio": [ require("./routes/v1/audio") ],
     "checkins": [ require("./routes/v1/checkins") ],
-    "users": [ require("./routes/v1/users") ]
+    "users": [ require("./routes/v1/users") ],
+    "shortlinks": [ require("./routes/v1/shortlinks") ]
   },
   "v2": {
   }
