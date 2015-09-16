@@ -8,8 +8,6 @@ var querystring = require("querystring");
 var passport = require("passport");
 var hash = require("../../utils/hash.js").hash;
 var aws = require("../../utils/external/aws.js").aws();
-var guardianSoftware = require("../../data_storage/guardian-software.js");
-var fileKeeper = require("../../file_storage/file-keeper.js");
 var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
@@ -147,39 +145,5 @@ router.route("/:guardian_id/software/:software_role")
 ;
 
 
-// submit a new APK guardian software file
-// (primarily for admin use, when releasing a new software version)
-router.route("/upload/software")
-  .post(function(req,res) {
-  	if(!req.body.software_version){
-  	  res.status(500).json({msg:"a software version must be specified"});
-  	  return;
-  	}
-  	hash.fileSha1Async(req.files.software ? req.files.software.path : null)
-  	.then(function(fileHash){
-      return guardianSoftware.upsertGuardianSoftware(req.body.software_version, fileHash)
-    })
-    .then(function(gs) {
-      //if a file was uploaded
-      if(req.files.software && req.files.software.path) {
-  		  fileKeeper.putFile(req.files.software.path, "rfcx-development", req.body.software_version+".apk")
-  		  .then(function(fkRes){
-      	  //remove temporarily uploaded file
-      	  fs.unlink(req.files.software.path,function(e){if(e){console.log(e);}});
-      	  if (200 == fkRes.statusCode) {
-      	    res.status(200).json({msg:"success"}); 
-      	  } else {
-      	    res.status(500).json({msg:"file keeper error storing guardian software file: " + fkRes.msg});
-      	  }
-      	})
-      	.done()
-    	} else {
-    	  res.status(200).json({msg:"success"});
-    	}
-  	}).catch(function(err){
-      res.status(500).json({msg:"error submitting guardian software file: " + err.message});
-    });
-  })
-;   
 
 module.exports = router;

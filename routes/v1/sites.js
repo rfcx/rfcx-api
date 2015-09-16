@@ -33,8 +33,7 @@ router.route("/:site_id")
 
     models.GuardianSite
       .findOne({ 
-        where: { guid: req.params.site_id },
-        include: [ { all: true } ]
+        where: { guid: req.params.site_id }
       }).then(function(dbSite){
         
         res.status(200).json(views.models.guardianSites(req,res,dbSite));
