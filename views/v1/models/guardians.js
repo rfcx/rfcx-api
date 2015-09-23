@@ -16,6 +16,12 @@ exports.models = {
         guid: dbRow.guid,
         shortname: dbRow.shortname,
         is_certified: dbRow.is_certified,
+        carrier: {
+          name: dbRow.carrier_name,
+          number: dbRow.phone_number
+        },
+        cartodb_coverage_id: dbRow.cartodb_coverage_id,
+        software: [],
         checkins: {
           guardian: {
             count: dbRow.check_in_count,
