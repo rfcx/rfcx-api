@@ -46,7 +46,20 @@ module.exports = function(sequelize, DataTypes) {
         max: 180
       }
     },
+    cartodb_coverage_id: {
+      type: DataTypes.UUID,
+      unique: false,
+      allowNull: true,
+      validate: {
+      }
+    },
     phone_number: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+    carrier_name: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
