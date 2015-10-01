@@ -126,4 +126,23 @@ router.route("/register")
   
   });
 
+// TO DO security measure to ensure that not any user can see any other user
+router.route("/:user_id")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    models.User 
+      .findOne({
+        where: { guid: req.params.user_id }
+      }).then(function(dbUser){
+        
+        res.status(200).json(views.models.users(req,res,dbUser));
+
+      }).catch(function(err){
+        console.log("failed to return user | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return user"}); }
+      });
+
+  })
+;
+
 module.exports = router;
