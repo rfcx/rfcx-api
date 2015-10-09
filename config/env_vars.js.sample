@@ -17,6 +17,7 @@ exports.env = {
 
   NEW_RELIC_KEY: "",
   CARTODB_KEY: "",
+  MANDRILL_KEY: "",
 
   SEQUELIZE_VERBOSE: false
   

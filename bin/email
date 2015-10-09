@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 var fs = require("fs");
-
-var mandrill = require('mandrill-api/mandrill');
-var mandrill_client = new mandrill.Mandrill('CAeD7ywHVI24Tyhm4dwnqw');
+var args = process.argv.slice(2);
+var recipient_email = args[0].trim();
 
 if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
   var env = require(__dirname+"/../config/env_vars.js").env;
   for (i in env) { process.env[i] = env[i]; }
 }
 
+var mandrill = require('mandrill-api/mandrill');
+var mandrill_client = new mandrill.Mandrill(process.env.MANDRILL_KEY);
 
 var message = {
     "html": "<p>Example HTML content</p>",
     "text": "Example text content",
-    "subject": "example subject",
+    "subject": "Subject: "+(new Date()).toISOString(),
     "from_email": "admin@rfcx.org",
-    "from_name": "Example Name",
+    "from_name": "Email: "+(new Date()).toISOString(),
     "to": [{
-            "email": "topher@rfcx.org",
-            "name": "Topher White",
+            "email": recipient_email,
+            "name": "Recipient Name",
             "type": "to"
         }],
     "headers": {
@@ -33,7 +34,7 @@ var message = {
     "url_strip_qs": null,
     "preserve_recipients": null,
     "view_content_link": null,
-//    "bcc_address": "message.bcc_address@example.com",
+    "bcc_address": "admin@rfcx.org",
     "tracking_domain": null,
     "signing_domain": null,
     "return_path_domain": null,
@@ -44,7 +45,7 @@ var message = {
             "content": "merge1 content"
         }],
     "merge_vars": [{
-            "rcpt": "recipient.email@example.com",
+            "rcpt": recipient_email,
             "vars": [{
                     "name": "merge2",
                     "content": "merge2 content"
@@ -53,7 +54,7 @@ var message = {
     "tags": [
         "password-resets"
     ],
-    "subaccount": "customer-123",
+    "subaccount": null,
     "google_analytics_domains": [
         "example.com"
     ],
@@ -62,16 +63,16 @@ var message = {
         "website": "www.example.com"
     },
     "recipient_metadata": [{
-            "rcpt": "recipient.email@example.com",
+            "rcpt": recipient_email,
             "values": {
                 "user_id": 123456
             }
         }],
-    "attachments": [{
-            "type": "text/plain",
-            "name": "myfile.txt",
-            "content": "ZXhhbXBsZSBmaWxl"
-        }],
+    "attachments": [/*{
+            "type": "image/png",
+            "name": "image.png",
+            "content": ""
+        }*/],
     "images": [{
             "type": "image/png",
             "name": "IMAGECID",
@@ -80,7 +81,7 @@ var message = {
 };
 var async = false;
 var ip_pool = "Main Pool";
-var send_at = null;//new Date();//"example send_at";
+var send_at = null;
 mandrill_client.messages.send({"message": message, "async": async, "ip_pool": ip_pool, "send_at": send_at}, function(result) {
     console.log(result);
     /*
@@ -96,3 +97,4 @@ mandrill_client.messages.send({"message": message, "async": async, "ip_pool": ip
     console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
     // A mandrill error occurred: Unknown_Subaccount - No subaccount exists with the id 'customer-123'
 });
+
