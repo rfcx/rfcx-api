@@ -21,6 +21,10 @@ exports.models = {
           number: dbRow.phone_number
         },
         cartodb_coverage_id: dbRow.cartodb_coverage_id,
+        location: {
+          latitude: parseFloat(dbRow.latitude),
+          longitude: parseFloat(dbRow.longitude)
+        },
         software: [],
         checkins: {
           guardian: {

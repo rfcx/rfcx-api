@@ -134,7 +134,7 @@ router.route("/:user_id")
       .findOne({
         where: { guid: req.params.user_id }
       }).then(function(dbUser){
-        
+
         res.status(200).json(views.models.users(req,res,dbUser));
 
       }).catch(function(err){
@@ -142,6 +142,30 @@ router.route("/:user_id")
         if (!!err) { res.status(500).json({msg:"failed to return user"}); }
       });
 
+  })
+;
+
+// TO DO security measure to ensure that not any user can see any other user
+router.route("/:user_id")
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
+
+    if (req.rfcx.auth_token_info.guid === req.params.user_id) {
+      models.User 
+        .findOne({
+          where: { guid: req.params.user_id }
+        }).then(function(dbUser){
+
+          
+          res.status(200).json(views.models.users(req,res,dbUser));
+
+
+        }).catch(function(err){
+          console.log("failed to update user | "+err);
+          if (!!err) { res.status(500).json({msg:"failed to update user"}); }
+        });
+    } else {
+      res.status(401).json({msg:"not allowed to edit another user's profile"});
+    }
   })
 ;
 
