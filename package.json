@@ -14,7 +14,7 @@
     "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
   "dependencies": {
-    "aws-sdk": "^2.1.45",
+    "aws-sdk": "^2.2.9",
     "bluebird": "^2.4.2",
     "body-parser": "^1.13.3",
     "cartodb": "^0.2.1",
@@ -28,13 +28,13 @@
     "mandrill-api": "^1.0.45",
     "morgan": "^1.6.1",
     "multer": "^0.1.8",
-    "mysql": "^2.8.0",
+    "mysql": "^2.9.0",
     "newrelic": "^1.21.1",
     "passport": "^0.2.2",
     "passport-accesstoken": "^0.1.0",
     "passport-local": "^1.0.0",
-    "sequelize": "^3.5.1",
-    "sequelize-cli": "^1.7.4",
+    "sequelize": "^3.11.0",
+    "sequelize-cli": "^1.9.1",
     "serve-favicon": "^2.2.1",
     "sha.js": "^2.4.2"
   },
