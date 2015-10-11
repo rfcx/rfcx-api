@@ -18,7 +18,10 @@ router.route("/:audio_id")
         if (req.rfcx.content_type === "m4a") {
           views.models.guardianAudioFile(req,res,dbAudio);
         } else {
-          res.status(200).json(views.models.guardianAudio(req,res,dbAudio));
+            views.models.guardianAudio(req,res,dbAudio)
+              .then(function(audioJson){
+                res.status(200).json(audioJson);
+            });
         }
         
       }).catch(function(err){
