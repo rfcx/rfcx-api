@@ -240,7 +240,7 @@ router.route("/:guardian_id/checkins")
                      origin_id: timeStamp,
                      timeStamp: new Date(parseInt(timeStamp)),
                      isSaved: false,
-                     s3Path: "/"+process.env.NODE_ENV
+                     s3Path: "/screenshots/"+process.env.NODE_ENV
                               +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
                               +"/"+dbGuardian.guid
                               +"/"+dbGuardian.guid+"-"+dateString+".png"
@@ -260,6 +260,8 @@ router.route("/:guardian_id/checkins")
                         } else if (200 == s3Res.statusCode) {
                           for (l in screenShotInfo) {
                             if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
+                              
+                              fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
 
                               models.GuardianMetaScreenShot.create({
                                   guardian_id: dbGuardian.id,
@@ -268,14 +270,12 @@ router.route("/:guardian_id/checkins")
                                   sha1_checksum: screenShotInfo[l].sha1Hash,
                                   url: screenShotInfo[l].s3Path
                                 }).then(function(dbGuardianMetaScreenShot){
-                                  // // if all goes well, then report it on the "global" object...
+                                    // if all goes well, then report it on the "global" object...
                                     screenShotInfo[l].isSaved = true;
                                     console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
                                 }).catch(function(err){
                                   console.log("error saving screenshot: "+screenShotInfo[l].timeStamp+err);
                                 });
-
-                              fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
                             }
                           }                        
                         }
