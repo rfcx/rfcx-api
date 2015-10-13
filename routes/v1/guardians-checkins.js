@@ -262,7 +262,7 @@ router.route("/:guardian_id/checkins")
                             if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
 
                               models.GuardianMetaScreenShot.create({
-                                  guardian_id: screenShotInfo[l].guardian_id,
+                                  guardian_id: dbGuardian.id,
                                   captured_at: screenShotInfo[l].timeStamp,
                                   size: screenShotInfo[l].size,
                                   sha1_checksum: screenShotInfo[l].sha1Hash,
