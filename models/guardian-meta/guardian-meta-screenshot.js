@@ -31,7 +31,7 @@ module.exports = function(sequelize, DataTypes) {
     sha1_checksum: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
+      unique: false,
       validate: {
       }
     }
