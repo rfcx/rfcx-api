@@ -299,11 +299,11 @@ router.route("/:guardian_id/checkins")
             }
 
             // add messages instructions
-            returnJson.instructions.messages.push({
-              body: "From  "+dbGuardian.guid,
-              address: "+14153359205",
-              guid: "guid goes here"
-            });
+            // returnJson.instructions.messages.push({
+            //   body: "From  "+dbGuardian.guid,
+            //   address: "+14153359205",
+            //   guid: "guid goes here"
+            // });
             
             var softwareVersions = [];
             for (versionInd in versionJson) { softwareVersions.push(versionInd+"-"+versionJson[versionInd]); }
