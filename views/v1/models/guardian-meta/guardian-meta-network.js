@@ -15,6 +15,7 @@ exports.models = {
       jsonArray.push({
         measured_at: dbRow.measured_at,
         signal_strength: dbRow.signal_strength,
+        network_type: dbRow.network_type,
         carrier_name: dbRow.carrier_name
       });
     }
