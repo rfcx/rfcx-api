@@ -68,7 +68,9 @@ router.route("/:guardian_id/software/:software_role/latest")
             order: [ ["current_version_id", "ASC"] ]
           }).then(function(dSoftware){
 
-            res.status(200).json(views.models.guardianSoftware(req,res,dSoftware));
+            res.status(200).json(
+              (dbGuardian.is_updatable) ? views.models.guardianSoftware(req,res,dSoftware) : []
+              );
 
           }).catch(function(err){
             res.status(500).json({msg:"error finding latest software versions | "+err});
@@ -134,7 +136,9 @@ router.route("/:guardian_id/software/:software_role")
             order: [ ["current_version_id", "ASC"] ]
           }).then(function(dSoftware){
 
-            res.status(200).json(views.models.guardianSoftware(req,res,dSoftware));
+            res.status(200).json(
+              (dbGuardian.is_updatable) ? views.models.guardianSoftware(req,res,dSoftware) : []
+              );
 
           }).catch(function(err){
             res.status(500).json({msg:"error finding latest software versions | "+err});
