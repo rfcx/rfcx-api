@@ -30,6 +30,13 @@ module.exports = function(sequelize, DataTypes) {
           min: 1
       }
     },
+    harmonic_intervals: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
     latitude: {
       type: DataTypes.FLOAT,
       allowNull: true,

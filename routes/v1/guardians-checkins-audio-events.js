@@ -44,6 +44,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                       var eventTime = new Date(audioEvent.incident_time.replace(/ /g,"T")+".000Z");
                       var audioStartTime = new Date(audioEvent.recording_start);
                       var audioEventTime = eventTime.valueOf()-audioStartTime.valueOf();
+                      var harmonicInterval = JSON.stringify(audioEvent.harmonic_interval);
                       
                       models.GuardianEvent
                         .create({
@@ -53,6 +54,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                           site_id: dbGuardian.site_id,
                           measured_at: eventTime, 
                           classification: audioEvent.snd_classification, 
+                          harmonic_intervals: harmonicInterval,
                           latitude: parseFloat(audioEvent.lat_lng[0]),
                           longitude: parseFloat(audioEvent.lat_lng[1]),
                           duration: Math.round(parseFloat(audioEvent.incident_duration)*1000)
@@ -60,7 +62,6 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
 
                           savedEvents.push(dbGuardianEvent.guid);
                           if (savedEvents.length == audioEvents.length) {
-                            console.log("HARMONIC INTERVAL SIZE: "+audioEvent.harmonic_interval.length);
                             res.status(200).json(savedEvents);
                           }
 
