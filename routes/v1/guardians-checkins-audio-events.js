@@ -60,6 +60,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
 
                           savedEvents.push(dbGuardianEvent.guid);
                           if (savedEvents.length == audioEvents.length) {
+                            console.log("HARMONIC INTERVAL SIZE: "+audioEvent.harmonic_interval.length);
                             res.status(200).json(savedEvents);
                           }
 
