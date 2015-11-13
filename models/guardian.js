@@ -40,6 +40,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    is_updatable: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      validate: {
+      }
+    },
     latitude: {
       type: DataTypes.FLOAT,
       allowNull: true,
