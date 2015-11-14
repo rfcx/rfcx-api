@@ -39,17 +39,24 @@ router.route("/:guardian_id/checkins")
           var metaVersionArr = strArrToJSArr(json.software_version,"|","*"), versionJson = {};
           for (vInd in metaVersionArr) { versionJson[metaVersionArr[vInd][0]] = metaVersionArr[vInd][1]; }
 
+          var metaGeo = [
+              ((json.location[0] != null) ? parseFloat(json.location[0]) : null),
+              ((json.location[1] != null) ? parseFloat(json.location[1]) : null),
+              ((json.location[2] != null) ? parseFloat(json.location[2]) : null)
+            ];
+
           models.GuardianCheckIn
             .create({
               guardian_id: dbGuardian.id,
               site_id: dbGuardian.site_id,
               software_versions: JSON.stringify(versionJson),
-              measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
-              queued_at: new Date(parseInt(json.queued_at)),
+              measured_at: timeStampToDate(json.measured_at, json.timezone_offset),
+              queued_at: timeStampToDate(json.queued_at, json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
               guardian_skipped_checkins: parseInt(json.skipped_checkins),
-              location_latitude: 3.6141375, // this needs to be a real values from the guardian, or otherwise...
-              location_longitude: 14.2108033, // this needs to be a real values from the guardian, or otherwise...
+              location_latitude: metaGeo[0],
+              location_longitude: metaGeo[1],
+              location_precision: metaGeo[2],
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
 
@@ -61,8 +68,8 @@ router.route("/:guardian_id/checkins")
               models.GuardianMetaDataTransfer.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
-                  started_at: new Date(metaDataTransfer[dtInd][0].replace(/ /g,"T")+json.timezone_offset),
-                  ended_at: new Date(metaDataTransfer[dtInd][1].replace(/ /g,"T")+json.timezone_offset),
+                  started_at: timeStampToDate(metaDataTransfer[dtInd][0], json.timezone_offset),
+                  ended_at: timeStampToDate(metaDataTransfer[dtInd][1], json.timezone_offset),
                   bytes_received: parseInt(metaDataTransfer[dtInd][2]),
                   bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
                   total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
@@ -78,7 +85,7 @@ router.route("/:guardian_id/checkins")
               models.GuardianMetaCPU.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
-                  measured_at: new Date(metaCPU[cpuInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  measured_at: timeStampToDate(metaCPU[cpuInd][0], json.timezone_offset),
                   cpu_percent: parseInt(metaCPU[cpuInd][1]),
                   cpu_clock: parseInt(metaCPU[cpuInd][2])
                 }).then(function(dbGuardianMetaCPU){ }).catch(function(err){
@@ -92,7 +99,7 @@ router.route("/:guardian_id/checkins")
               models.GuardianMetaBattery.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
-                  measured_at: new Date(metaBattery[battInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  measured_at: timeStampToDate(metaBattery[battInd][0], json.timezone_offset),
                   battery_percent: parseInt(metaBattery[battInd][1]),
                   battery_temperature: parseInt(metaBattery[battInd][2])
                 }).then(function(dbGuardianMetaBattery){ }).catch(function(err){
@@ -106,7 +113,7 @@ router.route("/:guardian_id/checkins")
               models.GuardianMetaPower.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
-                  measured_at: new Date(metaPower[pwrInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  measured_at: timeStampToDate(metaPower[pwrInd][0], json.timezone_offset),
                   is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
                   is_charged: (metaPower[pwrInd][2] === "1") ? true : false
                 }).then(function(dbGuardianMetaPower){ }).catch(function(err){
@@ -120,7 +127,7 @@ router.route("/:guardian_id/checkins")
               models.GuardianMetaNetwork.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
-                  measured_at: new Date(metaNetwork[ntwkInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  measured_at: timeStampToDate(metaNetwork[ntwkInd][0], json.timezone_offset),
                   signal_strength: parseInt(metaNetwork[ntwkInd][1]),
                   network_type: metaNetwork[ntwkInd][2],
                   carrier_name: metaNetwork[ntwkInd][3]
@@ -135,7 +142,7 @@ router.route("/:guardian_id/checkins")
               models.GuardianMetaOffline.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
-                  ended_at: new Date(metaOffline[offlInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  ended_at: timeStampToDate(metaOffline[offlInd][0], json.timezone_offset),
                   offline_duration: parseInt(metaOffline[offlInd][1]),
                   carrier_name: metaOffline[offlInd][2]
                 }).then(function(dbGuardianMetaOffline){ }).catch(function(err){
@@ -149,7 +156,7 @@ router.route("/:guardian_id/checkins")
               models.GuardianMetaLightMeter.create({
                   guardian_id: dbGuardian.id,
                   check_in_id: dbCheckIn.id,
-                  measured_at: new Date(metaLightMeter[lmInd][0].replace(/ /g,"T")+json.timezone_offset),
+                  measured_at: timeStampToDate(metaLightMeter[lmInd][0], json.timezone_offset),
                   luminosity: parseInt(metaLightMeter[lmInd][1])
                 }).then(function(dbGuardianMetaLightMeter){ }).catch(function(err){
                   console.log("failed to create GuardianMetaLightMeter | "+err);
@@ -180,7 +187,7 @@ router.route("/:guardian_id/checkins")
                   version: null,//dSoftware.number,
                   address: json.messages[msgInd].address,
                   body: json.messages[msgInd].body,
-                  timeStamp: new Date(json.messages[msgInd].received_at.replace(/ /g,"T")+json.timezone_offset),
+                  timeStamp: timeStampToDate(json.messages[msgInd].received_at, json.timezone_offset),
                   isSaved: false
                 };
               }
@@ -239,7 +246,7 @@ router.route("/:guardian_id/checkins")
                      sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
                      guardianSha1Hash: screenShotMeta[3],
                      origin_id: timeStamp,
-                     timeStamp: new Date(parseInt(timeStamp)),
+                     timeStamp: timeStampToDate(timeStamp, json.timezone_offset),
                      isSaved: false,
                      s3Path: "/screenshots/"+process.env.NODE_ENV
                               +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
@@ -323,10 +330,10 @@ router.route("/:guardian_id/checkins")
                 var audioInfo = {};
                 for (i in req.files.audio) {
                   audioMeta[i] = audioMeta[i].split("*");
-                  var timeStamp = audioMeta[i][1]; 
-                  audioMeta[i][1] = new Date(parseInt(audioMeta[i][1]));
+                  var timeStampIndex = audioMeta[i][1]; 
+                  audioMeta[i][1] = timeStampToDate(audioMeta[i][1], json.timezone_offset); 
                   var dateString = audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-");
-                  audioInfo[timeStamp] = {
+                  audioInfo[timeStampIndex] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
                     version: null, // to be decided whether this is important to include here...
@@ -337,7 +344,7 @@ router.route("/:guardian_id/checkins")
                     size: null, // to be calculated following the uncompression
                     sha1Hash: null, // to be calculated following the uncompression
                     duration: null,
-                    timeStamp: timeStamp,
+                    timeStamp: timeStampIndex,
                     measured_at: audioMeta[i][1],
                     api_token_guid: null,
                     api_token: null,
@@ -439,7 +446,7 @@ router.route("/:guardian_id/checkins")
                                                     checkin_id: audioInfo[m].checkin_id,
                                                     audio_id: audioInfo[m].audio_id,
                                                     sha1Hash: audioInfo[m].sha1Hash,
-                                                    latLng: [ dbCheckIn.location_latitude, dbCheckIn.location_longitude ],
+                                                    geoLocation: { latitude: dbCheckIn.location_latitude, longitude: dbCheckIn.location_longitude, precision: dbCheckIn.location_precision },
                                                     timeStamp: audioInfo[m].timeStamp,
                                                     measured_at: audioInfo[m].measured_at,
                                                     api_token_guid: audioInfo[m].api_token_guid,
@@ -591,6 +598,22 @@ router.route("/:guardian_id/checkins")
 ;
 
 module.exports = router;
+
+function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
+
+  var asDate = null;
+
+  // PLEASE MODIFY LATER WHEN WE NO LONGER NEED TO SUPPORT LEGACY TIMESTAMPS !!!!!
+  if ((""+timeStamp).indexOf(":") > -1) {
+    // LEGACY TIMESTAMP FORMAT
+    asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
+  } else if (timeStamp != null) {
+    
+    asDate = new Date(parseInt(timeStamp));
+  
+  }
+  return asDate;
+}
 
 // Special Functions
 
