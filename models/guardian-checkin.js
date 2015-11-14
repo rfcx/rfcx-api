@@ -84,8 +84,15 @@ module.exports = function(sequelize, DataTypes) {
         min: -180,
         max: 180
       }
+    },
+    location_precision: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: 0
+      }
     }
-
   }, {
     classMethods: {
       associate: function(models) {
