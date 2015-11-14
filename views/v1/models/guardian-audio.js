@@ -18,8 +18,8 @@ exports.models = {
 
       aws.s3(s3Bucket).getFile(s3Path, function(err, result){
         if(err) { return next(err); }
-        res.setHeader("Content-disposition", "filename="+dbRow.guid+"."+audioFileExtension);
-        res.setHeader("Content-type", audioContentType);
+        res.setHeader("Content-Disposition", "filename="+dbRow.guid+"."+audioFileExtension);
+        res.setHeader("Content-Type", audioContentType);
         result.pipe(res);           
       });
   },
