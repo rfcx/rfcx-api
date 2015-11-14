@@ -45,6 +45,7 @@ router.route("/:guardian_id/checkins")
               site_id: dbGuardian.site_id,
               software_versions: JSON.stringify(versionJson),
               measured_at: new Date(json.measured_at.replace(/ /g,"T")+json.timezone_offset),
+              queued_at: new Date(parseInt(json.queued_at)),
               guardian_queued_checkins: parseInt(json.queued_checkins),
               guardian_skipped_checkins: parseInt(json.skipped_checkins),
               location_latitude: 3.6141375, // this needs to be a real values from the guardian, or otherwise...

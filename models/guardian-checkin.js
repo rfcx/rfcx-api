@@ -15,6 +15,14 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
+    queued_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      allowNull: true,
+      validate: {
+        isDate: true
+      }
+    },
     is_certified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
