@@ -26,10 +26,11 @@ exports.models = {
         location: {
           latitude: parseFloat(dbRow.latitude),
           longitude: parseFloat(dbRow.longitude)
-        }
+        },
+        fingerprint: null
       };
 
-      if (dbRow.harmonic_intervals != null) { guardianEvent.fingerprint = dbRow.harmonic_intervals; }
+      if (dbRow.fingerprint != null) { guardianEvent.fingerprint = dbRow.fingerprint; }
 
       jsonArray.push(guardianEvent);
     }
