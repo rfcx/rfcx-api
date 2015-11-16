@@ -30,8 +30,8 @@ module.exports = function(sequelize, DataTypes) {
           min: 1
       }
     },
-    harmonic_intervals: {
-      type: DataTypes.STRING,
+    fingerprint: {
+      type: DataTypes.TEXT,
       allowNull: true,
       unique: false,
       validate: {

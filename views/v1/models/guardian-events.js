@@ -1,8 +1,14 @@
 var util = require("util");
+var Promise = require("bluebird");
+var aws = require("../../../utils/external/aws.js").aws();
+var token = require("../../../utils/auth-token.js").token;
+function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
   guardianEvents: function(req,res,dbEvents) {
+
+    var views = getAllViews();
 
     if (!util.isArray(dbEvents)) { dbEvents = [dbEvents]; }
     
@@ -23,7 +29,7 @@ exports.models = {
         }
       };
 
-//      if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
+      if (dbRow.harmonic_intervals != null) { guardianEvent.fingerprint = dbRow.harmonic_intervals; }
 
       jsonArray.push(guardianEvent);
     }
