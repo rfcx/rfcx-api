@@ -30,7 +30,7 @@ exports.models = {
         fingerprint: null
       };
 
-      if (dbRow.fingerprint != null) { guardianEvent.fingerprint = dbRow.fingerprint; }
+      if (dbRow.fingerprint != null) { guardianEvent.fingerprint = JSON.parse(dbRow.fingerprint); }
 
       jsonArray.push(guardianEvent);
     }
