@@ -93,39 +93,6 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
   })
 ;
 
-// router.route("/:guardian_id/re-analyze")
-//   .post(passport.authenticate("token",{session:false}), function(req, res) {
-
-//     models.Guardian
-//       .findOne( { where: { guid: req.params.guardian_id } })
-//       .then(function(dbGuardian){
-
-//         models.GuardianAudio
-//           .findAll({ 
-//             where: { guardian_id: dbGuardian.id, analysis_aws_queue_id: null }, 
-//             include: [ { all: true } ], 
-//             order: [ ["measured_at", "DESC"] ],
-//             limit: 200
-//           }).then(function(dbAudio){
-
-//             views.models.guardianAudio(req,res,dbAudio)
-//               .then(function(audioJson){
-//                 res.status(200).json(audioJson);
-//             });
-            
-//         }).catch(function(err){
-//           console.log("failed to return audio | "+err);
-//           if (!!err) { res.status(500).json({msg:"failed to return audio"}); }
-//         });
-
-
-
-//       }).catch(function(err){
-//         console.log("failed to find guardian reference | "+err);
-//         if (!!err) { res.status(404).json({ message: "failed to find guardian reference", error: { status: 404 } }); }
-//       });
-//   })
-// ;
 
 module.exports = router;
 
