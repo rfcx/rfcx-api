@@ -33,33 +33,34 @@ models.Guardian
     models.GuardianAudio
       .findAll({ 
         where: { guardian_id: dbGuardian.id, analysis_aws_queue_id: null }, 
-        include: [ { all: true } ], 
+   //     include: [ { all: true } ], 
         order: [ ["measured_at", "DESC"] ],
-        limit: 200
+        limit: 250
       }).then(function(dbAudio){
-
-        var audioEntry = {};
 
         for (dbAudInd in dbAudio) {
 
-          audioEntry[dbAudio[dbAudInd].guid] = dbAudio[dbAudInd];
+        models.GuardianCheckIn
+          .findOne( { 
+            where: { id: dbAudio[dbAudInd].check_in_id },
+            include: [ { all: true } ]
+          }).then(function(dbCheckIn){
+
+
+            dbCheckIn.Audio[0].s3Path = dbCheckIn.Audio[0].url.substr(13);
 
           token.createAnonymousToken({
-            reference_tag: dbAudio[dbAudInd].guid,
+            reference_tag: dbCheckIn.Audio[0].guid,
             token_type: "worker-analysis",
             created_by: "re-analyze-script",
-            minutes_until_expiration: 60,
-            allow_garbage_collection: true,
+            minutes_until_expiration: 2880,
+            allow_garbage_collection: false,
             only_allow_access_to: [
-              // the generated token will only be usable for the specific audio file url
-              "^/v1/audio/"+dbAudio[dbAudInd].guid+"."+dbAudio[dbAudInd].url.substr(1+dbAudio[dbAudInd].url.lastIndexOf("."))+"$"
+              "^/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbCheckIn.Audio[0].guid+"/events$"
               ]
           }).then(function(tokenInfo){
 
 
-            models.GuardianCheckIn
-              .findOne( { where: { id: audioEntry[tokenInfo.reference_tag].check_in_id } })
-              .then(function(dbCheckIn){
 
 
                           aws.sns().publish({
@@ -67,16 +68,16 @@ models.Guardian
                             Message: JSON.stringify({
                                 guardian_id: dbGuardian.guid,
                                 checkin_id: dbCheckIn.guid,
-                                audio_id: audioEntry[tokenInfo.reference_tag].guid,
-                                sha1Hash: audioEntry[tokenInfo.reference_tag].sha1_checksum,
-                                geoLocation: { latitude: dbGuardian.latitude, longitude: dbGuardian.longitude, precision: 0 },
-                                timeStamp: audioEntry[tokenInfo.reference_tag].measured_at.valueOf(),
-                                measured_at: audioEntry[tokenInfo.reference_tag].measured_at,
+                                audio_id: dbCheckIn.Audio[0].guid,
+                                sha1Hash: dbCheckIn.Audio[0].sha1_checksum,
+                                geoLocation: { latitude: 0, longitude: 0, precision: 0 },
+                                timeStamp: dbCheckIn.Audio[0].measured_at.valueOf(),
+                                measured_at: dbCheckIn.Audio[0].measured_at,
                                 api_token_guid: tokenInfo.token_guid,
                                 api_token: tokenInfo.token,
                                 api_token_expires: tokenInfo.token_expires_at,
-                                audioUrl: aws.s3SignedUrl("rfcx-ark", audioEntry[tokenInfo.reference_tag].url, 60),
-                                s3Path: audioEntry[tokenInfo.reference_tag].url
+                                audioUrl: aws.s3SignedUrl("rfcx-ark", dbCheckIn.Audio[0].s3Path, 60),
+                                s3Path: dbCheckIn.Audio[0].s3Path
                               })
                           }, function(snsErr, snsData) {
 
@@ -84,11 +85,11 @@ models.Guardian
                               console.log(snsErr);
                             } else {
 
-                            audioEntry[tokenInfo.reference_tag].analysis_aws_queue_id = snsData.MessageId;
+                            dbCheckIn.Audio[0].analysis_aws_queue_id = snsData.MessageId;
 
-                            audioEntry[tokenInfo.reference_tag].save();
+                            dbCheckIn.Audio[0].save();
 
-                            console.log(dbCheckIn.guid +" | "+ snsData.MessageId);
+                            console.log(dbCheckIn.Audio[0].sha1_checksum +" | "+ dbCheckIn.guid +" | "+ snsData.MessageId);
 
 
                             }
@@ -96,14 +97,20 @@ models.Guardian
                           });
 
 
-            }).catch(function(err){
-              console.log("failed to return checkin | "+err);
-            });
+
 
           }).catch(function(err){
             console.log("error creating access token for analysis worker | "+err);
           });
+
+
+
+            }).catch(function(err){
+              console.log("failed to return checkin | "+err);
+            });
+
         }
+
     }).catch(function(err){
       console.log("failed to return audio | "+err);
     });
