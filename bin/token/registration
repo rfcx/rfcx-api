@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+cd $SCRIPT_DIR/../..;
+
+echo "We are about to create one (1) new registration token."
+
+read -p "How many tokens would you like to create?: " -n 12 -r
+export TOKEN_COUNT=$((REPLY * 1));
+
+read -p "How many months before the token(s) should expire?: " -n 12 -r
+export EXPIRATION_MINUTES=$((REPLY * 44640));
+
+read -p "What will this token by used for (token 'type')?: " -n 64 -r
+export TOKEN_TYPE=$REPLY;
+
+$SCRIPT_DIR/_generic_token_create --token_type $TOKEN_TYPE --what_kind_of_token registration --how_many $TOKEN_COUNT --minutes_until_expiration $EXPIRATION_MINUTES --allowed_redemptions 3 --allow_garbage_collection true --only_allow_access_to "^/v1/users/register$"
+
+# --created_for _ 
+# --created_by _
+# --reference_tag ant-nux-testing
