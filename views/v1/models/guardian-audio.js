@@ -18,6 +18,9 @@ exports.models = {
 
       aws.s3(s3Bucket).getFile(s3Path, function(err, result){
         if(err) { return next(err); }
+        console.log(result.headers);
+        res.setHeader("Content-Length", result.headers["content-length"]);
+        res.setHeader("Accept-Ranges", result.headers["accept-ranges"]);
         res.setHeader("Content-Disposition", "filename="+dbRow.guid+"."+audioFileExtension);
         res.setHeader("Content-Type", audioContentType);
         result.pipe(res);           
@@ -29,7 +32,7 @@ exports.models = {
     var views = getAllViews();
 
     if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
-    
+
     var jsonArray = [];
 
     return new Promise(function(resolve,reject){

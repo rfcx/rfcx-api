@@ -44,7 +44,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                       var eventTime = new Date(audioEvent.incident_time.replace(/ /g,"T")+".000Z");
                       var audioStartTime = new Date(audioEvent.recording_start);
                       var audioEventTime = eventTime.valueOf()-audioStartTime.valueOf();
-                      var fingerprintArray = JSON.stringify(audioEvent.harmonic_interval);
+                      var fingerprintArray = JSON.stringify(audioEvent.fingerprint);
                       
                       models.GuardianEvent
                         .create({
@@ -53,7 +53,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                           audio_id: dbAudio.id, 
                           site_id: dbGuardian.site_id,
                           measured_at: eventTime, 
-                          classification: audioEvent.snd_classification, 
+                          classification: audioEvent.incident_classification, 
                           fingerprint: fingerprintArray,
                           latitude: parseFloat(audioEvent.lat_lng[0]),
                           longitude: parseFloat(audioEvent.lat_lng[1]),
