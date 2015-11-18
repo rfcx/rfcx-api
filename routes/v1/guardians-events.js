@@ -27,14 +27,14 @@ router.route("/:guardian_id/events")
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
-          }).then(function(dbEvent){
+          }).then(function(dbEvents){
 
-            // views.models.guardianEvents(req,res,dbEvent)
-            //   .then(function(eventJson){
-            //     res.status(200).json(eventJson);
-            // });
+            views.models.guardianEvents(req,res,dbEvents)
+              .then(function(eventJson){
+                res.status(200).json(eventJson);
+            });
 
-            res.status(200).json(views.models.guardianEvents(req,res,dbEvent));
+    //        res.status(200).json(views.models.guardianEvents(req,res,dbEvent));
             
             
 

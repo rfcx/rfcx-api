@@ -29,6 +29,7 @@ exports.models = {
     var views = getAllViews();
 
     if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
+    
     var jsonArray = [];
 
     return new Promise(function(resolve,reject){
