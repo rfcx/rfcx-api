@@ -25,18 +25,19 @@ exports.models = {
           jsonRowsByGuid[thisGuid] = {
             guid: thisGuid,
             analyzed_at: thisRow.Audio.analyzed_at,
-            reviewed_at: null,
+            reviewed_at: thisRow.reviewed_at,
+            reviewed_by: null,
             classification: {
-              analysis: thisRow.classification,
-              review: null
+              analysis: thisRow.classification_analysis,
+              reviewer: thisRow.classification_reviewer
             },
-            measured_at: {
-              analysis: thisRow.measured_at,
-              review: null
+            begins_at: {
+              analysis: thisRow.begins_at_analysis,
+              reviewer: thisRow.begins_at_reviewer
             },
             duration: {
-              analysys: thisRow.duration,
-              review: null
+              analysis: thisRow.duration_analysis,
+              reviewer: thisRow.duration_reviewer
             },
             location: {
               latitude: parseFloat(thisRow.latitude),
@@ -44,9 +45,9 @@ exports.models = {
             }
           };
 
-          if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_id = thisRow.Site.guid; }
-          if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian_id = thisRow.Guardian.guid; }
-          if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_id = thisRow.CheckIn.guid; }
+          if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid; }
+          if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian_guid = thisRow.Guardian.guid; }
+          if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_guid = thisRow.CheckIn.guid; }
 
           if (PARENT_GUID != null) { jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID; }
 

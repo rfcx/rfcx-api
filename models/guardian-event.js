@@ -14,7 +14,37 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    classification_analysis: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    classification_reviewer: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
     measured_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      allowNull: true,
+      validate: {
+        isDate: true
+      }
+    },
+    begins_at_analysis: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      allowNull: true,
+      validate: {
+        isDate: true
+      }
+    },
+    begins_at_reviewer: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       allowNull: true,
@@ -28,6 +58,29 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
           isInt: true,
           min: 1
+      }
+    },
+    duration_analysis: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+          isInt: true,
+          min: 1
+      }
+    },
+    duration_reviewer: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+          isInt: true,
+          min: 1
+      }
+    },
+    reviewed_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      validate: {
+        isDate: true
       }
     },
     fingerprint: {
@@ -58,7 +111,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
+        GuardianEvent.belongsTo(models.GuardianSite, {as: "Site", foreignKey: "site_id"});
         GuardianEvent.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianEvent.belongsTo(models.GuardianCheckIn, {as: "CheckIn", foreignKey: "check_in_id"});
         GuardianEvent.belongsTo(models.GuardianAudio, {as: "Audio", foreignKey: "audio_id"});
       },
       indexes: [

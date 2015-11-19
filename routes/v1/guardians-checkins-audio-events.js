@@ -53,7 +53,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                           audio_id: dbAudio.id, 
                           site_id: dbGuardian.site_id,
                           measured_at: eventTime, 
-                          classification: audioEvent.incident_classification, 
+                          classification_analysis: audioEvent.incident_classification, 
                           fingerprint: fingerprintArray,
                           latitude: parseFloat(audioEvent.lat_lng[0]),
                           longitude: parseFloat(audioEvent.lat_lng[1]),

@@ -55,9 +55,9 @@ exports.models = {
             sha1_checksum: thisRow.sha1_checksum
           };
 
-          if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_id = thisRow.Site.guid; }
-          if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian_id = thisRow.Guardian.guid; }
-          if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_id = thisRow.CheckIn.guid; }
+          if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid; }
+          if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian_guid = thisRow.Guardian.guid; }
+          if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_guid = thisRow.CheckIn.guid; }
 
           if (PARENT_GUID != null) { jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID; }
 
