@@ -462,7 +462,8 @@ router.route("/:guardian_id/checkins")
                                                   console.log(snsErr);
                                                 } else {
 
-                                                  dbAudio.analysis_aws_queue_id = snsData.MessageId;
+                                                  dbAudio.analysis_queued_at = new Date();
+                                                  dbAudio.save();
                                                   
                                                   var isComplete = true;
 

@@ -20,6 +20,12 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
+    analysis_queued_at: {
+      type: DataTypes.DATE,
+      validate: {
+        isDate: true
+      }
+    },
     size: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -70,14 +76,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
-      validate: {
-      }
-    },
-    analysis_aws_queue_id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      unique: false,
-      allowNull: true,
       validate: {
       }
     }

@@ -37,7 +37,7 @@ models.Guardian
 
     models.GuardianAudio
       .findAll({ 
-        where: { guardian_id: dbGuardian.id, analysis_aws_queue_id: null }, 
+        where: { guardian_id: dbGuardian.id, analysis_queued_at: null }, 
         include: [ { all: true } ], 
         order: [ ["measured_at", "DESC"] ],
         limit: 2000
@@ -83,7 +83,7 @@ models.Guardian
                               console.log(snsErr);
                             } else {
 
-                            audArr[tokenInfo.reference_tag].analysis_aws_queue_id = snsData.MessageId;
+                            audArr[tokenInfo.reference_tag].analysis_queued_at = new Date();
 
                             audArr[tokenInfo.reference_tag].save();
 
