@@ -263,7 +263,7 @@ router.route("/:guardian_id/checkins")
                     aws.s3("rfcx-meta").putFile(
                       screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
                       function(err, s3Res){
-                        s3Res.resume();
+                        try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
                         if (!!err) {
                           console.log(err);
                         } else if (200 == s3Res.statusCode) {
@@ -412,7 +412,7 @@ router.route("/:guardian_id/checkins")
                             aws.s3("rfcx-ark").putFile(
                               audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 
                               function(err, s3Res){
-                                s3Res.resume();
+                                try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
                                 if (!!err) {
                                   console.log(err);
                                 } else if (200 == s3Res.statusCode) {

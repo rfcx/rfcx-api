@@ -56,5 +56,5 @@ function useS3Mock() {
 }
 
 function getBucket(bucketName) {
-  return useS3Mock() ? process.cwd()+"/tmp/faux-knox/" : bucketName;
+  return useS3Mock() ? process.cwd()+"/tmp/faux-knox/"+bucketName+"/" : bucketName;
 }
