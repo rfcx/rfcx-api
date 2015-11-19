@@ -24,9 +24,10 @@ var aws = require(__dirname+"/../utils/external/aws.js").aws();
 // var passport = require("passport");
 // passport.use(require(__dirname+"/../middleware/passport-token").TokenStrategy);
 
+var guardian_id = '0bdbb4a5d567'; // sede
 //var guardian_id = "201b89ba5ae2"; //tora
 //var guardian_id = "fdead698b925"; //velho marco
-var guardian_id = "3b10826702df"; //itahu
+//var guardian_id = "3b10826702df"; //itahu
 
 var audArr = {};
 
@@ -39,7 +40,7 @@ models.Guardian
         where: { guardian_id: dbGuardian.id, analysis_aws_queue_id: null }, 
         include: [ { all: true } ], 
         order: [ ["measured_at", "DESC"] ],
-        limit: 750
+        limit: 2000
       }).then(function(dbAudio){
 
         for (dbAudInd in dbAudio) {

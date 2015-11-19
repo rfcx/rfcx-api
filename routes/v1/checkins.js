@@ -3,6 +3,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
+var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
@@ -10,12 +11,18 @@ router.route("/:checkin_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianCheckIn
-      .findOne({ 
+      .findAll({ 
         where: { guid: req.params.checkin_id },
-        include: [ { all: true } ]
+        include: [ { all: true } ],
+        limit: 1
       }).then(function(dbCheckIn){
-        
-        res.status(200).json(views.models.guardianCheckIns(req,res,dbCheckIn));
+
+        if (dbCheckIn.length < 1) {
+          httpError(res, 404, "database");
+        } else {
+          views.models.guardianCheckIns(req,res,dbCheckIn)
+            .then(function(json){ res.status(200).json(json); });
+        }
 
       }).catch(function(err){
         console.log("failed to return checkin | "+err);

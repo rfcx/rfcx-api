@@ -1,53 +1,86 @@
 var util = require("util");
+var Promise = require("bluebird");
+var token = require("../../../utils/auth-token.js").token;
 function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
-  guardianCheckIns: function(req,res,dbCheckIn) {
+  guardianCheckIns: function(req,res,dbRows,PARENT_GUID) {
 
     var views = getAllViews();
 
-    if (!util.isArray(dbCheckIn)) { dbCheckIn = [dbCheckIn]; }
-
-    var jsonArray = [];
-
-    for (i in dbCheckIn) {
-      
-      var dbRow = dbCheckIn[i];
-
-      var checkIn = {
-        guid: dbRow.guid,
-        measured_at: dbRow.measured_at,
-        created_at: dbRow.created_at,
-        is_certified: dbRow.is_certified,
-        request_latency: {
-          api: dbRow.request_latency_api,
-          guardian: dbRow.request_latency_guardian,
-        },
-        location: {
-          latitude: parseFloat(dbRow.latitude),
-          longitude: parseFloat(dbRow.longitude)
-        },
-        meta: {}
-      };
-
-      if (dbRow.Guardian != null) { checkIn.guardian = views.models.guardian(req,res,dbRow.Guardian)[0]; }
-//      if (dbRow.Version != null) { checkIn.software_version = dbRow.Version.number; }
-      if (dbRow.Audio != null) { checkIn.audio = views.models.guardianAudio(req,res,dbRow.Audio); }
-      if (dbRow.MetaMessages != null) { checkIn.messages = views.models.guardianMetaMessages(req,res,dbRow.MetaMessages); }
-
-      if (dbRow.MetaCPU != null) { checkIn.meta.cpu = views.models.guardianMetaCPU(req,res,dbRow.MetaCPU); }
-      if (dbRow.MetaDataTransfer != null) { checkIn.meta.data_transfer = views.models.guardianMetaDataTransfer(req,res,dbRow.MetaDataTransfer); }
-      if (dbRow.MetaBattery != null) { checkIn.meta.battery = views.models.guardianMetaBattery(req,res,dbRow.MetaBattery); }
-      if (dbRow.MetaLightMeter != null) { checkIn.meta.light_meter = views.models.guardianMetaLightMeter(req,res,dbRow.MetaLightMeter); }      
-      if (dbRow.MetaNetwork != null) { checkIn.meta.network = views.models.guardianMetaNetwork(req,res,dbRow.MetaNetwork); }
-      if (dbRow.MetaOffline != null) { checkIn.meta.offline = views.models.guardianMetaOffline(req,res,dbRow.MetaOffline); }
-      if (dbRow.MetaPower != null) { checkIn.meta.power = views.models.guardianMetaPower(req,res,dbRow.MetaPower); }
-
-      jsonArray.push(checkIn);
-    }
-    return jsonArray;
+    if (!util.isArray(dbRows)) { dbRows = [dbRows]; }
     
+    var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
+
+    return new Promise(function(resolve,reject){
+
+      for (i in dbRows) {
+        
+        var thisRow = dbRows[i], thisGuid = thisRow.guid;
+
+        dbRowsByGuid[thisGuid] = thisRow;
+
+        jsonRowsByGuid[thisGuid] = {
+          guid: thisGuid,
+          measured_at: thisRow.measured_at,
+          created_at: thisRow.created_at,
+          is_certified: thisRow.is_certified,
+          request_latency: {
+            api: thisRow.request_latency_api,
+            guardian: thisRow.request_latency_guardian,
+          },
+          location: {
+            latitude: parseFloat(thisRow.latitude),
+            longitude: parseFloat(thisRow.longitude)
+          },
+          meta: {}
+        };
+
+        if (PARENT_GUID != null) { jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID; }
+
+        if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site = views.models.guardianSites(req,res,thisRow.Guardian)[0]; }
+        if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian = views.models.guardian(req,res,thisRow.Guardian)[0]; }
+        
+        if (thisRow.MetaMessages != null) { jsonRowsByGuid[thisGuid].messages = views.models.guardianMetaMessages(req,res,thisRow.MetaMessages); }
+
+        if (thisRow.MetaCPU != null) { jsonRowsByGuid[thisGuid].meta.cpu = views.models.guardianMetaCPU(req,res,thisRow.MetaCPU); }
+        if (thisRow.MetaDataTransfer != null) { jsonRowsByGuid[thisGuid].meta.data_transfer = views.models.guardianMetaDataTransfer(req,res,thisRow.MetaDataTransfer); }
+        if (thisRow.MetaBattery != null) { jsonRowsByGuid[thisGuid].meta.battery = views.models.guardianMetaBattery(req,res,thisRow.MetaBattery); }
+        if (thisRow.MetaLightMeter != null) { jsonRowsByGuid[thisGuid].meta.light_meter = views.models.guardianMetaLightMeter(req,res,thisRow.MetaLightMeter); }      
+        if (thisRow.MetaNetwork != null) { jsonRowsByGuid[thisGuid].meta.network = views.models.guardianMetaNetwork(req,res,thisRow.MetaNetwork); }
+        if (thisRow.MetaOffline != null) { jsonRowsByGuid[thisGuid].meta.offline = views.models.guardianMetaOffline(req,res,thisRow.MetaOffline); }
+        if (thisRow.MetaPower != null) { jsonRowsByGuid[thisGuid].meta.power = views.models.guardianMetaPower(req,res,thisRow.MetaPower); }
+
+        try {
+
+          if (thisRow.Audio == null) {
+
+            jsonArray.push(jsonRowsByGuid[thisGuid]);
+            if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
+
+          } else {
+            views.models.guardianAudio(req,res,thisRow.Audio,thisGuid)
+              .then(function(audioJson){
+
+                thisGuid = audioJson[0].PARENT_GUID;
+                delete audioJson[0].PARENT_GUID;
+                jsonRowsByGuid[thisGuid].audio = audioJson[0];
+
+                jsonArray.push(jsonRowsByGuid[thisGuid]);
+                if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
+
+              });
+          }
+
+        } catch (e) {
+          reject(e);
+        }
+
+      }
+
+    });
+
   }
 
 

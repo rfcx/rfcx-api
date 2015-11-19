@@ -11,6 +11,7 @@ var hash = require("../../utils/hash.js").hash;
 var token = require("../../utils/auth-token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var views = require("../../views/v1");
+var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
@@ -582,16 +583,17 @@ router.route("/:guardian_id/checkins")
             offset: req.rfcx.offset
           }).then(function(dbCheckIn){
             
-            res.status(200).json(views.models.guardianCheckIns(req,res,dbCheckIn));
+            views.models.guardianCheckIns(req,res,dbCheckIn)
+              .then(function(json){ res.status(200).json(json); });
 
           }).catch(function(err){
-            console.log("failed to return checkin | "+err);
-            if (!!err) { res.status(500).json({msg:"failed to find checkin reference"}); }
+            console.log(err);
+            if (!!err) { httpError(res, 500, "database"); }
           });
 
       }).catch(function(err){
-        console.log("failed to find guardian | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to find guardian"}); }
+        console.log(err);
+        if (!!err) { httpError(res, 500, "database"); }
       });
 
   })

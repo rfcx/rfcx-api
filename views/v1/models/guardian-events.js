@@ -6,127 +6,101 @@ function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
-  guardianEvents: function(req,res,dbEvents) {
+  guardianEvents: function(req,res,dbRows,PARENT_GUID) {
 
     var views = getAllViews();
 
-    if (!util.isArray(dbEvents)) { dbEvents = [dbEvents]; }
+    if (!util.isArray(dbRows)) { dbRows = [dbRows]; }
     
-    var jsonArray = [];
-    var eventRowOutput = {};
-    var eventDbRow = {};
+    var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
 
     return new Promise(function(resolve,reject){
 
-        for (dbEventInd in dbEvents) {
+        for (i in dbRows) {
 
-          var dbRow = dbEvents[dbEventInd];
+          var thisRow = dbRows[i], thisGuid = thisRow.guid;
 
-          eventDbRow[dbRow.guid] = dbEvents[dbEventInd];
+          dbRowsByGuid[thisGuid] = thisRow;
 
-          eventRowOutput[dbRow.guid] = {
-            guid: dbRow.guid,
-            classification: dbRow.classification,
-            measured_at: dbRow.measured_at,
-            duration: dbRow.duration,
-            location: {
-              latitude: parseFloat(dbRow.latitude),
-              longitude: parseFloat(dbRow.longitude)
+          jsonRowsByGuid[thisGuid] = {
+            guid: thisGuid,
+            analyzed_at: thisRow.Audio.analyzed_at,
+            reviewed_at: null,
+            classification: {
+              analysis: thisRow.classification,
+              review: null
             },
-            fingerprint: null
-          };
-          
-          if (dbRow.fingerprint != null) { eventRowOutput[dbRow.guid].fingerprint = JSON.parse(dbRow.fingerprint); }
-
-          if (dbRow.Audio == null) {
-            
-            eventRowOutput[dbRow.guid].audio = null;
-            jsonArray.push(eventRowOutput[dbRow.guid]);   
-
-            if (jsonArray.length == dbEvents.length) {
-              resolve(jsonArray);
+            measured_at: {
+              analysis: thisRow.measured_at,
+              review: null
+            },
+            duration: {
+              analysys: thisRow.duration,
+              review: null
+            },
+            location: {
+              latitude: parseFloat(thisRow.latitude),
+              longitude: parseFloat(thisRow.longitude)
             }
+          };
 
-          } else {
+          if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_id = thisRow.Site.guid; }
+          if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian_id = thisRow.Guardian.guid; }
+          if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_id = thisRow.CheckIn.guid; }
 
-            token.createAnonymousToken({
-              reference_tag: dbRow.guid,
-              token_type: "event-audio-file",
-              minutes_until_expiration: 60,
-              created_by: null,
-              allow_garbage_collection: false,
-              only_allow_access_to: [
-                // the generated token will only be usable for the specific audio file url
-                "^/v1/audio/"+dbRow.Audio.guid+"."+dbRow.Audio.url.substr(1+dbRow.Audio.url.lastIndexOf("."))+"$"
-                ]
-            }).then(function(tokenInfo){
-                try {
+          if (PARENT_GUID != null) { jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID; }
 
-                  var dbRow = eventDbRow[tokenInfo.reference_tag];
+          token.createAnonymousToken({
+            reference_tag: thisGuid,
+            token_type: "event-audio-file",
+            minutes_until_expiration: 60,
+            created_by: null,
+            allow_garbage_collection: false,
+            only_allow_access_to: [ "^/v1/events/"+thisGuid+".mp3$" ]
+          }).then(function(tokenInfo){
+              try {
 
-                  audioFileExtension = dbRow.Audio.url.substr(1+dbRow.Audio.url.lastIndexOf(".")),
-                  s3NoProtocol = dbRow.Audio.url.substr(dbRow.Audio.url.indexOf("://")+3),
-                  s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-                  s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"))
-                  ;
+                var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid;
 
-                  eventRowOutput[tokenInfo.reference_tag].url = 
-                      req.rfcx.api_url+"/v1/audio/"+dbRow.Audio.guid+"."+audioFileExtension
-                      +"?auth_user=token/"+tokenInfo.token_guid
-                      +"&auth_token="+tokenInfo.token
-                      +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
-                  eventRowOutput[tokenInfo.reference_tag].url_expires_at = tokenInfo.token_expires_at,
+                jsonRowsByGuid[thisGuid].url = 
+                    req.rfcx.api_url+"/v1/events/"+thisGuid+".mp3"
+                    +"?auth_user=token/"+tokenInfo.token_guid
+                    +"&auth_token="+tokenInfo.token
+                    +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
 
-                  jsonArray.push(eventRowOutput[tokenInfo.reference_tag]);
+                jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
 
-                  if (jsonArray.length == dbEvents.length) {
-                    resolve(jsonArray);
-                  }
-                  
-                } catch (e) {
-                  reject(e);
+                if (thisRow.Audio == null) {
+
+                  jsonArray.push(jsonRowsByGuid[thisGuid]);
+                  if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
+
+                } else {
+                  views.models.guardianAudio(req,res,thisRow.Audio,thisGuid)
+                    .then(function(audioJson){
+
+                      thisGuid = audioJson[0].PARENT_GUID;
+                      delete audioJson[0].PARENT_GUID;
+                      jsonRowsByGuid[thisGuid].audio = audioJson[0];
+
+                      jsonArray.push(jsonRowsByGuid[thisGuid]);
+                      if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
+
+                    });
                 }
-            }).catch(function(err){
-                console.log("failed to create anonymous token | "+err);
-                reject(new Error(err));
-            });
-          }
+                
+              } catch (e) {
+                reject(e);
+              }
+          }).catch(function(err){
+              console.log("failed to create anonymous token | "+err);
+              reject(new Error(err));
+          });
+  
         }
 
     });
 
-
-  },
-
-  guardianEventFingerprints: function(req,res,dbEvents) {
-
-    var views = getAllViews();
-
-    if (!util.isArray(dbEvents)) { dbEvents = [dbEvents]; }
-    
-    var jsonArray = [];
-
-    for (i in dbEvents) {
-
-      var dbRow = dbEvents[i];
-
-      var guardianEventFingerprint = {
-          guid: dbRow.guid,
-          classification: dbRow.classification,
-          measured_at: dbRow.measured_at,
-          duration: dbRow.duration,
-          location: {
-            latitude: parseFloat(dbRow.latitude),
-            longitude: parseFloat(dbRow.longitude)
-          },
-          fingerprint: null
-        };
-        
-      if (dbRow.fingerprint != null) { guardianEventFingerprint.fingerprint = JSON.parse(dbRow.fingerprint); }
-
-      jsonArray.push(guardianEventFingerprint);
-    }
-    return jsonArray;
 
   }
 

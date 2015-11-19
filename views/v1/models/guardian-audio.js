@@ -6,9 +6,9 @@ function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
-  guardianAudioFile: function(req,res,dbAudio) {
+  guardianAudioFile: function(req,res,dbRows) {
 
-    var dbRow = dbAudio,
+    var dbRow = dbRows,
         s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
         s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
@@ -27,65 +27,62 @@ exports.models = {
       });
   },
 
-  guardianAudio: function(req,res,dbAudio) {
+  guardianAudio: function(req,res,dbRows,PARENT_GUID) {
 
     var views = getAllViews();
 
-    if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
-
-    var jsonArray = [];
+    if (!util.isArray(dbRows)) { dbRows = [dbRows]; }
+    
+    var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
 
     return new Promise(function(resolve,reject){
 
-        for (dbAudInd in dbAudio) {
+        for (i in dbRows) {
+
+          var thisRow = dbRows[i], thisGuid = thisRow.guid;
+
+          dbRowsByGuid[thisGuid] = thisRow;
+
+          jsonRowsByGuid[thisGuid] = {
+            guid: thisGuid,
+            measured_at: thisRow.measured_at,
+            analyzed_at: thisRow.analyzed_at,
+            size: thisRow.size,
+            duration: thisRow.duration,
+            format: thisRow.capture_format,
+            bitrate: thisRow.capture_bitrate,
+            sample_rate: thisRow.capture_sample_rate,
+            sha1_checksum: thisRow.sha1_checksum
+          };
+
+          if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_id = thisRow.Site.guid; }
+          if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian_id = thisRow.Guardian.guid; }
+          if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_id = thisRow.CheckIn.guid; }
+
+          if (PARENT_GUID != null) { jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID; }
 
           token.createAnonymousToken({
-            reference_tag: dbAudInd,
+            reference_tag: thisGuid,
             token_type: "audio-file",
-            minutes_until_expiration: 15,
+            minutes_until_expiration: 30,
             created_by: null,
             allow_garbage_collection: false,
-            only_allow_access_to: [
-              // the generated token will only be usable for the specific audio file url
-              "^/v1/audio/"+dbAudio[dbAudInd].guid+"."+dbAudio[dbAudInd].url.substr(1+dbAudio[dbAudInd].url.lastIndexOf("."))+"$"
-              ]
+            only_allow_access_to: ["^/v1/audio/"+thisGuid+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+"$"]
           }).then(function(tokenInfo){
               try {
 
-                var dbRow = dbAudio[tokenInfo.reference_tag],
-                audioFileExtension = dbRow.url.substr(1+dbRow.url.lastIndexOf(".")),
-                s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-                s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-                s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"))
-                ;
+                var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid;
 
-                var audio = {
-                  guid: dbRow.guid,
-                  measured_at: dbRow.measured_at,
-                  analyzed_at: dbRow.analyzed_at,
-                  size: dbRow.size,
-                  duration: dbRow.duration,
-                  format: dbRow.capture_format,
-                  bitrate: dbRow.capture_bitrate,
-                  sample_rate: dbRow.capture_sample_rate,
-                  sha1_checksum: dbRow.sha1_checksum,
-                  url: req.rfcx.api_url+"/v1/audio/"+dbRow.guid+"."+audioFileExtension
+                jsonRowsByGuid[thisGuid].url = 
+                    req.rfcx.api_url+"/v1/audio/"+thisGuid+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))
                     +"?auth_user=token/"+tokenInfo.token_guid
                     +"&auth_token="+tokenInfo.token
-                    +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString(),
-                  url_expires_at: tokenInfo.token_expires_at,
-                  events: []
-                };
+                    +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
 
-                 if (dbRow.Guardian != null) { audio.guardian = views.models.guardian(req,res,dbRow.Guardian)[0]; }
-                 if (dbRow.CheckIn != null) { audio.checkin = views.models.guardianCheckIns(req,res,dbRow.CheckIn); }
-                 if (dbRow.Event != null) { audio.events = views.models.guardianEvents(req,res,dbRow.Event); }
+                jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
 
-                jsonArray.push(audio);
-
-                if (jsonArray.length == dbAudio.length) {
-                  resolve(jsonArray);
-                }
+                jsonArray.push(jsonRowsByGuid[thisGuid]);
+                if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
                 
               } catch (e) {
                 reject(e);

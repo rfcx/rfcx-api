@@ -34,10 +34,6 @@ router.route("/:guardian_id/events")
                 res.status(200).json(eventJson);
             });
 
-    //        res.status(200).json(views.models.guardianEvents(req,res,dbEvent));
-            
-            
-
         }).catch(function(err){
           console.log("failed to return events | "+err);
           if (!!err) { res.status(500).json({msg:"failed to return events"}); }
