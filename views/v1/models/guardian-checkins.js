@@ -23,8 +23,9 @@ exports.models = {
 
         jsonRowsByGuid[thisGuid] = {
           guid: thisGuid,
+          queued_at: thisRow.queued_at,
           measured_at: thisRow.measured_at,
-          created_at: thisRow.created_at,
+          received_at: thisRow.created_at,
           is_certified: thisRow.is_certified,
           request_latency: {
             api: thisRow.request_latency_api,
