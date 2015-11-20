@@ -1,7 +1,7 @@
 var util = require("util");
-var hash = require("../utils/hash.js").hash;
 var Promise = require("bluebird");
-var models  = require("../models");
+var hash = require("../../utils/misc/hash.js").hash;
+var models  = require("../../models");
 
 exports.token = {
 

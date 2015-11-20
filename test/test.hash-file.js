@@ -1,6 +1,6 @@
 require('./test.000.init.js').expect;
 var expect = require('chai').expect;
-var hash = require("../utils/hash.js").hash;
+var hash = require("../utils/misc/hash.js").hash;
 
 var sha1Regex = /^[0-9a-f]{40}$/i;
 

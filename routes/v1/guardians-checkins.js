@@ -7,8 +7,8 @@ var fs = require("fs");
 var zlib = require("zlib");
 var exifTool = require("exiftool");
 var util = require("util");
-var hash = require("../../utils/hash.js").hash;
-var token = require("../../utils/auth-token.js").token;
+var hash = require("../../utils/misc/hash.js").hash;
+var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var views = require("../../views/v1");
 var httpError = require("../../utils/http-errors.js");
@@ -318,9 +318,9 @@ router.route("/:guardian_id/checkins")
             
             var softwareVersions = [];
             for (versionInd in versionJson) { softwareVersions.push(versionInd+"-"+versionJson[versionInd]); }
-            console.log("guardian: "+dbGuardian.guid+", "
-                        +"check-in: "+dbCheckIn.guid);
 
+            // logging association of guardian and creation of check-in
+            console.log("guardian: "+dbGuardian.guid+", "+"check-in: "+dbCheckIn.guid);
 
             // save audio files
             if (!!req.files.audio) {

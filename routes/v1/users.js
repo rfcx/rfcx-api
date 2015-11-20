@@ -1,8 +1,8 @@
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-var hash = require("../../utils/hash.js").hash;
-var token = require("../../utils/auth-token.js").token;
+var hash = require("../../utils/misc/hash.js").hash;
+var token = require("../../utils/internal-rfcx/token.js").token;
 var views = require("../../views/v1");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);

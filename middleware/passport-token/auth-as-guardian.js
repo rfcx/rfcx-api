@@ -1,6 +1,6 @@
 var models  = require("../../models");
-var hash = require("../../utils/hash.js").hash;
-var misc = require("../../utils/misc.js");
+var hash = require("../../utils/misc/hash.js").hash;
+var regex = require("../../utils/misc/regex.js");
 
 exports.authenticateAs = function(req,token,done,authUser){
 
@@ -19,7 +19,7 @@ exports.authenticateAs = function(req,token,done,authUser){
         return done(null, false, {message:"this guardian doesn't exist in the database"});
 
       } else if (   (dbGuardian.auth_token_hash == hash.hashedCredentials(dbGuardian.auth_token_salt,token))
-                &&  (misc.regExIndexOf(req.rfcx.url_path, only_allow_access_to) > -1)
+                &&  (regex.regExIndexOf(req.rfcx.url_path, only_allow_access_to) > -1)
           ) {
 
             req.rfcx.auth_token_info = {

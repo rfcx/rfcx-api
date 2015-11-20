@@ -10,24 +10,10 @@ if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
 }
 
 var models  = require(__dirname+"/../models");
-// var express = require("express");
-// var router = express.Router();
-// var querystring = require("querystring");
-// var fs = require("fs");
-// var zlib = require("zlib");
-// var exifTool = require("exiftool");
-// var util = require("util");
-// var hash = require(__dirname+"/../utils/hash.js").hash;
-var token = require(__dirname+"/../utils/auth-token.js").token;
+var token = require(__dirname+"/../utils/internal-rfcx/token.js").token;
 var aws = require(__dirname+"/../utils/external/aws.js").aws();
-// var views = require(__dirname+"/../views/v1");
-// var passport = require("passport");
-// passport.use(require(__dirname+"/../middleware/passport-token").TokenStrategy);
 
 var guardian_id = '0bdbb4a5d567'; // sede
-//var guardian_id = "201b89ba5ae2"; //tora
-//var guardian_id = "fdead698b925"; //velho marco
-//var guardian_id = "3b10826702df"; //itahu
 
 var audArr = {};
 

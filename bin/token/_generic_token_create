@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 var args = process.argv.slice(2);
-var token = require("../../utils/auth-token.js").token;
+var token = require("../../utils/internal-rfcx/token.js").token;
 
 // this outputs a tab separated list of tokens, and saves them to the database
 

@@ -1,7 +1,7 @@
 var util = require("util");
 var Promise = require("bluebird");
 var aws = require("../../../utils/external/aws.js").aws();
-var token = require("../../../utils/auth-token.js").token;
+var token = require("../../../utils/internal-rfcx/token.js").token;
 function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
