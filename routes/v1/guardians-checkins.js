@@ -37,7 +37,7 @@ router.route("/:guardian_id/checkins")
           dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
           dbGuardian.save();
 
-          var metaVersionArr = strArrToJSArr(json.software_version,"|","*"), versionJson = {};
+          var metaVersionArr = strArrToJSArr(json.software,"|","*"), versionJson = {};
           for (vInd in metaVersionArr) { versionJson[metaVersionArr[vInd][0]] = metaVersionArr[vInd][1]; }
 
           var metaGeo = [
@@ -241,6 +241,7 @@ router.route("/:guardian_id/checkins")
                   screenShotInfo[timeStamp] = {
                      guardian_id: dbGuardian.guid,
                      checkin_id: dbCheckIn.guid,
+                     screenshot_id: null, 
                      version: null, // to be decided whether this is important to include here...
                      uploadLocalPath: req.files.screenshot[i].path,
                      size: fs.statSync(req.files.screenshot[i].path).size,
@@ -268,7 +269,7 @@ router.route("/:guardian_id/checkins")
                           console.log(err);
                         } else if (200 == s3Res.statusCode) {
                           for (l in screenShotInfo) {
-                            if (s3Res.req.url.indexOf(screenShotInfo[l].s3Path) >= 0) {
+                            if (aws.s3ConfirmSave(s3Res,screenShotInfo[l].s3Path)) {
                               
                               fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
 
@@ -281,6 +282,7 @@ router.route("/:guardian_id/checkins")
                                 }).then(function(dbGuardianMetaScreenShot){
                                     // if all goes well, then report it on the "global" object...
                                     screenShotInfo[l].isSaved = true;
+                                    screenShotInfo[l].screenshot_id = dbGuardianMetaScreenShot.guid;
                                     console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
                                 }).catch(function(err){
                                   console.log("error saving screenshot: "+screenShotInfo[l].timeStamp+err);
@@ -417,7 +419,7 @@ router.route("/:guardian_id/checkins")
                                   console.log(err);
                                 } else if (200 == s3Res.statusCode) {
                                   for (l in audioInfo) {
-                                    if (s3Res.req.url.indexOf(audioInfo[l].s3Path) >= 0) {
+                                    if (aws.s3ConfirmSave(s3Res,audioInfo[l].s3Path)) {
                                       audioInfo[l].isSaved.s3 = true;
 
                                       audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
@@ -458,7 +460,7 @@ router.route("/:guardian_id/checkins")
                                                   })
                                               }, function(snsErr, snsData) {
 
-                                                if (!!snsErr) {
+                                                if (!!snsErr && !aws.snsIgnoreError()) {
                                                   console.log(snsErr);
                                                 } else {
 
@@ -469,7 +471,7 @@ router.route("/:guardian_id/checkins")
 
                                                   for (n in audioInfo) {
                                                     if (!audioInfo[n].isSaved.sqs) { isComplete = false; }
-                                                    console.log("audio: "+audioInfo[n].audio_id+" (sqs: "+snsData.MessageId+")");
+                                                    console.log("audio: "+audioInfo[n].audio_id+" (sqs: "+((snsData != null) ? snsData.MessageId : "null" )+")");
                                                     returnJson.audio.push({
                                                       id: n,
                                                       guid: audioInfo[n].audio_id
@@ -479,7 +481,7 @@ router.route("/:guardian_id/checkins")
                                                     if (screenShotInfo[o].isSaved) {
                                                       returnJson.screenshots.push({
                                                         id: o,
-                                                        guid: null
+                                                        guid: screenShotInfo[o].screenshot_id
                                                       });
                                                     }         
                                                   }
