@@ -147,7 +147,7 @@ router.route("/:guardian_id/checkins")
                   is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
                   is_charged: (metaPower[pwrInd][2] === "1") ? true : false
                 }).then(function(dbGuardianMetaPower){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaPower | "+err);
+                  console.log("failed to create GuardianMetaPower | "+err+" | "+JSON.stringify(metaPower));
                 });
             }
 
