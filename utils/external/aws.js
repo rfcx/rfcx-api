@@ -60,7 +60,7 @@ exports.aws = function() {
 };
 
 function useAWSMocks() {
-  return (process.env.NODE_ENV === "development") || (process.env.NODE_ENV === "test");
+  return /*(process.env.NODE_ENV === "development") ||*/ (process.env.NODE_ENV === "test");
 }
 
 function getBucket(bucketName) {
