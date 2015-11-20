@@ -1,3 +1,4 @@
+var verbose_logging = (process.env.NODE_ENV !== "production");
 var models  = require("../../models");
 var hash = require("../../utils/misc/hash.js").hash;
 var regex = require("../../utils/misc/regex.js");
@@ -35,7 +36,7 @@ exports.authenticateAs = function(req,token,done,authUser){
           guid: dbToken.guid
         };
 
-        console.log("authenticated with anonymous token: "+req.rfcx.auth_token_info.guid);
+        if (verbose_logging) { console.log("authenticated with anonymous token: "+req.rfcx.auth_token_info.guid); }
         
         return done(null,req.rfcx.auth_token_info);
             
