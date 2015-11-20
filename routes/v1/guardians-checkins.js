@@ -27,7 +27,8 @@ router.route("/:guardian_id/checkins")
 
         var json = JSON.parse(zLibBuffer.toString());
         if (verbose_logging) { console.log(json); }
-      
+        
+        // retrieve the guardian from the database
         models.Guardian
           .findOne({ 
             where: { guid: req.params.guardian_id }
@@ -37,20 +38,48 @@ router.route("/:guardian_id/checkins")
           dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
           dbGuardian.save();
 
-          var metaVersionArr = strArrToJSArr(json.software,"|","*"), versionJson = {};
-          for (vInd in metaVersionArr) { versionJson[metaVersionArr[vInd][0]] = metaVersionArr[vInd][1]; }
+          // parse and record guardian software versions
+          var roleVersions = {}, roleArr = strArrToJSArr(json.software,"|","*");
+          for (vInd in roleArr) { 
+            roleVersions[roleArr[vInd][0]] = roleArr[vInd][1];
+            models.GuardianSoftware
+              .findOne({ 
+                where: { role: roleArr[vInd][0] }
+            }).then(function(dbSoftwareRole){
+              models.GuardianSoftwareVersion
+                .findAll({ 
+                  where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] },
+                  order: [ ["created_at", "DESC"] ],
+                  limit: 1
+              }).then(function(dbSoftwareRoleVersion){
+                if (dbSoftwareRoleVersion.length < 1) {
+                  console.log("software role "+dbSoftwareRole.role+", version "+roleVersions[dbSoftwareRole.role]+" is not [yet] in the database.");
+                } else {
+                  models.GuardianMetaSoftwareVersion
+                    .findOrCreate({
+                      where: { guardian_id: dbGuardian.id, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
+                  }).spread(function(dbMetaSoftware, wasCreated){
+                    dbMetaSoftware.last_checkin_at = new Date();
+                    dbMetaSoftware.save();
+                  }).catch(function(err){ console.log(err); });
+                }
+              }).catch(function(err){ console.log(err); });
+            }).catch(function(err){ console.log(err); });
+          }
 
+          // organize geo-location data parameters
           var metaGeo = [
               ((json.location[0] != null) ? parseFloat(json.location[0]) : null),
               ((json.location[1] != null) ? parseFloat(json.location[1]) : null),
               ((json.location[2] != null) ? parseFloat(json.location[2]) : null)
             ];
 
+          // add a new checkin to the database
           models.GuardianCheckIn
             .create({
               guardian_id: dbGuardian.id,
               site_id: dbGuardian.site_id,
-              software_versions: JSON.stringify(versionJson),
+              software_versions: JSON.stringify(roleVersions),
               measured_at: timeStampToDate(json.measured_at, json.timezone_offset),
               queued_at: timeStampToDate(json.queued_at, json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
@@ -316,9 +345,6 @@ router.route("/:guardian_id/checkins")
             //   guid: "guid goes here"
             // });
             
-            var softwareVersions = [];
-            for (versionInd in versionJson) { softwareVersions.push(versionInd+"-"+versionJson[versionInd]); }
-
             // logging association of guardian and creation of check-in
             console.log("guardian: "+dbGuardian.guid+", "+"check-in: "+dbCheckIn.guid);
 
