@@ -318,10 +318,8 @@ router.route("/:guardian_id/checkins")
             
             var softwareVersions = [];
             for (versionInd in versionJson) { softwareVersions.push(versionInd+"-"+versionJson[versionInd]); }
-            console.log("check-in: "+dbCheckIn.guid+", "
-                        +"guardian: "+dbGuardian.guid+", "
-                        +"version: "+softwareVersions.join(", ")
-                        );
+            console.log("guardian: "+dbGuardian.guid+", "
+                        +"check-in: "+dbCheckIn.guid);
 
 
             // save audio files
