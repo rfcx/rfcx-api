@@ -59,7 +59,7 @@ router.route("/:guardian_id/checkins")
                     .findOrCreate({
                       where: { guardian_id: dbGuardian.id, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
                   }).spread(function(dbMetaSoftware, wasCreated){
-              //      dbMetaSoftware.last_checkin_at = new Date();
+                    dbMetaSoftware.updated_at = new Date();
                     dbMetaSoftware.save();
                   }).catch(function(err){ console.log(err); });
                 }
