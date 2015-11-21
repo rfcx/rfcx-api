@@ -466,8 +466,7 @@ router.route("/:guardian_id/checkins")
                                             audioInfo[m].api_token = tokenInfo.token;
                                             audioInfo[m].api_token_expires_at = tokenInfo.token_expires_at;
                                             audioInfo[m].minutes_until_expiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
-                                            console.log("minutes til expiration: "+audioInfo[m].minutes_until_expiration);
-
+                                            
                                             aws.sns().publish({
                                                 TopicArn: aws.snsTopicArn("rfcx-analysis"),
                                                 Message: JSON.stringify({
