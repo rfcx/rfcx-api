@@ -25,56 +25,58 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                 dbAudio.analyzed_at = new Date();
                 dbAudio.save();
 
-                // This is not ideal... currently the python-based analysis sends a JSON array of detected events
-                // as a separate text file. This file must therefore be downloaded into the temporary uploads directory
-                // and then opened, parsed, and deleted afterward. It would obviously be better to have this same
-                // JSON array sent along as a string in a POST field instead.
-                fs.readFile(req.files.json.path, "utf8", function(readFileError, data) {
-                  if (readFileError) throw readFileError;
+                console.log(req.body.json);
+                res.status(200).json([]);
+                // // This is not ideal... currently the python-based analysis sends a JSON array of detected events
+                // // as a separate text file. This file must therefore be downloaded into the temporary uploads directory
+                // // and then opened, parsed, and deleted afterward. It would obviously be better to have this same
+                // // JSON array sent along as a string in a POST field instead.
+                // fs.readFile(req.files.json.path, "utf8", function(readFileError, data) {
+                //   if (readFileError) throw readFileError;
                   
-                  var audioEvents = JSON.parse(data);
+                //   var audioEvents = JSON.parse(data);
 
-                  fs.unlink(req.files.json.path,function(e){if(e){console.log(e);}});
+                //   fs.unlink(req.files.json.path,function(e){if(e){console.log(e);}});
 
-                  if (audioEvents.length > 0) {
-                    console.log(audioEvents.length+" events to be saved...");
-                    var savedEvents = [];
-                    for (eventInd in audioEvents) {
-                      var audioEvent = audioEvents[eventInd];
-                      var eventTime = new Date(audioEvent.begins_at.replace(/ /g,"T")+".000Z");
-                      var fingerprintArray = JSON.stringify(audioEvent.fingerprint);
+                //   if (audioEvents.length > 0) {
+                //     console.log(audioEvents.length+" events to be saved...");
+                //     var savedEvents = [];
+                //     for (eventInd in audioEvents) {
+                //       var audioEvent = audioEvents[eventInd];
+                //       var eventTime = new Date(audioEvent.begins_at.replace(/ /g,"T")+".000Z");
+                //       var fingerprintArray = JSON.stringify(audioEvent.fingerprint);
                       
-                      models.GuardianEvent
-                        .create({
-                          guardian_id: dbGuardian.id, 
-                          check_in_id: dbCheckIn.id, 
-                          audio_id: dbAudio.id, 
-                          site_id: dbGuardian.site_id,
-                          begins_at_analysis: eventTime, 
-                          begins_at_reviewer: null,
-                          duration_analysis: Math.round(parseFloat(audioEvent.duration)*1000),
-                          duration_reviewer: null,
-                          classification_analysis: audioEvent.classification, 
-                          classification_reviewer: null,
-                          latitude: dbCheckIn.location_latitude,
-                          longitude: dbCheckIn.location_longitude,
-                          fingerprint: fingerprintArray
-                        }).then(function(dbGuardianEvent){
+                //       models.GuardianEvent
+                //         .create({
+                //           guardian_id: dbGuardian.id, 
+                //           check_in_id: dbCheckIn.id, 
+                //           audio_id: dbAudio.id, 
+                //           site_id: dbGuardian.site_id,
+                //           begins_at_analysis: eventTime, 
+                //           begins_at_reviewer: null,
+                //           duration_analysis: Math.round(parseFloat(audioEvent.duration)*1000),
+                //           duration_reviewer: null,
+                //           classification_analysis: audioEvent.classification, 
+                //           classification_reviewer: null,
+                //           latitude: dbCheckIn.location_latitude,
+                //           longitude: dbCheckIn.location_longitude,
+                //           fingerprint: fingerprintArray
+                //         }).then(function(dbGuardianEvent){
 
-                          savedEvents.push(dbGuardianEvent.guid);
-                          if (savedEvents.length == audioEvents.length) {
-                            res.status(200).json(savedEvents);
-                          }
+                //           savedEvents.push(dbGuardianEvent.guid);
+                //           if (savedEvents.length == audioEvents.length) {
+                //             res.status(200).json(savedEvents);
+                //           }
 
-                        }).catch(function(err){
-                          console.log("failed to create event | "+err);
-                          res.status(500).json({msg:"failed to create event"});
-                        });
-                    }
-                  } else {
-                    res.status(200).json([]);
-                  }
-                });
+                //         }).catch(function(err){
+                //           console.log("failed to create event | "+err);
+                //           res.status(500).json({msg:"failed to create event"});
+                //         });
+                //     }
+                //   } else {
+                //     res.status(200).json([]);
+                //   }
+                // });
 
               }).catch(function(err){
                 console.log("failed to find audio reference | "+err);

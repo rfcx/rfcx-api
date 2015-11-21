@@ -62,7 +62,7 @@ models.Guardian
                                 api_token_guid: tokenInfo.token_guid,
                                 api_token: tokenInfo.token,
                                 api_token_expires_at: tokenInfo.token_expires_at,
-                                api_url_event_save: "/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbAudio[dbAudInd].CheckIn.guid+"/audio/"+dbAudio[dbAudInd].guid+"/events",
+                                api_url: "/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbAudio[dbAudInd].CheckIn.guid+"/audio/"+dbAudio[dbAudInd].guid+"/events",
                                 audio_url: aws.s3SignedUrl("rfcx-ark", audArr[tokenInfo.reference_tag].s3Path, Math.round(tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf()/60000)),
                                 audio_sha1: audArr[tokenInfo.reference_tag].sha1_checksum
                               })
