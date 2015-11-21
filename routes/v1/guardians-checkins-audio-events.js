@@ -28,7 +28,6 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                 var audioEvents = JSON.parse(req.body.json);
 
                 if (audioEvents.length > 0) {
-                  console.log(audioEvents.length+" events to be saved...");
                   var savedEvents = [];
                   for (eventInd in audioEvents) {
                     var audioEvent = audioEvents[eventInd];

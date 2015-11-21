@@ -4,6 +4,6 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 
 export TIMEOUT=2700
 
-$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 1 $TIMEOUT &
-$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 2 $TIMEOUT &
-#$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 3 $TIMEOUT &
+$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 1 $TIMEOUT | grep -v /health_check &
+$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 2 $TIMEOUT | grep -v /health_check &
+#$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 3 $TIMEOUT | grep -v /health_check &
