@@ -375,7 +375,8 @@ router.route("/:guardian_id/checkins")
                     measured_at: audioMeta[i][1],
                     api_token_guid: null,
                     api_token: null,
-                    api_token_expires: null,
+                    api_token_expires_at: null,
+                    api_url_event_save: null,
                     isSaved: { db: false, s3: false, sqs: false },
                     s3Path: "/"+process.env.NODE_ENV
                             +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
@@ -434,6 +435,7 @@ router.route("/:guardian_id/checkins")
                             // inform other async processes that this one has been saved to database
                             audioInfo[k].isSaved.db = true;
                             audioInfo[k].audio_id = dbAudio.guid;
+                            audioInfo[k].api_url_event_save = "/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbAudio.guid+"/events";
 
                             aws.s3("rfcx-ark").putFile(
                               audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 
@@ -450,13 +452,11 @@ router.route("/:guardian_id/checkins")
                                       
                                       token.createAnonymousToken({
                                         reference_tag: audioInfo[l].audio_id,
-                                        token_type: "worker-analysis",
+                                        token_type: "analysis-worker",
                                         created_by: "guardian-checkin",
                                         minutes_until_expiration: 60,
                                         allow_garbage_collection: true,
-                                        only_allow_access_to: [
-                                          "^/v1/guardians/"+audioInfo[l].guardian_id+"/checkins/"+audioInfo[l].checkin_id+"/audio/"+audioInfo[l].audio_id+"/events$"
-                                          ]
+                                        only_allow_access_to: [ "^"+audioInfo[l].api_url_event_save+"$" ]
                                       }).then(function(tokenInfo){
 
                                         for (m in audioInfo) {
@@ -464,23 +464,22 @@ router.route("/:guardian_id/checkins")
 
                                             audioInfo[m].api_token_guid = tokenInfo.token_guid;
                                             audioInfo[m].api_token = tokenInfo.token;
-                                            audioInfo[m].api_token_expires = tokenInfo.token_expires_at;
+                                            audioInfo[m].api_token_expires_at = tokenInfo.token_expires_at;
+                                            audioInfo[m].minutes_until_expiration = Math.round(tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf()/60000);
+                                            console.log("minutes til expiration: "+audioInfo[m].minutes_until_expiration);
 
                                             aws.sns().publish({
                                                 TopicArn: aws.snsTopicArn("rfcx-analysis"),
                                                 Message: JSON.stringify({
-                                                    guardian_id: audioInfo[m].guardian_id,
-                                                    checkin_id: audioInfo[m].checkin_id,
-                                                    audio_id: audioInfo[m].audio_id,
-                                                    sha1Hash: audioInfo[m].sha1Hash,
-                                                    geoLocation: { latitude: dbCheckIn.location_latitude, longitude: dbCheckIn.location_longitude, precision: dbCheckIn.location_precision },
-                                                    timeStamp: audioInfo[m].timeStamp,
+                                                    
                                                     measured_at: audioInfo[m].measured_at,
+
                                                     api_token_guid: audioInfo[m].api_token_guid,
                                                     api_token: audioInfo[m].api_token,
-                                                    api_token_expires: audioInfo[m].api_token_expires,
-                                                    audioUrl: aws.s3SignedUrl("rfcx-ark", audioInfo[m].s3Path, 60),
-                                                    s3Path: audioInfo[m].s3Path
+                                                    api_token_expires_at: audioInfo[m].api_token_expires_at,
+                                                    api_url_event_save: audioInfo[m].api_url_event_save,
+                                                    audio_url: aws.s3SignedUrl("rfcx-ark", audioInfo[m].s3Path, audioInfo[m].minutes_until_expiration),
+                                                    audio_sha1: audioInfo[m].sha1Hash
                                                   })
                                               }, function(snsErr, snsData) {
 
