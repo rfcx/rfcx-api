@@ -346,7 +346,9 @@ router.route("/:guardian_id/checkins")
             // });
             
             // logging association of guardian and creation of check-in
-            console.log("guardian: "+dbGuardian.guid+", "+"check-in: "+dbCheckIn.guid+", version: "+roleVersions.api);
+            var checkInLogging = "guardian: "+dbGuardian.guid+" |";
+            for (role in roleVersions) { checkInLogging += " "+role+"-"+roleVersions[role]; }
+            console.log(checkInLogging);
 
             // save audio files
             if (!!req.files.audio) {
@@ -493,7 +495,6 @@ router.route("/:guardian_id/checkins")
 
                                                   for (n in audioInfo) {
                                                     if (!audioInfo[n].isSaved.sqs) { isComplete = false; }
-                                                    console.log("audio: "+audioInfo[n].audio_id+" (sqs: "+((snsData != null) ? snsData.MessageId : "null" )+")");
                                                     returnJson.audio.push({
                                                       id: n,
                                                       guid: audioInfo[n].audio_id
