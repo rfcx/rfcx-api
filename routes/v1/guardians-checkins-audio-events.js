@@ -25,7 +25,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                 dbAudio.analyzed_at = new Date();
                 dbAudio.save();
                   
-                var audioEvents = JSON.parse(data);
+                var audioEvents = JSON.parse(req.body.json);
 
                 if (audioEvents.length > 0) {
                   console.log(audioEvents.length+" events to be saved...");
