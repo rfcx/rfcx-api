@@ -55,7 +55,37 @@ router.route("/:event_id")
           if (reviewerInput.classification_reviewer != null) { dbEvent[0].classification_reviewer = reviewerInput.classification_reviewer; }
           if (reviewerInput.begins_at_reviewer != null) { dbEvent[0].begins_at_reviewer = reviewerInput.begins_at_reviewer; }
           if (reviewerInput.duration_reviewer != null) { dbEvent[0].duration_reviewer = reviewerInput.duration_reviewer; }
-          
+
+          dbEvent[0].save();
+
+          views.models.guardianEvents(req,res,dbEvent)
+            .then(function(json){ res.status(200).json(json); });
+
+        }
+
+    }).catch(function(err){
+      console.log(err);
+      if (!!err) { httpError(res, 500, "database"); }
+    });
+
+  })
+;
+
+router.route("/:event_id")
+  .delete(passport.authenticate("token",{session:false}), function(req,res) {
+
+    models.GuardianEvent
+      .findAll({ 
+        where: { guid: req.params.event_id }, 
+        include: [ { all: true } ],
+        limit: 1
+      }).then(function(dbEvent){
+
+        if (dbEvent.length < 1) {
+          httpError(res, 404, "database");
+        } else {
+
+          dbEvent[0].invalidated_reviewer = true;
           dbEvent[0].save();
 
           views.models.guardianEvents(req,res,dbEvent)

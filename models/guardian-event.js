@@ -76,18 +76,18 @@ module.exports = function(sequelize, DataTypes) {
           min: 1
       }
     },
-    // invalidated_analysis: {
-    //   type: DataTypes.BOOLEAN,
-    //   defaultValue: false,
-    //   validate: {
-    //   }
-    // },
-    // invalidated_reviewer: {
-    //   type: DataTypes.BOOLEAN,
-    //   defaultValue: false,
-    //   validate: {
-    //   }
-    // },
+    invalidated_analysis: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      validate: {
+      }
+    },
+    invalidated_reviewer: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      validate: {
+      }
+    },
     reviewed_at: {
       type: DataTypes.DATE,
       allowNull: true,

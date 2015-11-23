@@ -39,6 +39,10 @@ exports.models = {
               analysis: thisRow.duration_analysis,
               reviewer: thisRow.duration_reviewer
             },
+            invalidated: {
+              analysis: thisRow.invalidated_analysis,
+              reviewer: thisRow.invalidated_reviewer
+            },
             location: {
               latitude: parseFloat(thisRow.latitude),
               longitude: parseFloat(thisRow.longitude)
