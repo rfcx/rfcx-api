@@ -15,7 +15,7 @@ router.route("/:guardian_id/events")
       }).then(function(dbGuardian){
 
         var dbQuery = { guardian_id: dbGuardian.id };
-        var dateClmn = "measured_at";
+        var dateClmn = "begins_at_analysis";
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }

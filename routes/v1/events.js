@@ -56,6 +56,8 @@ router.route("/:event_id")
           if (reviewerInput.begins_at_reviewer != null) { dbEvent[0].begins_at_reviewer = reviewerInput.begins_at_reviewer; }
           if (reviewerInput.duration_reviewer != null) { dbEvent[0].duration_reviewer = reviewerInput.duration_reviewer; }
 
+          dbEvent[0].reviewed_at = new Date();
+          
           dbEvent[0].save();
 
           views.models.guardianEvents(req,res,dbEvent)
@@ -86,6 +88,7 @@ router.route("/:event_id")
         } else {
 
           dbEvent[0].invalidated_reviewer = true;
+          dbEvent[0].reviewed_at = new Date();
           dbEvent[0].save();
 
           views.models.guardianEvents(req,res,dbEvent)

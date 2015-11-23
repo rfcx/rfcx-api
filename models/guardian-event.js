@@ -7,13 +7,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.UUIDV4,
       unique: true
     },
-    classification: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: false,
-      validate: {
-      }
-    },
     classification_analysis: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -26,14 +19,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: false,
       validate: {
-      }
-    },
-    measured_at: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      allowNull: true,
-      validate: {
-        isDate: true
       }
     },
     begins_at_analysis: {
@@ -50,14 +35,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: true
-      }
-    },
-    duration: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-          isInt: true,
-          min: 1
       }
     },
     duration_analysis: {
