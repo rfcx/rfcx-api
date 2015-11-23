@@ -10,7 +10,10 @@ exports.middleware = {
   setApiParams: function(req, res, next) {
 
     var apiUrl = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol)+"://"+req.headers.host;
+    
     var paramLimit = (req.query.limit == null) ? 20 : parseInt(req.query.limit);
+    if (paramLimit > 300) { paramLimit = 300; }
+
     var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
 
     var paramAfter = (req.query.starting_after == null) ? null : (new Date(""+req.query.starting_after));
