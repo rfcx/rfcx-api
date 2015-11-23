@@ -51,7 +51,8 @@ exports.models = {
             format: thisRow.capture_format,
             bitrate: thisRow.capture_bitrate,
             sample_rate: thisRow.capture_sample_rate,
-            sha1_checksum: thisRow.sha1_checksum
+            sha1_checksum: thisRow.sha1_checksum,
+            spectrogram: "https://static.rfcx.org/tmp/spec_dolph.png"
           };
 
           if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid; }
