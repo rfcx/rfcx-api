@@ -19,6 +19,7 @@ router.route("/:guardian_id/events")
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
+        if (req.query.reviewed != null) { dbQuery.reviewed_at = (req.query.reviewed === "true") ? { $ne: null } : null }
 
         models.GuardianEvent
           .findAll({ 
