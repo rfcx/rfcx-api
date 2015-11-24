@@ -36,7 +36,9 @@ exports.authenticateAs = function(req,token,done,authUser){
             req.rfcx.auth_token_info = {
               type: "user",
               id: dbUser.Token[i].id,
-              guid: dbUser.guid
+              guid: dbUser.guid,
+              owner_id: dbUser.id,
+              owner_guid: dbUser.guid
             };
 
             if (verbose_logging) { console.log("authenticated as user "+req.rfcx.auth_token_info.guid); }

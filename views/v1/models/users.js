@@ -28,6 +28,28 @@ exports.models = {
     }
     return jsonArray;
 
+  },
+
+  usersPublic: function(req,res,dbUser) {
+
+    if (!util.isArray(dbUser)) { dbUser = [dbUser]; }
+    
+    var jsonArray = [];
+
+    for (i in dbUser) {
+
+      var dbRow = dbUser[i];
+
+      var user = {
+        guid: dbRow.guid,
+        username: dbRow.username,
+        email: dbRow.email
+      };
+
+      jsonArray.push(user);
+    }
+    return jsonArray;
+
   }
 
 

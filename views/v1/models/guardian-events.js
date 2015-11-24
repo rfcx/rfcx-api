@@ -25,8 +25,6 @@ exports.models = {
           jsonRowsByGuid[thisGuid] = {
             guid: thisGuid,
             analyzed_at: thisRow.Audio.analyzed_at,
-            reviewed_at: thisRow.reviewed_at,
-            reviewed_by: null,
             classification: {
               analysis: thisRow.classification_analysis,
               reviewer: thisRow.classification_reviewer
@@ -46,12 +44,15 @@ exports.models = {
             location: {
               latitude: parseFloat(thisRow.latitude),
               longitude: parseFloat(thisRow.longitude)
-            }
+            },
+            reviewed_at: thisRow.reviewed_at,
+            reviewed_by: null
           };
 
           if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid; }
           if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian_guid = thisRow.Guardian.guid; }
           if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_guid = thisRow.CheckIn.guid; }
+          if (thisRow.Reviewer != null) { jsonRowsByGuid[thisGuid].reviewed_by = views.models.usersPublic(req,res,thisRow.Reviewer)[0]; }
 
           if (PARENT_GUID != null) { jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID; }
 

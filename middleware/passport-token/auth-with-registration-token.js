@@ -41,7 +41,9 @@ exports.authenticateAs = function(req,token,done,authUser){
         req.rfcx.auth_token_info = {
           type: "registration",
           id: dbToken.id,
-          guid: dbToken.guid
+          guid: dbToken.guid,
+          owner_id: null,
+          owner_guid: null
         };
 
         console.log("authenticated with registration code/token: "+req.rfcx.auth_token_info.guid);

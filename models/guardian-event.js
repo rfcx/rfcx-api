@@ -104,6 +104,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianEvent.belongsTo(models.Guardian, {as: 'Guardian'});
         GuardianEvent.belongsTo(models.GuardianCheckIn, {as: "CheckIn", foreignKey: "check_in_id"});
         GuardianEvent.belongsTo(models.GuardianAudio, {as: "Audio", foreignKey: "audio_id"});
+        GuardianEvent.belongsTo(models.User, {as: "Reviewer", foreignKey: "reviewer_id"});
       },
       indexes: [
         {

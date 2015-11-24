@@ -57,7 +57,8 @@ router.route("/:event_id")
           if (reviewerInput.duration_reviewer != null) { dbEvent[0].duration_reviewer = reviewerInput.duration_reviewer; }
 
           dbEvent[0].reviewed_at = new Date();
-          
+          dbEvent[0].reviewer_id = req.rfcx.auth_token_info.owner_id;
+
           dbEvent[0].save();
 
           views.models.guardianEvents(req,res,dbEvent)

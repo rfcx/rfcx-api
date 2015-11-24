@@ -33,7 +33,9 @@ exports.authenticateAs = function(req,token,done,authUser){
         req.rfcx.auth_token_info = {
           type: "anonymous",
           id: dbToken.id,
-          guid: dbToken.guid
+          guid: dbToken.guid,
+          owner_id: null,
+          owner_guid: null
         };
 
         if (verbose_logging) { console.log("authenticated with anonymous token: "+req.rfcx.auth_token_info.guid); }

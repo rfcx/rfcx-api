@@ -26,7 +26,9 @@ exports.authenticateAs = function(req,token,done,authUser){
             req.rfcx.auth_token_info = {
               type: "guardian",
               id: dbGuardian.id,
-              guid: dbGuardian.guid
+              guid: dbGuardian.guid,
+              owner_id: dbGuardian.id,
+              owner_guid: dbGuardian.guid
             };
 
             if (verbose_logging) { console.log("authenticated as guardian "+req.rfcx.auth_token_info.guid); }
