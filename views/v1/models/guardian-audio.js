@@ -26,6 +26,20 @@ exports.models = {
       });
   },
 
+  guardianSpectrogramFile: function(req,res,dbRows) {
+
+    var dbRow = dbRows;
+
+      aws.s3("rfcx-meta").getFile("/spec_hann.png", function(err, result){
+        if(err) { return next(err); }
+        res.setHeader("Content-Length", result.headers["content-length"]);
+        res.setHeader("Accept-Ranges", result.headers["accept-ranges"]);
+        res.setHeader("Content-Disposition", "filename="+dbRow.guid+".png");
+        res.setHeader("Content-Type", "image/png");
+        result.pipe(res);           
+      });
+  },
+
   guardianAudio: function(req,res,dbRows,PARENT_GUID) {
 
     var views = getAllViews();
@@ -52,7 +66,7 @@ exports.models = {
             bitrate: thisRow.capture_bitrate,
             sample_rate: thisRow.capture_sample_rate,
             sha1_checksum: thisRow.sha1_checksum,
-            spectrogram: "https://static.rfcx.org/tmp/spec_dolph.png"
+            spectrogram: null
           };
 
           if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid; }
@@ -67,17 +81,21 @@ exports.models = {
             minutes_until_expiration: 30,
             created_by: null,
             allow_garbage_collection: false,
-            only_allow_access_to: ["^/v1/audio/"+thisGuid+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+"$"]
+            only_allow_access_to: [
+              "^/v1/audio/"+thisGuid+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+"$",
+              "^/v1/audio/"+thisGuid+".png$"
+              ]
           }).then(function(tokenInfo){
               try {
 
-                var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid;
+                var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid,
+                    urlBase = req.rfcx.api_url+"/v1/audio/"+thisGuid,
+                    urlAuthParams = "?auth_user=token/"+tokenInfo.token_guid
+                                  +"&auth_token="+tokenInfo.token
+                                  +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
 
-                jsonRowsByGuid[thisGuid].url = 
-                    req.rfcx.api_url+"/v1/audio/"+thisGuid+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))
-                    +"?auth_user=token/"+tokenInfo.token_guid
-                    +"&auth_token="+tokenInfo.token
-                    +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
+                jsonRowsByGuid[thisGuid].url = urlBase+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+urlAuthParams;
+                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png"+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
 
