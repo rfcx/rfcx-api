@@ -16,13 +16,17 @@ exports.models = {
         audioContentType = "audio/mp4"
         ;
 
+      console.log(req.headers);
+
       aws.s3(s3Bucket).getFile(s3Path, function(err, result){
         if(err) { return next(err); }
+        result.resume();
         res.setHeader("Content-Length", result.headers["content-length"]);
-        res.setHeader("Accept-Ranges", result.headers["accept-ranges"]);
+        res.setHeader("Accept-Ranges", "bytes 0-"+(parseInt(result.headers["content-length"])-1)+"/"+parseInt(result.headers["content-length"]));
+        res.setHeader("Content-Type", result.headers["content-type"]);
         res.setHeader("Content-Disposition", "filename="+dbRow.guid+"."+audioFileExtension);
-        res.setHeader("Content-Type", audioContentType);
-        result.pipe(res);           
+        result.pipe(res);   
+        console.log(result.headers);        
       });
   },
 
@@ -95,17 +99,18 @@ exports.models = {
               try {
 
                 var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid,
-                    urlBase = req.rfcx.api_url_domain+"/v1/assets/audio/"+thisGuid,
+                    urlBase = process.env.ASSET_URLBASE+"/audio/"+thisGuid,
                     urlAuthParams = "?auth_user=token/"+tokenInfo.token_guid
                                   +"&auth_token="+tokenInfo.token
                                   +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
 
-                jsonRowsByGuid[thisGuid].url = urlBase+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+urlAuthParams;
-                // temporary... should replace
+                jsonRowsByGuid[thisGuid].url = urlBase+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."));
+                
+                // in case we just prefer to use S3 signed URLs (safari is having problems, for example)
                 // var s3NoProtocol = thisRow.url.substr(thisRow.url.indexOf("://")+3),
                 //     s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
                 //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
-                // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30).replace(/rfcx-ark.s3-eu-west-1.amazonaws.com\/production/g,"ark.rfcx.org");
+                // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30);
 
                 jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png"+urlAuthParams;
 

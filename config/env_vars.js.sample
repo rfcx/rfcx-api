@@ -11,8 +11,7 @@ exports.env = {
 
   ASSET_BUCKET_AUDIO: "",
   ASSET_BUCKET_META: "",
-  ASSET_URLBASE_AUDIO: "",
-  ASSET_URLBASE_META: "",
+  ASSET_URLBASE: "",
 
   RDS_HOSTNAME: "",
   RDS_DB_NAME: "",

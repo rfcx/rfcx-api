@@ -3,8 +3,6 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
-var passport = require("passport");
-passport.use(require("../../middleware/passport-token").TokenStrategy);
 
 router.route("/audio/:audio_id")
   .get(function(req,res) {
@@ -16,10 +14,15 @@ router.route("/audio/:audio_id")
       }).then(function(dbAudio){
 
         if (req.rfcx.content_type === "m4a") {
+        
           views.models.guardianAudioFile(req,res,dbAudio);
+
         } else if (req.rfcx.content_type === "png") {
+          
           views.models.guardianSpectrogramFile(req,res,dbAudio);
+        
         } else {
+          
             views.models.guardianAudio(req,res,dbAudio)
               .then(function(audioJson){
                 res.status(200).json(audioJson);
