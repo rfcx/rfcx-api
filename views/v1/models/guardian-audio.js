@@ -12,21 +12,24 @@ exports.models = {
         s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
         s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
-        audioContentType = "audio/mp4"
+        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
         ;
 
       console.log(req.headers);
 
       aws.s3(s3Bucket).getFile(s3Path, function(err, result){
         if(err) { return next(err); }
+
+        // this next line may not be necessary
         result.resume();
-        res.setHeader("Content-Length", result.headers["content-length"]);
-        res.setHeader("Accept-Ranges", "bytes 0-"+(parseInt(result.headers["content-length"])-1)+"/"+parseInt(result.headers["content-length"]));
+        
+        var contentLength = parseInt(result.headers["content-length"]);
+
+        res.setHeader("Content-Length", contentLength);
+        res.setHeader("Accept-Ranges", "bytes 0-"+(contentLength-1)+"/"+contentLength);
         res.setHeader("Content-Type", result.headers["content-type"]);
         res.setHeader("Content-Disposition", "filename="+dbRow.guid+"."+audioFileExtension);
-        result.pipe(res);   
-        console.log(result.headers);        
+        result.pipe(res);      
       });
   },
 
