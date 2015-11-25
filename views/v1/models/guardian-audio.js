@@ -28,11 +28,11 @@ exports.models = {
 
   guardianSpectrogramFile: function(req,res,dbRows) {
 
-    var spawn = require('child_process').spawn;
-    res.writeHead(200, { "Content-Type": "image/png" });
-    var cat_child = spawn("cat", ["/Users/Shared/spec_.png"]);
-    req.connection.on("end", function() { cat_child.kill(); });
-    cat_child.stdout.on("data", function(data) { res.write(data); });
+    // var spawn = require('child_process').spawn;
+    // res.writeHead(200, { "Content-Type": "image/png" });
+    // var cat_child = spawn("cat", ["/Users/Shared/spec_.png"]);
+    // req.connection.on("end", function() { cat_child.kill(); });
+    // cat_child.stdout.on("data", function(data) { res.write(data); });
 
     var dbRow = dbRows;
     aws.s3("rfcx-meta").getFile("/spec_hann.png", function(err, result){
