@@ -549,6 +549,7 @@ router.route("/:guardian_id/checkins")
                       }).catch(function(err){
                         console.log("error adding audio to database | "+err);
                         dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
+                        models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo[j].sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
                         if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
                       });
                     } else {
