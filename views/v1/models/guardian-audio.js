@@ -43,12 +43,19 @@ exports.models = {
     // cat_child.stdout.on("data", function(data) { res.write(data); });
 
     var dbRow = dbRows;
-    aws.s3("rfcx-static").getFile("/img/utils/trans/trans.png", function(err, result){
+    aws.s3("rfcx-meta").getFile("/trans.png", function(err, result){
       if(err) { return next(err); }
-      res.setHeader("Content-Length", result.headers["content-length"]);
-      res.setHeader("Accept-Ranges", result.headers["accept-ranges"]);
-      res.setHeader("Content-Disposition", "filename="+dbRow.guid+".png");
-      res.setHeader("Content-Type", "image/png");
+      // this next line may not be necessary
+      result.resume();
+      
+      var contentLength = parseInt(result.headers["content-length"]);
+      
+      res.writeHead(  200, {
+        "Content-Length": contentLength,
+        "Content-Type": result.headers["content-type"],
+        "Content-Disposition": "filename="+dbRow.guid+".png"
+      });
+
       result.pipe(res);           
     });
 
@@ -116,7 +123,7 @@ exports.models = {
                 //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
                 // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30);
 
-                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png"+urlAuthParams;
+                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png";//+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
 
