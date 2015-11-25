@@ -437,7 +437,7 @@ router.route("/:guardian_id/checkins")
                             // inform other async processes that this one has been saved to database
                             audioInfo[k].isSaved.db = true;
                             audioInfo[k].audio_id = dbAudio.guid;
-                            audioInfo[k].api_url = req.rfcx.api_url_domain+"/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbAudio.guid+"/events";
+                            audioInfo[k].api_url = "/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbAudio.guid+"/events";
 
                             aws.s3(process.env.ASSET_BUCKET_AUDIO).putFile(
                               audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 
@@ -478,7 +478,7 @@ router.route("/:guardian_id/checkins")
                                                     api_token_guid: audioInfo[m].api_token_guid,
                                                     api_token: audioInfo[m].api_token,
                                                     api_token_expires_at: audioInfo[m].api_token_expires_at,
-                                                    api_url: audioInfo[m].api_url,
+                                                    api_url: req.rfcx.api_url_domain+audioInfo[m].api_url,
                                                     audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audioInfo[m].s3Path, audioInfo[m].minutes_until_expiration),
                                                     audio_sha1: audioInfo[m].sha1Hash
                                                   })
