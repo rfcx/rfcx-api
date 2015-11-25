@@ -43,7 +43,7 @@ exports.models = {
     // cat_child.stdout.on("data", function(data) { res.write(data); });
 
     var dbRow = dbRows;
-    aws.s3(process.env.ASSET_BUCKET_META).getFile("/spec_hann.png", function(err, result){
+    aws.s3("rfcx-static").getFile("/img/utils/trans/trans.png", function(err, result){
       if(err) { return next(err); }
       res.setHeader("Content-Length", result.headers["content-length"]);
       res.setHeader("Accept-Ranges", result.headers["accept-ranges"]);
