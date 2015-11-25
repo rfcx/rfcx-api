@@ -15,8 +15,6 @@ exports.models = {
         audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
         ;
 
-      console.log(req.headers);
-
       aws.s3(s3Bucket).getFile(s3Path, function(err, result){
         if(err) { return next(err); }
 
