@@ -290,7 +290,7 @@ router.route("/:guardian_id/checkins")
 
                   if (screenShotInfo[j].sha1Hash === screenShotInfo[j].guardianSha1Hash) {
 
-                    aws.s3("rfcx-meta").putFile(
+                    aws.s3(process.env.ASSET_BUCKET_META).putFile(
                       screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
                       function(err, s3Res){
                         try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
@@ -406,7 +406,7 @@ router.route("/:guardian_id/checkins")
                         site_id: dbGuardian.site_id,
                         check_in_id: dbCheckIn.id,
                         sha1_checksum: audioInfo[j].sha1Hash,
-                        url: "s3://rfcx-ark"+audioInfo[j].s3Path,
+                        url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo[j].s3Path,
                         size: audioInfo[j].size,
                         duration: audioInfo[j].duration,
                         measured_at: audioInfo[j].measured_at
@@ -439,7 +439,7 @@ router.route("/:guardian_id/checkins")
                             audioInfo[k].audio_id = dbAudio.guid;
                             audioInfo[k].api_url = req.rfcx.api_url_domain+"/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbAudio.guid+"/events";
 
-                            aws.s3("rfcx-ark").putFile(
+                            aws.s3(process.env.ASSET_BUCKET_AUDIO).putFile(
                               audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 
                               function(err, s3Res){
                                 try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
@@ -479,7 +479,7 @@ router.route("/:guardian_id/checkins")
                                                     api_token: audioInfo[m].api_token,
                                                     api_token_expires_at: audioInfo[m].api_token_expires_at,
                                                     api_url: audioInfo[m].api_url,
-                                                    audio_url: aws.s3SignedUrl("rfcx-ark", audioInfo[m].s3Path, audioInfo[m].minutes_until_expiration),
+                                                    audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audioInfo[m].s3Path, audioInfo[m].minutes_until_expiration),
                                                     audio_sha1: audioInfo[m].sha1Hash
                                                   })
                                               }, function(snsErr, snsData) {
