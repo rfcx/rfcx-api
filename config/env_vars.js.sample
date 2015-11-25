@@ -9,6 +9,11 @@ exports.env = {
   AWS_REGION_ID: "",
   AWS_ACCOUNT_ID: "",
 
+  AUDIO_BUCKET: "",
+  AUDIO_DOMAIN: "",
+  META_BUCKET: "",
+  META_DOMAIN: "",
+
   RDS_HOSTNAME: "",
   RDS_DB_NAME: "",
   RDS_USERNAME: "",

@@ -28,16 +28,22 @@ exports.models = {
 
   guardianSpectrogramFile: function(req,res,dbRows) {
 
-    var dbRow = dbRows;
+    var spawn = require('child_process').spawn;
+    res.writeHead(200, { "Content-Type": "image/png" });
+    var cat_child = spawn("cat", ["/Users/Shared/spec_.png"]);
+    req.connection.on("end", function() { cat_child.kill(); });
+    cat_child.stdout.on("data", function(data) { res.write(data); });
 
-      aws.s3("rfcx-meta").getFile("/spec_hann.png", function(err, result){
-        if(err) { return next(err); }
-        res.setHeader("Content-Length", result.headers["content-length"]);
-        res.setHeader("Accept-Ranges", result.headers["accept-ranges"]);
-        res.setHeader("Content-Disposition", "filename="+dbRow.guid+".png");
-        res.setHeader("Content-Type", "image/png");
-        result.pipe(res);           
-      });
+    var dbRow = dbRows;
+    aws.s3("rfcx-meta").getFile("/spec_hann.png", function(err, result){
+      if(err) { return next(err); }
+      res.setHeader("Content-Length", result.headers["content-length"]);
+      res.setHeader("Accept-Ranges", result.headers["accept-ranges"]);
+      res.setHeader("Content-Disposition", "filename="+dbRow.guid+".png");
+      res.setHeader("Content-Type", "image/png");
+      result.pipe(res);           
+    });
+
   },
 
   guardianAudio: function(req,res,dbRows,PARENT_GUID) {
@@ -89,12 +95,18 @@ exports.models = {
               try {
 
                 var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid,
-                    urlBase = req.rfcx.api_url+"/v1/audio/"+thisGuid,
+                    urlBase = req.rfcx.api_url_domain+"/v1/audio/"+thisGuid,
                     urlAuthParams = "?auth_user=token/"+tokenInfo.token_guid
                                   +"&auth_token="+tokenInfo.token
                                   +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
 
-                jsonRowsByGuid[thisGuid].url = urlBase+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+urlAuthParams;
+                //jsonRowsByGuid[thisGuid].url = urlBase+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+urlAuthParams;
+                // temporary... should replace
+                var s3NoProtocol = thisRow.url.substr(thisRow.url.indexOf("://")+3),
+                    s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
+                    s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
+                jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30).replace(/rfcx-ark.s3-eu-west-1.amazonaws.com\/production/g,"ark.rfcx.org");
+
                 jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png"+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;

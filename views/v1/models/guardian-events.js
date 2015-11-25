@@ -69,7 +69,7 @@ exports.models = {
                 var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid;
 
                 jsonRowsByGuid[thisGuid].url = 
-                    req.rfcx.api_url+"/v1/events/"+thisGuid+".mp3"
+                    req.rfcx.api_url_domain+"/v1/events/"+thisGuid+".mp3"
                     +"?auth_user=token/"+tokenInfo.token_guid
                     +"&auth_token="+tokenInfo.token
                     +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();

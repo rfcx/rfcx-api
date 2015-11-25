@@ -50,7 +50,8 @@ var routes = {
     "checkins": [ require("./routes/v1/checkins") ],
     "users": [ require("./routes/v1/users") ],
     "events": [ require("./routes/v1/events") ],
-    "shortlinks": [ require("./routes/v1/shortlinks") ]
+    "shortlinks": [ require("./routes/v1/shortlinks") ],
+    "ark": [ require("./routes/v1/ark") ],
   },
   "v2": {
   }

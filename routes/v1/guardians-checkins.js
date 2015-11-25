@@ -437,7 +437,7 @@ router.route("/:guardian_id/checkins")
                             // inform other async processes that this one has been saved to database
                             audioInfo[k].isSaved.db = true;
                             audioInfo[k].audio_id = dbAudio.guid;
-                            audioInfo[k].api_url = "/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbAudio.guid+"/events";
+                            audioInfo[k].api_url = req.rfcx.api_url_domain+"/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbAudio.guid+"/events";
 
                             aws.s3("rfcx-ark").putFile(
                               audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 

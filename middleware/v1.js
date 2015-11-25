@@ -9,7 +9,7 @@ exports.middleware = {
     
   setApiParams: function(req, res, next) {
 
-    var apiUrl = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol)+"://"+req.headers.host;
+    var apiUrlDomain = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol)+"://"+req.headers.host;
     
     var paramLimit = (req.query.limit == null) ? 20 : parseInt(req.query.limit);
     if (paramLimit > 300) { paramLimit = 300; }
@@ -35,7 +35,7 @@ exports.middleware = {
     if (req.body["rfcx_version"] != null) { apiVersion.body = req.body["rfcx_version"]; }
 
     req.rfcx = {
-      api_url: apiUrl,
+      api_url_domain: apiUrlDomain,
       api_version: apiVersion,
       url_path: urlPath,
       limit: paramLimit,
