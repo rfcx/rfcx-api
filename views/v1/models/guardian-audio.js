@@ -24,11 +24,14 @@ exports.models = {
         result.resume();
         
         var contentLength = parseInt(result.headers["content-length"]);
+        
+        res.writeHead(  200, {
+          "Content-Length": contentLength,
+          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+          "Content-Type": result.headers["content-type"],
+          "Content-Disposition": "filename="+dbRow.guid+"."+audioFileExtension
+        });
 
-        res.setHeader("Content-Length", contentLength);
-        res.setHeader("Accept-Ranges", "bytes 0-"+(contentLength-1)+"/"+contentLength);
-        res.setHeader("Content-Type", result.headers["content-type"]);
-        res.setHeader("Content-Disposition", "filename="+dbRow.guid+"."+audioFileExtension);
         result.pipe(res);      
       });
   },
