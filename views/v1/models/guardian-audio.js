@@ -123,7 +123,7 @@ exports.models = {
                 //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
                 // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30);
 
-                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png";//+urlAuthParams;
+                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png?v=1";//+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
 
