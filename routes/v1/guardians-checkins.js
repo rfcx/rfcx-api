@@ -79,7 +79,6 @@ router.route("/:guardian_id/checkins")
             .create({
               guardian_id: dbGuardian.id,
               site_id: dbGuardian.site_id,
-              software_versions: JSON.stringify(roleVersions),
               measured_at: timeStampToDate(json.measured_at, json.timezone_offset),
               queued_at: timeStampToDate(json.queued_at, json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
@@ -334,7 +333,7 @@ router.route("/:guardian_id/checkins")
             // add prefs instructions as set in database
             for (guardianInd in dbGuardian.dataValues) {
               if ((guardianInd.substr(0,6) === "prefs_") && (dbGuardian.dataValues[guardianInd] != null)) {
-                returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
+           //     returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
               }
             }
 

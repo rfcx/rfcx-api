@@ -34,12 +34,6 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    software_versions: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
     is_updatable: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

@@ -29,12 +29,6 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    software_versions: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
     request_latency_api: {
       type: DataTypes.INTEGER,
       allowNull: true,
