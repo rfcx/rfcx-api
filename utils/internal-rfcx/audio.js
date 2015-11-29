@@ -120,7 +120,7 @@ exports.audio = {
     },
 
     buildTransformToOgg: function(filePath, resolve, reject) {
-        return this.buildFfmpeg(filePath, 'ogg', 'libvorbis', 0, [], resolve, reject);
+        return this.buildFfmpeg(filePath, 'ogg', 'flac', 0, [], resolve, reject);
     },
 
     buildTransformMp4ForStream: function(filePath, resolve, reject) {
