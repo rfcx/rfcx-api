@@ -45,6 +45,7 @@ exports.models = {
               latitude: parseFloat(thisRow.latitude),
               longitude: parseFloat(thisRow.longitude)
             },
+            position: [req.rfcx.offset, 1500],
             reviewed_at: thisRow.reviewed_at,
             reviewed_by: null
           };
