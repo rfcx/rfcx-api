@@ -55,7 +55,7 @@ exports.models = {
           if (thisRow.CheckIn != null) { jsonRowsByGuid[thisGuid].checkin_guid = thisRow.CheckIn.guid; }
           if (thisRow.Reviewer != null) { jsonRowsByGuid[thisGuid].reviewed_by = views.models.usersPublic(req,res,thisRow.Reviewer)[0]; }
 
-          if ((req.query.include != null) && (req.query.include.indexOf("fingerprint") > -1)) { jsonRowsByGuid[thisGuid].fingerprint = thisRow.fingerprint; }
+          if ((req.query.include != null) && (req.query.include.indexOf("fingerprint") > -1)) { jsonRowsByGuid[thisGuid].fingerprint = JSON.parse(thisRow.fingerprint); }
 
           if (PARENT_GUID != null) { jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID; }
 
