@@ -7,7 +7,6 @@ exports.authenticateAs = function(req,token,done,authUser){
 
   var only_allow_access_to = [
       "^/v1/guardians/"+authUser.guid+"/checkins$",
-      "^/v1/guardians/"+authUser.guid+"/software/[a-z]+/latest$",
       "^/v1/guardians/"+authUser.guid+"/software/[a-z]+$"
     ];
 
