@@ -31,8 +31,8 @@ models.Guardian
       .findAll({ 
         where: { guardian_id: dbGuardian.id, analysis_queued_at: null }, 
         include: [ { all: true } ], 
-        order: [ ["measured_at", "DESC"] ],
-        limit: 2000
+        order: [ ["measured_at", "ASC"] ],
+        limit: 10
       }).then(function(dbAudio){
 
         for (dbAudInd in dbAudio) {
@@ -41,54 +41,57 @@ models.Guardian
 
           audArr[dbAudio[dbAudInd].guid] = dbAudio[dbAudInd];
 
-          token.createAnonymousToken({
-            reference_tag: dbAudio[dbAudInd].guid,
-            token_type: "worker-analysis",
-            created_by: "re-analyze-script",
-            minutes_until_expiration: 2880,
-            allow_garbage_collection: false,
-            only_allow_access_to: [
-              "^/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbAudio[dbAudInd].CheckIn.guid+"/audio/"+dbAudio[dbAudInd].guid+"/events$"
-              ]
-          }).then(function(tokenInfo){
+          if (dbAudio[dbAudInd].Event.length < 1) {
+
+            token.createAnonymousToken({
+              reference_tag: dbAudio[dbAudInd].guid,
+              token_type: "analysis-worker",
+              created_by: "re-analyze-script",
+              minutes_until_expiration: 60,
+              allow_garbage_collection: false,
+              only_allow_access_to: [
+                "^/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbAudio[dbAudInd].CheckIn.guid+"/audio/"+dbAudio[dbAudInd].guid+"/events$"
+                ]
+            }).then(function(tokenInfo){
 
 
-                          aws.sns().publish({
-                            TopicArn: aws.snsTopicArn("rfcx-analysis"),
-                            Message: JSON.stringify({
-                                
-                                measured_at: audArr[tokenInfo.reference_tag].measured_at,
+                             aws.sns().publish({
+                              TopicArn: aws.snsTopicArn("rfcx-analysis"),
+                              Message: JSON.stringify({
+                                  
+                                  measured_at: audArr[tokenInfo.reference_tag].measured_at,
 
-                                api_token_guid: tokenInfo.token_guid,
-                                api_token: tokenInfo.token,
-                                api_token_expires_at: tokenInfo.token_expires_at,
-                                api_url: "https://api.rfcx.org"+"/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbAudio[dbAudInd].CheckIn.guid+"/audio/"+dbAudio[dbAudInd].guid+"/events",
-                                audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audArr[tokenInfo.reference_tag].s3Path, Math.round(tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf()/60000)),
-                                audio_sha1: audArr[tokenInfo.reference_tag].sha1_checksum
-                              })
-                          }, function(snsErr, snsData) {
+                                  api_token_guid: tokenInfo.token_guid,
+                                  api_token: tokenInfo.token,
+                                  api_token_expires_at: tokenInfo.token_expires_at,
+                                  api_url: "https://api.rfcx.org"+"/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbAudio[dbAudInd].CheckIn.guid+"/audio/"+dbAudio[dbAudInd].guid+"/events",
+                                  audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audArr[tokenInfo.reference_tag].s3Path, Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000)),
+                                  audio_sha1: audArr[tokenInfo.reference_tag].sha1_checksum
+                                })
+                            }, function(snsErr, snsData) {
 
-                            if (!!snsErr) {
-                              console.log(snsErr);
-                            } else {
+                              if (!!snsErr) {
+                                console.log(snsErr);
+                              } else {
 
-                            audArr[tokenInfo.reference_tag].analysis_queued_at = new Date();
+                              audArr[tokenInfo.reference_tag].analysis_queued_at = new Date();
 
-                            audArr[tokenInfo.reference_tag].save();
+                              audArr[tokenInfo.reference_tag].save();
 
-                            console.log(audArr[tokenInfo.reference_tag].sha1_checksum +" | "+ audArr[tokenInfo.reference_tag].CheckIn.guid +" | "+ snsData.MessageId);
-
-
-                            }
-
-                          });
+                              console.log(audArr[tokenInfo.reference_tag].sha1_checksum +" | "+ audArr[tokenInfo.reference_tag].CheckIn.guid +" | "+ snsData.MessageId);
 
 
+                              }
+
+                            });
 
 
-          }).catch(function(err){
-            console.log("error creating access token for analysis worker | "+err);
-          });
+
+
+            }).catch(function(err){
+              console.log("error creating access token for analysis worker | "+err);
+            });
+          }
 
         }
 
