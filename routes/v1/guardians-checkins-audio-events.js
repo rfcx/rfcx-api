@@ -31,7 +31,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                   var savedEvents = [];
                   for (eventInd in audioEvents) {
                     var audioEvent = audioEvents[eventInd];
-                    var eventTime = new Date((dbAudio.measured_at.valueOf()+Math.round(1000*parseFloat(audioEvent.begins_at))));
+                    var eventTime = new Date((dbAudio.measured_at.valueOf()+parseInt(audioEvent.begins_at)));
                     var fingerprintArray = JSON.stringify(audioEvent.fingerprint);
                     
                     models.GuardianEvent
@@ -42,7 +42,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                         site_id: dbGuardian.site_id,
                         begins_at_analysis: eventTime, 
                         begins_at_reviewer: null,
-                        duration_analysis: Math.round(parseFloat(1000*audioEvent.duration)),
+                        duration_analysis: parseInt(audioEvent.duration),
                         duration_reviewer: null,
                         classification_analysis: audioEvent.classification, 
                         classification_reviewer: null,

@@ -61,18 +61,6 @@ router.route("/:guardian_id/checkins")
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
 
-            // save guardian meta data
-            checkInHelpers.saveMeta.DataTransfer(strArrToJSArr(json.data_transfer,"|","*"), dbGuardian.id, dbCheckIn.id);
-            checkInHelpers.saveMeta.CPU(strArrToJSArr(json.cpu,"|","*"), dbGuardian.id, dbCheckIn.id);
-            checkInHelpers.saveMeta.Battery(strArrToJSArr(json.battery,"|","*"), dbGuardian.id, dbCheckIn.id);
-            checkInHelpers.saveMeta.Power(strArrToJSArr(json.power,"|","*"), dbGuardian.id, dbCheckIn.id);
-            checkInHelpers.saveMeta.Network(strArrToJSArr(json.network,"|","*"), dbGuardian.id, dbCheckIn.id);
-            checkInHelpers.saveMeta.Offline(strArrToJSArr(json.offline,"|","*"), dbGuardian.id, dbCheckIn.id);
-            checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
-
-            // save software role versions
-            checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(json.software,"|","*"), dbGuardian.id);
-
             // template for json return... to be populated as we progress
             var returnJson = {
               checkin_id: dbCheckIn.guid, // unique guid of the check-in
@@ -85,30 +73,33 @@ router.route("/:guardian_id/checkins")
               }
             };
 
+            // save guardian meta data
+            checkInHelpers.saveMeta.DataTransfer(strArrToJSArr(json.data_transfer,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.CPU(strArrToJSArr(json.cpu,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Battery(strArrToJSArr(json.battery,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Power(strArrToJSArr(json.power,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Network(strArrToJSArr(json.network,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Offline(strArrToJSArr(json.offline,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
+
+            // save software role versions
+            checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(json.software,"|","*"), dbGuardian.id);
+
             // parse, review and save sms messages
             var messageInfo = checkInHelpers.messages.buildInfo(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
-
             for (msgInfoInd in messageInfo) {
               checkInHelpers.messages.save(messageInfo[msgInfoInd])
                 .then(function(dbMsg){
                   messageInfo[dbMsg.android_id].isSaved = true;
                   messageInfo[dbMsg.android_id].guid = dbMsg.guid;
                 });
-              // save each message into a database
-              // models.GuardianMetaMessage.create({
-              //     guardian_id: messageInfo[msgInfoInd].guardian_id,
-              //     check_in_id: messageInfo[msgInfoInd].checkin_id,
-              //     received_at: messageInfo[msgInfoInd].timeStamp,
-              //     address: messageInfo[msgInfoInd].address,
-              //     body: messageInfo[msgInfoInd].body,
-              //     android_id: messageInfo[msgInfoInd].android_id
-              //   }).then(function(dbGuardianMetaMessage){
-              //     // if all goes well, then report it on the "global" object...
-              //     console.log("message saved: "+dbGuardianMetaMessage.guid);
-              //   }).catch(function(err){
-              //     console.log("error saving message: "+messageInfo[msgInfoInd].android_id+", "+messageInfo[msgInfoInd].body+", "+err);
-              //   });
             }
+            // add messages instructions
+            // returnJson.instructions.messages.push({
+            //   body: "From  "+dbGuardian.guid,
+            //   address: "+14153359205",
+            //   guid: "guid goes here"
+            // });
 
             // if included, update previous checkIn info
             if (json.previous_checkins != null) {
@@ -206,13 +197,6 @@ router.route("/:guardian_id/checkins")
            //     returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
               }
             }
-
-            // add messages instructions
-            // returnJson.instructions.messages.push({
-            //   body: "From  "+dbGuardian.guid,
-            //   address: "+14153359205",
-            //   guid: "guid goes here"
-            // });
       
 
             // save audio files
