@@ -11,6 +11,7 @@ var hash = require("../../utils/misc/hash.js").hash;
 var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var views = require("../../views/v1");
+var checkInHelpers = require("../../utils/rfcx-checkin");
 var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
@@ -109,18 +110,19 @@ router.route("/:guardian_id/checkins")
             }
 
             // save guardian meta CPU
-            var metaCPU = strArrToJSArr(json.cpu,"|","*");
-            for (cpuInd in metaCPU) {
-              models.GuardianMetaCPU.create({
-                  guardian_id: dbGuardian.id,
-                  check_in_id: dbCheckIn.id,
-                  measured_at: timeStampToDate(metaCPU[cpuInd][0], json.timezone_offset),
-                  cpu_percent: parseInt(metaCPU[cpuInd][1]),
-                  cpu_clock: parseInt(metaCPU[cpuInd][2])
-                }).then(function(dbGuardianMetaCPU){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaCPU | "+err);
-                });
-            }
+        //    var metaCPU = strArrToJSArr(json.cpu,"|","*");
+            checkInHelpers.saveMeta.CPU(strArrToJSArr(json.cpu,"|","*"), dbGuardian.id, dbCheckIn.id);
+            // for (cpuInd in metaCPU) {
+            //   models.GuardianMetaCPU.create({
+            //       guardian_id: dbGuardian.id,
+            //       check_in_id: dbCheckIn.id,
+            //       measured_at: timeStampToDate(metaCPU[cpuInd][0], json.timezone_offset),
+            //       cpu_percent: parseInt(metaCPU[cpuInd][1]),
+            //       cpu_clock: parseInt(metaCPU[cpuInd][2])
+            //     }).then(function(dbGuardianMetaCPU){ }).catch(function(err){
+            //       console.log("failed to create GuardianMetaCPU | "+err);
+            //     });
+            // }
 
             // save guardian meta battery
             var metaBattery = strArrToJSArr(json.battery,"|","*");
