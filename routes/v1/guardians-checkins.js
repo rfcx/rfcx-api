@@ -39,35 +39,6 @@ router.route("/:guardian_id/checkins")
           dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
           dbGuardian.save();
 
-          // parse and record guardian software versions
-          var roleVersions = {}, roleArr = strArrToJSArr(json.software,"|","*");
-          for (vInd in roleArr) { 
-            roleVersions[roleArr[vInd][0]] = roleArr[vInd][1];
-            models.GuardianSoftware
-              .findOne({ 
-                where: { role: roleArr[vInd][0] }
-            }).then(function(dbSoftwareRole){
-              models.GuardianSoftwareVersion
-                .findAll({ 
-                  where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] },
-                  order: [ ["created_at", "DESC"] ],
-                  limit: 1
-              }).then(function(dbSoftwareRoleVersion){
-                if (dbSoftwareRoleVersion.length < 1) {
-                  console.log("software role "+dbSoftwareRole.role+", version "+roleVersions[dbSoftwareRole.role]+" is not [yet] in the database.");
-                } else {
-                  models.GuardianMetaSoftwareVersion
-                    .findOrCreate({
-                      where: { guardian_id: dbGuardian.id, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
-                  }).spread(function(dbMetaSoftware, wasCreated){
-                    dbMetaSoftware.updated_at = new Date();
-                    dbMetaSoftware.save();
-                  }).catch(function(err){ console.log(err); });
-                }
-              }).catch(function(err){ console.log(err); });
-            }).catch(function(err){ console.log(err); });
-          }
-
           // organize geo-location data parameters
           var metaGeo = [
               ((json.location[0] != null) ? parseFloat(json.location[0]) : null),
@@ -99,6 +70,9 @@ router.route("/:guardian_id/checkins")
             checkInHelpers.saveMeta.Offline(strArrToJSArr(json.offline,"|","*"), dbGuardian.id, dbCheckIn.id);
             checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
 
+            // save software role versions
+            checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(json.software,"|","*"), dbGuardian.id);
+
             // template for json return... to be populated as we progress
             var returnJson = {
               checkin_id: dbCheckIn.guid, // unique guid of the check-in
@@ -112,21 +86,9 @@ router.route("/:guardian_id/checkins")
             };
 
             // parse, review and save sms messages
+            var messageInfo = checkInHelpers.messages.buildInfo(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
+            
             if (util.isArray(json.messages)) {
-              var messageInfo = {};
-              for (msgInd in json.messages) {
-                messageInfo[json.messages[msgInd].android_id] = {
-                  android_id: json.messages[msgInd].android_id,
-                  guid: null,
-                  guardian_id: dbGuardian.id,
-                  checkin_id: dbCheckIn.id,
-                  version: null,//dSoftware.number,
-                  address: json.messages[msgInd].address,
-                  body: json.messages[msgInd].body,
-                  timeStamp: timeStampToDate(json.messages[msgInd].received_at, json.timezone_offset),
-                  isSaved: false
-                };
-              }
               for (msgInfoInd in messageInfo) {
                 // save each message into a database
                 models.GuardianMetaMessage.create({
@@ -250,11 +212,7 @@ router.route("/:guardian_id/checkins")
             //   address: "+14153359205",
             //   guid: "guid goes here"
             // });
-            
-            // logging association of guardian and creation of check-in
-            // var checkInLogging = "guardian: "+dbGuardian.guid+" |";
-            // for (role in roleVersions) { checkInLogging += " "+role+"-"+roleVersions[role]; }
-            // console.log(checkInLogging);
+      
 
             // save audio files
             if (!!req.files.audio) {
