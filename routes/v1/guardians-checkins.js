@@ -345,9 +345,9 @@ router.route("/:guardian_id/checkins")
             // });
             
             // logging association of guardian and creation of check-in
-            var checkInLogging = "guardian: "+dbGuardian.guid+" |";
-            for (role in roleVersions) { checkInLogging += " "+role+"-"+roleVersions[role]; }
-            console.log(checkInLogging);
+            // var checkInLogging = "guardian: "+dbGuardian.guid+" |";
+            // for (role in roleVersions) { checkInLogging += " "+role+"-"+roleVersions[role]; }
+            // console.log(checkInLogging);
 
             // save audio files
             if (!!req.files.audio) {
