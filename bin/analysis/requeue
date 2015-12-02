@@ -31,8 +31,8 @@ models.Guardian
       .findAll({ 
         where: { guardian_id: dbGuardian.id, analysis_queued_at: null }, 
         include: [ { all: true } ], 
-        order: [ ["measured_at", "ASC"] ],
-        limit: 10
+        order: [ ["measured_at", "DESC"] ],
+        limit: 3000
       }).then(function(dbAudio){
 
         for (dbAudInd in dbAudio) {
@@ -64,7 +64,7 @@ models.Guardian
                                   api_token_guid: tokenInfo.token_guid,
                                   api_token: tokenInfo.token,
                                   api_token_expires_at: tokenInfo.token_expires_at,
-                                  api_url: "https://api.rfcx.org"+"/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbAudio[dbAudInd].CheckIn.guid+"/audio/"+dbAudio[dbAudInd].guid+"/events",
+                                  api_url: "https://api.rfcx.org"+"/v1/guardians/"+guardian_id+"/checkins/"+audArr[tokenInfo.reference_tag].CheckIn.guid+"/audio/"+tokenInfo.reference_tag+"/events",
                                   audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audArr[tokenInfo.reference_tag].s3Path, Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000)),
                                   audio_sha1: audArr[tokenInfo.reference_tag].sha1_checksum
                                 })
@@ -91,6 +91,10 @@ models.Guardian
             }).catch(function(err){
               console.log("error creating access token for analysis worker | "+err);
             });
+          } else {
+            audArr[dbAudio[dbAudInd].guid].analysis_queued_at = new Date();
+            audArr[dbAudio[dbAudInd].guid].save();
+            console.log('skipped');
           }
 
         }
