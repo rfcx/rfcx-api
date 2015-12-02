@@ -87,26 +87,27 @@ router.route("/:guardian_id/checkins")
 
             // parse, review and save sms messages
             var messageInfo = checkInHelpers.messages.buildInfo(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
-            
-            if (util.isArray(json.messages)) {
-              for (msgInfoInd in messageInfo) {
-                // save each message into a database
-                models.GuardianMetaMessage.create({
-                    guardian_id: messageInfo[msgInfoInd].guardian_id,
-                    check_in_id: messageInfo[msgInfoInd].checkin_id,
-                    received_at: messageInfo[msgInfoInd].timeStamp,
-                    address: messageInfo[msgInfoInd].address,
-                    body: messageInfo[msgInfoInd].body,
-                    android_id: messageInfo[msgInfoInd].android_id
-                  }).then(function(dbGuardianMetaMessage){
-                    // if all goes well, then report it on the "global" object...
-                    messageInfo[dbGuardianMetaMessage.android_id].isSaved = true;
-                    messageInfo[dbGuardianMetaMessage.android_id].guid = dbGuardianMetaMessage.guid;
-                    console.log("message saved: "+dbGuardianMetaMessage.guid);
-                  }).catch(function(err){
-                    console.log("error saving message: "+messageInfo[msgInfoInd].android_id+", "+messageInfo[msgInfoInd].body+", "+err);
-                  });
-              }
+
+            for (msgInfoInd in messageInfo) {
+              checkInHelpers.messages.save(messageInfo[msgInfoInd])
+                .then(function(dbMsg){
+                  messageInfo[dbMsg.android_id].isSaved = true;
+                  messageInfo[dbMsg.android_id].guid = dbMsg.guid;
+                });
+              // save each message into a database
+              // models.GuardianMetaMessage.create({
+              //     guardian_id: messageInfo[msgInfoInd].guardian_id,
+              //     check_in_id: messageInfo[msgInfoInd].checkin_id,
+              //     received_at: messageInfo[msgInfoInd].timeStamp,
+              //     address: messageInfo[msgInfoInd].address,
+              //     body: messageInfo[msgInfoInd].body,
+              //     android_id: messageInfo[msgInfoInd].android_id
+              //   }).then(function(dbGuardianMetaMessage){
+              //     // if all goes well, then report it on the "global" object...
+              //     console.log("message saved: "+dbGuardianMetaMessage.guid);
+              //   }).catch(function(err){
+              //     console.log("error saving message: "+messageInfo[msgInfoInd].android_id+", "+messageInfo[msgInfoInd].body+", "+err);
+              //   });
             }
 
             // if included, update previous checkIn info
