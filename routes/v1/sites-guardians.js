@@ -3,6 +3,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
+var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
@@ -23,9 +24,13 @@ router.route("/:site_id/guardians")
             order: [ ["last_check_in", "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
-          }).then(function(dbGuardian){
-            
-            res.status(200).json(views.models.guardian(req,res,dbGuardian));
+          }).then(function(dbGuardians){
+
+            if (dbGuardians.length < 1) {
+              httpError(res, 404, "database");
+            } else {
+              res.status(200).json(views.models.guardian(req,res,dbGuardians));
+            }
 
           }).catch(function(err){
             console.log("failed to return guardians | "+err);

@@ -608,9 +608,13 @@ router.route("/:guardian_id/checkins")
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
           }).then(function(dbCheckIn){
-            
-            views.models.guardianCheckIns(req,res,dbCheckIn)
-              .then(function(json){ res.status(200).json(json); });
+
+            if (dbCheckIn.length < 1) {
+              httpError(res, 404, "database");
+            } else {
+              views.models.guardianCheckIns(req,res,dbCheckIn)
+                .then(function(json){ res.status(200).json(json); });
+            }
 
           }).catch(function(err){
             console.log(err);

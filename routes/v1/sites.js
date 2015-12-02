@@ -3,6 +3,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
+var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
@@ -18,7 +19,11 @@ router.route("/")
         offset: req.rfcx.offset
       }).then(function(dbSite){
         
-        res.status(200).json(views.models.guardianSites(req,res,dbSite));
+        if (dbSite.length < 1) {
+          httpError(res, 404, "database");
+        } else {
+          res.status(200).json(views.models.guardianSites(req,res,dbSite));
+        }
 
       }).catch(function(err){
         console.log("failed to return site | "+err);
@@ -32,11 +37,16 @@ router.route("/:site_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianSite
-      .findOne({ 
-        where: { guid: req.params.site_id }
+      .findAll({ 
+        where: { guid: req.params.site_id },
+        limit: 1
       }).then(function(dbSite){
         
-        res.status(200).json(views.models.guardianSites(req,res,dbSite));
+        if (dbSite.length < 1) {
+          httpError(res, 404, "database");
+        } else {
+          res.status(200).json(views.models.guardianSites(req,res,dbSite));
+        }
 
       }).catch(function(err){
         console.log("failed to return site | "+err);

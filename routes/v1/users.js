@@ -4,6 +4,7 @@ var router = express.Router();
 var hash = require("../../utils/misc/hash.js").hash;
 var token = require("../../utils/internal-rfcx/token.js").token;
 var views = require("../../views/v1");
+var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
@@ -131,11 +132,16 @@ router.route("/:user_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.User 
-      .findOne({
-        where: { guid: req.params.user_id }
+      .findAll({
+        where: { guid: req.params.user_id },
+        limit: 1
       }).then(function(dbUser){
 
-        res.status(200).json(views.models.users(req,res,dbUser));
+        if (dbUser.length < 1) {
+          httpError(res, 404, "database");
+        } else {
+          res.status(200).json(views.models.users(req,res,dbUser));
+        }
 
       }).catch(function(err){
         console.log("failed to return user | "+err);
@@ -151,13 +157,19 @@ router.route("/:user_id")
 
     if (req.rfcx.auth_token_info.guid === req.params.user_id) {
       models.User 
-        .findOne({
-          where: { guid: req.params.user_id }
+        .findAll({
+          where: { guid: req.params.user_id },
+          limit: 1
         }).then(function(dbUser){
 
-          
-          res.status(200).json(views.models.users(req,res,dbUser));
+          if (dbUser.length < 1) {
+            httpError(res, 404, "database");
+          } else {
 
+            // now let's update the user info....
+
+            res.status(200).json(views.models.users(req,res,dbUser));
+          }
 
         }).catch(function(err){
           console.log("failed to update user | "+err);

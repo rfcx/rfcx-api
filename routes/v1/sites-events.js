@@ -3,6 +3,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
+var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
@@ -30,10 +31,12 @@ router.route("/:site_id/events")
             offset: req.rfcx.offset
           }).then(function(dbEvents){
 
-            views.models.guardianEvents(req,res,dbEvents)
-              .then(function(eventJson){
-                res.status(200).json(eventJson);
-            });
+            if (dbEvents.length < 1) {
+              httpError(res, 404, "database");
+            } else {
+              views.models.guardianEvents(req,res,dbEvents)
+                .then(function(json){ res.status(200).json(json); });
+            }
 
         }).catch(function(err){
           console.log("failed to return events | "+err);

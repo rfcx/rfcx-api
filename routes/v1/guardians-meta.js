@@ -3,6 +3,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
+var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
@@ -41,7 +42,11 @@ router.route("/:guardian_id/meta/:meta_type")
                     offset: req.rfcx.offset
                 }).then(function(dbMeta){
 
-                    res.status(200).json(views.models[modelLookUp[meta_type][1]](req,res,dbMeta));
+                    if (dbMeta.length < 1) {
+                      httpError(res, 404, "database");
+                    } else {
+                      res.status(200).json(views.models[modelLookUp[meta_type][1]](req,res,dbMeta));
+                    }
 
                 }).catch(function(err){
                     res.status(500).json({msg:"error finding guardian | "+err});
