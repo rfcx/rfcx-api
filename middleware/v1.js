@@ -16,8 +16,8 @@ exports.middleware = {
 
     var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
 
-    var paramAfter = (req.query.starting_after == null) ? null : (new Date(""+req.query.starting_after));
-    var paramBefore = (req.query.ending_before == null) ? null : (new Date(""+req.query.ending_before));
+    var paramAfter = (req.query.starting_after == null) ? null : (isNaN(Number(req.query.starting_after))) ? (new Date(""+req.query.starting_after)) : (new Date(parseInt(req.query.starting_after)));
+    var paramBefore = (req.query.ending_before == null) ? null : (isNaN(Number(req.query.ending_before))) ? (new Date(""+req.query.ending_before)) : (new Date(parseInt(req.query.ending_before)));
 
     var contentType = path.extname(req.path).trim().substr(1);    
     if (contentType.trim().length == 0) { contentType = "json"; }
