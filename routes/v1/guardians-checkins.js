@@ -91,108 +91,13 @@ router.route("/:guardian_id/checkins")
           }).then(function(dbCheckIn){
 
             // save guardian meta data
-
-            // save guardian meta data transfer
-            var metaDataTransfer = strArrToJSArr(json.data_transfer,"|","*");
-            for (dtInd in metaDataTransfer) {
-              models.GuardianMetaDataTransfer.create({
-                  guardian_id: dbGuardian.id,
-                  check_in_id: dbCheckIn.id,
-                  started_at: timeStampToDate(metaDataTransfer[dtInd][0], json.timezone_offset),
-                  ended_at: timeStampToDate(metaDataTransfer[dtInd][1], json.timezone_offset),
-                  bytes_received: parseInt(metaDataTransfer[dtInd][2]),
-                  bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
-                  total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
-                  total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
-                }).then(function(dbGuardianMetaDataTransfer){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaDataTransfer | "+err);
-                });
-            }
-
-            // save guardian meta CPU
-        //    var metaCPU = strArrToJSArr(json.cpu,"|","*");
+            checkInHelpers.saveMeta.DataTransfer(strArrToJSArr(json.data_transfer,"|","*"), dbGuardian.id, dbCheckIn.id);
             checkInHelpers.saveMeta.CPU(strArrToJSArr(json.cpu,"|","*"), dbGuardian.id, dbCheckIn.id);
-            // for (cpuInd in metaCPU) {
-            //   models.GuardianMetaCPU.create({
-            //       guardian_id: dbGuardian.id,
-            //       check_in_id: dbCheckIn.id,
-            //       measured_at: timeStampToDate(metaCPU[cpuInd][0], json.timezone_offset),
-            //       cpu_percent: parseInt(metaCPU[cpuInd][1]),
-            //       cpu_clock: parseInt(metaCPU[cpuInd][2])
-            //     }).then(function(dbGuardianMetaCPU){ }).catch(function(err){
-            //       console.log("failed to create GuardianMetaCPU | "+err);
-            //     });
-            // }
-
-            // save guardian meta battery
-            var metaBattery = strArrToJSArr(json.battery,"|","*");
-            for (battInd in metaBattery) {
-              models.GuardianMetaBattery.create({
-                  guardian_id: dbGuardian.id,
-                  check_in_id: dbCheckIn.id,
-                  measured_at: timeStampToDate(metaBattery[battInd][0], json.timezone_offset),
-                  battery_percent: parseInt(metaBattery[battInd][1]),
-                  battery_temperature: parseInt(metaBattery[battInd][2])
-                }).then(function(dbGuardianMetaBattery){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaBattery | "+err);
-                });
-            }
-
-            // save guardian meta power
-            var metaPower = strArrToJSArr(json.power,"|","*");
-            for (pwrInd in metaPower) {
-              models.GuardianMetaPower.create({
-                  guardian_id: dbGuardian.id,
-                  check_in_id: dbCheckIn.id,
-                  measured_at: timeStampToDate(metaPower[pwrInd][0], json.timezone_offset),
-                  is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
-                  is_charged: (metaPower[pwrInd][2] === "1") ? true : false
-                }).then(function(dbGuardianMetaPower){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaPower | "+err);
-                });
-            }
-
-            // save guardian meta network
-            var metaNetwork = strArrToJSArr(json.network,"|","*");
-            for (ntwkInd in metaNetwork) {
-              models.GuardianMetaNetwork.create({
-                  guardian_id: dbGuardian.id,
-                  check_in_id: dbCheckIn.id,
-                  measured_at: timeStampToDate(metaNetwork[ntwkInd][0], json.timezone_offset),
-                  signal_strength: parseInt(metaNetwork[ntwkInd][1]),
-                  network_type: metaNetwork[ntwkInd][2],
-                  carrier_name: metaNetwork[ntwkInd][3]
-                }).then(function(dbGuardianMetaNetwork){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaNetwork | "+err);
-                });
-            }
-
-            // save guardian meta offline periods
-            var metaOffline = strArrToJSArr(json.offline,"|","*");
-            for (offlInd in metaOffline) {
-              models.GuardianMetaOffline.create({
-                  guardian_id: dbGuardian.id,
-                  check_in_id: dbCheckIn.id,
-                  ended_at: timeStampToDate(metaOffline[offlInd][0], json.timezone_offset),
-                  offline_duration: parseInt(metaOffline[offlInd][1]),
-                  carrier_name: metaOffline[offlInd][2]
-                }).then(function(dbGuardianMetaOffline){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaOffline | "+err);
-                });
-            }
-
-            // save guardian meta light meter
-            var metaLightMeter = strArrToJSArr(json.lightmeter,"|","*");
-            for (lmInd in metaLightMeter) {
-              models.GuardianMetaLightMeter.create({
-                  guardian_id: dbGuardian.id,
-                  check_in_id: dbCheckIn.id,
-                  measured_at: timeStampToDate(metaLightMeter[lmInd][0], json.timezone_offset),
-                  luminosity: parseInt(metaLightMeter[lmInd][1])
-                }).then(function(dbGuardianMetaLightMeter){ }).catch(function(err){
-                  console.log("failed to create GuardianMetaLightMeter | "+err);
-                });
-            }
+            checkInHelpers.saveMeta.Battery(strArrToJSArr(json.battery,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Power(strArrToJSArr(json.power,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Network(strArrToJSArr(json.network,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Offline(strArrToJSArr(json.offline,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
 
             // template for json return... to be populated as we progress
             var returnJson = {
