@@ -11,8 +11,8 @@ exports.messages = {
         messageInfo[jsonMessages[msgInd].android_id] = {
           android_id: jsonMessages[msgInd].android_id,
           guid: null,
-          guardian_id: dbGuardian.id,
-          checkin_id: dbCheckIn.id,
+          guardian_id: guardianId,
+          checkin_id: checkInId,
           version: null,
           address: jsonMessages[msgInd].address,
           body: jsonMessages[msgInd].body,
