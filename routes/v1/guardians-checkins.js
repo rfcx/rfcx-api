@@ -305,7 +305,7 @@ router.route("/:guardian_id/checkins")
                                         reference_tag: audioInfo[l].audio_id,
                                         token_type: "analysis-worker",
                                         created_by: "guardian-checkin",
-                                        minutes_until_expiration: 60,
+                                        minutes_until_expiration: 180,
                                         allow_garbage_collection: true,
                                         only_allow_access_to: [ "^"+audioInfo[l].api_url+"$" ]
                                       }).then(function(tokenInfo){
