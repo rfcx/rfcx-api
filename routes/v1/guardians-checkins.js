@@ -19,25 +19,24 @@ passport.use(require("../../middleware/passport-token").TokenStrategy);
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
-    var requestStartTime = (new Date()).valueOf();
+    // template for json return... to be populated as we progress
+    var returnJson = {
+      checkin_id: null, // unique guid of the check-in
+      audio: [], // array of audio files successfully ingested
+      screenshots: [], // array of screenshot images successfully ingested
+      messages: [], // array of sms messages successfully ingested
+      instructions: {
+        prefs: {},
+        messages: [] // array of sms messages that the guardian should send
+      }
+    };
 
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.meta)
       .then(function(json){
 
-        // ultra verbose.... during development, we dump the meta json to the console
+        // during development, we dump the meta json to the console (ultra verbose)
         if (verbose_logging) { console.log(json); }
-
-    //     /* gzip json */
-    // zlib.unzip(
-    //   new Buffer(querystring.parse("gzipped="+req.body.meta).gzipped,"base64"),
-    //   function(zLibError,zLibBuffer){
-    //   if (!zLibError) {
-
-    //     var json = JSON.parse(zLibBuffer.toString());
-        
-
-        /* gzip json */
         
         // retrieve the guardian from the database
         models.Guardian
@@ -71,17 +70,8 @@ router.route("/:guardian_id/checkins")
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
 
-            // template for json return... to be populated as we progress
-            var returnJson = {
-              checkin_id: dbCheckIn.guid, // unique guid of the check-in
-              audio: [], // array of audio files successfully ingested
-              screenshots: [], // array of screenshot images successfully ingested
-              messages: [], // array of sms messages successfully ingested
-              instructions: {
-                prefs: {},
-                messages: [] // array of sms messages that the guardian should send
-              }
-            };
+            // set checkin guid on global json return object
+            returnJson.checkin_id = dbCheckIn.guid;
 
             // save guardian meta data
             checkInHelpers.saveMeta.DataTransfer(strArrToJSArr(json.data_transfer,"|","*"), dbGuardian.id, dbCheckIn.id);
@@ -377,7 +367,7 @@ router.route("/:guardian_id/checkins")
                                                   }
                                                   if (isComplete) {
 
-                                                    dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+                                                    dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
                                                     dbCheckIn.save();
 
                                                     if (verbose_logging) { console.log(returnJson); }
@@ -425,21 +415,23 @@ router.route("/:guardian_id/checkins")
               }
             } else {
               console.log("no audio files detected");
-              dbCheckIn.request_latency_api = (new Date()).valueOf()-requestStartTime;
+              dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
               dbCheckIn.save();
               res.status(200).json(returnJson);
             }
 
           }).catch(function(err){
             console.log("error adding checkin to database | "+err);
-            if (!!err) { res.status(500).json({msg:"error adding checkin to database"}); }
+            if (!!err) { httpError(res, 500, "database"); }
           });
+
+      // if we can't find the guardian referenced in the checkin request
       }).catch(function(err){
         console.log("failed to find guardian | "+err);
-        if (!!err) { res.status(404).json({msg:"failed to find guardian"}); }
+        if (!!err) { httpError(res, 404, "database"); }
       });
 
-    // catch errors on unzipping of gzipped meta json
+    // catch error on unzipping of gzipped meta json
     }).catch(function(gZipErr){
       httpError(res, 500, "parse");
     });
