@@ -9,6 +9,8 @@ if (fs.existsSync(__dirname+"/../../config/env_vars.js")) {
   for (i in env) { process.env[i] = env[i]; }
 }
 
+process.env.NODE_ENV = "production"; // could also be staging...
+
 var models  = require(__dirname+"/../../models");
 var token = require(__dirname+"/../../utils/internal-rfcx/token.js").token;
 var aws = require(__dirname+"/../../utils/external/aws.js").aws();
@@ -18,8 +20,6 @@ if (args[0] == null) {
   console.log("You must provide a count and a guardian guid as arguments.");
 
 } else {
-
-
 
 var query_limit = parseInt(args[0]);
 var guardian_id = args[1];
