@@ -12,7 +12,7 @@ exports.middleware = {
     var apiUrlDomain = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol)+"://"+req.headers.host;
     
     var paramLimit = (req.query.limit == null) ? 20 : parseInt(req.query.limit);
-    if (paramLimit > 300) { paramLimit = 300; }
+    if (paramLimit > 300) { paramLimit = 300; } else if (paramLimit < 1) { paramLimit = 1; }
 
     var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
 
