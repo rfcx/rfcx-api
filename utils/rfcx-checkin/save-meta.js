@@ -1,5 +1,3 @@
-var util = require("util");
-var Promise = require("bluebird");
 var models  = require("../../models");
 
 exports.saveMeta = {
