@@ -42,18 +42,16 @@ router.route("/:guardian_id/meta/:meta_type")
                     offset: req.rfcx.offset
                 }).then(function(dbMeta){
 
-                    if (dbMeta.length < 1) {
-                      httpError(res, 404, "database");
-                    } else {
-                      res.status(200).json(views.models[modelLookUp[meta_type][1]](req,res,dbMeta));
-                    }
+                    res.status(200).json(views.models[modelLookUp[meta_type][1]](req,res,dbMeta));
 
                 }).catch(function(err){
-                    res.status(500).json({msg:"error finding guardian | "+err});
+                    console.log("failure to retrieve meta data: "+err);
+                    httpError(res, 500, "database");
                 });
 
         }).catch(function(err){
-            res.status(500).json({msg:"error finding guardian | "+err});
+            console.log("failure to retrieve guardian: "+err);
+            httpError(res, 404, "database");
         });
   })
 ;
