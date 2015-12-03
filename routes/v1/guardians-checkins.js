@@ -2,7 +2,7 @@ var verbose_logging = (process.env.NODE_ENV !== "production");
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-var querystring = require("querystring");
+//var querystring = require("querystring");
 var fs = require("fs");
 var zlib = require("zlib");
 var exifTool = require("exiftool");
@@ -21,13 +21,23 @@ router.route("/:guardian_id/checkins")
 
     var requestStartTime = (new Date()).valueOf();
 
-    zlib.unzip(
-      new Buffer(querystring.parse("gzipped="+req.body.meta).gzipped,"base64"),
-      function(zLibError,zLibBuffer){
-      if (!zLibError) {
+    // unzip gzipped meta json blob
+    checkInHelpers.gzip.unZipJson(req.body.meta)
+      .then(function(json){
 
-        var json = JSON.parse(zLibBuffer.toString());
+        // ultra verbose.... during development, we dump the meta json to the console
         if (verbose_logging) { console.log(json); }
+
+    //     /* gzip json */
+    // zlib.unzip(
+    //   new Buffer(querystring.parse("gzipped="+req.body.meta).gzipped,"base64"),
+    //   function(zLibError,zLibBuffer){
+    //   if (!zLibError) {
+
+    //     var json = JSON.parse(zLibBuffer.toString());
+        
+
+        /* gzip json */
         
         // retrieve the guardian from the database
         models.Guardian
@@ -428,11 +438,12 @@ router.route("/:guardian_id/checkins")
         console.log("failed to find guardian | "+err);
         if (!!err) { res.status(404).json({msg:"failed to find guardian"}); }
       });
-    } else {
-      console.log("failed to parse gzipped json | "+zLibError);
-      if (!!zLibError) { res.status(500).json({msg:"failed to parse gzipped json"}); }
-    }
+
+    // catch errors on unzipping of gzipped meta json
+    }).catch(function(gZipErr){
+      httpError(res, 500, "parse");
     });
+
   })
 ;
 

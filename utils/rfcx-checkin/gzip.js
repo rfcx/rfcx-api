@@ -1,4 +1,5 @@
 var Promise = require("bluebird");
+var querystring = require("querystring");
 var zlib = require("zlib");
 
 exports.gzip = {
@@ -6,20 +7,21 @@ exports.gzip = {
   unZipJson: function(gZippedJson) {
     return new Promise(function(resolve, reject) {
         try {
-          models.GuardianMetaMessage.create({
-              guardian_id: message.guardian_id,
-              check_in_id: message.checkin_id,
-              received_at: message.timeStamp,
-              address: message.address,
-              body: message.body,
-              android_id: message.android_id
-            }).then(function(dbGuardianMetaMessage){
-              resolve(dbGuardianMetaMessage);
-              console.log("message saved: "+dbGuardianMetaMessage.guid);
-            }).catch(function(err){
-              console.log("error saving message: "+message.android_id+", "+message.body+", "+err);
-              reject(new Error(err));
-            });
+
+          zlib.unzip(
+            new Buffer(querystring.parse("gzipped="+gZippedJson).gzipped,"base64"),
+            function(zLibError,zLibBuffer){
+              if (!zLibError) {
+                resolve(JSON.parse(zLibBuffer.toString()));
+              } else {
+                if (!!zLibError) {
+                  console.log(zLibError);
+                  reject(new Error(zLibError));
+                }
+              }
+
+          });
+
         } catch(err) {
             console.log(err);
             reject(new Error(err));
