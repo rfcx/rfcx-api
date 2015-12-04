@@ -1,6 +1,8 @@
 var util = require("util");
+var fs = require("fs");
 var Promise = require("bluebird");
 var models  = require("../../models");
+var hash = require("../../utils/misc/hash.js").hash;
 
 exports.screenshots = {
 
@@ -9,6 +11,7 @@ exports.screenshots = {
     var screenShotInfo = {};
 
     if (!!screenShotFiles) {
+
       // make sure the screenshot files is an array
       if (!util.isArray(screenShotFiles)) { screenShotFiles = [screenShotFiles]; }
       
@@ -16,43 +19,28 @@ exports.screenshots = {
 
         console.log(screenShotMeta);
 
-      // var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
-      // var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
-      // screenShotInfo[timeStamp] = {
-      //    guardian_id: dbGuardian.guid,
-      //    checkin_id: dbCheckIn.guid,
-      //    screenshot_id: null, 
-      //    version: null, // to be decided whether this is important to include here...
-      //    uploadLocalPath: req.files.screenshot[i].path,
-      //    size: fs.statSync(req.files.screenshot[i].path).size,
-      //    sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
-      //    guardianSha1Hash: screenShotMeta[i][3],
-      //    origin_id: timeStamp,
-      //    timeStamp: timeStampToDate(timeStamp, json.timezone_offset),
-      //    isSaved: false,
-      //    s3Path: "/screenshots/"+process.env.NODE_ENV
-      //             +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
-      //             +"/"+dbGuardian.guid
-      //             +"/"+dbGuardian.guid+"-"+dateString+".png"
-      // };
-
+        var timeStamp = screenShotFiles[i].originalname.substr(0,screenShotFiles[i].originalname.lastIndexOf(".png"));
+        var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
+        
+        screenShotInfo[timeStamp] = {
+          guardian_id: guardianId,
+          checkin_id: checkInId,
+          screenshot_id: null, 
+          uploadLocalPath: screenShotFiles[i].path,
+          size: fs.statSync(screenShotFiles[i].path).size,
+          sha1Hash: hash.fileSha1(screenShotFiles[i].path),
+          guardianSha1Hash: screenShotMeta[i][3],
+          origin_id: timeStamp,
+          timeStamp: new Date(parseInt(timeStamp)),
+          isSaved: false,
+          s3Path: "/screenshots/"+process.env.NODE_ENV
+                   +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
+                   +"/"+guardianId
+                   +"/"+guardianId+"-"+dateString+".png"
+        };
+        console.log(screenShotInfo);
       }
     }
-    // if (util.isArray(jsonMessages)) {         
-    //   for (msgInd in jsonMessages) {
-    //     messageInfo[jsonMessages[msgInd].android_id] = {
-    //       android_id: jsonMessages[msgInd].android_id,
-    //       guid: null,
-    //       guardian_id: guardianId,
-    //       checkin_id: checkInId,
-    //       version: null,
-    //       address: jsonMessages[msgInd].address,
-    //       body: jsonMessages[msgInd].body,
-    //       timeStamp: timeStampToDate(jsonMessages[msgInd].received_at, timezone_offset),
-    //       isSaved: false
-    //     };
-    //   }
-    // }
     return screenShotInfo;
   },
 

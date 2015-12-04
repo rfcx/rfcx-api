@@ -2,7 +2,6 @@ var verbose_logging = (process.env.NODE_ENV !== "production");
 var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
-//var querystring = require("querystring");
 var fs = require("fs");
 var zlib = require("zlib");
 var exifTool = require("exiftool");
