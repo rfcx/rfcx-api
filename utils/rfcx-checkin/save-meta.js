@@ -103,6 +103,20 @@ exports.saveMeta = {
     }
   },
 
+  PreviousCheckIns: function(previousCheckIns) {
+    for (prvChkInInd in previousCheckIns) {
+      models.GuardianCheckIn
+        .findOne({
+          where: { guid: previousCheckIns[prvChkInInd][0] }
+        }).then(function(dbPreviousCheckIn){
+          dbPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1];
+          dbPreviousCheckIn.save();
+        }).catch(function(err){
+          console.log("error finding/updating previous checkin id: "+previousCheckIns[prvChkInInd][0]);
+        });
+    }
+  },
+
   SoftwareRoleVersion: function(roleArr, guardianId) {
     var roleVersions = {};
     for (vInd in roleArr) { 

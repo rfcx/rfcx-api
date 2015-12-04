@@ -44,10 +44,12 @@ router.route("/:guardian_id/checkins")
             where: { guid: req.params.guardian_id }
         }).then(function(dbGuardian){
 
+          // TO DO - move into helper method
           dbGuardian.last_check_in = new Date();
           dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
           dbGuardian.save();
 
+          // TO DO - move into helper method
           // organize geo-location data parameters
           var metaGeo = [
               ((json.location[0] != null) ? parseFloat(json.location[0]) : null),
@@ -85,6 +87,9 @@ router.route("/:guardian_id/checkins")
             // save software role versions
             checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(json.software,"|","*"), dbGuardian.id);
 
+            // update previous checkin info, if included
+            checkInHelpers.saveMeta.PreviousCheckIns(strArrToJSArr(json.previous_checkins,"|","*"));
+
             // parse, review and save sms messages
             var messageInfo = checkInHelpers.messages.buildInfo(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
             for (msgInfoInd in messageInfo) {
@@ -101,22 +106,24 @@ router.route("/:guardian_id/checkins")
             //   guid: "guid goes here"
             // });
 
+            // TO DO - move into helper method
             // if included, update previous checkIn info
-            if (json.previous_checkins != null) {
-              var previousCheckIns = strArrToJSArr(json.previous_checkins,"|","*");
-              for (prvChkInInd in previousCheckIns) {
-                models.GuardianCheckIn
-                  .findOne({
-                    where: { guid: previousCheckIns[prvChkInInd][0] }
-                  }).then(function(dPreviousCheckIn){
-                    dPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1];
-                    dPreviousCheckIn.save();
-                  }).catch(function(err){
-                    console.log("error finding/updating previous checkin id: "+previousCheckIns[prvChkInInd][0]);
-                  });
-              }
-            }
+            // if (json.previous_checkins != null) {
+            //   var previousCheckIns = strArrToJSArr(json.previous_checkins,"|","*");
+            //   for (prvChkInInd in previousCheckIns) {
+            //     models.GuardianCheckIn
+            //       .findOne({
+            //         where: { guid: previousCheckIns[prvChkInInd][0] }
+            //       }).then(function(dPreviousCheckIn){
+            //         dPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1];
+            //         dPreviousCheckIn.save();
+            //       }).catch(function(err){
+            //         console.log("error finding/updating previous checkin id: "+previousCheckIns[prvChkInInd][0]);
+            //       });
+            //   }
+            // }
 
+            // TO DO - move into helper method
             // save screenshot files
             if (!!req.files.screenshot) {
               var screenShotInfo = {};
@@ -191,6 +198,7 @@ router.route("/:guardian_id/checkins")
                 }
             }
 
+            // TO DO - move into helper method
             // add prefs instructions as set in database
             for (guardianInd in dbGuardian.dataValues) {
               if ((guardianInd.substr(0,6) === "prefs_") && (dbGuardian.dataValues[guardianInd] != null)) {

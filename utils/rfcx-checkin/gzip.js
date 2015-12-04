@@ -27,6 +27,31 @@ exports.gzip = {
             reject(new Error(err));
         }
     }.bind(this));
+  },
+
+  unZipFile: function(gZippedFilePath, unZippedDestinationFilePath) {
+    return new Promise(function(resolve, reject) {
+        try {
+
+          // zlib.unzip(
+          //   new Buffer(querystring.parse("gzipped="+gZippedJson).gzipped,"base64"),
+          //   function(zLibError,zLibBuffer){
+          //     if (!zLibError) {
+                 resolve(unZippedDestinationFilePath);
+          //     } else {
+          //       if (!!zLibError) {
+          //         console.log(zLibError);
+          //         reject(new Error(zLibError));
+          //       }
+          //     }
+
+          // });
+
+        } catch(err) {
+            console.log(err);
+            reject(new Error(err));
+        }
+    }.bind(this));
   }
 
 };
