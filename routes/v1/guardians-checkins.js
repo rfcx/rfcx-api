@@ -91,7 +91,7 @@ router.route("/:guardian_id/checkins")
             checkInHelpers.saveMeta.PreviousCheckIns(strArrToJSArr(json.previous_checkins,"|","*"));
 
             // parse, review and save sms messages
-            var messageInfo = checkInHelpers.messages.buildInfo(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
+            var messageInfo = checkInHelpers.messages.info(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
             for (msgInfoInd in messageInfo) {
               checkInHelpers.messages.save(messageInfo[msgInfoInd])
                 .then(function(dbMsg){
@@ -105,6 +105,8 @@ router.route("/:guardian_id/checkins")
             //   address: "+14153359205",
             //   guid: "guid goes here"
             // });
+            
+            var preScreenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(json.screenshots,"|","*"), dbGuardian.id, dbCheckIn.id);
 
             // TO DO - move into helper method
             // save screenshot files

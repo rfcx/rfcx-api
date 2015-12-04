@@ -4,7 +4,7 @@ var models  = require("../../models");
 
 exports.messages = {
 
-  buildInfo: function(jsonMessages, guardianId, checkInId, timezone_offset) {
+  info: function(jsonMessages, guardianId, checkInId, timezone_offset) {
     var messageInfo = {};
     if (util.isArray(jsonMessages)) {         
       for (msgInd in jsonMessages) {
