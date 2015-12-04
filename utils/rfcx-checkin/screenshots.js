@@ -5,18 +5,17 @@ var models  = require("../../models");
 exports.screenshots = {
 
   info: function(screenShotFiles, screenShotMeta, guardianId, checkInId) {
-    // make sure the screenshot files is an array
-    if (!util.isArray(screenShotFiles)) { screenShotFiles = [screenShotFiles]; }
-    
+
     var screenShotInfo = {};
 
-    for (i in screenShotFiles) {
+    if (!!screenShotFiles) {
+      // make sure the screenshot files is an array
+      if (!util.isArray(screenShotFiles)) { screenShotFiles = [screenShotFiles]; }
+      
+      for (i in screenShotFiles) {
 
-      console.log(screenShotMeta);
+        console.log(screenShotMeta);
 
-      // // this next line assumes there is only one screenshot attached
-      // // ...so this should probably be updated to work like the rest of this section
-      // var screenShotMeta = json.screenshots.split("|")[0].split("*");
       // var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
       // var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
       // screenShotInfo[timeStamp] = {
@@ -27,7 +26,7 @@ exports.screenshots = {
       //    uploadLocalPath: req.files.screenshot[i].path,
       //    size: fs.statSync(req.files.screenshot[i].path).size,
       //    sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
-      //    guardianSha1Hash: screenShotMeta[3],
+      //    guardianSha1Hash: screenShotMeta[i][3],
       //    origin_id: timeStamp,
       //    timeStamp: timeStampToDate(timeStamp, json.timezone_offset),
       //    isSaved: false,
@@ -37,8 +36,8 @@ exports.screenshots = {
       //             +"/"+dbGuardian.guid+"-"+dateString+".png"
       // };
 
+      }
     }
-
     // if (util.isArray(jsonMessages)) {         
     //   for (msgInd in jsonMessages) {
     //     messageInfo[jsonMessages[msgInd].android_id] = {
