@@ -122,7 +122,6 @@ router.route("/:guardian_id/checkins")
                      guardian_id: dbGuardian.guid,
                      checkin_id: dbCheckIn.guid,
                      screenshot_id: null, 
-                     version: null, // to be decided whether this is important to include here...
                      uploadLocalPath: req.files.screenshot[i].path,
                      size: fs.statSync(req.files.screenshot[i].path).size,
                      sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
@@ -206,7 +205,6 @@ router.route("/:guardian_id/checkins")
                   audioInfo[timeStampIndex] = {
                     guardian_id: dbGuardian.guid,
                     checkin_id: dbCheckIn.guid,
-                    version: null, // to be decided whether this is important to include here...
                     battery_temperature: null,
                     guardianSha1Hash: audioMeta[i][3],
                     uploadLocalPath: req.files.audio[i].path,
