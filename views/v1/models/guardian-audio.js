@@ -44,7 +44,7 @@ exports.models = {
     // cat_child.stdout.on("data", function(data) { res.write(data); });
 
     var dbRow = dbRows;
-    aws.s3("rfcx-meta").getFile("/spec_2686b9fa-f008-49f7-b69a-f5e94d45cf23.png", function(err, result){
+    aws.s3("rfcx-meta").getFile("/trans.png", function(err, result){
       if(err) { return next(err); }
       // this next line may not be necessary
       result.resume();
@@ -124,7 +124,7 @@ exports.models = {
                 //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
                 // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30);
 
-                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png?v=2";//+urlAuthParams;
+                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png?v=3";//+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
 
