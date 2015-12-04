@@ -107,23 +107,6 @@ router.route("/:guardian_id/checkins")
             // });
 
             // TO DO - move into helper method
-            // if included, update previous checkIn info
-            // if (json.previous_checkins != null) {
-            //   var previousCheckIns = strArrToJSArr(json.previous_checkins,"|","*");
-            //   for (prvChkInInd in previousCheckIns) {
-            //     models.GuardianCheckIn
-            //       .findOne({
-            //         where: { guid: previousCheckIns[prvChkInInd][0] }
-            //       }).then(function(dPreviousCheckIn){
-            //         dPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1];
-            //         dPreviousCheckIn.save();
-            //       }).catch(function(err){
-            //         console.log("error finding/updating previous checkin id: "+previousCheckIns[prvChkInInd][0]);
-            //       });
-            //   }
-            // }
-
-            // TO DO - move into helper method
             // save screenshot files
             if (!!req.files.screenshot) {
               var screenShotInfo = {};
