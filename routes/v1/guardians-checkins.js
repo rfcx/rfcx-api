@@ -94,6 +94,7 @@ router.route("/:guardian_id/checkins")
             for (msgInfoInd in messageInfo) {
               checkInHelpers.messages.save(messageInfo[msgInfoInd])
                 .then(function(dbMsg){
+                  // if all goes well, report it on the global object so we can tell at the end
                   messageInfo[dbMsg.android_id].isSaved = true;
                   messageInfo[dbMsg.android_id].guid = dbMsg.guid;
                 });
@@ -159,7 +160,7 @@ router.route("/:guardian_id/checkins")
                                   sha1_checksum: screenShotInfo[l].sha1Hash,
                                   url: screenShotInfo[l].s3Path
                                 }).then(function(dbGuardianMetaScreenShot){
-                                    // if all goes well, then report it on the "global" object...
+                                    // if all goes well, report it on the global object so we can tell at the end
                                     screenShotInfo[l].isSaved = true;
                                     screenShotInfo[l].screenshot_id = dbGuardianMetaScreenShot.guid;
                                     console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
