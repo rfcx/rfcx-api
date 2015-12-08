@@ -265,10 +265,10 @@ router.route("/:guardian_id/checkins")
                                   exifTool.metadata(audioFileData,function(err,audioFileExifData){
                                     if (!!err) { throw err;
                                     } else {
-                                      dbAudio.duration = (((parseInt(audioFileExifData.duration.split(":")[0])*3600)+(parseInt(audioFileExifData.duration.split(":")[1])*60)+parseInt(audioFileExifData.duration.split(":")[2]))*1000);
-                                      dbAudio.capture_format = audioFileExifData.audioFormat;
-                                      dbAudio.capture_bitrate = Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000/128)*128;
-                                      dbAudio.capture_sample_rate = parseInt(audioFileExifData.audioSampleRate);
+                                      dbAudio.duration = (audioFileExifData.duration != null) ? ((((parseInt(audioFileExifData.duration.split(":")[0])*3600)+(parseInt(audioFileExifData.duration.split(":")[1])*60)+parseInt(audioFileExifData.duration.split(":")[2]))*1000)) : null;
+                                      dbAudio.capture_format = (audioFileExifData.audioFormat != null) ? audioFileExifData.audioFormat : null;
+                                      dbAudio.capture_bitrate = (audioFileExifData.avgBitrate != null) ? (Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000/128)*128) : null;
+                                      dbAudio.capture_sample_rate = (audioFileExifData.audioSampleRate != null) ? parseInt(audioFileExifData.audioSampleRate) : null;
                                       dbAudio.save();
                                     }
                                   });
