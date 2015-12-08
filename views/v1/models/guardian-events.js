@@ -20,7 +20,7 @@ exports.models = {
 
           var thisRow = dbRows[i], thisGuid = thisRow.guid;
 
-          if (thisRow.Audio != null) {
+          if (thisRow.Audio.analyzed_at != null) {
 
             dbRowsByGuid[thisGuid] = thisRow;
 
