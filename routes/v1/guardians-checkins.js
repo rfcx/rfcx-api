@@ -272,9 +272,9 @@ router.route("/:guardian_id/checkins")
                                       dbAudio.save();
                                     }
                                   });
-                                } catch(function(exifToolError){
+                                } catch (exifToolError) {
                                   console.log(exifToolError);
-                                });
+                                }
                               }
                             });
                             
