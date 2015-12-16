@@ -22,7 +22,7 @@ router.route("/player")
 
       console.log(tokenInfo);
       res.status(200).json({
-        token_guid: tokenInfo.token_guid,
+        guid: tokenInfo.token_guid,
         token: tokenInfo.token,
         expires_at: tokenInfo.token_expires_at.toISOString(),
         only_allow_access_to: tokenInfo.only_allow_access_to
