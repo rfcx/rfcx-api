@@ -130,7 +130,7 @@ exports.models = {
 
           var thisRow = dbRows[i], thisGuid = thisRow.guid;
 
-          if (thisRow.begins_at != null) {
+          if (thisRow.begins_at_analysis != null) {
 
             dbRowsByGuid[thisGuid] = thisRow;
 
@@ -140,10 +140,10 @@ exports.models = {
             };
 
             jsonArray.push(jsonRowsByGuid[thisGuid]);
-            if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
 
           }
         }
+        resolve(jsonArray);
 
     });
 
