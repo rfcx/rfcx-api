@@ -113,6 +113,41 @@ exports.models = {
     });
 
 
+  },
+
+
+  guardianEventsLite: function(req,res,dbRows,PARENT_GUID) {
+
+    var views = getAllViews();
+
+    if (!util.isArray(dbRows)) { dbRows = [dbRows]; }
+    
+    var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
+
+    return new Promise(function(resolve,reject){
+
+        for (i in dbRows) {
+
+          var thisRow = dbRows[i], thisGuid = thisRow.guid;
+
+          if (thisRow.Audio.analyzed_at != null) {
+
+            dbRowsByGuid[thisGuid] = thisRow;
+
+            jsonRowsByGuid[thisGuid] = {
+              classification: thisRow.classification_analysis,
+              begins_at: thisRow.begins_at_analysis
+            };
+
+            jsonArray.push(jsonRowsByGuid[thisGuid]);
+            if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
+
+          }
+        }
+
+    });
+
+
   }
 
 };
