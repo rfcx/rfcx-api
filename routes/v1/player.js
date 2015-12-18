@@ -8,8 +8,8 @@ var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
 
-router.route("/player")
-  .get(function(req,res) {
+router.route("/login")
+  .post(function(req,res) {
 
     token.createAnonymousToken({
       reference_tag: "player-anonymous",
@@ -20,12 +20,12 @@ router.route("/player")
       only_allow_access_to: [ "^"+"/v1/guardians/74b55fd8b7f2/audio.json"+"$" ]
     }).then(function(tokenInfo){
 
-      console.log(tokenInfo);
       res.status(200).json({
-        guid: tokenInfo.token_guid,
-        token: tokenInfo.token,
-        expires_at: tokenInfo.token_expires_at.toISOString(),
-        only_allow_access_to: tokenInfo.only_allow_access_to
+        token: {
+          guid: tokenInfo.token_guid,
+          token: tokenInfo.token,
+          expires_at: tokenInfo.token_expires_at.toISOString()
+        }
       });
      
     }).catch(function(err){

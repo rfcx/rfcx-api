@@ -51,7 +51,7 @@ var routes = {
     "users": [ require("./routes/v1/users") ],
     "events": [ require("./routes/v1/events") ],
     "shortlinks": [ require("./routes/v1/shortlinks") ],
-    "tokens": [ require("./routes/v1/tokens") ],
+    "player": [ require("./routes/v1/player") ],
     "assets": [ require("./routes/v1/assets") ],
   },
   "v2": {
