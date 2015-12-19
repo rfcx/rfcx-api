@@ -24,6 +24,9 @@ router.route("/:guardian_id/meta/:meta_type")
             checkins: ["GuardianCheckIn", "guardianMetaCheckIns", "measured_at"]
         };
 
+        req.rfcx.limit = (req.query.limit == null) ? 1 : parseInt(req.query.limit);
+        if (req.rfcx.limit > 5000) { req.rfcx.limit = 5000; } else if (req.rfcx.limit < 1) { req.rfcx.limit = 1; }
+
         models.Guardian
           .findOne({ 
             where: { guid: req.params.guardian_id }

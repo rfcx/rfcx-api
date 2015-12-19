@@ -17,7 +17,9 @@ router.route("/login")
       created_by: "player-anonymous",
       minutes_until_expiration: 360,
       allow_garbage_collection: false,
-      only_allow_access_to: [ "^"+"/v1/guardians/74b55fd8b7f2/audio.json"+"$", "^"+"/v1/guardians/0bdbb4a5d567/audio.json"+"$" ]
+      only_allow_access_to: [ 
+        "^/v1/guardians/[012345678abcdef]{12}/audio.json$"
+        ]
     }).then(function(tokenInfo){
 
       res.status(200).json({
@@ -29,7 +31,8 @@ router.route("/login")
       });
      
     }).catch(function(err){
-      console.log("error creating access token for analysis worker | "+err);
+      console.log("error creating access token for audio player | "+err);
+      res.status(500).json({});
     });
 
   })
