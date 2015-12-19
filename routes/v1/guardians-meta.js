@@ -20,7 +20,8 @@ router.route("/:guardian_id/meta/:meta_type")
             network: ["GuardianMetaNetwork", "guardianMetaNetwork", "measured_at"],
             offline: ["GuardianMetaOffline", "guardianMetaOffline", "ended_at"],
             power: ["GuardianMetaPower", "guardianMetaPower", "measured_at"],
-            messages: ["GuardianMetaMessage", "guardianMetaMessages", "received_at"]
+            messages: ["GuardianMetaMessage", "guardianMetaMessages", "received_at"],
+            checkins: ["GuardianCheckIn", "guardianMetaCheckIns", "measured_at"]
         };
 
         models.Guardian

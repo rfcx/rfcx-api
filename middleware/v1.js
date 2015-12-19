@@ -2,10 +2,6 @@ var path = require("path");
 var url = require("url");
 
 exports.middleware = {
-
-  emptyMiddleware: function(req, res, next) {
-    next();
-  },
     
   setApiParams: function(req, res, next) {
 
