@@ -35,6 +35,63 @@ exports.models = {
       });
   },
 
+// TEST
+  TEMP_MP3_guardianAudioFile: function(req,res,dbRows) {
+
+    var dbRow = dbRows,
+        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
+        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
+        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
+        ;
+
+      aws.s3("rfcx-ark").getFile("/test.mp3", function(err, result){
+        if(err) { return next(err); }
+
+        // this next line may not be necessary
+        result.resume();
+        
+        var contentLength = parseInt(result.headers["content-length"]);
+        
+        res.writeHead(  200, {
+          "Content-Length": contentLength,
+          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+          "Content-Type": result.headers["content-type"],
+          "Content-Disposition": "filename="+dbRow.guid+".mp3"
+        });
+
+        result.pipe(res);      
+      });
+  },
+// TEST
+  TEMP_OGG_guardianAudioFile: function(req,res,dbRows) {
+
+    var dbRow = dbRows,
+        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
+        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
+        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
+        ;
+
+      aws.s3("rfcx-ark").getFile("/test.ogg", function(err, result){
+        if(err) { return next(err); }
+
+        // this next line may not be necessary
+        result.resume();
+        
+        var contentLength = parseInt(result.headers["content-length"]);
+        
+        res.writeHead(  200, {
+          "Content-Length": contentLength,
+          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+          "Content-Type": result.headers["content-type"],
+          "Content-Disposition": "filename="+dbRow.guid+".ogg"
+        });
+
+        result.pipe(res);      
+      });
+  },
+
   guardianSpectrogramFile: function(req,res,dbRows) {
 
     // var spawn = require('child_process').spawn;

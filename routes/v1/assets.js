@@ -16,6 +16,11 @@ router.route("/audio/:audio_id")
         if (req.rfcx.content_type === "m4a") {
         
           views.models.guardianAudioFile(req,res,dbAudio);
+          
+        } else if (req.rfcx.content_type === "mp3") {
+          views.models.TEMP_MP3_guardianAudioFile(req,res,dbAudio);
+        } else if (req.rfcx.content_type === "ogg") {
+          views.models.TEMP_OGG_guardianAudioFile(req,res,dbAudio);
 
         } else if (req.rfcx.content_type === "png") {
           
