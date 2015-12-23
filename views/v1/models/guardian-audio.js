@@ -183,7 +183,14 @@ exports.models = {
 
                 jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png?v=3";//+urlAuthParams;
 
-                jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
+                jsonRowsByGuid[thisGuid].urls = {
+                  m4a: urlBase+".m4a",
+                  mp3: urlBase+".mp3",
+                  ogg: urlBase+".ogg",
+                  png: urlBase+".png?v=3"
+                };
+
+                //jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
 
                 jsonArray.push(jsonRowsByGuid[thisGuid]);
                 if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
