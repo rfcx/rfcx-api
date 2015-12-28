@@ -13,6 +13,8 @@ exports.env = {
   ASSET_BUCKET_META: "",
   ASSET_URLBASE: "",
 
+  PLAYER_PASSWORD: "",
+
   RDS_HOSTNAME: "",
   RDS_DB_NAME: "",
   RDS_USERNAME: "",
