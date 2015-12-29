@@ -5,17 +5,17 @@ function getAllQueryHelpers() { return require("../../utils/rfcx-query"); }
 
 exports.guardianAudioStatus = {
 
-  allCoverage: function(guardianId) {
+  allCoverage: function(guardianId, realTimeOffsetInMinutes) {
     return new Promise(function(resolve, reject) {
 
         try {
 
           var queryHelpers = getAllQueryHelpers();
 
-          queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 3).then(function(coverage_3hours){
-            queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 6).then(function(coverage_6hours){
-              queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 12).then(function(coverage_12hours){
-                queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 24).then(function(coverage_24hours){
+          queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 3, realTimeOffsetInMinutes).then(function(coverage_3hours){
+            queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 6, realTimeOffsetInMinutes).then(function(coverage_6hours){
+              queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 12, realTimeOffsetInMinutes).then(function(coverage_12hours){
+                queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 24, realTimeOffsetInMinutes).then(function(coverage_24hours){
 
                   resolve({
                     "3hrs": coverage_3hours, "6hrs": coverage_6hours, "12hrs": coverage_12hours, "24hrs": coverage_24hours
@@ -33,13 +33,13 @@ exports.guardianAudioStatus = {
     }.bind(this));
   },
 
-  singleCoverage: function(guardianId, intervalInHours) {
+  singleCoverage: function(guardianId, intervalInHours, realTimeOffsetInMinutes) {
     return new Promise(function(resolve, reject) {
 
         try {
             var dbWhere = { guardian_id: guardianId, measured_at: {} };
-            dbWhere.measured_at["$lt"] = new Date();
-            dbWhere.measured_at["$gt"] = new Date(new Date()).valueOf()-(parseInt(intervalInHours)*3600000);
+            dbWhere.measured_at["$lt"] = new Date((new Date()).valueOf()-(parseInt(realTimeOffsetInMinutes)*60000));
+            dbWhere.measured_at["$gt"] = new Date((new Date()).valueOf()-(parseInt(intervalInHours)*3600000)-(parseInt(realTimeOffsetInMinutes)*60000));
 
             models.GuardianAudio
               .findOne({

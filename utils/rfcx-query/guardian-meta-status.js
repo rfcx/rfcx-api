@@ -5,17 +5,17 @@ function getAllQueryHelpers() { return require("../../utils/rfcx-query"); }
 
 exports.guardianMetaStatus = {
 
-  allTotalDataTransfer: function(guardianId) {
+  allTotalDataTransfer: function(guardianId, realTimeOffsetInMinutes) {
     return new Promise(function(resolve, reject) {
 
         try {
 
           var queryHelpers = getAllQueryHelpers();
 
-          queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 3).then(function(data_3hours){
-            queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 6).then(function(data_6hours){
-              queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 12).then(function(data_12hours){
-                queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 24).then(function(data_24hours){
+          queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 3, realTimeOffsetInMinutes).then(function(data_3hours){
+            queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 6, realTimeOffsetInMinutes).then(function(data_6hours){
+              queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 12, realTimeOffsetInMinutes).then(function(data_12hours){
+                queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 24, realTimeOffsetInMinutes).then(function(data_24hours){
 
                   resolve({
                     "3hrs": data_3hours, "6hrs": data_6hours, "12hrs": data_12hours, "24hrs": data_24hours
@@ -33,13 +33,13 @@ exports.guardianMetaStatus = {
     }.bind(this));
   },
 
-  singleTotalDataTransfer: function(guardianId, intervalInHours) {
+  singleTotalDataTransfer: function(guardianId, intervalInHours, realTimeOffsetInMinutes) {
     return new Promise(function(resolve, reject) {
 
         try {
             var dbWhere = { guardian_id: guardianId, ended_at: {} };
-            dbWhere.ended_at["$lt"] = new Date();
-            dbWhere.ended_at["$gt"] = new Date(new Date()).valueOf()-(parseInt(intervalInHours)*3600000);
+            dbWhere.ended_at["$lt"] = new Date((new Date()).valueOf()-(parseInt(realTimeOffsetInMinutes)*60000));
+            dbWhere.ended_at["$gt"] = new Date((new Date()).valueOf()-(parseInt(intervalInHours)*3600000)-(parseInt(realTimeOffsetInMinutes)*60000));
 
             models.GuardianMetaDataTransfer
               .findOne({

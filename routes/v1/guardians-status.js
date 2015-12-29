@@ -16,9 +16,9 @@ router.route("/:guardian_id/status")
             where: { guid: req.params.guardian_id }
         }).then(function(dbGuardian){
 
-            guardianStatus.guardianAudioStatus.allCoverage(dbGuardian.id).then(function(coverageResult){
+            guardianStatus.guardianAudioStatus.allCoverage(dbGuardian.id, 3).then(function(coverageResult){
 
-                guardianStatus.guardianMetaStatus.allTotalDataTransfer(dbGuardian.id).then(function(dataTransferResult){
+                guardianStatus.guardianMetaStatus.allTotalDataTransfer(dbGuardian.id, 3).then(function(dataTransferResult){
 
                     res.status(200).json({
                         audio: {
