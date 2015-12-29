@@ -1,10 +1,39 @@
 var util = require("util");
 var Promise = require("bluebird");
 var models  = require("../../models");
+function getAllQueryHelpers() { return require("../../utils/rfcx-query"); }
 
 exports.guardianMetaStatus = {
 
-  dataTransfer: function(guardianId, intervalInHours) {
+  allTotalDataTransfer: function(guardianId) {
+    return new Promise(function(resolve, reject) {
+
+        try {
+
+          var queryHelpers = getAllQueryHelpers();
+
+          queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 3).then(function(data_3hours){
+            queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 6).then(function(data_6hours){
+              queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 12).then(function(data_12hours){
+                queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 24).then(function(data_24hours){
+
+                  resolve({
+                    "3hrs": data_3hours, "6hrs": data_6hours, "12hrs": data_12hours, "24hrs": data_24hours
+                  });
+
+                });
+              });
+            });
+          });
+
+        } catch(err) {
+            console.log(err);
+            reject(new Error(err));
+        }
+    }.bind(this));
+  },
+
+  singleTotalDataTransfer: function(guardianId, intervalInHours) {
     return new Promise(function(resolve, reject) {
 
         try {
@@ -20,10 +49,9 @@ exports.guardianMetaStatus = {
                     [ models.sequelize.fn("SUM", models.sequelize.col("bytes_received")), "sum_bytes_received" ]
                 ]
               }).then(function(dbStatus){
-                console.log(dbStatus.dataValues);
                 resolve({
-                  bytes_sent: dbStatus.dataValues.sum_bytes_sent,
-                  bytes_received: dbStatus.dataValues.sum_bytes_received
+                  bytes_sent: parseInt(dbStatus.dataValues.sum_bytes_sent),
+                  bytes_received: parseInt(dbStatus.dataValues.sum_bytes_received)
                 });
 
               }).catch(function(err){
