@@ -17,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     only_allow_access_to: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
       validate: {
       }
