@@ -34,6 +34,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    sim_card_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     is_updatable: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

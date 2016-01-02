@@ -1,9 +1,9 @@
 var util = require("util");
 var Promise = require("bluebird");
-var models  = require("../../models");
-function getAllQueryHelpers() { return require("../../utils/rfcx-query"); }
+var models  = require("../../../models");
+function getAllQueryHelpers() { return require("../../../utils/rfcx-query"); }
 
-exports.guardianAudioStatus = {
+exports.guardianStatusAudio = {
 
   allCoverage: function(guardianId, realTimeOffsetInMinutes) {
     return new Promise(function(resolve, reject) {
@@ -12,10 +12,10 @@ exports.guardianAudioStatus = {
 
           var queryHelpers = getAllQueryHelpers();
 
-          queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 3, realTimeOffsetInMinutes).then(function(coverage_3hours){
-            queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 6, realTimeOffsetInMinutes).then(function(coverage_6hours){
-              queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 12, realTimeOffsetInMinutes).then(function(coverage_12hours){
-                queryHelpers.guardianAudioStatus.singleCoverage(guardianId, 24, realTimeOffsetInMinutes).then(function(coverage_24hours){
+          queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 3, realTimeOffsetInMinutes).then(function(coverage_3hours){
+            queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 6, realTimeOffsetInMinutes).then(function(coverage_6hours){
+              queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 12, realTimeOffsetInMinutes).then(function(coverage_12hours){
+                queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 24, realTimeOffsetInMinutes).then(function(coverage_24hours){
 
                   resolve({
                     "3hrs": coverage_3hours, "6hrs": coverage_6hours, "12hrs": coverage_12hours, "24hrs": coverage_24hours

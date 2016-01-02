@@ -1,9 +1,9 @@
 var util = require("util");
 var Promise = require("bluebird");
-var models  = require("../../models");
-function getAllQueryHelpers() { return require("../../utils/rfcx-query"); }
+var models  = require("../../../models");
+function getAllQueryHelpers() { return require("../../../utils/rfcx-query"); }
 
-exports.guardianMetaStatus = {
+exports.guardianStatusMeta = {
 
   allTotalDataTransfer: function(guardianId, realTimeOffsetInMinutes) {
     return new Promise(function(resolve, reject) {
@@ -12,10 +12,10 @@ exports.guardianMetaStatus = {
 
           var queryHelpers = getAllQueryHelpers();
 
-          queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 3, realTimeOffsetInMinutes).then(function(data_3hours){
-            queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 6, realTimeOffsetInMinutes).then(function(data_6hours){
-              queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 12, realTimeOffsetInMinutes).then(function(data_12hours){
-                queryHelpers.guardianMetaStatus.singleTotalDataTransfer(guardianId, 24, realTimeOffsetInMinutes).then(function(data_24hours){
+          queryHelpers.guardianStatusMeta.singleTotalDataTransfer(guardianId, 3, realTimeOffsetInMinutes).then(function(data_3hours){
+            queryHelpers.guardianStatusMeta.singleTotalDataTransfer(guardianId, 6, realTimeOffsetInMinutes).then(function(data_6hours){
+              queryHelpers.guardianStatusMeta.singleTotalDataTransfer(guardianId, 12, realTimeOffsetInMinutes).then(function(data_12hours){
+                queryHelpers.guardianStatusMeta.singleTotalDataTransfer(guardianId, 24, realTimeOffsetInMinutes).then(function(data_24hours){
 
                   resolve({
                     "3hrs": data_3hours, "6hrs": data_6hours, "12hrs": data_12hours, "24hrs": data_24hours

@@ -3,7 +3,7 @@ var models  = require("../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../views/v1");
-var guardianStatus = require("../../utils/rfcx-query");
+var queryHelpers = require("../../utils/rfcx-query");
 var httpError = require("../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../middleware/passport-token").TokenStrategy);
@@ -16,18 +16,22 @@ router.route("/:guardian_id/status")
             where: { guid: req.params.guardian_id }
         }).then(function(dbGuardian){
 
-            guardianStatus.guardianAudioStatus.allCoverage(dbGuardian.id, 3).then(function(coverageResult){
+            queryHelpers.guardianStatusAudio.allCoverage(dbGuardian.id, 3).then(function(coverageResult){
+            queryHelpers.guardianStatusMeta.allTotalDataTransfer(dbGuardian.id, 3).then(function(dataTransferResult){
 
-                guardianStatus.guardianMetaStatus.allTotalDataTransfer(dbGuardian.id, 3).then(function(dataTransferResult){
+                res.status(200).json({
+                    guardian: {
 
-                    res.status(200).json({
-                        audio: {
-                            coverage_percent: coverageResult
-                        },
+                    },
+                    audio: {
+                        coverage_percent: coverageResult
+                    },
+                    meta: {
                         data_transfer: dataTransferResult
-                    });
-
+                    }
                 });
+
+            });
             });
 
 
