@@ -101,7 +101,7 @@ exports.models = {
     // cat_child.stdout.on("data", function(data) { res.write(data); });
 
     var dbRow = dbRows;
-    aws.s3("rfcx-meta").getFile("/trans.png", function(err, result){
+    aws.s3("rfcx-ark").getFile("/spec_dolph.png", function(err, result){
       if(err) { return next(err); }
       // this next line may not be necessary
       result.resume();
