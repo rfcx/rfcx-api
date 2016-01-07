@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+
+export JSON_FILE="$SCRIPT_DIR/../../tmp/admin/cache_list_s3_objects.json";
+
+$SCRIPT_DIR/utils/list_s3_objects --env production > $JSON_FILE && echo "]" >> $JSON_FILE;
+
+$SCRIPT_DIR/utils/load_json --env production --json $JSON_FILE;

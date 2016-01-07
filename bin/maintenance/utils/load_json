@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+var args = process.argv.slice(2);
+
+//var s3 = require("s3");
+var fs = require("fs");
+var syncExec = require("sync-exec");
+
+if (fs.existsSync(__dirname+"/../../../config/env_vars.js")) {
+  var env = require(__dirname+"/../../../config/env_vars.js").env;
+  for (i in env) { process.env[i] = env[i]; }
+}
+
+var ENV_PREFIX = ((args[args.indexOf("--env")] === ("--env")) ? args[args.indexOf("--env")+1] : process.env.NODE_ENV);
+var JSON_FILE = ((args[args.indexOf("--json")] === ("--json")) ? args[args.indexOf("--json")+1] : null);
+
+var allS3Keys = JSON.parse(fs.readFileSync(JSON_FILE));
+
+for (i in allS3Keys) {
+
+    var cmd = __dirname+"/../utils/check_database s3://"+process.env.ASSET_BUCKET_AUDIO+"/"+allS3Keys[i];
+    var rtrn = syncExec(cmd);
+    console.log(rtrn.stdout);
+
+}
+

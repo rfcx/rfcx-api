@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+var args = process.argv.slice(2);
+
+//var s3 = require("s3");
+var fs = require("fs");
+
+if (fs.existsSync(__dirname+"/../../../config/env_vars.js")) {
+  var env = require(__dirname+"/../../../config/env_vars.js").env;
+  for (i in env) { process.env[i] = env[i]; }
+}
+
+var models  = require(__dirname+"/../../../models");
+
+  models.GuardianAudio
+    .findAll({ 
+      where: { url: args[0] }, 
+      limit: 1
+    }).then(function(dbAudio){ 
+
+      if (dbAudio.length > 0) {
+        process.stdout.write(dbAudio[0].guid+" exists in database");
+      } else {
+        process.stdout.write("no such file");
+      }
+
+    }).catch(function(err){
+      process.stderr.write("failed to return audio | "+err);
+  });
+
+
