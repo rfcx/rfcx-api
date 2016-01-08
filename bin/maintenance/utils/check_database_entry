@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+
+export S3_URL=$1;
+
+export DB_URL_API=`cat $SCRIPT_DIR/../../admin/_private/rfcx-db-uri-api.txt;`;
+export DB_PSWD_API=`cat $SCRIPT_DIR/../../admin/_private/rfcx-db-pswd-api.txt;`;
+
+export QUERY="SELECT COUNT(*), guid FROM GuardianAudio WHERE url='$S3_URL' LIMIT 1;";
+export QUERY_DB=`mysql -h127.0.0.1 -uebroot -p$DB_PSWD_API ebdb -e "$QUERY";`;
+export QUERY_COUNT=`echo -n $QUERY_DB | cut -d' ' -f 3`;
+export QUERY_GUID=`echo -n $QUERY_DB | cut -d' ' -f 4`;
+
+echo -n "$QUERY_COUNT*$QUERY_GUID";

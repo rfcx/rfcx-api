@@ -4,6 +4,17 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 
 export JSON_FILE="$SCRIPT_DIR/../../tmp/admin/cache_list_s3_objects.json";
 
-$SCRIPT_DIR/utils/list_s3_objects --env production > $JSON_FILE && echo "]" >> $JSON_FILE;
+export ENV=$1;
 
-$SCRIPT_DIR/utils/load_json --env production --json $JSON_FILE;
+if [[ -z "$2" ]]; then
+  export PREFIX="$ENV";
+else
+  export PREFIX="$ENV/$2";
+fi
+
+rm -f $JSON_FILE;
+echo "fetching list of all s3 objects and caching it locally...";
+$SCRIPT_DIR/utils/list_s3_objects --prefix $PREFIX > $JSON_FILE && echo "]" >> $JSON_FILE;
+
+echo "cycling through the file list and checking database..."
+$SCRIPT_DIR/utils/cycle_thru_files --env $ENV --json $JSON_FILE;

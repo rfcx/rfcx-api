@@ -9,7 +9,7 @@ if (fs.existsSync(__dirname+"/../../../config/env_vars.js")) {
   for (i in env) { process.env[i] = env[i]; }
 }
 
-var ENV_PREFIX = ((args[args.indexOf("--env")] === ("--env")) ? args[args.indexOf("--env")+1] : process.env.NODE_ENV);
+var PREFIX = ((args[args.indexOf("--prefix")] === ("--prefix")) ? args[args.indexOf("--prefix")+1]+"/" : "");
 
 var client = s3.createClient({
   maxAsyncS3: 20,
@@ -50,4 +50,4 @@ function scanAllFiles(prefix) {
 
 }
 
-scanAllFiles(ENV_PREFIX+"/");
+scanAllFiles(PREFIX);
