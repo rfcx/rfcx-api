@@ -38,6 +38,7 @@ var routes = {
                     require("./routes/v1/guardians-checkins"), 
                     require("./routes/v1/guardians-checkins-audio-events"),
                     require("./routes/v1/guardians-audio"),
+                    require("./routes/v1/guardians-audio-uploads"),
                     require("./routes/v1/guardians-events"),
                     require("./routes/v1/guardians-meta"),
                     require("./routes/v1/guardians-status")
@@ -47,7 +48,7 @@ var routes = {
                 require("./routes/v1/sites-guardians"),
                 require("./routes/v1/sites-events") 
               ],
-    "audio": [ require("./routes/v1/audio") ],
+    "audio": [  require("./routes/v1/audio") ],
     "checkins": [ require("./routes/v1/checkins") ],
     "users": [ require("./routes/v1/users") ],
     "events": [ require("./routes/v1/events") ],
