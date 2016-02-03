@@ -87,6 +87,16 @@ function setupTmpDirectory() {
       });
     } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
 
+    if (fs.existsSync(tmpDir+"/ffmpeg")) {
+      fs.readdir(tmpDir+"/ffmpeg/", function (err, uploads) {
+        uploads.forEach(function (uploadFileName) {
+          fs.unlink(tmpDir+"/ffmpeg/"+uploadFileName,function(err){
+             if (err) throw err;
+          });
+        }); 
+      });
+    } else { fs.mkdirSync(tmpDir+"/ffmpeg"); }
+
   } catch(err) {
     console.error(err);
   }

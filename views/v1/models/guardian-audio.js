@@ -1,6 +1,9 @@
 var util = require("util");
 var Promise = require("bluebird");
 var aws = require("../../../utils/external/aws.js").aws();
+var exec = require("child_process").exec;
+var fs = require("fs");
+var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
 var audioUtils = require("../../../utils/internal-rfcx/token.js").token;
 function getAllViews() { return require("../../../views/v1"); }
@@ -94,28 +97,56 @@ exports.models = {
 
   guardianSpectrogramFile: function(req,res,dbRows) {
 
-    // var spawn = require('child_process').spawn;
-    // res.writeHead(200, { "Content-Type": "image/png" });
-    // var cat_child = spawn("cat", ["/Users/Shared/spec_.png"]);
-    // req.connection.on("end", function() { cat_child.kill(); });
-    // cat_child.stdout.on("data", function(data) { res.write(data); });
+    var dbRow = dbRows,
+        hashName = hash.randomString(32),
+        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
+        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
+        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
+        audioFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+"."+audioFileExtension,
+        specFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+".png",
+        specSettings = { 
+          specWidth: 2048, specHeight: 512, 
+          windowFunc: "Dolph", // Hann Hamming Bartlett Rectangular Kaiser Dolph
+          zAxis: 95, // color range in dB, ranging from 20 to 180
+          clipDuration: dbRow.duration
+        };
 
-    var dbRow = dbRows;
-    aws.s3("rfcx-ark").getFile("/spec_dolph.png", function(err, result){
-      if(err) { return next(err); }
-      // this next line may not be necessary
-      result.resume();
-      
-      var contentLength = parseInt(result.headers["content-length"]);
-      
-      res.writeHead(  200, {
-        "Content-Length": contentLength,
-        "Content-Type": result.headers["content-type"],
-        "Content-Disposition": "filename="+dbRow.guid+".png"
-      });
+    var cliCreateSpec = "ffmpeg -i "+audioFilePath
+              +" -loglevel panic -nostdin -ac 1 -f sox -"
+              +" | sox -t sox - -n spectrogram -h -r -o "+specFilePath
+              +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
+              +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s -d "+((specSettings.clipDuration)/1000);
 
-      result.pipe(res);           
-    });
+    aws.s3(s3Bucket).get(s3Path)
+      .on("response", function(s3Res){
+        var audioWriteStream = fs.createWriteStream(audioFilePath);
+        audioWriteStream.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
+        s3Res.on("data", function(data){ audioWriteStream.write(data); });
+        s3Res.on("end", function(){ audioWriteStream.end(); });
+        s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
+        audioWriteStream.on("finish", function(){ 
+          if (fs.existsSync(audioFilePath)) {
+            exec(cliCreateSpec, function(err,stdout,stderr){
+              if (stderr.trim().length > 0) { console.log(stderr); }
+              if (!!err) { console.log(err); }
+              if (fs.existsSync(specFilePath)) {
+                res.writeHead(200, { "Content-Type": "image/png" });
+                var specStream = fs.createReadStream(specFilePath);
+                specStream.pipe(res);
+              } else {
+                res.status(500).json({});
+              }
+             fs.unlink(specFilePath,function(e){if(e){console.log(e);}});
+             fs.unlink(audioFilePath,function(e){if(e){console.log(e);}});
+            });
+
+          } else {
+            console.log("File was not saved...");
+            res.status(500).json({msg:"File was not saved..."});
+          }
+        });
+      }).end();
 
   },
 
