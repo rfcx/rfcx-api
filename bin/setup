@@ -58,8 +58,8 @@ function setupTmpDirectory() {
   try {
     if (fs.existsSync(tmpDir+"/uploads")) {
       fs.readdir(tmpDir+"/uploads", function (err, dirName) {
-        dirName.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/uploads/"+uploadFileName,function(err){ if (err) throw err; });
+        dirName.forEach(function (innerFileName) {
+          fs.unlink(tmpDir+"/uploads/"+innerFileName,function(err){ if (err) console.log(err); });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/uploads"); }
@@ -70,8 +70,8 @@ function setupTmpDirectory() {
   try {
     if (fs.existsSync(tmpDir+"/test-assets")) {
       fs.readdir(tmpDir+"/test-assets", function (err, dirName) {
-        dirName.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/test-assets/"+uploadFileName,function(err){ if (err) throw err; });
+        dirName.forEach(function (innerFileName) {
+          fs.unlink(tmpDir+"/test-assets/"+innerFileName,function(err){ if (err) console.log(err); });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/test-assets"); }
@@ -82,8 +82,8 @@ function setupTmpDirectory() {
   try {
     if (fs.existsSync(tmpDir+"/faux-knox")) {
       fs.readdir(tmpDir+"/faux-knox/", function (err, dirName) {
-        dirName.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/faux-knox/"+uploadFileName,function(err){ if (err) throw err; });
+        dirName.forEach(function (innerFileName) {
+          fs.unlink(tmpDir+"/faux-knox/"+innerFileName,function(err){ if (err) console.log(err); });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
@@ -94,13 +94,50 @@ function setupTmpDirectory() {
   try {
     if (fs.existsSync(tmpDir+"/ffmpeg")) {
       fs.readdir(tmpDir+"/ffmpeg/", function (err, dirName) {
-        dirName.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/ffmpeg/"+uploadFileName,function(err){ if (err) throw err; });
+        dirName.forEach(function (innerFileName) {
+          fs.unlink(tmpDir+"/ffmpeg/"+innerFileName,function(err){ if (err) console.log(err); });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/ffmpeg"); }
   } catch(err) {
     console.error(err);
   }
+
+  try {
+    if (fs.existsSync(tmpDir+"/faux-knox")) {
+      fs.readdir(tmpDir+"/faux-knox/", function (err, dirName) {
+        dirName.forEach(function (innerFileName) {
+          fs.unlink(tmpDir+"/faux-knox/"+innerFileName,function(err){ if (err) console.log(err); });
+        }); 
+      });
+    } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
+  } catch(err) {
+    console.error(err);
+  }
+
+  try {
+    if (fs.existsSync(process.env.UPLOAD_CACHE_DIRECTORY)) {
+      fs.readdir(process.env.UPLOAD_CACHE_DIRECTORY, function (err, dirName) {
+        dirName.forEach(function (innerFileName) {
+          fs.unlink(process.env.UPLOAD_CACHE_DIRECTORY+innerFileName,function(err){ if (err) console.log(err); });
+        }); 
+      });
+    } else { fs.mkdirSync(process.env.UPLOAD_CACHE_DIRECTORY); }
+  } catch(err) {
+    console.error(err);
+  }
+
+  try {
+    if (fs.existsSync(process.env.FFMPEG_CACHE_DIRECTORY)) {
+      fs.readdir(process.env.FFMPEG_CACHE_DIRECTORY, function (err, dirName) {
+        dirName.forEach(function (innerFileName) {
+          fs.unlink(process.env.FFMPEG_CACHE_DIRECTORY+innerFileName,function(err){ if (err) console.log(err); });
+        }); 
+      });
+    } else { fs.mkdirSync(process.env.FFMPEG_CACHE_DIRECTORY); }
+  } catch(err) {
+    console.error(err);
+  }
+
 }
 
