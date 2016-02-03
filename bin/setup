@@ -57,11 +57,9 @@ function setupTmpDirectory() {
 
   try {
     if (fs.existsSync(tmpDir+"/uploads")) {
-      fs.readdir(tmpDir+"/uploads", function (err, uploads) {
-        uploads.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/uploads/"+uploadFileName,function(err){
-             if (err) throw err;
-          });
+      fs.readdir(tmpDir+"/uploads", function (err, dirName) {
+        dirName.forEach(function (uploadFileName) {
+          fs.unlink(tmpDir+"/uploads/"+uploadFileName,function(err){ if (err) throw err; });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/uploads"); }
@@ -71,11 +69,9 @@ function setupTmpDirectory() {
 
   try {
     if (fs.existsSync(tmpDir+"/test-assets")) {
-      fs.readdir(tmpDir+"/test-assets", function (err, uploads) {
-        uploads.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/test-assets/"+uploadFileName,function(err){
-             if (err) throw err;
-          });
+      fs.readdir(tmpDir+"/test-assets", function (err, dirName) {
+        dirName.forEach(function (uploadFileName) {
+          fs.unlink(tmpDir+"/test-assets/"+uploadFileName,function(err){ if (err) throw err; });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/test-assets"); }
@@ -85,11 +81,9 @@ function setupTmpDirectory() {
 
   try {
     if (fs.existsSync(tmpDir+"/faux-knox")) {
-      fs.readdir(tmpDir+"/faux-knox/", function (err, uploads) {
-        uploads.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/faux-knox/"+uploadFileName,function(err){
-             if (err) throw err;
-          });
+      fs.readdir(tmpDir+"/faux-knox/", function (err, dirName) {
+        dirName.forEach(function (uploadFileName) {
+          fs.unlink(tmpDir+"/faux-knox/"+uploadFileName,function(err){ if (err) throw err; });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
@@ -99,11 +93,9 @@ function setupTmpDirectory() {
 
   try {
     if (fs.existsSync(tmpDir+"/ffmpeg")) {
-      fs.readdir(tmpDir+"/ffmpeg/", function (err, uploads) {
-        uploads.forEach(function (uploadFileName) {
-          fs.unlink(tmpDir+"/ffmpeg/"+uploadFileName,function(err){
-             if (err) throw err;
-          });
+      fs.readdir(tmpDir+"/ffmpeg/", function (err, dirName) {
+        dirName.forEach(function (uploadFileName) {
+          fs.unlink(tmpDir+"/ffmpeg/"+uploadFileName,function(err){ if (err) throw err; });
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/ffmpeg"); }
