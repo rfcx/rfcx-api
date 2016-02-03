@@ -56,7 +56,6 @@ function setupTmpDirectory() {
   if (!fs.existsSync(tmpDir)) { fs.mkdirSync(tmpDir); }
 
   try {
-
     if (fs.existsSync(tmpDir+"/uploads")) {
       fs.readdir(tmpDir+"/uploads", function (err, uploads) {
         uploads.forEach(function (uploadFileName) {
@@ -66,7 +65,11 @@ function setupTmpDirectory() {
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/uploads"); }
+  } catch(err) {
+    console.error(err);
+  }
 
+  try {
     if (fs.existsSync(tmpDir+"/test-assets")) {
       fs.readdir(tmpDir+"/test-assets", function (err, uploads) {
         uploads.forEach(function (uploadFileName) {
@@ -76,7 +79,11 @@ function setupTmpDirectory() {
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/test-assets"); }
+  } catch(err) {
+    console.error(err);
+  }
 
+  try {
     if (fs.existsSync(tmpDir+"/faux-knox")) {
       fs.readdir(tmpDir+"/faux-knox/", function (err, uploads) {
         uploads.forEach(function (uploadFileName) {
@@ -86,7 +93,11 @@ function setupTmpDirectory() {
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
+  } catch(err) {
+    console.error(err);
+  }
 
+  try {
     if (fs.existsSync(tmpDir+"/ffmpeg")) {
       fs.readdir(tmpDir+"/ffmpeg/", function (err, uploads) {
         uploads.forEach(function (uploadFileName) {
@@ -96,7 +107,6 @@ function setupTmpDirectory() {
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/ffmpeg"); }
-
   } catch(err) {
     console.error(err);
   }
