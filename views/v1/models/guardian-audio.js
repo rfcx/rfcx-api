@@ -112,11 +112,11 @@ exports.models = {
           clipDuration: dbRow.duration
         };
 
-    var cliCreateSpec = "ffmpeg -i "+audioFilePath
-              +" -loglevel panic -nostdin -ac 1 -f sox -"
-              +" | sox -t sox - -n spectrogram -h -r -o "+specFilePath
-              +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
-              +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s -d "+((specSettings.clipDuration)/1000);
+    var ffmpegSox = process.env.FFMPEG_PATH+" -i "+audioFilePath+" -loglevel panic -nostdin -ac 1 -f sox - "
+                  +" | "
+                  +" "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r -o "+specFilePath
+                  +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
+                  +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s -d "+((specSettings.clipDuration)/1000);
 
     aws.s3(s3Bucket).get(s3Path)
       .on("response", function(s3Res){
@@ -127,7 +127,7 @@ exports.models = {
         s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
         audioWriteStream.on("finish", function(){ 
           if (fs.existsSync(audioFilePath)) {
-            exec(cliCreateSpec, function(err,stdout,stderr){
+            exec(ffmpegSox, function(err,stdout,stderr){
               if (stderr.trim().length > 0) { console.log(stderr); }
               if (!!err) { console.log(err); }
               if (fs.existsSync(specFilePath)) {

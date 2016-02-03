@@ -3,7 +3,10 @@ exports.env = {
   NODE_ENV: "development",
 
   UPLOAD_CACHE_DIRECTORY: process.cwd()+"/tmp/uploads/",
+
   FFMPEG_CACHE_DIRECTORY: process.cwd()+"/tmp/ffmpeg/",
+  FFMPEG_PATH: "/usr/bin/ffmpeg",
+  SOX_PATH: "/usr/bin/sox",
 
   AWS_ACCESS_KEY_ID: "",
   AWS_SECRET_KEY: "",
