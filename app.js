@@ -78,7 +78,8 @@ for (apiVersion in routes) {
 }
 
 // Health Check Endpoint
-app.get("/health_check", function(req,res){ res.status(200).json({app:app.get("title")});});
+var healthCheck = require("./utils/internal-rfcx/health-check.js").healthCheck;
+app.get("/health_check", function(req,res){ healthCheck.httpResponse(req,res); });
 
 // Default Endpoint
 app.get("/",function(req,res){
