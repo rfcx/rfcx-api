@@ -21,6 +21,8 @@ router.route("/audio/:audio_id")
           views.models.TEMP_MP3_guardianAudioFile(req,res,dbAudio);
         } else if (req.rfcx.content_type === "ogg") {
           views.models.TEMP_OGG_guardianAudioFile(req,res,dbAudio);
+        } else if (req.rfcx.content_type === "opus") {
+          views.models.TEMP_OGG_guardianAudioFile(req,res,dbAudio);
 
         } else if (req.rfcx.content_type === "png") {
           

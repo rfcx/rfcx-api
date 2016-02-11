@@ -2,6 +2,7 @@ var util = require("util");
 var Promise = require("bluebird");
 var aws = require("../../../utils/external/aws.js").aws();
 var exec = require("child_process").exec;
+var ffmpeg = require("fluent-ffmpeg");
 var fs = require("fs");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
@@ -70,29 +71,86 @@ exports.models = {
   TEMP_OGG_guardianAudioFile: function(req,res,dbRows) {
 
     var dbRow = dbRows,
+        hashName = hash.randomString(32),
         s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
         s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
-        ;
+        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
+        audioFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+"."+audioFileExtension,
+        outputSettings = {
 
-      aws.s3("rfcx-ark").getFile("/test.ogg", function(err, result){
-        if(err) { return next(err); }
+        };
 
-        // this next line may not be necessary
-        result.resume();
-        
-        var contentLength = parseInt(result.headers["content-length"]);
-        
-        res.writeHead(  200, {
-          "Content-Length": contentLength,
-          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-          "Content-Type": result.headers["content-type"],
-          "Content-Disposition": "filename="+dbRow.guid+".ogg"
+    aws.s3(s3Bucket).get(s3Path)
+      .on("response", function(s3Res){
+        var audioWriteStream = fs.createWriteStream(audioFilePath);
+        audioWriteStream.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
+        s3Res.on("data", function(data){ audioWriteStream.write(data); });
+        s3Res.on("end", function(){ audioWriteStream.end(); });
+        s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
+        audioWriteStream.on("finish", function(){ 
+          if (fs.existsSync(audioFilePath)) {
+            res.writeHead(200, {
+              "Content-Type": "audio/ogg",
+              //"Content-Length": contentLength,
+              //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+              "Content-Disposition": "filename="+dbRow.guid+".opus"
+            });
+            new ffmpeg(audioFilePath)
+              .outputFormat("opus")
+              .audioCodec("libopus")
+              .audioBitrate("16k")
+              .outputOptions([
+                "-compression_level 10",
+                "-application audio",
+                "-vbr on"
+                ])
+              .on("error",function(err,stdout,stderr){
+                  console.log('an error happened: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                  res.status(500).json({});
+              })
+              .on("end",function(){
+                fs.unlink(audioFilePath,function(e){if(e){console.log(e);}});
+              })
+              .pipe(res, { end: true });
+
+          } else {
+            console.log("Source audio not accessible...");
+            res.status(500).json({msg:"Source audio not accessible..."});
+          }
         });
+      }).end();
 
-        result.pipe(res);      
-      });
+
+
+
+
+
+
+    // var dbRow = dbRows,
+    //     s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
+    //     s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
+    //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+    //     audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
+    //     ;
+
+    //   aws.s3("rfcx-ark").getFile("/test.ogg", function(err, result){
+    //     if(err) { return next(err); }
+
+    //     // this next line may not be necessary
+    //     result.resume();
+        
+    //     var contentLength = parseInt(result.headers["content-length"]);
+        
+    //     res.writeHead(  200, {
+    //       "Content-Length": contentLength,
+    //       "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+    //       "Content-Type": result.headers["content-type"],
+    //       "Content-Disposition": "filename="+dbRow.guid+".ogg"
+    //     });
+
+    //     result.pipe(res);      
+    //   });
   },
 
   guardianSpectrogramFile: function(req,res,dbRows) {
@@ -131,7 +189,13 @@ exports.models = {
               if (stderr.trim().length > 0) { console.log(stderr); }
               if (!!err) { console.log(err); }
               if (fs.existsSync(specFilePath)) {
-                res.writeHead(200, { "Content-Type": "image/png" });
+
+                res.writeHead(200, {
+                  "Content-Type": "image/png",
+                  //"Content-Length": contentLength,
+                  //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+                  "Content-Disposition": "filename="+dbRow.guid+".png"
+                });
                 var specStream = fs.createReadStream(specFilePath);
                 specStream.pipe(res);
               } else {
@@ -142,8 +206,8 @@ exports.models = {
             });
 
           } else {
-            console.log("File was not saved...");
-            res.status(500).json({msg:"File was not saved..."});
+            console.log("Source audio not accessible...");
+            res.status(500).json({msg:"Source audio not accessible..."});
           }
         });
       }).end();
@@ -212,16 +276,17 @@ exports.models = {
                 //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
                 // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30);
 
-                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png?v=3";//+urlAuthParams;
+                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png";//+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].urls = {
                   m4a: urlBase+".m4a",
                   mp3: urlBase+".mp3",
                   ogg: urlBase+".ogg",
-                  png: urlBase+".png?v=3"
+                  opus: urlBase+".opus",
+                  png: urlBase+".png"
                 };
 
-                //jsonRowsByGuid[thisGuid].url_expires_at = tokenInfo.token_expires_at;
+                jsonRowsByGuid[thisGuid].urls_expire_at = tokenInfo.token_expires_at;
 
                 jsonArray.push(jsonRowsByGuid[thisGuid]);
                 if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
