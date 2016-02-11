@@ -11,7 +11,7 @@ exports.healthCheck = {
           attributes: [[models.sequelize.fn("COUNT", models.sequelize.col("id")), "count"]]
         }).then(function(dbRowCount){
           try {
-            resolve(dbRowCount.dataValues.count > 0);
+            resolve(dbRowCount.dataValues.count >= 0);
           } catch (e) { reject(e); }
         }).catch(function(err){
           console.log("failed to fetch row count | "+err);
