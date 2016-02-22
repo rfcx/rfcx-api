@@ -43,29 +43,52 @@ exports.models = {
   TEMP_MP3_guardianAudioFile: function(req,res,dbRows) {
 
     var dbRow = dbRows,
+        hashName = hash.randomString(32),
         s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
         s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
-        ;
+        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
+        audioFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+"."+audioFileExtension,
+        outputSettings = {
 
-      aws.s3("rfcx-ark").getFile("/test.mp3", function(err, result){
-        if(err) { return next(err); }
+        };
 
-        // this next line may not be necessary
-        result.resume();
-        
-        var contentLength = parseInt(result.headers["content-length"]);
-        
-        res.writeHead(  200, {
-          "Content-Length": contentLength,
-          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-          "Content-Type": result.headers["content-type"],
-          "Content-Disposition": "filename="+dbRow.guid+".mp3"
+    aws.s3(s3Bucket).get(s3Path)
+      .on("response", function(s3Res){
+        var audioWriteStream = fs.createWriteStream(audioFilePath);
+        audioWriteStream.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
+        s3Res.on("data", function(data){ audioWriteStream.write(data); });
+        s3Res.on("end", function(){ audioWriteStream.end(); });
+        s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
+        audioWriteStream.on("finish", function(){ 
+          if (fs.existsSync(audioFilePath)) {
+            res.writeHead(200, {
+              "Content-Type": "audio/mpeg",
+              //"Content-Length": contentLength,
+              //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+              "Content-Disposition": "filename="+dbRow.guid+".mp3"
+            });
+            new ffmpeg(audioFilePath)
+              .outputFormat("mp3")
+              .audioCodec("libmp3lame")
+              .audioBitrate("64k")
+              .outputOptions([
+                ])
+              .on("error",function(err,stdout,stderr){
+                  console.log('an error happened: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                  res.status(500).json({});
+              })
+              .on("end",function(){
+                fs.unlink(audioFilePath,function(e){if(e){console.log(e);}});
+              })
+              .pipe(res, { end: true });
+
+          } else {
+            console.log("Source audio not accessible...");
+            res.status(500).json({msg:"Source audio not accessible..."});
+          }
         });
-
-        result.pipe(res);      
-      });
+      }).end();
   },
 // TEST
   TEMP_OGG_guardianAudioFile: function(req,res,dbRows) {
@@ -121,36 +144,6 @@ exports.models = {
         });
       }).end();
 
-
-
-
-
-
-
-    // var dbRow = dbRows,
-    //     s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-    //     s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-    //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-    //     audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
-    //     ;
-
-    //   aws.s3("rfcx-ark").getFile("/test.ogg", function(err, result){
-    //     if(err) { return next(err); }
-
-    //     // this next line may not be necessary
-    //     result.resume();
-        
-    //     var contentLength = parseInt(result.headers["content-length"]);
-        
-    //     res.writeHead(  200, {
-    //       "Content-Length": contentLength,
-    //       "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-    //       "Content-Type": result.headers["content-type"],
-    //       "Content-Disposition": "filename="+dbRow.guid+".ogg"
-    //     });
-
-    //     result.pipe(res);      
-    //   });
   },
 
   guardianSpectrogramFile: function(req,res,dbRows) {
@@ -167,10 +160,13 @@ exports.models = {
           specWidth: 2048, specHeight: 512, 
           windowFunc: "Dolph", // Hann Hamming Bartlett Rectangular Kaiser Dolph
           zAxis: 95, // color range in dB, ranging from 20 to 180
-          clipDuration: dbRow.duration
+          clipDuration: dbRow.duration,
+          audioSampleRate: (dbRow.capture_sample_rate != null) ? dbRow.capture_sample_rate : 8000
         };
 
-    var ffmpegSox = process.env.FFMPEG_PATH+" -i "+audioFilePath+" -loglevel panic -nostdin -ac 1 -f sox - "
+    var ffmpegSox = process.env.FFMPEG_PATH+" -i "+audioFilePath+" -loglevel panic -nostdin"
+                  +" -ac 1 -ar "+specSettings.audioSampleRate
+                  +" -f sox - "
                   +" | "
                   +" "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r -o "+specFilePath
                   +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
