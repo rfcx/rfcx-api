@@ -23,6 +23,13 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    file_extension: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: false,
+      validate: {
+      }
+    },
     sample_rate: {
       type: DataTypes.INTEGER,
       allowNull: false,
