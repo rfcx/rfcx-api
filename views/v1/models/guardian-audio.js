@@ -228,7 +228,6 @@ exports.models = {
                 jsonRowsByGuid[thisGuid].urls = {
                   m4a: urlBase+".m4a",
                   mp3: urlBase+".mp3",
-                  ogg: urlBase+".ogg",
                   opus: urlBase+".opus",
                   png: urlBase+".png"
                 };
