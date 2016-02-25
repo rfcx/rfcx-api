@@ -6,8 +6,9 @@ var ffmpeg = require("fluent-ffmpeg");
 var fs = require("fs");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
-var audioUtils = require("../../../utils/internal-rfcx/token.js").token;
+var audioUtils = require("../../../utils/rfcx-audio").audioUtils;
 function getAllViews() { return require("../../../views/v1"); }
+
 
 exports.models = {
 
@@ -42,107 +43,57 @@ exports.models = {
 // TEST
   TEMP_MP3_guardianAudioFile: function(req,res,dbRows) {
 
-    var dbRow = dbRows,
-        hashName = hash.randomString(32),
-        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
-        audioFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+"."+audioFileExtension,
-        outputSettings = {
+    var dbRow = dbRows;
 
-        };
-
-    aws.s3(s3Bucket).get(s3Path)
-      .on("response", function(s3Res){
-        var audioWriteStream = fs.createWriteStream(audioFilePath);
-        audioWriteStream.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        s3Res.on("data", function(data){ audioWriteStream.write(data); });
-        s3Res.on("end", function(){ audioWriteStream.end(); });
-        s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        audioWriteStream.on("finish", function(){ 
-          if (fs.existsSync(audioFilePath)) {
-            res.writeHead(200, {
-              "Content-Type": "audio/mpeg",
-              //"Content-Length": contentLength,
-              //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-              "Content-Disposition": "filename="+dbRow.guid+".mp3"
+    audioUtils.cacheSourceAudio(dbRow.url)
+      .then(function(sourceFilePath){
+          audioUtils.transcodeToMP3({
+              sourceFilePath: sourceFilePath,
+              enhanced: true,
+              bitRate: "32k",
+              sampleRate: dbRow.capture_sample_rate
+            }).then(function(ffmpegObj){
+              audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".mp3")
+                .then(function(){
+                  fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+                }).catch(function(err){
+                  console.log(err);
+                });
+            }).catch(function(err){
+              console.log(err);
             });
-            new ffmpeg(audioFilePath)
-              .outputFormat("mp3")
-              .audioCodec("libmp3lame")
-              .audioBitrate("64k")
-              .outputOptions([
-                ])
-              .on("error",function(err,stdout,stderr){
-                  console.log('an error happened: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                  res.status(500).json({});
-              })
-              .on("end",function(){
-                fs.unlink(audioFilePath,function(e){if(e){console.log(e);}});
-              })
-              .pipe(res, { end: true });
-
-          } else {
-            console.log("Source audio not accessible...");
-            res.status(500).json({msg:"Source audio not accessible..."});
-          }
+        }).catch(function(err){
+          console.log(err);
+          res.status(500).json({msg:"failed to transcode audio"});
         });
-      }).end();
+
   },
 // TEST
   TEMP_OGG_guardianAudioFile: function(req,res,dbRows) {
 
-    var dbRow = dbRows,
-        hashName = hash.randomString(32),
-        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
-        audioFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+"."+audioFileExtension,
-        outputSettings = {
+    var dbRow = dbRows;
 
-        };
-
-    aws.s3(s3Bucket).get(s3Path)
-      .on("response", function(s3Res){
-        var audioWriteStream = fs.createWriteStream(audioFilePath);
-        audioWriteStream.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        s3Res.on("data", function(data){ audioWriteStream.write(data); });
-        s3Res.on("end", function(){ audioWriteStream.end(); });
-        s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        audioWriteStream.on("finish", function(){ 
-          if (fs.existsSync(audioFilePath)) {
-            res.writeHead(200, {
-              "Content-Type": "audio/ogg",
-              //"Content-Length": contentLength,
-              //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-              "Content-Disposition": "filename="+dbRow.guid+".opus"
+    audioUtils.cacheSourceAudio(dbRow.url)
+      .then(function(sourceFilePath){
+          audioUtils.transcodeToOpus({
+              sourceFilePath: sourceFilePath,
+              enhanced: false,
+              bitRate: "16k",
+              sampleRate: dbRow.capture_sample_rate
+            }).then(function(ffmpegObj){
+              audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".opus")
+                .then(function(){
+                  fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+                }).catch(function(err){
+                  console.log(err);
+                });
+            }).catch(function(err){
+              console.log(err);
             });
-            new ffmpeg(audioFilePath)
-              .outputFormat("opus")
-              .audioCodec("libopus")
-              .audioBitrate("16k")
-              .outputOptions([
-                "-compression_level 10",
-                "-application audio",
-                "-vbr on"
-                ])
-              .on("error",function(err,stdout,stderr){
-                  console.log('an error happened: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                  res.status(500).json({});
-              })
-              .on("end",function(){
-                fs.unlink(audioFilePath,function(e){if(e){console.log(e);}});
-              })
-              .pipe(res, { end: true });
-
-          } else {
-            console.log("Source audio not accessible...");
-            res.status(500).json({msg:"Source audio not accessible..."});
-          }
+        }).catch(function(err){
+          console.log(err);
+          res.status(500).json({msg:"failed to transcode audio"});
         });
-      }).end();
 
   },
 

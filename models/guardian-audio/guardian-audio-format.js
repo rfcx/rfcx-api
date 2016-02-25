@@ -38,6 +38,13 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true,
         min: 0
       }
+    },
+    is_vbr: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      validate: {
+      }
     }
   }, {
     classMethods: {
