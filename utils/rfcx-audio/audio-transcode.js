@@ -26,6 +26,7 @@ exports.audioUtils = {
             ],
             outputOptions = (isEnhanced) ? enhancedOutputOptions : [];
         for (i in this.formats[format].outputOptions) { outputOptions.push(this.formats[format].outputOptions[i]); }
+            console.log(outputOptions);
         return outputOptions;
     },
 
@@ -67,7 +68,7 @@ exports.audioUtils = {
                     var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"."+this.formats.opus.extension;
                     resolve(
                         new ffmpeg(inputParams.sourceFilePath)
-                       //     .input(inputParams.sourceFilePath)
+                            .input(inputParams.sourceFilePath)
                             .outputOptions(this.transcodingOutputOptions("opus",inputParams.enhanced))
                             .outputFormat(this.formats.opus.outputFormat)
                             .audioCodec(this.formats.opus.codec)
