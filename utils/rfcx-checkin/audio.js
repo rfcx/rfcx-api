@@ -26,7 +26,7 @@ exports.audio = {
 
           audioInfo[timeStamp] = {
             guardian_id: dbGuardian.id,
-            guardian_guid: dbGuardian.guid
+            guardian_guid: dbGuardian.guid,
             checkin_id: dbCheckIn.id,
             checkin_guid: dbCheckIn.guid,
             site_id: dbGuardian.site_id,
