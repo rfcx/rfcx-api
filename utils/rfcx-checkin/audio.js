@@ -17,8 +17,6 @@ exports.audio = {
         
       if (audioMeta.length == audioFiles.length) {
 
-        console.log(audioMeta);
-
         for (i in audioFiles) {
 
           var timeStamp = audioMeta[i][1]; 
