@@ -413,6 +413,7 @@ router.route("/:guardian_id/checkins")
               dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
               dbCheckIn.save();
 
+              console.log(messageInfo);
                                                   for (p in messageInfo) {
                                                     if (messageInfo[p].isSaved) {
                                                       returnJson.messages.push({
