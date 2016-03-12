@@ -3,6 +3,7 @@ var fs = require("fs");
 var Promise = require("bluebird");
 var models  = require("../../models");
 var hash = require("../../utils/misc/hash.js").hash;
+var aws = require("../../utils/external/aws.js").aws();
 
 exports.screenshots = {
 
@@ -16,8 +17,6 @@ exports.screenshots = {
       if (!util.isArray(screenShotFiles)) { screenShotFiles = [screenShotFiles]; }
       
       for (i in screenShotFiles) {
-
-        console.log(screenShotMeta);
 
         var timeStamp = screenShotFiles[i].originalname.substr(0,screenShotFiles[i].originalname.lastIndexOf(".png"));
         var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
@@ -44,23 +43,62 @@ exports.screenshots = {
     return screenShotInfo;
   },
 
-  save: function(message) {
+  save: function(screenShotInfo) {
     return new Promise(function(resolve, reject) {
         try {
-          // models.GuardianMetaMessage.create({
-          //     guardian_id: message.guardian_id,
-          //     check_in_id: message.checkin_id,
-          //     received_at: message.timeStamp,
-          //     address: message.address,
-          //     body: message.body,
-          //     android_id: message.android_id
-          //   }).then(function(dbGuardianMetaMessage){
-          //     resolve(dbGuardianMetaMessage);
-          //     console.log("message saved: "+dbGuardianMetaMessage.guid);
-          //   }).catch(function(err){
-          //     console.log("error saving message: "+message.android_id+", "+message.body+", "+err);
-          //     reject(new Error(err));
-          //   });
+
+          if (screenShotInfo.sha1Hash === screenShotInfo.guardianSha1Hash) {
+
+
+
+
+            aws.s3(process.env.ASSET_BUCKET_META).putFile(
+              screenShotInfo.uploadLocalPath, screenShotInfo.s3Path, 
+              function(err, s3Res){
+                try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
+                if (!!err) {
+                  console.log(err);
+                  reject(new Error(err));
+                } else if (200 == s3Res.statusCode) {
+
+                  if (aws.s3ConfirmSave(s3Res,screenShotInfo.s3Path)) {
+                    
+                    fs.unlink(screenShotInfo.uploadLocalPath,function(e){if(e){console.log(e);}});
+
+                    models.GuardianMetaScreenShot.create({
+                        guardian_id: screenShotInfo.guardian_id,
+                        captured_at: screenShotInfo.timeStamp,
+                        size: screenShotInfo.size,
+                        sha1_checksum: screenShotInfo.sha1Hash,
+                        url: screenShotInfo.s3Path
+                      }).then(function(dbGuardianMetaScreenShot){
+                          // if all goes well, report it on the global object so we can tell at the end
+                          screenShotInfo.isSaved = true;
+                          screenShotInfo.screenshot_id = dbGuardianMetaScreenShot.guid;
+                          console.log("screenshot saved: "+screenShotInfo.origin_id);
+                          resolve(screenShotInfo);
+                      }).catch(function(err){
+                        console.log("error saving screenshot to db: "+screenShotInfo.origin_id+", "+err);
+                        reject(new Error(err));
+                      });
+                  }   
+
+                }
+            });
+
+
+
+
+
+          } else {
+            console.log("screenshot checksum failed ("+screenShotInfo.origin_id+")");
+            // even if checksum fails, we still (at least for now) want
+            // to instruct to the guardian to delete the screenshot and move on
+            screenShotInfo.isSaved = true;
+            fs.unlink(screenShotInfo.uploadLocalPath,function(e){if(e){console.log(e);}});
+            resolve(screenShotInfo);
+          }
+
         } catch(err) {
             console.log(err);
             reject(new Error(err));
@@ -91,3 +129,4 @@ function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
   }
   return asDate;
 }
+

@@ -94,7 +94,7 @@ router.route("/:guardian_id/checkins")
             for (msgInfoInd in messageInfo) {
               checkInHelpers.messages.save(messageInfo[msgInfoInd])
                 .then(function(dbMsg){
-                  // if all goes well, report it on the global object so we can tell at the end
+                  // if all goes well, report it on the global object so we can check later on
                   messageInfo[dbMsg.android_id].isSaved = true;
                   messageInfo[dbMsg.android_id].guid = dbMsg.guid;
                 });
@@ -106,81 +106,62 @@ router.route("/:guardian_id/checkins")
             //   guid: "guid goes here"
             // });
             
-            var preScreenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(json.screenshots,"|","*"), dbGuardian.id, dbCheckIn.id);
-
-            // TO DO - move into helper method
-            // save screenshot files
-            if (!!req.files.screenshot) {
-              var screenShotInfo = {};
-              if (!util.isArray(req.files.screenshot)) { req.files.screenshot = [req.files.screenshot]; }
-                for (i in req.files.screenshot) {
-                  // this next line assumes there is only one screenshot attached
-                  // ...so this should probably be updated to work like the rest of this section
-                  var screenShotMeta = json.screenshots.split("|")[0].split("*");
-                  var timeStamp = req.files.screenshot[i].originalname.substr(0,req.files.screenshot[i].originalname.lastIndexOf(".png"));
-                  var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
-                  screenShotInfo[timeStamp] = {
-                     guardian_id: dbGuardian.guid,
-                     checkin_id: dbCheckIn.guid,
-                     screenshot_id: null, 
-                     uploadLocalPath: req.files.screenshot[i].path,
-                     size: fs.statSync(req.files.screenshot[i].path).size,
-                     sha1Hash: hash.fileSha1(req.files.screenshot[i].path),
-                     guardianSha1Hash: screenShotMeta[3],
-                     origin_id: timeStamp,
-                     timeStamp: timeStampToDate(timeStamp, json.timezone_offset),
-                     isSaved: false,
-                     s3Path: "/screenshots/"+process.env.NODE_ENV
-                              +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
-                              +"/"+dbGuardian.guid
-                              +"/"+dbGuardian.guid+"-"+dateString+".png"
-                  };
-
-                }
-                for (j in screenShotInfo) {
-
-                  if (screenShotInfo[j].sha1Hash === screenShotInfo[j].guardianSha1Hash) {
-
-                    aws.s3(process.env.ASSET_BUCKET_META).putFile(
-                      screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
-                      function(err, s3Res){
-                        try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
-                        if (!!err) {
-                          console.log(err);
-                        } else if (200 == s3Res.statusCode) {
-                          for (l in screenShotInfo) {
-                            if (aws.s3ConfirmSave(s3Res,screenShotInfo[l].s3Path)) {
-                              
-                              fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
-
-                              models.GuardianMetaScreenShot.create({
-                                  guardian_id: dbGuardian.id,
-                                  captured_at: screenShotInfo[l].timeStamp,
-                                  size: screenShotInfo[l].size,
-                                  sha1_checksum: screenShotInfo[l].sha1Hash,
-                                  url: screenShotInfo[l].s3Path
-                                }).then(function(dbGuardianMetaScreenShot){
-                                    // if all goes well, report it on the global object so we can tell at the end
-                                    screenShotInfo[l].isSaved = true;
-                                    screenShotInfo[l].screenshot_id = dbGuardianMetaScreenShot.guid;
-                                    console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
-                                }).catch(function(err){
-                                  console.log("error saving screenshot: "+screenShotInfo[l].timeStamp+err);
-                                });
-                            }
-                          }                        
-                        }
-                    });
-
-                  } else {
-                    // even if checksum fails, we still (at least for now) want
-                    // to instruct to the guardian to delete the screenshot and move on
-                    screenShotInfo[j].isSaved = true;
-                    fs.unlink(screenShotInfo[j].uploadLocalPath,function(e){if(e){console.log(e);}});
-                  }
-
-                }
+            var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(json.screenshots,"|","*"), dbGuardian.id, dbCheckIn.id);
+            for (screenShotInfoInd in screenShotInfo) {
+              checkInHelpers.screenshots.save(screenShotInfo[screenShotInfoInd])
+                .then(function(rtrnScreenShotInfo){
+                  screenShotInfo[rtrnScreenShotInfo.origin_id] = rtrnScreenShotInfo;
+                });
             }
+
+            // // TO DO - move into helper method
+            // // save screenshot files
+            // if (!!req.files.screenshot) {
+
+            //     for (j in screenShotInfo) {
+
+            //       if (screenShotInfo[j].sha1Hash === screenShotInfo[j].guardianSha1Hash) {
+
+            //         aws.s3(process.env.ASSET_BUCKET_META).putFile(
+            //           screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
+            //           function(err, s3Res){
+            //             try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
+            //             if (!!err) {
+            //               console.log(err);
+            //             } else if (200 == s3Res.statusCode) {
+            //               for (l in screenShotInfo) {
+            //                 if (aws.s3ConfirmSave(s3Res,screenShotInfo[l].s3Path)) {
+                              
+            //                   fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
+
+            //                   models.GuardianMetaScreenShot.create({
+            //                       guardian_id: dbGuardian.id,
+            //                       captured_at: screenShotInfo[l].timeStamp,
+            //                       size: screenShotInfo[l].size,
+            //                       sha1_checksum: screenShotInfo[l].sha1Hash,
+            //                       url: screenShotInfo[l].s3Path
+            //                     }).then(function(dbGuardianMetaScreenShot){
+            //                         // if all goes well, report it on the global object so we can tell at the end
+            //                         screenShotInfo[l].isSaved = true;
+            //                         screenShotInfo[l].screenshot_id = dbGuardianMetaScreenShot.guid;
+            //                         console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
+            //                     }).catch(function(err){
+            //                       console.log("error saving screenshot: "+screenShotInfo[l].timeStamp+err);
+            //                     });
+            //                 }
+            //               }                        
+            //             }
+            //         });
+
+            //       } else {
+            //         // even if checksum fails, we still (at least for now) want
+            //         // to instruct to the guardian to delete the screenshot and move on
+            //         screenShotInfo[j].isSaved = true;
+            //         fs.unlink(screenShotInfo[j].uploadLocalPath,function(e){if(e){console.log(e);}});
+            //       }
+
+            //     }
+            // }
 
             // TO DO - move into helper method
             // add prefs instructions as set in database
