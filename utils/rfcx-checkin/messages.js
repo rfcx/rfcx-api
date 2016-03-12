@@ -24,21 +24,23 @@ exports.messages = {
     return messageInfo;
   },
 
-  save: function(message) {
+  save: function(messageInfo) {
     return new Promise(function(resolve, reject) {
         try {
           models.GuardianMetaMessage.create({
-              guardian_id: message.guardian_id,
-              check_in_id: message.checkin_id,
-              received_at: message.timeStamp,
-              address: message.address,
-              body: message.body,
-              android_id: message.android_id
+              guardian_id: messageInfo.guardian_id,
+              check_in_id: messageInfo.checkin_id,
+              received_at: messageInfo.timeStamp,
+              address: messageInfo.address,
+              body: messageInfo.body,
+              android_id: messageInfo.android_id
             }).then(function(dbGuardianMetaMessage){
-              resolve(dbGuardianMetaMessage);
+              messageInfo.isSaved = true;
+              messageInfo.guid = dbGuardianMetaMessage.guid;
+              resolve(messageInfo);
               console.log("message saved: "+dbGuardianMetaMessage.guid);
             }).catch(function(err){
-              console.log("error saving message: "+message.android_id+", "+message.body+", "+err);
+              console.log("error saving message: "+messageInfo.android_id+", "+messageInfo.body+", "+err);
               reject(new Error(err));
             });
         } catch(err) {

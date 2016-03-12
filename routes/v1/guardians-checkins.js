@@ -93,10 +93,8 @@ router.route("/:guardian_id/checkins")
             var messageInfo = checkInHelpers.messages.info(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
             for (msgInfoInd in messageInfo) {
               checkInHelpers.messages.save(messageInfo[msgInfoInd])
-                .then(function(dbMsg){
-                  // if all goes well, report it on the global object so we can check later on
-                  messageInfo[dbMsg.android_id].isSaved = true;
-                  messageInfo[dbMsg.android_id].guid = dbMsg.guid;
+                .then(function(rtrnMessageInfo){
+                  messageInfo[rtrnMessageInfo.android_id] = rtrnMessageInfo;
                 });
             }
             
@@ -124,6 +122,11 @@ router.route("/:guardian_id/checkins")
            //     returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
               }
             }
+
+
+            // parse, review and save audio
+            var audioInfo_PRE = checkInHelpers.audio.info(req.files.audio, strArrToJSArr(json.audio,"|","*")/* dbGuardian.id, dbGuardian.guid, dbCheckIn.id*/);
+            
       
 
             // save audio files

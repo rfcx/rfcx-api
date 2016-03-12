@@ -49,9 +49,6 @@ exports.screenshots = {
 
           if (screenShotInfo.sha1Hash === screenShotInfo.guardianSha1Hash) {
 
-
-
-
             aws.s3(process.env.ASSET_BUCKET_META).putFile(
               screenShotInfo.uploadLocalPath, screenShotInfo.s3Path, 
               function(err, s3Res){
@@ -75,8 +72,9 @@ exports.screenshots = {
                           // if all goes well, report it on the global object so we can tell at the end
                           screenShotInfo.isSaved = true;
                           screenShotInfo.screenshot_id = dbGuardianMetaScreenShot.guid;
-                          console.log("screenshot saved: "+screenShotInfo.origin_id);
+                          screenShotInfo.guid = dbGuardianMetaScreenShot.guid;
                           resolve(screenShotInfo);
+                          console.log("screenshot saved: "+screenShotInfo.origin_id);
                       }).catch(function(err){
                         console.log("error saving screenshot to db: "+screenShotInfo.origin_id+", "+err);
                         reject(new Error(err));
@@ -85,10 +83,6 @@ exports.screenshots = {
 
                 }
             });
-
-
-
-
 
           } else {
             console.log("screenshot checksum failed ("+screenShotInfo.origin_id+")");
@@ -104,29 +98,7 @@ exports.screenshots = {
             reject(new Error(err));
         }
     }.bind(this));
-  },
-
-  send: function() {
-
   }
 
 };
-
-
-
-function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
-
-  var asDate = null;
-
-  // PLEASE MODIFY LATER WHEN WE NO LONGER NEED TO SUPPORT LEGACY TIMESTAMPS !!!!!
-  if ((""+timeStamp).indexOf(":") > -1) {
-    // LEGACY TIMESTAMP FORMAT
-    asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
-  } else if (timeStamp != null) {
-    
-    asDate = new Date(parseInt(timeStamp));
-  
-  }
-  return asDate;
-}
 
