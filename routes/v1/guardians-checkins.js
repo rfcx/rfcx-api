@@ -99,14 +99,9 @@ router.route("/:guardian_id/checkins")
                   messageInfo[dbMsg.android_id].guid = dbMsg.guid;
                 });
             }
-            // add messages instructions
-            // returnJson.instructions.messages.push({
-            //   body: "From  "+dbGuardian.guid,
-            //   address: "+14153359205",
-            //   guid: "guid goes here"
-            // });
             
-            var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(json.screenshots,"|","*"), dbGuardian.id, dbCheckIn.id);
+            // parse, review and save screenshots
+            var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(json.screenshots,"|","*"), dbGuardian.id, dbGuardian.guid, dbCheckIn.id);
             for (screenShotInfoInd in screenShotInfo) {
               checkInHelpers.screenshots.save(screenShotInfo[screenShotInfoInd])
                 .then(function(rtrnScreenShotInfo){
@@ -114,54 +109,13 @@ router.route("/:guardian_id/checkins")
                 });
             }
 
-            // // TO DO - move into helper method
-            // // save screenshot files
-            // if (!!req.files.screenshot) {
+            // add messages instructions
+            // returnJson.instructions.messages.push({
+            //   body: "From  "+dbGuardian.guid,
+            //   address: "+14153359205",
+            //   guid: "guid goes here"
+            // });
 
-            //     for (j in screenShotInfo) {
-
-            //       if (screenShotInfo[j].sha1Hash === screenShotInfo[j].guardianSha1Hash) {
-
-            //         aws.s3(process.env.ASSET_BUCKET_META).putFile(
-            //           screenShotInfo[j].uploadLocalPath, screenShotInfo[j].s3Path, 
-            //           function(err, s3Res){
-            //             try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
-            //             if (!!err) {
-            //               console.log(err);
-            //             } else if (200 == s3Res.statusCode) {
-            //               for (l in screenShotInfo) {
-            //                 if (aws.s3ConfirmSave(s3Res,screenShotInfo[l].s3Path)) {
-                              
-            //                   fs.unlink(screenShotInfo[l].uploadLocalPath,function(e){if(e){console.log(e);}});
-
-            //                   models.GuardianMetaScreenShot.create({
-            //                       guardian_id: dbGuardian.id,
-            //                       captured_at: screenShotInfo[l].timeStamp,
-            //                       size: screenShotInfo[l].size,
-            //                       sha1_checksum: screenShotInfo[l].sha1Hash,
-            //                       url: screenShotInfo[l].s3Path
-            //                     }).then(function(dbGuardianMetaScreenShot){
-            //                         // if all goes well, report it on the global object so we can tell at the end
-            //                         screenShotInfo[l].isSaved = true;
-            //                         screenShotInfo[l].screenshot_id = dbGuardianMetaScreenShot.guid;
-            //                         console.log("screenshot saved: "+screenShotInfo[l].timeStamp);
-            //                     }).catch(function(err){
-            //                       console.log("error saving screenshot: "+screenShotInfo[l].timeStamp+err);
-            //                     });
-            //                 }
-            //               }                        
-            //             }
-            //         });
-
-            //       } else {
-            //         // even if checksum fails, we still (at least for now) want
-            //         // to instruct to the guardian to delete the screenshot and move on
-            //         screenShotInfo[j].isSaved = true;
-            //         fs.unlink(screenShotInfo[j].uploadLocalPath,function(e){if(e){console.log(e);}});
-            //       }
-
-            //     }
-            // }
 
             // TO DO - move into helper method
             // add prefs instructions as set in database

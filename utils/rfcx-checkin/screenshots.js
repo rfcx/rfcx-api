@@ -7,7 +7,7 @@ var aws = require("../../utils/external/aws.js").aws();
 
 exports.screenshots = {
 
-  info: function(screenShotFiles, screenShotMeta, guardianId, checkInId) {
+  info: function(screenShotFiles, screenShotMeta, guardianId, guardianGuid, checkInId) {
 
     var screenShotInfo = {};
 
@@ -34,8 +34,8 @@ exports.screenshots = {
           isSaved: false,
           s3Path: "/screenshots/"+process.env.NODE_ENV
                    +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
-                   +"/"+guardianId
-                   +"/"+guardianId+"-"+dateString+".png"
+                   +"/"+guardianGuid
+                   +"/"+guardianGuid+"-"+dateString+".png"
         };
         console.log(screenShotInfo);
       }
