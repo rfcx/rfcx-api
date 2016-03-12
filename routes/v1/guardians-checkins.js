@@ -412,6 +412,7 @@ router.route("/:guardian_id/checkins")
               console.log("no audio files detected");
               dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
               dbCheckIn.save();
+              console.log(returnJson);
               res.status(200).json(returnJson);
             }
 
