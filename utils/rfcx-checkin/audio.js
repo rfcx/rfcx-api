@@ -4,7 +4,7 @@ var models  = require("../../models");
 
 exports.audio = {
 
-  info: function(audioFiles, audioMeta) {
+  info: function(audioFiles, audioMeta, guardianGuid, checkInGuid) {
 
     var audioInfo = {};
 
@@ -17,14 +17,30 @@ exports.audio = {
 
         for (i in audioFiles) {
 
-          var timeStampIndex = audioMeta[i][1]; 
-       //   audioMeta[i][1] = timeStampToDate(audioMeta[i][1], json.timezone_offset);
-      //    var dateString = audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-");
+          var timeStamp = audioMeta[i][1]; 
+          var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
 
-          console.log(audioMeta[i]);
-
-          // var timeStamp = screenShotFiles[i].originalname.substr(0,screenShotFiles[i].originalname.lastIndexOf(".png"));
-          // var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
+          audioInfo[timeStamp] = {
+            guardian_id: guardianGuid,
+            checkin_id: checkInGuid,
+            guardianSha1Hash: audioMeta[i][3],
+            uploadLocalPath: audioFiles[i].path,
+            unzipLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
+            size: null, // to be calculated following the uncompression
+            sha1Hash: null, // to be calculated following the uncompression
+            duration: null,
+            timeStamp: timeStamp,
+            measured_at: new Date(parseInt(timeStamp)),
+            api_token_guid: null,
+            api_token: null,
+            api_token_expires_at: null,
+            api_url: null,
+            isSaved: { db: false, s3: false, sqs: false },
+            s3Path: "/"+process.env.NODE_ENV
+                   +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
+                   +"/"+guardianGuid
+                   +"/"+guardianGuid+"-"+dateString+"."+audioMeta[i][2]
+          };
           
           // screenShotInfo[timeStamp] = {
           //   guardian_id: guardianId,
@@ -43,6 +59,8 @@ exports.audio = {
           //            +"/"+guardianGuid+"-"+dateString+".png"
           // };
           // console.log(screenShotInfo);
+
+
         }
 
 
