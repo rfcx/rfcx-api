@@ -37,7 +37,7 @@ exports.screenshots = {
                    +"/"+guardianGuid
                    +"/"+guardianGuid+"-"+dateString+".png"
         };
-        console.log(screenShotInfo);
+        //console.log(screenShotInfo);
       }
     }
     return screenShotInfo;

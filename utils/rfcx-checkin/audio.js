@@ -18,8 +18,8 @@ exports.audio = {
         for (i in audioFiles) {
 
           var timeStampIndex = audioMeta[i][1]; 
-          audioMeta[i][1] = timeStampToDate(audioMeta[i][1], json.timezone_offset);
-          var dateString = audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-");
+       //   audioMeta[i][1] = timeStampToDate(audioMeta[i][1], json.timezone_offset);
+      //    var dateString = audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-");
 
           console.log(audioMeta[i]);
 
@@ -58,20 +58,4 @@ exports.audio = {
 
 };
 
-
-function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
-
-  var asDate = null;
-
-  // PLEASE MODIFY LATER WHEN WE NO LONGER NEED TO SUPPORT LEGACY TIMESTAMPS !!!!!
-  if ((""+timeStamp).indexOf(":") > -1) {
-    // LEGACY TIMESTAMP FORMAT
-    asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
-  } else if (timeStamp != null) {
-    
-    asDate = new Date(parseInt(timeStamp));
-  
-  }
-  return asDate;
-}
 
