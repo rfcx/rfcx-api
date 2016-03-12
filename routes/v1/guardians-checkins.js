@@ -125,9 +125,19 @@ router.route("/:guardian_id/checkins")
 
 
             // parse, review and save audio
-            var audioInfo_PRE = checkInHelpers.audio.info(req.files.audio, strArrToJSArr(json.audio,"|","*"), dbGuardian.guid, dbCheckIn.guid);
-            console.log(audioInfo_PRE);
-      
+            var audioInfo_ = checkInHelpers.audio.info(req.files.audio, strArrToJSArr(json.audio,"|","*"), dbGuardian.guid, dbCheckIn.guid);
+            
+            // for (audioInfoInd in audioInfo_) {
+            //   checkInHelpers.audio.processUpload(audioInfo_[audioInfoInd])
+            //     .then(function(rtrnAudioInfo){
+
+            //       screenShotInfo[rtrnScreenShotInfo.origin_id] = rtrnScreenShotInfo;
+
+            //     });
+            // }
+
+
+
 
             // save audio files
             if (!!req.files.audio) {
