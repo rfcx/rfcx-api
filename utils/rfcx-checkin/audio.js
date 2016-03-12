@@ -6,7 +6,7 @@ var hash = require("../../utils/misc/hash.js").hash;
 
 exports.audio = {
 
-  info: function(audioFiles, audioMeta, guardianGuid, checkInGuid) {
+  info: function(audioFiles, audioMeta, dbGuardian, dbCheckIn) {
 
     var audioInfo = {};
 
@@ -17,20 +17,30 @@ exports.audio = {
         
       if (audioMeta.length == audioFiles.length) {
 
+        console.log(audioMeta);
+
         for (i in audioFiles) {
 
           var timeStamp = audioMeta[i][1]; 
           var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
 
           audioInfo[timeStamp] = {
-            guardian_id: guardianGuid,
-            checkin_id: checkInGuid,
+            guardian_id: dbGuardian.id,
+            guardian_guid: dbGuardian.guid
+            checkin_id: dbCheckIn.id,
+            checkin_guid: dbCheckIn.guid,
+            site_id: dbGuardian.site_id,
             guardianSha1Hash: audioMeta[i][3],
             uploadLocalPath: audioFiles[i].path,
             unzipLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
             size: null, // to be calculated following the uncompression
             sha1Hash: null, // to be calculated following the uncompression
+            
             duration: null,
+            capture_format: null,
+            capture_bitrate: null,
+            capture_sample_rate: null,
+
             timeStamp: timeStamp,
             measured_at: new Date(parseInt(timeStamp)),
             api_token_guid: null,
@@ -40,8 +50,8 @@ exports.audio = {
             isSaved: { db: false, s3: false, sqs: false },
             s3Path: "/"+process.env.NODE_ENV
                    +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
-                   +"/"+guardianGuid
-                   +"/"+guardianGuid+"-"+dateString+"."+audioMeta[i][2]
+                   +"/"+dbGuardian.guid
+                   +"/"+dbGuardian.guid+"-"+dateString+"."+audioMeta[i][2]
           };
           
         }
@@ -71,8 +81,7 @@ exports.audio = {
               // retrieve unzipped file size
               audioInfo.size = fs.statSync(audioInfo.unzipLocalPath).size;
 
-
-
+              resolve(audioInfo);
 
             } else {
               console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo.sha1Hash + " - " + audioInfo.guardianSha1Hash);
@@ -81,56 +90,34 @@ exports.audio = {
 
           });
 
-          // if (screenShotInfo.sha1Hash === screenShotInfo.guardianSha1Hash) {
-
-          //   aws.s3(process.env.ASSET_BUCKET_META).putFile(
-          //     screenShotInfo.uploadLocalPath, screenShotInfo.s3Path, 
-          //     function(err, s3Res){
-          //       try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
-          //       if (!!err) {
-          //         console.log(err);
-          //         reject(new Error(err));
-          //       } else if (200 == s3Res.statusCode) {
-
-          //         if (aws.s3ConfirmSave(s3Res,screenShotInfo.s3Path)) {
-                    
-          //           fs.unlink(screenShotInfo.uploadLocalPath,function(e){if(e){console.log(e);}});
-
-          //           models.GuardianMetaScreenShot.create({
-          //               guardian_id: screenShotInfo.guardian_id,
-          //               captured_at: screenShotInfo.timeStamp,
-          //               size: screenShotInfo.size,
-          //               sha1_checksum: screenShotInfo.sha1Hash,
-          //               url: screenShotInfo.s3Path
-          //             }).then(function(dbGuardianMetaScreenShot){
-          //                 // if all goes well, report it on the global object so we can tell at the end
-          //                 screenShotInfo.isSaved = true;
-          //                 screenShotInfo.screenshot_id = dbGuardianMetaScreenShot.guid;
-          //                 screenShotInfo.guid = dbGuardianMetaScreenShot.guid;
-          //                 resolve(screenShotInfo);
-          //                 console.log("screenshot saved: "+screenShotInfo.origin_id);
-          //             }).catch(function(err){
-          //               console.log("error saving screenshot to db: "+screenShotInfo.origin_id+", "+err);
-          //               reject(new Error(err));
-          //             });
-          //         }   
-
-          //       }
-          //   });
-
-          // } else {
-          //   console.log("screenshot checksum failed ("+screenShotInfo.origin_id+")");
-          //   // even if checksum fails, we still (at least for now) want
-          //   // to instruct to the guardian to delete the screenshot and move on
-          //   screenShotInfo.isSaved = true;
-          //   fs.unlink(screenShotInfo.uploadLocalPath,function(e){if(e){console.log(e);}});
-          //   resolve(screenShotInfo);
-          // }
-
         } catch(err) {
             console.log(err);
             reject(new Error(err));
         }
+    }.bind(this));
+  },
+
+  saveToDb: function(audioInfo) {
+    return new Promise(function(resolve, reject) {
+
+      models.GuardianAudio.create({
+        guardian_id: audioInfo.guardian_id,
+        site_id: audioInfo.site_id,
+        check_in_id: audioInfo.site_id,
+        sha1_checksum: audioInfo.sha1Hash,
+        url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
+        size: audioInfo.size,
+        duration: audioInfo.duration,
+        measured_at: audioInfo.measured_at
+      }).then(function(dbAudio){
+
+
+      }).catch(function(err){
+        console.log("error adding audio to database | "+err);
+//      dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
+//      models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo[j].sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
+        reject(new Error(err));
+      });     
     }.bind(this));
   }
 

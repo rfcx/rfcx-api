@@ -125,7 +125,7 @@ router.route("/:guardian_id/checkins")
 
 
             // parse, review and save audio
-            var audioInfo_ = checkInHelpers.audio.info(req.files.audio, strArrToJSArr(json.audio,"|","*"), dbGuardian.guid, dbCheckIn.guid);
+            var audioInfo_ = checkInHelpers.audio.info(req.files.audio, strArrToJSArr(json.audio,"|","*"), dbGuardian, dbCheckIn);
             
             // for (audioInfoInd in audioInfo_) {
             //   checkInHelpers.audio.processUpload(audioInfo_[audioInfoInd])
