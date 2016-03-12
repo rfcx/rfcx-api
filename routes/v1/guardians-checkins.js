@@ -415,13 +415,25 @@ router.route("/:guardian_id/checkins")
 
               console.log(messageInfo);
                                                   for (p in messageInfo) {
-                                                    if (messageInfo[p].isSaved) {
+                                      //              if (messageInfo[p].isSaved) {
                                                       returnJson.messages.push({
                                                         id: messageInfo[p].android_id,
                                                         guid: messageInfo[p].guid
                                                       });
-                                                    }         
+                                        //            }         
                                                   }
+
+
+              console.log(screenShotInfo);                           
+                                                  for (o in screenShotInfo) {
+                                          //          if (screenShotInfo[o].isSaved) {
+                                                      returnJson.screenshots.push({
+                                                        id: o,
+                                                        guid: screenShotInfo[o].screenshot_id
+                                                      });
+                                          //          }         
+                                                  }
+
                        console.log(returnJson) ;                     
               res.status(200).json(returnJson);
             }
