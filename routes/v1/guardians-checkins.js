@@ -412,7 +412,16 @@ router.route("/:guardian_id/checkins")
               console.log("no audio files detected");
               dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
               dbCheckIn.save();
-              console.log(returnJson);
+
+                                                  for (p in messageInfo) {
+                                                    if (messageInfo[p].isSaved) {
+                                                      returnJson.messages.push({
+                                                        id: messageInfo[p].android_id,
+                                                        guid: messageInfo[p].guid
+                                                      });
+                                                    }         
+                                                  }
+                       console.log(returnJson) ;                     
               res.status(200).json(returnJson);
             }
 
