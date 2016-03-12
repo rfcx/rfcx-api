@@ -26,7 +26,7 @@ exports.audioUtils = {
             ],
             outputOptions = (isEnhanced) ? enhancedOutputOptions : [];
         for (i in this.formats[format].outputOptions) { outputOptions.push(this.formats[format].outputOptions[i]); }
-            console.log(outputOptions);
+       //     console.log(outputOptions);
         return outputOptions;
     },
 
