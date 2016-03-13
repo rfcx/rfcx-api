@@ -26,7 +26,6 @@ exports.env = {
   RDS_PORT: 3306,
 
   NEW_RELIC_KEY: "",
-  CARTODB_KEY: "",
   MANDRILL_KEY: "",
 
   SEQUELIZE_VERBOSE: false
