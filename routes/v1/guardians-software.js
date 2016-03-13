@@ -47,7 +47,8 @@ router.route("/:guardian_id/software/:software_role")
                 models.GuardianMetaUpdateCheckIn
                   .create({
                     guardian_id: dbGuardian.id,
-                    version_id: dbSoftwareVersion.id
+                    version_id: dbSoftwareVersion.id,
+                    role_id: dbSoftware.id
                   }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
               }).catch(function(err){ });
           }).catch(function(err){ });
