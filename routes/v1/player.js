@@ -18,17 +18,17 @@ router.route("/login")
     if ((userInput.pswd == process.env.PLAYER_PASSWORD_ALT) || (userInput.pswd == process.env.PLAYER_PASSWORD)) {
 
       token.createAnonymousToken({
-        reference_tag: "player-web",
-        token_type: "player-web",
-        created_by: "player-web",
-        minutes_until_expiration: 360,
+        reference_tag: "stream-web",
+        token_type: "stream-web",
+        created_by: "stream-web",
+        minutes_until_expiration: 720,
         allow_garbage_collection: false,
         only_allow_access_to: [ 
           "^/v1/player/web",
           "^/v1/guardians/[012345678abcdef]{12}/audio.json$",
           "^/v1/sites/mbang/images.json",
           "^/v1/sites/tembe/images.json",
-          "^/v1/playlists/[012345678abcdef]{8}-[012345678abcdef]{4}-[012345678abcdef]{4}-[012345678abcdef]{4}-[012345678abcdef]{12}/audio.json$"
+          "^/v1/audio/[012345678abcdef]{8}-[012345678abcdef]{4}-[012345678abcdef]{4}-[012345678abcdef]{4}-[012345678abcdef]{12}/audio.json$"
           ]
       }).then(function(tokenInfo){
 
@@ -63,103 +63,49 @@ router.route("/web")
           streams: [
 
             {
-              name: "Amazon (LIVE)",
-              location: "",
+              type: "playlist",
+              shortname: "Amazon (Sundown)",
+              name: "Sundown, Tembé Indigenous Territory",
+              description: "Sundown, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+              timezone_offset: "UTC-03:00",
+              urls: {
+                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
+                      +"?starting_after=2016-03-12T21:46:00Z"
+                      +"&order=ascending",
+                slideshow: "/v1/sites/tembe/images.json"
+              }
+            },
+
+
+            {
+              type: "playlist",
+              shortname: "Amazon (Morning)",
+              name: "Afternoon, Tembé Indigenous Territory",
+              description: "Afternoon, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+              timezone_offset: "UTC-03:00",
+              urls: {
+                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
+                      +"?starting_after=2015-12-22T09:53:00Z"
+                      +"&order=ascending",
+                slideshow: "/v1/sites/tembe/images.json"
+              }
+            },
+
+
+            {
+              type: "stream",
+              shortname: "Amazon (LIVE)",
+              name: "Live Stream, Tembé Indigenous Territory",
+              description: "Live Stream, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+              timezone_offset: "UTC-03:00",
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json",
-                slideshow: "/v1/sites/mbang/images.json"
+                slideshow: "/v1/sites/tembe/images.json"
               }
             }
 
-          ],
-          
-          playlists: [
-
-            {
-              name: "Congo Basin",
-              location: "Mbang, Cameroon",
-              playlists: [
-
-                {
-                  name: "Sunrise",
-                  urls: {
-                    audio: "/v1/playlists/453e6376-d0b9-4ec9-8ebc-55bf336711a3.json",
-                    slideshow: "/v1/sites/mbang/images.json"
-                  }
-                },
-
-                {
-                  name: "Sunset",
-                  urls: {
-                    audio: "/v1/playlists/453e6376-d0b9-4ec9-8ebc-55bf336711a3.json",
-                    slideshow: "/v1/sites/mbang/images.json"
-                  }
-                },
-
-                {
-                  name: "Midnight",
-                  urls: {
-                    audio: "/v1/playlists/453e6376-d0b9-4ec9-8ebc-55bf336711a3.json",
-                    slideshow: "/v1/sites/mbang/images.json"
-                  }
-                }
-
-              ]
-            },
-
-
-            {
-              name: "Amazon (Brazil)",
-              location: "Tembé Territory, Brazil",
-              playlists: [
-
-                {
-                  name: "Sunrise",
-                  urls: {
-                    audio: "/v1/playlists/453e6376-d0b9-4ec9-8ebc-55bf336711a3.json",
-                    slideshow: "/v1/sites/tembe/images.json"
-                  }
-                },
-
-                {
-                  name: "Sunset",
-                  urls: {
-                    audio: "/v1/playlists/453e6376-d0b9-4ec9-8ebc-55bf336711a3.json",
-                    slideshow: "/v1/sites/tembe/images.json"
-                  }
-                },
-
-                {
-                  name: "Midnight",
-                  urls: {
-                    audio: "/v1/playlists/453e6376-d0b9-4ec9-8ebc-55bf336711a3.json",
-                    slideshow: "/v1/sites/tembe/images.json"
-                  }
-                },
-
-                {
-                  name: "Tembé Ceremony",
-                  urls: {
-                    audio: "/v1/playlists/453e6376-d0b9-4ec9-8ebc-55bf336711a3.json",
-                    slideshow: "/v1/sites/tembe/images.json"
-                  }
-                }
-
-              ]
-            },
-
-
-            {
-              name: "Amazon (Ecuador)",
-              location: "Cerro Blanco, Ecuador",
-              playlists: [
-              ]
-            }
-
-
-
-
           ]
+          
         });
 
 
