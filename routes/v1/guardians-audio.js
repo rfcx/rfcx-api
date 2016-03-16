@@ -20,12 +20,13 @@ router.route("/:guardian_id/audio")
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
+        var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
 
         models.GuardianAudio
           .findAll({ 
             where: dbQuery, 
             include: [ { all: true } ], 
-            order: [ [dateClmn, "DESC"] ],
+            order: [ [dateClmn, dbQueryOrder] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
           }).then(function(dbAudio){
