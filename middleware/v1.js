@@ -17,6 +17,8 @@ exports.middleware = {
     var paramAfter = (req.query.starting_after == null) ? null : (isNaN(Number(req.query.starting_after))) ? (new Date(""+req.query.starting_after)) : (new Date(parseInt(req.query.starting_after)));
     var paramBefore = (req.query.ending_before == null) ? null : (isNaN(Number(req.query.ending_before))) ? (new Date(""+req.query.ending_before)) : (new Date(parseInt(req.query.ending_before)));
 
+    var paramOrder = (req.query.order == null) ? null : ((req.query.order.toLowerCase() == "ascending") ? "ASC" : "DESC");
+
     var contentType = path.extname(req.path).trim().substr(1);    
     if (contentType.trim().length == 0) { contentType = "json"; }
     var urlPath = "/v1"+url.parse(req.url).pathname;
@@ -41,6 +43,7 @@ exports.middleware = {
       offset: paramOffset,
       starting_after: paramAfter,
       ending_before: paramBefore,
+      order: paramOrder,
       content_type: contentType,
       auth_user: authUser
     };
