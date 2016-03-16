@@ -68,6 +68,38 @@ exports.models = {
         });
 
   },
+
+// TEST
+  TEMP_WAV_guardianAudioFile: function(req,res,dbRows) {
+
+    var dbRow = dbRows;
+
+    audioUtils.cacheSourceAudio(dbRow.url)
+      .then(function(sourceFilePath){
+          audioUtils.transcodeToWavFile({
+              sourceFilePath: sourceFilePath,
+              sampleRate: dbRow.capture_sample_rate
+            }).then(function(outputFilePath){
+
+              res.status(200).json({file:outputFilePath});
+              fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+
+              // audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".wav")
+              //   .then(function(){
+              //     fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+              //   }).catch(function(err){
+              //     console.log(err);
+              //   });
+
+            }).catch(function(err){
+              console.log(err);
+            });
+        }).catch(function(err){
+          console.log(err);
+          res.status(500).json({msg:"failed to transcode audio"});
+        });
+
+  },
 // TEST
   TEMP_OGG_guardianAudioFile: function(req,res,dbRows) {
 

@@ -13,6 +13,10 @@ exports.audioUtils = {
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
             outputOptions: [ "-compression_level 10", "-application audio", "-vbr on" ]
         },
+        wav: { 
+            extension: "wav", codec: null, outputFormat: "wav", mime: "audio/wav",
+            outputOptions: []
+        },
         aac: { // this one needs some attention...
             extension: "m4a", codec: "libfdk_aac", outputFormat: "aac", mime: "audio/mp4",
             outputOptions: []
@@ -34,7 +38,6 @@ exports.audioUtils = {
         return new Promise(function(resolve, reject) {
             try {
                 if (fs.existsSync(inputParams.sourceFilePath)) {
-                    var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"."+this.formats.mp3.extension;
                     resolve(
                         new ffmpeg(inputParams.sourceFilePath)
                             .input(inputParams.sourceFilePath)
@@ -44,9 +47,9 @@ exports.audioUtils = {
                             .audioFrequency(inputParams.sampleRate)
                             .audioChannels((inputParams.enhanced) ? 2 : 1)
                             .audioBitrate(inputParams.bitRate)
-                        .on("error",function(err,stdout,stderr){
-                            console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                        })
+                            .on("error",function(err,stdout,stderr){
+                                console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                            })
                     );  
                     
                 } else {
@@ -65,7 +68,6 @@ exports.audioUtils = {
         return new Promise(function(resolve, reject) {
             try {
                 if (fs.existsSync(inputParams.sourceFilePath)) {
-                    var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"."+this.formats.opus.extension;
                     resolve(
                         new ffmpeg(inputParams.sourceFilePath)
                             .input(inputParams.sourceFilePath)
@@ -75,9 +77,9 @@ exports.audioUtils = {
                             .audioFrequency(inputParams.sampleRate)
                             .audioChannels((inputParams.enhanced) ? 2 : 1)
                             .audioBitrate(inputParams.bitRate)
-                        .on("error",function(err,stdout,stderr){
-                            console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                        })
+                            .on("error",function(err,stdout,stderr){
+                                console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                            })
                     );  
                     
                 } else {
@@ -87,6 +89,38 @@ exports.audioUtils = {
 
             } catch(err) {
                 console.log("failed to transcode audio to opus | " + err);
+                reject(new Error(err));
+            }
+        }.bind(this));
+    },
+
+    transcodeToWavFile: function(inputParams) {
+        return new Promise(function(resolve, reject) {
+            try {
+                if (fs.existsSync(inputParams.sourceFilePath)) {
+                    var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"."+this.formats.wav.extension;
+                    
+                    new ffmpeg(inputParams.sourceFilePath)
+                        .input(inputParams.sourceFilePath)
+                        .inputOptions("-flags +bitexact")
+                        .outputOptions(this.transcodingOutputOptions("wav",inputParams.enhanced))
+                        .outputFormat(this.formats.wav.outputFormat)
+                        .audioFrequency(inputParams.sampleRate)
+                        .save(transcodedFilePath)
+                        .on("error",function(err,stdout,stderr){
+                            console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                        })
+                        .on("end",function(){
+                            resolve(transcodedFilePath);
+                        });
+                    
+                } else {
+                    console.log("failed to locate source audio | " + err);
+                    reject(new Error(err));
+                }              
+
+            } catch(err) {
+                console.log("failed to transcode audio to wav | " + err);
                 reject(new Error(err));
             }
         }.bind(this));
