@@ -46,7 +46,8 @@ var routes = {
     "sites":  [ require("./routes/v1/sites"),
                 require("./routes/v1/sites-audio"),
                 require("./routes/v1/sites-guardians"),
-                require("./routes/v1/sites-events") 
+                require("./routes/v1/sites-events"),
+                require("./routes/v1/sites-images") 
               ],
     "audio": [  require("./routes/v1/audio") ],
     "checkins": [ require("./routes/v1/checkins") ],
