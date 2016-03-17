@@ -85,7 +85,23 @@ router.route("/web")
               description: "Afternoon, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
               location: "Amazon, Pará, Brazil",
               timezone_offset: -3,
-              flickr_photoset_id: "72157644507563608",
+              flickr_photoset_id: "72157637624534696",
+              urls: {
+                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
+                      +"?starting_after=2015-12-22T09:53:00Z"
+                      +"&order=ascending"
+              }
+            },
+
+
+            {
+              type: "playlist",
+              shortname: "Amazon (Midnight)",
+              name: "Midnight, Tembé Indigenous Territory",
+              description: "Midnight, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+              location: "Amazon, Pará, Brazil",
+              timezone_offset: -3,
+              flickr_photoset_id: "72157637625796744",
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2015-12-22T09:53:00Z"
@@ -101,7 +117,7 @@ router.route("/web")
               description: "Live Stream, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
               location: "Amazon, Pará, Brazil",
               timezone_offset: -3,
-              flickr_photoset_id: "72157644507563608",
+              flickr_photoset_id: "72157637623902166",
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
               }
