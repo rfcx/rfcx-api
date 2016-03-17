@@ -381,7 +381,7 @@ router.route("/:guardian_id/checkins")
                                                   }
 
                        console.log(returnJson) ;                     
-              res.status(200).json(returnJson);
+              res.status(403).json(returnJson);
             }
 
           }).catch(function(err){
