@@ -69,11 +69,11 @@ router.route("/web")
               description: "Sundown, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
               location: "Amazon, Pará, Brazil",
               timezone_offset: -3,
+              flickr_photoset_id: "72157644507563608",
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2016-03-12T21:46:00Z"
-                      +"&order=ascending",
-                slideshow: "/v1/sites/tembe/images.json"
+                      +"&order=ascending"
               }
             },
 
@@ -85,11 +85,11 @@ router.route("/web")
               description: "Afternoon, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
               location: "Amazon, Pará, Brazil",
               timezone_offset: -3,
+              flickr_photoset_id: "72157644507563608",
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2015-12-22T09:53:00Z"
-                      +"&order=ascending",
-                slideshow: "/v1/sites/tembe/images.json"
+                      +"&order=ascending"
               }
             },
 
@@ -101,9 +101,9 @@ router.route("/web")
               description: "Live Stream, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
               location: "Amazon, Pará, Brazil",
               timezone_offset: -3,
+              flickr_photoset_id: "72157644507563608",
               urls: {
-                audio: "/v1/guardians/0bdbb4a5d567/audio.json",
-                slideshow: "/v1/sites/tembe/images.json"
+                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
               }
             }
 
