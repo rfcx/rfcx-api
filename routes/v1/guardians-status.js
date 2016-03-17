@@ -19,6 +19,8 @@ router.route("/:guardian_id/status")
             queryHelpers.guardianStatusAudio.allCoverage(dbGuardian.id, 3).then(function(coverageResult){
             queryHelpers.guardianStatusMeta.allTotalDataTransfer(dbGuardian.id, 3).then(function(dataTransferResult){
 
+            queryHelpers.guardianStatusCheckIns.checkInSummary(dbGuardian.id, 3).then(function(checkInSummaryResult){
+
                 res.status(200).json({
                     guardian: {
 
@@ -28,9 +30,12 @@ router.route("/:guardian_id/status")
                     },
                     meta: {
                         data_transfer: dataTransferResult
-                    }
+                    },
+                    checkins: checkInSummaryResult.checkins
                 });
 
+            });
+            
             });
             });
 
