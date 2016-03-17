@@ -22,14 +22,17 @@ router.route("/:guardian_id/software/:software_role")
     var inquiringSoftwareRole = req.query.role;
     var inquiringSoftwareVersion = req.query.version;
 
+    var inquiringGuardianBattery = req.query.battery;
+    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp));
+
     models.Guardian
       .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
-        dbGuardian.last_update_check_in = new Date();
-        dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
-        dbGuardian.save();
+        // dbGuardian.last_update_check_in = new Date();
+        // dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
+        // dbGuardian.save();
 
         models.GuardianSoftware
           .findOne({
@@ -49,9 +52,22 @@ router.route("/:guardian_id/software/:software_role")
                     guardian_id: dbGuardian.id,
                     version_id: dbSoftwareVersion.id,
                     role_id: dbSoftware.id
-                  }).then(function(dbGuardianMetaUpdateCheckIn){ }).catch(function(err){ });
-              }).catch(function(err){ });
-          }).catch(function(err){ });
+                  }).then(function(dbGuardianMetaUpdateCheckIn){
+
+                    models.GuardianMetaBattery.create({
+                        guardian_id: dbGuardian.id,
+                        check_in_id: null,
+                        measured_at: inquiringGuardianTimeStamp,
+                        battery_percent: inquiringGuardianBattery,
+                        battery_temperature: null
+                      }).then(function(dbGuardianMetaBattery){
+
+                        // done saving meta data
+
+                      }).catch(function(err){ /*console.log(err);*/ });
+                  }).catch(function(err){ /*console.log(err);*/ });
+              }).catch(function(err){ /*console.log(err);*/ });
+          }).catch(function(err){ /*console.log(err);*/ });
       
 
         var dbQuery = { is_available: true };
