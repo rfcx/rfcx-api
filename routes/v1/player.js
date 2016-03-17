@@ -67,7 +67,8 @@ router.route("/web")
               shortname: "Amazon (Sundown)",
               name: "Sundown, Tembé Indigenous Territory",
               description: "Sundown, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
-              timezone_offset: "UTC-03:00",
+              location: "Amazon, Pará, Brazil"
+              timezone_offset: -3,
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2016-03-12T21:46:00Z"
@@ -82,7 +83,8 @@ router.route("/web")
               shortname: "Amazon (Morning)",
               name: "Afternoon, Tembé Indigenous Territory",
               description: "Afternoon, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
-              timezone_offset: "UTC-03:00",
+              location: "Amazon, Pará, Brazil"
+              timezone_offset: -3,
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2015-12-22T09:53:00Z"
@@ -97,7 +99,8 @@ router.route("/web")
               shortname: "Amazon (LIVE)",
               name: "Live Stream, Tembé Indigenous Territory",
               description: "Live Stream, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
-              timezone_offset: "UTC-03:00",
+              location: "Amazon, Pará, Brazil"
+              timezone_offset: -3,
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json",
                 slideshow: "/v1/sites/tembe/images.json"
