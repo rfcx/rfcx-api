@@ -35,6 +35,13 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
       }
+    },
+    flickr_photoset_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
     }
   }, {
     classMethods: {

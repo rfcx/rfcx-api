@@ -20,6 +20,7 @@ exports.models = {
         name: dbRow.name,
         description: dbRow.description,
         cartodb_map_id: dbRow.cartodb_map_id,
+        flickr_photoset_id: dbRow.flickr_photoset_id,
         is_active: dbRow.is_active
       };
 
