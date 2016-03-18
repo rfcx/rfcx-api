@@ -36,7 +36,7 @@ exports.audio = {
             
             duration: (audioMeta[i][7] != null) ? parseInt(audioMeta[i][7]) : null,
             capture_format: null,
-            capture_bitrate: (audioMeta[i][5] != null) ? parseInt(audioMeta[i][5]) : null,,
+            capture_bitrate: (audioMeta[i][5] != null) ? parseInt(audioMeta[i][5]) : null,
             capture_sample_rate: (audioMeta[i][4] != null) ? parseInt(audioMeta[i][4]) : null,
 
             timeStamp: timeStamp,
