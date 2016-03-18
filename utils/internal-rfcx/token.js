@@ -99,7 +99,7 @@ exports.token = {
       }
 
       if (  allow_garbage_collection
-        &&  (Math.random() < 0.1 ? true : false) // only do garbage collection ~10% of the time it's allowed
+        &&  (Math.random() < 0.01 ? true : false) // only do garbage collection ~1% of the time it's allowed
         ) {
         this.destroyExpiredTokens(what_kind_of_token);
       }
