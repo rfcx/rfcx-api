@@ -34,7 +34,7 @@ exports.audio = {
             size: null, // to be calculated following the uncompression
             sha1Hash: null, // to be calculated following the uncompression
             
-            duration: null,
+            duration: (audioMeta[i][7] != null) ? parseInt(audioMeta[i][7]) : null,
             capture_format: null,
             capture_bitrate: null,
             capture_sample_rate: null,
