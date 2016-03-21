@@ -13,9 +13,13 @@ router.route("/login")
 
     var userInput = {
       email: (req.body.email != null) ? req.body.email.toLowerCase() : null,
-      pswd: req.body.password,
-      extended_session: (req.body.extended_session != null) ? req.body.extended_session : false
+      pswd: req.body.password
     };
+    
+    var loginExpirationInMinutes = 1440; // 1 day (24 hours)
+    if ((req.body.extended_session != null) && (parseInt(req.body.extended_session) == 1)) {
+      loginExpirationInMinutes = 5760; // 4 days
+    }
 
     models.User 
       .findOne({
@@ -36,7 +40,7 @@ router.route("/login")
             created_by: req.rfcx.url_path,
             reference_tag: dbUser.guid,
             owner_primary_key: dbUser.id,
-            minutes_until_expiration: 1440
+            minutes_until_expiration: loginExpirationInMinutes
           }).then(function(tokenInfo){
 
             dbUser.VisibleToken = {
@@ -76,6 +80,7 @@ router.route("/register")
       email: req.body.email.toLowerCase(),
       pswd: req.body.password
     };
+    var loginExpirationInMinutes = 1440;
 
     models.User 
       .findOrCreate({
@@ -101,7 +106,7 @@ router.route("/register")
             created_by: req.rfcx.url_path,
             reference_tag: dbUser.guid,
             owner_primary_key: dbUser.id,
-            minutes_until_expiration: 1440
+            minutes_until_expiration: loginExpirationInMinutes
           }).then(function(tokenInfo){
 
             dbUser.VisibleToken = {
