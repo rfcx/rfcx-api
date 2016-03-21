@@ -13,7 +13,8 @@ router.route("/login")
 
     var userInput = {
       email: (req.body.email != null) ? req.body.email.toLowerCase() : null,
-      pswd: req.body.password
+      pswd: req.body.password,
+      extended_session: (req.body.extended_session != null) ? req.body.extended_session : false
     };
 
     models.User 
