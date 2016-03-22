@@ -74,6 +74,7 @@ router.route("/web")
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2016-03-12T21:49:00Z"
                       +"&order=ascending"
+                      +"&limit=3"
               }
             },
 
@@ -90,6 +91,7 @@ router.route("/web")
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2015-12-22T09:53:00Z"
                       +"&order=ascending"
+                      +"&limit=3"
               }
             },
 
@@ -106,6 +108,7 @@ router.route("/web")
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
                       +"?starting_after=2016-03-16T03:15:00Z"
                       +"&order=ascending"
+                      +"&limit=3"
               }
             },
 
