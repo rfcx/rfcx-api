@@ -13,6 +13,7 @@ exports.audioUtils = {
                   "Content-Type": getAudioFormatMeta()[fileName.substr(fileName.lastIndexOf(".")+1)].mime,
                   //"Content-Length": contentLength,
                   //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+                  "Cache-Control": "max-age=600",
                   "Content-Disposition": "filename="+fileName
                 });
 
