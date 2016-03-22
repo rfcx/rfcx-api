@@ -52,7 +52,7 @@ function initializeSequelize() {
 
 function setupTmpDirectory() {
   
-  var tmpDir = process.cwd()+"/tmp";
+  var tmpDir = process.env.CACHE_DIRECTORY;
   if (!fs.existsSync(tmpDir)) { fs.mkdirSync(tmpDir); }
 
   try {
@@ -111,30 +111,6 @@ function setupTmpDirectory() {
         }); 
       });
     } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
-  } catch(err) {
-    console.error(err);
-  }
-
-  try {
-    if (fs.existsSync(process.env.UPLOAD_CACHE_DIRECTORY)) {
-      fs.readdir(process.env.UPLOAD_CACHE_DIRECTORY, function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(process.env.UPLOAD_CACHE_DIRECTORY+innerFileName,function(err){ if (err) console.log(err); });
-        }); 
-      });
-    } else { fs.mkdirSync(process.env.UPLOAD_CACHE_DIRECTORY); }
-  } catch(err) {
-    console.error(err);
-  }
-
-  try {
-    if (fs.existsSync(process.env.FFMPEG_CACHE_DIRECTORY)) {
-      fs.readdir(process.env.FFMPEG_CACHE_DIRECTORY, function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(process.env.FFMPEG_CACHE_DIRECTORY+innerFileName,function(err){ if (err) console.log(err); });
-        }); 
-      });
-    } else { fs.mkdirSync(process.env.FFMPEG_CACHE_DIRECTORY); }
   } catch(err) {
     console.error(err);
   }

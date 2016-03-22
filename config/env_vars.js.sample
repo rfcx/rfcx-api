@@ -2,9 +2,8 @@ exports.env = {
 
   NODE_ENV: "development",
 
-  UPLOAD_CACHE_DIRECTORY: process.cwd()+"/tmp/uploads/",
+  CACHE_DIRECTORY: process.cwd()+"/tmp/",
 
-  FFMPEG_CACHE_DIRECTORY: process.cwd()+"/tmp/ffmpeg/",
   FFMPEG_PATH: "/usr/bin/ffmpeg",
   SOX_PATH: "/usr/bin/sox",
 

@@ -137,8 +137,8 @@ exports.models = {
         s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
         s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
         audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
-        audioFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+"."+audioFileExtension,
-        specFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+".png",
+        audioFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+"."+audioFileExtension,
+        specFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+".png",
         specSettings = { 
           specWidth: 2048, specHeight: 512, 
           windowFunc: "Dolph", // Hann Hamming Bartlett Rectangular Kaiser Dolph

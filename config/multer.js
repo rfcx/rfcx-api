@@ -2,7 +2,7 @@
 exports.config = function(processEnv){
   return {
 
-    dest: process.env.UPLOAD_CACHE_DIRECTORY
+    dest: process.env.CACHE_DIRECTORY+"uploads/"
   
   };
 }

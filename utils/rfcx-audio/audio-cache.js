@@ -15,7 +15,7 @@ exports.audioUtils = {
 
                     hashName = hash.randomString(32),
                     audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
-                    sourceFilePath = process.env.FFMPEG_CACHE_DIRECTORY+hashName+"."+audioFileExtension;
+                    sourceFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+"."+audioFileExtension;
 
                 aws.s3(s3Bucket).get(s3Path)
                   .on("response", function(s3Res){
