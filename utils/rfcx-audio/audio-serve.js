@@ -41,13 +41,13 @@ exports.audioUtils = {
                 res.writeHead(200, {
                   "Content-Type": getAudioFormatMeta()[fileName.substr(fileName.lastIndexOf(".")+1)].mime,
                   "Content-Length": contentLength,
-                  "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+         //         "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
                   "Cache-Control": "max-age=600",
                   "Content-Disposition": "filename="+fileName
                 });
 
                 var audioFileStream = fs.createReadStream(filePathToServe);
-                
+
                 audioFileStream
                   .on("end",function(){
                     res.end();
