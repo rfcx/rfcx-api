@@ -47,15 +47,15 @@ exports.models = {
 
     audioUtils.cacheSourceAudio(dbRow.url)
       .then(function(sourceFilePath){
-          audioUtils.transcodeToMP3({
+          audioUtils.transcodeToMp3File({
               sourceFilePath: sourceFilePath,
               enhanced: true,
               bitRate: "32k",
               sampleRate: dbRow.capture_sample_rate
-            }).then(function(ffmpegObj){
-              audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".mp3")
+            }).then(function(outputFilePath){
+              audioUtils.serveTranscodedAudioFromFile(res,outputFilePath,dbRow.guid+".mp3")
                 .then(function(){
-                  fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+                  // should we do/log anything if we're successful?
                 }).catch(function(err){
                   console.log(err);
                 });

@@ -120,7 +120,42 @@ exports.audioUtils = {
                 }              
 
             } catch(err) {
-                console.log("failed to transcode audio to wav | " + err);
+                console.log("failed to transcode audio to wav file | " + err);
+                reject(new Error(err));
+            }
+        }.bind(this));
+    },
+
+    transcodeToMp3File: function(inputParams) {
+        return new Promise(function(resolve, reject) {
+            try {
+                if (fs.existsSync(inputParams.sourceFilePath)) {
+                    var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"."+this.formats.mp3.extension;
+                    
+                    new ffmpeg(inputParams.sourceFilePath)
+                        .input(inputParams.sourceFilePath)
+                        .outputOptions(this.transcodingOutputOptions("mp3",inputParams.enhanced))
+                        .outputFormat(this.formats.mp3.outputFormat)
+                        .audioCodec(this.formats.mp3.codec)
+                        .audioFrequency(inputParams.sampleRate)
+                        .audioChannels((inputParams.enhanced) ? 2 : 1)
+                        .audioBitrate(inputParams.bitRate)
+                        .save(transcodedFilePath)
+                        .on("error",function(err,stdout,stderr){
+                            console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                        })
+                        .on("end",function(){
+                            fs.unlink(inputParams.sourceFilePath,function(e){if(e){console.log(e);}});
+                            resolve(transcodedFilePath);
+                        });
+                    
+                } else {
+                    console.log("failed to locate source audio | " + err);
+                    reject(new Error(err));
+                }              
+
+            } catch(err) {
+                console.log("failed to transcode audio to mp3 file | " + err);
                 reject(new Error(err));
             }
         }.bind(this));
