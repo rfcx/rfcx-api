@@ -14,7 +14,7 @@
     "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
   "dependencies": {
-    "aws-sdk": "^2.2.43",
+    "aws-sdk": "^2.2.46",
     "bluebird": "^2.10.2",
     "body-parser": "^1.15.0",
     "cors": "^2.7.1",
@@ -28,11 +28,11 @@
     "morgan": "^1.7.0",
     "multer": "^0.1.8",
     "mysql": "^2.10.2",
-    "newrelic": "^1.25.5",
+    "newrelic": "^1.26.0",
     "passport": "^0.2.2",
     "passport-accesstoken": "^0.1.0",
     "passport-local": "^1.0.0",
-    "sequelize": "^3.19.3",
+    "sequelize": "^3.20.0",
     "sequelize-cli": "^1.9.2",
     "serve-favicon": "^2.3.0",
     "sha.js": "^2.4.5"
