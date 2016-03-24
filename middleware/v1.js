@@ -7,7 +7,8 @@ exports.middleware = {
 
     var requestStartTime = (new Date()).valueOf();
 
-    var apiUrlDomain = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol)+"://"+req.headers.host;
+    var apiUrlProtocol = ((req.headers["x-forwarded-proto"] != null) ? req.headers["x-forwarded-proto"] : req.protocol);
+    var apiUrlDomain = apiUrlProtocol+"://"+req.headers.host;
     
     var paramLimit = (req.query.limit == null) ? 20 : parseInt(req.query.limit);
     if (paramLimit > 400) { paramLimit = 400; } else if (paramLimit < 1) { paramLimit = 1; }
@@ -36,6 +37,7 @@ exports.middleware = {
 
     req.rfcx = {
       request_start_time: requestStartTime,
+      api_url_protocol: apiUrlProtocol,
       api_url_domain: apiUrlDomain,
       api_version: apiVersion,
       url_path: urlPath,
@@ -50,5 +52,23 @@ exports.middleware = {
 
     next();
   },
+
+  insecureRequestFilter: function(req, res, next) {
+
+    // var allowedOverInsecureConnection = [
+    //   "/v1/shortlinks/"
+    // ];
+
+    if (    (process.env.NODE_ENV === "production") 
+        &&  (req.rfcx.api_url_protocol === "http")
+        &&  (req.rfcx.url_path.indexOf("/v1/shortlinks/") !== 0)
+        ) {
+
+        console.log("this would be redirected: "+req.headers.host+" - "+req.rfcx.url_path);
+    } 
+
+    next();
+  
+  }
 
 }
