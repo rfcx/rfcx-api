@@ -61,11 +61,12 @@ exports.middleware = {
 
     if (    (process.env.NODE_ENV === "production") 
         &&  (req.rfcx.api_url_protocol === "http")
-        &&  (req.rfcx.url_path.indexOf("/v1/shortlinks/") !== 0)
+//        &&  (req.rfcx.url_path.indexOf("/v1/shortlinks/") !== 0)
         ) {
 
-        console.log("this would be redirected: "+req.headers.host+" - "+req.rfcx.url_path);
-    } 
+        console.log("HTTP request in production: "+req.headers.host+" - "+req.rfcx.url_path);
+    }
+
 
     next();
   
