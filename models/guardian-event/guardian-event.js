@@ -22,7 +22,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     begins_at_analysis: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
@@ -30,7 +30,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     begins_at_reviewer: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
@@ -66,7 +66,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     reviewed_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
         isDate: true

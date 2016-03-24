@@ -3,7 +3,7 @@ module.exports = function(sequelize, DataTypes) {
   var GuardianMetaSoftwareVersion = sequelize.define('GuardianMetaSoftwareVersion', {
 
     last_checkin_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {

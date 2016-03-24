@@ -7,14 +7,14 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.UUIDV4
     },
     received_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
         isDate: true
       }
     },
     sent_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
         isDate: true

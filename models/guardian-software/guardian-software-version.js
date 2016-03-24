@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     release_date: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true

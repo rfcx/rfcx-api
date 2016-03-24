@@ -2,7 +2,7 @@
 module.exports = function(sequelize, DataTypes) {
   var GuardianMetaLightMeter = sequelize.define('GuardianMetaLightMeter', {
     measured_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       validate: {
         isDate: true
       }

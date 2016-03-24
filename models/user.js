@@ -35,7 +35,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     last_login_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
@@ -56,7 +56,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     auth_password_updated_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true

@@ -72,7 +72,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     last_check_in: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
@@ -87,7 +87,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     last_update_check_in: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
@@ -116,14 +116,14 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     auth_token_updated_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
       }
     },
     auth_token_expires_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true

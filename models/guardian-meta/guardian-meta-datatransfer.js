@@ -2,13 +2,13 @@
 module.exports = function(sequelize, DataTypes) {
   var GuardianMetaDataTransfer = sequelize.define('GuardianMetaDataTransfer', {
     started_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       validate: {
         isDate: true
       }
     },
     ended_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       validate: {
         isDate: true
       }

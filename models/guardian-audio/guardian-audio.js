@@ -8,20 +8,20 @@ module.exports = function(sequelize, DataTypes) {
       unique: true
     },
     measured_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: true
       }
     },
     analyzed_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       validate: {
         isDate: true
       }
     },
     analysis_queued_at: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATE(3),
       validate: {
         isDate: true
       }
