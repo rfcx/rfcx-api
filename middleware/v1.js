@@ -53,22 +53,19 @@ exports.middleware = {
     next();
   },
 
-  insecureRequestFilter: function(req, res, next) {
+  insecureRequestRedirect: function(req, res, next) {
 
-    var allowedOverInsecureConnection = [
-      "rf.cx"
-    ];
+    var allowedOverInsecureConnection = [ "rf.cx" ];
 
     if (    (process.env.NODE_ENV === "production") 
         &&  (req.rfcx.api_url_protocol === "http")
         &&  (allowedOverInsecureConnection.indexOf(req.headers.host) < 0)
         ) {
-      res.status(200).json({ error: "must be accessed over https" });
-//        console.log("HTTP request in production: "+req.headers.host+" - "+req.rfcx.url_path);
+          res.redirect("https://"+req.headers.host+req.rfcx.url_path);
+    } else {
+
+      next();      
     }
-
-
-    next();
   
   }
 
