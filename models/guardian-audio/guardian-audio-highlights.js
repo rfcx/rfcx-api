@@ -1,0 +1,63 @@
+"use strict";
+
+module.exports = function(sequelize, DataTypes) {
+  var GuardianAudioHighlight = sequelize.define("GuardianAudioHighlight", {
+    guid: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      unique: true
+    },
+    begins_at: {
+      type: DataTypes.DATE(3),
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
+    label: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    }
+  }, {
+    classMethods: {
+      associate: function(models) {
+
+        GuardianAudioHighlight.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianAudioHighlight.belongsTo(models.GuardianSite, {as: 'Site'});
+      },
+      indexes: [
+        {
+          unique: true,
+          fields: ["guid"]
+        }
+      ]
+    },
+    tableName: "GuardianAudioHighlights"
+  });
+
+  return GuardianAudioHighlight;
+};

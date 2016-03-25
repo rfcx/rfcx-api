@@ -26,8 +26,6 @@ router.route("/login")
         only_allow_access_to: [ 
           "^/v1/player/web",
           "^/v1/guardians/[012345678abcdef]{12}/audio.json$",
-          "^/v1/sites/mbang/images.json",
-          "^/v1/sites/tembe/images.json",
           "^/v1/audio/[012345678abcdef]{8}-[012345678abcdef]{4}-[012345678abcdef]{4}-[012345678abcdef]{4}-[012345678abcdef]{12}/audio.json$"
           ]
       }).then(function(tokenInfo){
@@ -65,14 +63,14 @@ router.route("/web")
             {
               type: "playlist",
               shortname: "Amazon (Sundown)",
-              name: "Sundown, Tembé Indigenous Territory",
-              description: "Sundown, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+              name: "Nightfall, Tembé Indigenous Territory",
+              description: "Nightfall, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
               location: "Amazon, Pará, Brazil",
               timezone_offset: -3,
               flickr_photoset_id: "72157644507563608",
               urls: {
                 audio: "/v1/guardians/0bdbb4a5d567/audio.json"
-                      +"?starting_after=2016-03-12T21:49:00Z"
+                      +"?starting_after=2016-03-22T01:15:00Z"
                       +"&order=ascending"
                       +"&limit=3"
               }
