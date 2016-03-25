@@ -61,39 +61,15 @@ router.route("/web")
     models.GuardianAudioHighlight
       .findAll({ 
         where: { group: "web-player" },
-        include: [ { all: true } ]/*, 
-        order: [ [dateClmn, dbQueryOrder] ]*/
+        include: [ { all: true } ], 
+        order: [ ["id", "ASC"] ]
       }).then(function(dbAudioHighlights){
 
-        // var dbQuery = { guardian_id: dbGuardian.id };
-        // var dateClmn = "measured_at";
-        // if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
-        // if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
-        // if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
-        // var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
-
-        // models.GuardianAudio
-        //   .findAll({ 
-        //     where: dbQuery, 
-        //     include: [ { all: true } ], 
-        //     order: [ [dateClmn, dbQueryOrder] ],
-        //     limit: req.rfcx.limit,
-        //     offset: req.rfcx.offset
-        //   }).then(function(dbAudio){
-
-            if (dbAudioHighlights.length < 1) {
-              httpError(res, 404, "database");
-            } else {
-              
-               // .then(function(json){ 
-                  res.status(200).json(views.models.guardianAudioHighlights(req,res,dbAudioHighlights));
-             //   });
-            }
-
-        // }).catch(function(err){
-        //   console.log("failed to return audio | "+err);
-        //   if (!!err) { res.status(500).json({msg:"failed to return audio"}); }
-        // });
+        if (dbAudioHighlights.length < 1) {
+          httpError(res, 404, "database");
+        } else {
+          res.status(200).json({ streams: views.models.guardianAudioHighlights(req,res,dbAudioHighlights) });
+        }
 
       }).catch(function(err){
         console.log("failed to find guardian audio highlights | "+err);
