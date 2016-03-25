@@ -7,6 +7,20 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.UUIDV4,
       unique: true
     },
+    group: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    type: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
     begins_at: {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,

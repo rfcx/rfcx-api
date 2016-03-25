@@ -56,77 +56,122 @@ router.route("/login")
 router.route("/web")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
-        res.status(200).json({
-
-          streams: [
-
-            {
-              type: "playlist",
-              shortname: "Amazon (Sundown)",
-              name: "Nightfall, Tembé Indigenous Territory",
-              description: "Nightfall, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
-              location: "Amazon, Pará, Brazil",
-              timezone_offset: -3,
-              flickr_photoset_id: "72157666271579426",
-              urls: {
-                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
-                      +"?starting_after=2016-03-22T01:15:00Z"
-                      +"&order=ascending"
-                      +"&limit=3"
-              }
-            },
 
 
-            {
-              type: "playlist",
-              shortname: "Amazon (Morning)",
-              name: "Afternoon, Tembé Indigenous Territory",
-              description: "Afternoon, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
-              location: "Amazon, Pará, Brazil",
-              timezone_offset: -3,
-              flickr_photoset_id: "72157666271579426",
-              urls: {
-                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
-                      +"?starting_after=2015-12-22T09:53:00Z"
-                      +"&order=ascending"
-                      +"&limit=3"
-              }
-            },
+    models.GuardianAudioHighlight
+      .findAll({ 
+        where: { group: "web-player" },
+        include: [ { all: true } ]/*, 
+        order: [ [dateClmn, dbQueryOrder] ]*/
+      }).then(function(dbAudioHighlights){
 
+        // var dbQuery = { guardian_id: dbGuardian.id };
+        // var dateClmn = "measured_at";
+        // if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
+        // if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
+        // if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
+        // var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
 
-            {
-              type: "playlist",
-              shortname: "Amazon (Midnight)",
-              name: "Midnight, Tembé Indigenous Territory",
-              description: "Midnight, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
-              location: "Amazon, Pará, Brazil",
-              timezone_offset: -3,
-              flickr_photoset_id: "72157666271579426",
-              urls: {
-                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
-                      +"?starting_after=2016-03-16T03:15:00Z"
-                      +"&order=ascending"
-                      +"&limit=3"
-              }
-            },
+        // models.GuardianAudio
+        //   .findAll({ 
+        //     where: dbQuery, 
+        //     include: [ { all: true } ], 
+        //     order: [ [dateClmn, dbQueryOrder] ],
+        //     limit: req.rfcx.limit,
+        //     offset: req.rfcx.offset
+        //   }).then(function(dbAudio){
 
-
-            {
-              type: "stream",
-              shortname: "Amazon (LIVE)",
-              name: "Live Stream, Tembé Indigenous Territory",
-              description: "Live Stream, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
-              location: "Amazon, Pará, Brazil",
-              timezone_offset: -3,
-              flickr_photoset_id: "72157666271579426",
-              urls: {
-                audio: "/v1/guardians/0bdbb4a5d567/audio.json"
-              }
+            if (dbAudioHighlights.length < 1) {
+              httpError(res, 404, "database");
+            } else {
+              
+               // .then(function(json){ 
+                  res.status(200).json(views.models.guardianAudioHighlights(req,res,dbAudioHighlights));
+             //   });
             }
 
-          ]
+        // }).catch(function(err){
+        //   console.log("failed to return audio | "+err);
+        //   if (!!err) { res.status(500).json({msg:"failed to return audio"}); }
+        // });
+
+      }).catch(function(err){
+        console.log("failed to find guardian audio highlights | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to find guardian audio highlights"}); }
+      });
+
+
+        // res.status(200).json({
+
+        //   streams: [
+
+        //     {
+        //       type: "playlist",
+        //       shortname: "Amazon (Sundown)",
+        //       name: "Nightfall, Tembé Indigenous Territory",
+        //       description: "Nightfall, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+        //       location: "Amazon, Pará, Brazil",
+        //       timezone_offset: -3,
+        //       flickr_photoset_id: "72157666271579426",
+        //       urls: {
+        //         audio: "/v1/guardians/0bdbb4a5d567/audio.json"
+        //               +"?starting_after=2016-03-22T01:15:00Z"
+        //               +"&order=ascending"
+        //               +"&limit=3"
+        //       }
+        //     },
+
+
+        //     {
+        //       type: "playlist",
+        //       shortname: "Amazon (Morning)",
+        //       name: "Afternoon, Tembé Indigenous Territory",
+        //       description: "Afternoon, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+        //       location: "Amazon, Pará, Brazil",
+        //       timezone_offset: -3,
+        //       flickr_photoset_id: "72157666271579426",
+        //       urls: {
+        //         audio: "/v1/guardians/0bdbb4a5d567/audio.json"
+        //               +"?starting_after=2015-12-22T09:53:00Z"
+        //               +"&order=ascending"
+        //               +"&limit=3"
+        //       }
+        //     },
+
+
+        //     {
+        //       type: "playlist",
+        //       shortname: "Amazon (Midnight)",
+        //       name: "Midnight, Tembé Indigenous Territory",
+        //       description: "Midnight, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+        //       location: "Amazon, Pará, Brazil",
+        //       timezone_offset: -3,
+        //       flickr_photoset_id: "72157666271579426",
+        //       urls: {
+        //         audio: "/v1/guardians/0bdbb4a5d567/audio.json"
+        //               +"?starting_after=2016-03-16T03:15:00Z"
+        //               +"&order=ascending"
+        //               +"&limit=3"
+        //       }
+        //     },
+
+
+        //     {
+        //       type: "stream",
+        //       shortname: "Amazon (LIVE)",
+        //       name: "Live Stream, Tembé Indigenous Territory",
+        //       description: "Live Stream, Tembé Indigenous Territory, Amazon Rainforest, Pará, Brazil",
+        //       location: "Amazon, Pará, Brazil",
+        //       timezone_offset: -3,
+        //       flickr_photoset_id: "72157666271579426",
+        //       urls: {
+        //         audio: "/v1/guardians/0bdbb4a5d567/audio.json"
+        //       }
+        //     }
+
+        //   ]
           
-        });
+        // });
 
 
   })

@@ -42,7 +42,14 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
-    }
+    },    
+    timezone_offset: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: {
+        isInt: true
+      }
+    },
   }, {
     classMethods: {
       associate: function(models) {
