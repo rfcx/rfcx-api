@@ -86,6 +86,13 @@ module.exports = function(sequelize, DataTypes) {
         isFloat: true,
         min: 0
       }
+    },
+    timezone_offset_minutes: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true
+      }
     }
   }, {
     classMethods: {

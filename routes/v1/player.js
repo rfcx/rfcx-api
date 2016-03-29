@@ -21,7 +21,7 @@ router.route("/login")
         reference_tag: "stream-web",
         token_type: "stream-web",
         created_by: "stream-web",
-        minutes_until_expiration: 720,
+        minutes_until_expiration: 1440, // tokens last for a full day
         allow_garbage_collection: false,
         only_allow_access_to: [ 
           "^/v1/player/web",
