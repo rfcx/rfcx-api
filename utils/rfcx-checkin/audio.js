@@ -12,7 +12,9 @@ exports.audio = {
 
     // REMOVE LATER
     // cached file garbage collection... 
-    cachedFiles.cacheDirectoryGarbageCollection();
+    if (Math.random() < 0.01 ? true : false) { // only do garbage collection ~1% of the time it's allowed
+      cachedFiles.cacheDirectoryGarbageCollection();
+    }
 
     var audioInfo = {};
 
