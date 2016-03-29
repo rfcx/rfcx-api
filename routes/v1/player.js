@@ -15,7 +15,11 @@ router.route("/login")
       pswd: (req.body.password != null) ? req.body.password.toLowerCase() : null
     };
 
-    // console.log(JSON.parse(process.env.PLAYER_PASSCODES).join("x")+" - "+userInput.pswd);
+    console.log(
+      JSON.parse(process.env.PLAYER_PASSCODES).join("—")
+      +" - "+userInput.pswd
+      +" - "+( JSON.parse(process.env.PLAYER_PASSCODES).indexOf(userInput.pswd) > -1 )
+      );
 
     // if ( JSON.parse(process.env.PLAYER_PASSCODES).indexOf(userInput.pswd) > -1 ) {
     if ( process.env.PLAYER_PASSWORD == userInput.pswd) {
