@@ -15,7 +15,10 @@ router.route("/login")
       pswd: (req.body.password != null) ? req.body.password.toLowerCase() : null
     };
 
-    if ( JSON.parse(process.env.PLAYER_PASSCODES).indexOf(userInput.pswd) > -1 ) {
+    // console.log(JSON.parse(process.env.PLAYER_PASSCODES).join("x")+" - "+userInput.pswd);
+
+    // if ( JSON.parse(process.env.PLAYER_PASSCODES).indexOf(userInput.pswd) > -1 ) {
+    if ( process.env.PLAYER_PASSWORD == userInput.pswd) {
 
       token.createAnonymousToken({
         reference_tag: "stream-web",
