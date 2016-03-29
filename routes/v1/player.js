@@ -16,9 +16,9 @@ router.route("/login")
     };
 
     console.log(
-      JSON.parse(process.env.PLAYER_PASSCODES).join("—")
+      process.env.PLAYER_PASSCODES.split(",").join("—")
       +" - "+userInput.pswd
-      +" - "+( JSON.parse(process.env.PLAYER_PASSCODES).indexOf(userInput.pswd) > -1 )
+      +" - "+( process.env.PLAYER_PASSCODES.split(",").indexOf(userInput.pswd) > -1 )
       );
 
     // if ( JSON.parse(process.env.PLAYER_PASSCODES).indexOf(userInput.pswd) > -1 ) {
