@@ -4,9 +4,15 @@ var models  = require("../../models");
 var zlib = require("zlib");
 var hash = require("../../utils/misc/hash.js").hash;
 
+var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
+
 exports.audio = {
 
   info: function(audioFiles, audioMeta, dbGuardian, dbCheckIn) {
+
+    // REMOVE LATER
+    // cached file garbage collection... 
+    cachedFiles.cacheDirectoryGarbageCollection();
 
     var audioInfo = {};
 
