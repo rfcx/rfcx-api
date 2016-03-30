@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMetaDataTransfer: function(req,res,dbDataTransfer) {
+  guardianMetaDataTransfer: function(req,res,dbDataTransfer,modelInfo) {
 
     if (!util.isArray(dbDataTransfer)) { dbDataTransfer = [dbDataTransfer]; }
 

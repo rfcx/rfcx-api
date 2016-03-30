@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMetaNetwork: function(req,res,dbNetwork) {
+  guardianMetaNetwork: function(req,res,dbNetwork,modelInfo) {
 
     if (!util.isArray(dbNetwork)) { dbNetwork = [dbNetwork]; }
 

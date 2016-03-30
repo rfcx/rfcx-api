@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMetaCheckIns: function(req,res,dbCheckIns) {
+  guardianMetaCheckIns: function(req,res,dbCheckIns,modelInfo) {
 
     if (!util.isArray(dbCheckIns)) { dbCheckIns = [dbCheckIns]; }
 

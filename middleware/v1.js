@@ -17,6 +17,9 @@ exports.middleware = {
 
     var paramAfter = (req.query.starting_after == null) ? null : (isNaN(Number(req.query.starting_after))) ? (new Date(""+req.query.starting_after)) : (new Date(parseInt(req.query.starting_after)));
     var paramBefore = (req.query.ending_before == null) ? null : (isNaN(Number(req.query.ending_before))) ? (new Date(""+req.query.ending_before)) : (new Date(parseInt(req.query.ending_before)));
+    var fallbackDurationInMinutes = 60;
+    if ((paramAfter != null) && (paramBefore == null)) { paramBefore = new Date(paramAfter.valueOf()+fallbackDurationInMinutes*60*1000); }
+    if ((paramBefore != null) && (paramAfter == null)) { paramAfter = new Date(paramBefore.valueOf()-fallbackDurationInMinutes*60*1000); }
 
     var paramOrder = (req.query.order == null) ? null : ((req.query.order.toLowerCase() == "ascending") ? "ASC" : "DESC");
 

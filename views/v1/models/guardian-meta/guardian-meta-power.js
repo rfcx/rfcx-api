@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMetaPower: function(req,res,dbPower) {
+  guardianMetaPower: function(req,res,dbPower,modelInfo) {
 
     if (!util.isArray(dbPower)) { dbPower = [dbPower]; }
 

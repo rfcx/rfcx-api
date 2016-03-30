@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMetaBattery: function(req,res,dbBattery) {
+  guardianMetaBattery: function(req,res,dbBattery,modelInfo) {
 
     if (!util.isArray(dbBattery)) { dbBattery = [dbBattery]; }
 

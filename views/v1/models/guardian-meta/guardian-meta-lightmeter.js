@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMetaLightMeter: function(req,res,dbLightMeter) {
+  guardianMetaLightMeter: function(req,res,dbLightMeter,modelInfo) {
 
     if (!util.isArray(dbLightMeter)) { dbLightMeter = [dbLightMeter]; }
 

@@ -2,7 +2,7 @@ var util = require("util");
 
 exports.models = {
 
-  guardianMetaOffline: function(req,res,dbOffline) {
+  guardianMetaOffline: function(req,res,dbOffline,modelInfo) {
 
     if (!util.isArray(dbOffline)) { dbOffline = [dbOffline]; }
 

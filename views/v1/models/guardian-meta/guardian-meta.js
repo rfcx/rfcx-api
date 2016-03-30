@@ -37,8 +37,8 @@ exports.models = {
 
   constructValueArrays: function(arrayLength, dbMeta, modelInfo) {
     var valueArrays = [],
-        startDateTime = (dbMeta.length > 0) ? dbMeta[0][modelInfo.timeStampColumn].valueOf() : 0,
-        endDateTime = (dbMeta.length > 0) ? dbMeta[dbMeta.length-1][modelInfo.timeStampColumn].valueOf() : 0,
+        startDateTime = dbMeta[0][modelInfo.timeStampColumn].valueOf(),
+        endDateTime = dbMeta[dbMeta.length-1][modelInfo.timeStampColumn].valueOf(),
         timeInterval = Math.floor((endDateTime-startDateTime)/arrayLength);
     for (var i = 0; i <= arrayLength; i++) { 
       valueArrays[i] = { 
@@ -74,34 +74,27 @@ exports.models = {
     return outputJson;
   },
 
-  guardianMetaCPU: function(req, res, dbMeta, modelInfo) {
+  guardianMeta: function(req, res, dbMeta, modelInfo) {
+
+    var outputJson = [];
 
     if (!util.isArray(dbMeta)) { dbMeta = [dbMeta]; }
 
-    var valueArrays = this.constructValueArrays(req.rfcx.limit, dbMeta, modelInfo);
+    if (dbMeta.length > 0) {
 
-    var jsonArray = [];
+      var valueArrays = this.constructValueArrays(req.rfcx.limit, dbMeta, modelInfo);
 
-    for (i in dbMeta) {
+      for (i in dbMeta) {
+        valueArrays = this.populateValueArrays(valueArrays, dbMeta[i], modelInfo);
+      }
 
-      var dbRow = dbMeta[i];
+      valueArrays = this.generateValueArrayAverages(valueArrays, modelInfo);
 
-      jsonArray.push({
-        measured_at: dbMeta[i].measured_at,
-        percent_usage: dbMeta[i].cpu_percent,
-        clock_speed: dbMeta[i].cpu_clock
-      });
+      outputJson = this.finalizeValueArraysForOutput(valueArrays, modelInfo);
 
-      valueArrays = this.populateValueArrays(valueArrays, dbMeta[i], modelInfo);
-      
     }
-    
-    valueArrays = this.generateValueArrayAverages(valueArrays, modelInfo);
 
-    
-    console.log(this.finalizeValueArraysForOutput(valueArrays, modelInfo));
-
-    return jsonArray;
+    return outputJson;
   }
 
 };
