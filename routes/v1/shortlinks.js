@@ -28,7 +28,7 @@ router.route("/:shortlink_id")
 
 router.route("/")
   .get(function(req,res) {
-    res.redirect(301, "https://api.rfcx.org/");
+    res.redirect(301, "https://rfcx.org/");
   })
 ;
 
