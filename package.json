@@ -28,7 +28,7 @@
     "morgan": "^1.7.0",
     "multer": "^0.1.8",
     "mysql": "^2.10.2",
-    "newrelic": "^1.26.0",
+    "newrelic": "^1.26.1",
     "passport": "^0.2.2",
     "passport-accesstoken": "^0.1.0",
     "passport-local": "^1.0.0",
