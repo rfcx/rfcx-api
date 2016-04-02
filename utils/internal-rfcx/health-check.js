@@ -23,19 +23,21 @@ exports.healthCheck = {
 
   httpResponse: function(req,res) {
 
+    var rtrnJson = { healthy: null };
+    if (req.query.headers==="1") { rtrnJson.http_headers = {}; for (i in req.headers) { rtrnJson.http_headers[i] = req.headers[i]; } }
+
     this.dbCheck()
       .then(function(isConnected){
-        res.status(isConnected ? 200 : 500)
-          .json({ healthy: isConnected });
+        rtrnJson.healthy = isConnected;
+        res.status(isConnected ? 200 : 500).json(rtrnJson);
       }).catch(function(err){
         if (!!err) { 
           console.log(err.message);
-          res.status(500)
-            .json({ healthy: false });
+          rtrnJson.healthy = false;
+          res.status(500).json(rtrnJson);
         }
       });
 
   }
   
 };
-
