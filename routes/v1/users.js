@@ -17,7 +17,7 @@ router.route("/login")
     };
     
     var loginExpirationInMinutes = 1440; // 1 day (24 hours)
-    if ((req.body.extended_session != null) && (parseInt(req.body.extended_session) == 1)) {
+    if ((req.body.extended_expiration != null) && (parseInt(req.body.extended_expiration) == 1)) {
       loginExpirationInMinutes = 5760; // 4 days
     }
 
