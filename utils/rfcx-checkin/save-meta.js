@@ -117,6 +117,18 @@ exports.saveMeta = {
     }
   },
 
+  RebootEvents: function(rebootEvents, guardianId, checkInId) {
+    for (rebootEvntInd in rebootEvents) {
+      models.GuardianMetaReboot.create({
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          completed_at: new Date(parseInt(rebootEvents[rebootEvntInd][0]))
+        }).then(function(dbGuardianMetaReboot){ }).catch(function(err){
+          console.log("failed to create GuardianMetaReboot | "+err);
+        });
+    }
+  },
+
   SoftwareRoleVersion: function(roleArr, guardianId) {
     var roleVersions = {};
     for (vInd in roleArr) { 

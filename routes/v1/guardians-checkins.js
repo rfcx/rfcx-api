@@ -83,6 +83,9 @@ router.route("/:guardian_id/checkins")
             checkInHelpers.saveMeta.Offline(strArrToJSArr(json.offline,"|","*"), dbGuardian.id, dbCheckIn.id);
             checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
 
+            // save reboot events
+            checkInHelpers.saveMeta.RebootEvents(strArrToJSArr(json.reboots,"|","*"), dbGuardian.id, dbCheckIn.id);
+
             // save software role versions
             checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(json.software,"|","*"), dbGuardian.id);
 
