@@ -60,7 +60,7 @@ exports.middleware = {
 
     var allowedOverInsecureConnection = [ "rf.cx" ];
 
-    if (    (process.env.NODE_ENV === "production") 
+    if (    ((process.env.NODE_ENV === "production") || (process.env.NODE_ENV === "staging")) 
         &&  (req.rfcx.api_url_protocol === "http")
         &&  (allowedOverInsecureConnection.indexOf(req.headers.host) < 0)
         ) {
