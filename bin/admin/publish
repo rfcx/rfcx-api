@@ -4,10 +4,13 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 cd $SCRIPT_DIR/../../;
 
 read -p "Are you sure you want to deploy this version to AWS? (y/n): " -n 1 -r
+
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
+  
   echo -e "\nYou chose 'yes'.\n";
   read -p "Would you like to deploy to the (s)taging or (p)roduction environment? (s/p): " -n 1 -r
+
   if [[ $REPLY =~ ^[Pp]$ ]]
   then
     echo -e "\nYou chose to deploy to 'production'.\n"
@@ -22,8 +25,16 @@ then
     echo -e "\nExecuting deployment script (this may take a few minutes).\n"
     eb deploy rfcx-api-staging;
   fi
+
   git checkout master;
-  eb status;
+
+  if [[ $REPLY =~ ^[Pp]$ ]]
+  then
+    eb status rfcx-api-production;
+  else
+    eb status rfcx-api-staging;
+  fi
+
 else
   echo -e "\nYou chose NOT to deploy the application to AWS.\n";
   git checkout master;
