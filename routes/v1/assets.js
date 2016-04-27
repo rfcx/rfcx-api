@@ -42,6 +42,29 @@ router.route("/audio/:audio_id")
   })
 ;
 
+router.route("/screenshots/:screenshot_id")
+  .get(function(req,res) {
+
+    models.GuardianMetaScreenShot
+      .findOne({ 
+        where: { guid: req.params.screenshot_id }, 
+        include: [{ all: true }]
+      }).then(function(dbScreenshot){
+
+        if (req.rfcx.content_type === "png") {
+          views.models.guardianMetaScreenshotFile(req,res,dbScreenshot);
+        } else {
+          res.status(200).json(views.models.guardianMetaScreenshots(req,res,dbScreenshot)); 
+        }
+        
+      }).catch(function(err){
+        console.log("failed to return screenshot | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return screenshot"}); }
+      });
+
+  })
+;
+
 
 
 module.exports = router;

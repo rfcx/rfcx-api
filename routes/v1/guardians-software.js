@@ -22,17 +22,13 @@ router.route("/:guardian_id/software/:software_role")
     var inquiringSoftwareRole = req.query.role;
     var inquiringSoftwareVersion = req.query.version;
 
-    var inquiringGuardianBattery = req.query.battery;
+    var inquiringGuardianBattery = parseInt(req.query.battery);
     var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp));
 
     models.Guardian
       .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
-
-        // dbGuardian.last_update_check_in = new Date();
-        // dbGuardian.update_check_in_count = 1+dbGuardian.update_check_in_count;
-        // dbGuardian.save();
 
         models.GuardianSoftware
           .findOne({
@@ -98,6 +94,10 @@ router.route("/:guardian_id/software/:software_role")
   })
 ;
 
+// router.route("/software/:software_role")
+//   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
+//   })
+// ;
 
 module.exports = router;

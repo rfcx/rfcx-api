@@ -41,6 +41,7 @@ var routes = {
                     require("./routes/v1/guardians-audio-uploads"),
                     require("./routes/v1/guardians-events"),
                     require("./routes/v1/guardians-meta"),
+                    require("./routes/v1/guardians-screenshots"),
                     require("./routes/v1/guardians-status")
                   ],
     "sites":  [ require("./routes/v1/sites"),
