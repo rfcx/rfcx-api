@@ -13,7 +13,7 @@ exports.screenshots = {
 
     if (!!screenShotFiles) {
 
-      // make sure the screenshot files is an array
+      // make sure the screenshot files parameter is an array
       if (!util.isArray(screenShotFiles)) { screenShotFiles = [screenShotFiles]; }
       
       for (i in screenShotFiles) {
@@ -32,12 +32,11 @@ exports.screenshots = {
           origin_id: timeStamp,
           timeStamp: new Date(parseInt(timeStamp)),
           isSaved: false,
-          s3Path: "/screenshots/"+process.env.NODE_ENV
+          s3Path: "/screenshots"
                    +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
                    +"/"+guardianGuid
                    +"/"+guardianGuid+"-"+dateString+".png"
         };
-        //console.log(screenShotInfo);
       }
     }
     return screenShotInfo;
