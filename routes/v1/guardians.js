@@ -71,9 +71,9 @@ router.route("/register")
       }).spread(function(dbGuardian, wasCreated){
 
         if (!wasCreated) {
-          res.status(409).json({ 
-            message: "A guardian with that guid already exists", error: { status: 409 }
-          });
+          res.status(200).json(
+            views.models.guardian(req,res,dbGuardian)
+            );
         } else {
 
           var token_salt = hash.randomHash(320);
