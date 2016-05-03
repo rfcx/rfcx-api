@@ -171,10 +171,8 @@ router.route("/:guardian_id/checkins")
                     api_token_expires_at: null,
                     api_url: null,
                     isSaved: { db: false, s3: false, sqs: false },
-                    s3Path: "/"+process.env.NODE_ENV
-                            +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
-                            +"/"+dbGuardian.guid
-                            +"/"+dbGuardian.guid+"-"+dateString+"."+audioMeta[i][2]
+                    s3Path: "/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)+"/"+dbGuardian.guid+"/"
+                            +dbGuardian.guid+"-"+dateString+"."+audioMeta[i][2]
                   };
                 }
 
