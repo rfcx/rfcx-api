@@ -468,7 +468,7 @@ function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
 // Special Functions
 
 function strArrToJSArr(str,delimA,delimB) {
-  if (str == null) { return []; }
+  if ((str == null) || (str.length == 0)) { return []; }
   try {
     var rtrnArr = [], arr = str.split(delimA);
     if (arr.length > 0) {
