@@ -144,7 +144,7 @@ exports.saveMeta = {
             limit: 1
         }).then(function(dbSoftwareRoleVersion){
           if (dbSoftwareRoleVersion.length < 1) {
-            console.log("software role "+dbSoftwareRole.role+", version "+roleVersions[dbSoftwareRole.role]+" is not [yet] in the database.");
+        //    console.log("software role "+dbSoftwareRole.role+", version "+roleVersions[dbSoftwareRole.role]+" is not [yet] in the database.");
           } else {
             models.GuardianMetaSoftwareVersion
               .findOrCreate({
