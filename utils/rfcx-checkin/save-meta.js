@@ -121,6 +121,7 @@ exports.saveMeta = {
   },
 
   DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
+    
     var diskUsage = { internal: {}, external: {} };
     for (duInd in metaDiskUsage) {
       diskUsage[metaDiskUsage[duInd][0]] = {
@@ -129,20 +130,18 @@ exports.saveMeta = {
         available: parseInt(metaDiskUsage[duInd][3])
       };
     }
-    console.log(diskUsage);
 
-    //   models.GuardianMetaDiskUsage.create({
-    //       guardian_id: guardianId,
-    //       check_in_id: checkInId,
-    //       measured_at: new Date(parseInt(metaDiskUsage[duInd][0])),
-    //       x: parseFloat(xyzVals[0]),
-    //       y: parseFloat(xyzVals[1]),
-    //       z: parseFloat(xyzVals[2]),
-    //       sample_count: parseInt(metaAccelerometer[acInd][2])
-    //     }).then(function(dbGuardianMetaAccelerometer){ }).catch(function(err){
-    //       console.log("failed to create GuardianMetaAccelerometer | "+err);
-    //     });
-    // }
+    models.GuardianMetaDiskUsage.create({
+        guardian_id: guardianId,
+        check_in_id: checkInId,
+        measured_at: diskUsage.internal.measured_at,
+        internal_bytes_available: diskUsage.internal.available,
+        internal_bytes_used: diskUsage.internal.used,
+        external_bytes_available: diskUsage.external.available,
+        external_bytes_used: diskUsage.external.used
+      }).then(function(dbGuardianMetaDiskUsage){ }).catch(function(err){
+        console.log("failed to create GuardianMetaDiskUsage | "+err);
+      });
   },
 
   PreviousCheckIns: function(previousCheckIns) {
