@@ -120,6 +120,31 @@ exports.saveMeta = {
     }
   },
 
+  DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
+    var diskUsage = { internal: {}, external: {} };
+    for (duInd in metaDiskUsage) {
+      diskUsage[metaDiskUsage[duInd][0]] = {
+        measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
+        used: parseInt(metaDiskUsage[duInd][2]),
+        available: parseInt(metaDiskUsage[duInd][3])
+      };
+    }
+    console.log(diskUsage);
+
+    //   models.GuardianMetaDiskUsage.create({
+    //       guardian_id: guardianId,
+    //       check_in_id: checkInId,
+    //       measured_at: new Date(parseInt(metaDiskUsage[duInd][0])),
+    //       x: parseFloat(xyzVals[0]),
+    //       y: parseFloat(xyzVals[1]),
+    //       z: parseFloat(xyzVals[2]),
+    //       sample_count: parseInt(metaAccelerometer[acInd][2])
+    //     }).then(function(dbGuardianMetaAccelerometer){ }).catch(function(err){
+    //       console.log("failed to create GuardianMetaAccelerometer | "+err);
+    //     });
+    // }
+  },
+
   PreviousCheckIns: function(previousCheckIns) {
     for (prvChkInInd in previousCheckIns) {
       models.GuardianCheckIn
