@@ -103,6 +103,23 @@ exports.saveMeta = {
     }
   },
 
+  Accelerometer: function(metaAccelerometer, guardianId, checkInId) {
+    for (acInd in metaAccelerometer) {
+      var xyzVals = metaAccelerometer[acInd][1].split(",");
+      models.GuardianMetaAccelerometer.create({
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(metaAccelerometer[acInd][0])),
+          x: parseFloat(xyzVals[0]),
+          y: parseFloat(xyzVals[1]),
+          z: parseFloat(xyzVals[2]),
+          sample_count: parseInt(metaAccelerometer[acInd][2])
+        }).then(function(dbGuardianMetaAccelerometer){ }).catch(function(err){
+          console.log("failed to create GuardianMetaAccelerometer | "+err);
+        });
+    }
+  },
+
   PreviousCheckIns: function(previousCheckIns) {
     for (prvChkInInd in previousCheckIns) {
       models.GuardianCheckIn

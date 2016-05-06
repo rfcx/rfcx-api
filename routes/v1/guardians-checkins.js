@@ -82,6 +82,7 @@ router.route("/:guardian_id/checkins")
             checkInHelpers.saveMeta.Network(strArrToJSArr(json.network,"|","*"), dbGuardian.id, dbCheckIn.id);
             checkInHelpers.saveMeta.Offline(strArrToJSArr(json.offline,"|","*"), dbGuardian.id, dbCheckIn.id);
             checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Accelerometer(strArrToJSArr(json.accelerometer,"|","*"), dbGuardian.id, dbCheckIn.id);
 
             // save reboot events
             checkInHelpers.saveMeta.RebootEvents(strArrToJSArr(json.reboots,"|","*"), dbGuardian.id, dbCheckIn.id);
