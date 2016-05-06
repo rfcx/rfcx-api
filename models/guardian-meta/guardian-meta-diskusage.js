@@ -8,34 +8,30 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     internal_bytes_available: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       defaultValue: 0,
       validate: {
-        isInt: true,
         min: 0
       }
     },
     internal_bytes_used: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       defaultValue: 0,
       validate: {
-        isInt: true,
         min: 0
       }
     },
     external_bytes_available: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       defaultValue: 0,
       validate: {
-        isInt: true,
         min: 0
       }
     },
     external_bytes_used: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       defaultValue: 0,
       validate: {
-        isInt: true,
         min: 0
       }
     }
