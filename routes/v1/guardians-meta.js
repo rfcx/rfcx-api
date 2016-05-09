@@ -86,6 +86,22 @@ router.route("/:guardian_id/meta/:meta_type")
                     is_charged: "is_charged"
                     }
                 },
+            accelerometer: {
+                model: "GuardianMetaAccelerometer", 
+                viewFunction: "guardianMetaAccelerometer", 
+                timeStampColumn: "measured_at",
+                dbToJsonMap: {
+                    measured_at: "measured_at"
+                    }
+                },
+            diskusage: {
+                model: "GuardianMetaDiskUsage", 
+                viewFunction: "guardianMetaDiskUsage", 
+                timeStampColumn: "measured_at",
+                dbToJsonMap: {
+                    measured_at: "measured_at"
+                    }
+                },
             messages: {
                 model: "GuardianMetaMessage", 
                 viewFunction: "guardianMetaMessages", 
