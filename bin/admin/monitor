@@ -4,6 +4,13 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 
 export TIMEOUT=2700
 
-$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 1 $TIMEOUT | grep -v /health_check &
-$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 2 $TIMEOUT | grep -v /health_check &
-#$SCRIPT_DIR/_expect_helpers/monitor_expect_tail_logs 3 $TIMEOUT | grep -v /health_check &
+read -p "Would you like to monitor (s)taging or (p)roduction? (s/p): " -n 1 -r
+
+if [[ $REPLY =~ ^[Pp]$ ]]
+then
+  $SCRIPT_DIR/monitor_/monitor_expect_tail_logs rfcx-api-production 1 $TIMEOUT | grep -v /health_check &
+  $SCRIPT_DIR/monitor_/monitor_expect_tail_logs rfcx-api-production 2 $TIMEOUT | grep -v /health_check &
+#  $SCRIPT_DIR/monitor_/monitor_expect_tail_logs rfcx-api-production 3 $TIMEOUT | grep -v /health_check &
+else
+  $SCRIPT_DIR/monitor_/monitor_expect_tail_logs_single_instance rfcx-api-staging 1 $TIMEOUT | grep -v /health_check &
+fi
