@@ -120,8 +120,32 @@ exports.saveMeta = {
     }
   },
 
+  GeoLocation: function(metaLocation, guardianId, checkInId) {
+    for (locInd in metaLocation) {
+      var latLng = [
+        new Date(parseInt(metaLocation[locInd][0])),
+        parseFloat(metaLocation[locInd][1]),
+        parseFloat(metaLocation[locInd][2]),
+        parseFloat(metaLocation[locInd][3]),
+      ];
+      console.log(latLng);
+      // models.GuardianMetaDataTransfer.create({
+      //     guardian_id: guardianId,
+      //     check_in_id: checkInId,
+      //     started_at: new Date(parseInt(metaDataTransfer[dtInd][0])),
+      //     ended_at: new Date(parseInt(metaDataTransfer[dtInd][1])),
+      //     bytes_received: parseInt(metaDataTransfer[dtInd][2]),
+      //     bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
+      //     total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
+      //     total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
+      //   }).then(function(dbGuardianMetaDataTransfer){ }).catch(function(err){
+      //     console.log("failed to create GuardianMetaDataTransfer | "+err);
+      //   });
+    }
+  },
+
   DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
-    
+
     var diskUsage = { internal: {}, external: {} };
     for (duInd in metaDiskUsage) {
       diskUsage[metaDiskUsage[duInd][0]] = {

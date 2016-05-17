@@ -25,7 +25,6 @@ router.route("/:guardian_id/checkins")
       screenshots: [], // array of screenshot images successfully ingested
       messages: [], // array of sms messages successfully ingested
       instructions: {
-        prefs: {},
         messages: [] // array of sms messages that the guardian should send
       }
     };
@@ -48,14 +47,6 @@ router.route("/:guardian_id/checkins")
           dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
           dbGuardian.save();
 
-          // TO DO - move into helper method
-          // organize geo-location data parameters
-          var metaGeo = [
-              ((json.location[0] != null) ? parseFloat(json.location[0]) : null),
-              ((json.location[1] != null) ? parseFloat(json.location[1]) : null),
-              ((json.location[2] != null) ? parseFloat(json.location[2]) : null)
-            ];
-
           // add a new checkin to the database
           models.GuardianCheckIn
             .create({
@@ -65,9 +56,6 @@ router.route("/:guardian_id/checkins")
               queued_at: timeStampToDate(json.queued_at, json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
               guardian_skipped_checkins: parseInt(json.skipped_checkins),
-              location_latitude: metaGeo[0],
-              location_longitude: metaGeo[1],
-              location_precision: metaGeo[2],
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
 
@@ -84,6 +72,7 @@ router.route("/:guardian_id/checkins")
             checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
             checkInHelpers.saveMeta.Accelerometer(strArrToJSArr(json.accelerometer,"|","*"), dbGuardian.id, dbCheckIn.id);
             checkInHelpers.saveMeta.DiskUsage(strArrToJSArr(json.disk_usage,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.GeoLocation(strArrToJSArr(json.location,"|","*"), dbGuardian.id, dbCheckIn.id);
 
             // save reboot events
             checkInHelpers.saveMeta.RebootEvents(strArrToJSArr(json.reboots,"|","*"), dbGuardian.id, dbCheckIn.id);
@@ -127,7 +116,6 @@ router.route("/:guardian_id/checkins")
            //     returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
               }
             }
-
 
             // parse, review and save audio
             var audioInfo_ = checkInHelpers.audio.info(req.files.audio, strArrToJSArr(json.audio,"|","*"), dbGuardian, dbCheckIn);
