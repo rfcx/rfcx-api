@@ -1,19 +1,19 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require("../../models");
+var models  = require("../../../models");
 var express = require("express");
 var router = express.Router();
 var fs = require("fs");
 var zlib = require("zlib");
 var exifTool = require("exiftool");
 var util = require("util");
-var hash = require("../../utils/misc/hash.js").hash;
-var token = require("../../utils/internal-rfcx/token.js").token;
-var aws = require("../../utils/external/aws.js").aws();
-var views = require("../../views/v1");
-var checkInHelpers = require("../../utils/rfcx-checkin");
-var httpError = require("../../utils/http-errors.js");
+var hash = require("../../../utils/misc/hash.js").hash;
+var token = require("../../../utils/internal-rfcx/token.js").token;
+var aws = require("../../../utils/external/aws.js").aws();
+var views = require("../../../views/v1");
+var checkInHelpers = require("../../../utils/rfcx-checkin");
+var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
-passport.use(require("../../middleware/passport-token").TokenStrategy);
+passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {

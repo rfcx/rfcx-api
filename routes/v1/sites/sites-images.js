@@ -1,13 +1,13 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require("../../models");
+var models  = require("../../../models");
 var express = require("express");
 var router = express.Router();
-var views = require("../../views/v1");
-var httpError = require("../../utils/http-errors.js");
+var views = require("../../../views/v1");
+var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
-passport.use(require("../../middleware/passport-token").TokenStrategy);
+passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
-router.route("/:site_id/events")
+router.route("/:site_id/images")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianSite

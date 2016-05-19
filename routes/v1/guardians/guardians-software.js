@@ -1,17 +1,17 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require("../../models");
+var models  = require("../../../models");
 var express = require("express");
 var router = express.Router();
 var fs = require("fs");
 var util = require("util");
 var querystring = require("querystring");
 var passport = require("passport");
-var hash = require("../../utils/misc/hash.js").hash;
-var aws = require("../../utils/external/aws.js").aws();
-var views = require("../../views/v1");
-var httpError = require("../../utils/http-errors.js");
+var hash = require("../../../utils/misc/hash.js").hash;
+var aws = require("../../../utils/external/aws.js").aws();
+var views = require("../../../views/v1");
+var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
-passport.use(require("../../middleware/passport-token").TokenStrategy);
+passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)

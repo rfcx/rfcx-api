@@ -1,12 +1,12 @@
-var models  = require("../../models");
+var models  = require("../../../models");
 var express = require("express");
 var router = express.Router();
-var hash = require("../../utils/misc/hash.js").hash;
-var token = require("../../utils/internal-rfcx/token.js").token;
-var views = require("../../views/v1");
-var httpError = require("../../utils/http-errors.js");
+var hash = require("../../../utils/misc/hash.js").hash;
+var token = require("../../../utils/internal-rfcx/token.js").token;
+var views = require("../../../views/v1");
+var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
-passport.use(require("../../middleware/passport-token").TokenStrategy);
+passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/login")
   .post(function(req,res) {

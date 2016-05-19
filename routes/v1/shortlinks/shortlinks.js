@@ -1,8 +1,8 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require("../../models");
+var models  = require("../../../models");
 var express = require("express");
 var router = express.Router();
-var httpError = require("../../utils/http-errors.js");
+var httpError = require("../../../utils/http-errors.js");
 
 
 router.route("/:shortlink_id")
