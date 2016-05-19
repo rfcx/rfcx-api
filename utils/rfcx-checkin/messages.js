@@ -16,7 +16,7 @@ exports.messages = {
           version: null,
           address: jsonMessages[msgInd].address,
           body: jsonMessages[msgInd].body,
-          timeStamp: timeStampToDate(jsonMessages[msgInd].received_at, timezone_offset),
+          timeStamp: new Date(parseInt(jsonMessages[msgInd].received_at)),
           isSaved: false
         };
       }
@@ -56,20 +56,3 @@ exports.messages = {
 
 };
 
-
-
-function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
-
-  var asDate = null;
-
-  // PLEASE MODIFY LATER WHEN WE NO LONGER NEED TO SUPPORT LEGACY TIMESTAMPS !!!!!
-  if ((""+timeStamp).indexOf(":") > -1) {
-    // LEGACY TIMESTAMP FORMAT
-    asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
-  } else if (timeStamp != null) {
-    
-    asDate = new Date(parseInt(timeStamp));
-  
-  }
-  return asDate;
-}
