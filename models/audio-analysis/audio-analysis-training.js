@@ -1,25 +1,11 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var AudioAnalysisModel = sequelize.define("AudioAnalysisModel", {
+  var AudioAnalysisTraining = sequelize.define("AudioAnalysisTraining", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       unique: true
-    },
-    model_download_url: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: false,
-      validate: {
-      }
-    },
-    model_sha1_checksum: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: false,
-      validate: {
-      }
     }
   }, {
     classMethods: {
@@ -34,8 +20,8 @@ module.exports = function(sequelize, DataTypes) {
         }
       ]
     },
-    tableName: "AudioAnalysisModels"
+    tableName: "AudioAnalysisTraining"
   });
 
-  return AudioAnalysisModel;
+  return AudioAnalysisTraining;
 };
