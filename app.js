@@ -33,30 +33,30 @@ app.use(passport.initialize());
 // Define/Load Routes
 var routes = {
   "v1": {
-    "guardians": [  require("./routes/v1/guardians"),
-                    require("./routes/v1/guardians-software"), 
-                    require("./routes/v1/guardians-checkins"), 
-                    require("./routes/v1/guardians-checkins-audio-events"),
-                    require("./routes/v1/guardians-audio"),
-                    require("./routes/v1/guardians-audio-uploads"),
-                    require("./routes/v1/guardians-events"),
-                    require("./routes/v1/guardians-meta"),
-                    require("./routes/v1/guardians-screenshots"),
-                    require("./routes/v1/guardians-status")
+    "guardians": [  require("./routes/v1/guardians/guardians"),
+                    require("./routes/v1/guardians/guardians-software"), 
+                    require("./routes/v1/guardians/guardians-checkins"), 
+                    require("./routes/v1/guardians/guardians-checkins-audio-events"),
+                    require("./routes/v1/guardians/guardians-audio"),
+                    require("./routes/v1/guardians/guardians-audio-uploads"),
+                    require("./routes/v1/guardians/guardians-events"),
+                    require("./routes/v1/guardians/guardians-meta"),
+                    require("./routes/v1/guardians/guardians-screenshots"),
+                    require("./routes/v1/guardians/guardians-status")
                   ],
-    "sites":  [ require("./routes/v1/sites"),
-                require("./routes/v1/sites-audio"),
-                require("./routes/v1/sites-guardians"),
-                require("./routes/v1/sites-events"),
-                require("./routes/v1/sites-images") 
+    "sites":  [ require("./routes/v1/sites/sites"),
+                require("./routes/v1/sites/sites-audio"),
+                require("./routes/v1/sites/sites-guardians"),
+                require("./routes/v1/sites/sites-events"),
+                require("./routes/v1/sites/sites-images") 
               ],
-    "audio": [  require("./routes/v1/audio") ],
-    "checkins": [ require("./routes/v1/checkins") ],
-    "users": [ require("./routes/v1/users") ],
-    "events": [ require("./routes/v1/events") ],
-    "shortlinks": [ require("./routes/v1/shortlinks") ],
-    "player": [ require("./routes/v1/player") ],
-    "assets": [ require("./routes/v1/assets") ],
+    "audio": [  require("./routes/v1/audio/audio") ],
+    "analysis": [  require("./routes/v1/analysis/analysis") ],
+    "users": [ require("./routes/v1/users/users") ],
+    "events": [ require("./routes/v1/events/events") ],
+    "shortlinks": [ require("./routes/v1/shortlinks/shortlinks") ],
+    "player": [ require("./routes/v1/player/player") ],
+    "assets": [ require("./routes/v1/assets/assets") ],
   },
   "v2": {
   }
