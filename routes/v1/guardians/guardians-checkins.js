@@ -136,24 +136,19 @@ router.route("/:guardian_id/checkins")
 
                         checkInHelpers.audio.extractAudioFileMeta(audioInfoPostQueue);
 
-                      }).catch(function(err){
-                        models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfoPostDbSave.sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
-                        dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-                        checkInHelpers.audio.rollBackCheckIn(audioInfoPostDbSave);
-                        if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
-                      });
+                    }).catch(function(err){
+                      checkInHelpers.audio.rollBackCheckIn(audioInfoPostDbSave);
+                      if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
+                    });
                   }).catch(function(err){
-                    dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
                     checkInHelpers.audio.rollBackCheckIn(audioInfoPostS3Save);
                     if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
                   });
                 }).catch(function(err){
-                  dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
                   checkInHelpers.audio.rollBackCheckIn(audioInfoPostUpload);
                   if (!!err) { res.status(500).json({msg:"error saving audio to s3"}); }
                 });
               }).catch(function(err){
-                dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
                 checkInHelpers.audio.rollBackCheckIn(audioInfo[audioInfoInd]);
                 if (!!err) { res.status(500).json({msg:"error processing audio upload file"}); }
               });
@@ -171,26 +166,7 @@ router.route("/:guardian_id/checkins")
               dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
               dbCheckIn.save();
 
-                                                  for (p in messageInfo) {
-                                      //              if (messageInfo[p].isSaved) {
-                                                      returnJson.messages.push({
-                                                        id: messageInfo[p].android_id,
-                                                        guid: messageInfo[p].guid
-                                                      });
-                                        //            }         
-                                                  }
-
-                         
-                                                  for (o in screenShotInfo) {
-                                          //          if (screenShotInfo[o].isSaved) {
-                                                      returnJson.screenshots.push({
-                                                        id: o,
-                                                        guid: screenShotInfo[o].screenshot_id
-                                                      });
-                                          //          }         
-                                                  }
-
-                       console.log(returnJson) ;                     
+              console.log(returnJson) ;                     
               res.status(403).json(returnJson);
             }
 
