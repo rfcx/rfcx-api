@@ -20,6 +20,7 @@ exports.models = {
         type: dbRow.type,
         shortname: dbRow.label,
         name: dbRow.name,
+        is_active: dbRow.is_active,
         location: null,
         timezone_offset: 0,
         description: dbRow.description,
