@@ -55,6 +55,12 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+      validate: {}
     }
   }, {
     classMethods: {
