@@ -104,6 +104,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianCheckIn.hasMany(models.GuardianMetaBattery, {as: "MetaBattery", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaDataTransfer, {as: "MetaDataTransfer", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaLightMeter, {as: "MetaLightMeter", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaGeoLocation, {as: "MetaGeoLocation", foreignKey: "check_in_id"});
         
         GuardianCheckIn.hasMany(models.GuardianMetaNetwork, {as: "MetaNetwork", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaOffline, {as: "MetaOffline", foreignKey: "check_in_id"});

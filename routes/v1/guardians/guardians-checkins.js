@@ -170,6 +170,9 @@ router.route("/:guardian_id/checkins")
               res.status(403).json(returnJson);
             }
 
+
+            
+
           }).catch(function(err){
             console.log("error adding checkin to database | "+err);
             if (!!err) { httpError(res, 500, "database"); }
