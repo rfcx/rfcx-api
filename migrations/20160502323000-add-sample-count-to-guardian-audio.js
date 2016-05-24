@@ -4,12 +4,14 @@ module.exports = {
   up: function(migration, DataTypes, done) {
 
   migration.addColumn(
-    "Guardians",
-    "sim_card_id",
+    "GuardianAudio",
+    "capture_sample_count",
     {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
+        isInt: true,
+        min: 0
       }
     }
   );
@@ -20,10 +22,9 @@ module.exports = {
 
   down: function(migration, DataTypes, done) {
 
-  migration.removeColumn('Guardians', 'sim_card_id');
-  
+  migration.removeColumn('GuardianAudio', 'capture_sample_count');
+
   done();
 
   }
 };
-

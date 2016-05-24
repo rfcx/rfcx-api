@@ -88,7 +88,7 @@ router.route("/:guardian_id/checkins")
             for (msgInfoInd in messageInfo) {
               checkInHelpers.messages.save(messageInfo[msgInfoInd])
                 .then(function(rtrnMessageInfo){
-                  messageInfo[rtrnMessageInfo.android_id] = rtrnMessageInfo;
+                  returnJson.messages.push({ id: rtrnMessageInfo.android_id, guid: rtrnMessageInfo.guid });
                 });
             }
             
@@ -97,7 +97,7 @@ router.route("/:guardian_id/checkins")
             for (screenShotInfoInd in screenShotInfo) {
               checkInHelpers.screenshots.save(screenShotInfo[screenShotInfoInd])
                 .then(function(rtrnScreenShotInfo){
-                  screenShotInfo[rtrnScreenShotInfo.origin_id] = rtrnScreenShotInfo;
+                  returnJson.screenshots.push({ id: rtrnScreenShotInfo.origin_id, guid: rtrnScreenShotInfo.screenshot_id });
                 });
             }
 
@@ -118,235 +118,54 @@ router.route("/:guardian_id/checkins")
             }
 
             // parse, review and save audio
-            var audioInfo_ = checkInHelpers.audio.info(req.files.audio, strArrToJSArr(json.audio,"|","*"), dbGuardian, dbCheckIn);
+            var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(json.audio,"|","*"), dbGuardian, dbCheckIn);
             
-            // for (audioInfoInd in audioInfo_) {
-            //   checkInHelpers.audio.processUpload(audioInfo_[audioInfoInd])
-            //     .then(function(rtrnAudioInfo){
+            for (audioInfoInd in audioInfo) {
+              checkInHelpers.audio.processUpload(audioInfo[audioInfoInd]).then(function(audioInfoPostUpload){
+                checkInHelpers.audio.saveToS3(audioInfoPostUpload).then(function(audioInfoPostS3Save){
+                  checkInHelpers.audio.saveToDb(audioInfoPostS3Save).then(function(audioInfoPostDbSave){
+                    checkInHelpers.audio.queueForAnalysis(audioInfoPostDbSave).then(function(audioInfoPostQueue){
 
-            //       screenShotInfo[rtrnScreenShotInfo.origin_id] = rtrnScreenShotInfo;
+                        returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
 
-            //     });
-            // }
+                        dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
+                        dbCheckIn.save();
+                        
+                        if (verbose_logging) { console.log(returnJson); }
+                        res.status(200).json(returnJson);
+
+                        checkInHelpers.audio.extractAudioFileMeta(audioInfoPostQueue);
+
+                      }).catch(function(err){
+                        models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfoPostDbSave.sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
+                        dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
+                        checkInHelpers.audio.rollBackCheckIn(audioInfoPostDbSave);
+                        if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
+                      });
+                  }).catch(function(err){
+                    dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
+                    checkInHelpers.audio.rollBackCheckIn(audioInfoPostS3Save);
+                    if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
+                  });
+                }).catch(function(err){
+                  dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
+                  checkInHelpers.audio.rollBackCheckIn(audioInfoPostUpload);
+                  if (!!err) { res.status(500).json({msg:"error saving audio to s3"}); }
+                });
+              }).catch(function(err){
+                dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
+                checkInHelpers.audio.rollBackCheckIn(audioInfo[audioInfoInd]);
+                if (!!err) { res.status(500).json({msg:"error processing audio upload file"}); }
+              });
+            }
 
 
 
 
             // save audio files
-            if (!!req.files.audio) {
-              if (!util.isArray(req.files.audio)) { req.files.audio = [req.files.audio]; }
-              var audioMeta = [];
-              if (json.audio != null) { audioMeta = json.audio.split("|"); }
-              if (audioMeta.length == req.files.audio.length) {
-                var audioInfo = {};
-                for (i in req.files.audio) {
-                  audioMeta[i] = audioMeta[i].split("*");
-                  var timeStampIndex = audioMeta[i][1]; 
-                  audioMeta[i][1] = timeStampToDate(audioMeta[i][1], json.timezone_offset); 
-                  var dateString = audioMeta[i][1].toISOString().substr(0,19).replace(/:/g,"-");
-                  audioInfo[timeStampIndex] = {
-                    guardian_id: dbGuardian.guid,
-                    checkin_id: dbCheckIn.guid,
-                    battery_temperature: null,
-                    guardianSha1Hash: audioMeta[i][3],
-                    uploadLocalPath: req.files.audio[i].path,
-                    unzipLocalPath: req.files.audio[i].path.substr(0,req.files.audio[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
-                    size: null, // to be calculated following the uncompression
-                    sha1Hash: null, // to be calculated following the uncompression
-                    duration: null,
-                    timeStamp: timeStampIndex,
-                    measured_at: audioMeta[i][1],
-                    api_token_guid: null,
-                    api_token: null,
-                    api_token_expires_at: null,
-                    api_url: null,
-                    isSaved: { db: false, s3: false, sqs: false },
-                    s3Path: "/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)+"/"+dbGuardian.guid+"/"
-                            +dbGuardian.guid+"-"+dateString+"."+audioMeta[i][2]
-                  };
-                }
+             if (!!req.files.audio) {
 
-                for (j in audioInfo) {
-                  
-                  // unzip uploaded audio file into upload directory
-                  audioInfo[j].unZipStream = fs.createWriteStream(audioInfo[j].unzipLocalPath);
-                  fs.createReadStream(audioInfo[j].uploadLocalPath).pipe(zlib.createGunzip()).pipe(audioInfo[j].unZipStream);
-                  // when the output stream closes, proceed asynchronously...
-                  audioInfo[j].unZipStream.on("close", function(){
-                    // fill in the file info on the unzipped audio file
-                    audioInfo[j].sha1Hash = hash.fileSha1(audioInfo[j].unzipLocalPath);
-                    audioInfo[j].size = fs.statSync(audioInfo[j].unzipLocalPath).size;
-                    // compare to checksum received from guardian
-                    if (audioInfo[j].sha1Hash === audioInfo[j].guardianSha1Hash) {
 
-                      // if it matches, add the audio to the database
-                      models.GuardianAudio.create({
-                        guardian_id: dbGuardian.id,
-                        site_id: dbGuardian.site_id,
-                        check_in_id: dbCheckIn.id,
-                        sha1_checksum: audioInfo[j].sha1Hash,
-                        url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo[j].s3Path,
-                        size: audioInfo[j].size,
-                        duration: audioInfo[j].duration,
-                        measured_at: audioInfo[j].measured_at
-                      }).then(function(dbAudio){
-                        // because the callback is asynchronous...
-                        // cycle through all uploaded audio options and match the checksum
-                        // ...in order to re-find our place
-                        for (k in audioInfo) {
-                          if (audioInfo[k].sha1Hash === dbAudio.sha1_checksum) {
-
-                            // parse exif data from file and save to db
-                            fs.readFile(audioInfo[k].unzipLocalPath,function(err,audioFileData){
-                              if (!!err) { throw err;
-                              } else {
-                                try {
-                                  exifTool.metadata(audioFileData,function(err,audioFileExifData){
-                                    if (!!err) { throw err;
-                                    } else {
-                                      dbAudio.duration = (audioFileExifData.duration != null) ? ((((parseInt(audioFileExifData.duration.split(":")[0])*3600)+(parseInt(audioFileExifData.duration.split(":")[1])*60)+parseInt(audioFileExifData.duration.split(":")[2]))*1000)) : null;
-                                      dbAudio.capture_format = (audioFileExifData.audioFormat != null) ? audioFileExifData.audioFormat : null;
-                                      dbAudio.capture_bitrate = (audioFileExifData.avgBitrate != null) ? (Math.round(parseFloat(audioFileExifData.avgBitrate.substr(0,audioFileExifData.avgBitrate.indexOf(" kbps")))*1000/128)*128) : null;
-                                      dbAudio.capture_sample_rate = (audioFileExifData.audioSampleRate != null) ? parseInt(audioFileExifData.audioSampleRate) : null;
-                                      dbAudio.save();
-                                    }
-                                  });
-                                } catch (exifToolError) {
-                                  console.log(exifToolError);
-                                }
-                              }
-                            });
-                            
-                            // inform other async processes that this one has been saved to database
-                            audioInfo[k].isSaved.db = true;
-                            audioInfo[k].audio_id = dbAudio.guid;
-                            audioInfo[k].api_url = "/v1/guardians/"+dbGuardian.guid+"/checkins/"+dbCheckIn.guid+"/audio/"+dbAudio.guid+"/events";
-
-                            aws.s3(process.env.ASSET_BUCKET_AUDIO).putFile(
-                              audioInfo[k].unzipLocalPath, audioInfo[k].s3Path, 
-                              function(err, s3Res){
-                                try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
-                                if (!!err) {
-                                  console.log(err);
-                                } else if (200 == s3Res.statusCode) {
-                                  for (l in audioInfo) {
-                                    if (aws.s3ConfirmSave(s3Res,audioInfo[l].s3Path)) {
-                                      audioInfo[l].isSaved.s3 = true;
-
-                                      audioInfo[l].measured_at = audioInfo[l].measured_at.toISOString();
-                                      
-                                      token.createAnonymousToken({
-                                        reference_tag: audioInfo[l].audio_id,
-                                        token_type: "analysis-worker",
-                                        created_by: "guardian-checkin",
-                                        minutes_until_expiration: 180,
-                                        allow_garbage_collection: true,
-                                        only_allow_access_to: [ "^"+audioInfo[l].api_url+"$" ]
-                                      }).then(function(tokenInfo){
-
-                                        for (m in audioInfo) {
-                                          if (audioInfo[m].audio_id == tokenInfo.reference_tag) {
-
-                                            audioInfo[m].api_token_guid = tokenInfo.token_guid;
-                                            audioInfo[m].api_token = tokenInfo.token;
-                                            audioInfo[m].api_token_expires_at = tokenInfo.token_expires_at;
-                                            audioInfo[m].minutes_until_expiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
-                                            
-                                            aws.sns().publish({
-                                                TopicArn: aws.snsTopicArn("rfcx-analysis"),
-                                                Message: JSON.stringify({
-                                                    
-                                                    measured_at: audioInfo[m].measured_at,
-
-                                                    api_token_guid: audioInfo[m].api_token_guid,
-                                                    api_token: audioInfo[m].api_token,
-                                                    api_token_expires_at: audioInfo[m].api_token_expires_at,
-                                                    api_url: req.rfcx.api_url_domain+audioInfo[m].api_url,
-                                                    audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audioInfo[m].s3Path, audioInfo[m].minutes_until_expiration),
-                                                    audio_sha1: audioInfo[m].sha1Hash
-                                                  })
-                                              }, function(snsErr, snsData) {
-
-                                                if (!!snsErr && !aws.snsIgnoreError()) {
-                                                  console.log(snsErr);
-                                                } else {
-
-                                                  dbAudio.analysis_queued_at = new Date();
-                                                  dbAudio.save();
-                                                  
-                                                  var isComplete = true;
-
-                                                  for (n in audioInfo) {
-                                                    if (!audioInfo[n].isSaved.sqs) { isComplete = false; }
-                                                    returnJson.audio.push({
-                                                      id: n,
-                                                      guid: audioInfo[n].audio_id
-                                                    });         
-                                                  }
-                                                  for (o in screenShotInfo) {
-                                                    if (screenShotInfo[o].isSaved) {
-                                                      returnJson.screenshots.push({
-                                                        id: o,
-                                                        guid: screenShotInfo[o].screenshot_id
-                                                      });
-                                                    }         
-                                                  }
-                                                  for (p in messageInfo) {
-                                                    if (messageInfo[p].isSaved) {
-                                                      returnJson.messages.push({
-                                                        id: messageInfo[p].android_id,
-                                                        guid: messageInfo[p].guid
-                                                      });
-                                                    }         
-                                                  }
-                                                  if (isComplete) {
-
-                                                    dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
-                                                    dbCheckIn.save();
-
-                                                    if (verbose_logging) { console.log(returnJson); }
-                                                    res.status(200).json(returnJson);
-                                                    
-                                                    for (q in audioInfo) { audioInfo[q].isSaved.sqs = false; }
-                                                  }
-                                                }
-                                            });
-                                            fs.unlink(audioInfo[m].uploadLocalPath,function(e){if(e){console.log(e);}});
-                                            fs.unlink(audioInfo[m].unzipLocalPath,function(e){if(e){console.log(e);}});
-                                            audioInfo[m].isSaved.sqs = true;
-
-                                          }  
-                                        }
-                                      }).catch(function(err){
-                                        console.log("error creating access token for analysis worker | "+err);
-                                        dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-                                        dbAudio.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-                                        if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
-                                      });
-                                    }
-                                  }
-                                }
-                            });
-                          }
-                        }
-                      }).catch(function(err){
-                        console.log("error adding audio to database | "+err);
-                        dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-                        models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo[j].sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
-                        if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
-                      });
-                    } else {
-                      console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash);
-                      dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-                      res.status(500).json({msg:"checksum mismatch on uploaded audio file | "+audioInfo[j].sha1Hash + " - " + audioInfo[j].guardianSha1Hash});
-                    }
-                  });
-                }
-              } else {
-                console.log("couldn't match audio meta to uploaded content | "+audioMeta);
-                dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-                if (!!err) { res.status(500).json({msg:"couldn't match audio meta to uploaded content"}); }
-              }
             } else {
               console.log("no audio files detected");
               dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;

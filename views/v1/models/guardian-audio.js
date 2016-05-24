@@ -143,7 +143,7 @@ exports.models = {
           specWidth: 2048, specHeight: 512, 
           windowFunc: "Dolph", // Hann Hamming Bartlett Rectangular Kaiser Dolph
           zAxis: 95, // color range in dB, ranging from 20 to 180
-          clipDuration: dbRow.duration,
+          clipDuration: (dbRow.capture_sample_count/dbRow.capture_sample_rate),
           audioSampleRate: (dbRow.capture_sample_rate != null) ? dbRow.capture_sample_rate : 8000
         };
 
@@ -153,7 +153,7 @@ exports.models = {
                   +" | "
                   +" "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r -o "+specFilePath
                   +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
-                  +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s -d "+((specSettings.clipDuration)/1000);
+                  +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s -d "+specSettings.clipDuration;
 
     aws.s3(s3Bucket).get(s3Path)
       .on("response", function(s3Res){
@@ -214,7 +214,7 @@ exports.models = {
             measured_at: thisRow.measured_at,
             analyzed_at: thisRow.analyzed_at,
             size: thisRow.size,
-            duration: thisRow.duration,
+            duration: parseInt(1000*thisRow.capture_sample_count/thisRow.capture_sample_rate),
             format: thisRow.capture_format,
             bitrate: thisRow.capture_bitrate,
             sample_rate: thisRow.capture_sample_rate,
