@@ -60,6 +60,7 @@ exports.audio = {
             capture_bitrate: (audioMeta[i][5] != null) ? parseInt(audioMeta[i][5]) : null,
             capture_sample_rate: (audioMeta[i][4] != null) ? parseInt(audioMeta[i][4]) : null,
             capture_sample_count: null,
+            capture_encode_duration: (audioMeta[i][8] != null) ? parseInt(audioMeta[i][8]) : null,
 
             timeStamp: timeStamp,
             measured_at: new Date(parseInt(timeStamp)),
@@ -166,6 +167,7 @@ exports.audio = {
         url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
         capture_sample_rate: audioInfo.capture_sample_rate,
         capture_bitrate: audioInfo.capture_bitrate,
+        encode_duration: audioInfo.capture_encode_duration,
         measured_at: audioInfo.measured_at
       }).then(function(dbAudio){
 
