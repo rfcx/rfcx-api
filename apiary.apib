@@ -71,3 +71,72 @@ Internal server error
                 "status": 500
               }
             }
+
+## Meta Data [/player/web]
+### Retrieve Streaming Information [GET]
+Retrieves streaming information for curated and real-time streams about
+(1) urls to download audio files, (2) stream-specific flick photo album and
+(3) location information.
+
+For token based authentication we need the guid and token information from Authentication/Login.
+Note, you'll need to prepend a "token/" before the guid.
+
++ Request (application/json)
+
++ Response 200 (application/json; charset=utf-8)
+
+    + Attributes (object)
+
+        + streams (array[stream])
+
+
+    + Body
+
+
+
+            {
+              "streams": [
+                {
+                  "guid": "6aa09bd6-c8a5-4da5-a808-8789f3d08e64",
+                  "active": true,
+                  "type": "playlist",
+                  "shortname": "Amazon (Nightfall)",
+                  "name": "Nightfall, Tembé Indigenous Territory",
+                  "location": "Amazon, Parà, Brazil",
+                  "timezone_offset": -3,
+                  "description": "Nightfall, Tembé Indigenous Territory, Amazon Rainforest",
+                  "flickr_photoset_id": "72157666271579426",
+                  "urls": {
+                    "audio": "/v1/guardians/0bdbb4a5d567/audio.json?starting_after=2016-03-22T01:15:00.000Z&order=ascending&limit=3"
+                  }
+                },
+                {
+                  "guid": "08f54f4b-999b-4bb7-a076-7ae3c97727cd",
+                  "active": false,
+                  "type": "stream",
+                  "shortname": "Ecuador (LIVE)",
+                  "name": "Live Stream, Tembé Indigenous Territory",
+                  "location": "Amazon, Parà, Brazil",
+                  "timezone_offset": -3,
+                  "description": "Live Stream, Tembé Indigenous Territory",
+                  "flickr_photoset_id": "72157666271579426",
+                  "urls": {
+                    "audio": "/v1/guardians/0bdbb4a5d567/audio.json"
+                  }
+                }
+              ]
+            }
+
+# Data Structures
+
+## stream (object)
++ active(boolean) - (new) whether the stream is currently active or not, this will be used for streams that will used for streams under construction
++ type (string) - 'playlist' (a curated stream from the past) or 'stream' (a live stream)
++ shortname (string) - for titles
++ name (string) - fully descriptive title
++ description (string) - a description of what we hear in the stream (especially for curated streams from the past), this could be used for the body of a player
++ location (string) - textual description of the location
++ timezone_offset (string) - UTC offset
++ flick_photoset_id (string) - this ID can be used to get photos from Flickr that are curated for this particular stream; this could be used for a slide show while streaming
++ urls
+    + audio (string) - url to retrieve the audio data

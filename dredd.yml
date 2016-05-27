@@ -3,7 +3,7 @@ custom:
   apiaryApiKey: bd2be04725ba8aa0dc853df6b275b3c1
   apiaryApiName: betaplayer
 dry-run: null
-hookfiles: null
+hookfiles: hooks/*
 language: nodejs
 sandbox: false
 server: bin/start
