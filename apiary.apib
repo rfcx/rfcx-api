@@ -1,80 +1,73 @@
 FORMAT: 1A
-HOST: https://api.rfcx.org/
+HOST: http://127.0.0.1:8080/v1/
 
-# rfcx-api
+# Beta Player API
 
-Polls is a simple API allowing consumers to view polls and vote in them.
+Caution: all of these endpoints are still in development. These are not stable
+intefaces.
 
-## Questions Collection [/questions]
+Access live streams from the rain forest.
 
-### List All Questions [GET]
+## Authentication [/player/login]
+Token Based authentication is used throughout the API.
 
-+ Response 200 (application/json)
+### Retrieve Token [POST]
+From this endpoint we retrieve an anonymous token. These are tokens for which we
+do not have any information (email, name, ...) about the user who requested it.
+These tokens have limited access rights.
 
-        [
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
-            }
-        ]
-
-### Create a New Question [POST]
-
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+We need to add the guid (as x-auth-user) and token (as x-auth-token) as headers
+to all further requests.
 
 + Request (application/json)
 
-        {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
-        }
+            { "password" : "1121" }
 
-+ Response 201 (application/json)
 
-    + Headers
++ Response 200 (application/json; charset=utf-8)
+Your password was correct and a token is included in the message.
 
-            Location: /questions/2
+    + Attributes(object)
+
+        + token (object) - authentication token for other requests
+            + guid (string) - user id (x-auth-user header)
+            + token (string) - token value (x-auth-token header)
+            + expires_at (string) - ISO 8601 date time string (in UTC)
 
     + Body
 
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
+                "token": {
+                    "guid": "82905453-27f7-4c4f-a280-9743d0b4022c",
+                    "token": "iwc3g2wd74eb4co5bt3dz49p1vq293rlrytirj6v",
+                    "expires_at": "2016-05-17T12:02:04.530Z"
+                }
+            }
+
++ Request (application/json)
+
+            { "password" : "1122" }
+
++ Response 401 (application/json; charset=utf-8)
+Invalid password
+
+    + Body
+
+            {
+              "message": "invalid password",
+              "error": {
+                "status": 401
+              }
+            }
+
++ Response 500 (application/json)
+Internal server error
+
+    + Body
+
+            {
+              "message": "error creating access token for audio player | database is not reachable",
+              "error": {
+                "status": 500
+              }
             }
