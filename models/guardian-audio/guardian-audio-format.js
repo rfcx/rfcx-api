@@ -32,6 +32,15 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
+    target_bit_rate: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: false,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     is_vbr: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

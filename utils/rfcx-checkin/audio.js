@@ -55,7 +55,6 @@ exports.audio = {
             audio_id: null,
             audio_guid: null,
             
-            duration: (audioMeta[i][7] != null) ? parseInt(audioMeta[i][7]) : null,
             capture_format: null,
             capture_bitrate: (audioMeta[i][5] != null) ? parseInt(audioMeta[i][5]) : null,
             capture_sample_rate: (audioMeta[i][4] != null) ? parseInt(audioMeta[i][4]) : null,
@@ -63,7 +62,7 @@ exports.audio = {
             capture_encode_duration: (audioMeta[i][8] != null) ? parseInt(audioMeta[i][8]) : null,
             capture_file_extension: audioMeta[i][2],
             capture_codec: audioMeta[i][6],
-            capture_is_vbr: false, // needs to be passed from guardian instead of hardcoded
+            capture_is_vbr: (audioMeta[i][7].toLowerCase() === "vbr"),
 
             timeStamp: timeStamp,
             measured_at: new Date(parseInt(timeStamp)),
@@ -181,6 +180,7 @@ exports.audio = {
               mime: mimeTypeFromAudioCodec(audioInfo.capture_codec),
               file_extension: audioInfo.capture_file_extension,
               sample_rate: audioInfo.capture_sample_rate,
+              target_bit_rate: audioInfo.capture_bitrate,
               is_vbr: audioInfo.capture_is_vbr
             }
           }).spread(function(dbAudioFormat, wasCreated){
