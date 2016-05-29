@@ -167,7 +167,6 @@ exports.audio = {
         check_in_id: audioInfo.checkin_id,
         sha1_checksum: audioInfo.sha1Hash,
         url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
-        capture_sample_rate: audioInfo.capture_sample_rate,
         capture_bitrate: audioInfo.capture_bitrate,
         encode_duration: audioInfo.capture_encode_duration,
         measured_at: audioInfo.measured_at

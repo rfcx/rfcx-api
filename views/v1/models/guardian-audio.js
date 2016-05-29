@@ -51,7 +51,7 @@ exports.models = {
               sourceFilePath: sourceFilePath,
               enhanced: true,
               bitRate: "32k",
-              sampleRate: dbRow.capture_sample_rate
+              sampleRate: dbRow.Format.sample_rate
             }).then(function(outputFilePath){
               audioUtils.serveTranscodedAudioFromFile(res,outputFilePath,dbRow.guid+".mp3")
                 .then(function(){
@@ -78,7 +78,7 @@ exports.models = {
       .then(function(sourceFilePath){
           audioUtils.transcodeToWavFile({
               sourceFilePath: sourceFilePath,
-              sampleRate: dbRow.capture_sample_rate
+              sampleRate: dbRow.Format.sample_rate
             }).then(function(outputFilePath){
 
               res.status(200).json({file:outputFilePath});
@@ -111,7 +111,7 @@ exports.models = {
               sourceFilePath: sourceFilePath,
               enhanced: false,
               bitRate: "16k",
-              sampleRate: dbRow.capture_sample_rate
+              sampleRate: dbRow.Format.sample_rate
             }).then(function(ffmpegObj){
               audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".opus")
                 .then(function(){
@@ -143,8 +143,8 @@ exports.models = {
           specWidth: 2048, specHeight: 512, 
           windowFunc: "Dolph", // Hann Hamming Bartlett Rectangular Kaiser Dolph
           zAxis: 95, // color range in dB, ranging from 20 to 180
-          clipDuration: (dbRow.capture_sample_count/dbRow.capture_sample_rate),
-          audioSampleRate: (dbRow.capture_sample_rate != null) ? dbRow.capture_sample_rate : 8000
+          clipDuration: (dbRow.capture_sample_count/dbRow.Format.sample_rate),
+          audioSampleRate: (dbRow.Format.sample_rate != null) ? dbRow.Format.sample_rate : 8000
         };
 
     var ffmpegSox = process.env.FFMPEG_PATH+" -i "+audioFilePath+" -loglevel panic -nostdin"
@@ -214,10 +214,10 @@ exports.models = {
             measured_at: thisRow.measured_at,
             analyzed_at: thisRow.analyzed_at,
             size: thisRow.size,
-            duration: parseInt(1000*thisRow.capture_sample_count/thisRow.capture_sample_rate),
-            format: thisRow.capture_format,
-            bitrate: thisRow.capture_bitrate,
-            sample_rate: thisRow.capture_sample_rate,
+            duration: Math.round(1000*thisRow.capture_sample_count/thisRow.Format.sample_rate),
+//            format: thisRow.capture_format,
+//            bitrate: thisRow.capture_bitrate,
+            sample_rate: thisRow.Format.sample_rate,
             sha1_checksum: thisRow.sha1_checksum,
             spectrogram: null
           };
