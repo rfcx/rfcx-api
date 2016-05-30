@@ -22,7 +22,7 @@ exports.audioUtils = {
             outputOptions: []
         },
         m4a: { // this one needs some attention...
-            extension: "m4a", codec: "libfdk_aac", outputFormat: "aac", mime: "audio/mp4",
+            extension: "m4a", codec: "libfdk_aac", outputFormat: "m4a", mime: "audio/mp4",
             outputOptions: []
         } 
     },
