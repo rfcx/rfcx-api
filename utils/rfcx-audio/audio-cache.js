@@ -25,12 +25,14 @@ exports.audioUtils = {
                     s3Res.on("end", function(){ tempWriteStream.end(); });
                     s3Res.on("error", function(err){ console.log(err); });
                     tempWriteStream.on("finish", function(){
-                        if (fs.existsSync(sourceFilePath)) {
-                            resolve(sourceFilePath);
-                        } else {
-                            console.log("Audio file not downloaded...");
-                            reject(new Error());
-                        }
+                        fs.stat(sourceFilePath, function(statErr,fileStat){
+                            if (statErr == null) {
+                                resolve(sourceFilePath);
+                            } else {
+                                console.log("Audio file not found...");
+                                reject(new Error());
+                            }
+                        });
                     });
                   }).end();
 

@@ -12,37 +12,7 @@ function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
-  // guardianAudioFile: function(req,res,dbRows) {
-
-  //   var dbRow = dbRows,
-  //       s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-  //       s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-  //       s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-  //       audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
-  //       ;
-
-  //     aws.s3(s3Bucket).getFile(s3Path, function(err, result){
-  //       if(err) { return next(err); }
-
-  //       // this next line may not be necessary
-  //       result.resume();
-        
-  //       var contentLength = parseInt(result.headers["content-length"]);
-        
-  //       res.writeHead(  200, {
-  //         "Content-Length": contentLength,
-  //         "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-  //         "Content-Type": result.headers["content-type"],
-  //         "Content-Disposition": "filename="+dbRow.guid+"."+audioFileExtension
-  //       });
-
-  //       result.pipe(res);      
-  //     });
-  // },
-
-  guardianAudioFile: function(req,res,dbRows) {
-
-    var dbRow = dbRows;
+  guardianAudioFile: function(req,res,dbRow) {
 
     var output_file_extension = req.rfcx.content_type,
         output_file_name = dbRow.guid+"."+output_file_extension;
@@ -128,7 +98,7 @@ exports.models = {
             audioUtils.transcodeToM4a({
                 sourceFilePath: sourceFilePath,
                 enhanced: false,
-                bitRate: "16k",
+                bitRate: "32k",
                 sampleRate: dbRow.Format.sample_rate
               }).then(function(ffmpegObj){
                 audioUtils.serveTranscodedAudio(res,ffmpegObj,output_file_name)
@@ -150,9 +120,6 @@ exports.models = {
                 sampleRate: dbRow.Format.sample_rate
               }).then(function(outputFilePath){
 
-                // res.status(200).json({file:outputFilePath});
-                // fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-
                 audioUtils.serveAudioFromFile(res,outputFilePath,output_file_name)
                   .then(function(){
                     // should we do/log anything if we're successful?
@@ -172,78 +139,67 @@ exports.models = {
 
         }).catch(function(err){
           console.log(err);
-          res.status(500).json({msg:"failed to transcode audio"});
+          res.status(500).json({msg:"failed to download audio"});
         });
 
   },
 
-  guardianAudioSpectrogram: function(req,res,dbRows) {
+  guardianAudioSpectrogram: function(req,res,dbRow) {
 
-    var dbRow = dbRows,
-        hashName = hash.randomString(32),
-        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
-        audioFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+"."+audioFileExtension,
-        specFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+".png",
-        specSettings = { 
+    var specSettings = { 
+          tmpFilePath: process.env.CACHE_DIRECTORY+"ffmpeg/"+hash.randomString(32)+".png",
           specWidth: 2048, specHeight: 512, 
-          windowFunc: // window function options listed below (select only one)
-                        "Dolph", 
-                      //  "Hann",
-                      //  "Hamming",
-                      //  "Bartlett",
-                      //  "Rectangular",
-                      //  "Kaiser",
           zAxis: 95, // color range in dB, ranging from 20 to 180
-          clipDuration: (dbRow.capture_sample_count/dbRow.Format.sample_rate),
-          audioSampleRate: (dbRow.Format.sample_rate != null) ? dbRow.Format.sample_rate : 8000
+          windowFunc: // window function options listed below (select only one)
+                        "Dolph" 
+                      //  "Hann"
+                      //  "Hamming"
+                      //  "Bartlett"
+                      //  "Rectangular"
+                      //  "Kaiser"
         };
 
-    var ffmpegSox = process.env.FFMPEG_PATH+" -i "+audioFilePath+" -loglevel panic -nostdin"
-                  +" -ac 1 -ar "+specSettings.audioSampleRate
+    audioUtils.cacheSourceAudio(dbRow.url)
+      .then(function(sourceFilePath){
+
+            var ffmpegSox = process.env.FFMPEG_PATH+" -i "+sourceFilePath+" -loglevel panic -nostdin"
+                  +" -ac 1 -ar "+dbRow.Format.sample_rate
                   +" -f sox - "
                   +" | "
-                  +" "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r -o "+specFilePath
+                  +" "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r"
+                  +" -o "+specSettings.tmpFilePath
                   +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
-                  +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s -d "+specSettings.clipDuration;
+                  +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s"
+                  +" -d "+(dbRow.capture_sample_count/dbRow.Format.sample_rate)
+                  ;
 
-    aws.s3(s3Bucket).get(s3Path)
-      .on("response", function(s3Res){
-        var audioWriteStream = fs.createWriteStream(audioFilePath);
-        audioWriteStream.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        s3Res.on("data", function(data){ audioWriteStream.write(data); });
-        s3Res.on("end", function(){ audioWriteStream.end(); });
-        s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        audioWriteStream.on("finish", function(){ 
-          if (fs.existsSync(audioFilePath)) {
             exec(ffmpegSox, function(err,stdout,stderr){
+
               if (stderr.trim().length > 0) { console.log(stderr); }
               if (!!err) { console.log(err); }
-              if (fs.existsSync(specFilePath)) {
 
-                res.writeHead(200, {
-                  "Content-Type": "image/png",
-                  //"Content-Length": contentLength,
-                  //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-                  "Content-Disposition": "filename="+dbRow.guid+".png"
-                });
-                var specStream = fs.createReadStream(specFilePath);
-                specStream.pipe(res);
-              } else {
-                res.status(500).json({});
-              }
-             fs.unlink(specFilePath,function(e){if(e){console.log(e);}});
-             fs.unlink(audioFilePath,function(e){if(e){console.log(e);}});
+              fs.stat(specSettings.tmpFilePath, function(statErr,fileStat){
+                if (statErr == null) {
+                  res.writeHead(200, {
+                    "Content-Type": "image/png",
+                    "Content-Disposition": "filename="+dbRow.guid+".png"
+                  });
+                  var specStream = fs.createReadStream(specSettings.tmpFilePath);
+                  specStream.pipe(res);
+                } else {
+                  console.log("Spectrogram file not found...");
+                  res.status(500).json({});
+                }
+                fs.unlink(specSettings.tmpFilePath,function(e){if(e){console.log(e);}});
+                fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+              });
+
             });
 
-          } else {
-            console.log("Source audio not accessible...");
-            res.status(500).json({msg:"Source audio not accessible..."});
-          }
-        });
-      }).end();
+    }).catch(function(err){
+      console.log(err);
+      res.status(500).json({msg:"failed to download audio"});
+    });
 
   },
 
@@ -272,8 +228,7 @@ exports.models = {
 //            format: thisRow.capture_format,
 //            bitrate: thisRow.capture_bitrate,
             sample_rate: thisRow.Format.sample_rate,
-            sha1_checksum: thisRow.sha1_checksum,
-            spectrogram: null
+            sha1_checksum: thisRow.sha1_checksum
           };
 
           if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid; }
@@ -289,7 +244,9 @@ exports.models = {
             created_by: null,
             allow_garbage_collection: false,
             only_allow_access_to: [
-              "^/v1/assets/audio/"+thisGuid+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+"$",
+              "^/v1/assets/audio/"+thisGuid+".m4a$",
+              "^/v1/assets/audio/"+thisGuid+".mp3$",
+              "^/v1/assets/audio/"+thisGuid+".opus$",
               "^/v1/assets/audio/"+thisGuid+".png$"
               ]
           }).then(function(tokenInfo){
@@ -300,16 +257,6 @@ exports.models = {
                     urlAuthParams = "?auth_user=token/"+tokenInfo.token_guid
                                   +"&auth_token="+tokenInfo.token
                                   +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
-
-                jsonRowsByGuid[thisGuid].url = urlBase+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."));
-                
-                // in case we just prefer to use S3 signed URLs (safari is having problems, for example)
-                // var s3NoProtocol = thisRow.url.substr(thisRow.url.indexOf("://")+3),
-                //     s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-                //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
-                // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30);
-
-                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png";//+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].urls = {
                   m4a: urlBase+".m4a",
