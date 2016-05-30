@@ -66,12 +66,7 @@ exports.models = {
           specWidth: 2048, specHeight: 512, 
           zAxis: 95, // color range in dB, ranging from 20 to 180
           windowFunc: // window function options listed below (select only one)
-                        "Dolph" 
-                      //  "Hann"
-                      //  "Hamming"
-                      //  "Bartlett"
-                      //  "Rectangular"
-                      //  "Kaiser"
+                        "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
       };
 
     audioUtils.cacheSourceAudio(dbRow.url)
