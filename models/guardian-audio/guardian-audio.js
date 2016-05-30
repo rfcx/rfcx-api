@@ -34,38 +34,7 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
-    duration: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
     capture_sample_count: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
-    capture_format: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: false,
-      validate: {
-      }
-    },
-    capture_bitrate: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
-    capture_sample_rate: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
