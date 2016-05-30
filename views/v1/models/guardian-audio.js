@@ -24,7 +24,7 @@ exports.models = {
 
           console.log("serving "+output_file_extension+" file without transcoding");
 
-          audioUtils.serveAudioFromFile(res,sourceFilePath,output_file_name)
+          audioUtils.serveAudioFromFile(res,sourceFilePath,output_file_name,audioUtils.formatSettings[output_file_extension].mime)
             .then(function(){
               // should we do/log anything if we're successful?
             }).catch(function(err){
@@ -35,112 +35,27 @@ exports.models = {
 
           console.log("transcoding "+dbRow.Format.file_extension+" audio to "+output_file_extension);
 
-          if (output_file_extension === "mp3") {
-
-            audioUtils.transcodeToMp3File({
-                sourceFilePath: sourceFilePath,
-                enhanced: true,
-                bitRate: "32k",
-                sampleRate: dbRow.Format.sample_rate
-              }).then(function(outputFilePath){
-                audioUtils.serveAudioFromFile(res,outputFilePath,output_file_name)
-                  .then(function(){
-                    // should we do/log anything if we're successful?
-                  }).catch(function(err){
-                    console.log(err);
-                  });
-              }).catch(function(err){
-                console.log(err);
-              });
-
-          } else if (output_file_extension === "opus") {
-
-            // this transcoded stream is served directly
-            audioUtils.transcodeToOpus({
-                sourceFilePath: sourceFilePath,
-                enhanced: false,
-                bitRate: "16k",
-                sampleRate: dbRow.Format.sample_rate
-              }).then(function(ffmpegObj){
-                audioUtils.serveTranscodedAudio(res,ffmpegObj,output_file_name)
-                  .then(function(){
-                    fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-                    // should we do/log anything if we're successful?
-                  }).catch(function(err){
-                    console.log(err);
-                  });
-              }).catch(function(err){
-                console.log(err);
-              });
-
-          } else if (output_file_extension === "flac") {
-
-            // this transcoded stream is served directly
-            audioUtils.transcodeToFlac({
-                sourceFilePath: sourceFilePath,
-                enhanced: false,
-                sampleRate: dbRow.Format.sample_rate
-              }).then(function(ffmpegObj){
-                audioUtils.serveTranscodedAudio(res,ffmpegObj,output_file_name)
-                  .then(function(){
-                    fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-                    // should we do/log anything if we're successful?
-                  }).catch(function(err){
-                    console.log(err);
-                  });
-              }).catch(function(err){
-                console.log(err);
-              });
-
-          } else if (output_file_extension === "m4a") {
-
-            // this transcoded stream is served directly
-            audioUtils.transcodeToM4a({
-                sourceFilePath: sourceFilePath,
-                enhanced: false,
-                bitRate: "32k",
-                sampleRate: dbRow.Format.sample_rate
-              }).then(function(ffmpegObj){
-                audioUtils.serveTranscodedAudio(res,ffmpegObj,output_file_name)
-                  .then(function(){
-                    fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-                    // should we do/log anything if we're successful?
-                  }).catch(function(err){
-                    console.log(err);
-                  });
-              }).catch(function(err){
-                console.log(err);
-              });
-
-          } else if (output_file_extension === "wav") {
-
-            // this transcoded stream is served directly
-            audioUtils.transcodeToWavFile({
-                sourceFilePath: sourceFilePath,
-                sampleRate: dbRow.Format.sample_rate
-              }).then(function(outputFilePath){
-
-                audioUtils.serveAudioFromFile(res,outputFilePath,output_file_name)
-                  .then(function(){
-                    // should we do/log anything if we're successful?
-                  }).catch(function(err){
-                    console.log(err);
-                  });
-
-              }).catch(function(err){
-                console.log(err);
-              });
-
-          }
-
+          audioUtils.transcodeToFile( output_file_extension, {
+              enhanced: (output_file_extension === "mp3"),
+              bitRate: (output_file_extension === "mp3") ? "32k" : "16k",
+              sampleRate: dbRow.Format.sample_rate,
+              sourceFilePath: sourceFilePath
+            }).then(function(outputFilePath){
+              audioUtils.serveAudioFromFile(res,outputFilePath,output_file_name,audioUtils.formatSettings[output_file_extension].mime)
+                .then(function(){
+                  // should we do/log anything if we're successful?
+                }).catch(function(err){
+                  console.log(err);
+                });
+            }).catch(function(err){
+              console.log(err);
+            });
         }
 
-
-
-        }).catch(function(err){
-          console.log(err);
-          res.status(500).json({msg:"failed to download audio"});
-        });
+      }).catch(function(err){
+        console.log(err);
+        res.status(500).json({msg:"failed to download audio"});
+      });
 
   },
 
@@ -157,7 +72,7 @@ exports.models = {
                       //  "Bartlett"
                       //  "Rectangular"
                       //  "Kaiser"
-        };
+      };
 
     audioUtils.cacheSourceAudio(dbRow.url)
       .then(function(sourceFilePath){
@@ -165,8 +80,7 @@ exports.models = {
             var ffmpegSox = process.env.FFMPEG_PATH+" -i "+sourceFilePath+" -loglevel panic -nostdin"
                   +" -ac 1 -ar "+dbRow.Format.sample_rate
                   +" -f sox - "
-                  +" | "
-                  +" "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r"
+                  +" | "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r"
                   +" -o "+specSettings.tmpFilePath
                   +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
                   +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s"
@@ -178,21 +92,14 @@ exports.models = {
               if (stderr.trim().length > 0) { console.log(stderr); }
               if (!!err) { console.log(err); }
 
-              fs.stat(specSettings.tmpFilePath, function(statErr,fileStat){
-                if (statErr == null) {
-                  res.writeHead(200, {
-                    "Content-Type": "image/png",
-                    "Content-Disposition": "filename="+dbRow.guid+".png"
-                  });
-                  var specStream = fs.createReadStream(specSettings.tmpFilePath);
-                  specStream.pipe(res);
-                } else {
-                  console.log("Spectrogram file not found...");
-                  res.status(500).json({});
-                }
-                fs.unlink(specSettings.tmpFilePath,function(e){if(e){console.log(e);}});
-                fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-              });
+              fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+
+              audioUtils.serveAudioFromFile(res,specSettings.tmpFilePath,dbRow.guid+".png","image/png")
+                .then(function(){
+                  // should we do/log anything if we're successful?
+                }).catch(function(err){
+                  console.log(err);
+                });
 
             });
 
