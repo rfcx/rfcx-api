@@ -126,7 +126,7 @@ exports.audio = {
             audioInfo.dbAudioObj.size = audioInfo.size;
             audioInfo.dbAudioObj.save();
 
-            audioUtils.transcodeToWavFile( "wav", {
+            audioUtils.transcodeToFile( "wav", {
                 sourceFilePath: audioInfo.unzipLocalPath,
                 sampleRate: audioInfo.capture_sample_rate
             }).then(function(wavFilePath){
