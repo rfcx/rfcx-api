@@ -81,7 +81,7 @@ Retrieves streaming information for curated and real-time streams about
 For token based authentication we need the guid and token information from Authentication/Login.
 Note, you'll need to prepend a "token/" before the guid.
 
-+ Request (application/json)
++ Request (application/x-www-form-urlencoded)
 
 + Response 200 (application/json; charset=utf-8)
 
@@ -126,6 +126,100 @@ Note, you'll need to prepend a "token/" before the guid.
                 }
               ]
             }
+
+
+## Guardian Audio Files API [/guardians/{guardian_id}/audio.json{?starting_after,limit,order}]
+### Retrieve Audio File Meta Data [GET]
+Retrieves a json file that contains the URL to download audio files, spectrogram and other meta
+info.
+
++ Parameters
+    + guardian_id: `74b55fd8b7f2` (string, required) - Guardian ID
+    + starting_after: `2016-05-29T22:44:00.000Z` (string, optional) - optional ISO 8601 date time string encoding when the streaming should start; it is used to stream from the past like
+    + limit: `3` (string, optional) - optional limits the number of files retrieved when playing a stream from the past
+    + order: `ascending` (enum[string], optional) - optional order on the stream from past to future (ascending) or from future to the past (descending)
+
+        + Members
+            + `ascending`
+            + `descending`
+
++ Request (application/x-www-form-urlencoded)
+
++ Response 200 (application/json; charset=utf-8)
+
+    + Attributes(array)
+        + (object) - authentication token for other requests
+            + bitrate (number) - bitrate of the file
+            + sample_rate (number) - sample rate of the audio file
+            + measured_at (string) - when the audio file was recorded, ISO 8601 date time string
+            + duration (number) - length of audio file in miliseconds (currently: 90s can be assumed)
+            + spectogram (string) - url to a png that contains the spectogram for this file, this is used for training the neural nets
+            + format (string) - audio file format (currently: mp4a)
+            + url (string) - URL to the audio file in the provided format
+            + urls (object) - dictionary of key/value pairs like m4a/url, mp3/url, opus/url
+            + urls_expire_at (string) - ISO 8601 date time string, after this time you need to query the API again to get new urls
+
+    + Body
+
+            [{
+                "guid": "51305c6c-d3e6-4ea7-b9f5-6f158a2def51",
+                "measured_at": "2016-05-29T22:44:36.306Z",
+                "analyzed_at": null,
+                "size": 184332,
+                "duration": 90127,
+                "sample_rate": 12000,
+                "sha1_checksum": "c18e932d9122d756488067847fbcdf93c6175316",
+                "spectrogram": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.png",
+                "guardian_guid": "74b55fd8b7f2",
+                "checkin_guid": "83606fc8-663c-4047-984d-5909852a62a7",
+                "url": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.opus",
+                "urls": {
+                    "m4a": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.m4a",
+                    "mp3": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.mp3",
+                    "opus": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.opus",
+                    "png": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.png"
+                },
+                "urls_expire_at": "2016-05-30T12:14:08.363Z"
+            }, {
+                "guid": "c6851115-208c-4950-8742-6bd9f784b5d8",
+                "measured_at": "2016-05-29T22:46:06.772Z",
+                "analyzed_at": null,
+                "size": 185655,
+                "duration": 90127,
+                "sample_rate": 12000,
+                "sha1_checksum": "441189f8b2778a689e1b8d497dbd21c771c8a5b8",
+                "spectrogram": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.png",
+                "guardian_guid": "74b55fd8b7f2",
+                "checkin_guid": "991bf551-f3d3-42b1-99f4-56e68def7639",
+                "url": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.opus",
+                "urls": {
+                    "m4a": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.m4a",
+                    "mp3": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.mp3",
+                    "opus": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.opus",
+                    "png": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.png"
+                },
+                "urls_expire_at": "2016-05-30T12:14:08.366Z"
+            }, {
+                "guid": "7814dd35-177c-46aa-b01d-765fcdb5458e",
+                "measured_at": "2016-05-29T22:47:37.247Z",
+                "analyzed_at": null,
+                "size": 186430,
+                "duration": 90127,
+                "sample_rate": 12000,
+                "sha1_checksum": "37bdf6596ee75cd604e76c7ff2e1b0d1a4de96c0",
+                "spectrogram": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.png",
+                "guardian_guid": "74b55fd8b7f2",
+                "checkin_guid": "f9d3d98a-04c5-4971-a3aa-cd414b231786",
+                "url": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.opus",
+                "urls": {
+                    "m4a": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.m4a",
+                    "mp3": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.mp3",
+                    "opus": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.opus",
+                    "png": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.png"
+                },
+                "urls_expire_at": "2016-05-30T12:14:08.369Z"
+            }]
+
 
 # Data Structures
 
