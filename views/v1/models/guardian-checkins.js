@@ -61,7 +61,7 @@ exports.models = {
             if (jsonArray.length == dbRows.length) { resolve(jsonArray); }
 
           } else {
-            views.models.guardianAudio(req,res,thisRow.Audio,thisGuid)
+            views.models.guardianAudioJson(req,res,thisRow.Audio,thisGuid)
               .then(function(audioJson){
 
                 thisGuid = audioJson[0].PARENT_GUID;

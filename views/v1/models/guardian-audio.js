@@ -12,56 +12,164 @@ function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
+  // guardianAudioFile: function(req,res,dbRows) {
+
+  //   var dbRow = dbRows,
+  //       s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
+  //       s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
+  //       s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
+  //       audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
+  //       ;
+
+  //     aws.s3(s3Bucket).getFile(s3Path, function(err, result){
+  //       if(err) { return next(err); }
+
+  //       // this next line may not be necessary
+  //       result.resume();
+        
+  //       var contentLength = parseInt(result.headers["content-length"]);
+        
+  //       res.writeHead(  200, {
+  //         "Content-Length": contentLength,
+  //         "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
+  //         "Content-Type": result.headers["content-type"],
+  //         "Content-Disposition": "filename="+dbRow.guid+"."+audioFileExtension
+  //       });
+
+  //       result.pipe(res);      
+  //     });
+  // },
+
   guardianAudioFile: function(req,res,dbRows) {
 
-    var dbRow = dbRows,
-        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
-        ;
-
-      aws.s3(s3Bucket).getFile(s3Path, function(err, result){
-        if(err) { return next(err); }
-
-        // this next line may not be necessary
-        result.resume();
-        
-        var contentLength = parseInt(result.headers["content-length"]);
-        
-        res.writeHead(  200, {
-          "Content-Length": contentLength,
-          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-          "Content-Type": result.headers["content-type"],
-          "Content-Disposition": "filename="+dbRow.guid+"."+audioFileExtension
-        });
-
-        result.pipe(res);      
-      });
-  },
-
-// TEST
-  TEMP_MP3_guardianAudioFile: function(req,res,dbRows) {
-
     var dbRow = dbRows;
+
+    var output_file_extension = req.rfcx.content_type,
+        output_file_name = dbRow.guid+"."+output_file_extension;
 
     audioUtils.cacheSourceAudio(dbRow.url)
       .then(function(sourceFilePath){
-          audioUtils.transcodeToMp3File({
-              sourceFilePath: sourceFilePath,
-              enhanced: true,
-              bitRate: "32k",
-              sampleRate: dbRow.Format.sample_rate
-            }).then(function(outputFilePath){
-              audioUtils.serveTranscodedAudioFromFile(res,outputFilePath,dbRow.guid+".mp3")
-                .then(function(){
-                  // should we do/log anything if we're successful?
-                }).catch(function(err){
-                  console.log(err);
-                });
+
+        if (dbRow.Format.file_extension === output_file_extension) {
+
+          console.log("serving "+output_file_extension+" file without transcoding");
+
+          audioUtils.serveAudioFromFile(res,sourceFilePath,output_file_name)
+            .then(function(){
+              // should we do/log anything if we're successful?
             }).catch(function(err){
               console.log(err);
             });
+
+        } else {
+
+          console.log("transcoding "+dbRow.Format.file_extension+" audio to "+output_file_extension);
+
+          if (output_file_extension === "mp3") {
+
+            audioUtils.transcodeToMp3File({
+                sourceFilePath: sourceFilePath,
+                enhanced: true,
+                bitRate: "32k",
+                sampleRate: dbRow.Format.sample_rate
+              }).then(function(outputFilePath){
+                audioUtils.serveAudioFromFile(res,outputFilePath,output_file_name)
+                  .then(function(){
+                    // should we do/log anything if we're successful?
+                  }).catch(function(err){
+                    console.log(err);
+                  });
+              }).catch(function(err){
+                console.log(err);
+              });
+
+          } else if (output_file_extension === "opus") {
+
+            // this transcoded stream is served directly
+            audioUtils.transcodeToOpus({
+                sourceFilePath: sourceFilePath,
+                enhanced: false,
+                bitRate: "16k",
+                sampleRate: dbRow.Format.sample_rate
+              }).then(function(ffmpegObj){
+                audioUtils.serveTranscodedAudio(res,ffmpegObj,output_file_name)
+                  .then(function(){
+                    fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+                    // should we do/log anything if we're successful?
+                  }).catch(function(err){
+                    console.log(err);
+                  });
+              }).catch(function(err){
+                console.log(err);
+              });
+
+          } else if (output_file_extension === "flac") {
+
+            // this transcoded stream is served directly
+            audioUtils.transcodeToFlac({
+                sourceFilePath: sourceFilePath,
+                enhanced: false,
+                sampleRate: dbRow.Format.sample_rate
+              }).then(function(ffmpegObj){
+                audioUtils.serveTranscodedAudio(res,ffmpegObj,output_file_name)
+                  .then(function(){
+                    fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+                    // should we do/log anything if we're successful?
+                  }).catch(function(err){
+                    console.log(err);
+                  });
+              }).catch(function(err){
+                console.log(err);
+              });
+
+          } else if (output_file_extension === "m4a") {
+
+            // this transcoded stream is served directly
+            audioUtils.transcodeToM4a({
+                sourceFilePath: sourceFilePath,
+                enhanced: false,
+                bitRate: "16k",
+                sampleRate: dbRow.Format.sample_rate
+              }).then(function(ffmpegObj){
+                audioUtils.serveTranscodedAudio(res,ffmpegObj,output_file_name)
+                  .then(function(){
+                    fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+                    // should we do/log anything if we're successful?
+                  }).catch(function(err){
+                    console.log(err);
+                  });
+              }).catch(function(err){
+                console.log(err);
+              });
+
+          } else if (output_file_extension === "wav") {
+
+            // this transcoded stream is served directly
+            audioUtils.transcodeToWavFile({
+                sourceFilePath: sourceFilePath,
+                sampleRate: dbRow.Format.sample_rate
+              }).then(function(outputFilePath){
+
+                // res.status(200).json({file:outputFilePath});
+                // fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+
+                audioUtils.serveAudioFromFile(res,outputFilePath,output_file_name)
+                  .then(function(){
+                    // should we do/log anything if we're successful?
+                  }).catch(function(err){
+                    console.log(err);
+                  });
+
+              }).catch(function(err){
+                console.log(err);
+              });
+
+          }
+
+        }
+
+
+
         }).catch(function(err){
           console.log(err);
           res.status(500).json({msg:"failed to transcode audio"});
@@ -69,67 +177,7 @@ exports.models = {
 
   },
 
-// TEST
-  TEMP_WAV_guardianAudioFile: function(req,res,dbRows) {
-
-    var dbRow = dbRows;
-
-    audioUtils.cacheSourceAudio(dbRow.url)
-      .then(function(sourceFilePath){
-          audioUtils.transcodeToWavFile({
-              sourceFilePath: sourceFilePath,
-              sampleRate: dbRow.Format.sample_rate
-            }).then(function(outputFilePath){
-
-              res.status(200).json({file:outputFilePath});
-              fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-
-              // audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".wav")
-              //   .then(function(){
-              //     fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-              //   }).catch(function(err){
-              //     console.log(err);
-              //   });
-
-            }).catch(function(err){
-              console.log(err);
-            });
-        }).catch(function(err){
-          console.log(err);
-          res.status(500).json({msg:"failed to transcode audio"});
-        });
-
-  },
-// TEST
-  TEMP_OGG_guardianAudioFile: function(req,res,dbRows) {
-
-    var dbRow = dbRows;
-
-    audioUtils.cacheSourceAudio(dbRow.url)
-      .then(function(sourceFilePath){
-          audioUtils.transcodeToOpus({
-              sourceFilePath: sourceFilePath,
-              enhanced: false,
-              bitRate: "16k",
-              sampleRate: dbRow.Format.sample_rate
-            }).then(function(ffmpegObj){
-              audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".opus")
-                .then(function(){
-                  fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-                }).catch(function(err){
-                  console.log(err);
-                });
-            }).catch(function(err){
-              console.log(err);
-            });
-        }).catch(function(err){
-          console.log(err);
-          res.status(500).json({msg:"failed to transcode audio"});
-        });
-
-  },
-
-  guardianSpectrogramFile: function(req,res,dbRows) {
+  guardianAudioSpectrogram: function(req,res,dbRows) {
 
     var dbRow = dbRows,
         hashName = hash.randomString(32),
@@ -141,7 +189,13 @@ exports.models = {
         specFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+".png",
         specSettings = { 
           specWidth: 2048, specHeight: 512, 
-          windowFunc: "Dolph", // Hann Hamming Bartlett Rectangular Kaiser Dolph
+          windowFunc: // window function options listed below (select only one)
+                        "Dolph", 
+                      //  "Hann",
+                      //  "Hamming",
+                      //  "Bartlett",
+                      //  "Rectangular",
+                      //  "Kaiser",
           zAxis: 95, // color range in dB, ranging from 20 to 180
           clipDuration: (dbRow.capture_sample_count/dbRow.Format.sample_rate),
           audioSampleRate: (dbRow.Format.sample_rate != null) ? dbRow.Format.sample_rate : 8000
@@ -193,7 +247,7 @@ exports.models = {
 
   },
 
-  guardianAudio: function(req,res,dbRows,PARENT_GUID) {
+  guardianAudioJson: function(req,res,dbRows,PARENT_GUID) {
 
     var views = getAllViews();
 
