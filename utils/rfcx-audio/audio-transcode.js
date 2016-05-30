@@ -74,7 +74,7 @@ exports.audioUtils = {
         }.bind(this));
     },
 
-    transcodeToWavFile: function(inputParams) {
+    transcodeToWavFile: function(audioFormat, inputParams) {
         return new Promise(function(resolve, reject) {
             try {
                 fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
