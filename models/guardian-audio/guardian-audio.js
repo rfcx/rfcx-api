@@ -73,6 +73,14 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
+    encode_duration: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     sha1_checksum: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -83,7 +91,7 @@ module.exports = function(sequelize, DataTypes) {
     url: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
+      unique: false,
       validate: {
       }
     }

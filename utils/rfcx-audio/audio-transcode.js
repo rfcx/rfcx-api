@@ -11,13 +11,17 @@ exports.audioUtils = {
         },
         opus: { 
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
-            outputOptions: [ "-compression_level 10", "-application audio", "-vbr on" ]
+            outputOptions: [ "-compression_level 7", "-application audio", "-vbr on" ]
         },
         wav: { 
             extension: "wav", codec: null, outputFormat: "wav", mime: "audio/wav",
             outputOptions: []
         },
-        aac: { // this one needs some attention...
+        flac: { 
+            extension: "flac", codec: "flac", outputFormat: "flac", mime: "audio/flac",
+            outputOptions: []
+        },
+        m4a: { // this one needs some attention...
             extension: "m4a", codec: "libfdk_aac", outputFormat: "aac", mime: "audio/mp4",
             outputOptions: []
         } 
@@ -89,6 +93,65 @@ exports.audioUtils = {
 
             } catch(err) {
                 console.log("failed to transcode audio to opus | " + err);
+                reject(new Error(err));
+            }
+        }.bind(this));
+    },
+
+    transcodeToFlac: function(inputParams) {
+        return new Promise(function(resolve, reject) {
+            try {
+                if (fs.existsSync(inputParams.sourceFilePath)) {
+                    resolve(
+                        new ffmpeg(inputParams.sourceFilePath)
+                            .input(inputParams.sourceFilePath)
+                            .outputOptions(this.transcodingOutputOptions("flac",inputParams.enhanced))
+                            .outputFormat(this.formats.flac.outputFormat)
+                            .audioCodec(this.formats.flac.codec)
+                            .audioFrequency(inputParams.sampleRate)
+                            .audioChannels((inputParams.enhanced) ? 2 : 1)
+                            .on("error",function(err,stdout,stderr){
+                                console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                            })
+                    );  
+                    
+                } else {
+                    console.log("failed to locate source audio | " + err);
+                    reject(new Error(err));
+                }              
+
+            } catch(err) {
+                console.log("failed to transcode audio to flac | " + err);
+                reject(new Error(err));
+            }
+        }.bind(this));
+    },
+
+    transcodeToM4a: function(inputParams) {
+        return new Promise(function(resolve, reject) {
+            try {
+                if (fs.existsSync(inputParams.sourceFilePath)) {
+                    resolve(
+                        new ffmpeg(inputParams.sourceFilePath)
+                            .input(inputParams.sourceFilePath)
+                            .outputOptions(this.transcodingOutputOptions("m4a",inputParams.enhanced))
+                            .outputFormat(this.formats.m4a.outputFormat)
+                            .audioCodec(this.formats.m4a.codec)
+                            .audioFrequency(inputParams.sampleRate)
+                            .audioChannels((inputParams.enhanced) ? 2 : 1)
+                            .audioBitrate(inputParams.bitRate)
+                            .on("error",function(err,stdout,stderr){
+                                console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                            })
+                    );  
+                    
+                } else {
+                    console.log("failed to locate source audio | " + err);
+                    reject(new Error(err));
+                }              
+
+            } catch(err) {
+                console.log("failed to transcode audio to m4a | " + err);
                 reject(new Error(err));
             }
         }.bind(this));

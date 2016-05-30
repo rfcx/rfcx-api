@@ -32,7 +32,7 @@ exports.audioUtils = {
 
     },
 
-    serveTranscodedAudioFromFile: function(res,filePathToServe,fileName) {
+    serveAudioFromFile: function(res,filePathToServe,fileName) {
 
         return new Promise(function(resolve, reject) {
             try {
@@ -57,7 +57,7 @@ exports.audioUtils = {
                   .pipe(res, { end: true });
 
             } catch(err) {
-                console.log("failed to serve transcoded audio file | " + err);
+                console.log("failed to serve audio file | " + err);
                 reject(new Error(err));
             }
         }.bind(this));

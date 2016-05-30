@@ -2,13 +2,6 @@
 
 module.exports = function(sequelize, DataTypes) {
   var GuardianAudioFormat = sequelize.define("GuardianAudioFormat", {
-    container: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: false,
-      validate: {
-      }
-    },
     codec: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -31,6 +24,15 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     sample_rate: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: false,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    target_bit_rate: {
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: false,

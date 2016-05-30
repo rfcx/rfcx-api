@@ -55,11 +55,14 @@ exports.audio = {
             audio_id: null,
             audio_guid: null,
             
-            duration: (audioMeta[i][7] != null) ? parseInt(audioMeta[i][7]) : null,
             capture_format: null,
             capture_bitrate: (audioMeta[i][5] != null) ? parseInt(audioMeta[i][5]) : null,
             capture_sample_rate: (audioMeta[i][4] != null) ? parseInt(audioMeta[i][4]) : null,
             capture_sample_count: null,
+            capture_encode_duration: (audioMeta[i][8] != null) ? parseInt(audioMeta[i][8]) : null,
+            capture_file_extension: audioMeta[i][2],
+            capture_codec: audioMeta[i][6],
+            capture_is_vbr: (audioMeta[i][7].toLowerCase() === "vbr"),
 
             timeStamp: timeStamp,
             measured_at: new Date(parseInt(timeStamp)),
@@ -164,18 +167,37 @@ exports.audio = {
         check_in_id: audioInfo.checkin_id,
         sha1_checksum: audioInfo.sha1Hash,
         url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
-        capture_sample_rate: audioInfo.capture_sample_rate,
         capture_bitrate: audioInfo.capture_bitrate,
+        encode_duration: audioInfo.capture_encode_duration,
         measured_at: audioInfo.measured_at
       }).then(function(dbAudio){
 
-        audioInfo.isSaved.db = true;
+        models.GuardianAudioFormat
+          .findOrCreate({
+            where: {
+              codec: audioInfo.capture_codec,
+              mime: mimeTypeFromAudioCodec(audioInfo.capture_codec),
+              file_extension: audioInfo.capture_file_extension,
+              sample_rate: audioInfo.capture_sample_rate,
+              target_bit_rate: audioInfo.capture_bitrate,
+              is_vbr: audioInfo.capture_is_vbr
+            }
+          }).spread(function(dbAudioFormat, wasCreated){
+            
+            dbAudio.format_id = dbAudioFormat.id;
+            dbAudio.save();
 
-        audioInfo.dbAudioObj = dbAudio;
-        audioInfo.audio_id = dbAudio.id;
-        audioInfo.audio_guid = dbAudio.guid;
+            audioInfo.isSaved.db = true;
+            audioInfo.dbAudioObj = dbAudio;
+            audioInfo.audio_id = dbAudio.id;
+            audioInfo.audio_guid = dbAudio.guid;
 
-        resolve(audioInfo);
+            resolve(audioInfo);
+
+          }).catch(function(err){ 
+            console.log("error linking audio format to audio entry to database | "+err);
+            reject(new Error(err));
+          });
 
       }).catch(function(err){
         console.log("error adding audio to database | "+err);
@@ -296,5 +318,21 @@ var cleanupCheckInFiles = function(audioInfo) {
       if (err == null) { fs.unlink( audioInfo.wavAudioLocalPath, function(e) { if (e) { console.log(e); } } ); }
     });
 
-  };
+};
+
+var mimeTypeFromAudioCodec = function(audioCodec) {
+
+  if (audioCodec.toLowerCase() == "aac") {
+    return "audio/mp4";
+  } else if (audioCodec.toLowerCase() == "opus") {
+    return "audio/ogg";
+  } else if (audioCodec.toLowerCase() == "flac") {
+    return "audio/flac";
+  } else if (audioCodec.toLowerCase() == "mp3") {
+    return "audio/mpeg";
+  } else {
+    return null;
+  }
+
+};
 
