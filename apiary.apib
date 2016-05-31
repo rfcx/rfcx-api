@@ -301,6 +301,93 @@ windows for a 90s audio file. All windows must be defined.
               }
             ]
 
+
+### Classify Windows [POST]
+The user classified all windows and the new classification is saved to retrain
+the network.
+
+
++ Parameters
+    +  audio_id: `f1204f34-ac85-41dd-acdd-1c0c9e7ba989` (string, required) - guid fo audio file that can be retrieved from the Guardian's audio file API
+
++ Request (application/json)
+
+    + Body
+
+            [
+              {
+                "number": 0
+              },
+              {
+                "number": 1,
+                "class": "ambient"
+              }
+            ]
+
++ Response 400 (application/json; charset=utf-8)
+This error occurs if the application sends an array of classifications but some
+windows remain unclassfied. Logref contains a link to internal log files for this
+API error. If you came here via the link and there was a breaking change to the
+api interface please send an email to rfcx. This should not happen. Thank you so
+much for telling us about it. (https://github.com/blongden/vnd.error)
+
+
+    + Body
+
+            {
+              "message": "Windows are missing classes. Please classify each window!",
+              "logref": "c3e94a04-8122-459e-aec9-52c9733e8c8d",
+              "_links": {
+                "about": {
+                  "href": "https://api.rfcx.org/v1/analytics/81a7c480-d149-4a89-a083-2d5d85d5a6dc"
+                },
+                "describes": {
+                  "href": "http://docs.betaplayer.apiary.io/#reference/0/guardian-audio-files-analytics-api"
+                },
+                "help": {
+                  "href": "http://docs.betaplayer.apiary.io/#reference/0/guardian-audio-files-analytics-api"
+                }
+              }
+            }
+
++ Request (application/json)
+
+    + Body
+
+            [
+              {
+                "number": 0,
+                "class": "engine"
+              },
+              {
+                "number": 1,
+                "class": "ambient"
+              }
+            ]
+
++ Response 200 (application/json; charset=utf-8)
+If the user has already classified the file, the existing classification has been updated. Otherwise, a
+classification was added to the audio file's analytics.
+
+    + Attributes (object)
+        + action (enum[string]) - whether a window was reclassified or classified for the first time by the user
+            + Members
+                + `created`
+                + `updated`
+        + _links (object)
+            + self (object) - link to the newly created or updated resource
+
+    + Body
+
+            {
+              "action": "created",
+              "_links": {
+                   "self": {
+                      "href": "https://api.rfcx.org/v1/analytics/81a7c480-d149-4a89-a083-2d5d85d5a6dc/classifications/51d86420-09ba-4ff9-baf6-bc9f577bf86d"
+                    }
+              }
+            }
+
 # Data Structures
 
 ## stream (object)
