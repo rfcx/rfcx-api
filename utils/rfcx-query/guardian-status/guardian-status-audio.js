@@ -45,8 +45,7 @@ exports.guardianStatusAudio = {
               .findOne({
                 where: dbWhere,
                 attributes: [
-                    [ models.sequelize.fn("SUM", models.sequelize.col("capture_sample_count")), "sample_count_sum" ],
-        //            [ models.sequelize.fn("MAX", models.sequelize.col("capture_sample_rate")), "sample_rate_max" ]
+                    [ models.sequelize.fn("SUM", models.sequelize.col("capture_sample_count")), "sample_count_sum" ]
                 ]
               }).then(function(dbStatus){
 
