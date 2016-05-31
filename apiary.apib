@@ -221,6 +221,86 @@ info.
             }]
 
 
+## Guardian Audio Files Analytics API [/analytics/{audio_id}]
+
+Todo: This endpoint is still in development.
+
+### Retrieve Window Classifications [GET]
+Each audio file is dividided in 3 second windows. Each window is classified into
+categories like ambient sound or engine. This endpoint is used to both retrieve
+window information and classifications.
+
+In the example json, there are only three windows. In the actual api, we need 45 x 3s
+windows for a 90s audio file. All windows must be defined.
+
++ Parameters
+    +  audio_id: `f1204f34-ac85-41dd-acdd-1c0c9e7ba989` (string, required) - guid fo audio file that can be retrieved from the Guardian's audio file API
+
++ Request (application/x-www-form-urlencoded)
+
++ Response 200 (application/json; charset=utf-8)
+
+    + Attributes (array)
+        + (object) - one audio window
+            + number (number) - window number from 0 to 44
+            + start (number) - start of window in miliseconds from beginning of audio file (including)
+            + end (number) - end of window in miliseconds from beginning of audio file (excluding)
+            + classes (array)
+                + (object) classification probability
+                    + class (string) - classification like ambient or engine
+                    + p (number) - probability of the classification (need to sum up to one)
+
+
+    + Body
+
+            [
+              {
+                "number": 0,
+                "start": 0,
+                "end": 2000,
+                "classes": [
+                  {
+                    "class": "ambient",
+                    "p": 0.1
+                  },
+                  {
+                    "class": "engine",
+                    "p": 0.9
+                  }
+                ]
+              },
+              {
+                "number": 1,
+                "start": 0,
+                "end": 2,
+                "classes": [
+                  {
+                    "class": "ambient",
+                    "p": 0.1
+                  },
+                  {
+                    "class": "engine",
+                    "p": 0.9
+                  }
+                ]
+              },
+              {
+                "number": 44,
+                "start": 88,
+                "end": 90,
+                "classes": [
+                  {
+                    "class": "ambient",
+                    "p": 0.0
+                  },
+                  {
+                    "class": "engine",
+                    "p": 1.0
+                  }
+                ]
+              }
+            ]
+
 # Data Structures
 
 ## stream (object)
