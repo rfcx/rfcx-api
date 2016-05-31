@@ -12,48 +12,36 @@ function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
-  guardianAudioFile: function(req,res,dbRows) {
+  guardianAudioFile: function(req,res,dbRow) {
 
-    var dbRow = dbRows,
-        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));
-        ;
-
-      aws.s3(s3Bucket).getFile(s3Path, function(err, result){
-        if(err) { return next(err); }
-
-        // this next line may not be necessary
-        result.resume();
-        
-        var contentLength = parseInt(result.headers["content-length"]);
-        
-        res.writeHead(  200, {
-          "Content-Length": contentLength,
-          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-          "Content-Type": result.headers["content-type"],
-          "Content-Disposition": "filename="+dbRow.guid+"."+audioFileExtension
-        });
-
-        result.pipe(res);      
-      });
-  },
-
-// TEST
-  TEMP_MP3_guardianAudioFile: function(req,res,dbRows) {
-
-    var dbRow = dbRows;
+    var output_file_extension = req.rfcx.content_type,
+        output_file_name = dbRow.guid+"."+output_file_extension;
 
     audioUtils.cacheSourceAudio(dbRow.url)
       .then(function(sourceFilePath){
-          audioUtils.transcodeToMp3File({
-              sourceFilePath: sourceFilePath,
-              enhanced: true,
-              bitRate: "32k",
-              sampleRate: dbRow.capture_sample_rate
+
+        if (dbRow.Format.file_extension === output_file_extension) {
+
+          console.log("serving "+output_file_extension+" file without transcoding");
+
+          audioUtils.serveAudioFromFile(res,sourceFilePath,output_file_name,audioUtils.formatSettings[output_file_extension].mime)
+            .then(function(){
+              // should we do/log anything if we're successful?
+            }).catch(function(err){
+              console.log(err);
+            });
+
+        } else {
+
+          console.log("transcoding "+dbRow.Format.file_extension+" audio to "+output_file_extension);
+
+          audioUtils.transcodeToFile( output_file_extension, {
+              enhanced: (output_file_extension === "mp3"),
+              bitRate: (output_file_extension === "mp3") ? "32k" : "16k",
+              sampleRate: dbRow.Format.sample_rate,
+              sourceFilePath: sourceFilePath
             }).then(function(outputFilePath){
-              audioUtils.serveTranscodedAudioFromFile(res,outputFilePath,dbRow.guid+".mp3")
+              audioUtils.serveAudioFromFile(res,outputFilePath,output_file_name,audioUtils.formatSettings[output_file_extension].mime)
                 .then(function(){
                   // should we do/log anything if we're successful?
                 }).catch(function(err){
@@ -62,138 +50,62 @@ exports.models = {
             }).catch(function(err){
               console.log(err);
             });
-        }).catch(function(err){
-          console.log(err);
-          res.status(500).json({msg:"failed to transcode audio"});
-        });
+        }
+
+      }).catch(function(err){
+        console.log(err);
+        res.status(500).json({msg:"failed to download audio"});
+      });
 
   },
 
-// TEST
-  TEMP_WAV_guardianAudioFile: function(req,res,dbRows) {
+  guardianAudioSpectrogram: function(req,res,dbRow) {
 
-    var dbRow = dbRows;
+    var specSettings = { 
+          tmpFilePath: process.env.CACHE_DIRECTORY+"ffmpeg/"+hash.randomString(32)+".png",
+          specWidth: 2048, specHeight: 512, 
+          zAxis: 95, // color range in dB, ranging from 20 to 180
+          windowFunc: // window function options listed below (select only one)
+                        "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
+      };
 
     audioUtils.cacheSourceAudio(dbRow.url)
       .then(function(sourceFilePath){
-          audioUtils.transcodeToWavFile({
-              sourceFilePath: sourceFilePath,
-              sampleRate: dbRow.capture_sample_rate
-            }).then(function(outputFilePath){
 
-              res.status(200).json({file:outputFilePath});
+            var ffmpegSox = process.env.FFMPEG_PATH+" -i "+sourceFilePath+" -loglevel panic -nostdin"
+                  +" -ac 1 -ar "+dbRow.Format.sample_rate
+                  +" -f sox - "
+                  +" | "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r"
+                  +" -o "+specSettings.tmpFilePath
+                  +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
+                  +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s"
+                  +" -d "+(dbRow.capture_sample_count/dbRow.Format.sample_rate)
+                  ;
+
+            exec(ffmpegSox, function(err,stdout,stderr){
+
+              if (stderr.trim().length > 0) { console.log(stderr); }
+              if (!!err) { console.log(err); }
+
               fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
 
-              // audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".wav")
-              //   .then(function(){
-              //     fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
-              //   }).catch(function(err){
-              //     console.log(err);
-              //   });
-
-            }).catch(function(err){
-              console.log(err);
-            });
-        }).catch(function(err){
-          console.log(err);
-          res.status(500).json({msg:"failed to transcode audio"});
-        });
-
-  },
-// TEST
-  TEMP_OGG_guardianAudioFile: function(req,res,dbRows) {
-
-    var dbRow = dbRows;
-
-    audioUtils.cacheSourceAudio(dbRow.url)
-      .then(function(sourceFilePath){
-          audioUtils.transcodeToOpus({
-              sourceFilePath: sourceFilePath,
-              enhanced: false,
-              bitRate: "16k",
-              sampleRate: dbRow.capture_sample_rate
-            }).then(function(ffmpegObj){
-              audioUtils.serveTranscodedAudio(res,ffmpegObj,dbRow.guid+".opus")
+              audioUtils.serveAudioFromFile(res,specSettings.tmpFilePath,dbRow.guid+".png","image/png")
                 .then(function(){
-                  fs.unlink(sourceFilePath,function(e){if(e){console.log(e);}});
+                  // should we do/log anything if we're successful?
                 }).catch(function(err){
                   console.log(err);
                 });
-            }).catch(function(err){
-              console.log(err);
+
             });
-        }).catch(function(err){
-          console.log(err);
-          res.status(500).json({msg:"failed to transcode audio"});
-        });
+
+    }).catch(function(err){
+      console.log(err);
+      res.status(500).json({msg:"failed to download audio"});
+    });
 
   },
 
-  guardianSpectrogramFile: function(req,res,dbRows) {
-
-    var dbRow = dbRows,
-        hashName = hash.randomString(32),
-        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        audioFileExtension = s3Path.substr(1+s3Path.lastIndexOf(".")),
-        audioFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+"."+audioFileExtension,
-        specFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+".png",
-        specSettings = { 
-          specWidth: 2048, specHeight: 512, 
-          windowFunc: "Dolph", // Hann Hamming Bartlett Rectangular Kaiser Dolph
-          zAxis: 95, // color range in dB, ranging from 20 to 180
-          clipDuration: (dbRow.capture_sample_count/dbRow.capture_sample_rate),
-          audioSampleRate: (dbRow.capture_sample_rate != null) ? dbRow.capture_sample_rate : 8000
-        };
-
-    var ffmpegSox = process.env.FFMPEG_PATH+" -i "+audioFilePath+" -loglevel panic -nostdin"
-                  +" -ac 1 -ar "+specSettings.audioSampleRate
-                  +" -f sox - "
-                  +" | "
-                  +" "+process.env.SOX_PATH+" -t sox - -n spectrogram -h -r -o "+specFilePath
-                  +" -x "+specSettings.specWidth+" -y "+specSettings.specHeight
-                  +" -w "+specSettings.windowFunc+" -z "+specSettings.zAxis+" -s -d "+specSettings.clipDuration;
-
-    aws.s3(s3Bucket).get(s3Path)
-      .on("response", function(s3Res){
-        var audioWriteStream = fs.createWriteStream(audioFilePath);
-        audioWriteStream.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        s3Res.on("data", function(data){ audioWriteStream.write(data); });
-        s3Res.on("end", function(){ audioWriteStream.end(); });
-        s3Res.on("error", function(err){ console.log(err); res.status(500).json({msg:err}); });
-        audioWriteStream.on("finish", function(){ 
-          if (fs.existsSync(audioFilePath)) {
-            exec(ffmpegSox, function(err,stdout,stderr){
-              if (stderr.trim().length > 0) { console.log(stderr); }
-              if (!!err) { console.log(err); }
-              if (fs.existsSync(specFilePath)) {
-
-                res.writeHead(200, {
-                  "Content-Type": "image/png",
-                  //"Content-Length": contentLength,
-                  //"Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-                  "Content-Disposition": "filename="+dbRow.guid+".png"
-                });
-                var specStream = fs.createReadStream(specFilePath);
-                specStream.pipe(res);
-              } else {
-                res.status(500).json({});
-              }
-             fs.unlink(specFilePath,function(e){if(e){console.log(e);}});
-             fs.unlink(audioFilePath,function(e){if(e){console.log(e);}});
-            });
-
-          } else {
-            console.log("Source audio not accessible...");
-            res.status(500).json({msg:"Source audio not accessible..."});
-          }
-        });
-      }).end();
-
-  },
-
-  guardianAudio: function(req,res,dbRows,PARENT_GUID) {
+  guardianAudioJson: function(req,res,dbRows,PARENT_GUID) {
 
     var views = getAllViews();
 
@@ -214,12 +126,11 @@ exports.models = {
             measured_at: thisRow.measured_at,
             analyzed_at: thisRow.analyzed_at,
             size: thisRow.size,
-            duration: parseInt(1000*thisRow.capture_sample_count/thisRow.capture_sample_rate),
-            format: thisRow.capture_format,
-            bitrate: thisRow.capture_bitrate,
-            sample_rate: thisRow.capture_sample_rate,
-            sha1_checksum: thisRow.sha1_checksum,
-            spectrogram: null
+            duration: Math.round(1000*thisRow.capture_sample_count/thisRow.Format.sample_rate),
+//            format: thisRow.capture_format,
+//            bitrate: thisRow.capture_bitrate,
+            sample_rate: thisRow.Format.sample_rate,
+            sha1_checksum: thisRow.sha1_checksum
           };
 
           if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid; }
@@ -235,7 +146,9 @@ exports.models = {
             created_by: null,
             allow_garbage_collection: false,
             only_allow_access_to: [
-              "^/v1/assets/audio/"+thisGuid+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."))+"$",
+              "^/v1/assets/audio/"+thisGuid+".m4a$",
+              "^/v1/assets/audio/"+thisGuid+".mp3$",
+              "^/v1/assets/audio/"+thisGuid+".opus$",
               "^/v1/assets/audio/"+thisGuid+".png$"
               ]
           }).then(function(tokenInfo){
@@ -246,16 +159,6 @@ exports.models = {
                     urlAuthParams = "?auth_user=token/"+tokenInfo.token_guid
                                   +"&auth_token="+tokenInfo.token
                                   +"&auth_expires_at="+tokenInfo.token_expires_at.toISOString();
-
-                jsonRowsByGuid[thisGuid].url = urlBase+"."+thisRow.url.substr(1+thisRow.url.lastIndexOf("."));
-                
-                // in case we just prefer to use S3 signed URLs (safari is having problems, for example)
-                // var s3NoProtocol = thisRow.url.substr(thisRow.url.indexOf("://")+3),
-                //     s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-                //     s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/"));
-                // jsonRowsByGuid[thisGuid].url = aws.s3SignedUrl(s3Bucket, s3Path, 30);
-
-                jsonRowsByGuid[thisGuid].spectrogram = urlBase+".png";//+urlAuthParams;
 
                 jsonRowsByGuid[thisGuid].urls = {
                   m4a: urlBase+".m4a",

@@ -1,80 +1,403 @@
 FORMAT: 1A
-HOST: https://api.rfcx.org/
+HOST: http://127.0.0.1:8080/v1/
 
-# rfcx-api
+# Beta Player API
 
-Polls is a simple API allowing consumers to view polls and vote in them.
+Caution: all of these endpoints are still in development. These are not stable
+intefaces.
 
-## Questions Collection [/questions]
+Access live streams from the rain forest.
 
-### List All Questions [GET]
+## Authentication [/player/login]
+Token Based authentication is used throughout the API.
 
-+ Response 200 (application/json)
+### Retrieve Token [POST]
+From this endpoint we retrieve an anonymous token. These are tokens for which we
+do not have any information (email, name, ...) about the user who requested it.
+These tokens have limited access rights.
 
-        [
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
-            }
-        ]
-
-### Create a New Question [POST]
-
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+We need to add the guid (as x-auth-user) and token (as x-auth-token) as headers
+to all further requests.
 
 + Request (application/json)
 
-        {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
-        }
+            { "password" : "1121" }
 
-+ Response 201 (application/json)
 
-    + Headers
++ Response 200 (application/json; charset=utf-8)
+Your password was correct and a token is included in the message.
 
-            Location: /questions/2
+    + Attributes(object)
+
+        + token (object) - authentication token for other requests
+            + guid (string) - user id (x-auth-user header)
+            + token (string) - token value (x-auth-token header)
+            + expires_at (string) - ISO 8601 date time string (in UTC)
 
     + Body
 
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
+                "token": {
+                    "guid": "82905453-27f7-4c4f-a280-9743d0b4022c",
+                    "token": "iwc3g2wd74eb4co5bt3dz49p1vq293rlrytirj6v",
+                    "expires_at": "2016-05-17T12:02:04.530Z"
+                }
             }
+
++ Request (application/json)
+
+            { "password" : "1122" }
+
++ Response 401 (application/json; charset=utf-8)
+Invalid password
+
+    + Body
+
+            {
+              "message": "invalid password",
+              "error": {
+                "status": 401
+              }
+            }
+
++ Response 500 (application/json)
+Internal server error
+
+    + Body
+
+            {
+              "message": "error creating access token for audio player | database is not reachable",
+              "error": {
+                "status": 500
+              }
+            }
+
+## Meta Data [/player/web]
+### Retrieve Streaming Information [GET]
+Retrieves streaming information for curated and real-time streams about
+(1) urls to download audio files, (2) stream-specific flick photo album and
+(3) location information.
+
+For token based authentication we need the guid and token information from Authentication/Login.
+Note, you'll need to prepend a "token/" before the guid.
+
++ Request (application/x-www-form-urlencoded)
+
++ Response 200 (application/json; charset=utf-8)
+
+    + Attributes (object)
+
+        + streams (array[stream])
+
+
+    + Body
+
+
+
+            {
+              "streams": [
+                {
+                  "guid": "6aa09bd6-c8a5-4da5-a808-8789f3d08e64",
+                  "active": true,
+                  "type": "playlist",
+                  "shortname": "Amazon (Nightfall)",
+                  "name": "Nightfall, Tembé Indigenous Territory",
+                  "location": "Amazon, Parà, Brazil",
+                  "timezone_offset": -3,
+                  "description": "Nightfall, Tembé Indigenous Territory, Amazon Rainforest",
+                  "flickr_photoset_id": "72157666271579426",
+                  "urls": {
+                    "audio": "/v1/guardians/0bdbb4a5d567/audio.json?starting_after=2016-03-22T01:15:00.000Z&order=ascending&limit=3"
+                  }
+                },
+                {
+                  "guid": "08f54f4b-999b-4bb7-a076-7ae3c97727cd",
+                  "active": false,
+                  "type": "stream",
+                  "shortname": "Ecuador (LIVE)",
+                  "name": "Live Stream, Tembé Indigenous Territory",
+                  "location": "Amazon, Parà, Brazil",
+                  "timezone_offset": -3,
+                  "description": "Live Stream, Tembé Indigenous Territory",
+                  "flickr_photoset_id": "72157666271579426",
+                  "urls": {
+                    "audio": "/v1/guardians/0bdbb4a5d567/audio.json"
+                  }
+                }
+              ]
+            }
+
+
+## Guardian Audio Files API [/guardians/{guardian_id}/audio.json{?starting_after,limit,order}]
+### Retrieve Audio File Meta Data [GET]
+Retrieves a json file that contains the URL to download audio files, spectrogram and other meta
+info.
+
++ Parameters
+    + guardian_id: `74b55fd8b7f2` (string, required) - Guardian ID
+    + starting_after: `2016-05-29T22:44:00.000Z` (string, optional) - optional ISO 8601 date time string encoding when the streaming should start; it is used to stream from the past like
+    + limit: `3` (string, optional) - optional limits the number of files retrieved when playing a stream from the past
+    + order: `ascending` (enum[string], optional) - optional order on the stream from past to future (ascending) or from future to the past (descending)
+
+        + Members
+            + `ascending`
+            + `descending`
+
++ Request (application/x-www-form-urlencoded)
+
++ Response 200 (application/json; charset=utf-8)
+
+    + Attributes(array)
+        + (object) - authentication token for other requests
+            + bitrate (number) - bitrate of the file
+            + sample_rate (number) - sample rate of the audio file
+            + measured_at (string) - when the audio file was recorded, ISO 8601 date time string
+            + duration (number) - length of audio file in miliseconds (currently: 90s can be assumed)
+            + spectogram (string) - url to a png that contains the spectogram for this file, this is used for training the neural nets
+            + format (string) - audio file format (currently: mp4a)
+            + url (string) - URL to the audio file in the provided format
+            + urls (object) - dictionary of key/value pairs like m4a/url, mp3/url, opus/url
+            + urls_expire_at (string) - ISO 8601 date time string, after this time you need to query the API again to get new urls
+
+    + Body
+
+            [{
+                "guid": "51305c6c-d3e6-4ea7-b9f5-6f158a2def51",
+                "measured_at": "2016-05-29T22:44:36.306Z",
+                "analyzed_at": null,
+                "size": 184332,
+                "duration": 90127,
+                "sample_rate": 12000,
+                "sha1_checksum": "c18e932d9122d756488067847fbcdf93c6175316",
+                "spectrogram": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.png",
+                "guardian_guid": "74b55fd8b7f2",
+                "checkin_guid": "83606fc8-663c-4047-984d-5909852a62a7",
+                "url": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.opus",
+                "urls": {
+                    "m4a": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.m4a",
+                    "mp3": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.mp3",
+                    "opus": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.opus",
+                    "png": "https://api.rfcx.org/v1/assets/audio/51305c6c-d3e6-4ea7-b9f5-6f158a2def51.png"
+                },
+                "urls_expire_at": "2016-05-30T12:14:08.363Z"
+            }, {
+                "guid": "c6851115-208c-4950-8742-6bd9f784b5d8",
+                "measured_at": "2016-05-29T22:46:06.772Z",
+                "analyzed_at": null,
+                "size": 185655,
+                "duration": 90127,
+                "sample_rate": 12000,
+                "sha1_checksum": "441189f8b2778a689e1b8d497dbd21c771c8a5b8",
+                "spectrogram": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.png",
+                "guardian_guid": "74b55fd8b7f2",
+                "checkin_guid": "991bf551-f3d3-42b1-99f4-56e68def7639",
+                "url": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.opus",
+                "urls": {
+                    "m4a": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.m4a",
+                    "mp3": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.mp3",
+                    "opus": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.opus",
+                    "png": "https://api.rfcx.org/v1/assets/audio/c6851115-208c-4950-8742-6bd9f784b5d8.png"
+                },
+                "urls_expire_at": "2016-05-30T12:14:08.366Z"
+            }, {
+                "guid": "7814dd35-177c-46aa-b01d-765fcdb5458e",
+                "measured_at": "2016-05-29T22:47:37.247Z",
+                "analyzed_at": null,
+                "size": 186430,
+                "duration": 90127,
+                "sample_rate": 12000,
+                "sha1_checksum": "37bdf6596ee75cd604e76c7ff2e1b0d1a4de96c0",
+                "spectrogram": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.png",
+                "guardian_guid": "74b55fd8b7f2",
+                "checkin_guid": "f9d3d98a-04c5-4971-a3aa-cd414b231786",
+                "url": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.opus",
+                "urls": {
+                    "m4a": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.m4a",
+                    "mp3": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.mp3",
+                    "opus": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.opus",
+                    "png": "https://api.rfcx.org/v1/assets/audio/7814dd35-177c-46aa-b01d-765fcdb5458e.png"
+                },
+                "urls_expire_at": "2016-05-30T12:14:08.369Z"
+            }]
+
+
+## Guardian Audio Files Analytics API [/analytics/{audio_id}]
+
+Todo: This endpoint is still in development.
+
+### Retrieve Window Classifications [GET]
+Each audio file is dividided in 3 second windows. Each window is classified into
+categories like ambient sound or engine. This endpoint is used to both retrieve
+window information and classifications.
+
+In the example json, there are only three windows. In the actual api, we need 45 x 3s
+windows for a 90s audio file. All windows must be defined.
+
++ Parameters
+    +  audio_id: `f1204f34-ac85-41dd-acdd-1c0c9e7ba989` (string, required) - guid fo audio file that can be retrieved from the Guardian's audio file API
+
++ Request (application/x-www-form-urlencoded)
+
++ Response 200 (application/json; charset=utf-8)
+
+    + Attributes (array)
+        + (object) - one audio window
+            + number (number) - window number from 0 to 44
+            + start (number) - start of window in miliseconds from beginning of audio file (including)
+            + end (number) - end of window in miliseconds from beginning of audio file (excluding)
+            + classes (array)
+                + (object) classification probability
+                    + class (string) - classification like ambient or engine
+                    + p (number) - probability of the classification (need to sum up to one)
+
+
+    + Body
+
+            [
+              {
+                "number": 0,
+                "start": 0,
+                "end": 2000,
+                "classes": [
+                  {
+                    "class": "ambient",
+                    "p": 0.1
+                  },
+                  {
+                    "class": "engine",
+                    "p": 0.9
+                  }
+                ]
+              },
+              {
+                "number": 1,
+                "start": 0,
+                "end": 2,
+                "classes": [
+                  {
+                    "class": "ambient",
+                    "p": 0.1
+                  },
+                  {
+                    "class": "engine",
+                    "p": 0.9
+                  }
+                ]
+              },
+              {
+                "number": 44,
+                "start": 88,
+                "end": 90,
+                "classes": [
+                  {
+                    "class": "ambient",
+                    "p": 0.0
+                  },
+                  {
+                    "class": "engine",
+                    "p": 1.0
+                  }
+                ]
+              }
+            ]
+
+
+### Classify Windows [POST]
+The user classified all windows and the new classification is saved to retrain
+the network.
+
+
++ Parameters
+    +  audio_id: `f1204f34-ac85-41dd-acdd-1c0c9e7ba989` (string, required) - guid fo audio file that can be retrieved from the Guardian's audio file API
+
++ Request (application/json)
+
+    + Body
+
+            [
+              {
+                "number": 0
+              },
+              {
+                "number": 1,
+                "class": "ambient"
+              }
+            ]
+
++ Response 400 (application/json; charset=utf-8)
+This error occurs if the application sends an array of classifications but some
+windows remain unclassfied. Logref contains a link to internal log files for this
+API error. If you came here via the link and there was a breaking change to the
+api interface please send an email to rfcx. This should not happen. Thank you so
+much for telling us about it. (https://github.com/blongden/vnd.error)
+
+
+    + Body
+
+            {
+              "message": "Windows are missing classes. Please classify each window!",
+              "logref": "c3e94a04-8122-459e-aec9-52c9733e8c8d",
+              "_links": {
+                "about": {
+                  "href": "https://api.rfcx.org/v1/analytics/81a7c480-d149-4a89-a083-2d5d85d5a6dc"
+                },
+                "describes": {
+                  "href": "http://docs.betaplayer.apiary.io/#reference/0/guardian-audio-files-analytics-api"
+                },
+                "help": {
+                  "href": "http://docs.betaplayer.apiary.io/#reference/0/guardian-audio-files-analytics-api"
+                }
+              }
+            }
+
++ Request (application/json)
+
+    + Body
+
+            [
+              {
+                "number": 0,
+                "class": "engine"
+              },
+              {
+                "number": 1,
+                "class": "ambient"
+              }
+            ]
+
++ Response 200 (application/json; charset=utf-8)
+If the user has already classified the file, the existing classification has been updated. Otherwise, a
+classification was added to the audio file's analytics.
+
+    + Attributes (object)
+        + action (enum[string]) - whether a window was reclassified or classified for the first time by the user
+            + Members
+                + `created`
+                + `updated`
+        + _links (object)
+            + self (object) - link to the newly created or updated resource
+
+    + Body
+
+            {
+              "action": "created",
+              "_links": {
+                   "self": {
+                      "href": "https://api.rfcx.org/v1/analytics/81a7c480-d149-4a89-a083-2d5d85d5a6dc/classifications/51d86420-09ba-4ff9-baf6-bc9f577bf86d"
+                    }
+              }
+            }
+
+# Data Structures
+
+## stream (object)
++ active(boolean) - (new) whether the stream is currently active or not, this will be used for streams that will used for streams under construction
++ type (string) - 'playlist' (a curated stream from the past) or 'stream' (a live stream)
++ shortname (string) - for titles
++ name (string) - fully descriptive title
++ description (string) - a description of what we hear in the stream (especially for curated streams from the past), this could be used for the body of a player
++ location (string) - textual description of the location
++ timezone_offset (string) - UTC offset
++ flick_photoset_id (string) - this ID can be used to get photos from Flickr that are curated for this particular stream; this could be used for a slide show while streaming
++ urls
+    + audio (string) - url to retrieve the audio data

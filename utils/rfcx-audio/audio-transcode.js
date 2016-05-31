@@ -2,160 +2,143 @@ var Promise = require("bluebird");
 var ffmpeg = require("fluent-ffmpeg");
 var fs = require("fs");
 
-exports.audioUtils = {
+var audioFormatSettings = { 
 
-    formats: {
         mp3: {
             extension: "mp3", codec: "libmp3lame", outputFormat: "mp3", mime: "audio/mpeg",
-            outputOptions: []
+            inputOptions: [],
+            outputOptions: [ "-b:a 32k" ]
         },
         opus: { 
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
-            outputOptions: [ "-compression_level 10", "-application audio", "-vbr on" ]
+            inputOptions: [],
+            outputOptions: [ "-b:a 16k", "-compression_level 7", "-application audio", "-vbr on"  ]
         },
         wav: { 
-            extension: "wav", codec: null, outputFormat: "wav", mime: "audio/wav",
+            extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
+            inputOptions: [ "-flags +bitexact" ],
             outputOptions: []
         },
-        aac: { // this one needs some attention...
-            extension: "m4a", codec: "libfdk_aac", outputFormat: "aac", mime: "audio/mp4",
-            outputOptions: []
-        } 
-    },
+        flac: { 
+            extension: "flac", codec: "flac", outputFormat: "flac", mime: "audio/flac",
+            inputOptions: [],
+            outputOptions: [ "-sample_fmt s16" ]
+        },
+        m4a: {
+            extension: "m4a", codec: "libfdk_aac", outputFormat: "m4a", mime: "audio/mp4",
+            inputOptions: [],
+            outputOptions: [ "-b:a 16k" ]
+        }
 
-    transcodingOutputOptions: function(format,isEnhanced) {
-        var enhancedOutputOptions = [
-                "-filter_complex", "[0:a][1:a]amerge=inputs=2[aout]",
-                "-map", "[aout]"
-            ],
-            outputOptions = (isEnhanced) ? enhancedOutputOptions : [];
-        for (i in this.formats[format].outputOptions) { outputOptions.push(this.formats[format].outputOptions[i]); }
-       //     console.log(outputOptions);
-        return outputOptions;
-    },
+    };
 
-    transcodeToMP3: function(inputParams) {
+exports.audioUtils = {
+
+    formatSettings: audioFormatSettings,
+
+    transcodeToFile: function(audioFormat, inputParams) {
         return new Promise(function(resolve, reject) {
             try {
-                if (fs.existsSync(inputParams.sourceFilePath)) {
-                    resolve(
+                fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
+                    if (statErr == null) {
+
+                        var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf(".")+1)+audioFormat;
+                        
                         new ffmpeg(inputParams.sourceFilePath)
                             .input(inputParams.sourceFilePath)
-                            .outputOptions(this.transcodingOutputOptions("mp3",inputParams.enhanced))
-                            .outputFormat(this.formats.mp3.outputFormat)
-                            .audioCodec(this.formats.mp3.codec)
+                            .inputOptions(getInputOptions(audioFormat,inputParams.enhanced))
+                            .outputOptions(getOutputOptions(audioFormat,inputParams.enhanced))
+                            .outputFormat(audioFormatSettings[audioFormat].outputFormat)
+                            .audioCodec(audioFormatSettings[audioFormat].codec)
                             .audioFrequency(inputParams.sampleRate)
                             .audioChannels((inputParams.enhanced) ? 2 : 1)
-                            .audioBitrate(inputParams.bitRate)
+                     //       .audioBitrate(inputParams.bitRate)
+                            .save(transcodedFilePath)
                             .on("error",function(err,stdout,stderr){
                                 console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
                             })
-                    );  
-                    
-                } else {
-                    console.log("failed to locate source audio | " + err);
-                    reject(new Error(err));
-                }              
+                            .on("end",function(){
+                                fs.unlink(inputParams.sourceFilePath,function(e){if(e){console.log(e);}});
+                                resolve(transcodedFilePath);
+                            });
+                    } else {
+                        console.log("failed to locate source audio | " + err);
+                        reject(new Error(err));
+                    }
+                });           
 
             } catch(err) {
-                console.log("failed to transcode audio to mp3 | " + err);
+                console.log("failed to transcode audio to "+audioFormat+" | " + err);
                 reject(new Error(err));
             }
         }.bind(this));
     },
+
+    // transcodeToWavFile: function(audioFormat, inputParams) {
+    //     return new Promise(function(resolve, reject) {
+    //         try {
+    //             fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
+    //                 if (statErr == null) {
+
+    //                     var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf(".")+1)+audioFormat;
+                        
+    //                     new ffmpeg(inputParams.sourceFilePath)
+    //                         .input(inputParams.sourceFilePath)
+    //                         .inputOptions(getInputOptions(audioFormat,inputParams.enhanced))
+    //                         .outputOptions(getOutputOptions(audioFormat,inputParams.enhanced))
+    //                         .outputFormat(audioFormatSettings[audioFormat].outputFormat)
+    //                         .audioCodec(audioFormatSettings[audioFormat].codec)
+    //                         .audioFrequency(inputParams.sampleRate)
+    //                         .audioChannels((inputParams.enhanced) ? 2 : 1)
+    //                  //       .audioBitrate(inputParams.bitRate)
+    //                         .save(transcodedFilePath)
+    //                         .on("error",function(err,stdout,stderr){
+    //                             console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+    //                         })
+    //                         .on("end",function(){
+    //                             fs.unlink(inputParams.sourceFilePath,function(e){if(e){console.log(e);}});
+    //                             resolve(transcodedFilePath);
+    //                         });
+    //                 } else {
+    //                     console.log("failed to locate source audio | " + err);
+    //                     reject(new Error(err));
+    //                 }
+    //             });           
+
+    //         } catch(err) {
+    //             console.log("failed to transcode audio to "+audioFormat+" | " + err);
+    //             reject(new Error(err));
+    //         }
+    //     }.bind(this));
+    // },
+
 
     transcodeToOpus: function(inputParams) {
         return new Promise(function(resolve, reject) {
             try {
-                if (fs.existsSync(inputParams.sourceFilePath)) {
-                    resolve(
-                        new ffmpeg(inputParams.sourceFilePath)
-                            .input(inputParams.sourceFilePath)
-                            .outputOptions(this.transcodingOutputOptions("opus",inputParams.enhanced))
-                            .outputFormat(this.formats.opus.outputFormat)
-                            .audioCodec(this.formats.opus.codec)
-                            .audioFrequency(inputParams.sampleRate)
-                            .audioChannels((inputParams.enhanced) ? 2 : 1)
-                            .audioBitrate(inputParams.bitRate)
-                            .on("error",function(err,stdout,stderr){
-                                console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                            })
-                    );  
-                    
-                } else {
-                    console.log("failed to locate source audio | " + err);
-                    reject(new Error(err));
-                }              
+                fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
+                    if (statErr == null) {
+                        resolve(
+                            new ffmpeg(inputParams.sourceFilePath)
+                                .input(inputParams.sourceFilePath)
+                                .outputOptions(getOutputOptions("opus",inputParams.enhanced))
+                                .outputFormat(audioFormatSettings.opus.outputFormat)
+                                .audioCodec(audioFormatSettings.opus.codec)
+                                .audioFrequency(inputParams.sampleRate)
+                                .audioChannels((inputParams.enhanced) ? 2 : 1)
+                                .audioBitrate(inputParams.bitRate)
+                                // .on("error",function(err,stdout,stderr){
+                                //     console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
+                                // })
+                        );  
+                    } else {
+                        console.log("failed to locate source audio | " + err);
+                        reject(new Error(err));
+                    }
+                });           
 
             } catch(err) {
                 console.log("failed to transcode audio to opus | " + err);
-                reject(new Error(err));
-            }
-        }.bind(this));
-    },
-
-    transcodeToWavFile: function(inputParams) {
-        return new Promise(function(resolve, reject) {
-            try {
-                if (fs.existsSync(inputParams.sourceFilePath)) {
-                    var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"."+this.formats.wav.extension;
-                    
-                    new ffmpeg(inputParams.sourceFilePath)
-                        .input(inputParams.sourceFilePath)
-                        .inputOptions("-flags +bitexact")
-                        .outputOptions(this.transcodingOutputOptions("wav",inputParams.enhanced))
-                        .outputFormat(this.formats.wav.outputFormat)
-                        .audioFrequency(inputParams.sampleRate)
-                        .save(transcodedFilePath)
-                        .on("error",function(err,stdout,stderr){
-                            console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                        })
-                        .on("end",function(){
-                            resolve(transcodedFilePath);
-                        });
-                    
-                } else {
-                    console.log("failed to locate source audio | " + err);
-                    reject(new Error(err));
-                }              
-
-            } catch(err) {
-                console.log("failed to transcode audio to wav file | " + err);
-                reject(new Error(err));
-            }
-        }.bind(this));
-    },
-
-    transcodeToMp3File: function(inputParams) {
-        return new Promise(function(resolve, reject) {
-            try {
-                if (fs.existsSync(inputParams.sourceFilePath)) {
-                    var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"."+this.formats.mp3.extension;
-                    
-                    new ffmpeg(inputParams.sourceFilePath)
-                        .input(inputParams.sourceFilePath)
-                        .outputOptions(this.transcodingOutputOptions("mp3",inputParams.enhanced))
-                        .outputFormat(this.formats.mp3.outputFormat)
-                        .audioCodec(this.formats.mp3.codec)
-                        .audioFrequency(inputParams.sampleRate)
-                        .audioChannels((inputParams.enhanced) ? 2 : 1)
-                        .audioBitrate(inputParams.bitRate)
-                        .save(transcodedFilePath)
-                        .on("error",function(err,stdout,stderr){
-                            console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                        })
-                        .on("end",function(){
-                            fs.unlink(inputParams.sourceFilePath,function(e){if(e){console.log(e);}});
-                            resolve(transcodedFilePath);
-                        });
-                    
-                } else {
-                    console.log("failed to locate source audio | " + err);
-                    reject(new Error(err));
-                }              
-
-            } catch(err) {
-                console.log("failed to transcode audio to mp3 file | " + err);
                 reject(new Error(err));
             }
         }.bind(this));
@@ -163,4 +146,22 @@ exports.audioUtils = {
 
 
 };
+
+function getInputOptions(format,isEnhanced) {
+    var enhancedInputOptions = [
+        ],
+        inputOptions = (isEnhanced) ? enhancedInputOptions : [];
+    for (i in audioFormatSettings[format].inputOptions) { inputOptions.push(audioFormatSettings[format].inputOptions[i]); }
+    return inputOptions;
+}
+
+function getOutputOptions(format,isEnhanced) {
+    var enhancedOutputOptions = [
+            "-filter_complex", "[0:a][1:a]amerge=inputs=2[aout]",
+            "-map", "[aout]"
+        ],
+        outputOptions = (isEnhanced) ? enhancedOutputOptions : [];
+    for (i in audioFormatSettings[format].outputOptions) { outputOptions.push(audioFormatSettings[format].outputOptions[i]); }
+    return outputOptions;
+}
 

@@ -45,13 +45,23 @@ exports.guardianStatusAudio = {
               .findOne({
                 where: dbWhere,
                 attributes: [
-                    [ models.sequelize.fn("SUM", models.sequelize.col("capture_sample_count")), "sample_count_sum" ],
-                    [ models.sequelize.fn("MAX", models.sequelize.col("capture_sample_rate")), "sample_rate_max" ]
+                    [ models.sequelize.fn("SUM", models.sequelize.col("capture_sample_count")), "sample_count_sum" ]
                 ]
               }).then(function(dbStatus){
 
-                resolve(Math.round(10000*parseInt(1000*dbStatus.dataValues.sample_count_sum/dbStatus.dataValues.sample_rate_max)/(parseInt(intervalInHours)*3600000))/100);
+                  models.GuardianAudio
+                    .findOne({ 
+                      where: dbWhere, 
+                      include: [{ all: true }]
+                    }).then(function(dbAudio){
 
+                      resolve(Math.round(10000*parseInt(1000*dbStatus.dataValues.sample_count_sum/dbAudio.Format.sample_rate)/(parseInt(intervalInHours)*3600000))/100);
+
+                    }).catch(function(err){
+                      console.log(err);
+                      reject(new Error(err));
+                    });       
+                               
               }).catch(function(err){
                 console.log(err);
                 reject(new Error(err));

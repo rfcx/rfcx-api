@@ -122,25 +122,18 @@ exports.saveMeta = {
 
   GeoLocation: function(metaLocation, guardianId, checkInId) {
     for (locInd in metaLocation) {
-      var latLng = [
-        new Date(parseInt(metaLocation[locInd][0])),
-        parseFloat(metaLocation[locInd][1]),
-        parseFloat(metaLocation[locInd][2]),
-        parseFloat(metaLocation[locInd][3]),
-      ];
-      console.log(latLng);
-      // models.GuardianMetaDataTransfer.create({
-      //     guardian_id: guardianId,
-      //     check_in_id: checkInId,
-      //     started_at: new Date(parseInt(metaDataTransfer[dtInd][0])),
-      //     ended_at: new Date(parseInt(metaDataTransfer[dtInd][1])),
-      //     bytes_received: parseInt(metaDataTransfer[dtInd][2]),
-      //     bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
-      //     total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
-      //     total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
-      //   }).then(function(dbGuardianMetaDataTransfer){ }).catch(function(err){
-      //     console.log("failed to create GuardianMetaDataTransfer | "+err);
-      //   });
+      if (metaLocation[locInd][1] != null) {
+        models.GuardianMetaGeoLocation.create({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaLocation[locInd][0])),
+            latitude: parseFloat(metaLocation[locInd][1]),
+            longitude: parseFloat(metaLocation[locInd][2]),
+            precision: parseFloat(metaLocation[locInd][3])
+          }).then(function(dbGuardianMetaGeoLocation){ }).catch(function(err){
+            console.log("failed to create GuardianMetaGeoLocation | "+err);
+          });
+      }
     }
   },
 

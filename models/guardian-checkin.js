@@ -61,32 +61,6 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
-    location_latitude: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        isFloat: true,
-        min: -90,
-        max: 90
-      }
-    },
-    location_longitude: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        isFloat: true,
-        min: -180,
-        max: 180
-      }
-    },
-    location_precision: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        isFloat: true,
-        min: 0
-      }
-    },
     timezone_offset_minutes: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -104,6 +78,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianCheckIn.hasMany(models.GuardianMetaBattery, {as: "MetaBattery", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaDataTransfer, {as: "MetaDataTransfer", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaLightMeter, {as: "MetaLightMeter", foreignKey: "check_in_id"});
+        GuardianCheckIn.hasMany(models.GuardianMetaGeoLocation, {as: "MetaGeoLocation", foreignKey: "check_in_id"});
         
         GuardianCheckIn.hasMany(models.GuardianMetaNetwork, {as: "MetaNetwork", foreignKey: "check_in_id"});
         GuardianCheckIn.hasMany(models.GuardianMetaOffline, {as: "MetaOffline", foreignKey: "check_in_id"});

@@ -1,0 +1,35 @@
+reporter: apiary
+custom:
+  apiaryApiKey: bd2be04725ba8aa0dc853df6b275b3c1
+  apiaryApiName: betaplayer
+dry-run: null
+hookfiles: hooks/*
+language: nodejs
+sandbox: false
+server: bin/start
+server-wait: 10
+init: false
+names: false
+only: []
+output: []
+header: []
+sorted: false
+user: null
+inline-errors: false
+details: false
+method: []
+color: true
+level: info
+timestamp: false
+silent: false
+path: []
+hooks-worker-timeout: 5000
+hooks-worker-connect-timeout: 1500
+hooks-worker-connect-retry: 500
+hooks-worker-after-connect-wait: 100
+hooks-worker-term-timeout: 5000
+hooks-worker-term-retry: 500
+hooks-worker-handler-host: localhost
+hooks-worker-handler-port: 61321
+blueprint: apiary.apib
+endpoint: 'http://localhost:8080/v1/'

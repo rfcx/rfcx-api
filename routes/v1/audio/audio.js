@@ -15,16 +15,10 @@ router.route("/:audio_id")
         include: [{ all: true }]
       }).then(function(dbAudio){
 
-        if (req.rfcx.content_type === "m4a") {
-          views.models.guardianAudioFile(req,res,dbAudio);
-        } else if (req.rfcx.content_type === "png") {
-          views.models.guardianSpectrogramFile(req,res,dbAudio);
-        } else {
-            views.models.guardianAudio(req,res,dbAudio)
-              .then(function(audioJson){
-                res.status(200).json(audioJson);
-            });
-        }
+          views.models.guardianAudioJson(req,res,dbAudio)
+            .then(function(audioJson){
+              res.status(200).json(audioJson);
+          });
         
       }).catch(function(err){
         console.log("failed to return audio | "+err);

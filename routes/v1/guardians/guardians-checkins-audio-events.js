@@ -46,8 +46,8 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                         duration_reviewer: null,
                         classification_analysis: audioEvent.classification, 
                         classification_reviewer: null,
-                        latitude: dbCheckIn.location_latitude,
-                        longitude: dbCheckIn.location_longitude,
+                        latitude: null,
+                        longitude: null,
                         fingerprint: fingerprintArray
                       }).then(function(dbGuardianEvent){
 

@@ -13,25 +13,22 @@ router.route("/audio/:audio_id")
         include: [{ all: true }]
       }).then(function(dbAudio){
 
-        if (req.rfcx.content_type === "m4a") {
+        var audio_file_extensions = [ "m4a", "mp3", "flac", "opus"/*, "wav"*/ ];
+
+        if (audio_file_extensions.indexOf(req.rfcx.content_type) >= 0) {
         
           views.models.guardianAudioFile(req,res,dbAudio);
           
-        } else if (req.rfcx.content_type === "mp3") {
-          views.models.TEMP_MP3_guardianAudioFile(req,res,dbAudio);
-        } else if (req.rfcx.content_type === "opus") {
-          views.models.TEMP_OGG_guardianAudioFile(req,res,dbAudio);
-
         } else if (req.rfcx.content_type === "png") {
           
-          views.models.guardianSpectrogramFile(req,res,dbAudio);
+          views.models.guardianAudioSpectrogram(req,res,dbAudio);
         
         } else {
           
-            views.models.guardianAudio(req,res,dbAudio)
-              .then(function(audioJson){
-                res.status(200).json(audioJson);
-            });
+          views.models.guardianAudioJson(req,res,dbAudio)
+            .then(function(audioJson){
+              res.status(200).json(audioJson);
+          });
         }
         
       }).catch(function(err){

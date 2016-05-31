@@ -1,5 +1,8 @@
-  language: node_js
-  env:
-    - NODE_ENV=test
-  before_script:
-    - mysql -e 'create database test;'
+language: node_js
+env:
+  - NODE_ENV=test
+before_script:
+  - mysql -e 'create database test;'
+  - dredd
+before_install:
+  - npm install -g dredd
