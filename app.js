@@ -26,6 +26,7 @@ app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(cors()); // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.json());
 app.use(multer(require("./config/multer").config(process.env)));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(passport.initialize());
@@ -57,6 +58,7 @@ var routes = {
     "shortlinks": [ require("./routes/v1/shortlinks/shortlinks") ],
     "player": [ require("./routes/v1/player/player") ],
     "assets": [ require("./routes/v1/assets/assets") ],
+    "reports": [ require("./routes/v1/reports/reports")]
   },
   "v2": {
   }
