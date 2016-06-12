@@ -4,7 +4,7 @@
 // like 'heard a chainsaw' or 'poacher sighting'
 module.exports = function(sequelize, DataTypes) {
   var Report = sequelize.define('Report', {
-    guid: { 
+    id: { 
       type:DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey:true
