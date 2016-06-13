@@ -46,14 +46,15 @@ var SequelizeApiConverter = function(type, baseUrl) {
       return api;
     }
 
+    /**
+     * Convert camelCase object attributes to underscore format
+     */
     function mapToDb(obj) {
       var db = {};
-      db.id = obj.data.id;
-      
 
-      for (var key of Object.keys(obj.data.attributes)) {
+      for (var key in obj) {
         var uncamelKey = fromCamel(key);
-        db[uncamelKey] = obj.data.attributes[key];
+        db[uncamelKey] = obj[key];
       }
 
       return db;
@@ -62,7 +63,7 @@ var SequelizeApiConverter = function(type, baseUrl) {
     converter.mapToApi = mapToApi; 
     converter.mapToDb = mapToDb;
     return converter;
-}
+};
 
 
 module.exports = SequelizeApiConverter; 
