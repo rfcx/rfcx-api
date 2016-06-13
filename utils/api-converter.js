@@ -35,7 +35,7 @@ var SequelizeApiConverter = function(type, baseUrl) {
       obj = obj.dataValues;
       var id = obj.id;
       var api = createApiObj(id);
-      for (var key of Object.keys(obj)) {
+      for (var key in obj) {
         if(key == 'id') {
           continue; 
         }
