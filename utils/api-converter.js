@@ -36,25 +36,32 @@ var SequelizeApiConverter = function(type, baseUrl) {
       var id = obj.id;
       var api = createApiObj(id);
       for (var key in obj) {
-        if(key == 'id') {
-          continue; 
+        if (obj.hasOwnProperty(key)) {
+          if(key == 'id') {
+            continue;
+          }
+
+          var camelKey = toCamel(key);
+          api.data.attributes[camelKey] = obj[key];
         }
-        
-        var camelKey = toCamel(key);
-        api.data.attributes[camelKey] = obj[key];
       }
       return api;
     }
 
     /**
-     * Convert camelCase object attributes to underscore format
+     * Convert camelCase object attributes to underscore format and prepare data for db
      */
     function mapToDb(obj) {
       var db = {};
 
-      for (var key in obj) {
-        var uncamelKey = fromCamel(key);
-        db[uncamelKey] = obj[key];
+      db.id = obj.data.id;
+      db.type = obj.data.type;
+
+      for (var key in obj.data.attributes) {
+        if (obj.data.attributes.hasOwnProperty(key)) {
+          var uncamelKey = fromCamel(key);
+          db[uncamelKey] = obj.data.attributes[key];
+        }
       }
 
       return db;
