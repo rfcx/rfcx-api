@@ -10,7 +10,6 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/login")
   .post(function(req,res) {
-
     var userInput = {
       email: (req.body.email != null) ? req.body.email.toLowerCase() : null,
       pswd: req.body.password
