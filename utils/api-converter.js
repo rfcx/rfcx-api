@@ -1,11 +1,11 @@
+var urls = require('./misc/urls');
 
-var SequelizeApiConverter = function(type, baseUrl) {
+var SequelizeApiConverter = function(type, req) {
     var converter = {}; 
   
     converter.type = type;
     converter.collection = type + "s";
-    converter.baseUrl = baseUrl;
-  
+    converter.baseUrl = urls.getApiUrl(req);
     function fromCamel(cameledName) {
       // Todo think about names starting with a capital letter 
       return cameledName.replace(/([A-Z])/g, function(m) { return '_' + m.toLowerCase()})

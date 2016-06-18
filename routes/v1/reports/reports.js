@@ -3,21 +3,16 @@ var models = require("../../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../../views/v1");
-var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
+var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 
-
-function getUrl(req) {
-    return req.protocol + '://' + req.get('host') + '/v1';
-}
 
 // create new report 
 router.route("/")
-    .post(passport.authenticate("token", {session: false}), function (req, res) {
-        var converter = new ApiConverter("report", getUrl(req));
-
+    .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+        var converter = new ApiConverter("report", req);
         var apiReport = converter.mapToDb(req.body);
         apiReport.reporter = req.rfcx.auth_token_info.owner_id;
         models.Report
@@ -34,8 +29,8 @@ router.route("/")
 
 // retrieve one report 
 router.route("/:report_id")
-    .get(passport.authenticate("token", {session: false}), function (req, res) {
-        var converter = new ApiConverter("report", getUrl(req));
+    .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+        var converter = new ApiConverter("report", req);
 
         models.Report
             .findOne({

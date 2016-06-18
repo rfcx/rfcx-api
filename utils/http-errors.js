@@ -12,6 +12,11 @@ var options = {
     "parse": "Failed to parse input"
   },
 
+  "403": {
+    "default": "Not authorized to access this resource",
+    "user": "Only users are authorized to access this resource"
+  }
+
 };
 
 var httpError = function(res, code, context) {
@@ -24,6 +29,6 @@ var httpError = function(res, code, context) {
     };
   console.log("Error: "+json.message);
   res.status(parseInt(code)).json(json);
-}
+};
 
 module.exports = httpError;
