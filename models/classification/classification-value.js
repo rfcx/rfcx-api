@@ -3,13 +3,22 @@
 // Available Classification Types 
 // Each 
 module.exports = function(sequelize, DataTypes) {
-    var ClassificationType = sequelize.define('ClassificationType', {
-        id: {
-            type:DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey:true
+    var ClassificationValues = sequelize.define('ClassificationValues', {
+
+        value: {
+            type: DataTypes.INTEGER,
+            primaryKey: true
         },
-        name: DataTypes.STRING
-    });
-    return ClassificationType;
+        classifier: DataTypes.STRING,
+        classification_type: {
+            type: DataTypes.UUID,
+            primaryKey: true,
+            references: {
+                model: 'ClassificationTypes',
+                key: 'id'
+            }
+        }
+    }
+    );
+    return ClassificationValues;
 };

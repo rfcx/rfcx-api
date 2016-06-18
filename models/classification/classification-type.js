@@ -1,26 +1,15 @@
 'use strict';
 
-// Creates a repository of reports for incidents 
-// like 'heard a chainsaw' or 'poacher sighting'
+// Available Classification Types 
+// Each 
 module.exports = function(sequelize, DataTypes) {
-    var ClassificationType = sequelize.define('Report', {
+    var ClassificationTypes = sequelize.define('ClassificationTypes', {
         id: {
             type:DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             primaryKey:true
         },
-        start_time: DataTypes.DATE,
-        end_time: DataTypes.DATE,
-        long: DataTypes.REAL,
-        lat: DataTypes.REAL,
-        type: DataTypes.STRING
-    }, {
-        classMethods: {
-            associate: function(models) {
-                Report.belongsTo(models.Guardian,{ foreignKey:'closest_guardian'});
-                Report.belongsTo(models.User, {foreignKey: 'reporter'});
-            }
-        }
+        name: DataTypes.STRING
     });
-    return Report;
+    return ClassificationTypes;
 };
