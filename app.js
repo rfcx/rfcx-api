@@ -58,7 +58,8 @@ var routes = {
     "shortlinks": [ require("./routes/v1/shortlinks/shortlinks") ],
     "player": [ require("./routes/v1/player/player") ],
     "assets": [ require("./routes/v1/assets/assets") ],
-    "reports": [ require("./routes/v1/reports/reports")]
+    "reports": [ require("./routes/v1/reports/reports")], 
+      "classifications": [require("./routes/v1/classification/classificationTypes"),require("./routes/v1/classification/classifications")]
   },
   "v2": {
   }

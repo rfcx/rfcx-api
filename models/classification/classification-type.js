@@ -9,7 +9,15 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: DataTypes.UUIDV4,
             primaryKey:true
         },
-        name: DataTypes.STRING
+        name: DataTypes.STRING,
+        classLengthMs: DataTypes.INTEGER
+    }, {
+        classMethods: {
+            associate: function(models) {
+                ClassificationTypes.belongsToMany(models.ClassificationClasses,{
+                    through: "ClassificationTypesClasses"});
+            }
+        }
     });
     return ClassificationTypes;
 };

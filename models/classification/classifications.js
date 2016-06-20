@@ -9,14 +9,15 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: DataTypes.UUIDV4,
             primaryKey:true
         },
-        start: { type: DataTypes.FLOAT, unsigned: true },
-        end: { type: DataTypes.FLOAT, unsigned: true },
-        value: DataTypes.INTEGER
+        start: { type: DataTypes.INTEGER, unsigned: true },
+        end: { type: DataTypes.INTEGER, unsigned: true },
+        class: DataTypes.STRING
     }, {
         classMethods: {
             associate: function(models) {
-                Classifications.belongsTo(models.ClassificationTypes,{ foreignKey:'classification_type'});
+                Classifications.belongsTo(models.ClassificationTypes,{ as:'classificationType', foreignKey:'classification_type'});
                 Classifications.belongsTo(models.User, {foreignKey: 'analyst'});
+                Classifications.belongsTo(models.GuardianAudio, {as:'audioId', foreignKey: 'audio_id',  targetKey: 'guid'});
             }
         }
     });

@@ -13,11 +13,11 @@ var requireUser = require("../../../middleware/authorization/authorization").req
 router.route("/")
     .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
         var converter = new ApiConverter("report", req);
-        var apiReport = converter.mapToDb(req.body);
+        var apiReport = converter.mapApiToSequelize(req.body);
         apiReport.reporter = req.rfcx.auth_token_info.owner_id;
         models.Report
             .create(apiReport).then(function (dbReport) {
-            res.status(201).json(converter.mapToApi(dbReport));
+            res.status(201).json(converter.mapSequelizeToApi(dbReport));
         }).catch(function (err) {
             // creation failed... probable cause: uuid already existed, strange!
             if (!!err) {
@@ -39,7 +39,7 @@ router.route("/:report_id")
             if (dbReport.reporter != req.rfcx.auth_token_info.owner_id) {
                 res.status(403).json({title: "You are only allowed to access your own reports. This report was created by someone else."});
             } else {
-                res.status(200).json(converter.mapToApi(dbReport));
+                res.status(200).json(converter.mapSequelizeToApi(dbReport));
             }
         }).catch(function (err) {
             if (!!err) {
