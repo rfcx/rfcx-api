@@ -43,6 +43,8 @@ function randomDataFilter(api, req, res) {
 	sql = condAdd(sql, api.todEnd, ' and TIME(a.measured_at) < :todEnd');
 	sql = condAdd(sql, api.sites, ' and a.site_id in (:sites)');
 	sql = condAdd(sql, api.guardians, ' and a.guardian_id in (:guardians)');
+	sql = condAdd(sql, api.classificationType, ' and c.classification_type in (:classificationType)');
+
 
 
 	if(api.classificationGoal == null) {

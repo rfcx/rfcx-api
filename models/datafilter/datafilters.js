@@ -24,9 +24,10 @@ module.exports = function(sequelize, DataTypes) {
         classificationGoal: DataTypes.INTEGER,
         limit: DataTypes.INTEGER,
         model: DataTypes.UUID,
-    classes: DataTypes.STRING,
-    reports: DataTypes.STRING,
-        analyst: DataTypes.INTEGER
+        classes: DataTypes.STRING,
+        reports: DataTypes.STRING,
+        analyst: DataTypes.INTEGER,
+        classification_type: DataTypes.UUID
     });
     return Datafilters;
 };
