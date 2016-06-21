@@ -1,11 +1,12 @@
 var urls = require('./misc/urls');
 
-var SequelizeApiConverter = function(type, req) {
+var SequelizeApiConverter = function(type, req, selfProperty) {
     var converter = this;
   
     converter.type = type;
     converter.collection = type.replace(/([A-Z])/g, function(m) { return 's/' + m.toLowerCase() }) + 's';
     converter.baseUrl = urls.getApiUrl(req);
+    converter.selfProp = selfProperty == null ? 'id' : selfProperty;
 
     function fromCamel(cameledName) {
       // Todo think about names starting with a capital letter 
@@ -28,7 +29,7 @@ var SequelizeApiConverter = function(type, req) {
           attributes: {}
         },
         links: {
-          self: converter.baseUrl + "/" + converter.collection + "/" + id
+          self: converter.baseUrl + "/" + converter.collection + "/"
         }
       };
 
@@ -56,6 +57,7 @@ var SequelizeApiConverter = function(type, req) {
                 api.data.attributes[transformedKey] = obj[key];
             }
         }
+        api.links.self += converter.selfProp in api.data.attributes ?  api.data.attributes[converter.selfProp] : id;
         return api;
     }
 
