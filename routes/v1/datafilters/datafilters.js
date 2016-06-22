@@ -45,8 +45,6 @@ function randomDataFilter(api, req, res) {
 	sql = condAdd(sql, api.guardians, ' and a.guardian_id in (:guardians)');
 	sql = condAdd(sql, api.classificationType, ' and c.classification_type in (:classificationType)');
 
-
-
 	if(api.classificationGoal == null) {
 		api.classificationGoal = 3;
 	}
@@ -83,6 +81,7 @@ router.route("/")
 			var apiFilter = converter.mapSequelizeToApi(filter);
 			res.status(201).json(apiFilter);
 		}).catch(function (err) {
+      console.log('Error while creating datafilter |', err);
 			if(!!err){
 				res.status(409).json({msg:"The datafilter could not be created. The name is already in use."});
 			}

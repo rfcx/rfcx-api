@@ -19,6 +19,7 @@ router.route("/")
 				res.status(201).json(converter.mapSequelizeToApi(dbApiClassification));
 		}).catch(function (err) {
 			// creation failed... probable cause: uuid already existed, strange!
+        console.log('Error while saving Classification | ', err);
 			if (!!err) {
 				res.status(500).json({title: "The classification could not be generated. Maybe your id was not unique?"});
 			}
