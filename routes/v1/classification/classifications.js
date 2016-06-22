@@ -7,6 +7,7 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
+var Promise = require("bluebird");
 
 
 router.route("/")
@@ -26,6 +27,27 @@ router.route("/")
 		});
 
 	});
+
+router.route("/multiple")
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+    var promises = [];
+    var converter = new ApiConverter("classification", req);
+    // iterate through all classifications inslide `list` attribute
+    for (var i = 0; i < req.body.data.attributes.list.length; i++) {
+      var apiClassification = converter.mapApiToSequelize(req.body.data.attributes.list[i]);
+      apiClassification.analyst = req.rfcx.auth_token_info.owner_id;
+      promises.push(models.Classifications.create(apiClassification));
+      Promise.all(promises)
+        .then(function(dbApiClassifications) {
+          // TODO: process each db action result and send all data back to client
+          res.status(201);
+      }, function(err) {
+        console.log('Error in process of classifications save |', err);
+        res.status(500).json({title: "Error in process of classifications save"});
+      });
+    }
+
+  });
 
 
 router.route("/:classification_id")
