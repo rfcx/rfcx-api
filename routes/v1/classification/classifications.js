@@ -37,15 +37,16 @@ router.route("/multiple")
       var apiClassification = converter.mapApiToSequelize(req.body.data.attributes.list[i]);
       apiClassification.analyst = req.rfcx.auth_token_info.owner_id;
       promises.push(models.Classifications.create(apiClassification));
-      Promise.all(promises)
-        .then(function(dbApiClassifications) {
-          // TODO: process each db action result and send all data back to client
-          res.status(201);
+    }
+    Promise.all(promises)
+      .then(function(dbApiClassifications) {
+        // TODO: process each db action result and send all data back to client
+        // TODO: replace result json object
+        res.status(201).json({});
       }, function(err) {
         console.log('Error in process of classifications save |', err);
         res.status(500).json({title: "Error in process of classifications save"});
       });
-    }
 
   });
 
