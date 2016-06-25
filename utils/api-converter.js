@@ -14,7 +14,7 @@ var SequelizeApiConverter = function(type, req, selfProperty) {
     }
 
     function toCamel(uncameledName) {
-      return uncameledName.replace(/_([a-z])/, function(m) {return m[1].toUpperCase();});
+      return uncameledName.replace(/_([a-z])/g, function(m) {return m[1].toUpperCase();});
     }
 
     function identityTransform(key) {
@@ -53,6 +53,9 @@ var SequelizeApiConverter = function(type, req, selfProperty) {
                     continue;
                 }
 
+                if((obj[key] === Object(obj[key])) && ('dataValues' in obj[key])){
+                    continue;
+                }
                 var transformedKey = transform(key);
                 api.data.attributes[transformedKey] = obj[key];
             }

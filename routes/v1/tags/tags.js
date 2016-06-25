@@ -25,8 +25,11 @@ function createTag(dbTag) {
 
 				return models.GuardianAudioTag
 					.create(dbTag).then(function (dbTag) {
-					dbTag.audio_id = guid;
-					return dbTag;
+						return models.User.findOne({where: {id: dbTag.tagged_by_user}}).then(function (dbUser) {
+							dbTag.audio_id = guid;
+							dbTag.tagged_by_user = dbUser.guid;
+							return dbTag;
+						});
 				});
 
 
@@ -36,12 +39,13 @@ function createTag(dbTag) {
 }
 
 function createOne(req, res) {
+	var guid = req.body.data.attributes.audioId;
 	req.body.data.attributes.taggedByUser = req.rfcx.auth_token_info.owner_id;
 	var converter = new ApiConverter("tag", req);
 	var dbTag = converter.mapApiToSequelize(req.body);
+	dbTag.audio_id = guid;
 	createTag(dbTag).then(function (dbTag) {
 		var apiTag = converter.mapSequelizeToApi(dbTag);
-		apiTag.data.attributes.audioId = dbAudio.guid;
 		res.status(201).json(apiTag);
 		return dbTag;
 	}).catch(function (err) {
@@ -63,16 +67,16 @@ function createMany(req, res) {
 	// iterate through all classifications inslide `list` attribute
 	for (var i = 0; i < req.body.data.attributes.length; i++) {
 		var dbTag = converter.mapApiToSequelize(req.body.data.attributes[i]);
-		dbTag.taggedByUser = req.rfcx.auth_token_info.owner_id;
+		dbTag.tagged_by_user = req.rfcx.auth_token_info.owner_id;
 		promises.push(createTag(dbTag));
 	}
 	Promise.all(promises)
 		.then(function (dbTags) {
-			// TODO: process each db action result and send all data back to client
-			// TODO: replace result json object
-			res.status(201).json(dbTags.map(function (dbTag) {
+			var api = { type: "tags"};
+			api.data = dbTags.map(function (dbTag) {
 				return converter.mapSequelizeToApi(dbTag.dataValues);
-			}));
+			});
+			res.status(201).json(api);
 			return dbTags;
 		}).catch(function (err) {
 		console.log('Error in process of tagging |', err);
@@ -95,10 +99,13 @@ router.route("/:tag_id")
 
 		models.GuardianAudioTag
 			.findOne({
-				where: {guid: req.params.tag_id}
+				where: {guid: req.params.tag_id},
+				include: [models.User]
 			}).then(function (dbTag) {
-
-			res.status(200).json(converter.mapSequelizeToApi(dbTag));
+			var api = converter.mapSequelizeToApi(dbTag);
+			api.data.attributes.taggedByUser = dbTag.User.guid;
+			delete api.data.attributes.User;
+			res.status(200).json(api);
 
 		}).catch(function (err) {
 			if (!!err) {
