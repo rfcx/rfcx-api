@@ -58,7 +58,12 @@ var routes = {
     "shortlinks": [ require("./routes/v1/shortlinks/shortlinks") ],
     "player": [ require("./routes/v1/player/player") ],
     "assets": [ require("./routes/v1/assets/assets") ],
-    "reports": [ require("./routes/v1/reports/reports")]
+    "reports": [ require("./routes/v1/reports/reports")],
+
+      "tags": [require("./routes/v1/tags/tags")],
+
+      "datafilters": [require("./routes/v1/datafilters/datafilters")],
+
   },
   "v2": {
   }

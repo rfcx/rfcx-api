@@ -67,7 +67,7 @@ exports.middleware = {
           res.redirect("https://"+req.headers.host+req.rfcx.url_path);
     } else {
 
-      next();      
+      next();
     }
   
   }
