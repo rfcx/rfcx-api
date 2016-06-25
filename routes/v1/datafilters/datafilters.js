@@ -8,6 +8,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var sequelize = require('../../../models/index');
+var urls = require("../../../utils/misc/urls");
 
 function condAdd(sql, condition, add) {
 	if(condition != null) {
@@ -17,44 +18,43 @@ function condAdd(sql, condition, add) {
 	return sql;
 }
 
-function condIteratorAdd(sql, iterator, add) {
-	if(iterator == null) {
-		return sql;
+
+
+
+function randomDataFilter(filter) {
+	var sql = 'SELECT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t ' +
+		' on a.id=t.audio_id where (t.tagged_by_user is null OR t.tagged_by_user != :user)';
+
+	sql = condAdd(sql, filter.start, ' and a.measured_at >= :start');
+	sql = condAdd(sql, filter.end, ' and a.measured_at < :end');
+	sql = condAdd(sql, filter.todStart, ' and TIME(a.measured_at) >= :todStart');
+	sql = condAdd(sql, filter.todEnd, ' and TIME(a.measured_at) < :todEnd');
+	sql = condAdd(sql, filter.sites, ' and a.site_id in (:sites)');
+	sql = condAdd(sql, filter.guardians, ' and a.guardian_id in (:guardians)');
+
+	if(filter.labelGoal == null) {
+		filter.labelGoal = 3;
 	}
 
-	sql += add + ' (' + iterator.join() + ') ';
+	sql += ' group by a.guid having count(DISTINCT t.tagged_by_user) < :labelGoal order by count(DISTINCT t.tagged_by_user) DESC, RAND()';
 
-	return sql;
+	sql = condAdd(sql, filter.limit, ' LIMIT :limit');
+
+	return sequelize.sequelize.query(sql,
+		{ replacements: filter, type: sequelize.sequelize.QueryTypes.SELECT }
+	)
 }
 
+function tagFilter(filter) {
 
+	filter.limit =  filter.limit ? filter.limit : 1;
+	var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id';
+	sql += ' where t.type == :type';
+	sql += ' and t.tag in (:tags)';
+	sql += ' LIMIT :limit';
 
-function randomDataFilter(api, req, res) {
-	var converter = new ApiConverter("datafilter", req);
-	var sql = 'SELECT a.guid FROM GuardianAudio a LEFT JOIN Classifications c ' +
-		' on a.guid=c.audio_id where (c.analyst is null OR c.analyst != :analyst)';
-
-	api.sites = JSON.parse(api.sites);
-	api.guardians = JSON.parse(api.guardians);
-
-	sql = condAdd(sql, api.start, ' and a.measured_at >= :start');
-	sql = condAdd(sql, api.end, ' and a.measured_at < :end');
-	sql = condAdd(sql, api.todStart, ' and TIME(a.measured_at) >= :todStart');
-	sql = condAdd(sql, api.todEnd, ' and TIME(a.measured_at) < :todEnd');
-	sql = condAdd(sql, api.sites, ' and a.site_id in (:sites)');
-	sql = condAdd(sql, api.guardians, ' and a.guardian_id in (:guardians)');
-	sql = condAdd(sql, api.classificationType, ' and c.classification_type in (:classificationType)');
-
-	if(api.classificationGoal == null) {
-		api.classificationGoal = 3;
-	}
-
-	sql += ' group by a.guid having count(DISTINCT c.analyst) < :classificationGoal order by count(DISTINCT c.analyst) DESC, RAND()';
-
-	sql = condAdd(sql, api.limit, ' LIMIT :limit');
-
-	sequelize.sequelize.query(sql,
-		{ replacements: api, type: sequelize.sequelize.QueryTypes.SELECT }
+	return sequelize.sequelize.query(sql,
+		{ replacements: filter, type: sequelize.sequelize.QueryTypes.SELECT }
 	).then(function(guids) {
 		var result = {};
 
@@ -71,36 +71,50 @@ function randomDataFilter(api, req, res) {
 	});
 }
 
-router.route("/")
-	.post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
-		var converter = new ApiConverter("datafilter", req, "name");
-		var db = converter.mapApiToSequelize(req.body);
-		db.guardians = JSON.stringify(db.guardians);
-		db.sites = JSON.stringify(db.sites);
-		models.Datafilters.create(db).then(function (filter) {
-			var apiFilter = converter.mapSequelizeToApi(filter);
-			res.status(201).json(apiFilter);
-		}).catch(function (err) {
-      console.log('Error while creating datafilter |', err);
-			if(!!err){
-				res.status(409).json({msg:"The datafilter could not be created. The name is already in use."});
-			}
-		});
-
-	});
 
 
-router.route("/:datafilter_name")
+router.route("/labelling")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
 		var converter = new ApiConverter("datafilter", req);
-		models.Datafilters.findOne({where: {name: req.params.datafilter_name}}).then(function (dbFilter) {
-			var api = converter.mapSequelizeToApi(dbFilter);
-			randomDataFilter(api.data.attributes, req, res);
+		var randomFilter = {
+			user: req.rfcx.auth_token_info.owner_id,
+			limit: 1
+		};
+
+		if (req.query.site) {
+			randomFilter.sites = [req.query.site];
+		}
+		if (req.query.guardian) {
+			randomFilter.guardians = [req.query.site];
+		}
+
+		randomDataFilter(randomFilter).then(function(guids) {
+			var result = {
+				data: {
+					type: "datafilter",
+					attributes: {}
+				},
+				links: {
+					self: urls.getApiUrl(req) + '/v1/datafilters/labelling'
+				}
+			};
+
+			result.data.attributes.audio = guids.map(function (obj) {
+				return {
+					guid: obj.guid,
+					link: urls.getAudioUrl(req, obj.guid)
+				}
+			});
+
+
+			res.status(200).json(result);
 		}).catch(function (err) {
 			if(!!err){
-				res.status(404).json({msg:"The datafilter could not be found: "+ err});
+				res.status(500).json({msg: err});
 			}
 		});
 	});
+
 
 module.exports = router;

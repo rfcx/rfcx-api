@@ -4,10 +4,10 @@
 // like 'heard a chainsaw' or 'poacher sighting'
 module.exports = function(sequelize, DataTypes) {
   var Report = sequelize.define('Report', {
-    id: { 
+    guid: {
       type:DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey:true
+      unique: true
     },
     start_time: DataTypes.DATE,
     end_time: DataTypes.DATE,
@@ -17,7 +17,6 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Report.belongsTo(models.Guardian,{ foreignKey:'closest_guardian'});
         Report.belongsTo(models.User, {foreignKey: 'reporter'});
       }
     }

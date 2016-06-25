@@ -60,7 +60,7 @@ var routes = {
     "assets": [ require("./routes/v1/assets/assets") ],
     "reports": [ require("./routes/v1/reports/reports")],
 
-      "classifications": [require("./routes/v1/classification/classificationTypes"), require("./routes/v1/classification/classifications")],
+      "tags": [require("./routes/v1/tags/tags")],
 
       "datafilters": [require("./routes/v1/datafilters/datafilters")],
 

@@ -45,11 +45,11 @@ var SequelizeApiConverter = function(type, req, selfProperty) {
             // we are accessing a sequelized object
             obj = obj.dataValues;
         }
-        var id = obj.id;
+        var id = obj.guid;
         var api = createApiObj(id);
         for (var key in obj) {
             if (obj.hasOwnProperty(key)) {
-                if(key == 'id' || key == 'updated_at' || key == 'created_at' || key == 'type') {
+                if(key == 'id' || key == 'updated_at' || key == 'created_at'  || key=='guid') {
                     continue;
                 }
 
@@ -72,7 +72,7 @@ var SequelizeApiConverter = function(type, req, selfProperty) {
         }
         var db = {};
 
-        db.id = obj.data.id;
+        db.guid = obj.data.id;
         db.type = obj.data.type;
 
         for (var key in obj.data.attributes) {

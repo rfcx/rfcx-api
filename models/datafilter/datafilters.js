@@ -4,10 +4,10 @@
 // like 'heard a chainsaw' or 'poacher sighting'
 module.exports = function(sequelize, DataTypes) {
     var Datafilters = sequelize.define('Datafilters', {
-        id: {
+        guid: {
             type:DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
-            primaryKey:true
+            unique: true
         },
 
         name: {
@@ -21,13 +21,10 @@ module.exports = function(sequelize, DataTypes) {
         tod_end: DataTypes.STRING,
         sites: DataTypes.STRING,
         guardians: DataTypes.STRING,
-        classificationGoal: DataTypes.INTEGER,
+        label_goal: DataTypes.INTEGER,
         limit: DataTypes.INTEGER,
         model: DataTypes.UUID,
-        classes: DataTypes.STRING,
-        reports: DataTypes.STRING,
-        analyst: DataTypes.INTEGER,
-        classification_type: DataTypes.UUID
+        tags: DataTypes.STRING
     });
     return Datafilters;
 };

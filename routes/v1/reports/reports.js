@@ -15,7 +15,7 @@ router.route("/")
         var converter = new ApiConverter("report", req);
         var apiReport = converter.mapApiToSequelize(req.body);
         apiReport.reporter = req.rfcx.auth_token_info.owner_id;
-        models.Report
+        return models.Report
             .create(apiReport).then(function (dbReport) {
             res.status(201).json(converter.mapSequelizeToApi(dbReport));
         }).catch(function (err) {
@@ -34,7 +34,7 @@ router.route("/:report_id")
 
         models.Report
             .findOne({
-                where: {id: req.params.report_id}
+                where: {guid: req.params.report_id}
             }).then(function (dbReport) {
             if (dbReport.reporter != req.rfcx.auth_token_info.owner_id) {
                 res.status(403).json({title: "You are only allowed to access your own reports. This report was created by someone else."});
