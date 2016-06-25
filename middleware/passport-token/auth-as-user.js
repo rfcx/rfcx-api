@@ -42,8 +42,7 @@ exports.authenticateAs = function(req,token,done,authUser){
             };
 
             if (verbose_logging) { console.log("authenticated as user "+req.rfcx.auth_token_info.guid); }
-            done(null,req.rfcx.auth_token_info);
-            return null;
+            return done(null,req.rfcx.auth_token_info);
           }
         }
       }
