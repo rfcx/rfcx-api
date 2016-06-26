@@ -8,17 +8,15 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var sequelize = require('../../../models/index');
-var urls = require("../../../utils/misc/urls");
+
 
 function condAdd(sql, condition, add) {
-	if(condition != null) {
+	if(condition) {
 		sql += add;
 	}
 
 	return sql;
 }
-
-
 
 
 function randomDataFilter(filter) {
@@ -46,25 +44,24 @@ function randomDataFilter(filter) {
 	)
 }
 
-function tagFilter(filter) {
-
-	filter.limit =  filter.limit ? filter.limit : 1;
+function filterByTag(filter) {
 	var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id';
-	sql += ' where t.type == :type';
-	sql += ' and t.tag in (:tags)';
-	sql += ' LIMIT :limit';
+	sql += ' where t.type = :type';
+	sql += ' and t.value in (:tags)';
+	sql = condAdd(sql, filter.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) > 2');
+	sql = condAdd(sql, filter.limit, ' LIMIT :limit');
 
 	return sequelize.sequelize.query(sql,
 		{ replacements: filter, type: sequelize.sequelize.QueryTypes.SELECT }
-	).then(function(guids) {
-		var result = {};
+	)
+}
 
-		result.audios = guids.map(function (obj) {
-			return obj.guid;
+function processResults(promise, req, res) {
+	return promise.then(function(guids) {
+		return views.models.DataFilterAudioGuidToJson(req, res, guids).then(function (result) {
+			res.status(200).json(result);
 		});
 
-		var resultApi = converter.mapPojoToApi(result);
-		res.status(200).json(resultApi);
 	}).catch(function (err) {
 		if(!!err){
 			res.status(500).json({msg: err});
@@ -72,12 +69,17 @@ function tagFilter(filter) {
 	});
 }
 
+router.route("/tag")
+	.post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+		var converter = new ApiConverter("datafilter", req);
+		var tagFilter = converter.mapApiToPojo(req.body);
 
+		var promise = filterByTag(tagFilter);
+		processResults(promise, req, res);
+	});
 
 router.route("/labelling")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
-
-		var converter = new ApiConverter("datafilter", req);
 		var randomFilter = {
 			user: req.rfcx.auth_token_info.owner_id,
 			limit: 1
@@ -90,31 +92,8 @@ router.route("/labelling")
 			randomFilter.guardians = [req.query.site];
 		}
 
-		randomDataFilter(randomFilter).then(function(guids) {
-			var result = {
-				data: {
-					type: "datafilter",
-					attributes: {}
-				},
-				links: {
-					self: urls.getApiUrl(req) + '/v1/datafilters/labelling'
-				}
-			};
-
-			result.data.attributes.audio = guids.map(function (obj) {
-				return {
-					guid: obj.guid,
-					link: urls.getAudioUrl(req, obj.guid)
-				}
-			});
-
-
-			res.status(200).json(result);
-		}).catch(function (err) {
-			if(!!err){
-				res.status(500).json({msg: err});
-			}
-		});
+		var promise = randomDataFilter(randomFilter);
+		processResults(promise, req, res);
 	});
 
 
