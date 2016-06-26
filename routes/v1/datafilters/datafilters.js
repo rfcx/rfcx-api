@@ -22,14 +22,15 @@ function condAdd(sql, condition, add) {
 
 
 function randomDataFilter(filter) {
-	var sql = 'SELECT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t ' +
-		' on a.id=t.audio_id where (t.tagged_by_user is null OR t.tagged_by_user != :user)';
+	var sql = 'SELECT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
+			   ' INNER JOIN GuardianSites s ON a.site_id=s.id '+
+				' where (t.tagged_by_user is null OR t.tagged_by_user != :user)';
 
 	sql = condAdd(sql, filter.start, ' and a.measured_at >= :start');
 	sql = condAdd(sql, filter.end, ' and a.measured_at < :end');
 	sql = condAdd(sql, filter.todStart, ' and TIME(a.measured_at) >= :todStart');
 	sql = condAdd(sql, filter.todEnd, ' and TIME(a.measured_at) < :todEnd');
-	sql = condAdd(sql, filter.sites, ' and a.site_id in (:sites)');
+	sql = condAdd(sql, filter.sites, ' and s.guid in (:sites)');
 	sql = condAdd(sql, filter.guardians, ' and a.guardian_id in (:guardians)');
 
 	if(filter.labelGoal == null) {
