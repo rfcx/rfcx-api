@@ -59,6 +59,7 @@ exports.models = {
 
   },
 
+
   guardianAudioSpectrogram: function(req,res,dbRow) {
 
     var specSettings = { 
@@ -183,6 +184,32 @@ exports.models = {
     });
   
   },
+  guardianAudioLabels: function(req, res, labels) {
+      return new Promise(function (resolve, reject) {
+          if (labels == null || !Array.isArray(labels) || labels.length == 0) {
+              reject(new Error("The returned labels were fewer than 1"));
+          }
+
+          var last = -2000;
+          var expectedLength = 2000;
+
+          for(var i=0; i<labels.length; i++){
+              var current = labels[i].begins_at;
+              var length = current - last;
+              if(length != expectedLength){
+                  result.status = "ERROR";
+                  reject(new Error("The length of windows should be two thousand miliseconds but was " + length));
+              }
+              last = current;
+          }
+
+          var labelValues = labels.map(function (label) {
+                  return label.label;
+          });
+
+          resolve(labelValues);
+      });
+  }
 
 
 };
