@@ -253,6 +253,7 @@ exports.audio = {
 
         audioInfo.analysis_method = "v3";
         audioInfo.analysis_model = "aa";
+        audioInfo.analysis_sample_rate = 8000;
 
         aws.sns().publish({
             TopicArn: aws.snsTopicArn("rfcx-analysis"),
@@ -269,7 +270,7 @@ exports.audio = {
 
                 analysis_method: audioInfo.analysis_method,
                 analysis_model: audioInfo.analysis_model,
-                analysis_sample_rate: 8000
+                analysis_sample_rate: audioInfo.analysis_sample_rate
                 
               })
           }, function(snsErr, snsData) {
