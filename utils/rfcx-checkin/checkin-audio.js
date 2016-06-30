@@ -251,6 +251,9 @@ exports.audio = {
         audioInfo.api_token_expires_at = tokenInfo.token_expires_at;
         audioInfo.minutes_until_expiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
 
+        audioInfo.analysis_method = "v3";
+        audioInfo.analysis_model = "aa";
+
         aws.sns().publish({
             TopicArn: aws.snsTopicArn("rfcx-analysis"),
             Message: JSON.stringify({
@@ -262,7 +265,11 @@ exports.audio = {
                 api_token_expires_at: audioInfo.api_token_expires_at,
                 api_url: audioInfo.api_url_domain+audioInfo.api_url,
                 audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audioInfo.s3Path, audioInfo.minutes_until_expiration),
-                audio_sha1: audioInfo.sha1Hash
+                audio_sha1: audioInfo.sha1Hash,
+
+                analysis_method: audioInfo.analysis_method,
+                analysis_model: audioInfo.analysis_model
+                
               })
           }, function(snsErr, snsData) {
             if (!!snsErr && !aws.snsIgnoreError()) {
