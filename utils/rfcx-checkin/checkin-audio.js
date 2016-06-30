@@ -268,7 +268,8 @@ exports.audio = {
                 audio_sha1: audioInfo.sha1Hash,
 
                 analysis_method: audioInfo.analysis_method,
-                analysis_model: audioInfo.analysis_model
+                analysis_model: audioInfo.analysis_model,
+                analysis_sample_rate: 8000
                 
               })
           }, function(snsErr, snsData) {
