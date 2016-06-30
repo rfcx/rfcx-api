@@ -7,6 +7,13 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.UUIDV4,
       unique: true
     },
+    shortname: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
     model_download_url: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -19,6 +26,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: false,
       validate: {
+      }
+    },
+    audio_sample_rate: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: false,
+      validate: {
+        isInt: true,
+        min: 0
       }
     }
   }, {
