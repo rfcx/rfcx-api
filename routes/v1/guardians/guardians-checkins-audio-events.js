@@ -36,8 +36,8 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                   for (wndwInd in analysisResults.results) {
                     var currentWindow = analysisResults.results[wndwInd];
 
-                    var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.windows[0])));
-                    var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.windows[1])));
+                    var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[0])));
+                    var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[1])));
 
                     for (classification in currentWindow.classifications) {
 
@@ -49,8 +49,8 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                           confidence: currentWindow.classifications[classInd][0],
                           begins_at: beginsAt,
                           ends_at: endsAt,
-                          begins_at_offset: currentWindow.windows[0],
-                          ends_at_offset: currentWindow.windows[1]
+                          begins_at_offset: currentWindow.window[0],
+                          ends_at_offset: currentWindow.window[1]
                         }).then(function(dbGuardianAudioTag){
 
                           savedClassifications.push(dbGuardianAudioTag.guid);
