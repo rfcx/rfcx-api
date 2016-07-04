@@ -25,45 +25,47 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                 dbAudio.analyzed_at = new Date();
                 dbAudio.save();
                   
-                var audioEvents = JSON.parse(req.body.json);
+                var analysisResults = JSON.parse(req.body.json);
 
-                if (audioEvents.length > 0) {
-                  var savedEvents = [];
-                  for (eventInd in audioEvents) {
-                    var audioEvent = audioEvents[eventInd];
-                    var eventTime = new Date((dbAudio.measured_at.valueOf()+parseInt(audioEvent.begins_at)));
-                    var fingerprintArray = JSON.stringify(audioEvent.fingerprint);
+                console.log(analysisResults);
+                
+                // if (audioEvents.length > 0) {
+                //   var savedEvents = [];
+                //   for (eventInd in audioEvents) {
+                //     var audioEvent = audioEvents[eventInd];
+                //     var eventTime = new Date((dbAudio.measured_at.valueOf()+parseInt(audioEvent.begins_at)));
+                //     var fingerprintArray = JSON.stringify(audioEvent.fingerprint);
                     
-                    models.GuardianEvent
-                      .create({
-                        guardian_id: dbGuardian.id, 
-                        check_in_id: dbCheckIn.id, 
-                        audio_id: dbAudio.id, 
-                        site_id: dbGuardian.site_id,
-                        begins_at_analysis: eventTime, 
-                        begins_at_reviewer: null,
-                        duration_analysis: parseInt(audioEvent.duration),
-                        duration_reviewer: null,
-                        classification_analysis: audioEvent.classification, 
-                        classification_reviewer: null,
-                        latitude: null,
-                        longitude: null,
-                        fingerprint: fingerprintArray
-                      }).then(function(dbGuardianEvent){
+                //     models.GuardianEvent
+                //       .create({
+                //         guardian_id: dbGuardian.id, 
+                //         check_in_id: dbCheckIn.id, 
+                //         audio_id: dbAudio.id, 
+                //         site_id: dbGuardian.site_id,
+                //         begins_at_analysis: eventTime, 
+                //         begins_at_reviewer: null,
+                //         duration_analysis: parseInt(audioEvent.duration),
+                //         duration_reviewer: null,
+                //         classification_analysis: audioEvent.classification, 
+                //         classification_reviewer: null,
+                //         latitude: null,
+                //         longitude: null,
+                //         fingerprint: fingerprintArray
+                //       }).then(function(dbGuardianEvent){
 
-                        savedEvents.push(dbGuardianEvent.guid);
-                        if (savedEvents.length == audioEvents.length) {
-                          res.status(200).json(savedEvents);
-                        }
+                //         savedEvents.push(dbGuardianEvent.guid);
+                //         if (savedEvents.length == audioEvents.length) {
+                  //         res.status(200).json(savedEvents);
+                  //       }
 
-                      }).catch(function(err){
-                        console.log("failed to create event | "+err);
-                        res.status(500).json({msg:"failed to create event"});
-                      });
-                  }
-                } else {
+                  //     }).catch(function(err){
+                  //       console.log("failed to create event | "+err);
+                  //       res.status(500).json({msg:"failed to create event"});
+                  //     });
+                  // }
+         //       } else {
                   res.status(200).json([]);
-                }
+         //       }
 
               }).catch(function(err){
                 console.log("failed to find audio reference | "+err);
