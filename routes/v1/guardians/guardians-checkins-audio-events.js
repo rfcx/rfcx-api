@@ -27,51 +27,62 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                   
                 var analysisResults = JSON.parse(req.body.json);
 
-                if (analysisResults.results.length > 0) {
-                  
-                  var processedWindows = 0, savedClassifications = [];
+                models.AudioAnalysisModel
+                  .findOne( { where: { shortname: analysisResults.model } })
+                  .then(function(dbModel){
 
-                  for (wndwInd in analysisResults.results) {
-                    var currentWindow = analysisResults.results[wndwInd];
+                    if (analysisResults.results.length > 0) {
+                      
+                      var processedWindows = 0, savedClassifications = [];
 
-                    var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[0])));
-                    var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[1])));
+                      for (wndwInd in analysisResults.results) {
+                        var currentWindow = analysisResults.results[wndwInd];
 
-                    for (classification in currentWindow.classifications) {
+                        var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[0])));
+                        var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[1])));
 
-                      if (currentWindow.classifications[classification][0] > 0) {
+                        for (classification in currentWindow.classifications) {
 
-                        models.GuardianAudioTag.create({
-                          type: "classification",
-                          value: classification,
-                          confidence: currentWindow.classifications[classification][0],
-                          begins_at: beginsAt,
-                          ends_at: endsAt,
-                          begins_at_offset: currentWindow.window[0],
-                          ends_at_offset: currentWindow.window[1]
-                        }).then(function(dbGuardianAudioTag){
+                          if (currentWindow.classifications[classification][0] > 0) {
 
-                          savedClassifications.push(dbGuardianAudioTag.guid);
-                          processedWindows++;
+                            models.GuardianAudioTag.create({
+                              type: "classification",
+                              value: classification,
+                              confidence: currentWindow.classifications[classification][0],
+                              begins_at: beginsAt,
+                              ends_at: endsAt,
+                              begins_at_offset: currentWindow.window[0],
+                              ends_at_offset: currentWindow.window[1],
+                              audio_id: dbAudio.id,
+                              tagged_by_model: dbModel.id
+                            }).then(function(dbGuardianAudioTag){
 
-                          if (processedWindows == analysisResults.results.length) {
-                            res.status(200).json(savedClassifications);
+                              savedClassifications.push(dbGuardianAudioTag.guid);
+                              processedWindows++;
+
+                              if (processedWindows == analysisResults.results.length) {
+                                res.status(200).json(savedClassifications);
+                              }
+
+                            }).catch(function(err){
+                              console.log("failed to create classification tag | "+err);
+                              res.status(500).json({msg:"failed to create classification tag"});
+                            });
+                          } else {
+                            processedWindows++;
                           }
+                        }
 
-                        }).catch(function(err){
-                          console.log("failed to create classification tag | "+err);
-                          res.status(500).json({msg:"failed to create classification tag"});
-                        });
-                      } else {
-                        processedWindows++;
                       }
+                        
+                    } else {
+                      res.status(200).json([]);
                     }
 
-                  }
-                    
-                } else {
-                  res.status(200).json([]);
-                }
+                }).catch(function(err){
+                  console.log("failed to find model reference | "+err);
+                  if (!!err) { res.status(404).json({ message: "failed to find model reference", error: { status: 500 } }); }
+                });
 
               }).catch(function(err){
                 console.log("failed to find audio reference | "+err);
