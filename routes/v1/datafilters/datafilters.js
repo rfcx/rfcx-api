@@ -7,7 +7,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var models = require('../../../models');
-
+var flipCoin = require("../../../utils/misc/rand.js").flipCoin;
 
 function condAdd(sql, condition, add) {
 	if(condition != null && condition != false) {
@@ -30,15 +30,15 @@ function filter(filterOpts) {
 	sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)');
 	sql = condAdd(sql, filterOpts.tagType, ' where t.type = :tagType');
 	sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
+  sql = condAdd(sql, filterOpts.taggedByModel, ' and t.tagged_by_model is NOT NULL');
 	sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) > 2');
 	sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
 	sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
 
 	return models.sequelize.query(sql,
-		{ replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
-	)
+    { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
+  );
 }
-
 
 function processResults(promise, req, res) {
 	return promise.then(function(guids) {
@@ -68,6 +68,11 @@ router.route("/labelling")
 		if (req.query.guardian) {
 			filterOpts.guardians = [req.query.guardian];
 		}
+
+    // if true then search for audios tagged by model
+    if (flipCoin()) {
+      filterOpts.taggedByModel = true;
+    }
 
 		var promise = filter(filterOpts);
 		processResults(promise, req, res);
