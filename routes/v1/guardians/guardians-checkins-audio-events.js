@@ -39,12 +39,12 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
 
                     for (classification in currentWindow.classifications) {
 
-                      if (currentWindow.classifications[classInd][0] > 0) {
+                      if (currentWindow.classifications[classification][0] > 0) {
 
                         models.GuardianAudioTag.create({
                           type: "classification",
                           value: classification,
-                          confidence: currentWindow.classifications[classInd][0],
+                          confidence: currentWindow.classifications[classification][0],
                           begins_at: beginsAt,
                           ends_at: endsAt,
                           begins_at_offset: currentWindow.window[0],
