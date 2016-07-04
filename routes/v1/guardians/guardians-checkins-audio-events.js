@@ -27,8 +27,6 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                   
                 var analysisResults = JSON.parse(req.body.json);
 
-                console.log(analysisResults);
-
                 if (analysisResults.results.length > 0) {
                   
                   var processedWindows = 0, savedClassifications = [];
