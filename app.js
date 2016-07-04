@@ -39,6 +39,7 @@ var routes = {
                     require("./routes/v1/guardians/guardians-checkins"), 
                     require("./routes/v1/guardians/guardians-checkins-audio-events"),
                     require("./routes/v1/guardians/guardians-audio"),
+                    require("./routes/v1/guardians/guardians-audio-analysis"),
                     require("./routes/v1/guardians/guardians-audio-uploads"),
                     require("./routes/v1/guardians/guardians-events"),
                     require("./routes/v1/guardians/guardians-meta"),
