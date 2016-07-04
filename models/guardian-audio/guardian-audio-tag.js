@@ -52,6 +52,16 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
+    },
+    confidence: {
+      type: DataTypes.FLOAT,
+      defaultValue: 1.0,
+      allowNull: false,
+      validate: {
+        isFloat: true,
+        min: 0.0,
+        max: 1.0
+      }
     }
   }, {
     classMethods: {

@@ -28,44 +28,52 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                 var analysisResults = JSON.parse(req.body.json);
 
                 console.log(analysisResults);
-                
-                // if (audioEvents.length > 0) {
-                //   var savedEvents = [];
-                //   for (eventInd in audioEvents) {
-                //     var audioEvent = audioEvents[eventInd];
-                //     var eventTime = new Date((dbAudio.measured_at.valueOf()+parseInt(audioEvent.begins_at)));
-                //     var fingerprintArray = JSON.stringify(audioEvent.fingerprint);
+
+                if (analysisResults.results.length > 0) {
+                  
+                  var processedWindows = 0, savedClassifications = [];
+
+                  for (wndwInd in analysisResults.results) {
+                    var currentWindow = analysisResults.results[wndwInd];
+
+                    var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.windows[0])));
+                    var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.windows[1])));
+
+                    for (classification in currentWindow.classifications) {
+
+                      if (currentWindow.classifications[classInd][0] > 0) {
+
+                        models.GuardianAudioTag.create({
+                          type: "classification",
+                          value: classification,
+                          confidence: currentWindow.classifications[classInd][0],
+                          begins_at: beginsAt,
+                          ends_at: endsAt,
+                          begins_at_offset: currentWindow.windows[0],
+                          ends_at_offset: currentWindow.windows[1]
+                        }).then(function(dbGuardianAudioTag){
+
+                          savedClassifications.push(dbGuardianAudioTag.guid);
+                          processedWindows++;
+
+                          if (processedWindows == analysisResults.results.length) {
+                            res.status(200).json(savedClassifications);
+                          }
+
+                        }).catch(function(err){
+                          console.log("failed to create classification tag | "+err);
+                          res.status(500).json({msg:"failed to create classification tag"});
+                        });
+                      } else {
+                        processedWindows++;
+                      }
+                    }
+
+                  }
                     
-                //     models.GuardianEvent
-                //       .create({
-                //         guardian_id: dbGuardian.id, 
-                //         check_in_id: dbCheckIn.id, 
-                //         audio_id: dbAudio.id, 
-                //         site_id: dbGuardian.site_id,
-                //         begins_at_analysis: eventTime, 
-                //         begins_at_reviewer: null,
-                //         duration_analysis: parseInt(audioEvent.duration),
-                //         duration_reviewer: null,
-                //         classification_analysis: audioEvent.classification, 
-                //         classification_reviewer: null,
-                //         latitude: null,
-                //         longitude: null,
-                //         fingerprint: fingerprintArray
-                //       }).then(function(dbGuardianEvent){
-
-                //         savedEvents.push(dbGuardianEvent.guid);
-                //         if (savedEvents.length == audioEvents.length) {
-                  //         res.status(200).json(savedEvents);
-                  //       }
-
-                  //     }).catch(function(err){
-                  //       console.log("failed to create event | "+err);
-                  //       res.status(500).json({msg:"failed to create event"});
-                  //     });
-                  // }
-         //       } else {
+                } else {
                   res.status(200).json([]);
-         //       }
+                }
 
               }).catch(function(err){
                 console.log("failed to find audio reference | "+err);
