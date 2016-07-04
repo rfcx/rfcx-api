@@ -50,7 +50,7 @@ router.route("/:guardian_id/audio/analysis")
                   checkin_guid: dbAudio[i].CheckIn.guid,
                   audio_guid: dbAudio[i].guid,
                   api_url_domain: req.rfcx.api_url_domain,
-                  audio_s3_path: dbAudio[i].url,
+                  audio_s3_path: dbAudio[i].url.substr(dbAudio[i].url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length),
                   audio_sha1_checksum: dbAudio[i].sha1_checksum,
                 });
 
