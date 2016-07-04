@@ -66,7 +66,7 @@ router.route("/labelling")
 			filterOpts.sites = [req.query.site];
 		}
 		if (req.query.guardian) {
-			filterOpts.guardians = [req.query.site];
+			filterOpts.guardians = [req.query.guardian];
 		}
 
 		var promise = filter(filterOpts);
