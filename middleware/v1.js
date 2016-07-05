@@ -11,7 +11,7 @@ exports.middleware = {
     var apiUrlDomain = apiUrlProtocol+"://"+req.headers.host;
     
     var paramLimit = (req.query.limit == null) ? 20 : parseInt(req.query.limit);
-    if (paramLimit > 400) { paramLimit = 400; } else if (paramLimit < 1) { paramLimit = 1; }
+    if (paramLimit > 1000) { paramLimit = 1000; } else if (paramLimit < 1) { paramLimit = 1; }
 
     var paramOffset = (req.query.offset == null) ? 0 : parseInt(req.query.offset);
 
