@@ -30,7 +30,7 @@ function filter(filterOpts) {
 	sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)');
 	sql = condAdd(sql, filterOpts.tagType, ' where t.type = :tagType');
 	sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
-  sql = condAdd(sql, filterOpts.taggedByModel, ' and t.tagged_by_model is NOT NULL');
+  sql = condAdd(sql, filterOpts.taggedEngineByModel, ' and t.tagged_by_model is NOT NULL');
 	sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) > 2');
 	sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
 	sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
@@ -41,18 +41,24 @@ function filter(filterOpts) {
 }
 
 function processResults(promise, req, res) {
-	return promise.then(function(guids) {
-		return views.models.DataFilterAudioGuidToJson(req, res, guids).then(function (result) {
-			res.status(200).json(result);
-		});
-
+	return promise.then(function(data) {
+		return processSuccess(data, req, res);
 	}).catch(function (err) {
-		if(!!err){
-			res.status(500).json({msg: err});
-		}
+		processError(err, req, res);
 	});
 }
 
+function processSuccess(data, req, res) {
+  return views.models.DataFilterAudioGuidToJson(req, res, data).then(function (result) {
+    res.status(200).json(result);
+  });
+}
+
+function processError(err, req, res) {
+  if(!!err){
+    res.status(500).json({msg: err});
+  }
+}
 
 router.route("/labelling")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
@@ -69,13 +75,33 @@ router.route("/labelling")
 			filterOpts.guardians = [req.query.guardian];
 		}
 
-    // if true then search for audios tagged by model
+    // if true then search for audios tagged by model with 'engine' value
     if (flipCoin()) {
-      filterOpts.taggedByModel = true;
+      filterOpts.tagValues = 'engine';
+      filterOpts.taggedEngineByModel = true;
     }
 
-		var promise = filter(filterOpts);
-		processResults(promise, req, res);
+		filter(filterOpts)
+      .then(function(guids) {
+        // if we found result then act like always...
+        if (guids.length) {
+          return guids;
+        }
+        // if we not found any guids then go another way
+        else {
+          // search random guids without tagging by model property
+          delete filterOpts.taggedEngineByModel;
+          delete filterOpts.tagValues;
+          // then return result whatever it will be - founded guids or empty array
+          return filter(filterOpts);
+        }
+      })
+      .then(function(data) {
+        return processSuccess(data, req, res);
+      })
+      .catch(function (err) {
+        processError(err, req, res);
+      });
 	});
 
 router.route("/")
