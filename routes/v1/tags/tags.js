@@ -64,7 +64,7 @@ function createMany(req, res) {
 	if (!Array.isArray(req.body.data.attributes)) {
 		res.status(400).json({msg: "Attributes must be an array!"});
 	}
-	// iterate through all classifications inslide `list` attribute
+	// iterate through all classifications inside `list` attribute
 	for (var i = 0; i < req.body.data.attributes.length; i++) {
 		var dbTag = converter.mapApiToSequelize(req.body.data.attributes[i]);
 		dbTag.tagged_by_user = req.rfcx.auth_token_info.owner_id;
