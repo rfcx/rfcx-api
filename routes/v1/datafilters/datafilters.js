@@ -30,7 +30,8 @@ function filter(filterOpts) {
 	sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)');
 	sql = condAdd(sql, filterOpts.tagType, ' where t.type = :tagType');
 	sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
-  sql = condAdd(sql, filterOpts.taggedEngineByModel, ' and t.tagged_by_model is NOT NULL');
+	sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5');
+	sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5');
 	sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) > 2');
 	sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
 	sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
@@ -60,12 +61,12 @@ function processError(err, req, res) {
   }
 }
 
-router.route("/labelling")
+router.route("/labelling/:type?")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 		var filterOpts = {
 			annotator: req.rfcx.auth_token_info.owner_id,
 			limit: 1,
-			hasNoLabels: false
+			hasLabels: false
 		};
 
 		if (req.query.site) {
@@ -75,10 +76,13 @@ router.route("/labelling")
 			filterOpts.guardians = [req.query.guardian];
 		}
 
-    // if true then search for audios tagged by model with 'engine' value
-    if (flipCoin()) {
-      filterOpts.tagValues = 'engine';
-      filterOpts.taggedEngineByModel = true;
+    // if tag was specified, then flip coin
+    if (req.params.type) {
+      // if true then search for audios tagged with specified tag
+      if (flipCoin()) {
+        filterOpts.tagValues = req.params.type;
+        filterOpts.highConfidence = true;
+      }
     }
 
 		filter(filterOpts)
@@ -90,8 +94,8 @@ router.route("/labelling")
         // if we not found any guids then go another way
         else {
           // search random guids without tagging by model property
-          delete filterOpts.taggedEngineByModel;
           delete filterOpts.tagValues;
+          delete filterOpts.highConfidence;
           // then return result whatever it will be - founded guids or empty array
           return filter(filterOpts);
         }
