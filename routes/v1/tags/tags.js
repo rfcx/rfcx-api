@@ -16,12 +16,12 @@ function createTag(dbTag) {
 			.findOne({where: {guid: dbTag.audio_id}})
 			.then(function (dbAudio) {
 				var guid = dbTag.audio_id;
-				dbTag.audio_id = dbAudio.id;
-				dbTag.utc_begins_at = new Date(dbAudio.measured_at);
-				dbTag.utc_ends_at = new Date(dbAudio.measured_at);
-				dbTag.utc_begins_at.setMilliseconds(dbTag.utc_begins_at.getMilliseconds() + dbTag.begins_at);
-				dbTag.utc_ends_at.setMilliseconds(dbTag.utc_ends_at.getMilliseconds() + dbTag.ends_at);
 
+				dbTag.audio_id = dbAudio.id;
+				dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
+				dbTag.ends_at = new Date(dbAudio.dataValues.measured_at);
+				dbTag.begins_at.setMilliseconds(dbTag.begins_at.getMilliseconds() + dbTag.begins_at_offset);
+				dbTag.ends_at.setMilliseconds(dbTag.ends_at.getMilliseconds() + dbTag.ends_at_offset);
 
 				return models.GuardianAudioTag
 					.create(dbTag).then(function (dbTag) {
@@ -31,9 +31,6 @@ function createTag(dbTag) {
 							return dbTag;
 						});
 				});
-
-
-
 			});
 
 }
