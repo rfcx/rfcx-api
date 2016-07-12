@@ -20,7 +20,8 @@ function createTag(dbTag) {
         // if begins_at_offset is not presented in request, then set it to 0
         dbTag.begins_at_offset = dbTag.begins_at_offset || 0;
         // if ends_at_offset is not presented in request, then check if duration presented, if not set to audio file duration
-        dbTag.ends_at_offset   = dbTag.ends_at_offset || dbTag.duration || dbAudio.dataValues.duration;
+        dbTag.ends_at_offset   = dbTag.ends_at_offset || dbTag.duration ||
+                                 (Math.round(1000*dbAudio.dataValues.capture_sample_count/dbAudio.dataValues.Format.sample_rate));
 
 				dbTag.audio_id = dbAudio.id;
 				dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
