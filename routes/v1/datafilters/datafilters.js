@@ -65,7 +65,7 @@ router.route("/labelling/:type?")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 		var filterOpts = {
 			annotator: req.rfcx.auth_token_info.owner_id,
-			limit: 1,
+			limit: req.query.limit || 1,
 			hasLabels: false
 		};
 
