@@ -17,6 +17,11 @@ function createTag(dbTag) {
 			.then(function (dbAudio) {
 				var guid = dbTag.audio_id;
 
+        // if begins_at_offset is not presented in request, then set it to 0
+        dbTag.begins_at_offset = dbTag.begins_at_offset || 0;
+        // if ends_at_offset is not presented in request, then check if duration presented, if not set to audio file duration
+        dbTag.ends_at_offset   = dbTag.ends_at_offset || dbTag.duration || dbAudio.dataValues.duration;
+
 				dbTag.audio_id = dbAudio.id;
 				dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
 				dbTag.ends_at = new Date(dbAudio.dataValues.measured_at);
