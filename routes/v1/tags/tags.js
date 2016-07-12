@@ -13,7 +13,10 @@ var Promise = require("bluebird");
 function createTag(dbTag) {
 
 		return models.GuardianAudio
-			.findOne({where: {guid: dbTag.audio_id}})
+			.findOne({
+        where: {guid: dbTag.audio_id},
+        include: [{ all: true }]
+      })
 			.then(function (dbAudio) {
 				var guid = dbTag.audio_id;
 
@@ -21,7 +24,7 @@ function createTag(dbTag) {
         dbTag.begins_at_offset = dbTag.begins_at_offset || 0;
         // if ends_at_offset is not presented in request, then check if duration presented, if not set to audio file duration
         dbTag.ends_at_offset   = dbTag.ends_at_offset || dbTag.duration ||
-                                 (Math.round(1000*dbAudio.dataValues.capture_sample_count/dbAudio.dataValues.Format.sample_rate));
+                                 (Math.round(1000*dbAudio.dataValues.capture_sample_count/dbAudio.Format.sample_rate));
 
 				dbTag.audio_id = dbAudio.id;
 				dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
