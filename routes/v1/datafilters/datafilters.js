@@ -28,7 +28,7 @@ function filter(filterOpts) {
 	sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart');
 	sql = condAdd(sql, filterOpts.todEnd, ' and TIME(a.measured_at) < :todEnd');
 	sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)');
-	sql = condAdd(sql, filterOpts.tagType, ' where t.type = :tagType');
+	sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
 	sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
 	sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5');
 	sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5');
@@ -61,7 +61,7 @@ function processError(err, req, res) {
   }
 }
 
-router.route("/labelling/:type?")
+router.route("/labelling/:tagValues?")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 		var filterOpts = {
 			annotator: req.rfcx.auth_token_info.owner_id,
@@ -84,16 +84,18 @@ router.route("/labelling/:type?")
       filterOpts.end = new Date(req.query.end);
     }
 
+    if (req.query.tagType) {
+      filterOpts.tagType = req.query.tagType;
+    }
+
     // if tag was specified, then flip coin
-    if (req.params.type) {
+    if (req.params.tagValues) {
       // if true then search for audios tagged with specified tag
       if (req.query.noRandomValues || flipCoin()) {
-        filterOpts.tagValues = req.params.type;
+        filterOpts.tagValues = req.params.tagValues;
         filterOpts.highConfidence = true;
       }
     }
-
-    console.log('options', filterOpts);
 
 		filter(filterOpts)
       .then(function(guids) {
@@ -104,8 +106,10 @@ router.route("/labelling/:type?")
         // if we not found any guids then go another way
         else {
           // search random guids without tagging by model property
+          delete filterOpts.tagType;
           delete filterOpts.tagValues;
           delete filterOpts.highConfidence;
+          filterOpts.hasLabels = false;
           // then return result whatever it will be - founded guids or empty array
           return filter(filterOpts);
         }
