@@ -66,7 +66,7 @@ router.route("/labelling/:type?")
 		var filterOpts = {
 			annotator: req.rfcx.auth_token_info.owner_id,
 			limit: parseInt(req.query.limit) || 1,
-			hasLabels: false
+			hasLabels: req.query.hasLabels? req.query.hasLabels : false
 		};
 
 		if (req.query.site) {
@@ -76,10 +76,18 @@ router.route("/labelling/:type?")
 			filterOpts.guardians = [req.query.guardian];
 		}
 
+    if (req.query.start) {
+      filterOpts.start = new Date(req.query.start);
+    }
+
+    if (req.query.end) {
+      filterOpts.end = new Date(req.query.end);
+    }
+
     // if tag was specified, then flip coin
     if (req.params.type) {
       // if true then search for audios tagged with specified tag
-      if (flipCoin()) {
+      if (req.query.noRandomValues || flipCoin()) {
         filterOpts.tagValues = req.params.type;
         filterOpts.highConfidence = true;
       }
