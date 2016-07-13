@@ -66,7 +66,7 @@ router.route("/labelling/:type?")
 		var filterOpts = {
 			annotator: req.rfcx.auth_token_info.owner_id,
 			limit: parseInt(req.query.limit) || 1,
-			hasLabels: req.query.hasLabels? req.query.hasLabels : false
+			hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
 		};
 
 		if (req.query.site) {
@@ -92,6 +92,8 @@ router.route("/labelling/:type?")
         filterOpts.highConfidence = true;
       }
     }
+
+    console.log('options', filterOpts);
 
 		filter(filterOpts)
       .then(function(guids) {
