@@ -121,7 +121,7 @@ router.route("/labelling/:tagValues?")
     filter(filterOpts).bind({})
       .then(function(guids) {
         // if we found result then act like always...
-        if (guids.length) {
+        if (guids.length || req.query.noRandomValues) {
           return guids;
         }
         // if we not found any guids then go another way
