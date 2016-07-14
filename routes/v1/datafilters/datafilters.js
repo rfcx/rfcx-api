@@ -20,10 +20,10 @@ function condAdd(sql, condition, add) {
 
 function filter(filterOpts) {
 	var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
-			   ' INNER JOIN GuardianSites s ON a.site_id=s.id ';
+			   ' INNER JOIN GuardianSites s ON a.site_id=s.id where';
 
-	sql = condAdd(sql, filterOpts.annotator, ' where (t.tagged_by_user is null OR t.tagged_by_user != :annotator)');
-	sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
+	sql = condAdd(sql, filterOpts.annotator, ' (t.tagged_by_user is null OR t.tagged_by_user != :annotator)');
+	sql = condAdd(sql, filterOpts.start, (filterOpts.annotator? ' and ' : ' ') + 'a.measured_at >= :start');
 	sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
 	sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart');
 	sql = condAdd(sql, filterOpts.todEnd, ' and TIME(a.measured_at) < :todEnd');
@@ -64,11 +64,13 @@ function processError(err, req, res) {
 router.route("/labelling/:tagValues?")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 		var filterOpts = {
-			annotator: req.rfcx.auth_token_info.owner_id,
 			limit: parseInt(req.query.limit) || 1,
 			hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
 		};
 
+    if (!req.query.ignoreAnnotator) {
+      filterOpts.annotator = req.rfcx.auth_token_info.owner_id;
+    }
 		if (req.query.site) {
 			filterOpts.sites = [req.query.site];
 		}
