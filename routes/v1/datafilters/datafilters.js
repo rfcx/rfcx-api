@@ -19,7 +19,7 @@ function condAdd(sql, condition, add) {
 
 
 function filter(filterOpts) {
-	var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
+	var sql = 'SELECT DISTINCT a.guid, t.audio_id FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
 			   ' INNER JOIN GuardianSites s ON a.site_id=s.id where';
 
 	sql = condAdd(sql, filterOpts.annotator, ' (t.tagged_by_user is null OR t.tagged_by_user != :annotator)');
@@ -49,6 +49,18 @@ function processResults(promise, req, res) {
 	});
 }
 
+function getLabelsData(filterOpts) {
+  var sql = 'SELECT a.guid, t.begins_at_offset, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where ';
+
+  sql = condAdd(sql, filterOpts.tagType, ' type = :tagType');
+  sql = condAdd(sql, filterOpts.tagValues, ' and value in (:tagValues)');
+  sql = condAdd(sql, true, ' group by t.audio_id, begins_at_offset having count(DISTINCT t.tagged_by_user) > 2 order by t.begins_at_offset ASC');
+
+  return models.sequelize.query(sql,
+    { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
+  );
+}
+
 function processSuccess(data, req, res) {
   return views.models.DataFilterAudioGuidToJson(req, res, data).then(function (result) {
     res.status(200).json(result);
@@ -62,21 +74,21 @@ function processError(err, req, res) {
 }
 
 router.route("/labelling/:tagValues?")
-	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
-		var filterOpts = {
-			limit: parseInt(req.query.limit) || 1,
-			hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
-		};
+  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+    var filterOpts = {
+      limit: parseInt(req.query.limit) || 1,
+      hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
+    };
 
     if (!req.query.ignoreAnnotator) {
       filterOpts.annotator = req.rfcx.auth_token_info.owner_id;
     }
-		if (req.query.site) {
-			filterOpts.sites = [req.query.site];
-		}
-		if (req.query.guardian) {
-			filterOpts.guardians = [req.query.guardian];
-		}
+    if (req.query.site) {
+      filterOpts.sites = [req.query.site];
+    }
+    if (req.query.guardian) {
+      filterOpts.guardians = [req.query.guardian];
+    }
 
     if (req.query.start) {
       filterOpts.start = new Date(req.query.start);
@@ -90,16 +102,23 @@ router.route("/labelling/:tagValues?")
       filterOpts.tagType = req.query.tagType;
     }
 
+    if (req.query.highConfidence) {
+      filterOpts.highConfidence = Boolean(req.query.highConfidence);
+    }
+
+    if (req.query.lowConfidence) {
+      filterOpts.lowConfidence = Boolean(req.query.lowConfidence);
+    }
+
     // if tag was specified, then flip coin
     if (req.params.tagValues) {
       // if true then search for audios tagged with specified tag
       if (req.query.noRandomValues || flipCoin()) {
         filterOpts.tagValues = req.params.tagValues;
-        filterOpts.highConfidence = true;
       }
     }
 
-		filter(filterOpts)
+    filter(filterOpts).bind({})
       .then(function(guids) {
         // if we found result then act like always...
         if (guids.length) {
@@ -111,13 +130,26 @@ router.route("/labelling/:tagValues?")
           delete filterOpts.tagType;
           delete filterOpts.tagValues;
           delete filterOpts.highConfidence;
+          delete filterOpts.lowConfidence;
           filterOpts.hasLabels = false;
           // then return result whatever it will be - founded guids or empty array
           return filter(filterOpts);
         }
       })
       .then(function(data) {
-        return processSuccess(data, req, res);
+        this.guids = data;
+        if (req.query.withCSV && data.length) {
+          return getLabelsData(filterOpts);
+        }
+        else {
+          return null;
+        }
+      })
+      .then(function(labels) {
+        return processSuccess({
+          guids: this.guids,
+          labels: labels
+        }, req, res);
       })
       .catch(function (err) {
         processError(err, req, res);
