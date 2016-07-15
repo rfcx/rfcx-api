@@ -19,24 +19,25 @@ function condAdd(sql, condition, add) {
 
 
 function filter(filterOpts) {
-	var sql = 'SELECT DISTINCT a.guid, t.audio_id FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
-			   ' INNER JOIN GuardianSites s ON a.site_id=s.id where';
+  var sql = 'SELECT DISTINCT a.guid, t.audio_id FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
+         ' INNER JOIN GuardianSites s ON a.site_id=s.id where';
 
-	sql = condAdd(sql, filterOpts.annotator, ' (t.tagged_by_user is null OR t.tagged_by_user != :annotator)');
-	sql = condAdd(sql, filterOpts.start, (filterOpts.annotator? ' and ' : ' ') + 'a.measured_at >= :start');
-	sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
-	sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart');
-	sql = condAdd(sql, filterOpts.todEnd, ' and TIME(a.measured_at) < :todEnd');
-	sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)');
-	sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
-	sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
-	sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5');
-	sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5');
-	sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) > 2');
-	sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
-	sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
+  sql = condAdd(sql, true, ' t.type != "warning"');
+  sql = condAdd(sql, filterOpts.annotator, ' and (t.tagged_by_user is null OR t.tagged_by_user != :annotator)');
+  sql = condAdd(sql, filterOpts.start, (filterOpts.annotator? ' and ' : ' ') + 'a.measured_at >= :start');
+  sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
+  sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart');
+  sql = condAdd(sql, filterOpts.todEnd, ' and TIME(a.measured_at) < :todEnd');
+  sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)');
+  sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
+  sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
+  sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5');
+  sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5');
+  sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) > 2');
+  sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
+  sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
 
-	return models.sequelize.query(sql,
+  return models.sequelize.query(sql,
     { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
   );
 }
