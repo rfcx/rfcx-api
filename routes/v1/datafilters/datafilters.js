@@ -24,7 +24,7 @@ function filter(filterOpts) {
 
   sql = condAdd(sql, true, ' t.type != "warning"');
   sql = condAdd(sql, filterOpts.annotator, ' and (t.tagged_by_user is null OR t.tagged_by_user != :annotator)');
-  sql = condAdd(sql, filterOpts.start, (filterOpts.annotator? ' and ' : ' ') + 'a.measured_at >= :start');
+  sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
   sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
   sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart');
   sql = condAdd(sql, filterOpts.todEnd, ' and TIME(a.measured_at) < :todEnd');
