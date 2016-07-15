@@ -19,11 +19,21 @@ function condAdd(sql, condition, add) {
 
 
 function filter(filterOpts) {
-  var sql = 'SELECT DISTINCT a.guid, t.audio_id FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
-         ' INNER JOIN GuardianSites s ON a.site_id=s.id where';
+    // the WHERE 1=1 allows us to add new conditions always with AND otherwise we have to make sure that a previous
+    // condition was met that inserted the WHERE clause
+  var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
+         ' INNER JOIN GuardianSites s ON a.site_id=s.id where 1=1';
 
-  sql = condAdd(sql, true, ' t.type != "warning"');
-  sql = condAdd(sql, filterOpts.annotator, ' and (t.tagged_by_user is null OR t.tagged_by_user != :annotator)');
+
+    // filter out files annotated by user
+    if (filterOpts.annotator) {
+        sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning" OR (sq.tagged_by_user=:annotator and sq.type="label"))'
+    } else {
+        // filter out corrupted files - TODO: we need to improve the index scan otherwise this is inefficient
+        sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning")'
+    }
+
+
   sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
   sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
   sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart');
