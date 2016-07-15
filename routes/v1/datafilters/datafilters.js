@@ -54,6 +54,8 @@ function getLabelsData(filterOpts) {
 
   sql = condAdd(sql, filterOpts.tagType, ' type = :tagType');
   sql = condAdd(sql, filterOpts.tagValues, ' and value in (:tagValues)');
+  sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
+  sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
   sql = condAdd(sql, true, ' group by t.audio_id, begins_at_offset having count(DISTINCT t.tagged_by_user) > 2 order by t.begins_at_offset ASC');
 
   return models.sequelize.query(sql,
