@@ -126,7 +126,8 @@ router.route("/labelling/:tagValues?")
     // if tag was specified, then flip coin
     if (req.params.tagValues) {
       // if true then search for audios tagged with specified tag
-      if (req.query.noRandomValues || flipCoin()) {
+        // Todo: for now we need more of the files for tags, so we'll always search for tags - we need to remove true soon
+      if (req.query.noRandomValues || flipCoin() || true) {
         filterOpts.tagValues = req.params.tagValues;
       }
     }
