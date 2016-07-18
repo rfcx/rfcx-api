@@ -10,7 +10,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 router.route("/:site_id/audio")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
-    models.GuardianSite
+    return models.GuardianSite
       .findOne({ 
         where: { guid: req.params.site_id }
       }).then(function(dbSite){
@@ -21,10 +21,9 @@ router.route("/:site_id/audio")
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
-        models.GuardianAudio
+        return models.GuardianAudio
           .findAll({ 
-            where: dbQuery, 
-       //     include: [ { all: true } ], 
+            where: dbQuery,
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
@@ -36,6 +35,8 @@ router.route("/:site_id/audio")
               views.models.guardianAudioJson(req,res,dbAudio)
                 .then(function(json){ res.status(200).json(json); });
             }
+
+            return null;
 
           }).catch(function(err){
             console.log("failed to return audio | "+err);
