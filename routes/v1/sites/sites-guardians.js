@@ -17,7 +17,7 @@ router.route("/:site_id/guardians")
 
         var dbQuery = { site_id: dbSite.id };
 
-        models.Guardian
+        return models.Guardian
           .findAll({ 
             where: dbQuery, 
             include: [ { all: true } ], 
@@ -31,6 +31,8 @@ router.route("/:site_id/guardians")
             } else {
               res.status(200).json(views.models.guardian(req,res,dbGuardians));
             }
+
+            return null;
 
           }).catch(function(err){
             console.log("failed to return guardians | "+err);

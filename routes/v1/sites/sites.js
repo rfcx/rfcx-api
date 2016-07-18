@@ -13,8 +13,6 @@ router.route("/")
     models.GuardianSite
       .findAll({ 
         where: { is_active: true },
-//        include: [ { all: true } ], 
-//        order: [ ["last_check_in", "DESC"] ],
         limit: req.rfcx.limit,
         offset: req.rfcx.offset
       }).then(function(dbSite){
