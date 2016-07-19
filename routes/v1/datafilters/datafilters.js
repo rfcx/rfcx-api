@@ -43,7 +43,7 @@ function filter(filterOpts) {
   sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
   sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5');
   sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5');
-  sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) > 2');
+  sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) >= 1');
   sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
   sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
 
@@ -67,7 +67,7 @@ function getLabelsData(filterOpts) {
   sql = condAdd(sql, filterOpts.tagValues, ' and value in (:tagValues)');
   sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
   sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
-  sql = condAdd(sql, true, ' group by t.audio_id, begins_at_offset having count(DISTINCT t.tagged_by_user) > 2 order by t.begins_at_offset ASC');
+  sql = condAdd(sql, true, ' group by t.audio_id, begins_at_offset having count(DISTINCT t.tagged_by_user) >= 1 order by t.begins_at_offset ASC');
 
   return models.sequelize.query(sql,
     { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
