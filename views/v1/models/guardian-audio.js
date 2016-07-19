@@ -158,7 +158,7 @@ exports.models = {
           jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID;
         }
 
-        return token.createAnonymousToken({
+        token.createAnonymousToken({
           reference_tag: thisGuid,
           token_type: "audio-file",
           minutes_until_expiration: 30,
@@ -197,7 +197,6 @@ exports.models = {
             reject(e);
           }
 
-          return null;
         }).catch(function (err) {
           console.log("failed to create anonymous token | " + err);
           reject(new Error(err));
