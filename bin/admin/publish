@@ -14,19 +14,19 @@ then
   if [[ $REPLY =~ ^[Pp]$ ]]
   then
     echo -e "\nYou chose to deploy to 'production'.\n"
-    git checkout deploy;
-    git merge master -m "Merging with master branch.";
+    # git checkout deploy;
+    # git merge master -m "Merging with master branch.";
     echo -e "\nExecuting deployment script (this may take a few minutes).\n"
     eb deploy rfcx-api-production;
   else
     echo -e "\nYou chose to deploy to 'staging'.\n"
-    git checkout deploy;
-    git merge master -m "Merging with master branch.";
+    # git checkout deploy;
+    # git merge master -m "Merging with master branch.";
     echo -e "\nExecuting deployment script (this may take a few minutes).\n"
     eb deploy rfcx-api-staging;
   fi
 
-  git checkout master;
+  # git checkout master;
 
   if [[ $REPLY =~ ^[Pp]$ ]]
   then
@@ -37,5 +37,5 @@ then
 
 else
   echo -e "\nYou chose NOT to deploy the application to AWS.\n";
-  git checkout master;
+  # git checkout master;
 fi
