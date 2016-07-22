@@ -27,7 +27,7 @@ router.route("/:guardian_id/events")
           }
         }
 
-        models.GuardianEvent
+        return models.GuardianEvent
           .findAll({ 
             where: dbQuery, 
             include: [ { all: true } ], 
@@ -36,12 +36,10 @@ router.route("/:guardian_id/events")
             offset: req.rfcx.offset
           }).then(function(dbEvents){
 
-            // if (dbEvents.length < 1) {
-            //   httpError(res, 404, "database");
-            // } else {
-              views.models.guardianEvents(req,res,dbEvents)
-                .then(function(json){ res.status(200).json(json); });
-            // }
+            views.models.guardianEvents(req,res,dbEvents)
+              .then(function(json){ res.status(200).json(json); });
+
+            return null;
 
         }).catch(function(err){
           console.log("failed to return events | "+err);
@@ -79,7 +77,7 @@ router.route("/:guardian_id/events/lite")
         req.rfcx.limit = (req.query.limit == null) ? 1 : parseInt(req.query.limit);
         if (req.rfcx.limit > 5000) { req.rfcx.limit = 5000; } else if (req.rfcx.limit < 1) { req.rfcx.limit = 1; }
 
-        models.GuardianEvent
+        return models.GuardianEvent
           .findAll({ 
             where: dbQuery, 
             include: [ { all: true } ], 
@@ -88,8 +86,10 @@ router.route("/:guardian_id/events/lite")
             offset: req.rfcx.offset
           }).then(function(dbEvents){
 
-              views.models.guardianEventsLite(req,res,dbEvents)
-                .then(function(json){ res.status(200).json(json); });
+            views.models.guardianEventsLite(req,res,dbEvents)
+              .then(function(json){ res.status(200).json(json); });
+
+            return null;
 
         }).catch(function(err){
           console.log("failed to return events | "+err);

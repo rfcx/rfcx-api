@@ -17,7 +17,7 @@ router.route("/login")
 
     if ( process.env.PLAYER_PASSCODES.split(",").indexOf(userInput.pswd) > -1 ) {
     
-      token.createAnonymousToken({
+      return token.createAnonymousToken({
         reference_tag: "stream-web",
         token_type: "stream-web",
         created_by: "stream-web",
@@ -37,6 +37,8 @@ router.route("/login")
             expires_at: tokenInfo.token_expires_at.toISOString()
           }
         });
+
+        return null;
        
       }).catch(function(err){
         console.log("error creating access token for audio player | "+err);
@@ -58,7 +60,7 @@ router.route("/web")
 
 
 
-    models.GuardianAudioHighlight
+    return models.GuardianAudioHighlight
       .findAll({ 
         where: { group: "web-player" },
         include: [ { all: true } ], 
@@ -70,6 +72,8 @@ router.route("/web")
         } else {
           res.status(200).json({ streams: views.models.guardianAudioHighlights(req,res,dbAudioHighlights) });
         }
+
+        return null;
 
       }).catch(function(err){
         console.log("failed to find guardian audio highlights | "+err);

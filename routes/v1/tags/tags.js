@@ -13,15 +13,24 @@ var Promise = require("bluebird");
 function createTag(dbTag) {
 
 		return models.GuardianAudio
-			.findOne({where: {guid: dbTag.audio_id}})
+			.findOne({
+        where: {guid: dbTag.audio_id},
+        include: [{ all: true }]
+      })
 			.then(function (dbAudio) {
 				var guid = dbTag.audio_id;
-				dbTag.audio_id = dbAudio.id;
-				dbTag.utc_begins_at = new Date(dbAudio.measured_at);
-				dbTag.utc_ends_at = new Date(dbAudio.measured_at);
-				dbTag.utc_begins_at.setMilliseconds(dbTag.utc_begins_at.getMilliseconds() + dbTag.begins_at);
-				dbTag.utc_ends_at.setMilliseconds(dbTag.utc_ends_at.getMilliseconds() + dbTag.ends_at);
 
+        // if begins_at_offset is not presented in request, then set it to 0
+        dbTag.begins_at_offset = dbTag.begins_at_offset || 0;
+        // if ends_at_offset is not presented in request, then check if duration presented, if not set to audio file duration
+        dbTag.ends_at_offset   = dbTag.ends_at_offset || dbTag.duration ||
+                                 (Math.round(1000*dbAudio.dataValues.capture_sample_count/dbAudio.Format.sample_rate));
+
+				dbTag.audio_id = dbAudio.id;
+				dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
+				dbTag.ends_at = new Date(dbAudio.dataValues.measured_at);
+				dbTag.begins_at.setMilliseconds(dbTag.begins_at.getMilliseconds() + dbTag.begins_at_offset);
+				dbTag.ends_at.setMilliseconds(dbTag.ends_at.getMilliseconds() + dbTag.ends_at_offset);
 
 				return models.GuardianAudioTag
 					.create(dbTag).then(function (dbTag) {
@@ -31,9 +40,6 @@ function createTag(dbTag) {
 							return dbTag;
 						});
 				});
-
-
-
 			});
 
 }
@@ -64,7 +70,7 @@ function createMany(req, res) {
 	if (!Array.isArray(req.body.data.attributes)) {
 		res.status(400).json({msg: "Attributes must be an array!"});
 	}
-	// iterate through all classifications inslide `list` attribute
+	// iterate through all classifications inside `list` attribute
 	for (var i = 0; i < req.body.data.attributes.length; i++) {
 		var dbTag = converter.mapApiToSequelize(req.body.data.attributes[i]);
 		dbTag.tagged_by_user = req.rfcx.auth_token_info.owner_id;
