@@ -43,7 +43,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
 
                         for (classification in currentWindow.classifications) {
 
-                          if (currentWindow.classifications[classification][0] > 0) {
+                          if (currentWindow.classifications[classification][0] > 0.5) {
 
                             models.GuardianAudioTag.create({
                               type: "classification",
@@ -65,11 +65,19 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                               }
 
                             }).catch(function(err){
+                              processedWindows++;
+                              if (processedWindows == analysisResults.results.length) {
+                                res.status(200).json(savedClassifications);
+                              }
+
                               console.log("failed to create classification tag | "+err);
                               res.status(500).json({msg:"failed to create classification tag"});
                             });
                           } else {
                             processedWindows++;
+                            if (processedWindows == analysisResults.results.length) {
+                              res.status(200).json(savedClassifications);
+                            }
                           }
                         }
 

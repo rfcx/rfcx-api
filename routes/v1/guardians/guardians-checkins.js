@@ -56,6 +56,7 @@ router.route("/:guardian_id/checkins")
               queued_at: timeStampToDate(json.queued_at, json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
               guardian_skipped_checkins: parseInt(json.skipped_checkins),
+              guardian_stashed_checkins: parseInt(json.stashed_checkins),
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
 
@@ -153,24 +154,6 @@ router.route("/:guardian_id/checkins")
                 if (!!err) { res.status(500).json({msg:"error processing audio upload file"}); }
               });
             }
-
-
-
-
-            // save audio files
-             if (!!req.files.audio) {
-
-
-            } else {
-              console.log("no audio files detected");
-              dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
-              dbCheckIn.save();
-
-              console.log(returnJson) ;                     
-              res.status(403).json(returnJson);
-            }
-
-
             
 
           }).catch(function(err){
