@@ -56,6 +56,7 @@ router.route("/:guardian_id/checkins")
               queued_at: timeStampToDate(json.queued_at, json.timezone_offset),
               guardian_queued_checkins: parseInt(json.queued_checkins),
               guardian_skipped_checkins: parseInt(json.skipped_checkins),
+              guardian_stashed_checkins: parseInt(json.stashed_checkins),
               is_certified: dbGuardian.is_certified
           }).then(function(dbCheckIn){
 
