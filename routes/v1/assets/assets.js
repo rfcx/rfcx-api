@@ -7,7 +7,7 @@ var views = require("../../../views/v1");
 router.route("/audio/:audio_id")
   .get(function(req,res) {
 
-    models.GuardianAudio
+    return models.GuardianAudio
       .findOne({ 
         where: { guid: req.params.audio_id }, 
         include: [{ all: true }]
@@ -30,6 +30,8 @@ router.route("/audio/:audio_id")
               res.status(200).json(audioJson);
           });
         }
+
+        return null;
         
       }).catch(function(err){
         console.log("failed to return audio | "+err);
@@ -42,7 +44,7 @@ router.route("/audio/:audio_id")
 router.route("/screenshots/:screenshot_id")
   .get(function(req,res) {
 
-    models.GuardianMetaScreenShot
+    return models.GuardianMetaScreenShot
       .findOne({ 
         where: { guid: req.params.screenshot_id }, 
         include: [{ all: true }]
@@ -53,6 +55,8 @@ router.route("/screenshots/:screenshot_id")
         } else {
           res.status(200).json(views.models.guardianMetaScreenshots(req,res,dbScreenshot)); 
         }
+
+        return null;
         
       }).catch(function(err){
         console.log("failed to return screenshot | "+err);

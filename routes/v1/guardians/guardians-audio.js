@@ -22,7 +22,7 @@ router.route("/:guardian_id/audio")
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
         var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
 
-        models.GuardianAudio
+        return models.GuardianAudio
           .findAll({ 
             where: dbQuery, 
             include: [ { all: true } ], 
@@ -37,6 +37,8 @@ router.route("/:guardian_id/audio")
               views.models.guardianAudioJson(req,res,dbAudio)
                 .then(function(json){ res.status(200).json(json); });
             }
+
+            return null;
 
         }).catch(function(err){
           console.log("failed to return audio | "+err);

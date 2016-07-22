@@ -12,14 +12,16 @@ exports.guardianStatusAudio = {
 
           var queryHelpers = getAllQueryHelpers();
 
-          queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 3, realTimeOffsetInMinutes).then(function(coverage_3hours){
-            queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 6, realTimeOffsetInMinutes).then(function(coverage_6hours){
-              queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 12, realTimeOffsetInMinutes).then(function(coverage_12hours){
-                queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 24, realTimeOffsetInMinutes).then(function(coverage_24hours){
+          return queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 3, realTimeOffsetInMinutes).then(function(coverage_3hours){
+            return queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 6, realTimeOffsetInMinutes).then(function(coverage_6hours){
+              return queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 12, realTimeOffsetInMinutes).then(function(coverage_12hours){
+                return queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 24, realTimeOffsetInMinutes).then(function(coverage_24hours){
 
                   resolve({
                     "3hrs": coverage_3hours, "6hrs": coverage_6hours, "12hrs": coverage_12hours, "24hrs": coverage_24hours
                   });
+
+                  return null;
 
                 });
               });
@@ -49,13 +51,15 @@ exports.guardianStatusAudio = {
                 ]
               }).then(function(dbStatus){
 
-                  models.GuardianAudio
+                  return models.GuardianAudio
                     .findOne({ 
                       where: dbWhere, 
                       include: [{ all: true }]
                     }).then(function(dbAudio){
 
                       resolve(Math.round(10000*parseInt(1000*dbStatus.dataValues.sample_count_sum/dbAudio.Format.sample_rate)/(parseInt(intervalInHours)*3600000))/100);
+
+                      return null;
 
                     }).catch(function(err){
                       console.log(err);
