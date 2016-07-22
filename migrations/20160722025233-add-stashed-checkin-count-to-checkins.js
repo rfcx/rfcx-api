@@ -4,7 +4,7 @@ module.exports = {
   up: function(migration, DataTypes, done) {
 
     migration.addColumn(
-      'GuardianCheckins',
+      'GuardianCheckIns',
       'guardian_stashed_checkins',
       {
         type: DataTypes.INTEGER,
@@ -21,7 +21,7 @@ module.exports = {
 
   down: function(migration, DataTypes, done) {
 
-    migration.removeColumn('GuardianCheckins', 'guardian_stashed_checkins');
+    migration.removeColumn('GuardianCheckIns', 'guardian_stashed_checkins');
 
     done();
   }
