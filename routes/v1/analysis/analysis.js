@@ -8,6 +8,7 @@ var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var passport = require("passport");
 var sqlUtils = require("../../../utils/misc/sql");
+var Promise = require("bluebird");
 
 router.route("/methods")
   .get(function(req,res) {
@@ -69,25 +70,60 @@ router.route('/models/precision')
       tagValue: "chainsaw"
     };
 
+    function getModel() {
+      if (req.query.model_guid) {
+        return models.AudioAnalysisModel
+          .findOne({
+            where: {guid: req.query.model_guid}
+          })
+      }
+      else {
+        // empty promise to go through
+        return new Promise(function(resolve){
+          return resolve();
+        });
+      }
+    }
+
     if (req.query.tagValue) {
       opts.tagValue = req.query.tagValue;
     }
 
-    var sql = 'SELECT m.audio_id, count(*) FROM ' +
-                '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
-                'INNER JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset and u.confidence=m.confidence where m.type="classification" and m.value=:tagValue ' +
-                'group by m.audio_id;';
+    var sqlAllEvents = 'SELECT audio_id, count(*) as count FROM GuardianAudioTags where confidence=1 and type="classification" and value=:tagValue ';
 
-    models.sequelize.query(sql,
-      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-    )
-      .then(function(data) {
+    sqlAllEvents = sqlUtils.condAdd(sqlAllEvents, opts.modelId, ' and tagged_by_model=:modelId');
+    sqlAllEvents = sqlUtils.condAdd(sqlAllEvents, true, ' group by audio_id');
 
-        var api = converter.mapSequelizeToApi(data);
+    var sqlTrueEvents = 'SELECT m.audio_id, count(*) as count FROM ' +
+                          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where confidence=1 and type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
+                          'INNER JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset and u.confidence=m.confidence where m.type="classification" and m.value=:tagValue ';
 
-        res.status(200).json(api);
+    sqlTrueEvents = sqlUtils.condAdd(sqlTrueEvents, opts.modelId, ' and m.tagged_by_model=:modelId');
+    sqlTrueEvents = sqlUtils.condAdd(sqlTrueEvents, true, ' group by m.audio_id');
 
-        return null;
+    getModel()
+      .then(function(model) {
+        if (model) {
+          opts.modelId = model.id;
+        }
+        return models.sequelize.query(sqlAllEvents,
+          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+        )
+      })
+      .then(function(dataAllEvents) {
+        return models.sequelize.query(sqlTrueEvents,
+          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+        ).then(function(dataTrueEvents) {
+
+            var api = converter.mapSequelizeToApi({
+              all: dataAllEvents,
+              confirmed: dataTrueEvents
+            });
+
+            res.status(200).json(api);
+
+            return null;
+          });
       })
       .catch(function(err) {
         console.log("failed to return models precision | "+err);
