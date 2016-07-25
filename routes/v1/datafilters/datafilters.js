@@ -8,22 +8,15 @@ var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var models = require('../../../models');
 var flipCoin = require("../../../utils/misc/rand.js").flipCoin;
+var sqlUtils = require("../../../utils/misc/sql");
 
-function condAdd(sql, condition, add) {
-	if(condition != null && condition != false) {
-		sql += add;
-	}
-
-	return sql;
-}
-
+var condAdd = sqlUtils.condAdd;
 
 function filter(filterOpts) {
     // the WHERE 1=1 allows us to add new conditions always with AND otherwise we have to make sure that a previous
     // condition was met that inserted the WHERE clause
   var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
          ' INNER JOIN GuardianSites s ON a.site_id=s.id where 1=1';
-
 
     // filter out files annotated by user
     if (filterOpts.annotator) {
