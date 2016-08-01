@@ -96,8 +96,8 @@ router.route('/models/precision')
     sqlAllEvents = sqlUtils.condAdd(sqlAllEvents, true, ' group by audio_id');
 
     var sqlTrueEvents = 'SELECT m.audio_id, count(*) as count, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
-                          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where confidence=1 and type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
-                          'INNER JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset and u.confidence=m.confidence INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and m.value=:tagValue ';
+                          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
+                          'INNER JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset and u.confidence=m.confidence INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and u.confidence=1 and m.value=:tagValue ';
 
     sqlTrueEvents = sqlUtils.condAdd(sqlTrueEvents, opts.modelId, ' and m.tagged_by_model=:modelId');
     sqlTrueEvents = sqlUtils.condAdd(sqlTrueEvents, true, ' group by m.audio_id');
@@ -149,8 +149,8 @@ router.route('/models/recall')
     var sqlAllEvents = 'SELECT audio_id, count(*) as count FROM (SELECT audio_id, begins_at_offset FROM GuardianAudioTags where type="label" and value="chainsaw" group by audio_id, begins_at_offset HAVING ROUND(AVG(confidence))=1) s group by audio_id';
 
     var sqlTrueEvents = 'SELECT m.audio_id, count(*) as count, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
-      '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where confidence=1 and type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
-      'INNER JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset and u.confidence=m.confidence INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and m.value=:tagValue ';
+                          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
+                          'INNER JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset and u.confidence=m.confidence INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and u.confidence=1 and m.value=:tagValue ';
 
     sqlTrueEvents = sqlUtils.condAdd(sqlTrueEvents, opts.modelId, ' and m.tagged_by_model=:modelId ');
     sqlTrueEvents = sqlUtils.condAdd(sqlTrueEvents, true, ' group by m.audio_id ');
