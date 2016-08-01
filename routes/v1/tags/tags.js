@@ -8,7 +8,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var Promise = require("bluebird");
-
+var sqlUtils = require("../../../utils/misc/sql");
 
 function createTag(dbTag) {
 
@@ -98,6 +98,37 @@ router.route("/")
 		}
 	});
 
+router.route("/audio/:audio_guid")
+  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    var opts = {
+      audioGuid: req.params.audio_guid
+    };
+
+    var sql = 'SELECT t.begins_at_offset, t.ends_at_offset, t.confidence, t.tagged_by_user as user, t.tagged_by_model as model, t.type, ' +
+                'CASE WHEN u.id=t.tagged_by_user THEN u.email ' +
+                'WHEN m.id=t.tagged_by_model THEN m.shortname ' +
+                'END as annotator ' +
+              'FROM GuardianAudioTags t ' +
+              'LEFT JOIN GuardianAudio a ON a.guid=:audioGuid ' +
+              'LEFT JOIN Users u ON u.id=t.tagged_by_user ' +
+              'LEFT JOIN AudioAnalysisModels m ON m.id=t.tagged_by_model ' +
+              'WHERE a.id=t.audio_id and t.type in ("label", "classification") ' +
+              'group by t.tagged_by_user, t.tagged_by_model, t.begins_at_offset order by t.begins_at_offset ASC, annotator ASC';
+
+    models.sequelize.query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT})
+        .then(function(data) {
+          return views.models.groupTagsByCreator(req,res,data)
+            .then(function(json) {
+              res.status(200).json(json);
+            });
+        })
+        .catch(function (err) {
+          res.status(500).json({msg: err});
+        });
+
+  });
 
 router.route("/:tag_id")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
