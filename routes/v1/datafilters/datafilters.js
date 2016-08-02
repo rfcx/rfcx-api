@@ -97,11 +97,11 @@ router.route("/labelling/:tagValues?")
     }
 
     if (req.query.start) {
-      filterOpts.start = new Date(req.query.start);
+      filterOpts.start = req.query.start;
     }
 
     if (req.query.end) {
-      filterOpts.end = new Date(req.query.end);
+      filterOpts.end = req.query.end;
     }
 
     if (req.query.tagType) {
