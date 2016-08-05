@@ -90,10 +90,10 @@ router.route('/models/precision')
       opts.tagValue = req.query.tagValue;
     }
 
-    var sqlAllEvents = 'SELECT audio_id, count(*) as count FROM GuardianAudioTags where confidence=1 and type="classification" and value=:tagValue ';
+    var sqlAllEvents = 'SELECT t.audio_id, a.guid, count(*) as count FROM GuardianAudioTags t LEFT JOIN GuardianAudio a ON a.id=t.audio_id where t.confidence=1 and t.type="classification" and t.value=:tagValue ';
 
-    sqlAllEvents = sqlUtils.condAdd(sqlAllEvents, opts.modelId, ' and tagged_by_model=:modelId');
-    sqlAllEvents = sqlUtils.condAdd(sqlAllEvents, true, ' group by audio_id');
+    sqlAllEvents = sqlUtils.condAdd(sqlAllEvents, opts.modelId, ' and t.tagged_by_model=:modelId');
+    sqlAllEvents = sqlUtils.condAdd(sqlAllEvents, true, ' group by t.audio_id');
 
     var sqlTrueEvents = 'SELECT m.audio_id, count(*) as count, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
                           '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
