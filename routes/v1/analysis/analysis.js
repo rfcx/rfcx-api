@@ -82,7 +82,7 @@ router.route('/models/unclassified_by_users')
 
     var converter = new ApiConverter("unclassified", req);
 
-    var opts = {
+    var sql, opts = {
       tagValue: "chainsaw"
     };
 
@@ -90,16 +90,17 @@ router.route('/models/unclassified_by_users')
       opts.tagValue = req.query.tagValue;
     }
 
-    var sql = 'SELECT t.audio_id, a.guid, count(*) as count FROM GuardianAudioTags t LEFT JOIN GuardianAudioTags m ON m.audio_id=t.audio_id and m.begins_at_offset=t.begins_at_offset and m.type="label" and m.value=:tagValue LEFT JOIN GuardianAudio a ON a.id=t.audio_id where t.type="classification" and t.value=:tagValue and m.audio_id is NULL';
-
-    sql = sqlUtils.condAdd(sql, opts.modelId, ' and t.tagged_by_model=:modelId');
-    sql = sqlUtils.condAdd(sql, true, ' group by t.audio_id');
-
     getModel(req)
       .then(function(model) {
         if (model) {
           opts.modelId = model.id;
         }
+
+        sql = 'SELECT t.audio_id, a.guid, count(*) as count FROM GuardianAudioTags t LEFT JOIN GuardianAudioTags m ON m.audio_id=t.audio_id and m.begins_at_offset=t.begins_at_offset and m.type="label" and m.value=:tagValue LEFT JOIN GuardianAudio a ON a.id=t.audio_id where t.type="classification" and t.value=:tagValue and m.audio_id is NULL';
+
+        sql = sqlUtils.condAdd(sql, opts.modelId, ' and t.tagged_by_model=:modelId');
+        sql = sqlUtils.condAdd(sql, true, ' group by t.audio_id');
+
         return models.sequelize.query(sql,
           { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
         )
@@ -125,7 +126,7 @@ router.route('/models/precision')
 
     var converter = new ApiConverter("precision", req);
 
-    var opts = {
+    var sql, opts = {
       tagValue: "chainsaw"
     };
 
@@ -133,18 +134,19 @@ router.route('/models/precision')
       opts.tagValue = req.query.tagValue;
     }
 
-    var sql = 'SELECT m.audio_id, SUM(CASE WHEN m.confidence=u.confidence and u.confidence=1 THEN 1 ELSE 0 END) as countConfirmed, SUM(CASE WHEN m.confidence=1 THEN 1 ELSE 0 END) as countAll, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
-                          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
-                          'LEFT JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and m.value=:tagValue ';
-
-    sql = sqlUtils.condAdd(sql, opts.modelId, ' and m.tagged_by_model=:modelId');
-    sql = sqlUtils.condAdd(sql, true, ' group by m.audio_id');
-
     getModel(req)
       .then(function(model) {
         if (model) {
           opts.modelId = model.id;
         }
+
+        sql = 'SELECT m.audio_id, SUM(CASE WHEN m.confidence=u.confidence and u.confidence=1 THEN 1 ELSE 0 END) as countConfirmed, SUM(CASE WHEN m.confidence=1 THEN 1 ELSE 0 END) as countAll, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
+          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
+          'LEFT JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and m.value=:tagValue ';
+
+        sql = sqlUtils.condAdd(sql, opts.modelId, ' and m.tagged_by_model=:modelId');
+        sql = sqlUtils.condAdd(sql, true, ' group by m.audio_id');
+
         return models.sequelize.query(sql,
           { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
         ).then(function(data) {
@@ -178,7 +180,7 @@ router.route('/models/recall')
 
     var converter = new ApiConverter("recall", req);
 
-    var opts = {
+    var sql, opts = {
       tagValue: "chainsaw"
     };
 
@@ -186,18 +188,19 @@ router.route('/models/recall')
       opts.tagValue = req.query.tagValue;
     }
 
-    var sql = 'SELECT m.audio_id, SUM(CASE WHEN m.confidence=u.confidence and u.confidence=1 THEN 1 ELSE 0 END) as countConfirmed, SUM(CASE WHEN u.confidence=1 THEN 1 ELSE 0 END) as countAll, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
-                          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
-                          'LEFT JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and m.value=:tagValue ';
-
-    sql = sqlUtils.condAdd(sql, opts.modelId, ' and m.tagged_by_model=:modelId ');
-    sql = sqlUtils.condAdd(sql, true, ' group by m.audio_id ');
-
     getModel(req)
       .then(function(model) {
         if (model) {
           opts.modelId = model.id;
         }
+
+        sql = 'SELECT m.audio_id, SUM(CASE WHEN m.confidence=u.confidence and u.confidence=1 THEN 1 ELSE 0 END) as countConfirmed, SUM(CASE WHEN u.confidence=1 THEN 1 ELSE 0 END) as countAll, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
+          '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
+          'LEFT JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and m.value=:tagValue ';
+
+        sql = sqlUtils.condAdd(sql, opts.modelId, ' and m.tagged_by_model=:modelId ');
+        sql = sqlUtils.condAdd(sql, true, ' group by m.audio_id ');
+
         return models.sequelize.query(sql,
           { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
         ).then(function(data) {
