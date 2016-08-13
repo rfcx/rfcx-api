@@ -45,7 +45,7 @@ router.route("/:audio_id/tags")
                             models.GuardianAudioTag.create({
                               type: "classification",
                               value: tagName,
-                              confidence: currentWindow.classifications[tagName][0],
+                              confidence: currentWindow.classifications[tagName],
                               begins_at: beginsAt,
                               ends_at: endsAt,
                               begins_at_offset: currentWindow.window[0],
@@ -70,12 +70,12 @@ router.route("/:audio_id/tags")
                               console.log("failed to create classification tag | "+err);
                               res.status(500).json({msg:"failed to create classification tag"});
                             });
-                          } else {
+                          }/* else {
                             processedWindows++;
                             if (processedWindows == analysisResults.results.length) {
                               res.status(200).json(savedClassifications);
                             }
-                          }
+                          }*/
                         }
 
                       }
