@@ -2,6 +2,7 @@ var Promise = require("bluebird");
 var fs = require("fs");
 var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
+var models  = require("../../models");
 
 exports.analysisUtils = {
 
@@ -9,69 +10,98 @@ exports.analysisUtils = {
  * queue an audio object for external analysis
  *
 * @param {Object}  options:
-*                  {String} guardian_guid
-*                  {String} checkin_guid
 *                  {String} audio_guid
                    {String} api_url_domain
+                   {String} audio_s3_bucket
                    {String} audio_s3_path
                    {String} audio_sha1_checksum
 
- * @return {Object} ...
-*                  {String} ...
  * @api private
  */
-    queueAudioForAnalysis: function(analysisMethod, analysisModel, audioInfo) {
+    queueAudioForAnalysis: function(analysisMethod, analysisModelGuid, options) {
         return new Promise(function(resolve, reject) {
 
-            var apiEndpoint = "/v1/guardians/"+audioInfo.guardian_guid+"/checkins/"+audioInfo.checkin_guid+"/audio/"+audioInfo.audio_guid+"/events";
-            var analysisSampleRate = 8000; // TO-DO this should dynamically be determined based on method+model
+            models.AudioAnalysisModel
+            .findOne({ 
+              where: { guid: analysisModelGuid }
+            }).then(function(dbAnalysisModel){
+              if (dbAnalysisModel == null) {
+                console.log("failed to find analysis model");
+                reject(new Error());
+              } else {
 
-            token.createAnonymousToken({
-            reference_tag: audioInfo.audio_guid,
-            token_type: "analysis",
-            created_by: "checkin",
-            minutes_until_expiration: 1440,
-            allow_garbage_collection: true,
-            only_allow_access_to: [ "^"+apiEndpoint+"$" ]
-            }).then(function(tokenInfo){
+                try {
 
-                var apiTokenGuid = tokenInfo.token_guid,
-                    apiToken = tokenInfo.token,
-                    apiTokenExpiresAt = tokenInfo.token_expires_at,
-                    apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
+                    var apiWriteBackEndpoint = "/v1/audio/"+options.audio_guid+"/tags",
+                        apiUrlDomain = options.api_url_domain,
 
-                aws.sns().publish({
-                    TopicArn: aws.snsTopicArn("rfcx-analysis"),
-                    Message: JSON.stringify({
-                    
-                        api_token_guid: apiTokenGuid,
-                        api_token: apiToken,
-                        api_token_expires_at: apiTokenExpiresAt,
-                        api_url: audioInfo.api_url_domain+apiEndpoint,
+                        audioS3Bucket = options.audio_s3_bucket,
+                        audioS3Path = options.audio_s3_path,
+                        audioSha1Checksum = options.audio_sha1_checksum,
 
-                        audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audioInfo.audio_s3_path, apiTokenMinutesUntilExpiration),
-                        audio_sha1: audioInfo.audio_sha1_checksum,
+                        analysisSampleRate = parseInt(dbAnalysisModel.audio_sample_rate),
+                        analysisModelUrl = dbAnalysisModel.model_download_url,
+                        analysisModelSha1Checksum = dbAnalysisModel.model_sha1_checksum;
 
-                        analysis_method: analysisMethod,
-                        analysis_model: analysisModel,
-                        analysis_sample_rate: analysisSampleRate
-                        
-                      })
-                  }, function(snsErr, snsData) {
-                    if (!!snsErr && !aws.snsIgnoreError()) {
-                      console.log(snsErr);
-                      reject(new Error(snsErr));
-                    } else {
-                      
-                      resolve(audioInfo);
+                        token.createAnonymousToken({
+                            token_type: "audio-analysis-queue",
+                            minutes_until_expiration: 1440,
+                            allow_garbage_collection: true,
+                            only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
+                        }).then(function(tokenInfo){
 
-                    }
-                });
+                            var apiTokenGuid = tokenInfo.token_guid,
+                                apiToken = tokenInfo.token,
+                                apiTokenExpiresAt = tokenInfo.token_expires_at,
+                                apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
 
+                            aws.sns().publish({
+                                TopicArn: aws.snsTopicArn("rfcx-analysis"),
+                                Message: JSON.stringify({
+                                
+                                    api_token_guid: apiTokenGuid,
+                                    api_token: apiToken,
+                                    api_token_expires_at: apiTokenExpiresAt,
+                                    api_url: apiUrlDomain+apiWriteBackEndpoint,
+
+                                    audio_url: aws.s3SignedUrl(audioS3Bucket, audioS3Path, apiTokenMinutesUntilExpiration),
+                                    audio_sha1: audioSha1Checksum,
+
+                                    analysis_method: analysisMethod,
+                                    analysis_sample_rate: analysisSampleRate,
+
+                                    analysis_model: analysisModelGuid,
+                                    analysis_model_url: analysisModelUrl,
+                                    analysis_model_sha1: analysisModelSha1Checksum
+                                    
+                                  })
+                              }, function(snsErr, snsData) {
+                                if (!!snsErr && !aws.snsIgnoreError()) {
+                                  console.log(snsErr);
+                                  reject(new Error(snsErr));
+                                } else {
+                                  
+                                  resolve();
+
+                                }
+                            });
+
+                        }).catch(function(err){
+                            console.log("error creating access token for analysis worker | "+err);
+                            if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
+                            reject(new Error(err));
+                        });
+
+
+                } catch(err) {
+                    console.log(err);
+                    reject(err);
+                }
+
+              }
             }).catch(function(err){
-                console.log("error creating access token for analysis worker | "+err);
-                if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
-                reject(new Error(err));
+              console.log("failed to find analysis model | "+err);
+              reject(err);
             });
 
         }.bind(this));
