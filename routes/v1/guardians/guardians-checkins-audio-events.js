@@ -28,7 +28,7 @@ router.route("/:guardian_id/checkins/:checkin_id/audio/:audio_id/events")
                 var analysisResults = JSON.parse(req.body.json);
 
                 models.AudioAnalysisModel
-                  .findOne( { where: { shortname: analysisResults.model } })
+                  .findOne( { where: { guid: analysisResults.model } })
                   .then(function(dbModel){
 
                     if (analysisResults.results.length > 0) {
