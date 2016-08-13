@@ -32,22 +32,20 @@ router.route("/:audio_id/tags")
                       
                       var processedWindows = 0, savedClassifications = [];
 
-                      console.log(analysisResults.results);
-
                       for (wndwInd in analysisResults.results) {
                         var currentWindow = analysisResults.results[wndwInd];
 
                         var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[0])));
                         var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[1])));
 
-                        for (classification in currentWindow.classifications) {
+                        for (tagName in currentWindow.classifications) {
 
-                          if (currentWindow.classifications[classification][0] > 0.5) {
+                          if (currentWindow.classifications[tagName] > 0.5) {
 
                             models.GuardianAudioTag.create({
                               type: "classification",
-                              value: classification,
-                              confidence: currentWindow.classifications[classification][0],
+                              value: tagName,
+                              confidence: currentWindow.classifications[tagName][0],
                               begins_at: beginsAt,
                               ends_at: endsAt,
                               begins_at_offset: currentWindow.window[0],
