@@ -21,9 +21,6 @@ router.route("/:audio_id/tags")
             models.GuardianAudio
               .findOne( { where: { guid: req.params.audio_id } })
               .then(function(dbAudio){
-
-                dbAudio.analyzed_at = new Date();
-                dbAudio.save();
                   
                 var analysisResults = JSON.parse(req.body.json);
 
@@ -34,6 +31,8 @@ router.route("/:audio_id/tags")
                     if (analysisResults.results.length > 0) {
                       
                       var processedWindows = 0, savedClassifications = [];
+
+                      console.log(analysisResults.results);
 
                       for (wndwInd in analysisResults.results) {
                         var currentWindow = analysisResults.results[wndwInd];
