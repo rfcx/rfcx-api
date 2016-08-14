@@ -18,7 +18,7 @@ exports.analysisUtils = {
 
  * @api private
  */
-    queueAudioForAnalysis: function(analysisMethod, analysisModelGuid, options) {
+    queueAudioForAnalysis: function(queueName, analysisMethod, analysisModelGuid, options) {
         return new Promise(function(resolve, reject) {
 
             models.AudioAnalysisModel
@@ -56,7 +56,7 @@ exports.analysisUtils = {
                                 apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
 
                             aws.sns().publish({
-                                TopicArn: aws.snsTopicArn("rfcx-analysis"),
+                                TopicArn: aws.snsTopicArn(queueName),
                                 Message: JSON.stringify({
                                 
                                     api_token_guid: apiTokenGuid,
