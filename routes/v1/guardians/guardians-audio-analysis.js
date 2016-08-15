@@ -45,11 +45,10 @@ router.route("/:guardian_id/audio/analysis")
               if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
               for (i in dbAudio) {
 
-                analysisUtils.queueAudioForAnalysis("v3","aa",{
-                  guardian_guid: dbAudio[i].Guardian.guid,
-                  checkin_guid: dbAudio[i].CheckIn.guid,
+                analysisUtils.queueAudioForAnalysis("rfcx-analysis-batch", "v3", "1eee3c3d-6637-4b7a-86af-30fec50dfb30", {
                   audio_guid: dbAudio[i].guid,
                   api_url_domain: req.rfcx.api_url_domain,
+                  audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
                   audio_s3_path: dbAudio[i].url.substr(dbAudio[i].url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length),
                   audio_sha1_checksum: dbAudio[i].sha1_checksum,
                 });

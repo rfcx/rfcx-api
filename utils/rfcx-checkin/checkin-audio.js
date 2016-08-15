@@ -252,7 +252,7 @@ exports.audio = {
         audioInfo.minutes_until_expiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
 
         audioInfo.analysis_method = "v3";
-        audioInfo.analysis_model = "aa";
+        audioInfo.analysis_model = "ab";
         audioInfo.analysis_sample_rate = 8000;
 
         aws.sns().publish({
