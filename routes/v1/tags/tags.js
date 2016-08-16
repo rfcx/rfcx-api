@@ -10,47 +10,58 @@ var requireUser = require("../../../middleware/authorization/authorization").req
 var Promise = require("bluebird");
 var sqlUtils = require("../../../utils/misc/sql");
 
-function createTag(dbTag) {
+function createOrUpdateTag(dbTag) {
 
-		return models.GuardianAudio
-			.findOne({
+    return models.GuardianAudio
+      .findOne({
         where: {guid: dbTag.audio_id},
         include: [{ all: true }]
       })
-			.then(function (dbAudio) {
-				var guid = dbTag.audio_id;
+      .then(function (dbAudio) {
+        var guid = dbTag.audio_id;
 
         // if begins_at_offset is not presented in request, then set it to 0
         dbTag.begins_at_offset = dbTag.begins_at_offset || 0;
         // if ends_at_offset is not presented in request, then check if duration presented, if not set to audio file duration
         dbTag.ends_at_offset   = dbTag.ends_at_offset || dbTag.duration ||
-                                 (Math.round(1000*dbAudio.dataValues.capture_sample_count/dbAudio.Format.sample_rate));
+        (Math.round(1000*dbAudio.dataValues.capture_sample_count/dbAudio.Format.sample_rate));
 
-				dbTag.audio_id = dbAudio.id;
-				dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
-				dbTag.ends_at = new Date(dbAudio.dataValues.measured_at);
-				dbTag.begins_at.setMilliseconds(dbTag.begins_at.getMilliseconds() + dbTag.begins_at_offset);
-				dbTag.ends_at.setMilliseconds(dbTag.ends_at.getMilliseconds() + dbTag.ends_at_offset);
+        dbTag.audio_id = dbAudio.id;
+        dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
+        dbTag.ends_at = new Date(dbAudio.dataValues.measured_at);
+        dbTag.begins_at.setMilliseconds(dbTag.begins_at.getMilliseconds() + dbTag.begins_at_offset);
+        dbTag.ends_at.setMilliseconds(dbTag.ends_at.getMilliseconds() + dbTag.ends_at_offset);
 
-				return models.GuardianAudioTag
-					.create(dbTag).then(function (dbTag) {
-						return models.User.findOne({where: {id: dbTag.tagged_by_user}}).then(function (dbUser) {
-							dbTag.audio_id = guid;
-							dbTag.tagged_by_user = dbUser.guid;
-							return dbTag;
-						});
-				});
-			});
-
+        return models.GuardianAudioTag
+          .findOrCreate({where: {guid: dbTag.guid}, defaults: dbTag})
+          .spread(function (dbTagResult, created) {
+            if (created) {
+              return models.User
+                .findOne({where: {id: dbTagResult.tagged_by_user}})
+                .then(function (dbUser) {
+                  dbTagResult.audio_id = guid;
+                  dbTagResult.tagged_by_user = dbUser.guid;
+                  return dbTagResult;
+                });
+            }
+            else {
+              return models.GuardianAudioTag
+                .update(dbTag, {where: {guid: dbTagResult.guid}})
+                .spread(function() {
+                  return dbTagResult;
+                });
+            }
+          });
+      });
 }
 
-function createOne(req, res) {
+function processOne(req, res) {
 	var guid = req.body.data.attributes.audioId;
 	req.body.data.attributes.taggedByUser = req.rfcx.auth_token_info.owner_id;
 	var converter = new ApiConverter("tag", req);
 	var dbTag = converter.mapApiToSequelize(req.body);
 	dbTag.audio_id = guid;
-	createTag(dbTag).then(function (dbTag) {
+  createOrUpdateTag(dbTag).then(function (dbTag) {
 		var apiTag = converter.mapSequelizeToApi(dbTag);
 		res.status(201).json(apiTag);
 		return dbTag;
@@ -64,7 +75,7 @@ function createOne(req, res) {
 	});
 }
 
-function createMany(req, res) {
+function processMany(req, res) {
 	var promises = [];
 	var converter = new ApiConverter("tag", req);
 	if (!Array.isArray(req.body.data.attributes)) {
@@ -74,7 +85,7 @@ function createMany(req, res) {
 	for (var i = 0; i < req.body.data.attributes.length; i++) {
 		var dbTag = converter.mapApiToSequelize(req.body.data.attributes[i]);
 		dbTag.tagged_by_user = req.rfcx.auth_token_info.owner_id;
-		promises.push(createTag(dbTag));
+		promises.push(createOrUpdateTag(dbTag));
 	}
 	Promise.all(promises)
 		.then(function (dbTags) {
@@ -92,9 +103,9 @@ function createMany(req, res) {
 router.route("/")
 	.post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 		if (req.body.data.type == 'tags') {
-			createMany(req, res);
+			processMany(req, res);
 		} else {
-			createOne(req, res);
+			processOne(req, res);
 		}
 	});
 
