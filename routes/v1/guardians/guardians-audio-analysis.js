@@ -27,7 +27,7 @@ router.route("/:guardian_id/audio/analysis")
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
 
-        
+        var modelGuid = req.query.model_id;
 
         models.GuardianAudio
           .findAll({ 
@@ -45,7 +45,7 @@ router.route("/:guardian_id/audio/analysis")
               if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
               for (i in dbAudio) {
 
-                analysisUtils.queueAudioForAnalysis("rfcx-analysis-batch", "v3", "c0b4dc0f-e0ae-42f6-8284-66532d749fa2", {
+                analysisUtils.queueAudioForAnalysis("rfcx-analysis-batch", "v3", modelGuid, {
                   audio_guid: dbAudio[i].guid,
                   api_url_domain: req.rfcx.api_url_domain,
                   audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
