@@ -62,6 +62,14 @@ module.exports = function(sequelize, DataTypes) {
         min: 0.0,
         max: 1.0
       }
+    },
+    playback_count: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 1
+      }
     }
   }, {
     classMethods: {
