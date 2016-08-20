@@ -18,7 +18,7 @@ exports.analysisUtils = {
 
  * @api private
  */
-    queueAudioForAnalysis: function(queueName, analysisMethod, analysisModelGuid, options) {
+    queueAudioForAnalysis: function(queueName, analysisModelGuid, options) {
         return new Promise(function(resolve, reject) {
 
             models.AudioAnalysisModel
@@ -67,7 +67,7 @@ exports.analysisUtils = {
                                     audio_url: aws.s3SignedUrl(audioS3Bucket, audioS3Path, apiTokenMinutesUntilExpiration),
                                     audio_sha1: audioSha1Checksum,
 
-                                    analysis_method: analysisMethod,
+                                    analysis_method: dbAnalysisModel.method_name,
 
                                     // TO-REMOVE sample rate should be determined locally during analysis from model metadata
                                     analysis_model_sample_rate: analysisSampleRate,

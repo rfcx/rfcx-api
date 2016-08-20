@@ -45,7 +45,7 @@ router.route("/:guardian_id/audio/analysis")
               if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
               for (i in dbAudio) {
 
-                analysisUtils.queueAudioForAnalysis("rfcx-analysis-batch", "v3", modelGuid, {
+                analysisUtils.queueAudioForAnalysis("rfcx-analysis-batch", modelGuid, {
                   audio_guid: dbAudio[i].guid,
                   api_url_domain: req.rfcx.api_url_domain,
                   audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,

@@ -238,7 +238,7 @@ exports.audio = {
 
       var modelGuid = "b6db4c8d-16b4-4400-bcbf-1e4f4938dede";
 
-      analysisUtils.queueAudioForAnalysis("rfcx-analysis", "v3", modelGuid, {
+      analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuid, {
         audio_guid: audioInfo.audio_guid,
         api_url_domain: audioInfo.api_url_domain,
         audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
