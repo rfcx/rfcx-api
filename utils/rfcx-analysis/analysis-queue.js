@@ -68,9 +68,11 @@ exports.analysisUtils = {
                                     audio_sha1: audioSha1Checksum,
 
                                     analysis_method: analysisMethod,
-                                    analysis_sample_rate: analysisSampleRate,
 
-                                    analysis_model: analysisModelGuid,
+                                    // TO-REMOVE sample rate should be determined locally during analysis from model metadata
+                                    analysis_model_sample_rate: analysisSampleRate,
+
+                                    analysis_model_id: analysisModelGuid,
                                     analysis_model_url: analysisModelUrl,
                                     analysis_model_sha1: analysisModelSha1Checksum
                                     
