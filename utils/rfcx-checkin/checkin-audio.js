@@ -106,7 +106,7 @@ exports.audio = {
 
             } else {
               console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo.sha1Hash + " - " + audioInfo.guardianSha1Hash);
-              reject(new Error(err));
+              reject(new Error());
             }
 
           });
