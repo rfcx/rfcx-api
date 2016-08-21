@@ -3,17 +3,20 @@ var models  = require("../../models");
 exports.saveMeta = {
 
   CPU: function(metaCPU, guardianId, checkInId) {
+    var metaCPUtoSave = [];
     for (cpuInd in metaCPU) {
-      models.GuardianMetaCPU.create({
+      metaCPUtoSave.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaCPU[cpuInd][0])),
           cpu_percent: parseInt(metaCPU[cpuInd][1]),
           cpu_clock: parseInt(metaCPU[cpuInd][2])
-        }).then(function(dbGuardianMetaCPU){ }).catch(function(err){
-          console.log("failed to create GuardianMetaCPU | "+err);
         });
     }
+    models.GuardianMetaCPU
+      .bulkCreate(metaCPUtoSave).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaCPU | "+err);
+      });
   },
 
   Battery: function(metaBattery, guardianId, checkInId) {
