@@ -46,7 +46,7 @@ exports.analysisUtils = {
                         token.createAnonymousToken({
                             token_type: "audio-analysis-queue",
                             minutes_until_expiration: 1440,
-                            allow_garbage_collection: true,
+                            allow_garbage_collection: false,
                             only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
                         }).then(function(tokenInfo){
 
