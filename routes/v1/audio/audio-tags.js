@@ -66,9 +66,6 @@ router.route("/:audio_id/tags")
                               if (processedWindows == analysisResults.results.length) {
                                 res.status(200).json(savedClassifications);
                               }
-
-                              console.log("failed to create classification tag | "+err);
-                              res.status(500).json({msg:"failed to create classification tag"});
                             });
                           }/* else {
                             processedWindows++;
