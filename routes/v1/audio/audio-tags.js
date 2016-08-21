@@ -30,13 +30,14 @@ router.route("/:audio_id/tags")
 
                     if (analysisResults.results.length > 0) {
 
+                      var preInsertGuardianAudioTags = [];
+
                       for (wndwInd in analysisResults.results) {
                         var currentWindow = analysisResults.results[wndwInd];
 
                         var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[0])));
                         var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[1])));
 
-                        var preInsertGuardianAudioTags = [];
 
                         for (tagName in currentWindow.classifications) {
 
@@ -58,16 +59,16 @@ router.route("/:audio_id/tags")
 
                         }
 
-                        models.GuardianAudioTag
-                          .bulkCreate(preInsertGuardianAudioTags)
-                          .then(function(){
-                            res.status(200).json([]);
-                          }).catch(function(err){
-                            console.log("failed to save analysis windows | "+err);
-                            if (!!err) { res.status(500).json({msg:"failed to save analysis windows"}); }
-                          });
-
                       }
+
+                    models.GuardianAudioTag
+                      .bulkCreate(preInsertGuardianAudioTags)
+                      .then(function(){
+                        res.status(200).json([]);
+                      }).catch(function(err){
+                        console.log("failed to save analysis windows | "+err);
+                        if (!!err) { res.status(500).json({msg:"failed to save analysis windows"}); }
+                      });
                         
                     } else {
                       res.status(200).json([]);
