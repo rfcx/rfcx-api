@@ -69,9 +69,6 @@ exports.analysisUtils = {
 
                                     analysis_method: dbAnalysisModel.method_name,
 
-                                    // TO-REMOVE sample rate should be determined locally during analysis from model metadata
-                                    analysis_model_sample_rate: analysisSampleRate,
-
                                     analysis_model_id: analysisModelGuid,
                                     analysis_model_url: analysisModelUrl,
                                     analysis_model_sha1: analysisModelSha1Checksum
