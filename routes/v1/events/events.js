@@ -6,13 +6,17 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
-var sqlUtils = require("../../../utils/misc/sql");
-
-var condAdd = sqlUtils.condAdd;
+var ApiConverter = require("../../../utils/api-converter");
 
 router.route("/")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
+    var converter = new ApiConverter("event", req);
+
+    var limit  = parseInt(req.query.limit) || 500,
+        offset = parseInt(req.query.offset) || 0;
+
+    // by default all clauses are empty. we will fill them if corresponding params are defined in url
     var whereClauses = {
       event: {},
       guardian: {},
@@ -45,7 +49,7 @@ router.route("/")
     }
 
     return models.GuardianEvent
-      .findAll({
+      .findAndCountAll({
         where: whereClauses.event,
         include: [
           { model: models.GuardianAudio, as: 'Audio', where: whereClauses.audio },
@@ -53,16 +57,26 @@ router.route("/")
           { model: models.GuardianSite, as: 'Site', where: whereClauses.site },
           { model: models.GuardianCheckIn, as: 'CheckIn' }
         ],
-        limit: parseInt(req.query.limit) || 5,
-        offset: parseInt(req.query.offset) || 0
+        limit: limit,
+        offset: offset
       }).then(function(dbEvents){
-        if (dbEvents.length < 1) {
-          return httpError(res, 404, "database");
-        } else {
-          return views.models.guardianEvents(req,res,dbEvents)
+        var data = {
+          limit: limit,
+          offset: offset,
+          number_of_results: dbEvents.count
+        };
+        if (dbEvents.rows.length) {
+          return views.models.guardianEvents(req,res,dbEvents.rows)
             .then(function(json){
-              res.status(200).json(json);
+              data.result = json;
+              var api = converter.cloneSequelizeToApi(data);
+              res.status(200).json(api);
             });
+        }
+        else {
+          data.result = [];
+          var api = converter.cloneSequelizeToApi(data);
+          return res.status(200).json(api);
         }
       })
       .catch(function (err) {
