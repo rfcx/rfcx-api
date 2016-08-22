@@ -6,11 +6,75 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var sqlUtils = require("../../../utils/misc/sql");
+
+var condAdd = sqlUtils.condAdd;
+
+router.route("/")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    var whereClauses = {
+      event: {},
+      guardian: {},
+      site: {},
+      audio: {}
+    };
+
+    if (req.query.after_begins_at_analysis) {
+      whereClauses.event.begins_at_analysis = {
+        $gte: req.query.after_begins_at_analysis
+      };
+    }
+
+    if (req.query.classification_analysis) {
+      whereClauses.event.classification_analysis = req.query.classification_analysis;
+    }
+
+    if (req.query.guardian_guid) {
+      whereClauses.guardian.guid = req.query.guardian_guid;
+    }
+
+    if (req.query.site_guid) {
+      whereClauses.site.guid = req.query.site_guid;
+    }
+
+    if (req.query.after_measured_at) {
+      whereClauses.audio.measured_at = {
+        $gte: req.query.after_measured_at
+      };
+    }
+
+    return models.GuardianEvent
+      .findAll({
+        where: whereClauses.event,
+        include: [
+          { model: models.GuardianAudio, as: 'Audio', where: whereClauses.audio },
+          { model: models.Guardian, as: 'Guardian', where: whereClauses.guardian },
+          { model: models.GuardianSite, as: 'Site', where: whereClauses.site },
+          { model: models.GuardianCheckIn, as: 'CheckIn' }
+        ],
+        limit: parseInt(req.query.limit) || 5,
+        offset: parseInt(req.query.offset) || 0
+      }).then(function(dbEvents){
+        if (dbEvents.length < 1) {
+          return httpError(res, 404, "database");
+        } else {
+          return views.models.guardianEvents(req,res,dbEvents)
+            .then(function(json){
+              res.status(200).json(json);
+            });
+        }
+      })
+      .catch(function (err) {
+        res.status(500).json({msg: err});
+      });
+
+  });
 
 router.route("/:event_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
-    models.GuardianEvent
+    return models.GuardianEvent
       .findAll({ 
         where: { guid: req.params.event_id }, 
         include: [ { all: true } ],
