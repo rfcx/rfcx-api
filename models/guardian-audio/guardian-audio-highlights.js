@@ -14,6 +14,15 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    order: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: false,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     type: {
       type: DataTypes.STRING,
       allowNull: true,

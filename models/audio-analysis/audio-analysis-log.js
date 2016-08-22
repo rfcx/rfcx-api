@@ -1,53 +1,54 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var AudioAnalysisModel = sequelize.define("AudioAnalysisModel", {
+  var AudioAnalysisLog = sequelize.define("AudioAnalysisLog", {
+
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       unique: true
     },
-    shortname: {
-      type: DataTypes.STRING,
+
+    queued_at: {
+      type: DataTypes.DATE(3),
       allowNull: true,
-      unique: false,
       validate: {
+        isDate: true
       }
     },
-    method_name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: false,
-      validate: {
-      }
-    },
-    model_download_url: {
-      type: DataTypes.STRING,
+
+    launched_at: {
+      type: DataTypes.DATE(3),
       allowNull: true,
-      unique: false,
       validate: {
+        isDate: true
       }
     },
-    model_sha1_checksum: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: false,
-      validate: {
-      }
-    },
-    audio_sample_rate: {
+
+    duration: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       unique: false,
       validate: {
         isInt: true,
         min: 0
       }
+    },
+
+    host: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
     }
+
   }, {
     classMethods: {
       associate: function(models) {
-        // associations can be defined here
+
+        AudioAnalysisLog.belongsTo(models.GuardianAudio, { as: "Audio", foreignKey: "audio_id" });
+        AudioAnalysisLog.belongsTo(models.AudioAnalysisModel, { as: "Model", foreignKey: "model_id" });
         
       },
       indexes: [
@@ -57,8 +58,8 @@ module.exports = function(sequelize, DataTypes) {
         }
       ]
     },
-    tableName: "AudioAnalysisModels"
+    tableName: "AudioAnalysisLogs"
   });
 
-  return AudioAnalysisModel;
+  return AudioAnalysisLog;
 };

@@ -64,7 +64,7 @@ router.route("/web")
       .findAll({ 
         where: { group: "web-player" },
         include: [ { all: true } ], 
-        order: [ ["id", "ASC"] ]
+        order: [ ["order", "ASC"] ]
       }).then(function(dbAudioHighlights){
 
         if (dbAudioHighlights.length < 1) {

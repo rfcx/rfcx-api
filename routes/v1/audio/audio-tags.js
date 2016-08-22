@@ -29,8 +29,8 @@ router.route("/:audio_id/tags")
                   .then(function(dbModel){
 
                     if (analysisResults.results.length > 0) {
-                      
-                      var processedWindows = 0, savedClassifications = [];
+
+                      var preInsertGuardianAudioTags = [];
 
                       for (wndwInd in analysisResults.results) {
                         var currentWindow = analysisResults.results[wndwInd];
@@ -38,11 +38,12 @@ router.route("/:audio_id/tags")
                         var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[0])));
                         var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[1])));
 
+
                         for (tagName in currentWindow.classifications) {
 
                           if (currentWindow.classifications[tagName] > 0.5) {
 
-                            models.GuardianAudioTag.create({
+                            preInsertGuardianAudioTags.push({
                               type: "classification",
                               value: tagName,
                               confidence: currentWindow.classifications[tagName],
@@ -52,33 +53,22 @@ router.route("/:audio_id/tags")
                               ends_at_offset: currentWindow.window[1],
                               audio_id: dbAudio.id,
                               tagged_by_model: dbModel.id
-                            }).then(function(dbGuardianAudioTag){
-
-                              savedClassifications.push(dbGuardianAudioTag.guid);
-                              processedWindows++;
-
-                              if (processedWindows == analysisResults.results.length) {
-                                res.status(200).json(savedClassifications);
-                              }
-
-                            }).catch(function(err){
-                              processedWindows++;
-                              if (processedWindows == analysisResults.results.length) {
-                                res.status(200).json(savedClassifications);
-                              }
-
-                              console.log("failed to create classification tag | "+err);
-                              res.status(500).json({msg:"failed to create classification tag"});
                             });
-                          }/* else {
-                            processedWindows++;
-                            if (processedWindows == analysisResults.results.length) {
-                              res.status(200).json(savedClassifications);
-                            }
-                          }*/
+
+                          }
+
                         }
 
                       }
+
+                    models.GuardianAudioTag
+                      .bulkCreate(preInsertGuardianAudioTags)
+                      .then(function(){
+                        res.status(200).json([]);
+                      }).catch(function(err){
+                        console.log("failed to save analysis windows | "+err);
+                        if (!!err) { res.status(500).json({msg:"failed to save analysis windows"}); }
+                      });
                         
                     } else {
                       res.status(200).json([]);

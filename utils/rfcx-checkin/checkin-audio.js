@@ -8,6 +8,7 @@ var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var exec = require("child_process").exec;
 var audioUtils = require("../../utils/rfcx-audio").audioUtils;
+var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
 
@@ -105,7 +106,7 @@ exports.audio = {
 
             } else {
               console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo.sha1Hash + " - " + audioInfo.guardianSha1Hash);
-              reject(new Error(err));
+              reject(new Error());
             }
 
           });
@@ -235,66 +236,24 @@ exports.audio = {
   queueForAnalysis: function(audioInfo) {
     return new Promise(function(resolve, reject) {
 
-      audioInfo.api_url = "/v1/guardians/"+audioInfo.guardian_guid+"/checkins/"+audioInfo.checkin_guid+"/audio/"+audioInfo.audio_guid+"/events";
+      var modelGuid = "b6db4c8d-16b4-4400-bcbf-1e4f4938dede";
 
-      token.createAnonymousToken({
-        reference_tag: audioInfo.audio_guid,
-        token_type: "analysis",
-        created_by: "checkin",
-        minutes_until_expiration: 180,
-        allow_garbage_collection: true,
-        only_allow_access_to: [ "^"+audioInfo.api_url+"$" ]
-      }).then(function(tokenInfo){
+      analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuid, {
+        audio_guid: audioInfo.audio_guid,
+        api_url_domain: audioInfo.api_url_domain,
+        audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
+        audio_s3_path: audioInfo.s3Path,
+        audio_sha1_checksum: audioInfo.sha1Hash,
+      }).then(function(){
 
-        audioInfo.api_token_guid = tokenInfo.token_guid;
-        audioInfo.api_token = tokenInfo.token;
-        audioInfo.api_token_expires_at = tokenInfo.token_expires_at;
-        audioInfo.minutes_until_expiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
-
-        audioInfo.analysis_method = "v3";
-        audioInfo.analysis_model = "ab";
-        audioInfo.analysis_sample_rate = 8000;
-
-        aws.sns().publish({
-            TopicArn: aws.snsTopicArn("rfcx-analysis"),
-            Message: JSON.stringify({
-                
-                measured_at: audioInfo.measured_at.toISOString(),
-
-                api_token_guid: audioInfo.api_token_guid,
-                api_token: audioInfo.api_token,
-                api_token_expires_at: audioInfo.api_token_expires_at,
-                api_url: audioInfo.api_url_domain+audioInfo.api_url,
-                audio_url: aws.s3SignedUrl(process.env.ASSET_BUCKET_AUDIO, audioInfo.s3Path, audioInfo.minutes_until_expiration),
-                audio_sha1: audioInfo.sha1Hash,
-
-                analysis_method: audioInfo.analysis_method,
-                analysis_model: audioInfo.analysis_model,
-                analysis_sample_rate: audioInfo.analysis_sample_rate
-                
-              })
-          }, function(snsErr, snsData) {
-            if (!!snsErr && !aws.snsIgnoreError()) {
-              console.log(snsErr);
-              reject(new Error(snsErr));
-            } else {
-
-              audioInfo.isSaved.sqs = true;
-
-              audioInfo.dbAudioObj.analysis_queued_at = new Date();
-              audioInfo.dbAudioObj.save();
-              
-              resolve(audioInfo);
-
-            }
-        });
+        audioInfo.isSaved.sqs = true;
+        resolve(audioInfo);
 
       }).catch(function(err){
-        console.log("error creating access token for analysis worker | "+err);
-        // dbCheckIn.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-        // dbAudio.destroy().then(function(){ console.log("deleted incomplete checkin entry"); }).catch(function(err){ console.log("failed to delete incomplete checkin entry | "+err); });
-        if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
-        reject(new Error(err));
+
+        console.log(err);
+        reject(err);
+
       });
 
     }.bind(this));
