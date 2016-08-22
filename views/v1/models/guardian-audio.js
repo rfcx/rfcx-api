@@ -139,10 +139,14 @@ exports.models = {
           measured_at: thisRow.measured_at,
           analyzed_at: thisRow.analyzed_at,
           size: thisRow.size,
-          duration: Math.round(1000 * thisRow.capture_sample_count / thisRow.Format.sample_rate),
-          sample_rate: thisRow.Format.sample_rate,
+          duration: null,
+          sample_rate: thisRow.Format? thisRow.Format.sample_rate : null,
           sha1_checksum: thisRow.sha1_checksum
         };
+
+        if (thisRow.Format) {
+          jsonRowsByGuid[thisGuid].duration = Math.round(1000 * thisRow.capture_sample_count / thisRow.Format.sample_rate)
+        }
 
         if (thisRow.Site != null) {
           jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid;
