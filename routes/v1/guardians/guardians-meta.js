@@ -288,6 +288,14 @@ router.route("/:guardian_id/meta2/:meta_type")
           request_latency_guardian: "latency",
           guardian_queued_checkins: "queued"
         }
+      },
+      reboots: {
+        model: "GuardianMetaReboot",
+        viewFunction: "guardianMetaReboots",
+        timeStampColumn: "completed_at",
+        dbToJsonMap: {
+          completed_at: "completed_at"
+        }
       }
     };
 
