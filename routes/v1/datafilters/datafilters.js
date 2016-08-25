@@ -82,51 +82,54 @@ function processError(err, req, res) {
 }
 
 router.route("/labelling/:tagValues?")
-  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    var body = req.body;
+
     var filterOpts = {
-      limit: parseInt(req.query.limit) || 1,
+      limit: parseInt(body.limit) || 1,
       hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
     };
 
-    if (!req.query.ignoreAnnotator) {
+    if (!Boolean(body.ignoreAnnotator)) {
       filterOpts.annotator = req.rfcx.auth_token_info.owner_id;
     }
-    if (req.query.site) {
-      filterOpts.sites = [req.query.site];
+    if (body.site) {
+      filterOpts.sites = [body.site];
     }
-    if (req.query.guardian) {
-      filterOpts.guardians = [req.query.guardian];
-    }
-
-    if (req.query.start) {
-      filterOpts.start = req.query.start;
+    if (body.guardian) {
+      filterOpts.guardians = [body.guardian];
     }
 
-    if (req.query.end) {
-      filterOpts.end = req.query.end;
+    if (body.start) {
+      filterOpts.start = body.start;
     }
 
-    if (req.query.tagType) {
-      filterOpts.tagType = req.query.tagType;
+    if (body.end) {
+      filterOpts.end = body.end;
     }
 
-    if (req.query.highConfidence) {
-      filterOpts.highConfidence = Boolean(req.query.highConfidence);
+    if (body.tagType) {
+      filterOpts.tagType = body.tagType;
     }
 
-    if (req.query.lowConfidence) {
-      filterOpts.lowConfidence = Boolean(req.query.lowConfidence);
+    if (body.highConfidence) {
+      filterOpts.highConfidence = Boolean(body.highConfidence);
     }
 
-    if (req.query.audioGuids) {
-      filterOpts.audioGuids = req.query.audioGuids.split(',');
+    if (body.lowConfidence) {
+      filterOpts.lowConfidence = Boolean(body.lowConfidence);
+    }
+
+    if (body.audioGuids) {
+      filterOpts.audioGuids = body.audioGuids.split(',');
     }
 
     // if tag was specified, then flip coin
     if (req.params.tagValues) {
       // if true then search for audios tagged with specified tag
         // Todo: for now we need more of the files for tags, so we'll always search for tags - we need to remove true soon
-      if (req.query.noRandomValues || flipCoin() || true) {
+      if (body.noRandomValues || flipCoin() || true) {
         filterOpts.tagValues = req.params.tagValues;
       }
     }
@@ -134,7 +137,7 @@ router.route("/labelling/:tagValues?")
     filter(filterOpts).bind({})
       .then(function(guids) {
         // if we found result then act like always...
-        if (guids.length || req.query.noRandomValues) {
+        if (guids.length || body.noRandomValues) {
           return guids;
         }
         // if we not found any guids then go another way
@@ -151,7 +154,7 @@ router.route("/labelling/:tagValues?")
       })
       .then(function(data) {
         this.guids = data;
-        if (req.query.withCSV && data.length) {
+        if (body.withCSV && data.length) {
           return getLabelsData(filterOpts);
         }
         else {
