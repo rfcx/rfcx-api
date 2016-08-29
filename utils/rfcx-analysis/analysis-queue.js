@@ -18,7 +18,7 @@ exports.analysisUtils = {
 
  * @api private
  */
-    queueAudioForAnalysis: function(queueName, analysisMethod, analysisModelGuid, options) {
+    queueAudioForAnalysis: function(queueName, analysisModelGuid, options) {
         return new Promise(function(resolve, reject) {
 
             models.AudioAnalysisModel
@@ -46,7 +46,7 @@ exports.analysisUtils = {
                         token.createAnonymousToken({
                             token_type: "audio-analysis-queue",
                             minutes_until_expiration: 1440,
-                            allow_garbage_collection: true,
+                            allow_garbage_collection: false,
                             only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
                         }).then(function(tokenInfo){
 
@@ -67,10 +67,9 @@ exports.analysisUtils = {
                                     audio_url: aws.s3SignedUrl(audioS3Bucket, audioS3Path, apiTokenMinutesUntilExpiration),
                                     audio_sha1: audioSha1Checksum,
 
-                                    analysis_method: analysisMethod,
-                                    analysis_sample_rate: analysisSampleRate,
+                                    analysis_method: dbAnalysisModel.method_name,
 
-                                    analysis_model: analysisModelGuid,
+                                    analysis_model_id: analysisModelGuid,
                                     analysis_model_url: analysisModelUrl,
                                     analysis_model_sha1: analysisModelSha1Checksum
                                     

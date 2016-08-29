@@ -21,12 +21,12 @@ var SequelizeApiConverter = function(type, req, selfProperty) {
         return key;
     }
 
-    function createApiObj(id) {
+    function createApiObj(id, attrs) {
       var api = {
         data: {
           id: id, 
           type: converter.type, 
-          attributes: {}
+          attributes: attrs || {}
         },
         links: {
           self: converter.baseUrl + "/" + converter.collection + "/"
@@ -68,6 +68,11 @@ var SequelizeApiConverter = function(type, req, selfProperty) {
         return mapToApiWithTransformation(obj, toCamel);
     }
 
+    function cloneSequelizeToApi(attrs) {
+      var obj = createApiObj(null, attrs);
+      delete obj.data.id;
+      return obj;
+    }
 
     function mapToPojoWithTransformation(obj, transform) {
         if(transform == null) {
@@ -100,6 +105,7 @@ var SequelizeApiConverter = function(type, req, selfProperty) {
     converter.mapPojoToApi = mapToApiWithTransformation;
     converter.mapSequelizeToApi = mapSequelizeToApi;
     converter.mapApiToSequelize = mapApiToSequelize;
+    converter.cloneSequelizeToApi = cloneSequelizeToApi;
 };
 
 

@@ -36,6 +36,7 @@ function filter(filterOpts) {
   sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
   sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5');
   sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5');
+  sql = condAdd(sql, filterOpts.audioGuids, ' and a.guid in (:audioGuids)');
   sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) >= 1');
   sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
   sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
@@ -60,6 +61,7 @@ function getLabelsData(filterOpts) {
   sql = condAdd(sql, filterOpts.tagValues, ' and value in (:tagValues)');
   sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
   sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
+  sql = condAdd(sql, filterOpts.audioGuids, ' and a.guid in (:audioGuids)');
   sql = condAdd(sql, true, ' group by t.audio_id, begins_at_offset having count(DISTINCT t.tagged_by_user) >= 1 order by t.begins_at_offset ASC');
 
   return models.sequelize.query(sql,
@@ -80,47 +82,54 @@ function processError(err, req, res) {
 }
 
 router.route("/labelling/:tagValues?")
-  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    var body = req.body;
+
     var filterOpts = {
-      limit: parseInt(req.query.limit) || 1,
+      limit: parseInt(body.limit) || 1,
       hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
     };
 
-    if (!req.query.ignoreAnnotator) {
+    if (!Boolean(body.ignoreAnnotator)) {
       filterOpts.annotator = req.rfcx.auth_token_info.owner_id;
     }
-    if (req.query.site) {
-      filterOpts.sites = [req.query.site];
+    if (body.site) {
+      filterOpts.sites = [body.site];
     }
-    if (req.query.guardian) {
-      filterOpts.guardians = [req.query.guardian];
-    }
-
-    if (req.query.start) {
-      filterOpts.start = req.query.start;
+    if (body.guardian) {
+      filterOpts.guardians = [body.guardian];
     }
 
-    if (req.query.end) {
-      filterOpts.end = req.query.end;
+    if (body.start) {
+      filterOpts.start = body.start;
     }
 
-    if (req.query.tagType) {
-      filterOpts.tagType = req.query.tagType;
+    if (body.end) {
+      filterOpts.end = body.end;
     }
 
-    if (req.query.highConfidence) {
-      filterOpts.highConfidence = Boolean(req.query.highConfidence);
+    if (body.tagType) {
+      filterOpts.tagType = body.tagType;
     }
 
-    if (req.query.lowConfidence) {
-      filterOpts.lowConfidence = Boolean(req.query.lowConfidence);
+    if (body.highConfidence) {
+      filterOpts.highConfidence = Boolean(body.highConfidence);
+    }
+
+    if (body.lowConfidence) {
+      filterOpts.lowConfidence = Boolean(body.lowConfidence);
+    }
+
+    if (body.audioGuids) {
+      filterOpts.audioGuids = body.audioGuids.split(',');
     }
 
     // if tag was specified, then flip coin
     if (req.params.tagValues) {
       // if true then search for audios tagged with specified tag
         // Todo: for now we need more of the files for tags, so we'll always search for tags - we need to remove true soon
-      if (req.query.noRandomValues || flipCoin() || true) {
+      if (body.noRandomValues || flipCoin() || true) {
         filterOpts.tagValues = req.params.tagValues;
       }
     }
@@ -128,7 +137,7 @@ router.route("/labelling/:tagValues?")
     filter(filterOpts).bind({})
       .then(function(guids) {
         // if we found result then act like always...
-        if (guids.length || req.query.noRandomValues) {
+        if (guids.length || body.noRandomValues) {
           return guids;
         }
         // if we not found any guids then go another way
@@ -145,7 +154,7 @@ router.route("/labelling/:tagValues?")
       })
       .then(function(data) {
         this.guids = data;
-        if (req.query.withCSV && data.length) {
+        if (body.withCSV && data.length) {
           return getLabelsData(filterOpts);
         }
         else {

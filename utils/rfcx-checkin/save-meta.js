@@ -3,65 +3,93 @@ var models  = require("../../models");
 exports.saveMeta = {
 
   CPU: function(metaCPU, guardianId, checkInId) {
+
+    var dbMetaCPU = [];
+
     for (cpuInd in metaCPU) {
-      models.GuardianMetaCPU.create({
+      dbMetaCPU.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaCPU[cpuInd][0])),
           cpu_percent: parseInt(metaCPU[cpuInd][1]),
           cpu_clock: parseInt(metaCPU[cpuInd][2])
-        }).then(function(dbGuardianMetaCPU){ }).catch(function(err){
-          console.log("failed to create GuardianMetaCPU | "+err);
         });
     }
+
+    models.GuardianMetaCPU
+      .bulkCreate(dbMetaCPU).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaCPU | "+err);
+      });
   },
 
   Battery: function(metaBattery, guardianId, checkInId) {
+
+    var dbMetaBattery = [];
+
     for (battInd in metaBattery) {
-      models.GuardianMetaBattery.create({
+        dbMetaBattery.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaBattery[battInd][0])),
           battery_percent: parseInt(metaBattery[battInd][1]),
           battery_temperature: parseInt(metaBattery[battInd][2])
-        }).then(function(dbGuardianMetaBattery){ }).catch(function(err){
-          console.log("failed to create GuardianMetaBattery | "+err);
         });
     }
+
+    models.GuardianMetaBattery
+      .bulkCreate(dbMetaBattery).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaBattery | "+err);
+      });
   },
 
   Power: function(metaPower, guardianId, checkInId) {
+
+    var dbMetaPower = [];
+
     for (pwrInd in metaPower) {
-      models.GuardianMetaPower.create({
+        dbMetaPower.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaPower[pwrInd][0])),
           is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
           is_charged: (metaPower[pwrInd][2] === "1") ? true : false
-        }).then(function(dbGuardianMetaPower){ }).catch(function(err){
-          console.log("failed to create GuardianMetaPower | "+err);
         });
     }
+
+    models.GuardianMetaPower
+      .bulkCreate(dbMetaPower).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaPower | "+err);
+      });
+
   },
 
   Network: function(metaNetwork, guardianId, checkInId) {
+
+    var dbMetaNetwork = [];
+
     for (ntwkInd in metaNetwork) {
-      models.GuardianMetaNetwork.create({
+        dbMetaNetwork.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaNetwork[ntwkInd][0])),
           signal_strength: parseInt(metaNetwork[ntwkInd][1]),
           network_type: metaNetwork[ntwkInd][2],
           carrier_name: metaNetwork[ntwkInd][3]
-        }).then(function(dbGuardianMetaNetwork){ }).catch(function(err){
-          console.log("failed to create GuardianMetaNetwork | "+err);
         });
     }
+
+    models.GuardianMetaNetwork
+      .bulkCreate(dbMetaNetwork).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaNetwork | "+err);
+      });
   },
 
   DataTransfer: function(metaDataTransfer, guardianId, checkInId) {
+
+    var dbMetaDataTransfer = [];
+
     for (dtInd in metaDataTransfer) {
-      models.GuardianMetaDataTransfer.create({
+      dbMetaDataTransfer.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           started_at: new Date(parseInt(metaDataTransfer[dtInd][0])),
@@ -70,43 +98,61 @@ exports.saveMeta = {
           bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
           total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
           total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
-        }).then(function(dbGuardianMetaDataTransfer){ }).catch(function(err){
-          console.log("failed to create GuardianMetaDataTransfer | "+err);
         });
     }
+
+    models.GuardianMetaDataTransfer
+      .bulkCreate(dbMetaDataTransfer).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaDataTransfer | "+err);
+      });
   },
 
   Offline: function(metaOffline, guardianId, checkInId) {
+
+    var dbMetaOffline = [];
+
     for (offlInd in metaOffline) {
-      models.GuardianMetaOffline.create({
+      dbMetaOffline.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           ended_at: new Date(parseInt(metaOffline[offlInd][0])),
           offline_duration: parseInt(metaOffline[offlInd][1]),
           carrier_name: metaOffline[offlInd][2]
-        }).then(function(dbGuardianMetaOffline){ }).catch(function(err){
-          console.log("failed to create GuardianMetaOffline | "+err);
         });
     }
+
+    models.GuardianMetaOffline
+      .bulkCreate(dbMetaOffline).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaOffline | "+err);
+      });
   },
 
   LightMeter: function(metaLightMeter, guardianId, checkInId) {
+
+    var dbMetaLightMeter = [];
+
     for (lmInd in metaLightMeter) {
-      models.GuardianMetaLightMeter.create({
+      dbMetaLightMeter.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaLightMeter[lmInd][0])),
           luminosity: parseInt(metaLightMeter[lmInd][1])
-        }).then(function(dbGuardianMetaLightMeter){ }).catch(function(err){
-          console.log("failed to create GuardianMetaLightMeter | "+err);
         });
     }
+
+    models.GuardianMetaLightMeter
+      .bulkCreate(dbMetaLightMeter).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaLightMeter | "+err);
+      });
   },
 
   Accelerometer: function(metaAccelerometer, guardianId, checkInId) {
+
+    var dbMetaAccelerometer = [];
+
     for (acInd in metaAccelerometer) {
       var xyzVals = metaAccelerometer[acInd][1].split(",");
-      models.GuardianMetaAccelerometer.create({
+      dbMetaAccelerometer.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaAccelerometer[acInd][0])),
@@ -114,27 +160,36 @@ exports.saveMeta = {
           y: parseFloat(xyzVals[1]),
           z: parseFloat(xyzVals[2]),
           sample_count: parseInt(metaAccelerometer[acInd][2])
-        }).then(function(dbGuardianMetaAccelerometer){ }).catch(function(err){
-          console.log("failed to create GuardianMetaAccelerometer | "+err);
         });
     }
+
+    models.GuardianMetaAccelerometer
+      .bulkCreate(dbMetaAccelerometer).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaAccelerometer | "+err);
+      });
   },
 
   GeoLocation: function(metaLocation, guardianId, checkInId) {
+
+    var dbMetaGeoLocation = [];
+
     for (locInd in metaLocation) {
       if (metaLocation[locInd][1] != null) {
-        models.GuardianMetaGeoLocation.create({
+        dbMetaGeoLocation.push({
             guardian_id: guardianId,
             check_in_id: checkInId,
             measured_at: new Date(parseInt(metaLocation[locInd][0])),
             latitude: parseFloat(metaLocation[locInd][1]),
             longitude: parseFloat(metaLocation[locInd][2]),
             precision: parseFloat(metaLocation[locInd][3])
-          }).then(function(dbGuardianMetaGeoLocation){ }).catch(function(err){
-            console.log("failed to create GuardianMetaGeoLocation | "+err);
           });
       }
     }
+
+    models.GuardianMetaGeoLocation
+      .bulkCreate(dbMetaGeoLocation).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaGeoLocation | "+err);
+      });
   },
 
   DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
@@ -176,15 +231,21 @@ exports.saveMeta = {
   },
 
   RebootEvents: function(rebootEvents, guardianId, checkInId) {
+
+    var dbMetaRebootEvents = [];
+
     for (rebootEvntInd in rebootEvents) {
-      models.GuardianMetaReboot.create({
+      dbMetaRebootEvents.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
           completed_at: new Date(parseInt(rebootEvents[rebootEvntInd][0]))
-        }).then(function(dbGuardianMetaReboot){ }).catch(function(err){
-          console.log("failed to create GuardianMetaReboot | "+err);
         });
     }
+
+    models.GuardianMetaReboot
+      .bulkCreate(dbMetaRebootEvents).then(function(){ }).catch(function(err){
+        console.log("failed to create GuardianMetaReboot | "+err);
+      });
   },
 
   SoftwareRoleVersion: function(roleArr, guardianId) {
