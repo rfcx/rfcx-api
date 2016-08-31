@@ -20,10 +20,17 @@ function filter(filterOpts) {
 
     // filter out files annotated by user
     if (filterOpts.annotator) {
+      if (filterOpts.ignoreCorrupted) {
         sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning" OR (sq.tagged_by_user=:annotator and sq.type="label"))'
+      }
+      else {
+        sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.tagged_by_user=:annotator and sq.type="label")'
+      }
     } else {
+      if (filterOpts.ignoreCorrupted) {
         // filter out corrupted files - TODO: we need to improve the index scan otherwise this is inefficient
         sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning")'
+      }
     }
 
 
@@ -91,6 +98,9 @@ router.route("/labelling/:tagValues?")
       hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
     };
 
+    if (body.ignoreCorrupted) {
+      filterOpts.ignoreCorrupted = Boolean(body.ignoreCorrupted);
+    }
     if (!Boolean(body.ignoreAnnotator)) {
       filterOpts.annotator = req.rfcx.auth_token_info.owner_id;
     }
