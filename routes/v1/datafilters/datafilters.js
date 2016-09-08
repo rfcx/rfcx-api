@@ -95,13 +95,13 @@ router.route("/labelling/:tagValues?")
 
     var filterOpts = {
       limit: parseInt(body.limit) || 1,
-      hasLabels: req.query.hasLabels? Boolean(req.query.hasLabels) : false
+      hasLabels: body.hasLabels || false
     };
 
     if (body.ignoreCorrupted) {
       filterOpts.ignoreCorrupted = Boolean(body.ignoreCorrupted);
     }
-    if (!Boolean(body.ignoreAnnotator)) {
+    if (!body.ignoreAnnotator) {
       filterOpts.annotator = req.rfcx.auth_token_info.owner_id;
     }
     if (body.site) {
