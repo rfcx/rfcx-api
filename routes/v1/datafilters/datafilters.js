@@ -61,11 +61,19 @@ function processResults(promise, req, res) {
 	});
 }
 
+function extractAudioGuids(data) {
+  var arr = [];
+  for (var i = 0; i < data.length; i++) {
+    arr.push(data[i].guid);
+  }
+  return arr;
+}
+
 function getLabelsData(filterOpts) {
   var sql = 'SELECT a.guid, t.begins_at_offset, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where ';
 
-  sql = condAdd(sql, filterOpts.tagType, ' type = :tagType');
-  sql = condAdd(sql, filterOpts.tagValues, ' and value in (:tagValues)');
+  sql = condAdd(sql, filterOpts.tagType, ' t.type = :tagType');
+  sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
   sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
   sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
   sql = condAdd(sql, filterOpts.audioGuids, ' and a.guid in (:audioGuids)');
@@ -165,6 +173,8 @@ router.route("/labelling/:tagValues?")
       .then(function(data) {
         this.guids = data;
         if (body.withCSV && data.length) {
+          // simplify tags query - search only in received guids
+          filterOpts.audioGuids = extractAudioGuids(data);
           return getLabelsData(filterOpts);
         }
         else {
