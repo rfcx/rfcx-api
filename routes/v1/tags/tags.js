@@ -9,6 +9,7 @@ var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var Promise = require("bluebird");
 var sqlUtils = require("../../../utils/misc/sql");
+var urls = require('../../../utils/misc/urls');
 
 function createOrUpdateTag(dbTag) {
 
@@ -138,6 +139,27 @@ router.route("/audio/:audio_guid")
         .catch(function (err) {
           res.status(500).json({msg: err});
         });
+
+  });
+
+router.route('/labels')
+  .get(passport.authenticate("token", {session: false}), requireUser, function(req, res) {
+    var converter = new ApiConverter("labels", req);
+
+    var sql = "SELECT DISTINCT value FROM GuardianAudioTags where type='label'";
+
+    return models.sequelize.query(sql, { type: models.sequelize.QueryTypes.SELECT })
+      .then(function(data) {
+        var api = converter.mapSequelizeToApi({
+          labels: data
+        });
+        api.links.self = urls.getApiUrl(req) + '/tags/labels';
+        res.status(200).json(api);
+      })
+      .catch(function(err) {
+        console.log("failed to return labels | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return labels"}); }
+      });
 
   });
 
