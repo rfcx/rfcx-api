@@ -18,11 +18,11 @@ exports.env = {
 
   PLAYER_PASSCODES: "0000,1111",
 
-  RDS_HOSTNAME: "localhost",
-  RDS_DB_NAME: "",
-  RDS_USERNAME: "",
-  RDS_PASSWORD: "",
-  RDS_PORT: 3306,
+  DB_HOSTNAME: "localhost",
+  DB_NAME: "rfcx_api",
+  DB_USERNAME: "",
+  DB_PASSWORD: "",
+  DB_PORT: 3306,
 
   NEW_RELIC_KEY: "",
   MANDRILL_KEY: "",

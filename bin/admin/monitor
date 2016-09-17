@@ -11,6 +11,7 @@ then
   $SCRIPT_DIR/monitor_/monitor_expect_tail_logs rfcx-api-production 1 $TIMEOUT | grep -v /health_check &
   $SCRIPT_DIR/monitor_/monitor_expect_tail_logs rfcx-api-production 2 $TIMEOUT | grep -v /health_check &
 #  $SCRIPT_DIR/monitor_/monitor_expect_tail_logs rfcx-api-production 3 $TIMEOUT | grep -v /health_check &
+#  $SCRIPT_DIR/monitor_/monitor_expect_tail_logs rfcx-api-production 4 $TIMEOUT | grep -v /health_check &
 else
   $SCRIPT_DIR/monitor_/monitor_expect_tail_logs_single_instance rfcx-api-staging 1 $TIMEOUT | grep -v /health_check &
 fi

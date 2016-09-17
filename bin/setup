@@ -17,7 +17,7 @@ function initializeSequelize() {
 
   var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false;
 
-  var configCustom = '"username": "'+process.env.RDS_USERNAME+'", "password": "'+process.env.RDS_PASSWORD+'", "database": "'+process.env.RDS_DB_NAME+'", "host": "'+process.env.RDS_HOSTNAME+'"';
+  var configCustom = '"username": "'+process.env.DB_USERNAME+'", "password": "'+process.env.DB_PASSWORD+'", "database": "'+process.env.DB_NAME+'", "host": "'+process.env.DB_HOSTNAME+'"';
   var configGeneric = '"dialect": "mysql", "logging": '+sequelizeVerbose+', "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }';
 
   var configJsonContent = '{ '
