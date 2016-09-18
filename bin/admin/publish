@@ -17,7 +17,7 @@ then
     # git checkout deploy;
     # git merge master -m "Merging with master branch.";
     echo -e "\nExecuting deployment script (this may take a few minutes).\n"
-    eb deploy rfcx-api-production;
+    eb deploy rfcx-api-production-env;
   else
     echo -e "\nYou chose to deploy to 'staging'.\n"
     # git checkout deploy;
@@ -30,7 +30,7 @@ then
 
   if [[ $REPLY =~ ^[Pp]$ ]]
   then
-    eb status rfcx-api-production;
+    eb status rfcx-api-production-env;
   else
     eb status rfcx-api-staging;
   fi
