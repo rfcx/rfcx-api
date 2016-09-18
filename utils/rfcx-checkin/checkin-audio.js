@@ -236,7 +236,7 @@ exports.audio = {
   queueForAnalysis: function(audioInfo) {
     return new Promise(function(resolve, reject) {
 
-      var modelGuid = "b6db4c8d-16b4-4400-bcbf-1e4f4938dede";
+      var modelGuid = "8f3ffc6c-4364-4e2a-aa30-563a8cf6d794";
 
       analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuid, {
         audio_guid: audioInfo.audio_guid,
