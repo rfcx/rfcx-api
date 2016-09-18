@@ -21,6 +21,12 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      validate: {
+      }
+    },
     model_download_url: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -42,6 +48,27 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: 0
+      }
+    },
+    ffmpeg_preprocess_options: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    sox_preprocess_options: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    imagemagick_preprocess_options: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
       }
     }
   }, {
