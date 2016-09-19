@@ -4,7 +4,6 @@ var express = require("express");
 var router = express.Router();
 var fs = require("fs");
 var zlib = require("zlib");
-var exifTool = require("exiftool");
 var util = require("util");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
