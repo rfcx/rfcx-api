@@ -5,8 +5,16 @@ set instance_number [lindex $argv 1]
 set timeout [lindex $argv 2]
 spawn eb ssh $rfcx_env
 match_max 100000
-expect "*?default is 1)*"
-send -- "$instance_number\r"
-expect "*?ec2-user@ip"
+expect {
+  "*?default is 1)*" {
+    send -- "$instance_number\r"
+    exp_continue
+  }
+  "*?(yes/no)" {
+    send -- "yes\r"
+    exp_continue
+  }
+  "*?ec2-user@ip"
+}
 send -- "tail -f /var/log/nodejs/nodejs.log\r"
 expect eof

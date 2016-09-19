@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+
+export MSG_STR_FULL=`$SCRIPT_DIR/monitor_instance_count_capture`;
+export MSG_STR_CLIP=`echo -n $MSG_STR_FULL | cut -d'(' -f 1`;
+export INSTANCT_DASHES="${MSG_STR_CLIP//[^-]}";
+
+echo -n "${#INSTANCT_DASHES}";
