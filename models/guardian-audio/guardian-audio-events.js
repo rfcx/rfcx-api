@@ -24,9 +24,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        GuardianAudioEvent.belongsTo(models.GuardianAudio, { foreignKey: "audio_id" });
-        GuardianAudioEvent.belongsTo(models.GuardianAudioEventType, { foreignKey: "type" });
-        GuardianAudioEvent.belongsTo(models.GuardianAudioEventValue, { foreignKey: "value" });
+        GuardianAudioEvent.belongsTo(models.GuardianAudio, { as: 'Audio', foreignKey: "audio_id" });
+        GuardianAudioEvent.belongsTo(models.GuardianAudioEventType, { as: 'Type', foreignKey: "type" });
+        GuardianAudioEvent.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
       },
       indexes: [
         {
