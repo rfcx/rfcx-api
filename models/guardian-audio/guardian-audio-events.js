@@ -20,6 +20,20 @@ module.exports = function(sequelize, DataTypes) {
     windows: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    begins_at: {
+      type: DataTypes.DATE(3),
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
+    ends_at: {
+      type: DataTypes.DATE(3),
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
     }
   }, {
     classMethods: {
