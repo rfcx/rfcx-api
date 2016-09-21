@@ -29,8 +29,10 @@ exports.models = {
           confidence: dbRow.confidence
         });
 
-        resolve(json);
       }
+
+      resolve(json);
+
     })
 
   },
@@ -41,11 +43,21 @@ exports.models = {
 
     return new Promise(function(resolve,reject) {
 
-      var csv = '';
+      var csv = 'event_guid,audio_guid,latitude,longitude,begins_at,ends_at,type,value,confidence\r\n';
 
       for (var i = 0; i < dbAudioEvents.length; i++) {
 
         var dbRow = dbAudioEvents[i];
+
+        csv += dbRow.guid + ',';
+        csv += dbRow.Audio.guid + ',';
+        csv += dbRow.Audio.Guardian.latitude + ',';
+        csv += dbRow.Audio.Guardian.longitude + ',';
+        csv += dbRow.begins_at.toISOString() + ',';
+        csv += dbRow.ends_at.toISOString() + ',';
+        csv += dbRow.Type.value + ',';
+        csv += dbRow.Value.value + ',';
+        csv += dbRow.confidence + '\r\n';
 
       }
 

@@ -6,14 +6,13 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
-var ApiConverter = require("../../../utils/api-converter");
 
 router.route("/event")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
-    if (req.url.indexOf('.json') !== -1 || req.url.indexOf('.csv') !== -1) {
+    if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
       isFile = true;
     }
 
@@ -24,41 +23,47 @@ router.route("/event")
     var whereClauses = {
       event: {},
       site: {},
-      audio: {}
+      audio: {},
+      type: {},
+      value: {}
     };
 
     if (req.query.updated_after) {
-      whereClauses.event.updated_at = {
-        $gt: req.query.updated_after
-      };
+      if (!whereClauses.event.updated_at) {
+        whereClauses.event.updated_at = {};
+      }
+      whereClauses.event.updated_at.$gt = req.query.updated_after;
     }
 
     if (req.query.updated_before) {
-      whereClauses.event.updated_at = {
-        $lt: req.query.updated_before
-      };
+      if (!whereClauses.event.updated_at) {
+        whereClauses.event.updated_at = {};
+      }
+      whereClauses.event.updated_at.$lt = req.query.updated_before;
     }
 
     if (req.query.created_after) {
-      whereClauses.event.created_at = {
-        $gt: req.query.created_after
-      };
+      if (!whereClauses.event.created_at) {
+        whereClauses.event.created_at = {};
+      }
+      whereClauses.event.created_at.$gt = req.query.created_after;
     }
 
     if (req.query.created_before) {
-      whereClauses.event.created_at = {
-        $lte: req.query.created_before
-      };
+      if (!whereClauses.event.created_at) {
+        whereClauses.event.created_at = {};
+      }
+      whereClauses.event.created_at.$lte = req.query.created_before;
     }
 
     if (req.query.starting_after) {
-      whereClauses.audio.measured_at = {
+      whereClauses.event.begins_at = {
         $gt: req.query.starting_after
       };
     }
 
     if (req.query.ending_before) {
-      whereClauses.audio.measured_at = {
+      whereClauses.event.ends_at = {
         $lte: req.query.ending_before
       };
     }
@@ -69,20 +74,20 @@ router.route("/event")
       };
     }
 
-    if (req.query.values) {
-      whereClauses.event.value = {
+    if (req.query.values && Array.isArray(req.query.values)) {
+      whereClauses.value.value = {
         $in: req.query.values
       };
     }
 
-    if (req.query.sites) {
+    if (req.query.sites && Array.isArray(req.query.sites)) {
       whereClauses.site.guid = {
         $in: req.query.sites
       };
     }
 
-    if (req.query.types) {
-      whereClauses.event.type = {
+    if (req.query.types && Array.isArray(req.query.types)) {
+      whereClauses.type.value = {
         $in: req.query.types
       };
     }
@@ -98,6 +103,7 @@ router.route("/event")
             as: 'Audio',
             where: whereClauses.audio,
             attributes: [
+              'guid',
               'measured_at'
             ],
             include: [
@@ -119,29 +125,42 @@ router.route("/event")
               }
             ]
           },
-          { model: models.GuardianAudioEventValue, as: 'Value' },
-          { model: models.GuardianAudioEventType, as: 'Type' }
+          {
+            model: models.GuardianAudioEventValue,
+            as: 'Value',
+            where: whereClauses.value
+          },
+          {
+            model: models.GuardianAudioEventType,
+            as: 'Type',
+            where: whereClauses.type
+          }
         ]
       })
       .then(function(dbEvents){
-        console.log('dbEvents', dbEvents);
         if (contentType === 'json') {
           return views.models.guardianAudioEventsJson(req,res,dbEvents.rows)
             .then(function(json){
-              res.status(200).json(json);
+              // if client requested json file, then respond with file
+              // if not, respond with simple json
+              res.contentType(isFile? 'text/json' : 'application/json');
+              if (isFile) {
+                res.attachment('event.json');
+              }
+              res.status(200).send(json);
             });
         }
         else if (contentType === 'csv') {
-          res.status(200).json({});
-          //return views.models.guardianAudioEventsCSV(req,res,dbEvents.rows)
-          //  .then(function(csv){
-          //    data.result = csv;
-          //    res.status(200).json(api);
-          //  });
+          return views.models.guardianAudioEventsCSV(req,res,dbEvents.rows)
+            .then(function(csv){
+              res.contentType('text/csv');
+              res.attachment('event.csv');
+              res.status(200).send(csv);
+            });
         }
       })
       .catch(function (err) {
-        console.log('errrrr', arguments);
+        console.log('Error while searching Audio Events', arguments);
         res.status(500).json({msg: err});
       });
 
