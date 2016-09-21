@@ -22,8 +22,8 @@ exports.models = {
           audio_guid: dbRow.Audio.guid,
           latitude: dbRow.Audio.Guardian.latitude,
           longitude: dbRow.Audio.Guardian.longitude,
-          begins_at: '',
-          ends_at: '',
+          begins_at: dbRow.begins_at,
+          ends_at: dbRow.ends_at,
           type: dbRow.Type.value,
           value: dbRow.Value.value,
           confidence: dbRow.confidence
