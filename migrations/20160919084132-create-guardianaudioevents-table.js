@@ -48,7 +48,7 @@ module.exports = {
         unique: true
       },
       audio_id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         references: {
           model: 'Audio',
           key: 'audio_id'
