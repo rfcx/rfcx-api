@@ -34,6 +34,24 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isDate: true
       }
+    },
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: -90,
+        max: 90
+      }
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: -180,
+        max: 180
+      }
     }
   }, {
     classMethods: {
