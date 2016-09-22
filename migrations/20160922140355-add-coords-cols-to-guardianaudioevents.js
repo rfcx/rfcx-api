@@ -5,7 +5,7 @@ module.exports = {
 
     migration.addColumn(
       'GuardianAudioEvents',
-      'latitude',
+      'shadow_latitude',
       {
         type: DataTypes.FLOAT,
         allowNull: true,
@@ -19,7 +19,7 @@ module.exports = {
 
     migration.addColumn(
       'GuardianAudioEvents',
-      'longitude',
+      'shadow_longitude',
       {
         type: DataTypes.FLOAT,
         allowNull: true,
@@ -36,8 +36,8 @@ module.exports = {
 
   down: function (migration, DataTypes, done) {
 
-    migration.removeColumn('GuardianAudioEvents', 'latitude');
-    migration.removeColumn('GuardianAudioEvents', 'longitude');
+    migration.removeColumn('GuardianAudioEvents', 'shadow_latitude');
+    migration.removeColumn('GuardianAudioEvents', 'shadow_longitude');
 
     done();
 

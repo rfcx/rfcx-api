@@ -21,7 +21,14 @@ router.route("/event")
 
     // by default all clauses are empty. we will fill them if corresponding params are defined in url
     var whereClauses = {
-      event: {},
+      event: {
+        shadow_latitude: {
+          $ne: null
+        },
+        shadow_longitude: {
+          $ne: null
+        }
+      },
       site: {},
       audio: {},
       type: {},
@@ -113,14 +120,6 @@ router.route("/event")
                 where: whereClauses.site,
                 attributes: [
                   'guid'
-                ]
-              },
-              {
-                model: models.Guardian,
-                as: 'Guardian',
-                attributes: [
-                  'latitude',
-                  'longitude'
                 ]
               }
             ]
