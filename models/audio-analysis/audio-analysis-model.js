@@ -70,12 +70,34 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
+    },
+    minimal_detection_confidence: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        isFloat: true
+      }
+    },
+    minimal_detected_windows: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        isInt: true,
+        min: 1
+      }
+    },
+    generate_event: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      validate: {
+      }
     }
   }, {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-        
+        AudioAnalysisModel.belongsTo(models.GuardianAudioEventType, { foreignKey: "event_type" });
+        AudioAnalysisModel.belongsTo(models.GuardianAudioEventValue, { foreignKey: "event_value" });
       },
       indexes: [
         {
