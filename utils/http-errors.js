@@ -1,6 +1,10 @@
 
 var options = {
 
+  "400": {
+    "default": "Missing required parameters"
+  },
+
   "404": {
     "default": "Not Found",
     "database": "Record Not Found"
@@ -19,10 +23,12 @@ var options = {
 
 };
 
-var httpError = function(res, code, context) {
-  
+var httpError = function(res, code, context, mes) {
+
+  var message = mes? mes : (((context != null) && (options[""+code][""+context] != null)) ? options[""+code][""+context] : options[""+code]["default"]);
+
   var json = {
-      message: ((context != null) && (options[""+code][""+context] != null)) ? options[""+code][""+context] : options[""+code]["default"],
+      message: message,
       error: {
         status: parseInt(code)
       }
