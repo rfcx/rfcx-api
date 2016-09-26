@@ -1,95 +1,16 @@
-var crypto = require("crypto");
-var Promise = require("bluebird");
-var csprng = require("csprng");
-var sha = require("sha.js");
-var fs = require("fs");
-var pfs = Promise.promisifyAll(require("fs"));
-
-exports.hash = {
+var guid = {
 
   /**
-	 * return a hash of the provided data
-	 *
-	 * @param {String} data
-	 * @return {String} hash
-	 * @api private
-	 */
-  hashData: function(data) {
-    return crypto
-      .createHash("sha1")
-      .update(data)
-      .digest("hex");
-  },
-  
-  /**
-	 * return a hash of the file at filePath
-	 *
-	 * @param {String} filePath
-	 * @return {String} hash
-	 * @api public
-	 */
-  fileSha1: function(filePath) {
-    return this.hashData(fs.readFileSync(filePath));
-  },
-  
-  /**
-	 * return a promise to create a hash of the file at filePath
-	 *
-	 * @param {String} filePath
-	 * @return {Promise} with hash entity
-	 * @api public
-	 */
-  fileSha1Async: function (filePath) {
-    //if no file path given, return a promise that resolves to null
-    if (!filePath) {
-      return new Promise(function(resolve) {
-          resolve(null);
-      });  
-    }
-    var self = this;
-    //else return a promise that resolves to a hash of the file
-    return pfs.readFileAsync(filePath)
-    .then(function (data) {
-      return self.hashData(data);
-    });
-  },
-
-  /**
-   * return a CSPRNG random 'hash' string
+   * Checks if given guid has valid format
    *
-   * @param {Integer} bits
-   * @return {String} hash
-   * @api private
+   * @param {String} guid
+   * @return {Boolean} hash
    */
-  randomHash: function(bits) {
-    return csprng(bits,36);
-  },
-
-  /**
-   * return a CSPRNG random 'token' string
-   *
-   * @param {String} length
-   * @return {String} token
-   * @api private
-   */
-  randomString: function(length) {
-    return this.randomHash(320).substr(0,length);
-  },
-
-  /**
-   * return a SHA256 hash of salted password/token
-   *
-   * @param {String} salt
-   * @param {String} secret
-   * @return {String} hash
-   * @api private
-   */
-  hashedCredentials: function(salt,secret) {
-    var sha256 = sha("sha256");
-    return sha256.update(salt+secret,"utf8").digest("hex");
-  },
-
-  
+  isValid: function(guid) {
+    var regExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return regExp.test(guid);
+  }
 
 };
 
+module.exports = guid;

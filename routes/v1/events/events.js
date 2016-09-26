@@ -4,6 +4,7 @@ var express = require("express");
 var router = express.Router();
 var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
+var guid = require("../../../utils/misc/guid.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require("bluebird");
@@ -233,6 +234,9 @@ router.route('/')
     if (!attrsValidity.status) {
       return httpError(res, 400, null, attrsValidity.missingAttrsStr);
     }
+    if (body.guid && !guid.isValid(body.guid)) {
+      return httpError(res, 400, null, 'Guardian Audio Event guid has incorrect format');
+    }
 
     var promises = [];
 
@@ -250,7 +254,6 @@ router.route('/')
         if (!data[1]) {
           return httpError(res, 404, null, 'Model with given name not found');
         }
-
         // replace names with ids
         attrs.audio_id = data[0].id;
         attrs.model = data[1].id;
