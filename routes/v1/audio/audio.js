@@ -94,14 +94,14 @@ router.route("/nextafter/:audio_id")
             .findOne({
               where: {
                 measured_at: {
-                  $gt: new Date(dbAudio.measured_at)
+                  $gt: dbAudio.measured_at
                 },
                 guardian_id: dbAudio.guardian_id,
                 site_id: dbAudio.site_id
               },
               include: [{all: true}],
               limit: 1,
-              order: 'measured_at ASC'
+              order: [["measured_at", 'ASC']]
             });
         }
 
@@ -125,6 +125,55 @@ router.route("/nextafter/:audio_id")
   })
 ;
 
+router.route("/prevbefore/:audio_id")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    models.GuardianAudio
+      .findOne({
+        where: { guid: req.params.audio_id },
+        include: [{ all: true }]
+      }).then(function(dbAudio){
+        // if current audio was not find, then resolve promise with null to return 404 error
+        if (!dbAudio) {
+          return new Promise(function(resolve){
+            return resolve(null);
+          });
+        }
+        else {
+          return models.GuardianAudio
+            .findOne({
+              where: {
+                measured_at: {
+                  $lt: dbAudio.measured_at
+                },
+                guardian_id: dbAudio.guardian_id,
+                site_id: dbAudio.site_id
+              },
+              include: [{all: true}],
+              limit: 1,
+              order: [["measured_at", 'DESC']]
+            });
+        }
+
+      })
+      .then(function(dbAudio) {
+        // if current audio or next audio was not found, return 404
+        if (!dbAudio) {
+          return httpError(res, 404, "database");
+        }
+        return views.models.guardianAudioJson(req,res,dbAudio)
+          .then(function(audioJson){
+            res.status(200).json(audioJson);
+          });
+
+      })
+      .catch(function(err){
+        console.log("failed to return audio | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return audio"}); }
+      });
+
+  })
+;
 
 module.exports = router;
 
