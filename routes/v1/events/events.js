@@ -208,8 +208,6 @@ router.route('/')
       value: body.value,
       begins_at: body.begins_at,
       ends_at: body.ends_at,
-      shadow_latitude: body.shadow_latitude,
-      shadow_longitude: body.shadow_longitude,
       model: body.model
     };
 
@@ -240,7 +238,7 @@ router.route('/')
 
     var promises = [];
 
-    promises.push(models.GuardianAudio.findOne({where: {guid: attrs.audio_id}}));
+    promises.push(models.GuardianAudio.findOne({where: {guid: attrs.audio_id}, include: { model: models.Guardian, as: 'Guardian'}}));
     promises.push(models.AudioAnalysisModel.findOne({where: {shortname: attrs.model}}));
     promises.push(models.GuardianAudioEventType.findOrCreate({where: {value: attrs.type}, defaults: {value: attrs.type}}));
     promises.push(models.GuardianAudioEventValue.findOrCreate({where: {value: attrs.value}, defaults: {value: attrs.value}}));
@@ -249,16 +247,25 @@ router.route('/')
       .then(function(data) {
 
         if (!data[0]) {
-          return httpError(res, 404, null, 'Audio with given guid not found');
+          httpError(res, 404, null, 'Audio with given guid not found');
+          return Promise.reject();
+        }
+        if (!data[0].Guardian) {
+          httpError(res, 500, null, 'Audio is not associated with any Guardians');
+          return Promise.reject();
         }
         if (!data[1]) {
-          return httpError(res, 404, null, 'Model with given name not found');
+          httpError(res, 404, null, 'Model with given name not found');
+          return Promise.reject();
         }
         // replace names with ids
         attrs.audio_id = data[0].id;
         attrs.model = data[1].id;
         attrs.type = data[2][0].id;
         attrs.value = data[3][0].id;
+
+        attrs.shadow_latitude = data[0].Guardian.latitude;
+        attrs.shadow_longitude = data[0].Guardian.longitude;
 
         return models.GuardianAudioEvent
           .findOrCreate({
@@ -286,8 +293,10 @@ router.route('/')
 
       })
       .catch(function(err) {
-        console.log(err);
-        if (!!err) { httpError(res, 500, "database"); }
+        if (!!err) {
+          console.log(err);
+          httpError(res, 500, "database");
+        }
       });
 
   });
