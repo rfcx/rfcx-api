@@ -254,6 +254,10 @@ router.route('/')
           httpError(res, 500, null, 'Audio is not associated with any Guardians');
           return Promise.reject();
         }
+        if (!data[0].Guardian.latitude || !data[0].Guardian.longitude) {
+          httpError(res, 500, null, 'Guardian related to specified Audio has incorrect coordinates');
+          return Promise.reject();
+        }
         if (!data[1]) {
           httpError(res, 404, null, 'Model with given name not found');
           return Promise.reject();
