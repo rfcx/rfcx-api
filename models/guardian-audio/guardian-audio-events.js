@@ -19,7 +19,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     windows: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        isInt: true
+      }
     },
     begins_at: {
       type: DataTypes.DATE(3),

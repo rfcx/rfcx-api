@@ -299,7 +299,12 @@ router.route('/')
       .catch(function(err) {
         if (!!err) {
           console.log(err);
-          httpError(res, 500, "database");
+          if (err.name && err.name === 'SequelizeValidationError') {
+            httpError(res, 400, null, 'Input data has incorrect format');
+          }
+          else {
+            httpError(res, 500, "database");
+          }
         }
       });
 
