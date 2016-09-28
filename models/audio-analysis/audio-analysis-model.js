@@ -92,7 +92,7 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    attrs: {
+    config: {
       type: DataTypes.TEXT('long'),
       allowNull: true,
       validate: {
