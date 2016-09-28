@@ -91,6 +91,12 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: true,
       validate: {
       }
+    },
+    attrs: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true,
+      validate: {
+      }
     }
   }, {
     classMethods: {
