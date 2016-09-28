@@ -239,7 +239,7 @@ router.route('/')
     var promises = [];
 
     promises.push(models.GuardianAudio.findOne({where: {guid: attrs.audio_id}, include: { model: models.Guardian, as: 'Guardian'}}));
-    promises.push(models.AudioAnalysisModel.findOne({where: {shortname: attrs.model}}));
+    promises.push(models.AudioAnalysisModel.findOne({where: { $or: {shortname: attrs.model, guid: attrs.model}}}));
     promises.push(models.GuardianAudioEventType.findOrCreate({where: {value: attrs.type}, defaults: {value: attrs.type}}));
     promises.push(models.GuardianAudioEventValue.findOrCreate({where: {value: attrs.value}, defaults: {value: attrs.value}}));
 
@@ -259,7 +259,7 @@ router.route('/')
           return Promise.reject();
         }
         if (!data[1]) {
-          httpError(res, 404, null, 'Model with given name not found');
+          httpError(res, 404, null, 'Model with given shortname/guid not found');
           return Promise.reject();
         }
         // replace names with ids
