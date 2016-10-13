@@ -39,6 +39,7 @@ function createOrUpdateTag(tag) {
             where: {
               audio_id: dbAudio.id,
               type: tag.type,
+              value: tag.value,
               tagged_by_user: tag.tagged_by_user
             }
           })
