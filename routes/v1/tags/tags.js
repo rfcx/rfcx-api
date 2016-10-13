@@ -11,47 +11,52 @@ var Promise = require("bluebird");
 var sqlUtils = require("../../../utils/misc/sql");
 var urls = require('../../../utils/misc/urls');
 
-function createOrUpdateTag(dbTag) {
+function createOrUpdateTag(tag) {
 
     return models.GuardianAudio
       .findOne({
-        where: {guid: dbTag.audio_id},
+        where: {guid: tag.audio_id},
         include: [{ all: true }]
       })
       .then(function (dbAudio) {
-        var guid = dbTag.audio_id;
+        //var guid = tag.audio_id;
 
         // if begins_at_offset is not presented in request, then set it to 0
-        dbTag.begins_at_offset = dbTag.begins_at_offset || 0;
+        tag.begins_at_offset = tag.begins_at_offset || 0;
         // if ends_at_offset is not presented in request, then check if duration presented, if not set to audio file duration
-        dbTag.ends_at_offset   = dbTag.ends_at_offset || dbTag.duration ||
+        tag.ends_at_offset   = tag.ends_at_offset || tag.duration ||
         (Math.round(1000*dbAudio.dataValues.capture_sample_count/dbAudio.Format.sample_rate));
 
-        dbTag.audio_id = dbAudio.id;
-        dbTag.begins_at = new Date(dbAudio.dataValues.measured_at);
-        dbTag.ends_at = new Date(dbAudio.dataValues.measured_at);
-        dbTag.begins_at.setMilliseconds(dbTag.begins_at.getMilliseconds() + dbTag.begins_at_offset);
-        dbTag.ends_at.setMilliseconds(dbTag.ends_at.getMilliseconds() + dbTag.ends_at_offset);
+        tag.audio_id = dbAudio.id;
+        tag.begins_at = new Date(dbAudio.dataValues.measured_at);
+        tag.ends_at = new Date(dbAudio.dataValues.measured_at);
+        tag.begins_at.setMilliseconds(tag.begins_at.getMilliseconds() + tag.begins_at_offset);
+        tag.ends_at.setMilliseconds(tag.ends_at.getMilliseconds() + tag.ends_at_offset);
 
+        // first of all, check if user has already created tags with given type for selected audio file
         return models.GuardianAudioTag
-          .findOrCreate({where: {guid: dbTag.guid}, defaults: dbTag})
-          .spread(function (dbTagResult, created) {
-            if (created) {
-              return models.User
-                .findOne({where: {id: dbTagResult.tagged_by_user}})
-                .then(function (dbUser) {
-                  dbTagResult.audio_id = guid;
-                  dbTagResult.tagged_by_user = dbUser.guid;
-                  return dbTagResult;
-                });
+          .findAll({
+            where: {
+              audio_id: dbAudio.id,
+              type: tag.type,
+              tagged_by_user: tag.tagged_by_user
             }
-            else {
-              return models.GuardianAudioTag
-                .update(dbTag, {where: {guid: dbTagResult.guid}})
-                .spread(function() {
-                  return dbTagResult;
-                });
+          })
+          .then(function(dbExistingTags) {
+            // if user has already classified this file, then remove all previous tags
+            if (dbExistingTags.length) {
+              var promises = [];
+              for (var i = 0; i < dbExistingTags.length; i++) {
+                promises.push(dbExistingTags[i].destroy());
+              }
+              return Promise.all(promises);
             }
+            // if user has not classified this file, just go through
+            return true;
+          })
+          .then(function() {
+            // create new tags
+            return models.GuardianAudioTag.create(tag);
           });
       });
 }
@@ -82,6 +87,7 @@ function processMany(req, res) {
 	if (!Array.isArray(req.body.data.attributes)) {
 		res.status(400).json({msg: "Attributes must be an array!"});
 	}
+
 	// iterate through all classifications inside `list` attribute
 	for (var i = 0; i < req.body.data.attributes.length; i++) {
 		var dbTag = converter.mapApiToSequelize(req.body.data.attributes[i]);
@@ -96,18 +102,30 @@ function processMany(req, res) {
 			});
 			res.status(201).json(api);
 			return dbTags;
-		}).catch(function (err) {
-		console.log('Error in process of tagging |', err);
-		res.status(500).json({msg: "Error in process of tagging save"});
-	});
+		})
+    .catch(function (err) {
+      if (err.status && err.status == 403) {
+        console.log('You\'re not allowed to save tags for this file |', err);
+        res.status(403).json({msg: err.msg || "You're not allowed to save tags for this file"});
+      }
+      else {
+        console.log('Error in process of tagging |', err);
+        res.status(500).json({msg: "Error in process of tagging save"});
+      }
+    });
 }
 router.route("/")
 	.post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
-		if (req.body.data.type == 'tags') {
-			processMany(req, res);
-		} else {
-			processOne(req, res);
-		}
+    try {
+      if (req.body.data.type == 'tags') {
+        processMany(req, res);
+      } else {
+        processOne(req, res);
+      }
+    }
+    catch(e) {
+      res.status(500).json({msg: "Error in process of tagging save"});
+    }
 	});
 
 router.route("/audio/:audio_guid")
