@@ -78,50 +78,6 @@ router.route('/models')
 
   });
 
-router.route('/models/:id')
-  .get(passport.authenticate("token", {session: false}), requireUser, function(req, res) {
-
-    var converter = new ApiConverter("audioAnalysisModel", req);
-
-    models.AudioAnalysisModel
-      .findOne({
-        where: {
-          $or: {
-            guid: req.params.id,
-            shortname: req.params.id
-          }
-        },
-        include: [{ all: true }]
-      })
-      .then(function(dbAnalysisModel){
-
-        if (dbAnalysisModel.length < 1) {
-          httpError(res, 404, "database");
-        } else {
-
-          // replace ids with `value`s from proper tables
-          if (dbAnalysisModel.GuardianAudioEventType && dbAnalysisModel.GuardianAudioEventType.value) {
-            dbAnalysisModel.event_type = dbAnalysisModel.GuardianAudioEventType.value;
-          }
-          if (dbAnalysisModel.GuardianAudioEventValue && dbAnalysisModel.GuardianAudioEventValue.value) {
-            dbAnalysisModel.event_value = dbAnalysisModel.GuardianAudioEventValue.value;
-          }
-
-          var api = converter.mapSequelizeToApi(dbAnalysisModel.dataValues);
-          // correct self link
-          api.links.self = urls.getApiUrl(req) + '/analysis/models/' + req.params.id;
-          res.status(200).json(api);
-        }
-
-        return null;
-      })
-      .catch(function(err) {
-        console.log("failed to return analysis model | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to return analysis model"}); }
-      })
-
-  });
-
 router.route('/models/unclassified_by_users')
   .get(passport.authenticate("token", {session: false}), requireUser, function(req, res) {
 
@@ -271,6 +227,50 @@ router.route('/models/recall')
         console.log("failed to return models precision | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return models precision"}); }
       });
+
+  });
+
+router.route('/models/:id')
+  .get(passport.authenticate("token", {session: false}), requireUser, function(req, res) {
+
+    var converter = new ApiConverter("audioAnalysisModel", req);
+
+    models.AudioAnalysisModel
+      .findOne({
+        where: {
+          $or: {
+            guid: req.params.id,
+            shortname: req.params.id
+          }
+        },
+        include: [{ all: true }]
+      })
+      .then(function(dbAnalysisModel){
+
+        if (dbAnalysisModel.length < 1) {
+          httpError(res, 404, "database");
+        } else {
+
+          // replace ids with `value`s from proper tables
+          if (dbAnalysisModel.GuardianAudioEventType && dbAnalysisModel.GuardianAudioEventType.value) {
+            dbAnalysisModel.event_type = dbAnalysisModel.GuardianAudioEventType.value;
+          }
+          if (dbAnalysisModel.GuardianAudioEventValue && dbAnalysisModel.GuardianAudioEventValue.value) {
+            dbAnalysisModel.event_value = dbAnalysisModel.GuardianAudioEventValue.value;
+          }
+
+          var api = converter.mapSequelizeToApi(dbAnalysisModel.dataValues);
+          // correct self link
+          api.links.self = urls.getApiUrl(req) + '/analysis/models/' + req.params.id;
+          res.status(200).json(api);
+        }
+
+        return null;
+      })
+      .catch(function(err) {
+        console.log("failed to return analysis model | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return analysis model"}); }
+      })
 
   });
 
