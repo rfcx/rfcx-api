@@ -143,7 +143,8 @@ router.route('/models/precision')
 
         sql = 'SELECT m.audio_id, SUM(CASE WHEN m.confidence=u.confidence and u.confidence=1 THEN 1 ELSE 0 END) as countConfirmed, SUM(CASE WHEN m.confidence=1 THEN 1 ELSE 0 END) as countAll, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
           '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
-          'LEFT JOIN (SELECT audio_id, begins_at_offset, type, value, tagged_by_model, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="classification" and value=:tagValue group by audio_id) m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id ';
+          'LEFT JOIN (SELECT audio_id, begins_at_offset, type, value, tagged_by_model, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="classification" and value=:tagValue group by audio_id, begins_at_offset) m ' +
+          'ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id ';
 
         sql = sqlUtils.condAdd(sql, opts.modelId, ' and m.tagged_by_model=:modelId');
         sql = sqlUtils.condAdd(sql, true, ' group by m.audio_id');
@@ -197,7 +198,8 @@ router.route('/models/recall')
 
         sql = 'SELECT m.audio_id, SUM(CASE WHEN m.confidence=u.confidence and u.confidence=1 THEN 1 ELSE 0 END) as countConfirmed, SUM(CASE WHEN u.confidence=1 THEN 1 ELSE 0 END) as countAll, t.guid, t.measured_at as measuredAt, t.capture_sample_count, f.sample_rate FROM ' +
           '(SELECT audio_id, begins_at_offset, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="label" and value=:tagValue group by audio_id, begins_at_offset) u ' +
-          'LEFT JOIN GuardianAudioTags m ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id where m.type="classification" and m.value=:tagValue ';
+          'LEFT JOIN (SELECT audio_id, begins_at_offset, type, value, tagged_by_model, ROUND(AVG(confidence)) as confidence FROM GuardianAudioTags where type="classification" and value=:tagValue group by audio_id, begins_at_offset) m ' +
+          'ON u.audio_id=m.audio_id and u.begins_at_offset=m.begins_at_offset INNER JOIN GuardianAudio t ON t.id=m.audio_id INNER JOIN GuardianAudioFormats f ON f.id=t.format_id ';
 
         sql = sqlUtils.condAdd(sql, opts.modelId, ' and m.tagged_by_model=:modelId ');
         sql = sqlUtils.condAdd(sql, true, ' group by m.audio_id ');
