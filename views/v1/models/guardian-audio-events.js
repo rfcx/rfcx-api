@@ -22,7 +22,7 @@ exports.models = {
           json.events.push({
             event_guid: dbRow.guid,
             audio_guid: dbRow.Audio.guid,
-            meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid,
+            meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.json',
             latitude: dbRow.shadow_latitude,
             longitude: dbRow.shadow_longitude,
             begins_at: dbRow.begins_at,
@@ -53,7 +53,7 @@ exports.models = {
 
         if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
 
-        var csv = 'event_guid,audio_guid,latitude,longitude,begins_at,ends_at,type,value,confidence\r\n';
+        var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence\r\n';
 
         for (var i = 0; i < dbAudioEvents.length; i++) {
 
@@ -61,6 +61,7 @@ exports.models = {
 
           csv += dbRow.guid + ',';
           csv += dbRow.Audio.guid + ',';
+          csv += process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.json,';
           csv += dbRow.shadow_latitude + ',';
           csv += dbRow.shadow_longitude + ',';
           csv += dbRow.begins_at.toISOString() + ',';
