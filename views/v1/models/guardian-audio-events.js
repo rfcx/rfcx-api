@@ -22,6 +22,7 @@ exports.models = {
           json.events.push({
             event_guid: dbRow.guid,
             audio_guid: dbRow.Audio.guid,
+            meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid,
             latitude: dbRow.shadow_latitude,
             longitude: dbRow.shadow_longitude,
             begins_at: dbRow.begins_at,
