@@ -168,6 +168,40 @@ router.route("/event")
 
   });
 
+router.route("/tuning")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    var converter = new ApiConverter("event", req);
+
+    var opts = {
+      type: req.query.type,
+      modelGuid: req.query.modelGuid,
+      minWindows: parseInt(req.query.minWindows),
+      minProbability: parseFloat(req.query.minProbability),
+      dateFrom: req.query.dateFrom,
+      dateTo: req.query.dateTo
+    };
+
+    var sql = "SELECT g.shortname, a.guid, count(t.audio_id) as count, avg(t.confidence) as prob, a.measured_at FROM " +
+                "(SELECT audio_id, begins_at_offset, avg(confidence) as confidence FROM GuardianAudioTags " +
+                  "INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid " +
+                  "WHERE tagged_by_model=m.id and tagged_by_model is not null and confidence>=:minProbability and value=:type " +
+                  "group by audio_id, begins_at_offset) t " +
+                "INNER JOIN GuardianAudio a on t.audio_id=a.id INNER JOIN Guardians g on g.id=a.guardian_id " +
+                "group by audio_id HAVING COUNT(audio_id)>=:minWindows;";
+
+    models.sequelize.query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT})
+      .then(function(data) {
+        var apiEvent = converter.cloneSequelizeToApi(data);
+        res.status(200).json(apiEvent);
+      })
+      .catch(function (err) {
+        res.status(500).json({msg: err});
+      });
+
+  });
+
 router.route("/:event_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
