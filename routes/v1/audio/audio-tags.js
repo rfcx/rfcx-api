@@ -41,7 +41,8 @@ router.route("/:audio_id/tags")
 
                         for (tagName in currentWindow.classifications) {
 
-                          if (currentWindow.classifications[tagName] > 0.5) {
+//                          if (currentWindow.classifications[tagName] > 0.5) {
+                          if (tagName.toLowerCase() != "ambient") {
 
                             preInsertGuardianAudioTags.push({
                               type: "classification",
