@@ -182,10 +182,11 @@ router.route("/tuning")
       dateTo: req.query.dateTo
     };
 
-    var sql = "SELECT t.shortname, t.audio_guid, count(t.audio_id) as count, avg(t.confidence) as prob, t.measured_at FROM " +
-                "(SELECT g.shortname as shortname, a.guid as audio_guid, a.measured_at as measured_at, audio_id, begins_at_offset, avg(confidence) as confidence FROM GuardianAudioTags " +
+    var sql = "SELECT t.shortname, t.audio_guid, t.timezone_offset, count(t.audio_id) as count, avg(t.confidence) as prob, t.measured_at FROM " +
+                "(SELECT g.shortname as shortname, a.guid as audio_guid, a.measured_at as measured_at, audio_id, begins_at_offset, avg(confidence) as confidence, s.timezone_offset as timezone_offset FROM GuardianAudioTags " +
                   "INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid " +
                   "INNER JOIN GuardianAudio a on audio_id=a.id " +
+                  "INNER JOIN GuardianSites s on site_id=s.id " +
                   "INNER JOIN Guardians g on g.id=a.guardian_id " +
                   "WHERE tagged_by_model=m.id and tagged_by_model is not null and confidence>=:minProbability and value=:type and a.measured_at>=:dateFrom and a.measured_at<:dateTo " +
                   "group by audio_id, begins_at_offset) t " +

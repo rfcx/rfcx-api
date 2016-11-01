@@ -150,6 +150,7 @@ exports.models = {
 
         if (thisRow.Site != null) {
           jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid;
+          jsonRowsByGuid[thisGuid].timezone_offset = thisRow.Site.timezone_offset;
         }
         if (thisRow.Guardian != null) {
           jsonRowsByGuid[thisGuid].guardian_guid = thisRow.Guardian.guid;
