@@ -26,6 +26,7 @@ exports.models = {
           }
           result.data.attributes.windows[row.begins_at_offset].push({
             endsAt: row.ends_at_offset,
+            duration: row.ends_at_offset - row.begins_at_offset,
             confidence: row.confidence,
             name: row.annotator,
             annotatorType: row.user? 'user' : row.model? 'model' : 'unknown'
