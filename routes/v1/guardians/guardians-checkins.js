@@ -124,7 +124,7 @@ router.route("/:guardian_id/checkins")
               checkInHelpers.audio.processUpload(audioInfo[audioInfoInd]).then(function(audioInfoPostUpload){
                 checkInHelpers.audio.saveToS3(audioInfoPostUpload).then(function(audioInfoPostS3Save){
                   checkInHelpers.audio.saveToDb(audioInfoPostS3Save).then(function(audioInfoPostDbSave){
-                    checkInHelpers.audio.queueForAnalysis(audioInfoPostDbSave).then(function(audioInfoPostQueue){
+                    checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave).then(function(audioInfoPostQueue){
 
                         returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
 

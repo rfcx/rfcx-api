@@ -233,31 +233,41 @@ exports.audio = {
     }.bind(this));
   },
 
-  queueForAnalysis: function(audioInfo) {
+  queueForTaggingByActiveModels: function(audioInfo) {
     return new Promise(function(resolve, reject) {
 
-      var modelGuid = "8f3ffc6c-4364-4e2a-aa30-563a8cf6d794";
+      try {
 
-      analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuid, {
-        audio_guid: audioInfo.audio_guid,
-        api_url_domain: audioInfo.api_url_domain,
-        audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-        audio_s3_path: audioInfo.s3Path,
-        audio_sha1_checksum: audioInfo.sha1Hash,
-      }).then(function(){
+        var modelGuids = [  "8f3ffc6c-4364-4e2a-aa30-563a8cf6d794", 
+                            "a5804661-b75a-4d62-9f91-a5ecfd64146d"
+                          ];
+
+        for (i in modelGuids) {
+
+          analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuids[i], {
+            audio_guid: audioInfo.audio_guid,
+            api_url_domain: audioInfo.api_url_domain,
+            audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
+            audio_s3_path: audioInfo.s3Path,
+            audio_sha1_checksum: audioInfo.sha1Hash,
+          }).then(function(){
+          }).catch(function(err){
+            console.log(err);
+          });
+
+        }
 
         audioInfo.isSaved.sqs = true;
         resolve(audioInfo);
-
-      }).catch(function(err){
-
+      
+      } catch(err) {
         console.log(err);
-        reject(err);
-
-      });
+        reject(new Error(err));
+      }
 
     }.bind(this));
   },
+
 
   rollBackCheckIn: function(audioInfo) {
 
