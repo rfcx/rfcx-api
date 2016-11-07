@@ -34,7 +34,11 @@ router.route("/audio-collections/by-guids")
        {
           "guid": "c03b78ad-1b82-4447-87ae-c2a903e98d34",
           "note": "second note"
-       }
+       },
+       {
+          "guid": "dca1d906-f5ac-4ee2-8b1b-a6c5d4f70c2d",
+          "delete": true
+       },
      */
     // to
     /*
@@ -44,13 +48,17 @@ router.route("/audio-collections/by-guids")
           },
           "c03b78ad-1b82-4447-87ae-c2a903e98d34": {
             "note": "second note"
+          },
+          "dca1d906-f5ac-4ee2-8b1b-a6c5d4f70c2d": {
+            "delete": true
           }
        }
      */
     var audioDataObj = {};
     body.audios.forEach(function(audio) {
       audioDataObj[audio.guid] = {
-        note: audio.note
+        note: audio.note,
+        delete: !!audio.delete
       }
     });
 
@@ -80,14 +88,21 @@ router.route("/audio-collections/by-guids")
         this.excluded = filterExcludedGuids(audioGuids, guids);
 
         return models.GuardianAudioCollection
-          .create();
+          .findOrCreate({
+            where: { guid: body.guid }
+          });
       })
-      .then(function (dbGuardianAudioCollection) {
+      .spread(function (dbGuardianAudioCollection, created) {
         // save collection object
         this.dbGuardianAudioCollection = dbGuardianAudioCollection;
         var promises = [];
         this.dbAudio.forEach(function(audio) {
-          promises.push(dbGuardianAudioCollection.addGuardianAudio(audio, {note: audioDataObj[audio.guid].note? audioDataObj[audio.guid].note : null}));
+          if (audioDataObj[audio.guid].delete) {
+            promises.push(dbGuardianAudioCollection.removeGuardianAudio(audio));
+          }
+          else {
+            promises.push(dbGuardianAudioCollection.addGuardianAudio(audio, {note: audioDataObj[audio.guid].note? audioDataObj[audio.guid].note : null}));
+          }
         });
         return Promise.all(promises);
       })
