@@ -6,18 +6,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       unique: true
-    },
-    note: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: false,
-      validate: {
-      }
     }
   }, {
     classMethods: {
       associate: function(models) {
-        GuardianAudioCollection.hasMany(models.GuardianAudio);
+        GuardianAudioCollection.belongsToMany(models.GuardianAudio, { through: 'GuardianAudioCollectionsRelation' });
       },
       indexes: [
         {
