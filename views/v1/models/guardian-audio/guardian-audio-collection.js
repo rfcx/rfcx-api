@@ -12,7 +12,7 @@ exports.models = {
         if (util.isArray(dbGuardianAudioCollection)) { dbGuardianAudioCollection = dbGuardianAudioCollection[0]; }
 
         var json = {
-            audios: []
+          audios: []
         };
 
         for (var i = 0; i < dbGuardianAudioCollection.GuardianAudios.length; i++) {

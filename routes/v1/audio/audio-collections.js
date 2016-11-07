@@ -117,10 +117,10 @@ router.route("/audio-collections/by-guids")
       })
       .then(function(data) {
 
-        var apiEvent = converter.cloneSequelizeToApi(data);
+        var api = converter.cloneSequelizeToApi(data);
 
-        apiEvent.data.id = this.dbGuardianAudioCollection.guid;
-        apiEvent.data.attributes.excluded = this.excluded.length? this.excluded : null;
+        api.data.id = this.dbGuardianAudioCollection.guid;
+        api.data.attributes.excluded = this.excluded.length? this.excluded : null;
 
         res.status(200).json(apiEvent);
 
@@ -128,6 +128,38 @@ router.route("/audio-collections/by-guids")
       .catch(function(err){
         console.log("failed to create audio collection | "+err);
         if (!!err) { res.status(500).json({ message: "failed to create audio collection", error: { status: 500 } }); }
+      });
+
+  });
+
+router.route("/audio-collections/:id")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+
+    var converter = new ApiConverter("audio-collection", req);
+
+    return models.GuardianAudioCollection
+      .findOne({
+        where: { guid: req.params.id },
+        include: [{ all: true } ]
+      })
+      .bind({})
+      .then(function(dbGuardianAudioCollection) {
+        this.dbGuardianAudioCollection = dbGuardianAudioCollection;
+        return views.models.guardianAudioCollection(req,res,dbGuardianAudioCollection)
+      })
+      .then(function(data) {
+
+        var api = converter.cloneSequelizeToApi(data);
+
+        api.data.id = this.dbGuardianAudioCollection.guid;
+        api.links.self += this.dbGuardianAudioCollection.guid;
+
+        res.status(200).json(api);
+
+      })
+      .catch(function(err){
+        console.log("failed to return audio collection | "+err);
+        if (!!err) { res.status(500).json({ message: "failed to return audio collection", error: { status: 500 } }); }
       });
 
   });
