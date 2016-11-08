@@ -11,7 +11,8 @@ exports.models = {
 
         var json = {
           name: dbAudioAnalysisTrainingSet.name,
-          eventValue: dbAudioAnalysisTrainingSet.GuardianAudioEventValue.value,
+          //eventValue: dbAudioAnalysisTrainingSet.GuardianAudioEventValue.value,
+          eventValue: dbAudioAnalysisTrainingSet.event_value,
           trainingSet: dbAudioAnalysisTrainingSet.TrainingSet.guid,
           testSet: dbAudioAnalysisTrainingSet.TestSet.guid
         };

@@ -24,25 +24,26 @@ router.route("/training-sets")
     }
 
     var dataObj = {
-      name: body.name
+      name: body.name,
+      event_value: body.event_value
     };
 
     // first of all, let's find event value
-    return models.GuardianAudioEventValue
-      .findOne({
-        where: { value: body.event_value }
-      })
+    //return models.GuardianAudioEventValue
+    //  .findOne({
+    //    where: { value: body.event_value }
+    //  })
       // bind to empty object, so we can save our callback results into it
-      .bind({})
-      .then(function(dbGuardianAudioEventValue) {
-        if (!dbGuardianAudioEventValue) {
-          return new Promise(function(resolve, reject) {
-            reject(new Error('Cannot find event value with given name'));
-          });
-        }
-        else {
+      //.bind({})
+      //.then(function(dbGuardianAudioEventValue) {
+      //  if (!dbGuardianAudioEventValue) {
+      //    return new Promise(function(resolve, reject) {
+      //      reject(new Error('Cannot find event value with given name'));
+      //    });
+      //  }
+      //  else {
           // update data object with event value id
-          dataObj.event_value = dbGuardianAudioEventValue.id;
+          //dataObj.event_value = dbGuardianAudioEventValue.id;
 
           // then create Training Set model and two Audio Collections models: one for Training Set and one for Test Set
           var promises = [];
@@ -55,9 +56,10 @@ router.route("/training-sets")
           promises.push(models.GuardianAudioCollection.create());
           // create audio collection for test set
           promises.push(models.GuardianAudioCollection.create());
-          return Promise.all(promises);
-        }
-      })
+          //return Promise.all(promises);
+        //}
+      //})
+    Promise.all(promises)
       .spread(function(trainingSetResults, trainingCollection, testCollection) {
         this.guid = trainingSetResults[0].guid;
 
