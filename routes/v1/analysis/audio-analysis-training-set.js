@@ -86,10 +86,43 @@ router.route("/training-sets")
         res.status(200).json(api);
       })
       .catch(function(err){
-        console.log("failed to save training set | " + err);
-        if (!!err) { res.status(500).json({ message: err? err.message : "failed to save training set", error: { status: 500 } }); }
+        console.log("Failed to save training set | " + err);
+        if (!!err) { res.status(500).json({ message: err? err.message : "Failed to save training set", error: { status: 500 } }); }
       });
 
   });
+
+router.route("/training-sets/:id")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+
+    var converter = new ApiConverter("training-set", req);
+
+    return models.AudioAnalysisTrainingSet
+      .findOne({
+        where: { guid: req.params.id },
+        include: [{ all: true } ]
+      })
+      .bind({})
+      .then(function(dbAudioAnalysisTrainingSet) {
+        this.dbAudioAnalysisTrainingSet = dbAudioAnalysisTrainingSet;
+        return views.models.audioAnalysisTrainingSet(req, res, dbAudioAnalysisTrainingSet);
+      })
+      .then(function(data) {
+
+        var api = converter.cloneSequelizeToApi(data);
+
+        api.data.id = this.dbAudioAnalysisTrainingSet.guid;
+        api.links.self += this.dbAudioAnalysisTrainingSet.guid;
+
+        res.status(200).json(api);
+
+      })
+      .catch(function(err){
+        console.log("Failed to return training set | "+err);
+        if (!!err) { res.status(500).json({ message: "Failed to return training set", error: { status: 500 } }); }
+      });
+
+  });
+
 
 module.exports = router;
