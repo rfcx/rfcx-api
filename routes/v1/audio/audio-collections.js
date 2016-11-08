@@ -22,7 +22,7 @@ router.route("/audio-collections/by-guids")
     var body = req.body;
 
     if (!body.audios || !body.audios.length) {
-      httpError(res, 400, null, 'Request does not contain audio guids');
+      return httpError(res, 400, null, 'Request does not contain audio guids');
     }
 
     // Convert array of objects to object with keys

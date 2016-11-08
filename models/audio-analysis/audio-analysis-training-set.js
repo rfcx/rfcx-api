@@ -19,8 +19,8 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         // associations can be defined here
         AudioAnalysisTrainingSet.belongsTo(models.GuardianAudioEventValue, { foreignKey: "event_value" });
-        AudioAnalysisTrainingSet.belongsTo(models.GuardianAudioCollection, { foreignKey: "training_set" });
-        AudioAnalysisTrainingSet.belongsTo(models.GuardianAudioCollection, { foreignKey: "test_set" });
+        AudioAnalysisTrainingSet.belongsTo(models.GuardianAudioCollection, { foreignKey: "training_set", as: 'TrainingSet' });
+        AudioAnalysisTrainingSet.belongsTo(models.GuardianAudioCollection, { foreignKey: "test_set", as: 'TestSet' });
       },
       indexes: [
         {
