@@ -26,6 +26,39 @@ exports.models = {
 
     })
 
+  },
+
+  audioAnalysisTrainingSets: function(req,res,dbAudioAnalysisTrainingSets) {
+
+    return new Promise(function(resolve,reject) {
+
+      try {
+
+        if (!util.isArray(dbAudioAnalysisTrainingSets)) { dbAudioAnalysisTrainingSets = [dbAudioAnalysisTrainingSets]; }
+
+        var json = {
+          trainingSets: []
+        };
+
+        for (var i = 0; i < dbAudioAnalysisTrainingSets.length; i++) {
+
+          var dbRow = dbAudioAnalysisTrainingSets[i];
+          json.trainingSets.push({
+            name: dbRow.name,
+            guid: dbRow.guid
+          })
+
+        }
+
+        resolve(json);
+
+      }
+      catch (err) {
+        reject(err);
+      }
+
+    })
+
   }
 
 };

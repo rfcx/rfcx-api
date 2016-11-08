@@ -92,6 +92,30 @@ router.route("/training-sets")
 
   });
 
+router.route("/training-sets")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+
+    var converter = new ApiConverter("training-set", req);
+
+    return models.AudioAnalysisTrainingSet
+      .findAll({
+        include: [{ all: true } ]
+      })
+      .then(function(dbAudioAnalysisTrainingSets) {
+        return views.models.audioAnalysisTrainingSets(req, res, dbAudioAnalysisTrainingSets);
+      })
+      .then(function(data) {
+        var api = converter.cloneSequelizeToApi(data);
+        res.status(200).json(api);
+
+      })
+      .catch(function(err){
+        console.log("Failed to return training sets | "+err);
+        if (!!err) { res.status(500).json({ message: "Failed to return training sets", error: { status: 500 } }); }
+      });
+
+  });
+
 router.route("/training-sets/:id")
   .get(passport.authenticate("token", {session: false}), function (req, res) {
 
