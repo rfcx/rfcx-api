@@ -3,18 +3,33 @@ var util    = require("util"),
 
 exports.models = {
 
-  audioAnalysisTrainingSet: function(req,res,dbAudioAnalysisTrainingSet) {
+  audioAnalysisTrainingSet: function(req,res,dbAudioAnalysisTrainingSet, trainingSet, testSet) {
 
     return new Promise(function(resolve,reject) {
 
       try {
 
+        function getCollectionData(collection, collectionAudios) {
+          var data = {
+            guid: collection.guid,
+            audios: []
+          };
+          for (var i = 0; i < collectionAudios.length; i++) {
+            var item = collectionAudios[i];
+            data.audios.push({
+              guid: item.guid,
+              position: item.GuardianAudioCollectionsRelation.position
+            });
+          }
+          return data;
+        }
+
         var json = {
           name: dbAudioAnalysisTrainingSet.name,
           //eventValue: dbAudioAnalysisTrainingSet.GuardianAudioEventValue.value,
           eventValue: dbAudioAnalysisTrainingSet.event_value,
-          trainingSet: dbAudioAnalysisTrainingSet.TrainingSet.guid,
-          testSet: dbAudioAnalysisTrainingSet.TestSet.guid
+          trainingSet: getCollectionData(dbAudioAnalysisTrainingSet.TrainingSet, trainingSet),
+          testSet: getCollectionData(dbAudioAnalysisTrainingSet.TestSet, testSet)
         };
 
         resolve(json);

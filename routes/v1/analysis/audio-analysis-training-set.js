@@ -129,7 +129,13 @@ router.route("/training-sets/:id")
       .bind({})
       .then(function(dbAudioAnalysisTrainingSet) {
         this.dbAudioAnalysisTrainingSet = dbAudioAnalysisTrainingSet;
-        return views.models.audioAnalysisTrainingSet(req, res, dbAudioAnalysisTrainingSet);
+        var promises = [];
+        promises.push(dbAudioAnalysisTrainingSet.TrainingSet.getGuardianAudios());
+        promises.push(dbAudioAnalysisTrainingSet.TestSet.getGuardianAudios());
+        return Promise.all(promises);
+      })
+      .then(function(data) {
+        return views.models.audioAnalysisTrainingSet(req, res, this.dbAudioAnalysisTrainingSet, data[0], data[1]);
       })
       .then(function(data) {
 
