@@ -95,15 +95,35 @@ router.route("/audio-collections/by-guids")
       .spread(function (dbGuardianAudioCollection, created) {
         // save collection object
         this.dbGuardianAudioCollection = dbGuardianAudioCollection;
-        var promises = [];
-        this.dbAudio.forEach(function(audio) {
-          if (audioDataObj[audio.guid].delete) {
-            promises.push(dbGuardianAudioCollection.removeGuardianAudio(audio));
-          }
-          else {
-            promises.push(dbGuardianAudioCollection.addGuardianAudio(audio, {note: audioDataObj[audio.guid].note? audioDataObj[audio.guid].note : null}));
+        // get all audios related to current collection to get their count
+        return dbGuardianAudioCollection.getGuardianAudios();
+      })
+      .then(function(dbGuardianAudios) {
+        // variable to store new audio file position
+        var currentIndex = 0,
+        // variable to store all existing audio guids
+            existingAudioGuids = [];
+        // go through all existing audio files, collect their guids and calculate the latest position
+        dbGuardianAudios.forEach(function(item) {
+          existingAudioGuids.push(item.guid);
+          if (item.GuardianAudioCollectionsRelation.position >= currentIndex) {
+            currentIndex = item.GuardianAudioCollectionsRelation.position + 1;
           }
         });
+        var promises = [];
+        this.dbAudio.forEach(function(audio) {
+          // if file need to be deleted, then create delete promise
+          if (audioDataObj[audio.guid].delete) {
+            promises.push(this.dbGuardianAudioCollection.removeGuardianAudio(audio));
+          }
+          // if file need to be added, then check if it's already exist. if not, create create promise
+          else if (existingAudioGuids.indexOf(audio.guid) === -1) {
+            promises.push(this.dbGuardianAudioCollection.addGuardianAudio(audio, {
+              note: audioDataObj[audio.guid].note? audioDataObj[audio.guid].note : null,
+              position: currentIndex++
+            }));
+          }
+        }.bind(this));
         return Promise.all(promises);
       })
       .then(function() {
@@ -122,7 +142,7 @@ router.route("/audio-collections/by-guids")
         api.data.id = this.dbGuardianAudioCollection.guid;
         api.data.attributes.excluded = this.excluded.length? this.excluded : null;
 
-        res.status(200).json(apiEvent);
+        res.status(200).json(api);
 
       })
       .catch(function(err){

@@ -8,6 +8,9 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
+    },
+    position: {
+      type: DataTypes.INTEGER
     }
   }, {
     tableName: "GuardianAudioCollectionsRelations"

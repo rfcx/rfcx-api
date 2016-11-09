@@ -24,7 +24,8 @@ exports.models = {
 
           json.audios.push({
             guid: dbRow.guid,
-            note: note
+            note: note,
+            position: dbRow.GuardianAudioCollectionsRelation.position
           });
 
         }
