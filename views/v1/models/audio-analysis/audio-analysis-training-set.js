@@ -18,6 +18,7 @@ exports.models = {
             var item = collectionAudios[i];
             data.audios.push({
               guid: item.guid,
+              note: item.GuardianAudioCollectionsRelation.note,
               position: item.GuardianAudioCollectionsRelation.position
             });
           }
