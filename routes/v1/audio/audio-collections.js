@@ -120,10 +120,10 @@ router.route("/audio-collections/by-guids")
           }
           else if (existingAudioGuids.indexOf(audio.guid) !== -1) {
             var obj = {};
-            if (audioDataObj[audio.guid].note) {
+            if (audioDataObj[audio.guid].note !== undefined) {
               obj.note = audioDataObj[audio.guid].note;
             }
-            if (audioDataObj[audio.guid].position) {
+            if (audioDataObj[audio.guid].position !== undefined) {
               obj.position = audioDataObj[audio.guid].position;
             }
             if (Object.keys(obj).length) {
