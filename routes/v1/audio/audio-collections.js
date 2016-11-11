@@ -58,6 +58,7 @@ router.route("/audio-collections/by-guids")
     body.audios.forEach(function(audio) {
       audioDataObj[audio.guid] = {
         note: audio.note,
+        position: audio.position,
         delete: !!audio.delete
       }
     });
@@ -95,6 +96,7 @@ router.route("/audio-collections/by-guids")
       .spread(function (dbGuardianAudioCollection, created) {
         // save collection object
         this.dbGuardianAudioCollection = dbGuardianAudioCollection;
+
         // get all audios related to current collection to get their count
         return dbGuardianAudioCollection.getGuardianAudios();
       })
@@ -115,6 +117,18 @@ router.route("/audio-collections/by-guids")
           // if file need to be deleted, then create delete promise
           if (audioDataObj[audio.guid].delete) {
             promises.push(this.dbGuardianAudioCollection.removeGuardianAudio(audio));
+          }
+          else if (existingAudioGuids.indexOf(audio.guid) !== -1) {
+            var obj = {};
+            if (audioDataObj[audio.guid].note) {
+              obj.note = audioDataObj[audio.guid].note;
+            }
+            if (audioDataObj[audio.guid].position) {
+              obj.position = audioDataObj[audio.guid].position;
+            }
+            if (Object.keys(obj).length) {
+              promises.push(this.dbGuardianAudioCollection.addGuardianAudio(audio, obj));
+            }
           }
           // if file need to be added, then check if it's already exist. if not, create create promise
           else if (existingAudioGuids.indexOf(audio.guid) === -1) {
