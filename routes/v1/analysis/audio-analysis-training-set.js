@@ -62,7 +62,8 @@ router.route("/training-sets")
     Promise.all(promises)
       .spread(function(trainingSetResults, trainingCollection, testCollection) {
         this.guid = trainingSetResults[0].guid;
-
+        this.trainingCollection = trainingCollection;
+        this.testCollection = testCollection;
         // update data object with Audio Collections ids
         dataObj.training_set = trainingCollection.id;
         dataObj.test_set = testCollection.id;
@@ -78,7 +79,7 @@ router.route("/training-sets")
           });
       })
       .then(function(dbAudioAnalysisTrainingSet) {
-        return views.models.audioAnalysisTrainingSet(req, res, dbAudioAnalysisTrainingSet);
+        return views.models.audioAnalysisTrainingSet(req, res, dbAudioAnalysisTrainingSet, this.trainingCollection, this.testCollection);
       })
       .then(function(data) {
         var api = converter.cloneSequelizeToApi(data);
