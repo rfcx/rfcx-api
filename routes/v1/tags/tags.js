@@ -9,6 +9,7 @@ var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var Promise = require("bluebird");
 var sqlUtils = require("../../../utils/misc/sql");
+var httpError = require("../../../utils/http-errors.js");
 var urls = require('../../../utils/misc/urls');
 
 function createOrUpdateTag(tag) {
@@ -273,6 +274,72 @@ router.route("/:tag_id")
 		});
 
 	});
+
+router.route('/classified/byannotator')
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    var converter = new ApiConverter("tags", req);
+
+    var body = req.body;
+
+    if (!body.annotatorGuid || !body.annotatorGuid.length) {
+      return httpError(res, 400, null, 'Request does not contain user guid');
+    }
+
+    if (!body.audios || !body.audios.length) {
+      return httpError(res, 400, null, 'Request does not contain audio guids');
+    }
+
+    if (!body.type || !body.type.length) {
+      return httpError(res, 400, null, 'Request does not contain tag type');
+    }
+
+    if (!body.value || !body.value.length) {
+      return httpError(res, 400, null, 'Request does not contain tag value');
+    }
+
+    var opts = {
+      // set to user by default
+      annotatorType: body.annotatorType || 'user',
+      annotatorGuid: body.annotatorGuid,
+      audios: body.audios,
+      type: body.type,
+      value: body.value
+    };
+
+    var sql = "SELECT a.guid, t.begins_at_offset, t.ends_at_offset, ROUND(AVG(t.confidence)) as confidence from GuardianAudioTags t ";
+
+    sql = sqlUtils.condAdd(sql, opts.annotatorType === 'user', 'INNER JOIN Users u ON u.guid=:annotatorGuid ');
+    sql = sqlUtils.condAdd(sql, opts.annotatorType === 'model', 'INNER JOIN AudioAnalysisModels u ON u.guid=:annotatorGuid ');
+
+    sql += "INNER JOIN GuardianAudio a ON a.id=t.audio_id " +
+           "WHERE t.type=:type and t.value=:value and a.guid in (:audios) ";
+
+    sql = sqlUtils.condAdd(sql, opts.annotatorType === 'user', 'and t.tagged_by_user=u.id ');
+    sql = sqlUtils.condAdd(sql, opts.annotatorType === 'model', 'and t.tagged_by_model=u.id ');
+
+    sql += "GROUP BY t.audio_id, t.begins_at_offset, t.ends_at_offset " +
+           "ORDER BY t.begins_at_offset ASC;";
+
+    return models.sequelize.query(sql, { replacements: opts, type: models.sequelize.QueryTypes.SELECT })
+      .then(function(dbTags) {
+        return views.models.countTagsByGuid(req, res, dbTags);
+      })
+      .then(function(data) {
+
+        var api = converter.cloneSequelizeToApi({
+          tags: data
+        });
+
+        res.status(200).json(api);
+
+      })
+      .catch(function(err) {
+        console.log("failed to return tags | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return tags"}); }
+      });
+
+  });
 
 
 

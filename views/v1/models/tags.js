@@ -41,6 +41,43 @@ exports.models = {
 
     });
 
+  },
+
+  countTagsByGuid: function(req, res, dbRows) {
+
+    return new Promise(function (resolve, reject) {
+
+      try {
+
+        var json = {};
+
+        var inputGuids = req.body.audios;
+
+        // set classified attribute to false by default for all input guids
+        inputGuids.forEach(function(guid) {
+          json[guid] = [];
+        });
+
+        // change classified to true for guids which has tags
+        dbRows.forEach(function(row) {
+          var guid = row.guid;
+          json[guid].push({
+            begins_at_offset: row.begins_at_offset,
+            ends_at_offset: row.ends_at_offset,
+            confidence: row.confidence
+          });
+        });
+
+        resolve(json);
+
+      }
+      catch (err) {
+        console.log('Error in process of counting tags for audio files |', err);
+        reject(new Error(err));
+      }
+
+    });
+
   }
 
 };
