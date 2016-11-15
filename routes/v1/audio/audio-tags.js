@@ -99,9 +99,9 @@ router.route("/:audio_id/tags")
                             var createdEvent = {
                                 type: dbModel.event_type,
                                 value: dbModel.event_value,
-                                beginsAt: eventBeginsAt,
-                                endsAt: eventEndsAt,
-                                audioId: req.params.audio_id
+                                begins_at: eventBeginsAt,
+                                ends_at: eventEndsAt,
+                                audio_id: req.params.audio_id
 
                             };
                             
