@@ -300,6 +300,8 @@ router.route('/classified/byannotator')
 
     function getAudioGuids() {
       return new Promise(function(resolve) {
+        // if user specified audio collection, then load audio files from this collection
+        // we can append separate audio guids later
         if (body.audioCollection) {
           return models.GuardianAudioCollection
             .findOne({
@@ -312,6 +314,10 @@ router.route('/classified/byannotator')
               })
             })
             .then(function(audioGuids) {
+              // if user specified both audio collection and audio guids, then combine them into one array
+              if (body.audioGuids && body.audioGuids.length) {
+                audioGuids = audioGuids.concat(body.audioGuids);
+              }
               resolve(audioGuids);
             }).
             catch(function() {
@@ -319,6 +325,7 @@ router.route('/classified/byannotator')
             });
         }
         else {
+          // if user specified only audio guids, then load only them
           resolve(body.audioGuids)
         }
       })
@@ -358,10 +365,8 @@ router.route('/classified/byannotator')
     }
 
     function runQuery(data) {
-      //console.log(data.sql, '\n\n', data.opts);
       return models.sequelize.query(data.sql, { replacements: data.opts, type: models.sequelize.QueryTypes.SELECT })
         .then(function(dbTags) {
-          console.log('dbTags', dbTags);
           return views.models.countTagsByGuid(req, res, dbTags, data.audioGuids);
         })
         .then(function(dbTagsParsed) {
