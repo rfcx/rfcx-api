@@ -238,13 +238,11 @@ router.route('/')
 
     var attrs = {
       confidence: body.confidence,
-      windows: body.windows,
       audio_id: body.audio_id,
       type: body.type,
       value: body.value,
       begins_at: body.begins_at,
-      ends_at: body.ends_at,
-      model: body.model
+      ends_at: body.ends_at
     };
 
     function checkAttrValidity() {
@@ -275,9 +273,8 @@ router.route('/')
     var promises = [];
 
     promises.push(models.GuardianAudio.findOne({where: {guid: attrs.audio_id}, include: { model: models.Guardian, as: 'Guardian'}}));
-    promises.push(models.AudioAnalysisModel.findOne({where: { $or: {shortname: attrs.model, guid: attrs.model}}}));
-    promises.push(models.GuardianAudioEventType.findOrCreate({where: {value: attrs.type}, defaults: {value: attrs.type}}));
-    promises.push(models.GuardianAudioEventValue.findOrCreate({where: {value: attrs.value}, defaults: {value: attrs.value}}));
+	  promises.push(models.GuardianAudioEventType.findOrCreate({where: { $or: {value: attrs.type, id: attrs.type}}, defaults: {value: attrs.type}}));
+    promises.push(models.GuardianAudioEventValue.findOrCreate({where: {$or: {value: attrs.value, id: attrs.value}}, defaults: {value: attrs.value}}));
 
     Promise.all(promises)
       .then(function(data) {
@@ -294,18 +291,14 @@ router.route('/')
           httpError(res, 500, null, 'Guardian related to specified Audio has incorrect coordinates');
           return Promise.reject();
         }
-        if (!data[1]) {
-          httpError(res, 404, null, 'Model with given shortname/guid not found');
-          return Promise.reject();
-        }
         // replace names with ids
         attrs.audio_id = data[0].id;
-        attrs.model = data[1].id;
-        attrs.type = data[2][0].id;
-        attrs.value = data[3][0].id;
+        attrs.type = data[1][0].id;
+        attrs.value = data[2][0].id;
 
         attrs.shadow_latitude = data[0].Guardian.latitude;
         attrs.shadow_longitude = data[0].Guardian.longitude;
+	      attrs.windows = 0;
 
         return models.GuardianAudioEvent
           .findOrCreate({

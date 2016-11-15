@@ -5,6 +5,8 @@ var router = express.Router();
 var querystring = require("querystring");
 var fs = require("fs");
 var passport = require("passport");
+var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
+
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/:audio_id/tags")
@@ -31,23 +33,31 @@ router.route("/:audio_id/tags")
                     if (analysisResults.results.length > 0) {
 
                       var preInsertGuardianAudioTags = [];
+                        var eventBeginsAt = dbAudio.measured_at;
+                        var eventEndsAt = dbAudio.measured_at;
+                        // contains all probabilities for the model
+                      var probabilityVector = [];
 
                       for (wndwInd in analysisResults.results) {
                         var currentWindow = analysisResults.results[wndwInd];
 
                         var beginsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[0])));
                         var endsAt = new Date((dbAudio.measured_at.valueOf()+parseInt(currentWindow.window[1])));
+                          if(endsAt > eventEndsAt){
+                              eventEndsAt = endsAt;
+                          }
 
 
                         for (tagName in currentWindow.classifications) {
 
 //                          if (currentWindow.classifications[tagName] > 0.5) {
                           if (tagName.toLowerCase() != "ambient") {
+                              var probability =  currentWindow.classifications[tagName];
 
                             preInsertGuardianAudioTags.push({
                               type: "classification",
                               value: tagName,
-                              confidence: currentWindow.classifications[tagName],
+                              confidence: probability,
                               begins_at: beginsAt,
                               ends_at: endsAt,
                               begins_at_offset: currentWindow.window[0],
@@ -55,6 +65,7 @@ router.route("/:audio_id/tags")
                               audio_id: dbAudio.id,
                               tagged_by_model: dbModel.id
                             });
+                              probabilityVector.push( probability );
 
                           }
 
@@ -64,6 +75,45 @@ router.route("/:audio_id/tags")
 
                     models.GuardianAudioTag
                       .bulkCreate(preInsertGuardianAudioTags)
+                        .then(function () {
+                            // queue up cognition analysis
+                            // current we only support window-count analysis method
+                            // Todo: this code will be deleted and live in an own cognition layer application/env
+
+                            var cognitionParmas = {
+                                analysisMethod: "window-count",
+                                params:  {
+                                    minMaxWindows: [
+                                        // -1 = infinity
+                                        [dbModel.minimal_detected_windows, -1]
+                                    ],
+                                    minMaxProbability: [
+                                        // 1.0 = max prob
+                                        [dbModel.minimal_detection_confidence, 1.0]
+                                    ]
+                                },
+                                data: [ probabilityVector ]
+                            };
+
+
+                            var createdEvent = {
+                                type: dbModel.event_type,
+                                value: dbModel.event_value,
+                                beginsAt: eventBeginsAt,
+                                endsAt: eventEndsAt,
+                                audioId: req.params.audio_id
+
+                            };
+                            
+                            var options = {
+                                api_url_domain: req.rfcx.api_url_domain
+                            };
+
+
+                            analysisUtils.queueForCognitionAnalysis("rfcx-cognition", createdEvent, cognitionParmas, options);
+
+
+                        })
                       .then(function(){
                         res.status(200).json([]);
                       }).catch(function(err){
