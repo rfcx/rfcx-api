@@ -286,7 +286,7 @@ router.route('/classified/byannotator')
       return httpError(res, 400, null, 'Request does not contain user guid');
     }
 
-    if (!body.audios || !body.audios.length) {
+    if (!body.audioGuids || !body.audioGuids.length) {
       return httpError(res, 400, null, 'Request does not contain audio guids');
     }
 
@@ -302,7 +302,7 @@ router.route('/classified/byannotator')
       // set to user by default
       annotatorType: body.annotatorType || 'user',
       annotatorGuid: body.annotatorGuid,
-      audios: body.audios,
+      audios: body.audioGuids,
       type: body.type,
       value: body.value
     };
