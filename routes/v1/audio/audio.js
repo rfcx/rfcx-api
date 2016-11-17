@@ -10,11 +10,23 @@ var Promise = require("bluebird");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var urls = require('../../../utils/misc/urls');
+var sequelize = require("sequelize");
 
 router.route("/filter")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     var converter = new ApiConverter("audio", req);
+
+    var order = 'measured_at ASC';
+
+    if (req.query.order && ['ASC', 'DESC', 'RAND'].indexOf(req.query.order.toUpperCase()) !== -1) {
+      if (req.query.order === 'RAND') {
+        order = [sequelize.fn('RAND', 'measured_at')];
+      }
+      else {
+        order = 'measured_at ' + req.query.order.toUpperCase();
+      }
+    }
 
     var mainClasuse = {},
       siteClause = {},
@@ -42,6 +54,7 @@ router.route("/filter")
     models.GuardianAudio
       .findAll({
         where: mainClasuse,
+        order: order,
         include: [
           {
             model: models.GuardianSite,
