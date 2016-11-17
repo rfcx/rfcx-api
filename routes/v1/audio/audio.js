@@ -8,6 +8,78 @@ var requireUser = require("../../../middleware/authorization/authorization").req
 var httpError = require("../../../utils/http-errors.js");
 var Promise = require("bluebird");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var ApiConverter = require("../../../utils/api-converter");
+var urls = require('../../../utils/misc/urls');
+
+router.route("/filter")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    var converter = new ApiConverter("audio", req);
+
+    var mainClasuse = {},
+      siteClause = {},
+      guardianClause = {};
+
+    if (req.query.siteGuid) {
+      siteClause.guid = req.query.siteGuid;
+    }
+    if (req.query.guardianGuid) {
+      guardianClause.guid = req.query.guardianGuid;
+    }
+    if (req.query.start) {
+      if (!mainClasuse.measured_at) {
+        mainClasuse.measured_at = {};
+      }
+      mainClasuse.measured_at.$gte = req.query.start;
+    }
+    if (req.query.end) {
+      if (!mainClasuse.measured_at) {
+        mainClasuse.measured_at = {};
+      }
+      mainClasuse.measured_at.$lte = req.query.end;
+    }
+
+    models.GuardianAudio
+      .findAll({
+        where: mainClasuse,
+        include: [
+          {
+            model: models.GuardianSite,
+            as: 'Site',
+            where: siteClause,
+            attributes: ['guid', 'timezone_offset']
+          },
+          {
+            model: models.Guardian,
+            as: 'Guardian',
+            where: guardianClause,
+            attributes: ['guid']
+          },
+          {
+            model: models.GuardianAudioFormat,
+            as: 'Format',
+            attributes: ['sample_rate']
+          }
+        ],
+        limit: req.query.limit? parseInt(req.query.limit) : 100
+      }).then(function(dbAudio){
+
+        return views.models.guardianAudioJson(req,res,dbAudio)
+          .then(function(audioJson){
+
+            var api = converter.cloneSequelizeToApi({audios: audioJson});
+
+            api.links.self = urls.getBaseUrl(req) + req.originalUrl;
+            res.status(200).json(api);
+
+          });
+
+      }).catch(function(err){
+        console.log("failed to return audios | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return audios"}); }
+      });
+
+  });
 
 router.route("/:audio_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {

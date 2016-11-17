@@ -128,6 +128,10 @@ exports.models = {
 
     return new Promise(function (resolve, reject) {
 
+      if (!dbRows.length) {
+        resolve([]);
+      }
+
       for (i in dbRows) {
 
         var thisRow = dbRows[i], thisGuid = thisRow.guid;
