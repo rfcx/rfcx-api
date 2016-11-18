@@ -70,9 +70,10 @@ function extractAudioGuids(data) {
 }
 
 function getLabelsData(filterOpts) {
-  var sql = 'SELECT a.guid, t.begins_at_offset, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where ';
 
-  sql = condAdd(sql, filterOpts.tagType, ' t.type = :tagType');
+  var sql = 'SELECT a.guid, t.begins_at_offset, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where 1=1 ';
+
+  sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
   sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
   sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
   sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
