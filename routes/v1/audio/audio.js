@@ -11,6 +11,8 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
+var sqlUtils = require("../../../utils/misc/sql");
+var condAdd = sqlUtils.condAdd;
 
 router.route("/filter")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
@@ -88,6 +90,85 @@ router.route("/filter")
           });
 
       }).catch(function(err){
+        console.log("failed to return audios | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return audios"}); }
+      });
+
+  });
+
+router.route("/filter/by-tags")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    var converter = new ApiConverter("audio", req);
+
+    var filterOpts = {};
+
+    if (req.query.limit) {
+      filterOpts.limit = parseInt(req.query.limit);
+    }
+
+    if (req.query.tagType) {
+      filterOpts.tagType = req.query.tagType;
+    }
+
+    if (req.query.tagValue) {
+      filterOpts.tagValue = req.query.tagValue;
+    }
+
+    if (req.query.userGuid) {
+      filterOpts.userGuid = req.query.userGuid;
+    }
+
+    if (req.query.modelGuid) {
+      filterOpts.modelGuid = req.query.modelGuid;
+    }
+
+    if (req.query.minConfidence) {
+      filterOpts.minConfidence = parseFloat(req.query.minConfidence);
+    }
+
+    if (req.query.maxConfidence) {
+      filterOpts.maxConfidence = parseFloat(req.query.maxConfidence);
+    }
+
+    if (req.query.minCount) {
+      filterOpts.minCount = parseInt(req.query.minCount);
+    }
+
+    var sql = 'SELECT DISTINCT a.id as audioId, a.guid, count(a.id) as count FROM GuardianAudio a ' +
+                'LEFT JOIN GuardianAudioTags t on a.id=t.audio_id ';
+
+    sql = condAdd(sql, filterOpts.userGuid, ' INNER JOIN Users u on u.id = t.tagged_by_user');
+    sql = condAdd(sql, filterOpts.modelGuid, ' INNER JOIN AudioAnalysisModels m on m.id = t.tagged_by_model');
+
+    sql = condAdd(sql, true, ' where 1=1');
+    sql = condAdd(sql, filterOpts.userGuid, ' and u.guid = :userGuid');
+    sql = condAdd(sql, filterOpts.modelGuid, ' and m.guid = :modelGuid');
+
+    sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
+    sql = condAdd(sql, filterOpts.tagValues, ' and t.value = :tagValue');
+    sql = condAdd(sql, filterOpts.userGuid, ' and t.value = :tagValue');
+    sql = condAdd(sql, filterOpts.minConfidence, ' and t.confidence >= :minConfidence');
+    sql = condAdd(sql, filterOpts.maxConfidence, ' and t.confidence <= :maxConfidence');
+    sql = condAdd(sql, true, ' group by a.guid');
+    sql = condAdd(sql, filterOpts.minCount, ' HAVING count(a.id) >= :minCount');
+    sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
+
+    return models.sequelize.query(sql,
+      { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
+    )
+      .then(function(dbAudio) {
+
+        var guids = dbAudio.map(function(item) {
+          return item.guid;
+        });
+
+        var api = converter.cloneSequelizeToApi({audios: guids});
+        api.links.self = urls.getBaseUrl(req) + req.originalUrl;
+
+        res.status(200).json(api);
+      })
+      .catch(function(err){
         console.log("failed to return audios | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return audios"}); }
       });
