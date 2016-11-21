@@ -383,7 +383,7 @@ router.route('/classified/byannotator')
     getAudioGuids()
       .then(combineQuery)
       .then(runQuery)
-      .catch(function() {
+      .catch(function(err) {
         console.log("failed to return tags | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return tags"}); }
       })
