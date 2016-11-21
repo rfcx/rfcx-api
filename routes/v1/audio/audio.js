@@ -146,8 +146,7 @@ router.route("/filter/by-tags")
     sql = condAdd(sql, filterOpts.modelGuid, ' and m.guid = :modelGuid');
 
     sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
-    sql = condAdd(sql, filterOpts.tagValues, ' and t.value = :tagValue');
-    sql = condAdd(sql, filterOpts.userGuid, ' and t.value = :tagValue');
+    sql = condAdd(sql, filterOpts.tagValue, ' and t.value = :tagValue');
     sql = condAdd(sql, filterOpts.minConfidence, ' and t.confidence >= :minConfidence');
     sql = condAdd(sql, filterOpts.maxConfidence, ' and t.confidence <= :maxConfidence');
     sql = condAdd(sql, true, ' group by a.guid');
