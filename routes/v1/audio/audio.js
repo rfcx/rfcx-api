@@ -62,7 +62,7 @@ router.route("/filter")
             model: models.GuardianSite,
             as: 'Site',
             where: siteClause,
-            attributes: ['guid', 'timezone_offset']
+            attributes: ['guid', 'timezone']
           },
           {
             model: models.Guardian,
