@@ -39,6 +39,7 @@ exports.models = {
       if (dbRow.Site != null) {
         guardianAudioHighlight.flickr_photoset_id = dbRow.Site.flickr_photoset_id;
         guardianAudioHighlight.timezone_offset = dbRow.Site.timezone_offset;
+        guardianAudioHighlight.timezone = dbRow.Site.timezone;
         guardianAudioHighlight.location = dbRow.Site.description;
       }
 
