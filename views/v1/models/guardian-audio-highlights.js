@@ -22,6 +22,7 @@ exports.models = {
         name: dbRow.name,
         is_active: dbRow.is_active,
         location: null,
+        timezone: 'UTC',
         timezone_offset: 0,
         description: dbRow.description,
         flickr_photoset_id:  null,
