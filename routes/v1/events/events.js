@@ -182,7 +182,7 @@ router.route("/tuning")
       dateTo: req.query.dateTo
     };
 
-    var sql = "SELECT g.shortname, a.guid as audio_guid, a.measured_at, count(t.audio_id) as count, avg(t.confidence) as prob, s.timezone FROM GuardianAudioTags t " +
+    var sql = "SELECT g.shortname, a.guid as audio_guid, a.measured_at, count(t.audio_id) as count, avg(t.confidence) as prob, s.timezone_offset, s.timezone FROM GuardianAudioTags t " +
                 "INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid " +
                 "INNER JOIN GuardianAudio a on audio_id=a.id " +
                 "INNER JOIN GuardianSites s on site_id=s.id " +
