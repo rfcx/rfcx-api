@@ -37,6 +37,7 @@ router.route("/:audio_id/tags")
                         var eventEndsAt = dbAudio.measured_at;
                         // contains all probabilities for the model
                       var probabilityVector = [];
+                      var cognitionValue = "";
 
                       for (wndwInd in analysisResults.results) {
                         var currentWindow = analysisResults.results[wndwInd];
@@ -53,6 +54,7 @@ router.route("/:audio_id/tags")
 //                          if (currentWindow.classifications[tagName] > 0.5) {
                           if (tagName.toLowerCase() != "ambient") {
                               var probability =  currentWindow.classifications[tagName];
+                            cognitionValue = tagName;
 
                             preInsertGuardianAudioTags.push({
                               type: "classification",
@@ -81,18 +83,20 @@ router.route("/:audio_id/tags")
                             // Todo: this code will be deleted and live in an own cognition layer application/env
 
                             var cognitionParmas = {
-                                analysisMethod: "window-count",
+                                analysis_method: "window-count",
                                 params:  {
-                                    minMaxWindows: [
+                                    min_max_windows: [
                                         // -1 = infinity
                                         [dbModel.minimal_detected_windows, -1]
                                     ],
-                                    minMaxProbability: [
+                                    min_max_probability: [
                                         // 1.0 = max prob
                                         [dbModel.minimal_detection_confidence, 1.0]
                                     ]
                                 },
-                                data: [ probabilityVector ]
+                                data: [ probabilityVector ],
+                                cognition_type: "event",
+                                cognition_value: cognitionValue
                             };
 
 
