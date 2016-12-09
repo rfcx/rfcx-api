@@ -43,15 +43,13 @@ exports.models = {
 
   },
 
-  countTagsByGuid: function(req, res, dbRows) {
+  countTagsByGuid: function(req, res, dbRows, inputGuids) {
 
     return new Promise(function (resolve, reject) {
 
       try {
 
         var json = {};
-
-        var inputGuids = req.body.audios;
 
         // set classified attribute to false by default for all input guids
         inputGuids.forEach(function(guid) {

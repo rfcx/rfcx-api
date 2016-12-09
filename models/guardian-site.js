@@ -50,6 +50,13 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true
       }
     },
+    timezone: {
+      type: DataTypes.STRING,
+      defaultValue: 'UTC',
+      allowNull: false,
+      validate: {
+      }
+    }
   }, {
     classMethods: {
       associate: function(models) {
