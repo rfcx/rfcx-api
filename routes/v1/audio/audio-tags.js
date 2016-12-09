@@ -69,13 +69,12 @@ router.route("/:audio_id/tags")
         return Promise.all(removePromises);
       })
       .then(function() {
+        // contains all probabilities for the model
         this.probabilityVector = [];
         this.cognitionValue = "";
         var preInsertGuardianAudioTags = [];
         this.eventBeginsAt = this.dbAudio.measured_at;
         this.eventEndsAt = this.dbAudio.measured_at;
-
-        // contains all probabilities for the model
 
         for (wndwInd in analysisResults.results) {
           var currentWindow = analysisResults.results[wndwInd];
@@ -86,10 +85,9 @@ router.route("/:audio_id/tags")
             this.eventEndsAt = endsAt;
           }
 
-
           for (tagName in currentWindow.classifications) {
 
-//                          if (currentWindow.classifications[tagName] > 0.5) {
+            // if (currentWindow.classifications[tagName] > 0.5) {
             if (tagName.toLowerCase() != "ambient") {
               var probability =  currentWindow.classifications[tagName];
               this.cognitionValue = tagName;
