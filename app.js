@@ -52,6 +52,7 @@ var routes = {
                 require("./routes/v1/sites/sites-images") 
               ],
     "audio": [  require("./routes/v1/audio/audio"),
+                require("./routes/v1/audio/audio-collections"),
                 require("./routes/v1/audio/audio-tags")
               ],
     "analysis": [  require("./routes/v1/analysis/analysis") ],

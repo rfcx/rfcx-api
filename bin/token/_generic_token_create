@@ -30,9 +30,8 @@ for (i in possibleParams) {
   }
 }
 
-var columns = [ "type", "guid", "token", "expires_at" ];
-if (finalParams.what_kind_of_token === "registration") { columns = [ "type", "code", "expires_at" ]; }
-console.log( columns.join("\t") );
+var rtrnTokens = [];
+console.log("");
 
 for (var i = 0; i < howManyTokens; i++) {
 
@@ -40,26 +39,58 @@ for (var i = 0; i < howManyTokens; i++) {
     
     case "anonymous":
       token.createAnonymousToken(finalParams).then(function(tkn){
-          console.log( [ finalParams.what_kind_of_token, tkn.token_guid, tkn.token, tkn.token_expires_at.toISOString()].join("\t") );
+          rtrnTokens.push({
+            type: finalParams.what_kind_of_token,
+            guid: tkn.token_guid,
+            token: tkn.token, 
+            expires_at: tkn.token_expires_at.toISOString()
+          }); 
         }).done();
       break;
 
     case "user":
       token.createUserToken(finalParams).then(function(tkn){
-          console.log( [ finalParams.what_kind_of_token, tkn.token_guid, tkn.token, tkn.token_expires_at.toISOString()].join("\t") );
+          rtrnTokens.push({
+            type: finalParams.what_kind_of_token,
+            guid: tkn.token_guid,
+            token: tkn.token, 
+            expires_at: tkn.token_expires_at.toISOString()
+          }); 
         }).done();
       break;
       
     case "registration":
       token.createRegistrationToken(finalParams).then(function(tkn){
-          console.log( [ finalParams.what_kind_of_token, (tkn.token_guid+tkn.token).toUpperCase(), tkn.token_expires_at.toISOString()].join("\t") );
+          rtrnTokens.push({
+            type: finalParams.what_kind_of_token,
+            code: (tkn.token_guid+tkn.token).toUpperCase(),
+            expires_at: tkn.token_expires_at.toISOString()
+          });
+          if (rtrnTokens.length == howManyTokens) { 
+            for (var j = 0; j < howManyTokens; j++) { 
+              console.log(rtrnTokens[j].code); 
+            }
+            console.log("");
+          }
         }).done();
       break;
     
     default:
       token.createAnonymousToken(finalParams).then(function(tkn){
-          console.log( [ finalParams.what_kind_of_token, tkn.token_guid, tkn.token, tkn.token_expires_at.toISOString()].join("\t") );
+          rtrnTokens.push({
+            type: finalParams.what_kind_of_token,
+            guid: tkn.token_guid,
+            token: tkn.token, 
+            expires_at: tkn.token_expires_at.toISOString()
+          }); 
+          if (rtrnTokens.length == howManyTokens) { 
+            for (var j = 0; j < howManyTokens; j++) { 
+              console.log(rtrnTokens[j].guid+"\t"+rtrnTokens[j].token+"\t"+rtrnTokens[j].expires_at); 
+            }
+            console.log("");
+          }
         }).done();
   }
 
 }
+

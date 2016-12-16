@@ -182,6 +182,76 @@ router.route('/labels')
 
   });
 
+router.route('/users')
+  .get(passport.authenticate("token", {session: false}), requireUser, function(req, res) {
+    var converter = new ApiConverter("users", req);
+
+    var sql = "SELECT DISTINCT u.email, u.username, u.type, u.guid FROM GuardianAudioTags t INNER JOIN Users u on u.id=t.tagged_by_user where t.type='label'";
+
+    return models.sequelize.query(sql, { type: models.sequelize.QueryTypes.SELECT })
+      .then(function(data) {
+        var api = converter.mapSequelizeToApi({
+          users: data
+        });
+        api.links.self = urls.getApiUrl(req) + '/tags/users';
+        res.status(200).json(api);
+      })
+      .catch(function(err) {
+        console.log("failed to return users | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return users"}); }
+      });
+
+  });
+
+router.route('/models')
+  .get(passport.authenticate("token", {session: false}), requireUser, function(req, res) {
+    var converter = new ApiConverter("models", req);
+
+    var sql = "SELECT DISTINCT m.shortname, m.guid FROM GuardianAudioTags t INNER JOIN AudioAnalysisModels m on m.id=t.tagged_by_model where t.type='classification'";
+
+    return models.sequelize.query(sql, { type: models.sequelize.QueryTypes.SELECT })
+      .then(function(data) {
+        var api = converter.mapSequelizeToApi({
+          models: data
+        });
+        api.links.self = urls.getApiUrl(req) + '/tags/models';
+        res.status(200).json(api);
+      })
+      .catch(function(err) {
+        console.log("failed to return models | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return models"}); }
+      });
+
+  });
+
+router.route('/annotators')
+  .get(passport.authenticate("token", {session: false}), requireUser, function(req, res) {
+    var converter = new ApiConverter("annotators", req);
+
+    var sqlUsers = "SELECT DISTINCT u.email, u.username, u.type, u.guid FROM GuardianAudioTags t INNER JOIN Users u on u.id=t.tagged_by_user where t.type='label'";
+    var sqlModels = "SELECT DISTINCT m.shortname, m.guid FROM GuardianAudioTags t INNER JOIN AudioAnalysisModels m on m.id=t.tagged_by_model where t.type='classification'";
+
+    return models.sequelize.query(sqlUsers, { type: models.sequelize.QueryTypes.SELECT })
+      .then(function(dataUsers) {
+
+        return models.sequelize.query(sqlModels, { type: models.sequelize.QueryTypes.SELECT })
+          .then(function(dataModels) {
+            var api = converter.mapSequelizeToApi({
+              users: dataUsers,
+              models: dataModels
+            });
+            api.links.self = urls.getApiUrl(req) + '/tags/annotators';
+            res.status(200).json(api);
+          });
+
+      })
+      .catch(function(err) {
+        console.log("failed to return models | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return models"}); }
+      });
+
+  });
+
 router.route("/:tag_id")
 	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 		var converter = new ApiConverter("tag", req);

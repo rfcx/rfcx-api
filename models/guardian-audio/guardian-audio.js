@@ -73,6 +73,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianAudio.hasMany(models.GuardianEvent, {as: "Event", foreignKey: "audio_id"});
         GuardianAudio.belongsTo(models.GuardianCheckIn, {as: "CheckIn", foreignKey: "check_in_id"});
         GuardianAudio.belongsTo(models.GuardianAudioFormat, {as: "Format", foreignKey: "format_id"});
+        GuardianAudio.belongsToMany(models.GuardianAudioCollection, { through: 'GuardianAudioCollectionsRelation' });
       },
       indexes: [
         {
