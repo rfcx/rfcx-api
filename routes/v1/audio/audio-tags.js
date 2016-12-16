@@ -12,7 +12,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 router.route("/:audio_id/tags")
   .post(passport.authenticate("token",{session:false}), function(req, res) {
     try {
-      analysisResults = JSON.parse(req.body.json);
+      analysisResults = req.body.json;
     }
     catch (e) {
       return httpError(res, 400, null, 'Failed to parse json data');
