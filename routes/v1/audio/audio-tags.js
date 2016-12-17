@@ -114,7 +114,7 @@ router.route("/:audio_id/tags")
         return models.GuardianAudioTag.bulkCreate(preInsertGuardianAudioTags)
       })
       .then(function (tags) {
-        if(dbModel.generate_event==0){
+        if(this.dbModel.generate_event==0){
           return tags;
         }
         // queue up cognition analysis
