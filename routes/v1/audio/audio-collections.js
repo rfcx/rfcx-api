@@ -22,11 +22,7 @@ router.route("/audio-collections/by-guids")
     var body = req.body;
 
     if (!body.audios || !body.audios.length) {
-<<<<<<< HEAD
-      httpError(res, 400, null, 'Request does not contain audio guids');
-=======
       return httpError(res, 400, null, 'Request does not contain audio guids');
->>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
     }
 
     // Convert array of objects to object with keys
@@ -62,10 +58,7 @@ router.route("/audio-collections/by-guids")
     body.audios.forEach(function(audio) {
       audioDataObj[audio.guid] = {
         note: audio.note,
-<<<<<<< HEAD
-=======
         position: audio.position,
->>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
         delete: !!audio.delete
       }
     });
@@ -103,17 +96,6 @@ router.route("/audio-collections/by-guids")
       .spread(function (dbGuardianAudioCollection, created) {
         // save collection object
         this.dbGuardianAudioCollection = dbGuardianAudioCollection;
-<<<<<<< HEAD
-        var promises = [];
-        this.dbAudio.forEach(function(audio) {
-          if (audioDataObj[audio.guid].delete) {
-            promises.push(dbGuardianAudioCollection.removeGuardianAudio(audio));
-          }
-          else {
-            promises.push(dbGuardianAudioCollection.addGuardianAudio(audio, {note: audioDataObj[audio.guid].note? audioDataObj[audio.guid].note : null}));
-          }
-        });
-=======
 
         // get all audios related to current collection to get their count
         return dbGuardianAudioCollection.getGuardianAudios();
@@ -156,7 +138,6 @@ router.route("/audio-collections/by-guids")
             }));
           }
         }.bind(this));
->>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
         return Promise.all(promises);
       })
       .then(function() {
@@ -175,11 +156,8 @@ router.route("/audio-collections/by-guids")
         api.data.id = this.dbGuardianAudioCollection.guid;
         api.data.attributes.excluded = this.excluded.length? this.excluded : null;
 
-<<<<<<< HEAD
-        res.status(200).json(apiEvent);
-=======
+
         res.status(200).json(api);
->>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
 
       })
       .catch(function(err){
