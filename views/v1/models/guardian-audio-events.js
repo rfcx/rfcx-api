@@ -29,7 +29,9 @@ exports.models = {
             ends_at: dbRow.ends_at,
             type: dbRow.Type.value,
             value: dbRow.Value.value,
-            confidence: dbRow.confidence
+            confidence: dbRow.confidence,
+            guardian_guid: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.guid : null,
+            guardian_shortname: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : null
           });
 
         }
@@ -53,7 +55,7 @@ exports.models = {
 
         if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
 
-        var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence\r\n';
+        var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence,guardian_guid,guardian_shortname\r\n';
 
         for (var i = 0; i < dbAudioEvents.length; i++) {
 
@@ -68,7 +70,9 @@ exports.models = {
           csv += dbRow.ends_at.toISOString() + ',';
           csv += dbRow.Type.value + ',';
           csv += dbRow.Value.value + ',';
-          csv += dbRow.confidence + '\r\n';
+          csv += dbRow.confidence + ',';
+          csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.guid : 'null') + ',';
+          csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : 'null') + '\r\n';
 
         }
 

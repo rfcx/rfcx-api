@@ -113,7 +113,10 @@ router.route("/:audio_id/tags")
 
         return models.GuardianAudioTag.bulkCreate(preInsertGuardianAudioTags)
       })
-      .then(function () {
+      .then(function (tags) {
+        if(this.dbModel.generate_event==0){
+          return tags;
+        }
         // queue up cognition analysis
         // current we only support window-count analysis method
         // Todo: this code will be deleted and live in an own cognition layer application/env
