@@ -124,6 +124,14 @@ router.route("/event")
                 attributes: [
                   'guid'
                 ]
+              },
+              {
+                model: models.Guardian,
+                as: 'Guardian',
+                attributes: [
+                  'guid',
+                  'shortname'
+                ]
               }
             ]
           },
