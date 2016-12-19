@@ -9,6 +9,7 @@ var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 var Promise = require("bluebird");
 var sqlUtils = require("../../../utils/misc/sql");
+var httpError = require("../../../utils/http-errors.js");
 var urls = require('../../../utils/misc/urls');
 
 function createOrUpdateTag(tag) {
@@ -273,6 +274,121 @@ router.route("/:tag_id")
 		});
 
 	});
+
+router.route('/classified/byannotator')
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    var converter = new ApiConverter("tags", req);
+
+    var body = req.body;
+
+    if (!body.annotatorGuid || !body.annotatorGuid.length) {
+      return httpError(res, 400, null, 'Request does not contain user guid');
+    }
+
+    if (!body.audioCollection && (!body.audioGuids || !body.audioGuids.length)) {
+      return httpError(res, 400, null, 'Request does not contain audio guids');
+    }
+
+    if (!body.type || !body.type.length) {
+      return httpError(res, 400, null, 'Request does not contain tag type');
+    }
+
+    if (!body.value || !body.value.length) {
+      return httpError(res, 400, null, 'Request does not contain tag value');
+    }
+
+    function getAudioGuids() {
+      return new Promise(function(resolve) {
+        // if user specified audio collection, then load audio files from this collection
+        // we can append separate audio guids later
+        if (body.audioCollection) {
+          return models.GuardianAudioCollection
+            .findOne({
+              where: { guid: body.audioCollection },
+              include: [{ all: true } ]
+            })
+            .then(function(dbGuardianAudioCollection) {
+              return dbGuardianAudioCollection.GuardianAudios.map(function(item) {
+                return item.guid;
+              })
+            })
+            .then(function(audioGuids) {
+              // if user specified both audio collection and audio guids, then combine them into one array
+              if (body.audioGuids && body.audioGuids.length) {
+                audioGuids = audioGuids.concat(body.audioGuids);
+              }
+              resolve(audioGuids);
+            }).
+            catch(function() {
+              httpError(res, 404, null, 'Audio collection with given guid was not found');
+            });
+        }
+        else {
+          // if user specified only audio guids, then load only them
+          resolve(body.audioGuids)
+        }
+      })
+    }
+
+    function combineQuery(audioGuids) {
+      return new Promise(function(resolve) {
+        var opts = {
+          // set to user by default
+          annotatorType: body.annotatorType || 'user',
+          annotatorGuid: body.annotatorGuid,
+          audios: audioGuids,
+          type: body.type,
+          value: body.value
+        };
+
+        var sql = "SELECT a.guid, t.begins_at_offset, t.ends_at_offset, ROUND(AVG(t.confidence)) as confidence from GuardianAudioTags t ";
+
+        sql = sqlUtils.condAdd(sql, opts.annotatorType === 'user', 'INNER JOIN Users u ON u.guid=:annotatorGuid ');
+        sql = sqlUtils.condAdd(sql, opts.annotatorType === 'model', 'INNER JOIN AudioAnalysisModels u ON u.guid=:annotatorGuid ');
+
+        sql += "INNER JOIN GuardianAudio a ON a.id=t.audio_id " +
+        "WHERE t.type=:type and t.value=:value and a.guid in (:audios) ";
+
+        sql = sqlUtils.condAdd(sql, opts.annotatorType === 'user', 'and t.tagged_by_user=u.id ');
+        sql = sqlUtils.condAdd(sql, opts.annotatorType === 'model', 'and t.tagged_by_model=u.id ');
+
+        sql += "GROUP BY t.audio_id, t.begins_at_offset, t.ends_at_offset " +
+        "ORDER BY t.begins_at_offset ASC;";
+
+        resolve({
+          sql: sql,
+          opts: opts,
+          audioGuids: audioGuids
+        });
+      })
+    }
+
+    function runQuery(data) {
+      return models.sequelize.query(data.sql, { replacements: data.opts, type: models.sequelize.QueryTypes.SELECT })
+        .then(function(dbTags) {
+          return views.models.countTagsByGuid(req, res, dbTags, data.audioGuids);
+        })
+        .then(function(dbTagsParsed) {
+
+          var api = converter.cloneSequelizeToApi({
+            tags: dbTagsParsed
+          });
+
+          res.status(200).json(api);
+
+        })
+    }
+
+    getAudioGuids()
+      .then(combineQuery)
+      .then(runQuery)
+      .catch(function(err) {
+        console.log("failed to return tags | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return tags"}); }
+      })
+
+  });
 
 
 

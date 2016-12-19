@@ -182,15 +182,15 @@ router.route("/tuning")
       dateTo: req.query.dateTo
     };
 
-    var sql = "SELECT t.shortname, t.audio_guid, t.timezone_offset, count(t.audio_id) as count, avg(t.confidence) as prob, t.measured_at FROM " +
-                "(SELECT g.shortname as shortname, a.guid as audio_guid, a.measured_at as measured_at, audio_id, begins_at_offset, avg(confidence) as confidence, s.timezone_offset as timezone_offset FROM GuardianAudioTags " +
-                  "INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid " +
-                  "INNER JOIN GuardianAudio a on audio_id=a.id " +
-                  "INNER JOIN GuardianSites s on site_id=s.id " +
-                  "INNER JOIN Guardians g on g.id=a.guardian_id " +
-                  "WHERE tagged_by_model=m.id and tagged_by_model is not null and confidence>=:minProbability and value=:type and a.measured_at>=:dateFrom and a.measured_at<:dateTo " +
-                  "group by audio_id, begins_at_offset) t " +
-                "group by audio_id HAVING COUNT(audio_id)>=:minWindows;";
+    var sql = "SELECT g.shortname, a.guid as audio_guid, a.measured_at, count(t.audio_id) as count, avg(t.confidence) as prob, s.timezone_offset, s.timezone FROM GuardianAudioTags t " +
+                "INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid " +
+                "INNER JOIN GuardianAudio a on audio_id=a.id " +
+                "INNER JOIN GuardianSites s on site_id=s.id " +
+                "INNER JOIN Guardians g on g.id=a.guardian_id " +
+                "WHERE tagged_by_model=m.id and tagged_by_model is not null and confidence>=:minProbability and value=:type and a.measured_at>=:dateFrom and a.measured_at<:dateTo " +
+                "GROUP BY t.audio_id " +
+                "HAVING COUNT(t.audio_id)>=:minWindows " +
+                "ORDER BY a.measured_at DESC;";
 
     models.sequelize.query(sql,
       { replacements: opts, type: models.sequelize.QueryTypes.SELECT})
@@ -238,13 +238,11 @@ router.route('/')
 
     var attrs = {
       confidence: body.confidence,
-      windows: body.windows,
       audio_id: body.audio_id,
       type: body.type,
       value: body.value,
       begins_at: body.begins_at,
-      ends_at: body.ends_at,
-      model: body.model
+      ends_at: body.ends_at
     };
 
     function checkAttrValidity() {
@@ -275,9 +273,8 @@ router.route('/')
     var promises = [];
 
     promises.push(models.GuardianAudio.findOne({where: {guid: attrs.audio_id}, include: { model: models.Guardian, as: 'Guardian'}}));
-    promises.push(models.AudioAnalysisModel.findOne({where: { $or: {shortname: attrs.model, guid: attrs.model}}}));
-    promises.push(models.GuardianAudioEventType.findOrCreate({where: {value: attrs.type}, defaults: {value: attrs.type}}));
-    promises.push(models.GuardianAudioEventValue.findOrCreate({where: {value: attrs.value}, defaults: {value: attrs.value}}));
+	  promises.push(models.GuardianAudioEventType.findOrCreate({where: { $or: {value: attrs.type, id: attrs.type}}, defaults: {value: attrs.type}}));
+    promises.push(models.GuardianAudioEventValue.findOrCreate({where: {$or: {value: attrs.value, id: attrs.value}}, defaults: {value: attrs.value}}));
 
     Promise.all(promises)
       .then(function(data) {
@@ -294,18 +291,14 @@ router.route('/')
           httpError(res, 500, null, 'Guardian related to specified Audio has incorrect coordinates');
           return Promise.reject();
         }
-        if (!data[1]) {
-          httpError(res, 404, null, 'Model with given shortname/guid not found');
-          return Promise.reject();
-        }
         // replace names with ids
         attrs.audio_id = data[0].id;
-        attrs.model = data[1].id;
-        attrs.type = data[2][0].id;
-        attrs.value = data[3][0].id;
+        attrs.type = data[1][0].id;
+        attrs.value = data[2][0].id;
 
         attrs.shadow_latitude = data[0].Guardian.latitude;
         attrs.shadow_longitude = data[0].Guardian.longitude;
+	      attrs.windows = 0;
 
         return models.GuardianAudioEvent
           .findOrCreate({

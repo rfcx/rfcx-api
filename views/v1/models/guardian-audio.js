@@ -128,6 +128,10 @@ exports.models = {
 
     return new Promise(function (resolve, reject) {
 
+      if (!dbRows.length) {
+        resolve([]);
+      }
+
       for (i in dbRows) {
 
         var thisRow = dbRows[i], thisGuid = thisRow.guid;
@@ -151,6 +155,7 @@ exports.models = {
         if (thisRow.Site != null) {
           jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid;
           jsonRowsByGuid[thisGuid].timezone_offset = thisRow.Site.timezone_offset;
+          jsonRowsByGuid[thisGuid].timezone = thisRow.Site.timezone;
         }
         if (thisRow.Guardian != null) {
           jsonRowsByGuid[thisGuid].guardian_guid = thisRow.Guardian.guid;

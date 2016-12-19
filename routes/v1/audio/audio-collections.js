@@ -22,7 +22,11 @@ router.route("/audio-collections/by-guids")
     var body = req.body;
 
     if (!body.audios || !body.audios.length) {
+<<<<<<< HEAD
       httpError(res, 400, null, 'Request does not contain audio guids');
+=======
+      return httpError(res, 400, null, 'Request does not contain audio guids');
+>>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
     }
 
     // Convert array of objects to object with keys
@@ -58,6 +62,10 @@ router.route("/audio-collections/by-guids")
     body.audios.forEach(function(audio) {
       audioDataObj[audio.guid] = {
         note: audio.note,
+<<<<<<< HEAD
+=======
+        position: audio.position,
+>>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
         delete: !!audio.delete
       }
     });
@@ -95,6 +103,7 @@ router.route("/audio-collections/by-guids")
       .spread(function (dbGuardianAudioCollection, created) {
         // save collection object
         this.dbGuardianAudioCollection = dbGuardianAudioCollection;
+<<<<<<< HEAD
         var promises = [];
         this.dbAudio.forEach(function(audio) {
           if (audioDataObj[audio.guid].delete) {
@@ -104,6 +113,50 @@ router.route("/audio-collections/by-guids")
             promises.push(dbGuardianAudioCollection.addGuardianAudio(audio, {note: audioDataObj[audio.guid].note? audioDataObj[audio.guid].note : null}));
           }
         });
+=======
+
+        // get all audios related to current collection to get their count
+        return dbGuardianAudioCollection.getGuardianAudios();
+      })
+      .then(function(dbGuardianAudios) {
+        // variable to store new audio file position
+        var currentIndex = 0,
+        // variable to store all existing audio guids
+            existingAudioGuids = [];
+        // go through all existing audio files, collect their guids and calculate the latest position
+        dbGuardianAudios.forEach(function(item) {
+          existingAudioGuids.push(item.guid);
+          if (item.GuardianAudioCollectionsRelation.position >= currentIndex) {
+            currentIndex = item.GuardianAudioCollectionsRelation.position + 1;
+          }
+        });
+        var promises = [];
+        this.dbAudio.forEach(function(audio) {
+          // if file need to be deleted, then create delete promise
+          if (audioDataObj[audio.guid].delete) {
+            promises.push(this.dbGuardianAudioCollection.removeGuardianAudio(audio));
+          }
+          else if (existingAudioGuids.indexOf(audio.guid) !== -1) {
+            var obj = {};
+            if (audioDataObj[audio.guid].note !== undefined) {
+              obj.note = audioDataObj[audio.guid].note;
+            }
+            if (audioDataObj[audio.guid].position !== undefined) {
+              obj.position = audioDataObj[audio.guid].position;
+            }
+            if (Object.keys(obj).length) {
+              promises.push(this.dbGuardianAudioCollection.addGuardianAudio(audio, obj));
+            }
+          }
+          // if file need to be added, then check if it's already exist. if not, create create promise
+          else if (existingAudioGuids.indexOf(audio.guid) === -1) {
+            promises.push(this.dbGuardianAudioCollection.addGuardianAudio(audio, {
+              note: audioDataObj[audio.guid].note? audioDataObj[audio.guid].note : null,
+              position: currentIndex++
+            }));
+          }
+        }.bind(this));
+>>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
         return Promise.all(promises);
       })
       .then(function() {
@@ -122,7 +175,11 @@ router.route("/audio-collections/by-guids")
         api.data.id = this.dbGuardianAudioCollection.guid;
         api.data.attributes.excluded = this.excluded.length? this.excluded : null;
 
+<<<<<<< HEAD
         res.status(200).json(apiEvent);
+=======
+        res.status(200).json(api);
+>>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
 
       })
       .catch(function(err){

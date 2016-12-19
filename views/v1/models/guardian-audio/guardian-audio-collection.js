@@ -24,7 +24,12 @@ exports.models = {
 
           json.audios.push({
             guid: dbRow.guid,
+<<<<<<< HEAD
             note: note
+=======
+            note: note,
+            position: dbRow.GuardianAudioCollectionsRelation.position
+>>>>>>> 09a159874c5bd486551d220e1945f9e62c78a076
           });
 
         }

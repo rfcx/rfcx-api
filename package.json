@@ -31,7 +31,7 @@
     "passport": "^0.2.2",
     "passport-accesstoken": "^0.1.0",
     "passport-local": "^1.0.0",
-    "sequelize": "^3.24.3",
+    "sequelize": "^3.24.8",
     "sequelize-cli": "^1.9.2",
     "serve-favicon": "^2.3.0",
     "sha.js": "^2.4.5"

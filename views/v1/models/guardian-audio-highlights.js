@@ -22,6 +22,7 @@ exports.models = {
         name: dbRow.name,
         is_active: dbRow.is_active,
         location: null,
+        timezone: 'UTC',
         timezone_offset: 0,
         description: dbRow.description,
         flickr_photoset_id:  null,
@@ -39,6 +40,7 @@ exports.models = {
       if (dbRow.Site != null) {
         guardianAudioHighlight.flickr_photoset_id = dbRow.Site.flickr_photoset_id;
         guardianAudioHighlight.timezone_offset = dbRow.Site.timezone_offset;
+        guardianAudioHighlight.timezone = dbRow.Site.timezone;
         guardianAudioHighlight.location = dbRow.Site.description;
       }
 
