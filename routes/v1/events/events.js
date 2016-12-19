@@ -1,5 +1,5 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require("../../../models");
+var models = require("../../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../../views/v1");
@@ -9,9 +9,11 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require("bluebird");
 var ApiConverter = require("../../../utils/api-converter");
+var aws = require("../../../utils/external/aws.js").aws();
+
 
 router.route("/event")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
@@ -19,8 +21,8 @@ router.route("/event")
       isFile = true;
     }
 
-    var limit  = parseInt(req.query.limit) || 1000,
-        offset = parseInt(req.query.offset) || 0;
+    var limit = parseInt(req.query.limit) || 1000,
+      offset = parseInt(req.query.offset) || 0;
 
     // by default all clauses are empty. we will fill them if corresponding params are defined in url
     var whereClauses = {
@@ -147,13 +149,13 @@ router.route("/event")
           }
         ]
       })
-      .then(function(dbEvents){
+      .then(function (dbEvents) {
         if (contentType === 'json') {
-          return views.models.guardianAudioEventsJson(req,res,dbEvents.rows)
-            .then(function(json){
+          return views.models.guardianAudioEventsJson(req, res, dbEvents.rows)
+            .then(function (json) {
               // if client requested json file, then respond with file
               // if not, respond with simple json
-              res.contentType(isFile? 'text/json' : 'application/json');
+              res.contentType(isFile ? 'text/json' : 'application/json');
               if (isFile) {
                 res.attachment('event.json');
               }
@@ -161,8 +163,8 @@ router.route("/event")
             });
         }
         else if (contentType === 'csv') {
-          return views.models.guardianAudioEventsCSV(req,res,dbEvents.rows)
-            .then(function(csv){
+          return views.models.guardianAudioEventsCSV(req, res, dbEvents.rows)
+            .then(function (csv) {
               res.contentType('text/csv');
               res.attachment('event.csv');
               res.status(200).send(csv);
@@ -177,7 +179,7 @@ router.route("/event")
   });
 
 router.route("/tuning")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
 
     var converter = new ApiConverter("event", req);
 
@@ -191,18 +193,18 @@ router.route("/tuning")
     };
 
     var sql = "SELECT g.shortname, a.guid as audio_guid, a.measured_at, count(t.audio_id) as count, avg(t.confidence) as prob, s.timezone_offset, s.timezone FROM GuardianAudioTags t " +
-                "INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid " +
-                "INNER JOIN GuardianAudio a on audio_id=a.id " +
-                "INNER JOIN GuardianSites s on site_id=s.id " +
-                "INNER JOIN Guardians g on g.id=a.guardian_id " +
-                "WHERE tagged_by_model=m.id and tagged_by_model is not null and confidence>=:minProbability and value=:type and a.measured_at>=:dateFrom and a.measured_at<:dateTo " +
-                "GROUP BY t.audio_id " +
-                "HAVING COUNT(t.audio_id)>=:minWindows " +
-                "ORDER BY a.measured_at DESC;";
+      "INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid " +
+      "INNER JOIN GuardianAudio a on audio_id=a.id " +
+      "INNER JOIN GuardianSites s on site_id=s.id " +
+      "INNER JOIN Guardians g on g.id=a.guardian_id " +
+      "WHERE tagged_by_model=m.id and tagged_by_model is not null and confidence>=:minProbability and value=:type and a.measured_at>=:dateFrom and a.measured_at<:dateTo " +
+      "GROUP BY t.audio_id " +
+      "HAVING COUNT(t.audio_id)>=:minWindows " +
+      "ORDER BY a.measured_at DESC;";
 
     models.sequelize.query(sql,
-      { replacements: opts, type: models.sequelize.QueryTypes.SELECT})
-      .then(function(data) {
+      {replacements: opts, type: models.sequelize.QueryTypes.SELECT})
+      .then(function (data) {
         var apiEvent = converter.cloneSequelizeToApi(data);
         res.status(200).json(apiEvent);
       })
@@ -213,32 +215,36 @@ router.route("/tuning")
   });
 
 router.route("/:event_id")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
 
     return models.GuardianEvent
       .findAll({
-        where: { guid: req.params.event_id },
-        include: [ { all: true } ],
+        where: {guid: req.params.event_id},
+        include: [{all: true}],
         limit: 1
-      }).then(function(dbEvent){
+      }).then(function (dbEvent) {
 
         if (dbEvent.length < 1) {
           httpError(res, 404, "database");
         } else {
-          views.models.guardianEvents(req,res,dbEvent)
-            .then(function(json){ res.status(200).json(json); });
+          views.models.guardianEvents(req, res, dbEvent)
+            .then(function (json) {
+              res.status(200).json(json);
+            });
         }
 
-    }).catch(function(err){
-      console.log(err);
-      if (!!err) { httpError(res, 500, "database"); }
-    });
+      }).catch(function (err) {
+        console.log(err);
+        if (!!err) {
+          httpError(res, 500, "database");
+        }
+      });
 
   })
 ;
 
 router.route('/')
-  .post(passport.authenticate("token",{session:false}), function(req,res) {
+  .post(passport.authenticate("token", {session: false}), function (req, res) {
 
     var converter = new ApiConverter("event", req);
 
@@ -268,7 +274,7 @@ router.route('/')
 
       return {
         status: !missingAttrs.length,
-        missingAttrsStr: missingAttrs.length? 'Missing required attributes:' + missingAttrs : null
+        missingAttrsStr: missingAttrs.length ? 'Missing required attributes:' + missingAttrs : null
       };
     }
 
@@ -282,13 +288,22 @@ router.route('/')
 
     var promises = [];
 
-    promises.push(models.GuardianAudio.findOne({where: {guid: attrs.audio_id}, include: { model: models.Guardian, as: 'Guardian'}}));
-    promises.push(models.AudioAnalysisModel.findOne({where: { $or: {shortname: attrs.model, guid: attrs.model}}}));
-    promises.push(models.GuardianAudioEventType.findOrCreate({where: { $or: {value: attrs.type, id: attrs.type}}, defaults: {value: attrs.type}}));
-    promises.push(models.GuardianAudioEventValue.findOrCreate({where: {$or: {value: attrs.value, id: attrs.value}}, defaults: {value: attrs.value}}));
+    promises.push(models.GuardianAudio.findOne({
+      where: {guid: attrs.audio_id},
+      include: {model: models.Guardian, as: 'Guardian'}
+    }));
+    promises.push(models.AudioAnalysisModel.findOne({where: {$or: {shortname: attrs.model, guid: attrs.model}}}));
+    promises.push(models.GuardianAudioEventType.findOrCreate({
+      where: {$or: {value: attrs.type, id: attrs.type}},
+      defaults: {value: attrs.type}
+    }));
+    promises.push(models.GuardianAudioEventValue.findOrCreate({
+      where: {$or: {value: attrs.value, id: attrs.value}},
+      defaults: {value: attrs.value}
+    }));
 
     Promise.all(promises)
-      .then(function(data) {
+      .then(function (data) {
 
         if (!data[0]) {
           httpError(res, 404, null, 'Audio with given guid not found');
@@ -308,11 +323,16 @@ router.route('/')
         }
         // replace names with ids
         attrs.audio_id = data[0].id;
+        this.audio_guid = data[0].guid;
         attrs.model = data[1].id;
+        this.model = data[1].shortname;
         attrs.type = data[2][0].id;
+        this.type = data[2][0].value;
         attrs.value = data[3][0].id;
+        this.value = data[3][0].value;
 
         attrs.guardian = data[0].Guardian.id;
+        this.guardian = data[0].Guardian.shortname;
         attrs.shadow_latitude = data[0].Guardian.latitude;
         attrs.shadow_longitude = data[0].Guardian.longitude;
 
@@ -324,77 +344,107 @@ router.route('/')
             defaults: attrs
           })
       })
-      .spread(function(dbGuardianAudioEvent, created) {
+      .spread(function (dbGuardianAudioEvent, created) {
         if (created) {
           return Promise.resolve(dbGuardianAudioEvent);
         }
         else {
           return models.GuardianAudioEvent
             .update(attrs, {where: {guid: dbGuardianAudioEvent.guid}})
-            .spread(function() {
+            .spread(function () {
               return models.GuardianAudioEvent.findOne({where: {guid: dbGuardianAudioEvent.guid}});
             });
         }
       })
-      .then(function(data) {
+      .then(function (data) {
         var apiEvent = converter.mapSequelizeToApi(data);
         res.status(200).json(apiEvent);
-
       })
-      .catch(function(err) {
-        if (!!err) {
-          console.log(err);
-          if (err.name && err.name === 'SequelizeValidationError') {
-            httpError(res, 400, null, 'Input data has incorrect format');
+      .then(function () {
+        var msg = {
+          type: this.type,
+          detected: this.value,
+          guardian: this.guardian,
+          model: this.model,
+          audio_guid: this.audio_guid
+        };
+
+        // currently we only send out alerts.
+        // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
+        if (msg.type == 'alert') {
+            return aws.publish("rfcx-detection-alerts", msg)
           }
-          else {
-            httpError(res, 500, "database");
+        })
+        .catch(function (err) {
+          if (!!err) {
+            console.log(err);
+            if (err.name && err.name === 'SequelizeValidationError') {
+              httpError(res, 400, null, 'Input data has incorrect format');
+            }
+            else {
+              httpError(res, 500, "database");
+            }
           }
-        }
-      });
+        });
 
   });
 
 router.route("/:event_id/review")
-  .post(passport.authenticate("token",{session:false}), function(req,res) {
+  .post(passport.authenticate("token", {session: false}), function (req, res) {
 
     models.GuardianEvent
-      .findAll({ 
-        where: { guid: req.params.event_id }, 
-        include: [ { all: true } ],
+      .findAll({
+        where: {guid: req.params.event_id},
+        include: [{all: true}],
         limit: 1
-      }).then(function(dbEvent){
+      }).then(function (dbEvent) {
 
-        if (dbEvent.length < 1) {
-          httpError(res, 404, "database");
-        } else {
+      if (dbEvent.length < 1) {
+        httpError(res, 404, "database");
+      } else {
 
-          var reviewerInput = {
-            classification: (req.body.classification != null) ? req.body.classification.toLowerCase() : null,
-            begins_at: (req.body.begins_at != null) ? new Date(req.body.begins_at) : null,
-            duration: (req.body.duration != null) ? parseInt(req.body.duration) : null,
-            invalidated: (req.body.invalidated != null) ? req.body.invalidated : null
-          };
+        var reviewerInput = {
+          classification: (req.body.classification != null) ? req.body.classification.toLowerCase() : null,
+          begins_at: (req.body.begins_at != null) ? new Date(req.body.begins_at) : null,
+          duration: (req.body.duration != null) ? parseInt(req.body.duration) : null,
+          invalidated: (req.body.invalidated != null) ? req.body.invalidated : null
+        };
 
-          if (reviewerInput.classification != null) { dbEvent[0].classification_reviewer = reviewerInput.classification; }
-          if (reviewerInput.begins_at != null) { dbEvent[0].begins_at_reviewer = reviewerInput.begins_at; }
-          if (reviewerInput.duration != null) { dbEvent[0].duration_reviewer = reviewerInput.duration; }
-          if (reviewerInput.invalidated != null) { if (reviewerInput.invalidated == "true") { dbEvent[0].invalidated_reviewer = true; } else if (reviewerInput.invalidated == "false") { dbEvent[0].invalidated_reviewer = false; } }
-
-
-          dbEvent[0].reviewed_at = new Date();
-          dbEvent[0].reviewer_id = req.rfcx.auth_token_info.owner_id;
-
-          dbEvent[0].save();
-
-          views.models.guardianEvents(req,res,dbEvent)
-            .then(function(json){ res.status(200).json(json); });
-
+        if (reviewerInput.classification != null) {
+          dbEvent[0].classification_reviewer = reviewerInput.classification;
+        }
+        if (reviewerInput.begins_at != null) {
+          dbEvent[0].begins_at_reviewer = reviewerInput.begins_at;
+        }
+        if (reviewerInput.duration != null) {
+          dbEvent[0].duration_reviewer = reviewerInput.duration;
+        }
+        if (reviewerInput.invalidated != null) {
+          if (reviewerInput.invalidated == "true") {
+            dbEvent[0].invalidated_reviewer = true;
+          } else if (reviewerInput.invalidated == "false") {
+            dbEvent[0].invalidated_reviewer = false;
+          }
         }
 
-    }).catch(function(err){
+
+        dbEvent[0].reviewed_at = new Date();
+        dbEvent[0].reviewer_id = req.rfcx.auth_token_info.owner_id;
+
+        dbEvent[0].save();
+
+        views.models.guardianEvents(req, res, dbEvent)
+          .then(function (json) {
+            res.status(200).json(json);
+          });
+
+      }
+
+    }).catch(function (err) {
       console.log(err);
-      if (!!err) { httpError(res, 500, "database"); }
+      if (!!err) {
+        httpError(res, 500, "database");
+      }
     });
 
   })

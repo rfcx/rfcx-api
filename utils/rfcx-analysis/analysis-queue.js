@@ -4,6 +4,7 @@ var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var models  = require("../../models");
 
+// Todo: Refactor to use new aws.publish function
 exports.analysisUtils = {
     /**
      * queue perceptions for cognitive analysis
