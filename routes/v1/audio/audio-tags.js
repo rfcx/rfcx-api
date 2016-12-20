@@ -143,8 +143,8 @@ router.route("/:audio_id/tags")
           value: this.dbModel.event_value,
           begins_at: this.eventBeginsAt,
           ends_at: this.eventEndsAt,
-          audio_id: req.params.audio_id
-
+          audio_id: req.params.audio_id,
+          model:  this.dbModel.id
         };
 
         var options = {
