@@ -366,7 +366,9 @@ router.route('/')
           detected: this.value,
           guardian: this.guardian,
           model: this.model,
-          audio_guid: this.audio_guid
+          audio_guid: this.audio_guid,
+          // Todo: generate a proper url string, need some sleep but will replace it tomorrow
+          listen: 'https://console.rfcx.org/#/classification/altomayo?guid=' + this.audio_guid +  '&typevalue=chainsaw&access=read'
         };
 
         // currently we only send out alerts.
