@@ -144,7 +144,7 @@ router.route("/:audio_id/tags")
           begins_at: this.eventBeginsAt,
           ends_at: this.eventEndsAt,
           audio_id: req.params.audio_id,
-          model:  this.dbModel.id
+          model:  this.dbModel.shortname
         };
 
         var options = {
