@@ -317,6 +317,12 @@ router.route('/')
       model: body.model
     };
 
+    // default windows to 0 if none are provided
+    // Todo: delete windows altogether
+    if (! attrs.windows) {
+      attrs.windows = 0;
+    }
+
     function checkAttrValidity() {
       var missingAttrs = '';
 

@@ -239,8 +239,10 @@ exports.audio = {
       try {
 
         var modelGuids = [  "8f3ffc6c-4364-4e2a-aa30-563a8cf6d794", 
-                            "a5804661-b75a-4d62-9f91-a5ecfd64146d"
-                          ];
+                            "a5804661-b75a-4d62-9f91-a5ecfd64146d",
+                            "87902751-d4b2-4831-8888-f31124e40830"
+
+        ];
 
         for (i in modelGuids) {
 
