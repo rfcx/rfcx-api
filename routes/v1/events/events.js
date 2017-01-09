@@ -232,7 +232,44 @@ router.route("/stats/guardian")
 
   });
 
+router.route("/stats/dates")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
 
+    var contentType = req.rfcx.content_type;
+    var isFile = false;
+    if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
+      isFile = true;
+    }
+
+    queryData(req)
+      .then(function (dbEvents) {
+        if (contentType === 'json') {
+          return views.models.guardianAudioEventsByDatesJson(req, res, dbEvents.rows)
+            .then(function (json) {
+              // if client requested json file, then respond with file
+              // if not, respond with simple json
+              res.contentType(isFile ? 'text/json' : 'application/json');
+              if (isFile) {
+                res.attachment('event.json');
+              }
+              res.status(200).send(json);
+            });
+        }
+        else if (contentType === 'csv') {
+          return views.models.guardianAudioEventsByGuardianCSV(req, res, dbEvents.rows)
+            .then(function (csv) {
+              res.contentType('text/csv');
+              res.attachment('event.csv');
+              res.status(200).send(csv);
+            });
+        }
+      })
+      .catch(function (err) {
+        console.log('Error while searching Audio Events', arguments);
+        res.status(500).json({msg: err});
+      });
+
+  });
 
 router.route("/tuning")
   .get(passport.authenticate("token", {session: false}), function (req, res) {

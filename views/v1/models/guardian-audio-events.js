@@ -60,6 +60,33 @@ function countEventsByGuardians(dbAudioEvents) {
   });
 }
 
+function countEventsByDates(dbAudioEvents) {
+  var json = {
+    dates: {}
+  };
+
+  dbAudioEvents.forEach(function(event) {
+    var date = event.begins_at,
+      dateStr = (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
+
+    if (!json.dates[dateStr]) {
+      json.dates[dateStr] = {};
+    }
+
+    var value = event.Value.value;
+    var dateObj = json.dates[dateStr];
+
+    if (!dateObj[value]) {
+      dateObj[value] = 0;
+    }
+
+    dateObj[value]++;
+
+  });
+
+  return json.dates;
+}
+
 exports.models = {
 
   guardianAudioEventsJson: function(req,res,dbAudioEvents) {
@@ -115,6 +142,25 @@ exports.models = {
         if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
 
         resolve(countEventsByGuardians(dbAudioEvents));
+
+      }
+      catch (err) {
+        reject(err);
+      }
+
+    })
+
+  },
+
+  guardianAudioEventsByDatesJson: function(req,res,dbAudioEvents) {
+
+    return new Promise(function(resolve,reject) {
+
+      try {
+
+        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
+
+        resolve(countEventsByDates(dbAudioEvents));
 
       }
       catch (err) {
