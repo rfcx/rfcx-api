@@ -47,6 +47,66 @@ exports.models = {
 
   },
 
+  guardianAudioEventsByGuardianJson: function(req,res,dbAudioEvents) {
+
+    return new Promise(function(resolve,reject) {
+
+      try {
+
+        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
+
+        var json = {
+          guardians: {}
+        };
+
+        for (var i = 0; i < dbAudioEvents.length; i++) {
+
+          var dbRow = dbAudioEvents[i];
+
+          if (!dbRow.Audio || !dbRow.Guardian) {
+            continue;
+          }
+
+          var dbGuardian = dbRow.Guardian,
+              dbGuardianGuid = dbGuardian.guid;
+
+          if (!json.guardians[dbGuardianGuid]) {
+            json.guardians[dbGuardianGuid] = {
+              guid: dbGuardianGuid,
+              shortname: dbGuardian.shortname,
+              coords: {
+                lat: dbGuardian.latitude,
+                lon: dbGuardian.longitude
+              },
+              events: {}
+            };
+          }
+
+          var guardian = json.guardians[dbGuardianGuid],
+              value = dbRow.Value.value;
+
+          if (!guardian.events[value]) {
+            guardian.events[value] = 0;
+          }
+          guardian.events[value]++;
+
+        }
+
+        var guardiansArr = Object.keys(json.guardians).map(function(key) {
+          return json.guardians[key];
+        });
+
+        resolve(guardiansArr);
+
+      }
+      catch (err) {
+        reject(err);
+      }
+
+    })
+
+  },
+
   guardianAudioEventsCSV: function(req,res,dbAudioEvents) {
 
     return new Promise(function(resolve,reject) {
