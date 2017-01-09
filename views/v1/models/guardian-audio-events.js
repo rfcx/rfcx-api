@@ -65,6 +65,10 @@ function countEventsByDates(dbAudioEvents) {
     dates: {}
   };
 
+  dbAudioEvents = dbAudioEvents.sort(function(a,b) {
+    return a.begins_at > b.begins_at;
+  });
+
   dbAudioEvents.forEach(function(event) {
     var date = event.begins_at,
       dateStr = (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
@@ -247,6 +251,57 @@ exports.models = {
           }
           csv += '\r\n';
         });
+
+        resolve(csv);
+
+      }
+      catch (err) {
+        reject(err);
+      }
+
+    });
+
+  },
+
+  guardianAudioEventsByDatesCSV: function(req,res,dbAudioEvents) {
+
+    return new Promise(function(resolve,reject) {
+
+      try {
+
+        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
+
+        var csv = 'date,';
+
+        var labelValues = extractLabelValues(dbAudioEvents);
+
+        labelValues.forEach(function(value) {
+          csv += value + ',';
+        });
+
+        csv = csv.slice(0, -1);
+        csv += '\r\n';
+
+        var json = countEventsByDates(dbAudioEvents);
+
+        for (var key in json) {
+          if (json.hasOwnProperty(key)) {
+
+            var item = json[key];
+
+            csv += key + ',';
+
+            labelValues.forEach(function(value) {
+              csv += (item[value] !== undefined? item[value] : 0) + ',';
+            });
+
+            if (labelValues.length) {
+              csv = csv.slice(0, -1);
+            }
+            csv += '\r\n';
+
+          }
+        }
 
         resolve(csv);
 
