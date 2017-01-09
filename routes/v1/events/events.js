@@ -217,7 +217,7 @@ router.route("/stats/guardian")
             });
         }
         else if (contentType === 'csv') {
-          return views.models.guardianAudioEventsCSV(req, res, dbEvents.rows)
+          return views.models.guardianAudioEventsByGuardianCSV(req, res, dbEvents.rows)
             .then(function (csv) {
               res.contentType('text/csv');
               res.attachment('event.csv');
