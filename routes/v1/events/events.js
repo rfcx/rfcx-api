@@ -10,6 +10,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require("bluebird");
 var ApiConverter = require("../../../utils/api-converter");
 var aws = require("../../../utils/external/aws.js").aws();
+var moment = require('moment');
 
 
 function queryData(req) {
@@ -154,6 +155,42 @@ function queryData(req) {
     })
 }
 
+function processStatsByDates(req, res) {
+  var contentType = req.rfcx.content_type;
+  var isFile = false;
+  if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
+    isFile = true;
+  }
+
+  queryData(req)
+    .then(function (dbEvents) {
+      if (contentType === 'json') {
+        return views.models.guardianAudioEventsByDatesJson(req, res, dbEvents.rows)
+          .then(function (json) {
+            // if client requested json file, then respond with file
+            // if not, respond with simple json
+            res.contentType(isFile ? 'text/json' : 'application/json');
+            if (isFile) {
+              res.attachment('event.json');
+            }
+            res.status(200).send(json);
+          });
+      }
+      else if (contentType === 'csv') {
+        return views.models.guardianAudioEventsByDatesCSV(req, res, dbEvents.rows)
+          .then(function (csv) {
+            res.contentType('text/csv');
+            res.attachment('event.csv');
+            res.status(200).send(csv);
+          });
+      }
+    })
+    .catch(function (err) {
+      console.log('Error while searching Audio Events', arguments);
+      res.status(500).json({msg: err});
+    });
+}
+
 router.route("/event")
   .get(passport.authenticate("token", {session: false}), function (req, res) {
 
@@ -233,41 +270,33 @@ router.route("/stats/guardian")
   });
 
 router.route("/stats/dates")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate("token", {session: false}), processStatsByDates);
 
-    var contentType = req.rfcx.content_type;
-    var isFile = false;
-    if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
-      isFile = true;
+router.route("/stats/weekly")
+  .get(passport.authenticate("token", {session: false}), function(req, res) {
+
+    if (!req.query) {
+      req.query = {};
     }
 
-    queryData(req)
-      .then(function (dbEvents) {
-        if (contentType === 'json') {
-          return views.models.guardianAudioEventsByDatesJson(req, res, dbEvents.rows)
-            .then(function (json) {
-              // if client requested json file, then respond with file
-              // if not, respond with simple json
-              res.contentType(isFile ? 'text/json' : 'application/json');
-              if (isFile) {
-                res.attachment('event.json');
-              }
-              res.status(200).send(json);
-            });
-        }
-        else if (contentType === 'csv') {
-          return views.models.guardianAudioEventsByDatesCSV(req, res, dbEvents.rows)
-            .then(function (csv) {
-              res.contentType('text/csv');
-              res.attachment('event.csv');
-              res.status(200).send(csv);
-            });
-        }
-      })
-      .catch(function (err) {
-        console.log('Error while searching Audio Events', arguments);
-        res.status(500).json({msg: err});
-      });
+    var dateStr = moment().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
+    req.query.starting_after = dateStr;
+
+    processStatsByDates(req, res);
+
+  });
+
+router.route("/stats/monthly")
+  .get(passport.authenticate("token", {session: false}), function(req, res) {
+
+    if (!req.query) {
+      req.query = {};
+    }
+
+    var dateStr = moment().subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss');
+    req.query.starting_after = dateStr;
+
+    processStatsByDates(req, res);
 
   });
 
