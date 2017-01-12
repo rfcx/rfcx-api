@@ -80,9 +80,9 @@ function queryData(req) {
     };
   }
 
-  if (req.query.values && Array.isArray(req.query.values)) {
+  if (req.query.values) {
     whereClauses.value.value = {
-      $in: req.query.values
+      $in: Array.isArray(req.query.values)? req.query.values : [req.query.values]
     };
   }
 
