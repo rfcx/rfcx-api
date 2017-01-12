@@ -38,8 +38,8 @@ function countEventsByGuardians(dbAudioEvents) {
         guid: dbGuardianGuid,
         shortname: dbGuardian.shortname,
         coords: {
-          lat: dbGuardian.latitude,
-          lon: dbGuardian.longitude
+          lat: dbRow.shadow_latitude,
+          lon: dbRow.shadow_longitude
         },
         events: {}
       };
