@@ -20,6 +20,20 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    firstname: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    lastname: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: true,
