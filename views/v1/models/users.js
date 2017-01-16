@@ -16,6 +16,8 @@ exports.models = {
         guid: dbRow.guid,
         type: dbRow.type,
         username: dbRow.username,
+        firstname: dbRow.firstname,
+        lastname: dbRow.lastname,
         email: dbRow.email,
         is_email_validated: dbRow.is_email_validated,
         last_login_at: dbRow.last_login_at,
