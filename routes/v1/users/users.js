@@ -76,6 +76,8 @@ router.route("/register")
 
     var userInput = {
       type: ((req.body.type == null) ? "unspecified" : req.body.type.toLowerCase()),
+      firstname: req.body.firstname || '',
+      lastname: req.body.lastname || '',
       email: req.body.email.toLowerCase(),
       pswd: req.body.password
     };
@@ -93,6 +95,8 @@ router.route("/register")
         } else {
 
           dbUser.type = userInput.type;
+          dbUser.firstname = userInput.firstname;
+          dbUser.lastname = userInput.lastname;
 
           var password_salt = hash.randomHash(320);
           dbUser.auth_password_salt = password_salt;
