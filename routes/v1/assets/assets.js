@@ -13,6 +13,10 @@ router.route("/audio/:audio_id")
         include: [{ all: true }]
       }).then(function(dbAudio){
 
+        if (!dbAudio) {
+          return res.status(404).json({msg: "Audio with given guid not found."});
+        }
+
         var audio_file_extensions = [ "m4a", "mp3", "flac", "opus"/*, "wav"*/ ];
 
         if (audio_file_extensions.indexOf(req.rfcx.content_type) >= 0) {
