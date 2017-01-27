@@ -300,6 +300,34 @@ router.route("/stats/monthly")
 
   });
 
+router.route("/stats/half-year")
+  .get(passport.authenticate("token", {session: false}), function(req, res) {
+
+    if (!req.query) {
+      req.query = {};
+    }
+
+    var dateStr = moment().subtract(6, 'month').format('YYYY-MM-DD HH:mm:ss');
+    req.query.starting_after = dateStr;
+
+    processStatsByDates(req, res);
+
+  });
+
+router.route("/stats/year")
+  .get(passport.authenticate("token", {session: false}), function(req, res) {
+
+    if (!req.query) {
+      req.query = {};
+    }
+
+    var dateStr = moment().subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
+    req.query.starting_after = dateStr;
+
+    processStatsByDates(req, res);
+
+  });
+
 router.route("/tuning")
   .get(passport.authenticate("token", {session: false}), function (req, res) {
 
