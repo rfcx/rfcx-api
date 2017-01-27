@@ -1,5 +1,6 @@
 var util    = require("util"),
-    Promise = require("bluebird");
+    Promise = require("bluebird"),
+    moment  = require("moment");
 
 function extractLabelValues(dbAudioEvents) {
 
@@ -70,8 +71,7 @@ function countEventsByDates(dbAudioEvents) {
   });
 
   dbAudioEvents.forEach(function(event) {
-    var date = event.begins_at,
-      dateStr = (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
+    var dateStr = moment(event.begins_at).format('MM/DD/YYYY');
 
     if (!json.dates[dateStr]) {
       json.dates[dateStr] = {};
