@@ -7,6 +7,7 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 var moment = require('moment');
+var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 function removeExpiredResetPasswordTokens() {
@@ -248,6 +249,53 @@ router.route("/reset-password")
         this.dbToken.destroy();
         // and check for other tokens being expired
         removeExpiredResetPasswordTokens();
+        res.status(200).json({});
+        return true;
+      })
+      .catch(function(err) {
+        if (!!err) {
+          console.log(err);
+          httpError(res, 500, "database");
+        }
+      });
+  });
+
+router.route("/change-password")
+  .post(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
+
+    if (!req.body.guid) {
+      return httpError(res, 400, null, 'You need to specify user guid in request payload.');
+    }
+    if (!req.body.password) {
+      return httpError(res, 400, null, 'You need to specify current password in request payload.');
+    }
+    if (!req.body.newPassword) {
+      return httpError(res, 400, null, 'You need to specify new password in request payload.');
+    }
+    // user must be logged in with his account to change the password
+    if (req.body.guid !== req.rfcx.auth_token_info.guid) {
+      return httpError(res, 403, null, 'You are not allowed to change stranger\'s password.');
+    }
+    models.User
+      .findOne({
+        where: { guid: req.body.guid }
+      })
+      .then(function(dbUser) {
+        if (!dbUser) {
+          httpError(res, 404, null, 'User with specified guid not found.');
+          return Promise.reject();
+        }
+        if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
+          httpError(res, 403, null, 'Password is incorrect.');
+          return Promise.reject();
+        }
+        var passwordSalt = hash.randomHash(320);
+        dbUser.auth_password_salt = passwordSalt;
+        dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, req.body.newPassword);
+        dbUser.auth_password_updated_at = new Date();
+        return dbUser.save();
+      })
+      .then(function() {
         res.status(200).json({});
         return true;
       })
