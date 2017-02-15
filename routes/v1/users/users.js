@@ -181,7 +181,7 @@ router.route("/send-reset-password-link")
       })
       .then(function(dbToken) {
         // send an email to user with link to change password
-        var url = process.env.CONSOLE_BASE_URL + 'change-password?token=' + dbToken.guid;
+        var url = process.env.CONSOLE_BASE_URL + 'reset-password?token=' + dbToken.guid;
         console.log('sending email with reset password link', url);
         return dbToken;
       })
