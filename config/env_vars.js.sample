@@ -27,6 +27,9 @@ exports.env = {
   NEW_RELIC_KEY: "",
   MANDRILL_KEY: "",
 
-  SEQUELIZE_VERBOSE: false
+  SEQUELIZE_VERBOSE: false,
+
+  // it must have /#/ at the end
+  CONSOLE_BASE_URL: 'http://localhost:3000/#/'
   
 }

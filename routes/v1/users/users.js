@@ -6,7 +6,24 @@ var token = require("../../../utils/internal-rfcx/token.js").token;
 var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
+var moment = require('moment');
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+
+function removeExpiredResetPasswordTokens() {
+  models.ResetPasswordToken
+    .destroy({
+      where: {expires_at: {$lt: new Date()}}
+    })
+    .then(function (count) {
+      if (!!count) {
+        console.log('Deleted ' + count + ' expired "reset password" token(s)');
+      }
+      return null;
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
 
 router.route("/login")
   .post(function(req,res) {
@@ -134,6 +151,112 @@ router.route("/register")
         });
       });
   
+  });
+
+router.route("/send-reset-password-link")
+  .post(function(req,res) {
+
+    // first of all, check if user with requested e-mail exists
+    models.User
+      .findOne({
+        where: { email: req.body.email }
+      })
+      .then(function(dbUser){
+        // if doesn't exists, simply do nothing
+        // don't tell a client that e-mail doesn't exist in terms of security
+        // this will prevent us from brute-force users by e-mails
+        if (!dbUser) {
+          res.status(200).json({});
+          return Promise.reject();
+        }
+        else {
+          // create reset password token for founded user which will expire in 1 day
+          return models.ResetPasswordToken
+            .create({
+              user_id: dbUser.id,
+              expires_at: moment().add(1, 'day')
+            });
+        }
+      })
+      .then(function(dbToken) {
+        // send an email to user with link to change password
+        var url = process.env.CONSOLE_BASE_URL + 'change-password?token=' + dbToken.guid;
+        console.log('sending email with reset password link', url);
+        return dbToken;
+      })
+      .then(function(dbToken) {
+        // return success to client with the time of token expiration
+        res.status(200).json({
+          expires_at: dbToken.expires_at
+        });
+      })
+      .catch(function(err) {
+        if (!!err) {
+          console.log(err);
+          httpError(res, 500, "database");
+        }
+      });
+
+  });
+
+router.route("/reset-password")
+  .post(function(req,res) {
+
+    // find reset password token by specified guid
+    models.ResetPasswordToken
+      .findOne({
+        where: { guid: req.body.token }
+      })
+      .bind({})
+      .then(function(dbToken) {
+        if (!dbToken) {
+          // if user specified not existing token, then show a message and cancel password reset
+          httpError(res, 404, null, 'Such token doesn\'t exist. It might be expired or invalid.');
+          return Promise.reject();
+        }
+        this.dbToken = dbToken;
+        // if token is expired, then show this message to user and cancel password reset. Destroy this token.
+        if (new Date(dbToken.expires_at) < new Date()) {
+          this.dbToken.destroy();
+          httpError(res, 400, null, 'Your token has expired. Please start reset password process once again.');
+          return Promise.reject();
+        }
+        else {
+          // if everything is ok, then find user by specified in token id
+          return models.User
+            .findOne({
+              where: { id: dbToken.user_id }
+            });
+        }
+      })
+      .then(function(dbUser) {
+        // if user was not found, then token has invalid user data. Destroy this token.
+        if (!dbUser) {
+          this.dbToken.destroy();
+          httpError(res, 400, null, 'Invalid token. Please start reset password process once again.');
+          return Promise.reject();
+        }
+        // encrypt user's new password and save it
+        var passwordSalt = hash.randomHash(320);
+        dbUser.auth_password_salt = passwordSalt;
+        dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, req.body.password);
+        dbUser.auth_password_updated_at = new Date();
+        return dbUser.save();
+      })
+      .then(function() {
+        // token doesn't need anymore, destroy it
+        this.dbToken.destroy();
+        // and check for other tokens being expired
+        removeExpiredResetPasswordTokens();
+        res.status(200).json({});
+        return true;
+      })
+      .catch(function(err) {
+        if (!!err) {
+          console.log(err);
+          httpError(res, 500, "database");
+        }
+      });
   });
 
 // TO DO security measure to ensure that not any user can see any other user
