@@ -28,8 +28,8 @@ router.route("/:guardian_id/audio/analysis")
 
 
         var modelGuid = req.query.model_id;
-
-        models.GuardianAudio
+        var audioGuids = [];
+        return models.GuardianAudio
           .findAll({ 
             where: dbQuery, 
 //            include: [ { all: true } ], 
@@ -42,12 +42,13 @@ router.route("/:guardian_id/audio/analysis")
               httpError(res, 404, "database");
             } else {
 
-              var audioGuids = [];
+
 
               if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
+              var batch = [];
               for (i in dbAudio) {
 
-                analysisUtils.queueAudioForAnalysis("rfcx-analysis-batch", modelGuid, {
+                  batch.push({
                   audio_guid: dbAudio[i].guid,
                   api_url_domain: req.rfcx.api_url_domain,
                   audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
@@ -58,10 +59,11 @@ router.route("/:guardian_id/audio/analysis")
                 audioGuids.push(dbAudio[i].guid);
               }
 
-              res.status(200).json(audioGuids);
-
+              return analysisUtils.batchQueueAudioForAnalysis("rfcx-analysis-batch", modelGuid, batch);
             }
 
+        }).then(function () {
+          res.status(200).json(audioGuids);
         }).catch(function(err){
           console.log("failed to requeue audio | "+err);
           if (!!err) { res.status(500).json({msg:"failed to requeue audio"}); }
