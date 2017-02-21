@@ -5,7 +5,7 @@ var aws = require("../../utils/external/aws.js").aws();
 var models  = require("../../models");
 
 
-function snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel, apiWriteBackEndpoint){
+function snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel){
     return new Promise(function(resolve, reject) {
         var apiUrlDomain = options.api_url_domain,
 
@@ -19,6 +19,7 @@ function snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel, apiWrit
         apiToken = tokenInfo.token,
         apiTokenExpiresAt = tokenInfo.token_expires_at,
         apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
+      var apiWriteBackEndpoint = "/v1/audio/"+options.audio_guid+"/tags";
 
       aws.sns().publish({
         TopicArn: aws.snsTopicArn(queueName),
@@ -233,16 +234,16 @@ exports.analysisUtils = {
           console.log("failed to find analysis model");
           reject(new Error());
         } else {
-            var apiWriteBackEndpoint = "/v1/audio/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/tags";
+            var endpointAccess = "/v1/audio/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/tags";
 
             return token.createAnonymousToken({
               token_type: "audio-analysis-queue",
               minutes_until_expiration: 1440,
               allow_garbage_collection: false,
-              only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
+              only_allow_access_to: [ "^"+endpointAccess+"$" ]
             }).then(function(tokenInfo){
              return Promise.map(batch, function (options) {
-               snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel, apiWriteBackEndpoint);
+               snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel);
              }, {concurrency: process.env.AWS_QUEUE_CONCURRENCY});
             }).then(function(){
                 resolve();
