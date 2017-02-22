@@ -59,7 +59,7 @@ router.route("/:guardian_id/audio/analysis")
                 audioGuids.push(dbAudio[i].guid);
               }
 
-              return analysisUtils.batchQueueAudioForAnalysis("rfcx-analysis-batch", modelGuid, batch);
+              return analysisUtils.batchQueueAudioForAnalysis(process.env.SQS_PERCEPTION_BATCH, modelGuid, batch);
             }
 
         }).then(function () {
