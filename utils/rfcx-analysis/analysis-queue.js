@@ -13,6 +13,7 @@ function snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel){
           audioS3Path = options.audio_s3_path,
           audioSha1Checksum = options.audio_sha1_checksum,
           analysisModelUrl = dbAnalysisModel.model_download_url,
+          analysisModelGuid = dbAnalysisModel.guid,
           analysisModelSha1Checksum = dbAnalysisModel.model_sha1_checksum;
 
          var apiTokenGuid = tokenInfo.token_guid,
@@ -35,7 +36,7 @@ function snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel){
 
           analysis_method: dbAnalysisModel.method_name,
 
-          analysis_model_id: options.audio_guid,
+          analysis_model_id: analysisModelGuid,
           analysis_model_url: analysisModelUrl,
           analysis_model_sha1: analysisModelSha1Checksum
 
