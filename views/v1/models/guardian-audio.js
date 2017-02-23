@@ -7,6 +7,7 @@ var fs = require("fs");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
 var audioUtils = require("../../../utils/rfcx-audio").audioUtils;
+var validation = require("../../../utils/misc/validation.js");
 function getAllViews() {
   return require("../../../views/v1");
 }
@@ -240,6 +241,27 @@ exports.models = {
 
       resolve(labelValues);
     });
+  },
+
+  transformCreateAudioRequestToModel: function(reqObj){
+
+    return Promise.resolve().then(function () {
+      var requiredAttributes = ["site_id", "guardian_id", "measured_at", "size", "sha1_checksum", "url", "capture_sample_count"];
+      validation.assertAttributesExist(reqObj, requiredAttributes);
+
+      console.info("assertions correct");
+      // Todo: @topher , you can add the actual format here. For now I just added a placeholder as we talked about.
+      var modelObj = { format_id: 3 };
+
+      // copy attributes to make sure that the request doesn't set columns we don't want it to set
+      for(var i=0; i < requiredAttributes.length; i++){
+        var attr = requiredAttributes[i];
+        modelObj[attr] = reqObj[attr];
+      }
+
+      return modelObj;
+    });
+
   }
 
 
