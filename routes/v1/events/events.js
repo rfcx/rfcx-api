@@ -422,6 +422,9 @@ router.route('/')
 
       for (var key in attrs) {
         if (attrs.hasOwnProperty(key)) {
+          if(key == 'begins_at' || key == 'ends_at'){
+            continue;
+          }
           if (attrs[key] === undefined || attrs[key] === null) {
             missingAttrs += (' ' + key);
           }
@@ -473,6 +476,14 @@ router.route('/')
           httpError(res, 404, null, 'Model with given shortname/guid not found');
           return Promise.reject();
         }
+
+        if (attrs['begins_at'] === undefined || attrs['begins_at'] === null) {
+            attrs.begins_at = data[0].measured_at;
+        }
+        if (attrs['ends_at'] === undefined || attrs['ends_at'] === null) {
+            attrs.ends_at = new Date(data[0].measured_at.getTime() + 1000*90);
+        }
+
         // replace names with ids
         attrs.audio_id = data[0].id;
         this.audio_guid = data[0].guid;
