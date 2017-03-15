@@ -13,6 +13,7 @@ exports.env = {
   AWS_ACCOUNT_ID: "",
 
   AWS_QUEUE_CONCURRENCY: 10,
+  BUCKET_ANALYSIS: "rfcx-analysis",
 
   ASSET_BUCKET_AUDIO: "rfcx-guardian-ark-development",
   ASSET_BUCKET_META: "rfcx-guardian-meta-development",
