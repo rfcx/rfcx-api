@@ -13,6 +13,8 @@ var checkInHelpers = require("../../../utils/rfcx-checkin");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var SensationsService = require("../../../services/sensations/sensations-service");
+
 
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
@@ -27,6 +29,7 @@ router.route("/:guardian_id/checkins")
         messages: [] // array of sms messages that the guardian should send
       }
     };
+
 
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.meta)
@@ -135,7 +138,10 @@ router.route("/:guardian_id/checkins")
                         res.status(200).json(returnJson);
 
                         checkInHelpers.audio.extractAudioFileMeta(audioInfoPostQueue);
-
+                        SensationsService.createSensationsFromGuardianAudio(audioInfoPostQueue.audio_guid)
+                          .catch(err => {
+                             if (!!err) { res.status(500).json({msg:`couldn't create sensations for audio guid ${audioInfoPostQueue.audio_guid}`}); }
+                        })
                     }).catch(function(err){
                       checkInHelpers.audio.rollBackCheckIn(audioInfoPostDbSave);
                       if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }

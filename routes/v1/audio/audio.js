@@ -13,6 +13,7 @@ var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 var condAdd = sqlUtils.condAdd;
+var SensationsService = require("../../../services/sensations/sensations-service");
 
 router.route("/filter")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
@@ -195,6 +196,22 @@ router.route("/:audio_id")
 
   })
 ;
+
+
+router.route("/:audio_id/createSensations")
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
+
+    SensationsService.createSensationsFromGuardianAudio(req.params.audio_id)
+      .then(sensations => res.status(200).json(sensations))
+      .catch(err => {
+        console.log("Failed to create sensations | " + err);
+        if (!!err) {
+          res.status(500).json({msg: "failed to create sensations"});
+        }
+
+      });
+  });
+
 
 // implements a majority vote for each sample in the audio file
 router.route("/:audio_id/labels")
