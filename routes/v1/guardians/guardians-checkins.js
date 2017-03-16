@@ -132,16 +132,17 @@ router.route("/:guardian_id/checkins")
                         returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
 
                         dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
-                        dbCheckIn.save();
+                        dbCheckIn.save().then(() => {
+                          return SensationsService.createSensationsFromGuardianAudio(audioInfoPostQueue.audio_guid)
+                            .catch(err => {
+                              if (!!err) { res.status(500).json({msg:`couldn't create sensations for audio guid ${audioInfoPostQueue.audio_guid}`}); }
+                            })
+                        });
                         
                         if (verbose_logging) { console.log(returnJson); }
                         res.status(200).json(returnJson);
 
                         checkInHelpers.audio.extractAudioFileMeta(audioInfoPostQueue);
-                        SensationsService.createSensationsFromGuardianAudio(audioInfoPostQueue.audio_guid)
-                          .catch(err => {
-                             if (!!err) { res.status(500).json({msg:`couldn't create sensations for audio guid ${audioInfoPostQueue.audio_guid}`}); }
-                        })
                     }).catch(function(err){
                       checkInHelpers.audio.rollBackCheckIn(audioInfoPostDbSave);
                       if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
