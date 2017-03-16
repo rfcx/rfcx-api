@@ -142,7 +142,7 @@ exports.audio = {
 
                     audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
                     audioInfo.dbAudioObj.save().then(() => {
-                      return SensationsService.createSensationsFromGuardianAudio(audioInfoPostQueue.audio_guid)
+                      return SensationsService.createSensationsFromGuardianAudio(audioInfo.audio_guid)
                         .catch(err => {
                           if (!!err) { res.status(500).json({msg:`couldn't create sensations for audio guid ${audioInfoPostQueue.audio_guid}`}); }
                         })
