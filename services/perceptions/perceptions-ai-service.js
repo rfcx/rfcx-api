@@ -67,7 +67,7 @@ module.exports = {
     return params.validate().then(transformedParams => {
       return new Promise(function (resolve, reject) {
         remoteFilePath = `/${versionName}/models/${process.env.NODE_ENV}/rfcx-model-${transformedParams.guid}.tar.gz`;
-        aws.s3(process.env.BUCKET_ANALYSIS).putFile(transformedParams.archive, remoteFilePath, function (err, s3Res) {
+        aws.s3(process.env.BUCKET_ANALYSIS).putFile(transformedParams.archive, remoteFilePath, { 'x-amz-acl': 'public-read' }, function (err, s3Res) {
           try {
             s3Res.resume();
           } catch (resumeErr) {
