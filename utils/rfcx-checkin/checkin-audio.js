@@ -11,6 +11,7 @@ var audioUtils = require("../../utils/rfcx-audio").audioUtils;
 var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
+var SensationsService = require("../../services/sensations/sensations-service");
 
 exports.audio = {
 
@@ -140,7 +141,12 @@ exports.audio = {
                     if (!!err) { console.log(err); }
 
                     audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
-                    audioInfo.dbAudioObj.save();
+                    audioInfo.dbAudioObj.save().then(() => {
+                      return SensationsService.createSensationsFromGuardianAudio(audioInfoPostQueue.audio_guid)
+                        .catch(err => {
+                          if (!!err) { res.status(500).json({msg:`couldn't create sensations for audio guid ${audioInfoPostQueue.audio_guid}`}); }
+                        })
+                    });
 
                     cleanupCheckInFiles(audioInfo);
 

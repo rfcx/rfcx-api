@@ -13,7 +13,6 @@ var checkInHelpers = require("../../../utils/rfcx-checkin");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
-var SensationsService = require("../../../services/sensations/sensations-service");
 
 
 router.route("/:guardian_id/checkins")
@@ -132,13 +131,7 @@ router.route("/:guardian_id/checkins")
                         returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
 
                         dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
-                        dbCheckIn.save().then(() => {
-                          return SensationsService.createSensationsFromGuardianAudio(audioInfoPostQueue.audio_guid)
-                            .catch(err => {
-                              if (!!err) { res.status(500).json({msg:`couldn't create sensations for audio guid ${audioInfoPostQueue.audio_guid}`}); }
-                            })
-                        });
-                        
+                        dbCheckIn.save();
                         if (verbose_logging) { console.log(returnJson); }
                         res.status(200).json(returnJson);
 
