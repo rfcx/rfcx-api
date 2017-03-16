@@ -21,7 +21,8 @@ exports.models = {
         description: dbRow.description,
         cartodb_map_id: dbRow.cartodb_map_id,
         flickr_photoset_id: dbRow.flickr_photoset_id,
-        is_active: dbRow.is_active
+        is_active: dbRow.is_active,
+        bounds: dbRow.bounds
       };
 
       if (dbRow.Guardian != null) { guardianSite.guardians = views.models.guardian(req,res,dbRow.Guardian); }
