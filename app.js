@@ -26,7 +26,7 @@ app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(cors()); // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({extended:false}));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '5mb' }));
 app.use(multer(require("./config/multer").config(process.env)));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(passport.initialize());
