@@ -20,8 +20,10 @@ module.exports = {
     params.convert("data_id").toNonNegativeInt();
 
     // this is will convert the property to a float and check if long/lat conforms to earth's max/min
-    params.convert("latitude").toLatitude();
-    params.convert("longitude").toLongitude();
+
+    // Todo: Guardians should send GPS coords then this could be required fields
+    params.convert("latitude").optional(1.0).toLatitude();
+    params.convert("longitude").optional(1.0).toLongitude();
 
     params.convert("begins_at").toQuantumTime();
     params.convert("ends_at").toQuantumTime();
