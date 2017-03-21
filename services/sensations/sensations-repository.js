@@ -31,7 +31,7 @@ module.exports = class SensationsRepository {
         "data_id=':data_id', " +
         "data_type=':data_type'";
 
-      return sequelize.query(sql, {replacements: createOptions, type: sequelize.QueryTypes.Insert}).spread((results) => { return { success: true, sqlResult: results}})
+      return sequelize.query(sql, {replacements: createOptions, type: sequelize.QueryTypes.Insert}).spread((results) => { return { success: true, sqlResult: results, createOptions: createOptions}})
     }
 
 
