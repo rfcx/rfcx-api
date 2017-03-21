@@ -32,7 +32,7 @@ var time = {
 
   dateTimeToMysqlString: function(dateTime) {
     var month = dateTime.getMonth() + 1;
-    var day = dateTime.getDay() + 1;
+    var day = dateTime.getDate();
     return "" + dateTime.getFullYear() + "-" + addLeadingZero(month)  + "-" + addLeadingZero(day) + " " +
       addLeadingZero(dateTime.getHours())+ ":" + addLeadingZero(dateTime.getMinutes()) + ":" + addLeadingZero(dateTime.getSeconds()) +
       "." + (dateTime.getMilliseconds() == 500 ? "500" : "000");
