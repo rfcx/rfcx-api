@@ -1,5 +1,5 @@
 var timeUtils = require("../misc/time");
-
+const moment = require("moment-timezone");
 
 module.exports = class Conversion {
   constructor(src, property, target = null){
@@ -91,9 +91,9 @@ module.exports = class Conversion {
     return this;
   }
 
-  toDateTime() {
+  toMoment(tz="UTC") {
     this.conversions.push(() => {
-      let newValue = new Date(this.value);
+      let newValue = moment.tz(this.value, tz);
 
       if (isNaN(newValue)) {
         this.throwError(`${this.value} should be a ISO8601 DateTime string but it is not`);
@@ -105,7 +105,7 @@ module.exports = class Conversion {
   }
 
   toQuantumTime(){
-    this.toDateTime();
+    this.toMoment();
     this.conversions.push(() => {
       timeUtils.quantify(this.value);
     });

@@ -43,7 +43,8 @@ var routes = {
                     require("./routes/v1/guardians/guardians-events"),
                     require("./routes/v1/guardians/guardians-meta"),
                     require("./routes/v1/guardians/guardians-screenshots"),
-                    require("./routes/v1/guardians/guardians-status")
+                    require("./routes/v1/guardians/guardians-status"),
+                    require("./routes/v1/guardians/guardians-coverage")
                   ],
     "sites":  [ require("./routes/v1/sites/sites"),
                 require("./routes/v1/sites/sites-audio"),

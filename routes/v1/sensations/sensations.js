@@ -20,8 +20,8 @@ router.route("/")
       data_id: req.body.data_id,
       latitude: req.body.latitude,
       longitude: req.body.longitude,
-      begins_at: req.body.begins_at,
-      ends_at: req.body.ends_at
+      starting_after: req.body.starting_after,
+      ending_before: req.body.ending_before
     };
 
     // call service and deal with success & failure
