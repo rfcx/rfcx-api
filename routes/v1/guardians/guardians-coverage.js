@@ -18,7 +18,7 @@ router.route("/:guardian_id/coverage")
       interval: req.query.interval
     };
 
-    executeService(req, res, serviceReq, SensationsService.getGuardianCoverage);
+    executeService(req, res, serviceReq, SensationsService.getGuardianCoverage, "Failed to create coverage.");
   })
 ;
 
