@@ -75,7 +75,7 @@ router.route("/login")
 
 
 router.route("/request-access/app")
-  .post(function(req,res){
+  .post(passport.authenticate("token",{session:false}), function(req,res){
     const serviceRequest = {
       email_address: req.body.email_address,
       os: req.body.os
