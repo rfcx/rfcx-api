@@ -537,7 +537,7 @@ router.route('/')
 
         // currently we only send out alerts.
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
-        var excludedGuardians = [170, 187];
+        var excludedGuardians = [];
         if( ! excludedGuardians.includes(guardian_id) ){
           return aws.publish("rfcx-detection-alerts", msg);
         }
