@@ -536,9 +536,8 @@ router.route('/')
 
         // currently we only send out alerts.
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
-        if (msg.type == 'alert') {
-            return aws.publish("rfcx-detection-alerts", msg)
-          }
+        return aws.publish("rfcx-detection-alerts", msg);
+
         })
         .catch(function (err) {
           if (!!err) {
