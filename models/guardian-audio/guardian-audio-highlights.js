@@ -70,6 +70,13 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: true,
       validate: {}
+    },
+    flickr_photoset_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
     }
   }, {
     classMethods: {
