@@ -496,6 +496,7 @@ router.route('/')
 
         attrs.guardian = data[0].Guardian.id;
         this.guardian = data[0].Guardian.shortname;
+        this.guardian_id = data[0].Guardian.id;
         attrs.shadow_latitude = data[0].Guardian.latitude;
         attrs.shadow_longitude = data[0].Guardian.longitude;
 
@@ -536,9 +537,10 @@ router.route('/')
 
         // currently we only send out alerts.
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
-        if (msg.type == 'alert') {
-            return aws.publish("rfcx-detection-alerts", msg)
-          }
+        var excludedGuardians = [];
+        if( ! excludedGuardians.includes(guardian_id) ){
+          return aws.publish("rfcx-detection-alerts", msg);
+        }
         })
         .catch(function (err) {
           if (!!err) {

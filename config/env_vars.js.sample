@@ -32,5 +32,10 @@ exports.env = {
   NEW_RELIC_KEY: "",
   MANDRILL_KEY: "",
 
+  MAILCHIMP_KEY: "",
+  MAILCHIMP_API_URL: "",
+  MAILCHIMP_APP_WAITING_LIST: "",
+
+
   SEQUELIZE_VERBOSE: false
 }
