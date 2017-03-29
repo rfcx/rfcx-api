@@ -244,7 +244,7 @@ exports.audio = {
 
       try {
 
-        var modelGuids = [  "8eec08a5-ef8d-4742-8e50-09bf46ec8220",
+        var modelGuids = [  "8dfd93aa-b518-4ce3-a777-930a4ded1268",
                             "f331d725-df5c-4a43-b0e2-0d51ed7f5055",
                             "a5804661-b75a-4d62-9f91-a5ecfd64146d",
                             "87902751-d4b2-4831-8888-f31124e40830"
