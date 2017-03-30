@@ -113,6 +113,11 @@ exports.models = {
             event_guid: dbRow.guid,
             audio_guid: dbRow.Audio.guid,
             meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.json',
+            audio: {
+              mp3: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.mp3',
+              png: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.png',
+              opus: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.opus'
+            },
             latitude: dbRow.shadow_latitude,
             longitude: dbRow.shadow_longitude,
             begins_at: dbRow.begins_at,
