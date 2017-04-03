@@ -26,7 +26,8 @@ exports.models = {
         timezone_offset: 0,
         description: dbRow.description,
         flickr_photoset_id:  dbRow.flickr_photoset_id || (dbRow.Site? dbRow.Site.flickr_photoset_id : null),
-        urls: { audio: null }
+        urls: { audio: null },
+        order: dbRow.order
       };
 
       if (dbRow.Guardian != null) {
