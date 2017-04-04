@@ -98,14 +98,26 @@ function queryData(req) {
     };
   }
 
-  // omit_false_positives is true by default
-  // then filter reviewer_confirmed by true and null
-  whereClauses.event.reviewer_confirmed = {
-    $not: false
-  };
-  // if user set omit_false_positives to false, then remove reviewer_confirmed filer
-  if (req.query.omit_false_positives && req.query.omit_false_positives.toString() === 'false') {
-    delete whereClauses.event.reviewer_confirmed;
+  var omitFalsePositives = true;
+  if (req.query.omit_false_positives === 'false') {
+    omitFalsePositives = false;
+  }
+  var omitUnreviewed = (req.query.omit_unreviewed === 'true');
+
+  if (omitFalsePositives && !omitUnreviewed) {
+    whereClauses.event.reviewer_confirmed = {
+      $not: false
+    };
+  }
+  if (omitFalsePositives && omitUnreviewed) {
+    whereClauses.event.reviewer_confirmed = {
+      $eq: true
+    };
+  }
+  if (!omitFalsePositives && omitUnreviewed) {
+    whereClauses.event.reviewer_confirmed = {
+      $not: null
+    };
   }
 
   return models.GuardianAudioEvent
