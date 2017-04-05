@@ -65,7 +65,7 @@ exports.screenshots = {
                         captured_at: screenShotInfo.timeStamp,
                         size: screenShotInfo.size,
                         sha1_checksum: screenShotInfo.sha1Hash,
-                        url: screenShotInfo.s3Path
+                        url: null
                       }).then(function(dbGuardianMetaScreenShot){
                           // if all goes well, report it on the global object so we can tell at the end
                           screenShotInfo.isSaved = true;
