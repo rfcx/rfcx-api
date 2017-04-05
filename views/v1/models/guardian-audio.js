@@ -20,7 +20,13 @@ exports.models = {
     var output_file_extension = req.rfcx.content_type,
       output_file_name = dbRow.guid + "." + output_file_extension;
 
-    audioUtils.cacheSourceAudio(dbRow.url)
+    // auto-generate the asset filepath if it's not stored in the url column
+    var audioStorageUrl = (dbRow.url == null)
+              ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbGuardian.guid,dbRow.Format.file_extension)
+              : dbRow.url;
+
+
+    audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function (sourceFilePath) {
 
         if (dbRow.Format.file_extension === output_file_extension) {
@@ -73,7 +79,12 @@ exports.models = {
         "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
     };
 
-    audioUtils.cacheSourceAudio(dbRow.url)
+    // auto-generate the asset filepath if it's not stored in the url column
+    var audioStorageUrl = (dbRow.url == null)
+              ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbGuardian.guid,dbRow.Format.file_extension)
+              : dbRow.url;
+
+    audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function (sourceFilePath) {
 
         var ffmpegSox = process.env.FFMPEG_PATH + " -i " + sourceFilePath + " -loglevel panic -nostdin"

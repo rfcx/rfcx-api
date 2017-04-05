@@ -26,12 +26,13 @@ exports.models = {
   },
 
   guardianMetaScreenshotFile: function(req,res,dbRows) {
-    var dbRow = dbRows/*,
-        s3NoProtocol = dbRow.url.substr(dbRow.url.indexOf("://")+3),
-        s3Bucket = s3NoProtocol.substr(0,s3NoProtocol.indexOf("/")),
-        s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf("/")),
-        fileExtension = s3Path.substr(1+s3Path.lastIndexOf("."));*/
-        ;
+    var dbRow = dbRows;
+
+    // auto-generate the asset filepath if it's not stored in the url column
+    var metaStoragePath = (dbRow.url == null)
+                      ? assetUtils.getGuardianAssetStoragePath("screenshots",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
+                      : dbRow.url.substr(dbRow.url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length);
+
 
       aws.s3(process.env.ASSET_BUCKET_META).getFile(dbRow.url, function(err, result){
         if(err) { return next(err); }
