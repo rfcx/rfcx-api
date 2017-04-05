@@ -33,7 +33,7 @@ exports.screenshots = {
           origin_id: timeStamp,
           timeStamp: timeStampDateObj,
           isSaved: false,
-          s3Path: assetUtils.getGuardianAssetStoragePath("screenshots",timeStampDateObj,dbGuardian.guid,"png")
+          s3Path: assetUtils.getGuardianAssetStoragePath("screenshots",timeStampDateObj,guardianGuid,"png")
           
         };
       }

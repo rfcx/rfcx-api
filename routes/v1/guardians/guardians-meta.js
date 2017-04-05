@@ -145,7 +145,7 @@ router.route("/:guardian_id/meta/:meta_type")
     models.Guardian
       .findOne({
         where: {guid: req.params.guardian_id}
-      }).then(function (dbGuardian) {
+      }).then(function(dbGuardian) {
 
         var dbQuery = {
           where: {guardian_id: dbGuardian.id},
@@ -309,7 +309,7 @@ router.route("/:guardian_id/meta2/:meta_type")
     models.Guardian
       .findOne({
         where: {guid: req.params.guardian_id}
-      }).then(function (dbGuardian) {
+      }).then(function(dbGuardian) {
 
         var dbQuery = {
           where: {guardian_id: dbGuardian.id},
