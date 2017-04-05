@@ -25,8 +25,9 @@ exports.models = {
         timezone: 'UTC',
         timezone_offset: 0,
         description: dbRow.description,
-        flickr_photoset_id:  null,
-        urls: { audio: null }
+        flickr_photoset_id:  dbRow.flickr_photoset_id || (dbRow.Site? dbRow.Site.flickr_photoset_id : null),
+        urls: { audio: null },
+        order: dbRow.order
       };
 
       if (dbRow.Guardian != null) {
@@ -38,7 +39,6 @@ exports.models = {
                   
       }
       if (dbRow.Site != null) {
-        guardianAudioHighlight.flickr_photoset_id = dbRow.Site.flickr_photoset_id;
         guardianAudioHighlight.timezone_offset = dbRow.Site.timezone_offset;
         guardianAudioHighlight.timezone = dbRow.Site.timezone;
         guardianAudioHighlight.location = dbRow.Site.description;

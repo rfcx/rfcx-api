@@ -7,6 +7,8 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+const executeService = require('../../../services/execute-service');
+const mailService = require('../../../services/mail/mail-service');
 
 router.route("/login")
   .post(function(req,res) {
@@ -69,6 +71,16 @@ router.route("/login")
         });
       });
   
+  });
+
+
+router.route("/request-access/app")
+  .post(function(req,res){
+    const serviceRequest = {
+      email_address: req.body.email_address,
+      os: req.body.os
+    };
+    executeService(req, res, serviceRequest, mailService.registerToAppWaitingList, "Failed to subscribe");
   });
 
 router.route("/register")

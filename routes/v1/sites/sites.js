@@ -11,12 +11,12 @@ router.route("/")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianSite
-      .findAll({ 
+      .findAll({
         where: { is_active: true },
         limit: req.rfcx.limit,
         offset: req.rfcx.offset
       }).then(function(dbSite){
-        
+
         if (dbSite.length < 1) {
           httpError(res, 404, "database");
         } else {
@@ -35,11 +35,11 @@ router.route("/:site_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianSite
-      .findAll({ 
+      .findAll({
         where: { guid: req.params.site_id },
         limit: 1
       }).then(function(dbSite){
-        
+
         if (dbSite.length < 1) {
           httpError(res, 404, "database");
         } else {
@@ -49,6 +49,35 @@ router.route("/:site_id")
       }).catch(function(err){
         console.log("failed to return site | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return site"}); }
+      });
+
+  })
+;
+
+router.route("/:site_id/bounds")
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
+
+    models.GuardianSite
+      .findOne({
+        where: { guid: req.params.site_id }
+      })
+      .then(function(dbSite){
+        if (!dbSite) {
+          httpError(res, 404, "database");
+        } else {
+          dbSite.bounds = {
+            type: req.body.type,
+            coordinates: req.body.coordinates
+          };
+          return dbSite.save();
+        }
+      })
+      .then(function(dbSite) {
+        res.status(200).json(views.models.guardianSites(req,res,dbSite));
+      })
+      .catch(function(err){
+        console.log("Error updating site bounds. Check params please | "+err);
+        if (!!err) { res.status(500).json({msg:"Error updating site bounds. Check params please."}); }
       });
 
   })

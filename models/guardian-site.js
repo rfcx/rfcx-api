@@ -56,6 +56,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       validate: {
       }
+    },
+    bounds: {
+      type: DataTypes.GEOMETRY,
+      allowNull: true,
+      validate: {
+      }
     }
   }, {
     classMethods: {

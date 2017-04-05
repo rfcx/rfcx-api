@@ -144,11 +144,11 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true,
         min: 1
       }
-    },
+    }
   }, {
     classMethods: {
       associate: function(models) {
-        
+        Guardian.belongsTo(models.GuardianSite, {as: 'Site'});
       },
       indexes: [
         {

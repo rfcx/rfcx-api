@@ -422,6 +422,9 @@ router.route('/')
 
       for (var key in attrs) {
         if (attrs.hasOwnProperty(key)) {
+          if(key == 'begins_at' || key == 'ends_at'){
+            continue;
+          }
           if (attrs[key] === undefined || attrs[key] === null) {
             missingAttrs += (' ' + key);
           }
@@ -473,6 +476,14 @@ router.route('/')
           httpError(res, 404, null, 'Model with given shortname/guid not found');
           return Promise.reject();
         }
+
+        if (attrs['begins_at'] === undefined || attrs['begins_at'] === null) {
+            attrs.begins_at = data[0].measured_at;
+        }
+        if (attrs['ends_at'] === undefined || attrs['ends_at'] === null) {
+            attrs.ends_at = new Date(data[0].measured_at.getTime() + 1000*90);
+        }
+
         // replace names with ids
         attrs.audio_id = data[0].id;
         this.audio_guid = data[0].guid;
@@ -485,6 +496,7 @@ router.route('/')
 
         attrs.guardian = data[0].Guardian.id;
         this.guardian = data[0].Guardian.shortname;
+        this.guardian_id = data[0].Guardian.id;
         attrs.shadow_latitude = data[0].Guardian.latitude;
         attrs.shadow_longitude = data[0].Guardian.longitude;
 
@@ -525,9 +537,10 @@ router.route('/')
 
         // currently we only send out alerts.
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
-        if (msg.type == 'alert') {
-            return aws.publish("rfcx-detection-alerts", msg)
-          }
+        var excludedGuardians = [];
+        if( ! excludedGuardians.includes(guardian_id) ){
+          return aws.publish("rfcx-detection-alerts", msg);
+        }
         })
         .catch(function (err) {
           if (!!err) {

@@ -11,6 +11,7 @@ var audioUtils = require("../../utils/rfcx-audio").audioUtils;
 var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
+var SensationsService = require("../../services/sensations/sensations-service");
 
 exports.audio = {
 
@@ -140,7 +141,12 @@ exports.audio = {
                     if (!!err) { console.log(err); }
 
                     audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
-                    audioInfo.dbAudioObj.save();
+                    audioInfo.dbAudioObj.save().then(() => {
+                      return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
+                        .catch(err => {
+                          if (!!err) { console.log(`couldn't create sensations for audio guid ${audioInfo.dbAudioObj.guid}`); }
+                        })
+                    });
 
                     cleanupCheckInFiles(audioInfo);
 
@@ -238,10 +244,10 @@ exports.audio = {
 
       try {
 
-        var modelGuids = [  "8f3ffc6c-4364-4e2a-aa30-563a8cf6d794", 
+        var modelGuids = [  "8dfd93aa-b518-4ce3-a777-930a4ded1268",
+                            "f331d725-df5c-4a43-b0e2-0d51ed7f5055",
                             "a5804661-b75a-4d62-9f91-a5ecfd64146d",
                             "87902751-d4b2-4831-8888-f31124e40830"
-
         ];
 
         for (i in modelGuids) {

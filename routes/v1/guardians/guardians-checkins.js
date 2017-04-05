@@ -14,6 +14,7 @@ var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
+
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
@@ -27,6 +28,7 @@ router.route("/:guardian_id/checkins")
         messages: [] // array of sms messages that the guardian should send
       }
     };
+
 
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.meta)
@@ -130,12 +132,10 @@ router.route("/:guardian_id/checkins")
 
                         dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
                         dbCheckIn.save();
-                        
                         if (verbose_logging) { console.log(returnJson); }
                         res.status(200).json(returnJson);
 
                         checkInHelpers.audio.extractAudioFileMeta(audioInfoPostQueue);
-
                     }).catch(function(err){
                       checkInHelpers.audio.rollBackCheckIn(audioInfoPostDbSave);
                       if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }

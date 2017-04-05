@@ -113,6 +113,11 @@ exports.models = {
             event_guid: dbRow.guid,
             audio_guid: dbRow.Audio.guid,
             meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.json',
+            audio: {
+              mp3: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.mp3',
+              png: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.png',
+              opus: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.opus'
+            },
             latitude: dbRow.shadow_latitude,
             longitude: dbRow.shadow_longitude,
             begins_at: dbRow.begins_at,
@@ -121,7 +126,8 @@ exports.models = {
             value: dbRow.Value.value,
             confidence: dbRow.confidence,
             guardian_guid: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.guid : null,
-            guardian_shortname: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : null
+            guardian_shortname: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : null,
+            site: dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : null
           });
 
         }
@@ -183,7 +189,7 @@ exports.models = {
 
         if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
 
-        var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence,guardian_guid,guardian_shortname\r\n';
+        var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence,guardian_guid,guardian_shortname,site\r\n';
 
         for (var i = 0; i < dbAudioEvents.length; i++) {
 
@@ -200,7 +206,8 @@ exports.models = {
           csv += dbRow.Value.value + ',';
           csv += dbRow.confidence + ',';
           csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.guid : 'null') + ',';
-          csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : 'null') + '\r\n';
+          csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : 'null') + ',';
+          csv += (dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : 'null') + '\r\n';
 
         }
 
