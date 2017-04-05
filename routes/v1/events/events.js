@@ -172,7 +172,17 @@ function queryData(req) {
           model: models.GuardianAudioEventType,
           as: 'Type',
           where: whereClauses.type
-        }
+        },
+        {
+          model: models.User,
+          as: 'User',
+          attributes: [
+            'guid',
+            'firstname',
+            'lastname',
+            'email'
+          ]
+        },
       ]
     })
 }
