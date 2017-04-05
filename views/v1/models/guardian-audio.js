@@ -7,6 +7,7 @@ var fs = require("fs");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
 var audioUtils = require("../../../utils/rfcx-audio").audioUtils;
+var assetUtils = require("../../../utils/internal-rfcx/asset-utils.js").assetUtils;
 var validation = require("../../../utils/misc/validation.js");
 function getAllViews() {
   return require("../../../views/v1");

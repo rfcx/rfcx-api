@@ -1,5 +1,6 @@
 var util = require("util");
 var aws = require("../../../../utils/external/aws.js").aws();
+var assetUtils = require("../../../../utils/internal-rfcx/asset-utils.js").assetUtils;
 
 exports.models = {
 
