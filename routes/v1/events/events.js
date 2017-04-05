@@ -11,7 +11,7 @@ var Promise = require("bluebird");
 var ApiConverter = require("../../../utils/api-converter");
 var aws = require("../../../utils/external/aws.js").aws();
 var moment = require('moment');
-
+var eventsService = require('../../../services/events/events-service');
 
 function queryData(req) {
 
@@ -384,6 +384,14 @@ router.route("/tuning")
         res.status(500).json({msg: err});
       });
 
+  });
+
+router.route("/values")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+    eventsService
+      .getGuardianAudioEventValues(req)
+      .then((data) => { res.status(200).json(data); })
+      .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Values."));
   });
 
 router.route("/:event_id")
