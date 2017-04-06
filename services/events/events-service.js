@@ -19,7 +19,19 @@ function updateEventReview(guid, confirmed, user_id) {
 
   return models.GuardianAudioEvent
     .findOne({
-      where: { guid: guid }
+      where: { guid: guid },
+      include: [
+        {
+          model: models.User,
+          as: 'User',
+          attributes: [
+            'guid',
+            'firstname',
+            'lastname',
+            'email'
+          ]
+        },
+      ]
     })
     .then((event) => {
       if (!event) {
@@ -32,9 +44,17 @@ function updateEventReview(guid, confirmed, user_id) {
       }
     })
     .then((event) => {
+      // reload event to refresh included models
+      return event.reload();
+    })
+    .then((event) => {
       return {
         guid: event.guid,
-        reviewer_confirmed: event.reviewer_confirmed
+        reviewer_confirmed: event.reviewer_confirmed,
+        reviewer_guid: event.User? event.User.guid : null,
+        reviewer_firstname: event.User? event.User.firstname : null,
+        reviewer_lastname: event.User? event.User.lastname : null,
+        reviewer_email: event.User? event.User.email : null
       }
     });
 }
