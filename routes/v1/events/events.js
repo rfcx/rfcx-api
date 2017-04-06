@@ -12,6 +12,7 @@ var ApiConverter = require("../../../utils/api-converter");
 var aws = require("../../../utils/external/aws.js").aws();
 var moment = require('moment');
 var eventsService = require('../../../services/events/events-service');
+var sequelize = require("sequelize");
 
 function queryData(req) {
 
@@ -399,7 +400,7 @@ router.route("/tuning")
 router.route("/values")
   .get(passport.authenticate("token", {session: false}), function (req, res) {
     eventsService
-      .getGuardianAudioEventValues(req)
+      .getGuardianAudioEventValues()
       .then((data) => { res.status(200).json(data); })
       .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Values."));
   });
@@ -656,5 +657,29 @@ router.route("/:event_id/review")
 
   })
 ;
+
+router.route("/:guid/confirm")
+  .post(passport.authenticate("token", {session: false}), function (req, res) {
+
+    eventsService.updateEventReview(req.params.guid, true, req.rfcx.auth_token_info.owner_id)
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(e => httpError(res, 500, e, "Could not update Event review."));
+
+  });
+
+router.route("/:guid/reject")
+  .post(passport.authenticate("token", {session: false}), function (req, res) {
+
+    eventsService.updateEventReview(req.params.guid, false, req.rfcx.auth_token_info.owner_id)
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(e => httpError(res, 500, e, "Could not update Event review."));
+
+  });
 
 module.exports = router;
