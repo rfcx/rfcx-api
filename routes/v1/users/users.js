@@ -9,6 +9,8 @@ var passport = require("passport");
 var moment = require('moment');
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+const executeService = require('../../../services/execute-service');
+const mailService = require('../../../services/mail/mail-service');
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -87,6 +89,16 @@ router.route("/login")
         });
       });
   
+  });
+
+
+router.route("/request-access/app")
+  .post(function(req,res){
+    const serviceRequest = {
+      email_address: req.body.email_address,
+      os: req.body.os
+    };
+    executeService(req, res, serviceRequest, mailService.registerToAppWaitingList, "Failed to subscribe");
   });
 
 router.route("/register")

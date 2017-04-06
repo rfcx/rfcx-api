@@ -58,7 +58,7 @@ exports.middleware = {
 
   insecureRequestRedirect: function(req, res, next) {
 
-    var allowedOverInsecureConnection = [ "rf.cx" ];
+    var allowedOverInsecureConnection = [ "rf.cx", "api-insecure.rfcx.org" ];
 
     if (    ((process.env.NODE_ENV === "production") || (process.env.NODE_ENV === "staging")) 
         &&  (req.rfcx.api_url_protocol === "http")

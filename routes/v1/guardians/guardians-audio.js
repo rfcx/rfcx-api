@@ -54,6 +54,30 @@ router.route("/:guardian_id/audio")
 ;
 
 
+router.route("/:guardian_id/audio")
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
+
+    models.Guardian.findOne({ where: { guid: req.params.guardian_id }
+    }).then(function(dbGuardian){
+      console.info("Creating Audio for guardian : " + req.params.guardian_id);
+      req.body.guardian_id = dbGuardian.id;
+      req.body.site_id = dbGuardian.site_id;
+      return views.models.transformCreateAudioRequestToModel(req.body);
+    }).then(function(dbModel){
+      console.info(dbModel);
+      return models.GuardianAudio.create(dbModel);
+    }).then(function(result){
+      res.status(200).json(result);
+    }).catch(function (err) {
+      if(!err){
+        console.info("Error was thrown without supplying an error message; please add a specific error message");
+        err = "generic error.";
+      }
+      res.status(500).json({msg: "Failed to create audio: " + err});
+    });
+  });
+
+
 
 module.exports = router;
 

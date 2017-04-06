@@ -8,9 +8,11 @@ var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var exec = require("child_process").exec;
 var audioUtils = require("../../utils/rfcx-audio").audioUtils;
+var assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
+var SensationsService = require("../../services/sensations/sensations-service");
 
 exports.audio = {
 
@@ -34,7 +36,7 @@ exports.audio = {
         for (i in audioFiles) {
 
           var timeStamp = audioMeta[i][1]; 
-          var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
+          var timeStampDateObj = new Date(parseInt(timeStamp));
 
           audioInfo[timeStamp] = {
 
@@ -66,15 +68,14 @@ exports.audio = {
             capture_is_vbr: (audioMeta[i][7].toLowerCase() === "vbr"),
 
             timeStamp: timeStamp,
-            measured_at: new Date(parseInt(timeStamp)),
+            measured_at: timeStampDateObj,
             api_token_guid: null,
             api_token: null,
             api_token_expires_at: null,
             api_url: null,
             api_url_domain: apiUrlDomain,
             isSaved: { db: false, s3: false, sqs: false },
-            s3Path: "/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)+"/"+dbGuardian.guid+"/"
-                   +dbGuardian.guid+"-"+dateString+"."+audioMeta[i][2]
+            s3Path: assetUtils.getGuardianAssetStoragePath("audio",timeStampDateObj,dbGuardian.guid,audioMeta[i][2])
           };
           
         }
@@ -140,7 +141,12 @@ exports.audio = {
                     if (!!err) { console.log(err); }
 
                     audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
-                    audioInfo.dbAudioObj.save();
+                    audioInfo.dbAudioObj.save().then(() => {
+                      return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
+                        .catch(err => {
+                          if (!!err) { console.log("could not create sensations for audio guid "+audioInfo.dbAudioObj.guid); }
+                        })
+                    });
 
                     cleanupCheckInFiles(audioInfo);
 
@@ -167,7 +173,7 @@ exports.audio = {
         site_id: audioInfo.site_id,
         check_in_id: audioInfo.checkin_id,
         sha1_checksum: audioInfo.sha1Hash,
-        url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
+        url: null,//"s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
         capture_bitrate: audioInfo.capture_bitrate,
         encode_duration: audioInfo.capture_encode_duration,
         measured_at: audioInfo.measured_at
@@ -238,10 +244,10 @@ exports.audio = {
 
       try {
 
-        var modelGuids = [  "8f3ffc6c-4364-4e2a-aa30-563a8cf6d794", 
+        var modelGuids = [  "8dfd93aa-b518-4ce3-a777-930a4ded1268",
+                            "f331d725-df5c-4a43-b0e2-0d51ed7f5055",
                             "a5804661-b75a-4d62-9f91-a5ecfd64146d",
                             "87902751-d4b2-4831-8888-f31124e40830"
-
         ];
 
         for (i in modelGuids) {

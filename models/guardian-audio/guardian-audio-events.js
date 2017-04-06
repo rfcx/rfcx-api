@@ -55,6 +55,11 @@ module.exports = function(sequelize, DataTypes) {
         min: -180,
         max: 180
       }
+    },
+    reviewer_confirmed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: null
     }
   }, {
     classMethods: {
@@ -64,6 +69,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianAudioEvent.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
         GuardianAudioEvent.belongsTo(models.AudioAnalysisModel, { as: 'Model', foreignKey: "model" });
         GuardianAudioEvent.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: "guardian" });
+        GuardianAudioEvent.belongsTo(models.User, { as: "User", foreignKey: "reviewed_by" });
       },
       indexes: [
         {

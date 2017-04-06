@@ -10,10 +10,20 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 router.route("/")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
+    var sitesQuery = {};
+
+    if (req.query.sites) {
+      sitesQuery.guid = { $in: req.query.sites };
+    }
+
     models.Guardian
-      .findAll({ 
-//        where: { guardian_id: dbGuardian.id }, 
-        include: [ { all: true } ], 
+      .findAll({
+        include: [{
+          model: models.GuardianSite,
+          as: 'Site',
+          where: sitesQuery,
+          attributes: ['guid']
+        }],
         order: [ ["last_check_in", "DESC"] ],
         limit: req.rfcx.limit,
         offset: req.rfcx.offset
