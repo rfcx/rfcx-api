@@ -4,6 +4,7 @@ var Promise = require("bluebird");
 var models  = require("../../models");
 var hash = require("../../utils/misc/hash.js").hash;
 var aws = require("../../utils/external/aws.js").aws();
+var assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 
 exports.screenshots = {
 
@@ -19,7 +20,7 @@ exports.screenshots = {
       for (i in screenShotFiles) {
 
         var timeStamp = screenShotFiles[i].originalname.substr(0,screenShotFiles[i].originalname.lastIndexOf(".png"));
-        var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
+        var timeStampDateObj = new Date(parseInt(timeStamp));
         
         screenShotInfo[timeStamp] = {
           guardian_id: guardianId,
@@ -30,12 +31,10 @@ exports.screenshots = {
           sha1Hash: hash.fileSha1(screenShotFiles[i].path),
           guardianSha1Hash: screenShotMeta[i][3],
           origin_id: timeStamp,
-          timeStamp: new Date(parseInt(timeStamp)),
+          timeStamp: timeStampDateObj,
           isSaved: false,
-          s3Path: "/screenshots"
-                   +"/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)
-                   +"/"+guardianGuid
-                   +"/"+guardianGuid+"-"+dateString+".png"
+          s3Path: assetUtils.getGuardianAssetStoragePath("screenshots",timeStampDateObj,guardianGuid,"png")
+          
         };
       }
     }
@@ -66,7 +65,7 @@ exports.screenshots = {
                         captured_at: screenShotInfo.timeStamp,
                         size: screenShotInfo.size,
                         sha1_checksum: screenShotInfo.sha1Hash,
-                        url: screenShotInfo.s3Path
+                        url: null
                       }).then(function(dbGuardianMetaScreenShot){
                           // if all goes well, report it on the global object so we can tell at the end
                           screenShotInfo.isSaved = true;

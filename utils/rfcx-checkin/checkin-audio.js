@@ -8,6 +8,7 @@ var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var exec = require("child_process").exec;
 var audioUtils = require("../../utils/rfcx-audio").audioUtils;
+var assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
@@ -35,7 +36,7 @@ exports.audio = {
         for (i in audioFiles) {
 
           var timeStamp = audioMeta[i][1]; 
-          var dateString = (new Date(parseInt(timeStamp))).toISOString().substr(0,19).replace(/:/g,"-");
+          var timeStampDateObj = new Date(parseInt(timeStamp));
 
           audioInfo[timeStamp] = {
 
@@ -67,15 +68,14 @@ exports.audio = {
             capture_is_vbr: (audioMeta[i][7].toLowerCase() === "vbr"),
 
             timeStamp: timeStamp,
-            measured_at: new Date(parseInt(timeStamp)),
+            measured_at: timeStampDateObj,
             api_token_guid: null,
             api_token: null,
             api_token_expires_at: null,
             api_url: null,
             api_url_domain: apiUrlDomain,
             isSaved: { db: false, s3: false, sqs: false },
-            s3Path: "/"+dateString.substr(0,7)+"/"+dateString.substr(8,2)+"/"+dbGuardian.guid+"/"
-                   +dbGuardian.guid+"-"+dateString+"."+audioMeta[i][2]
+            s3Path: assetUtils.getGuardianAssetStoragePath("audio",timeStampDateObj,dbGuardian.guid,audioMeta[i][2])
           };
           
         }
@@ -144,7 +144,7 @@ exports.audio = {
                     audioInfo.dbAudioObj.save().then(() => {
                       return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
                         .catch(err => {
-                          if (!!err) { console.log(`couldn't create sensations for audio guid ${audioInfo.dbAudioObj.guid}`); }
+                          if (!!err) { console.log("could not create sensations for audio guid "+audioInfo.dbAudioObj.guid); }
                         })
                     });
 
@@ -173,7 +173,7 @@ exports.audio = {
         site_id: audioInfo.site_id,
         check_in_id: audioInfo.checkin_id,
         sha1_checksum: audioInfo.sha1Hash,
-        url: "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
+        url: null,//"s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
         capture_bitrate: audioInfo.capture_bitrate,
         encode_duration: audioInfo.capture_encode_duration,
         measured_at: audioInfo.measured_at

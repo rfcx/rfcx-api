@@ -5,6 +5,7 @@ var router = express.Router();
 var util = require("util");
 var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
+var assetUtils = require("../../../utils/internal-rfcx/asset-utils.js").assetUtils;
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
@@ -32,7 +33,7 @@ router.route("/:guardian_id/audio/analysis")
         return models.GuardianAudio
           .findAll({ 
             where: dbQuery, 
-//            include: [ { all: true } ], 
+            include: [ { all: true } ], 
             order: [ [dateClmn, dbQueryOrder] ],
             limit: 14000,//req.rfcx.limit,
             offset: req.rfcx.offset
@@ -51,9 +52,14 @@ router.route("/:guardian_id/audio/analysis")
                   batch.push({
                   audio_guid: dbAudio[i].guid,
                   api_url_domain: req.rfcx.api_url_domain,
-                  audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-                  audio_s3_path: dbAudio[i].url.substr(dbAudio[i].url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length),
                   audio_sha1_checksum: dbAudio[i].sha1_checksum,
+                  audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
+                  audio_s3_path: 
+                    // auto-generate the asset filepath if it's not stored in the url column
+                    (dbAudio[i].url == null)
+                      ? assetUtils.getGuardianAssetStoragePath("audio",dbAudio[i].measured_at,dbGuardian.guid,dbAudio[i].Format.file_extension)
+                      : dbAudio[i].url.substr(dbAudio[i].url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length),
+                  
                 });
 
                 audioGuids.push(dbAudio[i].guid);

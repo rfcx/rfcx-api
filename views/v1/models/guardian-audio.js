@@ -7,6 +7,8 @@ var fs = require("fs");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
 var audioUtils = require("../../../utils/rfcx-audio").audioUtils;
+var assetUtils = require("../../../utils/internal-rfcx/asset-utils.js").assetUtils;
+var validation = require("../../../utils/misc/validation.js");
 function getAllViews() {
   return require("../../../views/v1");
 }
@@ -19,7 +21,13 @@ exports.models = {
     var output_file_extension = req.rfcx.content_type,
       output_file_name = dbRow.guid + "." + output_file_extension;
 
-    audioUtils.cacheSourceAudio(dbRow.url)
+    // auto-generate the asset filepath if it's not stored in the url column
+    var audioStorageUrl = (dbRow.url == null)
+              ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
+              : dbRow.url;
+
+
+    audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function (sourceFilePath) {
 
         if (dbRow.Format.file_extension === output_file_extension) {
@@ -72,7 +80,12 @@ exports.models = {
         "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
     };
 
-    audioUtils.cacheSourceAudio(dbRow.url)
+    // auto-generate the asset filepath if it's not stored in the url column
+    var audioStorageUrl = (dbRow.url == null)
+              ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
+              : dbRow.url;
+
+    audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function (sourceFilePath) {
 
         var ffmpegSox = process.env.FFMPEG_PATH + " -i " + sourceFilePath + " -loglevel panic -nostdin"
@@ -240,6 +253,27 @@ exports.models = {
 
       resolve(labelValues);
     });
+  },
+
+  transformCreateAudioRequestToModel: function(reqObj){
+
+    return Promise.resolve().then(function () {
+      var requiredAttributes = ["site_id", "guardian_id", "measured_at", "size", "sha1_checksum", "url", "capture_sample_count"];
+      validation.assertAttributesExist(reqObj, requiredAttributes);
+
+      console.info("assertions correct");
+      // Todo: @topher , you can add the actual format here. For now I just added a placeholder as we talked about.
+      var modelObj = { format_id: 3 };
+
+      // copy attributes to make sure that the request doesn't set columns we don't want it to set
+      for(var i=0; i < requiredAttributes.length; i++){
+        var attr = requiredAttributes[i];
+        modelObj[attr] = reqObj[attr];
+      }
+
+      return modelObj;
+    });
+
   }
 
 

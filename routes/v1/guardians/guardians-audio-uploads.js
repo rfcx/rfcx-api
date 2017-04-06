@@ -25,7 +25,7 @@ router.route("/:guardian_id/audio/uploads")
             .create({
               guardian_id: dbGuardian.id, 
               measured_at: uploadInfo.measured_at, 
-              url: uploadInfo.url
+              url: null // uploadInfo.url
             }).then(function(dbGuardianAudioUpload){
 
               res.status(200).json({measured_at: uploadInfo.measured_at, url: uploadInfo.url});
