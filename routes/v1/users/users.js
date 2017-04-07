@@ -34,19 +34,19 @@ router.route("/login")
       email: (req.body.email != null) ? req.body.email.toLowerCase() : null,
       pswd: req.body.password
     };
-    
+
     var loginExpirationInMinutes = 1440; // 1 day (24 hours)
     if ((req.body.extended_expiration != null) && (parseInt(req.body.extended_expiration) == 1)) {
       loginExpirationInMinutes = 5760; // 4 days
     }
 
-    models.User 
+    models.User
       .findOne({
         where: { email: userInput.email }
       }).then(function(dbUser){
 
         if (dbUser == null) {
-          res.status(401).json({ 
+          res.status(401).json({
             message: "invalid email or password", error: { status: 401 }
           });
         } else if (dbUser.auth_password_hash == hash.hashedCredentials(dbUser.auth_password_salt,userInput.pswd)) {
@@ -88,7 +88,7 @@ router.route("/login")
           message: err.message, error: { status: 500 }
         });
       });
-  
+
   });
 
 
@@ -113,13 +113,13 @@ router.route("/register")
     };
     var loginExpirationInMinutes = 1440;
 
-    models.User 
+    models.User
       .findOrCreate({
         where: { email: userInput.email }
       }).spread(function(dbUser, wasCreated){
 
         if (!wasCreated) {
-          res.status(409).json({ 
+          res.status(409).json({
             message: "A user with that username or email already exists", error: { status: 409 }
           });
         } else {
@@ -163,7 +163,7 @@ router.route("/register")
           message: err.message, error: { status: 500 }
         });
       });
-  
+
   });
 
 router.route("/send-reset-password-link")
@@ -174,6 +174,7 @@ router.route("/send-reset-password-link")
       .findOne({
         where: { email: req.body.email }
       })
+      .bind({})
       .then(function(dbUser){
         // if doesn't exists, simply do nothing
         // don't tell a client that e-mail doesn't exist in terms of security
@@ -183,6 +184,7 @@ router.route("/send-reset-password-link")
           return Promise.reject();
         }
         else {
+          this.dbUser = dbUser;
           // create reset password token for founded user which will expire in 1 day
           return models.ResetPasswordToken
             .create({
@@ -192,15 +194,23 @@ router.route("/send-reset-password-link")
         }
       })
       .then(function(dbToken) {
+        this.dbToken = dbToken;
         // send an email to user with link to change password
         var url = process.env.CONSOLE_BASE_URL + 'reset-password?token=' + dbToken.guid;
+        var text = 'To reset your RFCx account password click the following link: ' + url +
+                   ' If you didn\'t request a password change, you can ignore this message.'
         console.log('sending email with reset password link', url);
-        return dbToken;
+        return mailService.sendTextMail({
+          email_address: req.body.email,
+          recipient_name: this.dbUser.firstname || 'RFCx User',
+          subject: 'Password reset',
+          message: text
+        })
       })
-      .then(function(dbToken) {
+      .then(function(mailServiceRes) {
         // return success to client with the time of token expiration
         res.status(200).json({
-          expires_at: dbToken.expires_at
+          expires_at: this.dbToken.expires_at
         });
       })
       .catch(function(err) {
@@ -350,7 +360,7 @@ router.route("/:user_id")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
     if (req.rfcx.auth_token_info.guid === req.params.user_id) {
-      models.User 
+      models.User
         .findAll({
           where: { guid: req.params.user_id },
           limit: 1
