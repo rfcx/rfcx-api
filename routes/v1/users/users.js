@@ -199,13 +199,12 @@ router.route("/send-reset-password-link")
         var url = process.env.CONSOLE_BASE_URL + 'reset-password?token=' + dbToken.guid;
         var text = 'To reset your RFCx account password click the following link: ' + url +
                    ' If you didn\'t request a password change, you can ignore this message.'
-        console.log('sending email with reset password link', url);
         return mailService.sendTextMail({
           email_address: req.body.email,
           recipient_name: this.dbUser.firstname || 'RFCx User',
           subject: 'Password reset',
           message: text
-        })
+        });
       })
       .then(function(mailServiceRes) {
         // return success to client with the time of token expiration
@@ -266,13 +265,20 @@ router.route("/reset-password")
         dbUser.auth_password_updated_at = new Date();
         return dbUser.save();
       })
-      .then(function() {
+      .then(function(dbUser) {
         // token doesn't need anymore, destroy it
         this.dbToken.destroy();
         // and check for other tokens being expired
         removeExpiredResetPasswordTokens();
+        return mailService.sendTextMail({
+          email_address: dbUser.email,
+          recipient_name: dbUser.firstname || 'RFCx User',
+          subject: 'Password changed',
+          message: 'Your password has been changed. If you didn\'t make any changes, please contact us: contact@rfcx.org'
+        });
+      })
+      .then(function() {
         res.status(200).json({});
-        return true;
       })
       .catch(function(err) {
         if (!!err) {
