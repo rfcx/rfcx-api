@@ -323,6 +323,14 @@ router.route("/change-password")
         dbUser.auth_password_updated_at = new Date();
         return dbUser.save();
       })
+      .then(function(dbUser) {
+        return mailService.sendTextMail({
+          email_address: dbUser.email,
+          recipient_name: dbUser.firstname || 'RFCx User',
+          subject: 'Password changed',
+          message: 'Your password has been changed. If you didn\'t make any changes, please contact us: contact@rfcx.org'
+        });
+      })
       .then(function() {
         res.status(200).json({});
         return true;
