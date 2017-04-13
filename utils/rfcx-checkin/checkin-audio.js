@@ -244,10 +244,10 @@ exports.audio = {
 
       try {
 
-        var modelGuids = [  "8dfd93aa-b518-4ce3-a777-930a4ded1268",
-                            "f331d725-df5c-4a43-b0e2-0d51ed7f5055",
-                            "a5804661-b75a-4d62-9f91-a5ecfd64146d",
-                            "87902751-d4b2-4831-8888-f31124e40830"
+        var modelGuids = [  "d36df7cf-f982-49bb-a589-fa2bd3d93f07",
+                            "5794b25f-e2d0-4cb7-b912-3ace594219b3",
+                            "0ab55c18-72d8-493e-9905-b523141a312c",
+                            "a7ca89bd-5cbe-48ca-8ae2-6702a567da5e"
         ];
 
         for (i in modelGuids) {
