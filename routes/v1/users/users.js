@@ -11,6 +11,10 @@ var requireUser = require("../../../middleware/authorization/authorization").req
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 const executeService = require('../../../services/execute-service');
 const mailService = require('../../../services/mail/mail-service');
+var sensationsService = require("../../../services/sensations/sensations-service");
+var ValidationError = require("../../../utils/converter/validation-error");
+var usersService = require('../../../services/users/users-service');
+var sequelize = require("sequelize");
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -341,6 +345,37 @@ router.route("/change-password")
           httpError(res, 500, "database");
         }
       });
+  });
+
+router.route("/checkin")
+  .post(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
+
+    // map HTTP params to service params
+    var serviceParams = {
+      source_type: 2,
+      data_type: '0',
+      data_id: '0',
+      latitude: req.body.latitude,
+      longitude: req.body.longitude,
+      starting_after: req.body.time,
+      ending_before: req.body.time
+    };
+
+    usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      .then((user) => {
+        serviceParams.source_id = user.id;
+        return true;
+      })
+      .then(() => {
+        return sensationsService.createSensations(serviceParams);
+      })
+      .then(result => res.status(200).json(result))
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      // if the user supplied wrong arguments we want to give an error message and have a 400 error code
+      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      // catch-all for any other that is not based on user input
+      .catch(e => httpError(res, 500, e, "Checkin couldn't be created."));
+
   });
 
 // TO DO security measure to ensure that not any user can see any other user

@@ -19,7 +19,7 @@ function createSensations(params) {
 
   // if you don't add optional(default), then it's a validation error if the user doesn't provide one
   params.convert("source_id").toNonNegativeInt();
-  params.convert("data_id").toNonNegativeInt();
+  params.convert("data_id").optional(1).toNonNegativeInt();
 
   // this is will convert the property to a float and check if long/lat conforms to earth's max/min
 
@@ -29,8 +29,6 @@ function createSensations(params) {
 
   params.convert("starting_after").toQuantumTime();
   params.convert("ending_before").toQuantumTime();
-
-
 
   // validate will create a promise, if everything is fine the promise resolves and we can go on in then
   // if not the promise is rejected and the caller needs to deal with ValidationError
