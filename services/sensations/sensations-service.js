@@ -1,6 +1,6 @@
+var sequelize = require("sequelize");
 var Converter = require("../../utils/converter/converter");
 var SensationsRepository = require("./sensations-repository");
-var tablesService = require('../tables/tables-service');
 const ValidationError = require("../../utils/converter/validation-error");
 var models  = require("../../models");
 const audio_data = 1;
@@ -54,7 +54,7 @@ function createSensationsFromGuardianAudio(audio_guid) {
   }).then(guardian => {
     params.latitude = guardian.latitude;
     params.longitude = guardian.longitude;
-    return tablesService.getTableByName(models.GuardianAudio.tableName); // tableName === 'GuardianAudio'
+    return getSourceTypeIdByName(models.GuardianAudio.tableName); // tableName === 'GuardianAudio'
   }).then(source => {
     params.source_type = source.id;
     return createSensations(params);
@@ -110,7 +110,7 @@ function getGuardianCoverage(serviceRequest){
     params.starting_after = moment.tz(params.starting_after, site.timezone).tz("UTC").toISOString();
     params.ending_before = moment.tz(params.ending_before, site.timezone).tz("UTC").toISOString();
     params.local_tz = site.timezone;
-    return tablesService.getTableByName(models.GuardianAudio.tableName); // tableName === 'GuardianAudio'
+    return getSourceTypeIdByName(models.GuardianAudio.tableName); // tableName === 'GuardianAudio'
   }).then(source => {
     params.source_type = source.id;
     return getSourceCoverage(params);
@@ -118,9 +118,25 @@ function getGuardianCoverage(serviceRequest){
 
 }
 
+function getSourceTypeIdByName(name) {
+
+  return models.SourceType
+    .findOne({
+      where: { name: name }
+    })
+    .then((source) => {
+      if (!source) {
+        throw new sequelize.EmptyResultError('SourceType with given name not found.');
+      }
+      return source;
+    });
+
+}
+
 module.exports = {
   createSensations: createSensations,
   createSensationsFromGuardianAudio: createSensationsFromGuardianAudio ,
   getSourceCoverage: getSourceCoverage,
-  getGuardianCoverage: getGuardianCoverage
+  getGuardianCoverage: getGuardianCoverage,
+  getSourceTypeIdByName: getSourceTypeIdByName
 };

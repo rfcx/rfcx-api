@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var Table = sequelize.define("Table", {
+  var SourceType = sequelize.define("SourceType", {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -14,8 +14,8 @@ module.exports = function(sequelize, DataTypes) {
         fields: ["name"]
       }]
     },
-    tableName: "Tables"
+    tableName: "SourceTypes"
   });
 
-  return Table;
+  return SourceType;
 };

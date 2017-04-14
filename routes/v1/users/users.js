@@ -14,7 +14,6 @@ const mailService = require('../../../services/mail/mail-service');
 var sensationsService = require("../../../services/sensations/sensations-service");
 var ValidationError = require("../../../utils/converter/validation-error");
 var usersService = require('../../../services/users/users-service');
-var tablesService = require('../../../services/tables/tables-service');
 var sequelize = require("sequelize");
 
 function removeExpiredResetPasswordTokens() {
@@ -364,7 +363,7 @@ router.route("/checkin")
     usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
       .then((user) => {
         serviceParams.source_id = user.id;
-        return tablesService.getTableByName(models.User.tableName); // tableName === 'Users'
+        return sensationsService.getSourceTypeIdByName(models.User.tableName); // tableName === 'Users'
       })
       .then((source) => {
         serviceParams.source_type = source.id;
