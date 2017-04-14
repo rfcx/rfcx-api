@@ -87,7 +87,8 @@ module.exports = function(sequelize, DataTypes) {
           fields: ["guid"]
         }
       ]
-    }
+    },
+    tableName: "Users"
   });
 
   return User;
