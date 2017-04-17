@@ -1,10 +1,9 @@
+var sequelize = require("sequelize");
 var Converter = require("../../utils/converter/converter");
 var SensationsRepository = require("./sensations-repository");
 const ValidationError = require("../../utils/converter/validation-error");
 var models  = require("../../models");
-const guardian_source = 1;
 const audio_data = 1;
-const guardian_source_type = 1;
 const moment = require("moment-timezone");
 
 function createSensations(params) {
@@ -19,7 +18,7 @@ function createSensations(params) {
 
   // if you don't add optional(default), then it's a validation error if the user doesn't provide one
   params.convert("source_id").toNonNegativeInt();
-  params.convert("data_id").toNonNegativeInt();
+  params.convert("data_id").optional(1).toNonNegativeInt();
 
   // this is will convert the property to a float and check if long/lat conforms to earth's max/min
 
@@ -29,8 +28,6 @@ function createSensations(params) {
 
   params.convert("starting_after").toQuantumTime();
   params.convert("ending_before").toQuantumTime();
-
-
 
   // validate will create a promise, if everything is fine the promise resolves and we can go on in then
   // if not the promise is rejected and the caller needs to deal with ValidationError
@@ -55,11 +52,13 @@ function createSensationsFromGuardianAudio(audio_guid) {
     params.ending_before = ending_before.toISOString();
     return models.Guardian.findOne({where: {id: params.source_id}});
   }).then(guardian => {
-    params.source_type = guardian_source;
     params.latitude = guardian.latitude;
     params.longitude = guardian.longitude;
+    return getSourceTypeIdByName(models.GuardianAudio.tableName); // tableName === 'GuardianAudio'
+  }).then(source => {
+    params.source_type = source.id;
     return createSensations(params);
-  });
+  })
 }
 
 function getSourceCoverage(serviceRequest){
@@ -102,7 +101,6 @@ function getGuardianCoverage(serviceRequest){
     return models.Guardian.findOne({where: {guid: params.guardian_id}});
   }).then(guardian =>{
     params.source_id = guardian.id;
-    params.source_type = guardian_source_type;
     return models.GuardianSite.findOne({where: {id: guardian.site_id}});
   }).then(site => {
     if(! site.timezone) {
@@ -112,8 +110,26 @@ function getGuardianCoverage(serviceRequest){
     params.starting_after = moment.tz(params.starting_after, site.timezone).tz("UTC").toISOString();
     params.ending_before = moment.tz(params.ending_before, site.timezone).tz("UTC").toISOString();
     params.local_tz = site.timezone;
+    return getSourceTypeIdByName(models.GuardianAudio.tableName); // tableName === 'GuardianAudio'
+  }).then(source => {
+    params.source_type = source.id;
     return getSourceCoverage(params);
   });
+
+}
+
+function getSourceTypeIdByName(name) {
+
+  return models.SourceType
+    .findOne({
+      where: { name: name }
+    })
+    .then((source) => {
+      if (!source) {
+        throw new sequelize.EmptyResultError('SourceType with given name not found.');
+      }
+      return source;
+    });
 
 }
 
@@ -121,5 +137,6 @@ module.exports = {
   createSensations: createSensations,
   createSensationsFromGuardianAudio: createSensationsFromGuardianAudio ,
   getSourceCoverage: getSourceCoverage,
-  getGuardianCoverage: getGuardianCoverage
+  getGuardianCoverage: getGuardianCoverage,
+  getSourceTypeIdByName: getSourceTypeIdByName
 };
