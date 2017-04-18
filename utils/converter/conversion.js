@@ -14,7 +14,7 @@ module.exports = class Conversion {
     this.value = null;
     this.conversions = [];
     this.required = true;
-    this.default = null;
+    this.defaultValue = null;
   }
 
   execute(){
@@ -22,8 +22,11 @@ module.exports = class Conversion {
       this.throwError(`the parameter is required but was not provided`);
     }
 
-    this.value = this.src[this.property] || this.default;
+    this.value = this.src[this.property] || this.defaultValue;
 
+    if (!this.required && this.value === null) {
+      return this.value;
+    }
 
     for (var executeValidation of this.conversions){
       executeValidation();
@@ -32,10 +35,15 @@ module.exports = class Conversion {
     this.target[this.property] = this.value;
   }
 
-  optional(def){
-    this.required = false;
-    this.default = def;
+  default(def) {
+    if (def !== undefined) {
+      this.defaultValue = def;
+    }
+    return this;
+  }
 
+  optional(){
+    this.required = false;
     return this;
   }
 
