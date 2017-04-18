@@ -5,6 +5,27 @@ var views = require("../../views/v1");
 const versionName = "v3";
 var aws = require("../../utils/external/aws").aws();
 var ValidationError = require("../../utils/converter/validation-error");
+var Promise = require('bluebird');
+
+function uploadToS3(localPath, s3Path) {
+  return new Promise(function (resolve, reject) {
+    aws.s3(process.env.BUCKET_PERCEPTION).putFile(localPath, s3Path, { 'x-amz-acl': 'public-read' }, function (err, s3Res) {
+      try {
+        s3Res.resume();
+      } catch (resumeErr) {
+        console.log(resumeErr);
+      }
+      if (!!err) {
+        console.log(err);
+        reject(new Error(err));
+      } else if (200 == s3Res.statusCode) {
+        resolve();
+      } else {
+        reject(Error("Could not upload AI to S3."));
+      }
+    });
+  });
+}
 module.exports = {
   createAi: function (params) {
     return this.aiExists(params).then(aiExists => {
@@ -58,31 +79,20 @@ module.exports = {
   },
   uploadAi: function (params) {
     params = new Converter(params);
-    params.convert("archive").toString();
+    params.convert("model").toString();
+    params.convert("attributes").toString();
+    params.convert("weights").toString();
     params.convert("guid").toString();
 
-    var remoteFilePath = null;
-
-
     return params.validate().then(transformedParams => {
-      return new Promise(function (resolve, reject) {
-        remoteFilePath = `/${versionName}/models/${process.env.NODE_ENV}/rfcx-model-${transformedParams.guid}.tar.gz`;
-        aws.s3(process.env.BUCKET_ANALYSIS).putFile(transformedParams.archive, remoteFilePath, { 'x-amz-acl': 'public-read' }, function (err, s3Res) {
-          try {
-            s3Res.resume();
-          } catch (resumeErr) {
-            console.log(resumeErr);
-          }
-          if (!!err) {
-            console.log(err);
-            reject(new Error(err));
-          } else if (200 == s3Res.statusCode) {
-            resolve();
-          } else {
-            reject(Error("Could not upload AI to S3."));
-          }
-        });
-      });
+      var uploads = [];
+
+      uploads.push(uploadToS3(transformedParams.model,`/${transformedParams.guid}/definition.json`));
+      uploads.push(uploadToS3(transformedParams.weights,`/${transformedParams.guid}/weights.h5`));
+      uploads.push(uploadToS3(transformedParams.attributes,`/${transformedParams.guid}/attributes.json`));
+
+      return Promise.all(uploads);
+
     });
 
   }

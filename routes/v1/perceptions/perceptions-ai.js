@@ -19,7 +19,9 @@ router.route("/ai/:guid")
       event_type: req.body.event_type,
       event_value: req.body.event_value,
       guid: req.params.guid,
-      archive: req.files.archive.path
+      weights: req.files.weights.path,
+      model: req.files.model.path,
+      attributes: req.files.attributes.path
     };
 
 
