@@ -3,6 +3,8 @@ var Converter = require("../../utils/converter/converter");
 const ValidationError = require("../../utils/converter/validation-error");
 var models  = require("../../models");
 const userService = require('../users/users-service');
+var sequelize = require("sequelize");
+var Promise = require("bluebird");
 
 function getTypeByName(name) {
   return models.MessageType
@@ -17,7 +19,7 @@ function getTypeByName(name) {
     });
 }
 
-function validateParams(params) {
+function validateCreateParams(params) {
   params = new Converter(params);
 
   params.convert('text').optional().toString();
@@ -26,6 +28,18 @@ function validateParams(params) {
   params.convert('latitude').optional().toLatitude();
   params.convert('longitude').optional().toLongitude();
   params.convert('from_user').toNonNegativeInt();
+  params.convert('to_user').optional().toNonNegativeInt();
+
+  return params.validate();
+}
+
+function validateFindParams(params) {
+  params = new Converter(params);
+
+  params.convert('after').optional().toQuantumTime();
+  params.convert('before').optional().toQuantumTime();
+  params.convert('type').optional().toNonNegativeInt();
+  params.convert('from_user').optional().toNonNegativeInt();
   params.convert('to_user').optional().toNonNegativeInt();
 
   return params.validate();
@@ -53,6 +67,13 @@ function formatMessage(message) {
     });
 }
 
+function formatMessages(messages) {
+  var promises = messages.map((message) => {
+    return formatMessage(message);
+  });
+  return Promise.all(promises);
+}
+
 function getMessageByGuid(guid) {
   return models.Message
     .findOne({
@@ -62,15 +83,32 @@ function getMessageByGuid(guid) {
 }
 
 function createMessage(params) {
-  return validateParams(params)
+  return validateCreateParams(params)
     .then(data => {
       return models.Message.create(data);
     });
+}
+
+function findMessages(params) {
+  return validateFindParams(params)
+    .then(data => {
+      return models.Message.findAll({
+        where: sequelize.and(
+          params.from_user ? ['from_user = ?', params.from_user] : null,
+          params.to_user ? ['to_user = ?', params.to_user] : null,
+          params.type ? ['type = ?', params.type] : null,
+          params.after ? ['time > ?', params.after] : null,
+          params.before ? ['time < ?', params.before] : null
+        )
+      });
+    })
 }
 
 module.exports = {
   getTypeByName: getTypeByName,
   createMessage: createMessage,
   formatMessage: formatMessage,
-  getMessageByGuid: getMessageByGuid
+  formatMessages: formatMessages,
+  getMessageByGuid: getMessageByGuid,
+  findMessages: findMessages
 }
