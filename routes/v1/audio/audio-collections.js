@@ -230,9 +230,10 @@ router.route("/audio-collections/:id/data")
         if (!dbAudioAnalysisTrainingSet) {
           return httpError(res, 404, null, 'Audio Collection is not associated with any Training Sets.');
         }
+        this.eventValue = dbAudioAnalysisTrainingSet.event_value;
         return datafiltersService.getLabelsData({
           tagType: 'label',
-          tagValues: dbAudioAnalysisTrainingSet.event_value,
+          tagValues: this.eventValue,
           audioGuids: this.guids
         });
       })
@@ -243,7 +244,7 @@ router.route("/audio-collections/:id/data")
         });
       })
       .then(function(dataObj) {
-        return csvUtils.generateCSV(dataObj.data.attributes.labels, req.params.tagValue);
+        return csvUtils.generateCSV(dataObj.data.attributes.labels, this.eventValue);
       })
       .then(function(csv) {
         res.contentType('text/csv');
