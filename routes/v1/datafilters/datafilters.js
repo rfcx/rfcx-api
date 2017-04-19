@@ -10,6 +10,7 @@ var models = require('../../../models');
 var flipCoin = require("../../../utils/misc/rand.js").flipCoin;
 var sqlUtils = require("../../../utils/misc/sql");
 var csvUtils = require("../../../utils/misc/csv");
+var datafiltersService = require('../../../services/datafilters/datafilters-service');
 
 var condAdd = sqlUtils.condAdd;
 
@@ -70,21 +71,21 @@ function extractAudioGuids(data) {
   return arr;
 }
 
-function getLabelsData(filterOpts) {
+// function getLabelsData(filterOpts) {
 
-  var sql = 'SELECT a.guid, t.begins_at_offset, t.ends_at_offset, (t.ends_at_offset - t.begins_at_offset) as duration, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where 1=1 ';
+//   var sql = 'SELECT a.guid, t.begins_at_offset, t.ends_at_offset, (t.ends_at_offset - t.begins_at_offset) as duration, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where 1=1 ';
 
-  sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
-  sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
-  sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
-  sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
-  sql = condAdd(sql, filterOpts.audioGuids, ' and a.guid in (:audioGuids)');
-  sql = condAdd(sql, true, ' group by t.audio_id, begins_at_offset having count(DISTINCT t.tagged_by_user) >= 1 order by t.begins_at_offset ASC');
+//   sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
+//   sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
+//   sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
+//   sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
+//   sql = condAdd(sql, filterOpts.audioGuids, ' and a.guid in (:audioGuids)');
+//   sql = condAdd(sql, true, ' group by t.audio_id, begins_at_offset having count(DISTINCT t.tagged_by_user) >= 1 order by t.begins_at_offset ASC');
 
-  return models.sequelize.query(sql,
-    { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
-  );
-}
+//   return models.sequelize.query(sql,
+//     { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
+//   );
+// }
 
 function processSuccess(data, req, res) {
   return views.models.DataFilterAudioGuidToJson(req, res, data).then(function (result) {
@@ -94,6 +95,7 @@ function processSuccess(data, req, res) {
 
 function processError(err, req, res) {
   if(!!err){
+    console.log('err', err);
     res.status(500).json({msg: err});
   }
 }
@@ -165,7 +167,7 @@ router.route("/csv/:tagValue")
       .then(function(data) {
         this.guids = data;
         filterOpts.audioGuids = extractAudioGuids(data);
-        return getLabelsData(filterOpts);
+        return datafiltersService.getLabelsData(filterOpts);
       })
       .then(function(labels) {
         return views.models.DataFilterAudioGuidToJson(req, res, {
@@ -186,6 +188,8 @@ router.route("/csv/:tagValue")
 
 router.route("/labelling/:tagValue?")
   .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    var body = req.body;
 
     var filterOpts = combineFilterOpts(req);
 
@@ -212,7 +216,7 @@ router.route("/labelling/:tagValue?")
         if (body.withCSV && data.length) {
           // simplify tags query - search only in received guids
           filterOpts.audioGuids = extractAudioGuids(data);
-          return getLabelsData(filterOpts);
+          return datafiltersService.getLabelsData(filterOpts);
         }
         else {
           return null;

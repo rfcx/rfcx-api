@@ -7,6 +7,8 @@ var httpError = require("../../../utils/http-errors.js");
 var Promise = require("bluebird");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
+var datafiltersService = require('../../../services/datafilters/datafilters-service');
+var csvUtils = require("../../../utils/misc/csv");
 
 function filterExcludedGuids(originalArray, foundedArray) {
   return originalArray.filter(function(item) {
@@ -195,6 +197,58 @@ router.route("/audio-collections/:id")
       .catch(function(err){
         console.log("failed to return audio collection | "+err);
         if (!!err) { res.status(500).json({ message: "failed to return audio collection", error: { status: 500 } }); }
+      });
+
+  });
+
+router.route("/audio-collections/:id/data")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+
+    return models.GuardianAudioCollection
+      .findOne({
+        where: { guid: req.params.id },
+        include: [{ all: true } ]
+      })
+      .bind({})
+      .then(function(dbGuardianAudioCollection) {
+        if (!dbGuardianAudioCollection) {
+          return httpError(res, 404, null, 'Database does not contain following audio collection.');
+        }
+        this.guids = dbGuardianAudioCollection.GuardianAudios.map(function(audio) {
+          return audio.guid;
+        });
+        return models.AudioAnalysisTrainingSet.findOne({
+          where: {
+            $or: {
+              training_set: dbGuardianAudioCollection.id,
+              test_set: dbGuardianAudioCollection.id
+            }
+          }
+        });
+      })
+      .then(function(dbAudioAnalysisTrainingSet) {
+        if (!dbAudioAnalysisTrainingSet) {
+          return httpError(res, 404, null, 'Audio Collection is not associated with any Training Sets.');
+        }
+        return datafiltersService.getLabelsData({
+          tagType: 'label',
+          tagValues: dbAudioAnalysisTrainingSet.event_value,
+          audioGuids: this.guids
+        });
+      })
+      .then(function(labels) {
+        return views.models.DataFilterAudioGuidToJson(req, res, {
+          guids: this.guids,
+          labels: labels
+        });
+      })
+      .then(function(dataObj) {
+        return csvUtils.generateCSV(dataObj.data.attributes.labels, req.params.tagValue);
+      })
+      .then(function(csv) {
+        res.contentType('text/csv');
+        res.attachment('event.csv');
+        res.status(200).send(csv);
       });
 
   });
