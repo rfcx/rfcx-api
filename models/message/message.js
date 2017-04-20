@@ -31,6 +31,10 @@ module.exports = function(sequelize, DataTypes) {
         min: -180,
         max: 180
       }
+    },
+    text: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true
     }
   }, {
     classMethods: {
