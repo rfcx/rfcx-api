@@ -7,7 +7,7 @@ module.exports = {
       'AudioAnalysisModels',
       'experimental',
       {
-        type: DataTypes.BOOLEAN,
+        type: Sequelize.BOOLEAN,
         defaultValue: true
       }
     );
