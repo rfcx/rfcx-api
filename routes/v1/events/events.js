@@ -254,7 +254,6 @@ router.route("/event")
 
     queryData(req)
       .then(function (dbEvents) {
-        console.log('dbEvents', dbEvents.count);
         if (contentType === 'json') {
           return views.models.guardianAudioEventsJson(req, res, dbEvents.rows)
             .then(function (json) {

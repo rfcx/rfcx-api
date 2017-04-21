@@ -8,6 +8,41 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var PerceptionsAiService = require("../../../services/perceptions/perceptions-ai-service");
 var ValidationError = require("../../../utils/converter/validation-error");
+var ApiConverter = require("../../../utils/api-converter");
+var urls = require("../../../utils/misc/urls");
+
+router.route("/ai/models")
+  .get(passport.authenticate("token",{session:false}), (req, res) => {
+
+    var converter = new ApiConverter("models", req);
+
+    return models.AudioAnalysisModel
+      .findAll({
+        include: [{ all: true }]
+      })
+      .then(function(data) {
+        var outputData = data.map((model) => {
+          return {
+            guid: model.guid,
+            shortname: model.shortname,
+            is_active: model.is_active,
+            experimental: model.experimental,
+            event_type: model.GuardianAudioEventType? model.GuardianAudioEventType.value : null,
+            event_value: model.GuardianAudioEventValue? model.GuardianAudioEventValue.value : null
+          }
+        })
+        var api = converter.mapSequelizeToApi({
+          models: data
+        });
+        api.links.self = urls.getApiUrl(req) + '/perceptions/ai/models';
+        res.status(200).json(api);
+      })
+      .catch(function(err) {
+        console.log("failed to return models | ", err);
+        httpError(res, 500, err, 'failed to return models');
+      });
+
+  });
 
 router.route("/ai/:guid")
   .post(passport.authenticate("token",{session:false}), (req, res) => {
