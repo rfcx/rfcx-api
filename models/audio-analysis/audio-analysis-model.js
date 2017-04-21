@@ -97,6 +97,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
       }
+    },
+    experimental: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
     }
   }, {
     classMethods: {
