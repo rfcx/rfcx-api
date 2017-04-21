@@ -11,20 +11,20 @@ function createSensations(params) {
 
   // this will convert the source type to integer but requires non-negative numbers
   // if source_type is not provided by the user, it will be set to 1
-  params.convert("source_type").optional(1).toInt().minimum(0);
+  params.convert("source_type").optional().default(1).toInt().minimum(0);
 
   // as this will happen often, you can also use
-  params.convert("data_type").optional(1).toNonNegativeInt();
+  params.convert("data_type").optional().default(1).toNonNegativeInt();
 
-  // if you don't add optional(default), then it's a validation error if the user doesn't provide one
+  // if you don't add optional(), default(value), then it's a validation error if the user doesn't provide one
   params.convert("source_id").toNonNegativeInt();
-  params.convert("data_id").optional(1).toNonNegativeInt();
+  params.convert("data_id").optional().default(1).toNonNegativeInt();
 
   // this is will convert the property to a float and check if long/lat conforms to earth's max/min
 
   // Todo: Guardians should send GPS coords then this could be required fields
-  params.convert("latitude").optional(1.0).toLatitude();
-  params.convert("longitude").optional(1.0).toLongitude();
+  params.convert("latitude").optional().default(1.0).toLatitude();
+  params.convert("longitude").optional().default(1.0).toLongitude();
 
   params.convert("starting_after").toQuantumTime();
   params.convert("ending_before").toQuantumTime();
@@ -70,7 +70,7 @@ function getSourceCoverage(serviceRequest){
   inputParams.convert("starting_after").toMoment("UTC");
   inputParams.convert("ending_before").toMoment("UTC");
   inputParams.convert("interval").toInt().minimum(60).maximum(secondsIn31days);
-  inputParams.convert("local_tz").optional("UTC").toString();
+  inputParams.convert("local_tz").optional().default("UTC").toString();
   return inputParams.validate().then( () => {
     const durationInSeconds = (params.before - params.after) / 1000;
     // not more than 35 days

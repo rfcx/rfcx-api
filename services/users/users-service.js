@@ -2,7 +2,6 @@ var models = require("../../models");
 var sequelize = require("sequelize");
 
 function getUserByGuid(guid) {
-
   return models.User
     .findOne({
       where: { guid: guid }
@@ -13,9 +12,19 @@ function getUserByGuid(guid) {
       }
       return user;
     });
+}
 
+function formatUser(user) {
+  return {
+    guid: user.guid,
+    email: user.email,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    username: user.username
+  }
 }
 
 module.exports = {
-  getUserByGuid: getUserByGuid
+  getUserByGuid: getUserByGuid,
+  formatUser: formatUser
 };

@@ -8,7 +8,7 @@ function sendTextMail(serviceRequest) {
   var params = {};
   serviceRequest = new Converter(serviceRequest, params);
   serviceRequest.convert("email_address").toString();
-  serviceRequest.convert("recipient_name").optional("").toString();
+  serviceRequest.convert("recipient_name").optional().default('').toString();
   serviceRequest.convert("subject").toString();
   serviceRequest.convert("message").toString();
 
@@ -22,8 +22,8 @@ function registerToAppWaitingList(serviceRequest) {
   serviceRequest = new Converter(serviceRequest, params);
 
   serviceRequest.convert("email_address").toString();
-  serviceRequest.convert("requested_os").optional("iOS").toString();
-  
+  serviceRequest.convert("requested_os").optional().default('iOS').toString();
+
 
   return serviceRequest.validate().then(()=> {
     return mailing.subsribeToList(process.env.MAILCHIMP_APP_WAITING_LIST, params.email_address);
