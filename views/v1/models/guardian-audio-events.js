@@ -212,7 +212,7 @@ exports.models = {
           csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : 'null') + ',';
           csv += (dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : 'null') + ',';
           csv += dbRow.reviewer_confirmed + ',';
-          csv += (dbRow.User? dbRow.User.guid : 'null') + ',';
+          csv += (dbRow.User? dbRow.User.guid : 'null') + '\r\n';
         }
 
         resolve(csv);
