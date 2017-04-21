@@ -32,7 +32,8 @@ function queryData(req) {
     site: {},
     audio: {},
     type: {},
-    value: {}
+    value: {},
+    model: {}
   };
 
   if (req.query.updated_after) {
@@ -97,6 +98,19 @@ function queryData(req) {
     whereClauses.type.value = {
       $in: req.query.types
     };
+  }
+
+  if (req.query.models && Array.isArray(req.query.models)) {
+    whereClauses.model = {
+      $or: {
+        guid: {
+          $in: req.query.models
+        },
+        shortname: {
+          $in: req.query.models
+        }
+      }
+    }
   }
 
   var omitFalsePositives = true;
@@ -175,6 +189,11 @@ function queryData(req) {
           where: whereClauses.type
         },
         {
+          model: models.AudioAnalysisModel,
+          as: 'Model',
+          where: whereClauses.model
+        },
+        {
           model: models.User,
           as: 'User',
           attributes: [
@@ -235,6 +254,7 @@ router.route("/event")
 
     queryData(req)
       .then(function (dbEvents) {
+        console.log('dbEvents', dbEvents.count);
         if (contentType === 'json') {
           return views.models.guardianAudioEventsJson(req, res, dbEvents.rows)
             .then(function (json) {
