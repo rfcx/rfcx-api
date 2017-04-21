@@ -129,10 +129,7 @@ exports.models = {
             guardian_shortname: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : null,
             site: dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : null,
             reviewer_confirmed: dbRow.reviewer_confirmed,
-            reviewer_guid: dbRow.User? dbRow.User.guid : null,
-            reviewer_firstname: dbRow.User? dbRow.User.firstname : null,
-            reviewer_lastname: dbRow.User? dbRow.User.lastname : null,
-            reviewer_email: dbRow.User? dbRow.User.email : null
+            reviewer_guid: dbRow.User? dbRow.User.guid : null
           });
 
         }
@@ -195,7 +192,7 @@ exports.models = {
         if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
 
         var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence,guardian_guid,guardian_shortname,' +
-                   'site,reviewer_confirmed,reviewer_guid,reviewer_firstname,reviewer_lastname,reviewer_email\r\n';
+                   'site,reviewer_confirmed,reviewer_guid\r\n';
 
         for (var i = 0; i < dbAudioEvents.length; i++) {
 
@@ -216,9 +213,6 @@ exports.models = {
           csv += (dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : 'null') + ',';
           csv += dbRow.reviewer_confirmed + ',';
           csv += (dbRow.User? dbRow.User.guid : 'null') + ',';
-          csv += (dbRow.User? dbRow.User.firstname : 'null') + ',';
-          csv += (dbRow.User? dbRow.User.lastname : 'null') + ',';
-          csv += (dbRow.User? dbRow.User.email : 'null') + '\r\n';
         }
 
         resolve(csv);
