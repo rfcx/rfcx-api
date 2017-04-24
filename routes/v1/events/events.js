@@ -101,16 +101,18 @@ function queryData(req) {
   }
 
   if (req.query.models && Array.isArray(req.query.models)) {
-    whereClauses.model = {
-      $or: {
-        guid: {
-          $in: req.query.models
-        },
-        shortname: {
-          $in: req.query.models
-        }
+    whereClauses.model['$or'] = {
+      guid: {
+        $in: req.query.models
+      },
+      shortname: {
+        $in: req.query.models
       }
     }
+  }
+
+  if (req.query.showExperimental !== undefined) {
+    whereClauses.model.experimental = (req.query.showExperimental === 'true');
   }
 
   var omitFalsePositives = true;
