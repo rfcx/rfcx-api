@@ -19,7 +19,7 @@ exports.audio = {
   info: function(audioFiles, apiUrlDomain, audioMeta, dbGuardian, dbCheckIn) {
 
     // REMOVE LATER
-    // cached file garbage collection... 
+    // cached file garbage collection...
     if (Math.random() < 0.01 ? true : false) { // only do garbage collection ~1% of the time it's allowed
       cachedFiles.cacheDirectoryGarbageCollection();
     }
@@ -30,12 +30,12 @@ exports.audio = {
 
       // make sure the screenshot files is an array
       if (!util.isArray(audioFiles)) { audioFiles = [audioFiles]; }
-        
+
       if (audioMeta.length == audioFiles.length) {
 
         for (i in audioFiles) {
 
-          var timeStamp = audioMeta[i][1]; 
+          var timeStamp = audioMeta[i][1];
           var timeStampDateObj = new Date(parseInt(timeStamp));
 
           audioInfo[timeStamp] = {
@@ -49,7 +49,7 @@ exports.audio = {
             uploadLocalPath: audioFiles[i].path,
             unzipLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
             wavAudioLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+".wav",
-            
+
             guardianSha1Hash: audioMeta[i][3],
             sha1Hash: null, // to be calculated following the uncompression
             size: null, // to be calculated following the uncompression
@@ -57,7 +57,7 @@ exports.audio = {
             dbAudioObj: null,
             audio_id: null,
             audio_guid: null,
-            
+
             capture_format: null,
             capture_bitrate: (audioMeta[i][5] != null) ? parseInt(audioMeta[i][5]) : null,
             capture_sample_rate: (audioMeta[i][4] != null) ? parseInt(audioMeta[i][4]) : null,
@@ -77,7 +77,7 @@ exports.audio = {
             isSaved: { db: false, s3: false, sqs: false },
             s3Path: assetUtils.getGuardianAssetStoragePath("audio",timeStampDateObj,dbGuardian.guid,audioMeta[i][2])
           };
-          
+
         }
 
       } else {
@@ -101,7 +101,7 @@ exports.audio = {
             // calculate checksum of unzipped file
             audioInfo.sha1Hash = hash.fileSha1(audioInfo.unzipLocalPath);
             // compare to checksum received from guardian
-            if (audioInfo.sha1Hash === audioInfo.guardianSha1Hash) {  
+            if (audioInfo.sha1Hash === audioInfo.guardianSha1Hash) {
 
               resolve(audioInfo);
 
@@ -190,7 +190,7 @@ exports.audio = {
               is_vbr: audioInfo.capture_is_vbr
             }
           }).spread(function(dbAudioFormat, wasCreated){
-            
+
             dbAudio.format_id = dbAudioFormat.id;
             dbAudio.save();
 
@@ -201,7 +201,7 @@ exports.audio = {
 
             resolve(audioInfo);
 
-          }).catch(function(err){ 
+          }).catch(function(err){
             console.log("error linking audio format to audio entry to database | "+err);
             reject(new Error(err));
           });
@@ -209,7 +209,7 @@ exports.audio = {
       }).catch(function(err){
         console.log("error adding audio to database | "+err);
         reject(new Error(err));
-      });     
+      });
     }.bind(this));
   },
 
@@ -218,17 +218,17 @@ exports.audio = {
 
       aws.s3(process.env.ASSET_BUCKET_AUDIO)
         .putFile(
-          audioInfo.unzipLocalPath, 
-          audioInfo.s3Path, 
+          audioInfo.unzipLocalPath,
+          audioInfo.s3Path,
           function(err, s3Res){
             try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
             if (!!err) {
               console.log(err);
               reject(new Error(err));
             } else if ((200 == s3Res.statusCode) && aws.s3ConfirmSave(s3Res,audioInfo.s3Path)) {
-              
+
               audioInfo.isSaved.s3 = true;
-              
+
               resolve(audioInfo);
 
             } else {
@@ -240,49 +240,44 @@ exports.audio = {
   },
 
   queueForTaggingByActiveModels: function(audioInfo) {
-    return new Promise(function(resolve, reject) {
 
-      try {
-
-        var modelGuids = [  "d36df7cf-f982-49bb-a589-fa2bd3d93f07",
-                            "5794b25f-e2d0-4cb7-b912-3ace594219b3",
-                            "0ab55c18-72d8-493e-9905-b523141a312c",
-                            "a7ca89bd-5cbe-48ca-8ae2-6702a567da5e"
-        ];
-
+    return models.AudioAnalysisModel
+      .findAll({
+        where: { is_active: true }
+      })
+      .then(function(dbModels) {
+        return dbModels.map(function(model) {
+          return model.guid;
+        });
+      })
+      .then(function(modelGuids) {
+        var promises = [];
         for (i in modelGuids) {
-
-          analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuids[i], {
+          var prom = analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuids[i], {
             audio_guid: audioInfo.audio_guid,
             api_url_domain: audioInfo.api_url_domain,
             audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
             audio_s3_path: audioInfo.s3Path,
             audio_sha1_checksum: audioInfo.sha1Hash,
-          }).then(function(){
-          }).catch(function(err){
-            console.log(err);
           });
-
+          promises.push(prom);
         }
-
+        return Promise.all(promises);
+      })
+      .then(function() {
         audioInfo.isSaved.sqs = true;
-        resolve(audioInfo);
+        return audioInfo;
+      });
       
-      } catch(err) {
-        console.log(err);
-        reject(new Error(err));
-      }
-
-    }.bind(this));
   },
 
 
   rollBackCheckIn: function(audioInfo) {
 
     models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo.sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
-    
+
     models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function(dbCheckIn){ dbCheckIn.destroy().then(function(){ console.log("deleted checkin entry"); }); }).catch(function(err){ console.log("failed to delete checkin entry | "+err); });
- 
+
     cleanupCheckInFiles(audioInfo);
   }
 
