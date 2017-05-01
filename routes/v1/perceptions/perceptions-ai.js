@@ -11,7 +11,7 @@ var ValidationError = require("../../../utils/converter/validation-error");
 var ApiConverter = require("../../../utils/api-converter");
 var urls = require("../../../utils/misc/urls");
 
-router.route("/ai/models")
+router.route("/ai")
   .get(passport.authenticate("token",{session:false}), (req, res) => {
 
     var converter = new ApiConverter("models", req);
