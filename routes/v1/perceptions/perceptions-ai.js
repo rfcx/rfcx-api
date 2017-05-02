@@ -89,6 +89,9 @@ router.route("/ai/:id")
       .then(function(ai) {
         return PerceptionsAiService.updateAi(ai, params);
       })
+      .then((ai) => {
+        return PerceptionsAiService.formatAi(ai);
+      })
       .then((data) => {
         res.status(200).json(data);
       })

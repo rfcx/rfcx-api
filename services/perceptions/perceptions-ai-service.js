@@ -141,7 +141,9 @@ module.exports = {
       return ai.update(transformedParams);
     })
     .then((aiModel) => {
-      return aiModel.reload();
+      return aiModel.reload({
+        include: [{ all: true } ]
+      });
     });
   },
 
@@ -161,6 +163,28 @@ module.exports = {
         return model;
       });
 
+  },
+
+  formatAi: function(ai) {
+    return {
+      guid: ai.guid,
+      shorname: ai.shorname,
+      method_name: ai.method_name,
+      is_active: ai.is_active,
+      model_download_url: ai.model_download_url,
+      model_sha1_checksum: ai.model_sha1_checksum,
+      audio_sample_rate: ai.audio_sample_rate,
+      ffmpeg_preprocess_options: ai.ffmpeg_preprocess_options,
+      sox_preprocess_options: ai.sox_preprocess_options,
+      imagemagick_preprocess_options: ai.imagemagick_preprocess_options,
+      minimal_detection_confidence: ai.minimal_detection_confidence,
+      minimal_detected_windows: ai.minimal_detected_windows,
+      generate_event: ai.generate_event,
+      config: ai.config,
+      experimental: ai.experimental,
+      event_type: ai.GuardianAudioEventType? ai.GuardianAudioEventType.value : null,
+      event_value: ai.GuardianAudioEventValue? ai.GuardianAudioEventValue.value : null
+    };
   }
 
 
