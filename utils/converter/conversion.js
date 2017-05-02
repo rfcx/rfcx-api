@@ -148,7 +148,7 @@ module.exports = class Conversion {
 
   toBoolean(){
     this.conversions.push(()=>{
-      this.value = (this.value === 'true');
+      this.value = (this.value.toString() === 'true' || this.value.toString() === '1');
     });
     return this;
   }
