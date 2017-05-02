@@ -22,15 +22,8 @@ router.route("/ai")
         include: [{ all: true }]
       })
       .then(function(data) {
-        var outputData = data.map((model) => {
-          return {
-            guid: model.guid,
-            shortname: model.shortname,
-            is_active: model.is_active,
-            experimental: model.experimental,
-            event_type: model.GuardianAudioEventType? model.GuardianAudioEventType.value : null,
-            event_value: model.GuardianAudioEventValue? model.GuardianAudioEventValue.value : null
-          }
+        var outputData = data.map((ai) => {
+          return PerceptionsAiService.formatAi(ai);
         })
         var api = converter.mapSequelizeToApi({
           models: outputData

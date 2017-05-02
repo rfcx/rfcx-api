@@ -168,7 +168,7 @@ module.exports = {
   formatAi: function(ai) {
     return {
       guid: ai.guid,
-      shorname: ai.shorname,
+      shortname: ai.shortname,
       method_name: ai.method_name,
       is_active: ai.is_active,
       model_download_url: ai.model_download_url,
