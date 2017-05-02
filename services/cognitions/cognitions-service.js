@@ -1,35 +1,52 @@
 var Converter = require("../../utils/converter/converter");
 var models = require("../../models");
 var views = require("../../views/v1");
+var Promise = require("bluebird");
 
 module.exports = {
-  createCognitionType: function (params) {
+  createCognitionTypeValue: function (params) {
+
+    return Promise.all([
+      this.createCognitionType(params),
+      this.createCognitionValue(params)
+    ])
+    .spread((type, value) => {
+      return Object.assign({}, type, value);
+    });
+
+  },
+
+  createCognitionType: function(params) {
     var transformedParams = {};
     params = new Converter(params, transformedParams);
-
-    // required probability
     params.convert("event_type").toString();
-    params.convert("event_value").toString();
-
-    var res = {};
-
 
     return params.validate().then(() => {
       return models.GuardianAudioEventType.findOrCreate({
-        where: {value: transformedParams.event_type}
+        where: { value: transformedParams.event_type }
       });
     }).spread(ev => {
-      res.event_type = ev.value;
-      res.event_type_id = ev.id;
-    }).then(() => {
+      return {
+        event_type: ev.value,
+        event_type_id: ev.id
+      }
+    });
+  },
+
+  createCognitionValue: function(params) {
+    var transformedParams = {};
+    params = new Converter(params, transformedParams);
+    params.convert("event_value").toString();
+
+    return params.validate().then(() => {
       return models.GuardianAudioEventValue.findOrCreate({
-          where: {value: transformedParams.event_value}
+        where: { value: transformedParams.event_value }
       });
     }).spread(val => {
-      res.event_value = val.value;
-      res.event_value_id = val.id;
-    }).then(() => {
-      return res
+      return {
+        event_value: val.value,
+        event_value_id: val.id
+      }
     });
-  }
+  },
 };
