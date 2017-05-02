@@ -10,6 +10,7 @@ var PerceptionsAiService = require("../../../services/perceptions/perceptions-ai
 var ValidationError = require("../../../utils/converter/validation-error");
 var ApiConverter = require("../../../utils/api-converter");
 var urls = require("../../../utils/misc/urls");
+var sequelize = require("sequelize");
 
 router.route("/ai")
   .get(passport.authenticate("token",{session:false}), (req, res) => {
@@ -59,8 +60,6 @@ router.route("/ai/:guid")
       attributes: req.files.attributes.path
     };
 
-
-
     PerceptionsAiService.createAi(params)
       .then(created => res.status(200).json({
         shortname: params.shortname, guid: params.guid,
@@ -71,4 +70,32 @@ router.route("/ai/:guid")
       .catch(e => httpError(res, 500, e, `Perception Ai couldn't be created: ${e}`));
 
   });
+
+router.route("/ai/:id")
+  .put(passport.authenticate("token",{session:false}), (req, res) => {
+
+    var params = {
+      event_type: req.body.event_type,
+      event_value: req.body.event_value,
+      minimal_detection_confidence: req.body.minimal_detection_confidence,
+      minimal_detected_windows: req.body.minimal_detected_windows,
+      experimental: req.body.experimental,
+      shortname: req.body.shortname,
+      is_active: req.body.is_active
+    };
+
+    PerceptionsAiService
+      .findAi(req.params.id)
+      .then(function(ai) {
+        return PerceptionsAiService.updateAi(ai, params);
+      })
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(e => httpError(res, 500, e, `Perception Ai couldn't be updated: ${e}`));
+
+  });
+
 module.exports = router;
