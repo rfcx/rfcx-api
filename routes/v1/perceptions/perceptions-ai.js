@@ -28,7 +28,7 @@ router.route("/ai")
         var api = converter.mapSequelizeToApi({
           models: outputData
         });
-        api.links.self = urls.getApiUrl(req) + '/perceptions/ai/models';
+        api.links.self = urls.getApiUrl(req) + '/perceptions/ai';
         res.status(200).json(api);
       })
       .catch(function(err) {
