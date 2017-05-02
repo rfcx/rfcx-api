@@ -38,6 +38,20 @@ router.route("/ai")
 
   });
 
+router.route("/ai/:id")
+  .get(passport.authenticate("token",{session:false}), (req, res) => {
+
+    PerceptionsAiService
+      .findAi(req.params.id)
+      .then(PerceptionsAiService.formatAi)
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(e => httpError(res, 500, e, `Perception Ai couldn't be found: ${e}`));
+
+  });
+
 router.route("/ai/:guid")
   .post(passport.authenticate("token",{session:false}), (req, res) => {
 
@@ -82,9 +96,7 @@ router.route("/ai/:id")
       .then(function(ai) {
         return PerceptionsAiService.updateAi(ai, params);
       })
-      .then((ai) => {
-        return PerceptionsAiService.formatAi(ai);
-      })
+      .then(PerceptionsAiService.formatAi)
       .then((data) => {
         res.status(200).json(data);
       })
