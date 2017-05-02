@@ -22,7 +22,7 @@ module.exports = class Conversion {
       this.throwError(`the parameter is required but was not provided`);
     }
 
-    this.value = this.src[this.property] || this.defaultValue;
+    this.value = this.src[this.property] !== undefined? this.src[this.property] : this.defaultValue;
 
     if (!this.required && this.value === null) {
       return this.value;
@@ -144,5 +144,12 @@ module.exports = class Conversion {
     this.conversions.push(()=>{
       this.value = this.value.toString();
     });
+  }
+
+  toBoolean(){
+    this.conversions.push(()=>{
+      this.value = (this.value === 'true');
+    });
+    return this;
   }
 };
