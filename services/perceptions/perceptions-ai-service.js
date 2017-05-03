@@ -183,7 +183,9 @@ module.exports = {
       config: ai.config,
       experimental: ai.experimental,
       event_type: ai.GuardianAudioEventType? ai.GuardianAudioEventType.value : null,
-      event_value: ai.GuardianAudioEventValue? ai.GuardianAudioEventValue.value : null
+      event_value: ai.GuardianAudioEventValue? ai.GuardianAudioEventValue.value : null,
+      created_at: ai.created_at,
+      updated_at: ai.updated_at
     };
   }
 
