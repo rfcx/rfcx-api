@@ -154,7 +154,8 @@ module.exports = {
         $or: [
           { guid: id },
           { shortname: id }
-        ]}
+        ]},
+        include: [{ all: true } ]
       })
       .then((model) => {
         if (!model) {
