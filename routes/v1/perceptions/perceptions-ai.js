@@ -15,7 +15,7 @@ var sequelize = require("sequelize");
 router.route("/ai")
   .get(passport.authenticate("token",{session:false}), (req, res) => {
 
-    var converter = new ApiConverter("models", req);
+    var converter = new ApiConverter("ai", req);
 
     return models.AudioAnalysisModel
       .findAll({
@@ -26,7 +26,7 @@ router.route("/ai")
           return PerceptionsAiService.formatAi(ai);
         })
         var api = converter.mapSequelizeToApi({
-          models: outputData
+          ai: outputData
         });
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai';
         res.status(200).json(api);
@@ -41,11 +41,17 @@ router.route("/ai")
 router.route("/ai/:id")
   .get(passport.authenticate("token",{session:false}), (req, res) => {
 
+    var converter = new ApiConverter("ai", req);
+
     PerceptionsAiService
       .findAi(req.params.id)
       .then(PerceptionsAiService.formatAi)
       .then((data) => {
-        res.status(200).json(data);
+        var api = converter.mapSequelizeToApi({
+          ai: data
+        });
+        api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id;
+        res.status(200).json(api);
       })
       .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
       .catch(e => httpError(res, 500, e, `Perception Ai couldn't be found: ${e}`));
