@@ -87,6 +87,8 @@ router.route("/ai/:guid")
 router.route("/ai/:id")
   .put(passport.authenticate("token",{session:false}), (req, res) => {
 
+    var converter = new ApiConverter("ai", req);
+
     var params = {
       event_type: req.body.event_type,
       event_value: req.body.event_value,
@@ -104,7 +106,11 @@ router.route("/ai/:id")
       })
       .then(PerceptionsAiService.formatAi)
       .then((data) => {
-        res.status(200).json(data);
+        var api = converter.mapSequelizeToApi({
+          ai: data
+        });
+        api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id;
+        res.status(200).json(api);
       })
       .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
       .catch(ValidationError, e => httpError(res, 400, null, e.message))
