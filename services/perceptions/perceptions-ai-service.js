@@ -66,17 +66,26 @@ module.exports = {
     params.convert("event_type").toString();
     params.convert("event_value").toString();
     params.convert("guid").toString();
+    params.convert("is_active").optional().toBoolean()
+    params.convert("experimental").optional().toBoolean()
 
     // validate will create a promise, if everything is fine the promise resolves and we can go on in then
     // if not the promise is rejected and the caller needs to deal with ValidationError
-    return params.validate().then(() => {
-      return CognitionService.createCognitionTypeValue(transformedArgs);
-    }).then(cognitionType => {
-      transformedArgs.event_type = cognitionType.event_type_id;
-      transformedArgs.event_value = cognitionType.event_value_id;
-    }).then(() => {
-      return models.AudioAnalysisModel.upsert(transformedArgs);
-    });
+    return params.validate()
+      .then(() => {
+        return CognitionService.createCognitionTypeValue(transformedArgs);
+      })
+      .then(cognitionType => {
+        transformedArgs.event_type = cognitionType.event_type_id;
+        transformedArgs.event_value = cognitionType.event_value_id;
+      })
+      .then(() => {
+        return models.AudioAnalysisModel.create(transformedArgs);
+      })
+      .then(ai => {
+        return ai.reload({include: [{ all: true } ]});
+      });
+
   },
   uploadAi: function (params) {
     params = new Converter(params);
