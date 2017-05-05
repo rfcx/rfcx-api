@@ -1,7 +1,7 @@
 var models = require("../../models");
 var sequelize = require("sequelize");
 
-function formatGuardianAudioEventValues(arr) {
+function formatGuardianAudioEventTypesValues(arr) {
   return arr.map((item) => {
       return item.value;
     });
@@ -11,7 +11,15 @@ function getGuardianAudioEventValues() {
   return models.GuardianAudioEventValue
     .findAll()
     .then((data) => {
-      return formatGuardianAudioEventValues(data);
+      return formatGuardianAudioEventTypesValues(data);
+    });
+}
+
+function getGuardianAudioEventTypes() {
+  return models.GuardianAudioEventType
+    .findAll()
+    .then((data) => {
+      return formatGuardianAudioEventTypesValues(data);
     });
 }
 
@@ -61,5 +69,6 @@ function updateEventReview(guid, confirmed, user_id) {
 
 module.exports = {
   getGuardianAudioEventValues: getGuardianAudioEventValues,
+  getGuardianAudioEventTypes: getGuardianAudioEventTypes,
   updateEventReview: updateEventReview
 };

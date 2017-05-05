@@ -426,6 +426,14 @@ router.route("/values")
       .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Values."));
   });
 
+router.route("/types")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+    eventsService
+      .getGuardianAudioEventTypes()
+      .then((data) => { res.status(200).json(data); })
+      .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Types."));
+  });
+
 router.route("/:event_id")
   .get(passport.authenticate("token", {session: false}), function (req, res) {
 
