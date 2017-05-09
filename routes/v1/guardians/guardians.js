@@ -23,7 +23,7 @@ router.route("/")
           model: models.GuardianSite,
           as: 'Site',
           where: sitesQuery,
-          attributes: ['guid']
+          attributes: ['guid', 'name']
         }],
         order: [ ["last_check_in", "DESC"] ],
         limit: req.rfcx.limit,
