@@ -5,7 +5,7 @@ exports.models = {
   guardian: function(req,res,dbGuardian) {
 
     if (!util.isArray(dbGuardian)) { dbGuardian = [dbGuardian]; }
-    
+
     var jsonArray = [];
 
     for (i in dbGuardian) {
@@ -35,10 +35,9 @@ exports.models = {
             count: dbRow.update_check_in_count,
             last_checkin_at: dbRow.last_update_check_in
           }
-        }
+        },
+        last_audio: dbRow.last_audio? dbRow.last_audio : null
       };
-
-//      if (dbRow.Version != null) { guardian.software_version = dbRow.Version.number; }
 
       jsonArray.push(guardian);
     }
