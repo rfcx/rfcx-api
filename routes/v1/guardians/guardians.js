@@ -26,8 +26,8 @@ router.route("/")
           attributes: ['guid', 'name']
         }],
         order: [ ["last_check_in", "DESC"] ],
-        limit: req.rfcx.limit,
-        offset: req.rfcx.offset
+        limit: req.query.limit? parseInt(req.query.limit) : req.rfcx.limit,
+        offset: req.query.offset? parseInt(req.query.offset) : req.rfcx.offset
       })
       .bind({})
       .then(function(dbGuardian){
@@ -70,14 +70,16 @@ router.route("/")
       .then(function(dbAudios) {
         if (dbAudios && dbAudios.length) {
           dbAudios.forEach(function(dbAudio) {
-            var guardian = this.dbGuardian.find(function(guardian) {
-              return guardian.id === dbAudio.guardian_id;
-            })
-            if (guardian) {
-              guardian.last_audio = {
-                guid: dbAudio.guid,
-                measured_at: dbAudio.measured_at
-              };
+            if (dbAudio) {
+              var guardian = this.dbGuardian.find(function(guardian) {
+                return guardian.id === dbAudio.guardian_id;
+              })
+              if (guardian) {
+                guardian.last_audio = {
+                  guid: dbAudio.guid,
+                  measured_at: dbAudio.measured_at
+                };
+              }
             }
           }.bind(this));
         }
