@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+console.log('----------------------------------\nRFCX | ./bin/setup started')
 var exec = require('child_process').exec;
 var fs = require("fs");
 
@@ -8,11 +9,14 @@ if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
 }
 
 // run the setup script(s)
+console.log('RFCX | Setting up tmp directory');
 setupTmpDirectory();
+console.log('RFCX | Initializing sequelize');
 initializeSequelize();
 
 function initializeSequelize() {
 
+  console.log('RFCX | Creating config params: started')
   var configJsonFile = __dirname+"/../config/config.json";
 
   var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false;
@@ -27,22 +31,27 @@ function initializeSequelize() {
     +'\n"production": { '+configCustom+', '+configGeneric+' } '
   +'\n}';
 
+  console.log('RFCX | Creating config params: ended');
+
   fs.unlink(configJsonFile,function(e){
     fs.writeFile(configJsonFile, configJsonContent, function(e){
       if (!e) {
 
-        exec( "echo 'sequelize config.json has been [re]generated.'; "
-              ,function(err,stdout,stderr){
-          console.log(stdout);
-        });
-
+        console.log('RFCX | sequelize config.json has been [re]generated')
+        console.log('RFCX | Getting models')
         var models = require("../models");
-        
+
         // sequelize sync
+        console.log('RFCX | Syncing models')
         models.sequelize.sync().then(function() {
+          console.log('RFCX | Models have been synced')
           // run sequelize-cli migrations from command line
           var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
-          exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){ console.log(sErr); });
+          console.log('RFCX | Migrating db: started')
+          exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
+            console.log('RFCX | Migrating db: ended')
+            console.log(sErr);
+          });
         });
 
       }
@@ -51,7 +60,7 @@ function initializeSequelize() {
 }
 
 function setupTmpDirectory() {
-  
+
   var tmpDir = process.env.CACHE_DIRECTORY;
   if (!fs.existsSync(tmpDir)) { fs.mkdirSync(tmpDir); }
 
@@ -60,7 +69,7 @@ function setupTmpDirectory() {
       fs.readdir(tmpDir+"/uploads", function (err, dirName) {
         dirName.forEach(function (innerFileName) {
           fs.unlink(tmpDir+"/uploads/"+innerFileName,function(err){ if (err) console.log(err); });
-        }); 
+        });
       });
     } else { fs.mkdirSync(tmpDir+"/uploads"); }
   } catch(err) {
@@ -72,7 +81,7 @@ function setupTmpDirectory() {
       fs.readdir(tmpDir+"/test-assets", function (err, dirName) {
         dirName.forEach(function (innerFileName) {
           fs.unlink(tmpDir+"/test-assets/"+innerFileName,function(err){ if (err) console.log(err); });
-        }); 
+        });
       });
     } else { fs.mkdirSync(tmpDir+"/test-assets"); }
   } catch(err) {
@@ -84,7 +93,7 @@ function setupTmpDirectory() {
       fs.readdir(tmpDir+"/faux-knox/", function (err, dirName) {
         dirName.forEach(function (innerFileName) {
           fs.unlink(tmpDir+"/faux-knox/"+innerFileName,function(err){ if (err) console.log(err); });
-        }); 
+        });
       });
     } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
   } catch(err) {
@@ -96,7 +105,7 @@ function setupTmpDirectory() {
       fs.readdir(tmpDir+"/ffmpeg/", function (err, dirName) {
         dirName.forEach(function (innerFileName) {
           fs.unlink(tmpDir+"/ffmpeg/"+innerFileName,function(err){ if (err) console.log(err); });
-        }); 
+        });
       });
     } else { fs.mkdirSync(tmpDir+"/ffmpeg"); }
   } catch(err) {
@@ -108,7 +117,7 @@ function setupTmpDirectory() {
       fs.readdir(tmpDir+"/faux-knox/", function (err, dirName) {
         dirName.forEach(function (innerFileName) {
           fs.unlink(tmpDir+"/faux-knox/"+innerFileName,function(err){ if (err) console.log(err); });
-        }); 
+        });
       });
     } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
   } catch(err) {
