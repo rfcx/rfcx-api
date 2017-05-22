@@ -15,82 +15,83 @@ var sqlUtils = require("../../../utils/misc/sql");
 var condAdd = sqlUtils.condAdd;
 var SensationsService = require("../../../services/sensations/sensations-service");
 
+function filter(req) {
+  var order = 'measured_at ASC';
+
+  if (req.query.order && ['ASC', 'DESC', 'RAND'].indexOf(req.query.order.toUpperCase()) !== -1) {
+    if (req.query.order === 'RAND') {
+      order = [sequelize.fn('RAND', 'measured_at')];
+    }
+    else {
+      order = 'measured_at ' + req.query.order.toUpperCase();
+    }
+  }
+
+  var mainClasuse = {},
+    siteClause = {},
+    guardianClause = {};
+
+  if (req.query.siteGuid) {
+    siteClause.guid = req.query.siteGuid;
+  }
+  if (req.query.guardianGuid) {
+    guardianClause.guid = req.query.guardianGuid;
+  }
+  if (req.query.start) {
+    if (!mainClasuse.measured_at) {
+      mainClasuse.measured_at = {};
+    }
+    mainClasuse.measured_at.$gte = req.query.start;
+  }
+  if (req.query.end) {
+    if (!mainClasuse.measured_at) {
+      mainClasuse.measured_at = {};
+    }
+    mainClasuse.measured_at.$lte = req.query.end;
+  }
+
+  return models.GuardianAudio
+    .findAll({
+      where: mainClasuse,
+      order: order,
+      include: [
+        {
+          model: models.GuardianSite,
+          as: 'Site',
+          where: siteClause,
+          attributes: ['guid', 'timezone', 'timezone_offset']
+        },
+        {
+          model: models.Guardian,
+          as: 'Guardian',
+          where: guardianClause,
+          attributes: ['guid']
+        },
+        {
+          model: models.GuardianAudioFormat,
+          as: 'Format',
+          attributes: ['sample_rate']
+        }
+      ],
+      limit: req.query.limit? parseInt(req.query.limit) : 100
+    });
+}
+
 router.route("/filter")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     var converter = new ApiConverter("audio", req);
 
-    var order = 'measured_at ASC';
-
-    if (req.query.order && ['ASC', 'DESC', 'RAND'].indexOf(req.query.order.toUpperCase()) !== -1) {
-      if (req.query.order === 'RAND') {
-        order = [sequelize.fn('RAND', 'measured_at')];
-      }
-      else {
-        order = 'measured_at ' + req.query.order.toUpperCase();
-      }
-    }
-
-    var mainClasuse = {},
-      siteClause = {},
-      guardianClause = {};
-
-    if (req.query.siteGuid) {
-      siteClause.guid = req.query.siteGuid;
-    }
-    if (req.query.guardianGuid) {
-      guardianClause.guid = req.query.guardianGuid;
-    }
-    if (req.query.start) {
-      if (!mainClasuse.measured_at) {
-        mainClasuse.measured_at = {};
-      }
-      mainClasuse.measured_at.$gte = req.query.start;
-    }
-    if (req.query.end) {
-      if (!mainClasuse.measured_at) {
-        mainClasuse.measured_at = {};
-      }
-      mainClasuse.measured_at.$lte = req.query.end;
-    }
-
-    models.GuardianAudio
-      .findAll({
-        where: mainClasuse,
-        order: order,
-        include: [
-          {
-            model: models.GuardianSite,
-            as: 'Site',
-            where: siteClause,
-            attributes: ['guid', 'timezone', 'timezone_offset']
-          },
-          {
-            model: models.Guardian,
-            as: 'Guardian',
-            where: guardianClause,
-            attributes: ['guid']
-          },
-          {
-            model: models.GuardianAudioFormat,
-            as: 'Format',
-            attributes: ['sample_rate']
-          }
-        ],
-        limit: req.query.limit? parseInt(req.query.limit) : 100
-      }).then(function(dbAudio){
-
-        return views.models.guardianAudioJson(req,res,dbAudio)
-          .then(function(audioJson){
-
-            var api = converter.cloneSequelizeToApi({audios: audioJson});
-
-            api.links.self = urls.getBaseUrl(req) + req.originalUrl;
-            res.status(200).json(api);
-
-          });
-
-      }).catch(function(err){
+    filter(req)
+      .then(function(dbAudio){
+        return views.models.guardianAudioJson(req,res,dbAudio);
+      })
+      .then(function(audioJson) {
+        var api = converter.cloneSequelizeToApi({audios: audioJson});
+        api.links.self = urls.getBaseUrl(req) + req.originalUrl;
+        res.status(200).json(api);
+      })
+      .catch(function(err){
         console.log("failed to return audios | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return audios"}); }
       });
@@ -179,8 +180,8 @@ router.route("/:audio_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianAudio
-      .findOne({ 
-        where: { guid: req.params.audio_id }, 
+      .findOne({
+        where: { guid: req.params.audio_id },
         include: [{ all: true }]
       }).then(function(dbAudio){
 
@@ -188,7 +189,7 @@ router.route("/:audio_id")
             .then(function(audioJson){
               res.status(200).json(audioJson);
           });
-        
+
       }).catch(function(err){
         console.log("failed to return audio | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return audio"}); }
