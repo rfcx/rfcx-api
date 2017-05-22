@@ -14,6 +14,13 @@ var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 var condAdd = sqlUtils.condAdd;
 var SensationsService = require("../../../services/sensations/sensations-service");
+var AudioService = require("../../../services/audio/audio-service");
+var S3Service = require("../../../services/s3/s3-service");
+var pd = require('parallel-download');
+var archiver = require('archiver');
+var moment = require('moment');
+var path = require('path');
+var fs = require('fs');
 
 function filter(req) {
   var order = 'measured_at ASC';
@@ -77,6 +84,11 @@ function filter(req) {
     });
 }
 
+function getFilenameFromUrl(url) {
+  const splittedUrl = url.split('/');
+  return splittedUrl[splittedUrl.length - 1];
+}
+
 router.route("/filter")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
@@ -96,6 +108,71 @@ router.route("/filter")
         if (!!err) { res.status(500).json({msg:"failed to return audios"}); }
       });
 
+  });
+
+router.route("/download/zip")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    // download mp3 if anything else is not specified
+    var extension = req.query.extension || 'mp3';
+
+    if (['mp3', 'opus', 'm4a'].indexOf(extension) === -1) {
+      res.status(500).json({msg:'Specified files extension is not allowed. Available: "mp3", "opus" and "m4a"'})
+    }
+
+    var zipFilename = moment().format('MMDDYYYY_HHmmss') + '_audios.zip';
+    var zipPath = path.join(process.env.CACHE_DIRECTORY, 'zip', zipFilename);
+
+    var output = fs.createWriteStream(zipPath);
+    var archive = archiver('zip', {
+      zlib: { level: 9 }
+    });
+    archive.pipe(output);
+    archive.on('error', function(err) {
+      console.log("failed to get audios | " + err);
+      res.status(500).json({msg:"failed to get audios"});
+    });
+    output.on('close', () => {
+      console.log(archive.pointer() + ' total bytes');
+      console.log('archiver has been finalized and the output file descriptor has closed.');
+      S3Service.putObject(zipPath, zipFilename, process.env.ASSET_BUCKET_ZIP)
+        .then(function() {
+          fs.unlink(zipPath, function(err){ if(err){ console.log(err); }});
+          return S3Service.getObjectUrl(process.env.ASSET_BUCKET_ZIP, zipFilename);
+        })
+        .then(function(url) {
+          return res.status(200).json({
+            url: url
+          });
+        });
+    });
+
+    filter(req)
+      .then(function(dbAudios){
+        if (!dbAudios.length) {
+          fs.unlink(zipPath, function(err){ if(err){ console.log(err); }});
+          throw new sequelize.EmptyResultError('No files were found for this query.');
+        }
+        else {
+          return AudioService.getGuidsFromDbAudios(dbAudios);
+        }
+      })
+      .then(function(audioGuids) {
+        return AudioService.combineAssetsUrls(req, audioGuids, extension);
+      })
+      .then(pd)
+      .then(function(messages) {
+        messages.forEach(function(mes) {
+          archive.append(mes.content, { name: getFilenameFromUrl(mes.url) });
+        });
+        archive.finalize();
+        return true;
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(function(err) {
+        console.log("failed to get audios | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to get audios"}); }
+      });
   });
 
 router.route("/filter/by-tags")

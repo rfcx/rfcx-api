@@ -10,8 +10,14 @@ function getApiUrl(req) {
 function getAudioUrl(req, guid) {
     return getApiUrl(req) + '/audio/' + guid;
 }
+
+function getAudioAssetsUrl(req, guid, extension) {
+    return getApiUrl(req) + '/assets/audio/' + guid + '.' + extension;
+}
+
 module.exports = {
     getBaseUrl: getBaseUrl,
     getApiUrl: getApiUrl,
-    getAudioUrl: getAudioUrl
+    getAudioUrl: getAudioUrl,
+    getAudioAssetsUrl: getAudioAssetsUrl
 };
