@@ -1,4 +1,11 @@
 var AWS = require("aws-sdk");
+
+// configure AWS credentials
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+});
+
 var S3 = useAWSMocks() ? require("faux-knox") : require("knox");
 
 exports.aws = function() {
