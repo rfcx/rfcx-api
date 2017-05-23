@@ -9,6 +9,10 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
   
   echo -e "\nYou chose 'yes'.\n";
+  if grep -q "\"^" "package.json"; then
+     echo -e "\nYou may not deploy with a ^ in your package.json. Please use exact versions instead."
+     exit 1
+  fi
   read -p "Would you like to deploy to the (s)taging or (p)roduction environment? (s/p): " -n 1 -r
 
   if [[ $REPLY =~ ^[Pp]$ ]]
