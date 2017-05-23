@@ -59,6 +59,9 @@ router.route("/:guardian_id/audio")
 
     models.Guardian.findOne({ where: { guid: req.params.guardian_id }
     }).then(function(dbGuardian){
+      if(dbGuardian == null){
+        throw new Error(`Guardian with guid ${req.params.guardian_id} not found.`);
+      }
       console.info("Creating Audio for guardian : " + req.params.guardian_id);
       req.body.guardian_id = dbGuardian.id;
       req.body.site_id = dbGuardian.site_id;
@@ -73,6 +76,7 @@ router.route("/:guardian_id/audio")
         console.info("Error was thrown without supplying an error message; please add a specific error message");
         err = "generic error.";
       }
+      console.error(`Manual Audio Upload had error: ${err}`);
       res.status(500).json({msg: "Failed to create audio: " + err});
     });
   });
