@@ -6,22 +6,25 @@ var models = require("../models");
 var exec = require("child_process").exec;
 
 console.log('RFCX | Syncing models')
-models.sequelize.sync().then(function() {
-  console.log('RFCX | Models have been synced')
+models.sequelize.sync()
+  .then(function() {
+    console.log('RFCX | Models have been synced')
+    // run sequelize-cli migrations from command line
+    var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
+    console.log('RFCX | Migrating db: started')
+    exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
+      console.log('RFCX | Migrating db: ended')
+      console.log(sErr);
+    });
 
-  // run sequelize-cli migrations from command line
-  var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
-  console.log('RFCX | Migrating db: started')
-  exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
-    console.log('RFCX | Migrating db: ended')
-    console.log(sErr);
+    console.log('RFCX | Starting server')
+    var server = app.listen(app.get('port'), function(){
+      console.log(
+        app.get("title")+" (port "+app.get('port')+") ("+process.env.NODE_ENV+")"
+      );
+    });
+  })
+  .catch(function(err) {
+    console.log('RFCX | Error in syncing models:');
+    console.log(JSON.stringify(err));
   });
-
-  console.log('RFCX | Starting server')
-  var server = app.listen(app.get('port'), function(){
-    console.log(
-      app.get("title")+" (port "+app.get('port')+") ("+process.env.NODE_ENV+")"
-    );
-  });
-
-});
