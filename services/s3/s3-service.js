@@ -20,24 +20,6 @@ function putObject(localPath, filename, bucket) {
   });
 }
 
-/**
- * Returns public accessible url to file at S3
- * @param {string} bucket - S3 Bucket name
- * @param {string} filename - file name at S3 storage
- * @param {number} [expires=900] - file name at S3 storage (sec)
- * @returns {string} url - file url at S3
- */
-function getObjectUrl(bucket, filename, expires = 900) {
-  const params = {
-    Bucket: bucket,
-    Key: filename,
-    Expires: expires
-  };
-  const url = s3.getSignedUrl('getObject', params);
-  return url;
-}
-
 module.exports = {
-  putObject: putObject,
-  getObjectUrl: getObjectUrl
+  putObject: putObject
 };

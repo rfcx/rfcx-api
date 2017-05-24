@@ -21,6 +21,7 @@ var archiver = require('archiver');
 var moment = require('moment');
 var path = require('path');
 var fs = require('fs');
+var aws = require("../../../utils/external/aws.js").aws();
 
 function filter(req) {
   var order = 'measured_at ASC';
@@ -138,7 +139,7 @@ router.route("/download/zip")
       S3Service.putObject(zipPath, zipFilename, process.env.ASSET_BUCKET_ZIP)
         .then(function() {
           fs.unlink(zipPath, function(err){ if(err){ console.log(err); }});
-          return S3Service.getObjectUrl(process.env.ASSET_BUCKET_ZIP, zipFilename);
+          return aws.s3SignedUrl(process.env.ASSET_BUCKET_ZIP, zipFilename, 15);
         })
         .then(function(url) {
           return res.status(200).json({
