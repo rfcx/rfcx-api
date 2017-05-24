@@ -3,7 +3,7 @@ function findMissingAttributes(obj, attributes){
 
   for(var i=0; i<attributes.length; i++){
     var attr = attributes[i];
-    if(! obj.hasOwnProperty(attr)){
+    if(! Object.prototype.hasOwnProperty.call(obj, attr)) {
       missing.push(attr);
     }
   }

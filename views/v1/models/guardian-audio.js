@@ -258,12 +258,14 @@ exports.models = {
   transformCreateAudioRequestToModel: function(reqObj){
 
     return Promise.resolve().then(function () {
-      var requiredAttributes = ["site_id", "guardian_id", "measured_at", "size", "sha1_checksum", "url", "capture_sample_count"];
+      var requiredAttributes = ["site_id", "guardian_id", "measured_at", "size", "sha1_checksum", "format_id", "capture_sample_count"];
       validation.assertAttributesExist(reqObj, requiredAttributes);
 
       console.info("assertions correct");
-      // Todo: @topher , you can add the actual format here. For now I just added a placeholder as we talked about.
-      var modelObj = { format_id: 3 };
+
+      // default
+      var modelObj = {};
+
 
       // copy attributes to make sure that the request doesn't set columns we don't want it to set
       for(var i=0; i < requiredAttributes.length; i++){
