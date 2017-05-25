@@ -49,7 +49,7 @@ router.route("/:guardian_id/audio/analysis")
             where: dbQuery, 
             include: [ { all: true } ], 
             order: [ [dateClmn, dbQueryOrder] ],
-            limit: 14000,//req.rfcx.limit,
+            limit: 140000,//req.rfcx.limit,
             offset: req.rfcx.offset
           }).then(function(dbAudio){
 
