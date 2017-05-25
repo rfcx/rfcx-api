@@ -25,10 +25,24 @@ router.route("/:guardian_id/audio/analysis")
         var dateClmn = "measured_at";
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
-        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
+        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gte"] = req.rfcx.starting_after; }
 
+        var createdClmn = "created_at";
+        if ((req.query.created_before != null) || (req.query.created_after != null)) {
+          dbQuery[createdClmn] = {};
+        }
+        if (req.query.created_before != null) {
+            dbQuery[createdClmn]["$lt"] = req.query.created_before ;
+        }
+        if (req.query.created_after != null) {
+          dbQuery[createdClmn]["$gte"] = req.query.created_after;
+        }
 
-        var modelGuid = req.query.model_id;
+        if (req.query.manual_upload){
+          dbQuery.check_in_id = null
+        }
+
+      var modelGuid = req.query.model_id;
         var audioGuids = [];
         return models.GuardianAudio
           .findAll({ 
