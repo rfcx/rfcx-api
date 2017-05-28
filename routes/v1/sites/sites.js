@@ -5,6 +5,7 @@ var router = express.Router();
 var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
+var sequelize = require('sequelize');
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/")
@@ -30,6 +31,25 @@ router.route("/")
 
   })
 ;
+
+router.route("/statistics/audio")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    const sql = 'SELECT s.guid as guid, s.name as name, s.created_at as created_at, ' +
+                  'SUM(a.capture_sample_count / f.sample_rate / 60 /60) as sum FROM GuardianAudio a ' +
+                  'INNER JOIN GuardianAudioFormats f ON a.format_id = f.id INNER JOIN GuardianSites s ON ' +
+                  'a.site_id = s.id group by s.guid;';
+
+    models.sequelize
+      .query(sql, {
+        type: models.sequelize.QueryTypes.Insert
+      })
+      .spread((data) => {
+        res.status(200).json(data);
+      })
+      .catch(e => httpError(res, 500, e, "Couldn't get sites statistics."));
+
+  });
 
 router.route("/:site_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
