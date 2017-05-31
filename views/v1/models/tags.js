@@ -1,5 +1,6 @@
 var Promise = require("bluebird");
 var urls = require("../../../utils/misc/urls");
+var util = require("util");
 
 exports.models = {
 
@@ -51,6 +52,7 @@ exports.models = {
 
         var json = {};
 
+        if (!util.isArray(inputGuids)) { inputGuids = [inputGuids]; }
         // set classified attribute to false by default for all input guids
         inputGuids.forEach(function(guid) {
           json[guid] = [];

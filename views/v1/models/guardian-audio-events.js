@@ -129,7 +129,8 @@ exports.models = {
             guardian_shortname: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : null,
             site: dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : null,
             reviewer_confirmed: dbRow.reviewer_confirmed,
-            reviewer_guid: dbRow.User? dbRow.User.guid : null
+            reviewer_guid: dbRow.User? dbRow.User.guid : null,
+            ai_guid: dbRow.Model? dbRow.Model.guid : null
           });
 
         }
