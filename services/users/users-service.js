@@ -14,6 +14,11 @@ function getUserByGuid(guid) {
     });
 }
 
+function getAllUsers() {
+  return models.User
+    .findAll();
+}
+
 function formatUser(user) {
   return {
     guid: user.guid,
@@ -24,7 +29,15 @@ function formatUser(user) {
   }
 }
 
+function formatUsers(users) {
+  return users.map((user) => {
+    return formatUser(user);
+  });
+}
+
 module.exports = {
   getUserByGuid: getUserByGuid,
-  formatUser: formatUser
+  getAllUsers: getAllUsers,
+  formatUser: formatUser,
+  formatUsers: formatUsers,
 };

@@ -15,6 +15,7 @@ var sensationsService = require("../../../services/sensations/sensations-service
 var ValidationError = require("../../../utils/converter/validation-error");
 var usersService = require('../../../services/users/users-service');
 var sequelize = require("sequelize");
+var ApiConverter = require("../../../utils/api-converter");
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -433,6 +434,25 @@ router.route("/:user_id")
     } else {
       res.status(401).json({msg:"not allowed to edit another user's profile"});
     }
+  })
+;
+
+router.route("/")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    var converter = new ApiConverter("user", req);
+
+    usersService
+      .getAllUsers()
+      .then(usersService.formatUsers)
+      .then((users) => {
+        var data = converter.cloneSequelizeToApi({
+          users: users
+        });
+        res.status(200).json(data);
+      })
+      .catch(e => httpError(res, 500, e, 'Failed to return users.'));
+
   })
 ;
 
