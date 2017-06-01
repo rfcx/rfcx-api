@@ -130,7 +130,8 @@ exports.models = {
             site: dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : null,
             reviewer_confirmed: dbRow.reviewer_confirmed,
             reviewer_guid: dbRow.User? dbRow.User.guid : null,
-            ai_guid: dbRow.Model? dbRow.Model.guid : null
+            ai_guid: dbRow.Model? dbRow.Model.guid : null,
+            ai_min_conf: dbRow.Model && dbRow.Model.minimal_detection_confidence? dbRow.Model.minimal_detection_confidence : null,
           });
 
         }
