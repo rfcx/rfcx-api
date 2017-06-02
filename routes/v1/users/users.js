@@ -407,6 +407,31 @@ router.route("/:user_id")
   })
 ;
 
+router.route("/:guid/sites")
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    let converter = new ApiConverter("user", req);
+    let serviceParams = {
+      sites: req.body.sites,
+    };
+
+    usersService.getUserByGuid(req.params.guid)
+      .then((user) => {
+        return usersService.updateSiteRelations(user, serviceParams);
+      })
+      .then((user) => {
+        let data = converter.cloneSequelizeToApi({
+          user: user
+        });
+        data.links.self += req.params.guid + '/sites';
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(e => {console.log('e', e);httpError(res, 500, e, "Couldn't update user-sites relations.")});
+
+  });
+
 // TO DO security measure to ensure that not any user can see any other user
 router.route("/:user_id")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
@@ -438,7 +463,7 @@ router.route("/:user_id")
 ;
 
 router.route("/")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 
     var converter = new ApiConverter("user", req);
 
