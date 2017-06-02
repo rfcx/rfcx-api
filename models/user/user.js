@@ -80,6 +80,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         User.hasMany(models.UserToken, {as: "Token", foreignKey: "user_id"});
+        User.belongsToMany(models.GuardianSite, { through: 'UserSiteRelation' });
       },
       indexes: [
         {

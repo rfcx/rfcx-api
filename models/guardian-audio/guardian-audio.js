@@ -67,7 +67,6 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-
         GuardianAudio.belongsTo(models.Guardian, {as: 'Guardian'});
         GuardianAudio.belongsTo(models.GuardianSite, {as: 'Site'});
         GuardianAudio.hasMany(models.GuardianEvent, {as: "Event", foreignKey: "audio_id"});
