@@ -2,6 +2,7 @@ var models = require("../../models");
 var sequelize = require("sequelize");
 var Converter = require("../../utils/converter/converter");
 var Promise = require("bluebird");
+var sitesService = require("../sites/sites-service");
 
 function getUserByGuid(guid) {
   return models.User
@@ -101,10 +102,34 @@ function updateSiteRelations(user, params) {
     .then(formatUser);
 }
 
+function updateDefaultSite(user, siteGuid) {
+  return sitesService.getSiteByGuid(siteGuid)
+    .then(function(site) {
+      return user.update({
+        default_site: site.id
+      });
+    })
+    .then(() => {
+      return getUserByGuid(user.guid);
+    })
+    .then(formatUser);
+}
+
+function updateUserInfo(user, params) {
+  // only one attribute for now...
+  // when there will be more attributes, we need to update logic of this function
+  if (params.defaultSite) {
+    return updateDefaultSite(user, params.defaultSite);
+  }
+  return getUserByGuid(user.guid)
+    .then(formatUser);
+}
+
 module.exports = {
   getUserByGuid: getUserByGuid,
   getAllUsers: getAllUsers,
   formatUser: formatUser,
   formatUsers: formatUsers,
   updateSiteRelations: updateSiteRelations,
+  updateUserInfo: updateUserInfo,
 };
