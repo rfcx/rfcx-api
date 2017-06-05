@@ -19,7 +19,9 @@ function getUserByGuid(guid) {
 
 function getAllUsers() {
   return models.User
-    .findAll();
+    .findAll({
+      include: [{ all: true }]
+    });
 }
 
 function formatUser(user) {
@@ -29,11 +31,11 @@ function formatUser(user) {
     firstname: user.firstname,
     lastname: user.lastname,
     username: user.username,
-    accesibleSites: [],
+    accessibleSites: [],
   };
   if (user.GuardianSites) {
     user.GuardianSites.forEach((site) => {
-      userFormatted.accesibleSites.push(site.guid);
+      userFormatted.accessibleSites.push(site.guid);
     });
   }
   return userFormatted;
