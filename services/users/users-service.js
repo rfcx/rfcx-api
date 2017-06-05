@@ -32,6 +32,7 @@ function formatUser(user) {
     lastname: user.lastname,
     username: user.username,
     accessibleSites: [],
+    defaultSite: user.DefaultSite? user.DefaultSite.guid : null
   };
   if (user.GuardianSites) {
     user.GuardianSites.forEach((site) => {
