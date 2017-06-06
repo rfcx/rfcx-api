@@ -16,7 +16,7 @@ var sequelize = require("sequelize");
 
 function queryData(req) {
 
-  var limit = parseInt(req.query.limit) || 1000,
+  var limit = parseInt(req.query.limit) || 10000,
     offset = parseInt(req.query.offset) || 0;
 
   // by default all clauses are empty. we will fill them if corresponding params are defined in url
