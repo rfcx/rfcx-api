@@ -160,7 +160,26 @@ router.route("/event")
         }
       })
       .catch(function (err) {
-        console.log('Error while searching Audio Events', arguments);
+        console.log('Error while searching Audio Events', err);
+        res.status(500).json({msg: err});
+      });
+
+  });
+
+router.route("/event/datatable")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+
+    req.query.search = req.query.search.value.length? req.query.search.value : undefined;
+
+    queryData(req)
+      .then(function (dbEvents) {
+        return views.models.guardianAudioEventsJson(req, res, dbEvents)
+          .then(function (json) {
+            res.status(200).send(json);
+          });
+      })
+      .catch(function (err) {
+        console.log('Error while searching Audio Events', err);
         res.status(500).json({msg: err});
       });
 
