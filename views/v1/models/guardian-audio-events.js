@@ -111,27 +111,27 @@ exports.models = {
 
           json.events.push({
             event_guid: dbRow.guid,
-            audio_guid: dbRow.Audio.guid,
-            meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.json',
+            audio_guid: dbRow.audio_guid,
+            meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.json',
             audio: {
-              mp3: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.mp3',
-              png: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.png',
-              opus: process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.opus'
+              mp3: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.mp3',
+              png: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.png',
+              opus: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.opus'
             },
             latitude: dbRow.shadow_latitude,
             longitude: dbRow.shadow_longitude,
             begins_at: dbRow.begins_at,
             ends_at: dbRow.ends_at,
-            type: dbRow.Type.value,
-            value: dbRow.Value.value,
+            type: dbRow.event_type,
+            value: dbRow.event_value,
             confidence: dbRow.confidence,
-            guardian_guid: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.guid : null,
-            guardian_shortname: dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : null,
-            site: dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : null,
+            guardian_guid: dbRow.guardian_guid,
+            guardian_shortname: dbRow.guardian_shortname,
+            site: dbRow.site_guid,
             reviewer_confirmed: dbRow.reviewer_confirmed,
-            reviewer_guid: dbRow.User? dbRow.User.guid : null,
-            ai_guid: dbRow.Model? dbRow.Model.guid : null,
-            ai_min_conf: dbRow.Model && dbRow.Model.minimal_detection_confidence? dbRow.Model.minimal_detection_confidence : null,
+            reviewer_guid: dbRow.user_guid,
+            ai_guid: dbRow.model_guid,
+            ai_min_conf: dbRow.model_minimal_detection_confidence,
           });
 
         }
@@ -201,20 +201,20 @@ exports.models = {
           var dbRow = dbAudioEvents[i];
 
           csv += dbRow.guid + ',';
-          csv += dbRow.Audio.guid + ',';
-          csv += process.env.ASSET_URLBASE + "/audio/" + dbRow.Audio.guid + '.json,';
+          csv += dbRow.audio_guid + ',';
+          csv += process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.json,';
           csv += dbRow.shadow_latitude + ',';
           csv += dbRow.shadow_longitude + ',';
           csv += dbRow.begins_at.toISOString() + ',';
           csv += dbRow.ends_at.toISOString() + ',';
-          csv += dbRow.Type.value + ',';
-          csv += dbRow.Value.value + ',';
+          csv += dbRow.event_type + ',';
+          csv += dbRow.event_value + ',';
           csv += dbRow.confidence + ',';
-          csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.guid : 'null') + ',';
-          csv += (dbRow.Audio && dbRow.Audio.Guardian? dbRow.Audio.Guardian.shortname : 'null') + ',';
-          csv += (dbRow.Audio && dbRow.Audio.Site && dbRow.Audio.Site.guid? dbRow.Audio.Site.guid : 'null') + ',';
+          csv += dbRow.guardian_guid + ',';
+          csv += dbRow.guardian_shortname + ',';
+          csv += dbRow.site_guid + ',';
           csv += dbRow.reviewer_confirmed + ',';
-          csv += (dbRow.User? dbRow.User.guid : 'null') + '\r\n';
+          csv += dbRow.user_guid + '\r\n';
         }
 
         resolve(csv);
