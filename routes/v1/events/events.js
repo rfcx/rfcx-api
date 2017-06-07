@@ -34,6 +34,7 @@ function queryData(req) {
     showExperimental: req.query.showExperimental !== undefined? (req.query.showExperimental === 'true') : undefined,
     omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
     omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
+    search: req.query.search? '%' + req.query.search + '%' : undefined,
   };
 
   let sql = 'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
@@ -73,6 +74,15 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
+  sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.guid LIKE :search OR User.firstname LIKE :search OR User.lastname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.email LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
   sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
   return models.sequelize.query(sql,
