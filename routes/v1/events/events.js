@@ -34,6 +34,7 @@ function queryData(req) {
     showExperimental: req.query.showExperimental !== undefined? (req.query.showExperimental === 'true') : undefined,
     omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
     omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
+    omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
     search: req.query.search? '%' + req.query.search + '%' : undefined,
   };
 
@@ -50,13 +51,13 @@ function queryData(req) {
                    'EventType.value AS event_type, ' +
                    'EventValue.value AS event_value ' +
                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
-                   'INNER JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'INNER JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
-                   'INNER JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
-                   'INNER JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
-                   'INNER JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
-                   'INNER JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
-                   'INNER JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
+                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
+                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
+                   'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
+                   'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
+                   'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
                    'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
@@ -70,10 +71,11 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
-  sql = sqlUtils.condAdd(sql, opts.showExperimental !== undefined, ' AND Model.experimental = :showExperimental');
+  sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
+  sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
   sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
