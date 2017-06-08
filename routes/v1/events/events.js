@@ -16,6 +16,39 @@ var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 
 function prepareOpts(req) {
+
+  let order, dir;
+  if (req.query.order) {
+    order;
+    dir = 'ASC';
+    if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
+      dir = req.query.dir.toUpperCase();
+    }
+    switch (req.query.order) {
+      case 'audio_guid':
+        order = 'Audio.guid';
+        break;
+      case 'site':
+        order = 'Site.name';
+        break;
+      case 'guardian_shortname':
+        order = 'Guardian.shortname';
+        break;
+      case 'begins_at':
+        order = 'GuardianAudioEvent.begins_at';
+        break;
+      case 'reviewed_by':
+        order = 'User.email';
+        break;
+      case 'reviewer_confirmed':
+        order = 'GuardianAudioEvent.reviewer_confirmed';
+        break;
+      default:
+        order = 'GuardianAudioEvent.guid';
+        break;
+    }
+  }
+
   return {
     limit: req.query.limit? parseInt(req.query.limit) : 10000,
     offset: req.query.offset? parseInt(req.query.offset) : 0,
@@ -35,6 +68,8 @@ function prepareOpts(req) {
     omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
     omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
     search: req.query.search? '%' + req.query.search + '%' : undefined,
+    order: order? order : undefined,
+    dir: dir? dir : undefined,
   };
 }
 
@@ -136,6 +171,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.search, ' OR User.email LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
+  sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
   sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
   return models.sequelize.query(sql,
