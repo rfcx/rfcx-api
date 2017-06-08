@@ -15,9 +15,8 @@ var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 
-function queryData(req) {
-
-  const opts = {
+function prepareOpts(req) {
+  return {
     limit: req.query.limit? parseInt(req.query.limit) : 10000,
     offset: req.query.offset? parseInt(req.query.offset) : 0,
     updatedAfter: req.query.updated_after,
@@ -37,6 +36,58 @@ function queryData(req) {
     omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
     search: req.query.search? '%' + req.query.search + '%' : undefined,
   };
+}
+
+function countData(req) {
+
+  const opts = prepareOpts(req);
+
+  let sql = 'SELECT COUNT(*) AS total ' +
+                   'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
+                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
+                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
+                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
+                   'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
+                   'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
+                   'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+                   'WHERE 1=1 ';
+
+  sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
+  sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
+  sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
+  sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
+  sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
+  sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
+  sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
+  sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
+  sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
+  sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
+  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
+  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
+  sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
+  sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
+  sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.guid LIKE :search OR User.firstname LIKE :search OR User.lastname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.email LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
+
+  return models.sequelize.query(sql,
+    { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+  )
+
+}
+
+function queryData(req) {
+
+  const opts = prepareOpts(req);
 
   let sql = 'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
                    'GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, GuardianAudioEvent.shadow_latitude, ' +
@@ -171,14 +222,18 @@ router.route("/event")
 router.route("/event/datatable")
   .get(passport.authenticate("token", {session: false}), function (req, res) {
 
-    req.query.search = req.query.search.value.length? req.query.search.value : undefined;
-
-    queryData(req)
+    countData(req)
+      .bind({})
+      .then(function(data) {
+        this.total = data[0].total;
+        return queryData(req);
+      })
       .then(function (dbEvents) {
-        return views.models.guardianAudioEventsJson(req, res, dbEvents)
-          .then(function (json) {
-            res.status(200).send(json);
-          });
+        return views.models.guardianAudioEventsJson(req, res, dbEvents);
+      })
+      .then(function(json) {
+        json.total = this.total;
+        res.status(200).send(json);
       })
       .catch(function (err) {
         console.log('Error while searching Audio Events', err);
