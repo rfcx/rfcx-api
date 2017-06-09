@@ -77,6 +77,26 @@ router.route("/ai")
 
   });
 
+router.route("/ai/:id/precision/events")
+  .get(passport.authenticate("token",{session:false}), (req, res) => {
+
+    var converter = new ApiConverter("ai", req);
+
+    PerceptionsAiService
+      .findAi(req.params.id)
+      .then(PerceptionsAiService.getEventsPrecisionForAI)
+      .then((data) => {
+        var api = converter.mapSequelizeToApi({
+          data: data
+        });
+        api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id + '/precision/events';
+        res.status(200).json(api);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(e => httpError(res, 500, e, `Perception Ai couldn't be found: ${e}`));
+
+  });
+
 router.route("/ai/:id")
   .get(passport.authenticate("token",{session:false}), (req, res) => {
 
