@@ -219,7 +219,7 @@ module.exports = {
       .then(function(data) {
         let dataObj = data[0];
         dataObj.precision = dataObj.reviewed > 0? (dataObj.correct / dataObj.reviewed) : null;
-        return data;
+        return dataObj;
       });
 
   },
