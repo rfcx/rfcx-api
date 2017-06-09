@@ -27,17 +27,16 @@ function countEventsByGuardians(dbAudioEvents) {
 
     var dbRow = dbAudioEvents[i];
 
-    if (!dbRow.Audio || !dbRow.Guardian) {
+    if (!dbRow.audio_guid || !dbRow.guardian_guid) {
       continue;
     }
 
-    var dbGuardian = dbRow.Guardian,
-      dbGuardianGuid = dbGuardian.guid;
+    var dbGuardianGuid = dbRow.guardian_guid;
 
     if (!json.guardians[dbGuardianGuid]) {
       json.guardians[dbGuardianGuid] = {
         guid: dbGuardianGuid,
-        shortname: dbGuardian.shortname,
+        shortname: dbRow.guardian_shortname,
         coords: {
           lat: dbRow.shadow_latitude,
           lon: dbRow.shadow_longitude
@@ -47,7 +46,7 @@ function countEventsByGuardians(dbAudioEvents) {
     }
 
     var guardian = json.guardians[dbGuardianGuid],
-      value = dbRow.Value.value;
+        value = dbRow.event_value;
 
     if (!guardian.events[value]) {
       guardian.events[value] = 0;
@@ -67,7 +66,7 @@ function countEventsByDates(dbAudioEvents) {
   };
 
   dbAudioEvents = dbAudioEvents.sort(function(a,b) {
-    return a.begins_at > b.begins_at;
+    return new Date(a.begins_at).getTime() > new Date(b.begins_at).getTime();
   });
 
   dbAudioEvents.forEach(function(event) {
@@ -77,7 +76,7 @@ function countEventsByDates(dbAudioEvents) {
       json.dates[dateStr] = {};
     }
 
-    var value = event.Value.value;
+    var value = event.event_value;
     var dateObj = json.dates[dateStr];
 
     if (!dateObj[value]) {

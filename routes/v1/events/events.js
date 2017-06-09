@@ -158,7 +158,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
-  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
+  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
   sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
