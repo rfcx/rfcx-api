@@ -130,6 +130,7 @@ exports.models = {
             reviewer_confirmed: dbRow.reviewer_confirmed,
             reviewer_guid: dbRow.user_guid,
             ai_guid: dbRow.model_guid,
+            ai_shortname: dbRow.model_shortname,
             ai_min_conf: dbRow.model_minimal_detection_confidence,
           });
 
