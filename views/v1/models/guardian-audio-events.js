@@ -127,7 +127,7 @@ exports.models = {
             guardian_guid: dbRow.guardian_guid,
             guardian_shortname: dbRow.guardian_shortname,
             site: dbRow.site_guid,
-            reviewer_confirmed: !!dbRow.reviewer_confirmed,
+            reviewer_confirmed: dbRow.reviewer_confirmed !== null? !!dbRow.reviewer_confirmed : null,
             reviewer_guid: dbRow.user_guid,
             ai_guid: dbRow.model_guid,
             ai_shortname: dbRow.model_shortname,
