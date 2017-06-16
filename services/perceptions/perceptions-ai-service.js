@@ -197,7 +197,32 @@ module.exports = {
       created_at: ai.created_at,
       updated_at: ai.updated_at
     };
-  }
+  },
+
+  getEventsPrecisionForAI: function(ai) {
+
+    const opts = {
+      ai_guid: ai.guid,
+    };
+
+    let sql = 'SELECT COALESCE(SUM(GuardianAudioEvent.reviewer_confirmed IS TRUE),0) as correct, ' +
+                     'COALESCE(SUM(GuardianAudioEvent.reviewer_confirmed IS FALSE),0) as incorrect, ' +
+                     'COALESCE(SUM(GuardianAudioEvent.reviewer_confirmed IS NOT NULL),0) as reviewed ' +
+                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
+                    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
+                    'WHERE Model.guid = :ai_guid ';
+
+    return models.sequelize
+      .query(sql,
+        { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+      )
+      .then(function(data) {
+        let dataObj = data[0];
+        dataObj.precision = dataObj.reviewed > 0? (dataObj.correct / dataObj.reviewed) : null;
+        return dataObj;
+      });
+
+  },
 
 
 };

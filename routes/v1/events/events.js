@@ -13,200 +13,171 @@ var aws = require("../../../utils/external/aws.js").aws();
 var moment = require('moment');
 var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
+var sqlUtils = require("../../../utils/misc/sql");
+
+function prepareOpts(req) {
+
+  let order, dir;
+  if (req.query.order) {
+    order;
+    dir = 'ASC';
+    if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
+      dir = req.query.dir.toUpperCase();
+    }
+    switch (req.query.order) {
+      case 'audio_guid':
+        order = 'Audio.guid';
+        break;
+      case 'site':
+        order = 'Site.name';
+        break;
+      case 'guardian_shortname':
+        order = 'Guardian.shortname';
+        break;
+      case 'begins_at':
+        order = 'GuardianAudioEvent.begins_at';
+        break;
+      case 'reviewed_by':
+        order = 'User.email';
+        break;
+      case 'reviewer_confirmed':
+        order = 'GuardianAudioEvent.reviewer_confirmed';
+        break;
+      default:
+        order = 'GuardianAudioEvent.guid';
+        break;
+    }
+  }
+
+  return {
+    limit: req.query.limit? parseInt(req.query.limit) : 10000,
+    offset: req.query.offset? parseInt(req.query.offset) : 0,
+    updatedAfter: req.query.updated_after,
+    updatedBefore: req.query.updated_before,
+    createdAfter: req.query.created_after,
+    createdBefore: req.query.created_before,
+    startingAfter: req.query.starting_after,
+    endingBefore: req.query.ending_before,
+    minimumConfidence: req.query.minimum_confidence,
+    types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : undefined,
+    values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
+    sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
+    models: req.query.models? (Array.isArray(req.query.models)? req.query.models : [req.query.models]) : undefined,
+    showExperimental: req.query.showExperimental !== undefined? (req.query.showExperimental === 'true') : undefined,
+    omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
+    omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
+    omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
+    search: req.query.search? '%' + req.query.search + '%' : undefined,
+    order: order? order : undefined,
+    dir: dir? dir : undefined,
+  };
+}
+
+function countData(req) {
+
+  const opts = prepareOpts(req);
+
+  let sql = 'SELECT COUNT(*) AS total ' +
+                   'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
+                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
+                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
+                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
+                   'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
+                   'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
+                   'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+                   'WHERE 1=1 ';
+
+  sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
+  sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
+  sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
+  sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
+  sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
+  sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
+  sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
+  sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
+  sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
+  sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
+  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
+  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
+  sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
+  sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
+  sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.guid LIKE :search OR User.firstname LIKE :search OR User.lastname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.email LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
+
+  return models.sequelize.query(sql,
+    { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+  )
+
+}
 
 function queryData(req) {
 
-  var limit = parseInt(req.query.limit) || 10000,
-    offset = parseInt(req.query.offset) || 0;
+  const opts = prepareOpts(req);
 
-  // by default all clauses are empty. we will fill them if corresponding params are defined in url
-  var whereClauses = {
-    event: {
-      shadow_latitude: {
-        $ne: null
-      },
-      shadow_longitude: {
-        $ne: null
-      }
-    },
-    site: {},
-    audio: {},
-    type: {},
-    value: {},
-    model: {}
-  };
+  let sql = 'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
+                   'GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, GuardianAudioEvent.shadow_latitude, ' +
+                   'GuardianAudioEvent.shadow_longitude, GuardianAudioEvent.reviewer_confirmed, GuardianAudioEvent.created_at, ' +
+                   'GuardianAudioEvent.updated_at, ' +
+                   'Audio.guid AS audio_guid, Audio.measured_at AS audio_measured_at, ' +
+                   'Site.guid AS site_guid, ' +
+                   'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
+                   'Model.guid AS model_guid, Model.minimal_detection_confidence AS model_minimal_detection_confidence, ' +
+                     'Model.shortname AS model_shortname, ' +
+                   'User.guid AS user_guid, ' +
+                   'EventType.value AS event_type, ' +
+                   'EventValue.value AS event_value ' +
+                   'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
+                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
+                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
+                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
+                   'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
+                   'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
+                   'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+                   'WHERE 1=1 ';
 
-  if (req.query.updated_after) {
-    if (!whereClauses.event.updated_at) {
-      whereClauses.event.updated_at = {};
-    }
-    whereClauses.event.updated_at.$gt = req.query.updated_after;
-  }
+  sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
+  sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
+  sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
+  sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
+  sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
+  sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
+  sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
+  sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
+  sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
+  sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
+  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
+  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
+  sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
+  sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
+  sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.guid LIKE :search OR User.firstname LIKE :search OR User.lastname LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.email LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
+  sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+  sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
-  if (req.query.updated_before) {
-    if (!whereClauses.event.updated_at) {
-      whereClauses.event.updated_at = {};
-    }
-    whereClauses.event.updated_at.$lt = req.query.updated_before;
-  }
+  return models.sequelize.query(sql,
+    { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+  )
 
-  if (req.query.created_after) {
-    if (!whereClauses.event.created_at) {
-      whereClauses.event.created_at = {};
-    }
-    whereClauses.event.created_at.$gt = req.query.created_after;
-  }
-
-  if (req.query.created_before) {
-    if (!whereClauses.event.created_at) {
-      whereClauses.event.created_at = {};
-    }
-    whereClauses.event.created_at.$lte = req.query.created_before;
-  }
-
-  if (req.query.starting_after) {
-    whereClauses.event.begins_at = {
-      $gt: req.query.starting_after
-    };
-  }
-
-  if (req.query.ending_before) {
-    whereClauses.event.ends_at = {
-      $lte: req.query.ending_before
-    };
-  }
-
-  if (req.query.minimum_confidence) {
-    whereClauses.event.confidence = {
-      $gte: req.query.minimum_confidence
-    };
-  }
-
-  if (req.query.values) {
-    whereClauses.value.value = {
-      $in: Array.isArray(req.query.values)? req.query.values : [req.query.values]
-    };
-  }
-
-  if (req.query.sites && Array.isArray(req.query.sites)) {
-    whereClauses.site.guid = {
-      $in: req.query.sites
-    };
-  }
-
-  if (req.query.types && Array.isArray(req.query.types)) {
-    whereClauses.type.value = {
-      $in: req.query.types
-    };
-  }
-
-  if (req.query.models && Array.isArray(req.query.models)) {
-    whereClauses.model['$or'] = {
-      guid: {
-        $in: req.query.models
-      },
-      shortname: {
-        $in: req.query.models
-      }
-    }
-  }
-
-  if (req.query.showExperimental !== undefined) {
-    whereClauses.model.experimental = (req.query.showExperimental === 'true');
-  }
-
-  var omitFalsePositives = true;
-  if (req.query.omit_false_positives === 'false') {
-    omitFalsePositives = false;
-  }
-  var omitUnreviewed = (req.query.omit_unreviewed === 'true');
-
-  if (omitFalsePositives && !omitUnreviewed) {
-    whereClauses.event.reviewer_confirmed = {
-      $not: false
-    };
-  }
-  if (omitFalsePositives && omitUnreviewed) {
-    whereClauses.event.reviewer_confirmed = {
-      $eq: true
-    };
-  }
-  if (!omitFalsePositives && omitUnreviewed) {
-    whereClauses.event.reviewer_confirmed = {
-      $not: null
-    };
-  }
-
-  return models.GuardianAudioEvent
-    .findAndCountAll({
-      where: whereClauses.event,
-      limit: limit,
-      offset: offset,
-      include: [
-        {
-          model: models.GuardianAudio,
-          as: 'Audio',
-          where: whereClauses.audio,
-          attributes: [
-            'guid',
-            'measured_at'
-          ],
-          include: [
-            {
-              model: models.GuardianSite,
-              as: 'Site',
-              where: whereClauses.site,
-              attributes: [
-                'guid'
-              ]
-            },
-            {
-              model: models.Guardian,
-              as: 'Guardian',
-              attributes: [
-                'guid',
-                'shortname'
-              ]
-            }
-          ]
-        },
-        {
-          model: models.Guardian,
-          as: 'Guardian',
-          attributes: [
-            'guid',
-            'shortname',
-            'latitude',
-            'longitude'
-          ]
-        },
-        {
-          model: models.GuardianAudioEventValue,
-          as: 'Value',
-          where: whereClauses.value
-        },
-        {
-          model: models.GuardianAudioEventType,
-          as: 'Type',
-          where: whereClauses.type
-        },
-        {
-          model: models.AudioAnalysisModel,
-          as: 'Model',
-          where: whereClauses.model
-        },
-        {
-          model: models.User,
-          as: 'User',
-          attributes: [
-            'guid',
-            'firstname',
-            'lastname',
-            'email'
-          ]
-        },
-      ]
-    })
 }
 
 function processStatsByDates(req, res) {
@@ -219,7 +190,7 @@ function processStatsByDates(req, res) {
   queryData(req)
     .then(function (dbEvents) {
       if (contentType === 'json') {
-        return views.models.guardianAudioEventsByDatesJson(req, res, dbEvents.rows)
+        return views.models.guardianAudioEventsByDatesJson(req, res, dbEvents)
           .then(function (json) {
             // if client requested json file, then respond with file
             // if not, respond with simple json
@@ -231,7 +202,7 @@ function processStatsByDates(req, res) {
           });
       }
       else if (contentType === 'csv') {
-        return views.models.guardianAudioEventsByDatesCSV(req, res, dbEvents.rows)
+        return views.models.guardianAudioEventsByDatesCSV(req, res, dbEvents)
           .then(function (csv) {
             res.contentType('text/csv');
             res.attachment('event.csv');
@@ -257,7 +228,7 @@ router.route("/event")
     queryData(req)
       .then(function (dbEvents) {
         if (contentType === 'json') {
-          return views.models.guardianAudioEventsJson(req, res, dbEvents.rows)
+          return views.models.guardianAudioEventsJson(req, res, dbEvents)
             .then(function (json) {
               // if client requested json file, then respond with file
               // if not, respond with simple json
@@ -269,7 +240,7 @@ router.route("/event")
             });
         }
         else if (contentType === 'csv') {
-          return views.models.guardianAudioEventsCSV(req, res, dbEvents.rows)
+          return views.models.guardianAudioEventsCSV(req, res, dbEvents)
             .then(function (csv) {
               res.contentType('text/csv');
               res.attachment('event.csv');
@@ -278,7 +249,30 @@ router.route("/event")
         }
       })
       .catch(function (err) {
-        console.log('Error while searching Audio Events', arguments);
+        console.log('Error while searching Audio Events', err);
+        res.status(500).json({msg: err});
+      });
+
+  });
+
+router.route("/event/datatable")
+  .get(passport.authenticate("token", {session: false}), function (req, res) {
+
+    countData(req)
+      .bind({})
+      .then(function(data) {
+        this.total = data[0].total;
+        return queryData(req);
+      })
+      .then(function (dbEvents) {
+        return views.models.guardianAudioEventsJson(req, res, dbEvents);
+      })
+      .then(function(json) {
+        json.total = this.total;
+        res.status(200).send(json);
+      })
+      .catch(function (err) {
+        console.log('Error while searching Audio Events', err);
         res.status(500).json({msg: err});
       });
 
@@ -296,7 +290,7 @@ router.route("/stats/guardian")
     queryData(req)
       .then(function (dbEvents) {
         if (contentType === 'json') {
-          return views.models.guardianAudioEventsByGuardianJson(req, res, dbEvents.rows)
+          return views.models.guardianAudioEventsByGuardianJson(req, res, dbEvents)
             .then(function (json) {
               // if client requested json file, then respond with file
               // if not, respond with simple json
@@ -308,7 +302,7 @@ router.route("/stats/guardian")
             });
         }
         else if (contentType === 'csv') {
-          return views.models.guardianAudioEventsByGuardianCSV(req, res, dbEvents.rows)
+          return views.models.guardianAudioEventsByGuardianCSV(req, res, dbEvents)
             .then(function (csv) {
               res.contentType('text/csv');
               res.attachment('event.csv');
