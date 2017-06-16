@@ -1,5 +1,6 @@
 var timeUtils = require("../misc/time");
 const moment = require("moment-timezone");
+var util = require("util");
 
 module.exports = class Conversion {
   constructor(src, property, target = null){
@@ -149,6 +150,15 @@ module.exports = class Conversion {
   toBoolean(){
     this.conversions.push(()=>{
       this.value = (this.value.toString() === 'true' || this.value.toString() === '1');
+    });
+    return this;
+  }
+
+  toArray() {
+    this.conversions.push(()=>{
+      if (!util.isArray(this.value)) {
+        this.value = [ this.value ];
+      }
     });
     return this;
   }

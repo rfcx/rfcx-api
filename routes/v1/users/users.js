@@ -407,38 +407,70 @@ router.route("/:user_id")
   })
 ;
 
+router.route("/:guid/sites")
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    let converter = new ApiConverter("user", req);
+    let serviceParams = {
+      sites: req.body.sites,
+    };
+
+    usersService.getUserByGuid(req.params.guid)
+      .then((user) => {
+        return usersService.updateSiteRelations(user, serviceParams);
+      })
+      .then((user) => {
+        let data = converter.cloneSequelizeToApi({
+          user: user
+        });
+        data.links.self += req.params.guid + '/sites';
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(e => {console.log('e', e);httpError(res, 500, e, "Couldn't update user-sites relations.")});
+
+  });
+
 // TO DO security measure to ensure that not any user can see any other user
 router.route("/:user_id")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
-    if (req.rfcx.auth_token_info.guid === req.params.user_id) {
+    let converter = new ApiConverter("user", req);
+    // This must be replaced with AWS user roles
+    // if (req.rfcx.auth_token_info.guid === req.params.user_id) {
       models.User
-        .findAll({
-          where: { guid: req.params.user_id },
-          limit: 1
+        .findOne({
+          where: { guid: req.params.user_id }
         }).then(function(dbUser){
-
-          if (dbUser.length < 1) {
+          if (!dbUser) {
             httpError(res, 404, "database");
           } else {
-
             // now let's update the user info....
-
-            res.status(200).json(views.models.users(req,res,dbUser));
+            return usersService.updateUserInfo(dbUser, req.body);
           }
-
-        }).catch(function(err){
+        })
+        .then(function(user) {
+          let data = converter.cloneSequelizeToApi({
+            user: user
+          });
+          data.links.self += req.params.user_id;
+          res.status(200).json(data);
+        })
+        .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+        .catch(ValidationError, e => httpError(res, 400, null, e.message))
+        .catch(function(err){
           console.log("failed to update user | "+err);
           if (!!err) { res.status(500).json({msg:"failed to update user"}); }
         });
-    } else {
-      res.status(401).json({msg:"not allowed to edit another user's profile"});
-    }
+    // } else {
+      // res.status(401).json({msg:"not allowed to edit another user's profile"});
+    // }
   })
 ;
 
 router.route("/")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 
     var converter = new ApiConverter("user", req);
 
