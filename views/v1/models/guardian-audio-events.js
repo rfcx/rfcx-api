@@ -127,6 +127,7 @@ exports.models = {
             guardian_guid: dbRow.guardian_guid,
             guardian_shortname: dbRow.guardian_shortname,
             site: dbRow.site_guid,
+            timezone: dbRow.site_timezone,
             reviewer_confirmed: dbRow.reviewer_confirmed !== null? !!dbRow.reviewer_confirmed : null,
             reviewer_guid: dbRow.user_guid,
             ai_guid: dbRow.model_guid,
