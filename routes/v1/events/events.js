@@ -129,7 +129,7 @@ function queryData(req) {
                    'GuardianAudioEvent.shadow_longitude, GuardianAudioEvent.reviewer_confirmed, GuardianAudioEvent.created_at, ' +
                    'GuardianAudioEvent.updated_at, ' +
                    'Audio.guid AS audio_guid, Audio.measured_at AS audio_measured_at, ' +
-                   'Site.guid AS site_guid, ' +
+                   'Site.guid AS site_guid, Site.timezone as site_timezone, ' +
                    'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
                    'Model.guid AS model_guid, Model.minimal_detection_confidence AS model_minimal_detection_confidence, ' +
                      'Model.shortname AS model_shortname, ' +
