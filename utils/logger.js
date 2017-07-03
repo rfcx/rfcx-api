@@ -17,6 +17,7 @@ var logger = new winston.Logger({
 module.exports = logger;
 module.exports.stream = {
     write: function(message, encoding){
-        logger.info(message);
+        // remove last symbol to prevent double line break (Morgan add his line break)
+        logger.info(message.slice(0, -1));
     }
 };
