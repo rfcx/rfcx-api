@@ -40,7 +40,8 @@
     "sequelize": "3.30.4",
     "sequelize-cli": "1.9.2",
     "serve-favicon": "2.4.3",
-    "sha.js": "2.4.8"
+    "sha.js": "2.4.8",
+    "winston": "2.3.1"
   },
   "devDependencies": {
     "chai": "3.5.0",
