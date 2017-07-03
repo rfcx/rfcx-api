@@ -7,7 +7,7 @@ var logger = new winston.Logger({
             level: 'debug',
             handleExceptions: true,
             json: false,
-            colorize: true
+            colorize: process.env.NODE_ENV === 'development'
         }),
         // other transports will go here...
     ],
