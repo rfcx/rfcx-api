@@ -25,7 +25,9 @@ app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(cors()); // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
-app.use(morgan('combined', { "stream": logger.stream }));
+app.use(morgan(':date[iso] :status :method :url :remote-addr | User: :req[x-auth-user] | Response: :response-time ms', {
+  "stream": logger.stream
+}));
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(multer(require("./config/multer").config(process.env)));
