@@ -11,7 +11,7 @@ function retrieveRequestData(str) {
     url: str.match(/\[url (.*?)\]/)[1],
     remoteAddr: str.match(/\[remote-addr (.*?)\]/)[1],
     user: str.match(/\[user (.*?)\]/)[1],
-    response: str.match(/\[response (.*?)\]/)[1],
+    response: log.msg.match(/\[response (.*?)\]/)[1],
   };
 }
 
@@ -41,6 +41,25 @@ var logger = new winston.Logger({
       }
     })
     // other transports will go here...
+  ],
+  exceptionHandlers: [
+    new winston.transports.Loggly({
+      token: process.env.LOGGLY_TOKEN,
+      subdomain: process.env.LOGGLY_SUBDOMAIN,
+      tags: [ 'rfcx-api-errors' ],
+      handleExceptions: true,
+      json: true,
+    }),
+    new winstonCloudwatch({
+      level: 'info',
+      awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      awsSecretKey: process.env.AWS_SECRET_KEY,
+      awsRegion: process.env.AWS_REGION_ID,
+      logGroupName: 'rfcx-api-test',
+      logStreamName: 'errors',
+      handleExceptions: true,
+      json: true,
+    }),
   ],
   exitOnError: false
 });
