@@ -28,7 +28,7 @@ function filter(req) {
 
   if (req.query.order && ['ASC', 'DESC', 'RAND'].indexOf(req.query.order.toUpperCase()) !== -1) {
     if (req.query.order === 'RAND') {
-      order = [sequelize.fn('RAND', 'measured_at')];
+      order = [sequelize.fn('RAND')];
     }
     else {
       order = 'measured_at ' + req.query.order.toUpperCase();
