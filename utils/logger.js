@@ -11,7 +11,7 @@ function retrieveRequestData(str) {
     url: str.match(/\[url (.*?)\]/)[1],
     remoteAddr: str.match(/\[remote-addr (.*?)\]/)[1],
     user: str.match(/\[user (.*?)\]/)[1],
-    response: log.msg.match(/\[response (.*?)\]/)[1],
+    response: str.match(/\[response (.*?)\]/)[1],
   };
 }
 
