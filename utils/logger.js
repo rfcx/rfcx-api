@@ -1,11 +1,24 @@
 var winston = require('winston');
 require('winston-loggly-bulk');
+var winstonCloudwatch = require('winston-cloudwatch');
 winston.emitErrs = true;
+
+function retrieveRequestData(str) {
+  return {
+    timestamp: str.match(/\[timestamp (.*?)\]/)[1],
+    status: str.match(/\[status (.*?)\]/)[1],
+    method: str.match(/\[method (.*?)\]/)[1],
+    url: str.match(/\[url (.*?)\]/)[1],
+    remoteAddr: str.match(/\[remote-addr (.*?)\]/)[1],
+    user: str.match(/\[user (.*?)\]/)[1],
+    response: str.match(/\[response (.*?)\]/)[1],
+  };
+}
 
 var logger = new winston.Logger({
   transports: [
     new winston.transports.Console({
-      level: 'debug',
+      level: 'info',
       handleExceptions: true,
       json: false,
       colorize: process.env.NODE_ENV === 'development'
@@ -16,6 +29,17 @@ var logger = new winston.Logger({
       tags: [ 'rfcx-api-test' ],
       json: true,
     }),
+    new winstonCloudwatch({
+      level: 'info',
+      awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      awsSecretKey: process.env.AWS_SECRET_KEY,
+      awsRegion: process.env.AWS_REGION_ID,
+      logGroupName: 'rfcx-api-test',
+      logStreamName: 'api',
+      messageFormatter: function(log) {
+        return JSON.stringify(retrieveRequestData(log.msg));
+      }
+    })
     // other transports will go here...
   ],
   exitOnError: false
