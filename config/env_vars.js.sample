@@ -40,6 +40,8 @@ exports.env = {
   SEQUELIZE_VERBOSE: false,
 
   // it must have /#/ at the end
-  CONSOLE_BASE_URL: 'http://localhost:3000/#/'
+  CONSOLE_BASE_URL: 'http://localhost:3000/#/',
+
+  NODE_LOG_LEVEL: "info" // error, warn, info, debug
 
 }

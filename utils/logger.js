@@ -33,7 +33,6 @@ var logger = new winston.Logger({
         return JSON.stringify(retrieveRequestData(log.msg));
       }
     })
-    // other transports will go here...
   ],
   exceptionHandlers: [
     new winstonCloudwatch({
@@ -44,11 +43,30 @@ var logger = new winston.Logger({
       logGroupName: 'rfcx-api-test',
       logStreamName: 'errors',
       handleExceptions: true,
+      humanReadableUnhandledException: true,
       json: true,
     }),
   ],
   exitOnError: false
 });
+
+function determineLogLevel() {
+  var levels = ['error', 'warn', 'info', 'debug'],
+      envLevel = process.env.NODE_LOG_LEVEL? process.env.NODE_LOG_LEVEL.trim().toLowerCase() : undefined ;
+  if (!!envLevel && levels.indexOf(envLevel) !== -1) {
+    return envLevel;
+  }
+  else {
+    logger.error('Log level "' + process.env.NODE_LOG_LEVEL + '" is invalid. Choose one of: ' + levels.join(', '));
+    // winston.loggers.get('cloudwatch-error').error('Log level "' + process.env.NODE_LOG_LEVEL + '" is invalid. Choose one of: ' + levels.join(', '));
+    if (process.env.NODE_ENV !== 'production') {
+      return 'debug';
+    }
+    return 'info';
+  }
+}
+
+winston.level = determineLogLevel();
 
 module.exports = logger;
 module.exports.stream = {
