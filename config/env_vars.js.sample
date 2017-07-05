@@ -40,9 +40,6 @@ exports.env = {
   SEQUELIZE_VERBOSE: false,
 
   // it must have /#/ at the end
-  CONSOLE_BASE_URL: 'http://localhost:3000/#/',
-
-  LOGGLY_TOKEN: "",
-  LOGGLY_SUBDOMAIN: ""
+  CONSOLE_BASE_URL: 'http://localhost:3000/#/'
 
 }

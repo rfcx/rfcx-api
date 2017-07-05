@@ -1,5 +1,4 @@
 var winston = require('winston');
-require('winston-loggly-bulk');
 var winstonCloudwatch = require('winston-cloudwatch');
 winston.emitErrs = true;
 
@@ -23,12 +22,6 @@ var logger = new winston.Logger({
       json: false,
       colorize: process.env.NODE_ENV === 'development'
     }),
-    new winston.transports.Loggly({
-      token: process.env.LOGGLY_TOKEN,
-      subdomain: process.env.LOGGLY_SUBDOMAIN,
-      tags: [ 'rfcx-api-test' ],
-      json: true,
-    }),
     new winstonCloudwatch({
       level: 'info',
       awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -43,13 +36,6 @@ var logger = new winston.Logger({
     // other transports will go here...
   ],
   exceptionHandlers: [
-    new winston.transports.Loggly({
-      token: process.env.LOGGLY_TOKEN,
-      subdomain: process.env.LOGGLY_SUBDOMAIN,
-      tags: [ 'rfcx-api-errors' ],
-      handleExceptions: true,
-      json: true,
-    }),
     new winstonCloudwatch({
       level: 'info',
       awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
