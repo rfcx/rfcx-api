@@ -42,6 +42,7 @@ exports.env = {
   // it must have /#/ at the end
   CONSOLE_BASE_URL: 'http://localhost:3000/#/',
 
-  NODE_LOG_LEVEL: "info" // error, warn, info, debug
+  NODE_LOG_LEVEL: "info", // error, warn, info, debug
+  CLOUDWATCH_LOGS_GROUP_NAME: ""
 
 }
