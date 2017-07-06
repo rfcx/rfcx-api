@@ -19,16 +19,28 @@ var express = require("express"),
     passport = require("passport"),
     cors = require("cors"),
     bodyParser = require("body-parser"),
+    addRequestId = require('express-request-id'),
     app = express();
 
 app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
+app.use(addRequestId({
+  attributeName: 'guid'
+}));
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(cors()); // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
 app.use(expressWinston.logger({
   winstonInstance: loggers.expressLogger,
   expressFormat: true,
   level: 'info',
+  requestWhitelist: ['guid', 'url', 'headers', 'method', 'httpVersion', 'originalUrl', 'query'],
+  requestFilter: function(req, propName) {
+    if (propName === 'headers') {
+      // remove user token from logging for security reasons
+      delete req.headers['x-auth-token'];
+    }
+    return req[propName];
+  }
 }))
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json({ limit: '5mb' }));
