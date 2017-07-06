@@ -43,6 +43,7 @@ exports.env = {
   CONSOLE_BASE_URL: 'http://localhost:3000/#/',
 
   NODE_LOG_LEVEL: "info", // error, warn, info, debug
+  CLOUDWATCH_ENABLED: false, // cloudwatch should be disabled for developers by default
   CLOUDWATCH_LOGS_GROUP_NAME: ""
 
 }

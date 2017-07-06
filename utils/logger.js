@@ -19,7 +19,9 @@ var winston = require('winston');
 var cloudWatchTransport = require('winston-aws-cloudwatch')
 
 var logLevel = determineLogLevel(),
-    groupName = process.env.CLOUDWATCH_LOGS_GROUP_NAME || 'rfcx-api';
+    groupName = process.env.CLOUDWATCH_LOGS_GROUP_NAME || 'rfcx-api',
+    // process.env.CLOUDWATCH_ENABLED has string type
+    cloudWatchEnabled = process.env.CLOUDWATCH_ENABLED? process.env.CLOUDWATCH_ENABLED.toString() === 'true' : false;
 
 winston.emitErrs = true;
 winston.level = logLevel;
@@ -93,21 +95,26 @@ function createLoggerWrapper(winstonLogger, type) {
  * @param {String} type - logger's internal type; also stream name for CloudWatch Logs transport
  */
 function createLogger(type) {
+  var transports = [
+    new winston.transports.Console({
+      json: false,
+      colorize: process.env.NODE_ENV === 'development'
+    }),
+  ];
+  var exceptionHandlers = [];
+  if (cloudWatchEnabled) {
+    transports.push(createCloudWatchTransport(groupName, type));
+    if (type === 'requests') {
+      exceptionHandlers.push(createCloudWatchTransport(groupName, 'unhandled-errors'));
+    }
+  }
   var opts = {
     level: logLevel,
-    transports: [
-      new winston.transports.Console({
-        json: false,
-        colorize: process.env.NODE_ENV === 'development'
-      }),
-      createCloudWatchTransport(groupName, type)
-    ],
+    transports: transports,
     exitOnError: false
   }
   if (type === 'requests') {
-    opts.exceptionHandlers = [
-      createCloudWatchTransport(groupName, 'unhandled-errors')
-    ]
+    opts.exceptionHandlers = exceptionHandlers;
     return new winston.Logger(opts);
   }
   else {
