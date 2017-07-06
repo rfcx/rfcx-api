@@ -11,11 +11,8 @@
       but should log the attempted wrong values as they indicate that a client might need an update.
   4) Errors: these are like exceptions on the programming level and mean that in the server something is wrong.
 
-  This util exports 4 logger, each for own separate type of logs:
-  debugLogger which should be used as `debugLogger.debug('text')`
-  infoLogger which should be used as `infoLogger.info('text')`
-  warnLogger which should be used as `warnLogger.warn('text')`
-  errorLogger which should be used as `errorLogger.error('text')`
+  This util exports 4 loggers, each for own separate type of logs: debugLogger, infoLogger, warnLogger, errorLogger.
+  You can log messages using .log method on each of types (e.g. debugLogger.log('text', { req: req, foo: bar }))
 */
 
 var winston = require('winston');
@@ -28,11 +25,74 @@ winston.emitErrs = true;
 winston.level = logLevel;
 
 /**
- * Creates new Winston looger with Console and CloudWatchLogs transports.
- * @param {String} logStreamName - stream name for CloudWatch Logs transport
- * @param {Boolean} includeExceptionsHandler - indicates whether create exceptionHandlers into logger or not
+ * Creates Winston CloudWatchLogs transport with given logGroupName and logStreamName
+ * @param {String} logGroupName
+ * @param {String} logStreamName
+ * @returns {Object} cloudWatchTransport
  */
-function createLogger(logStreamName, includeExceptionsHandler) {
+function createCloudWatchTransport(logGroupName, logStreamName) {
+  var cloudwatchBaseOpts = {
+    createLogGroup: true,
+    createLogStream: true,
+    awsConfig: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+      region: process.env.AWS_REGION_ID
+    },
+  }
+  return new cloudWatchTransport(Object.assign({}, cloudwatchBaseOpts, {
+    logGroupName: logGroupName,
+    logStreamName: logStreamName,
+  }));
+}
+
+/**
+ * Creates wrapper around standard Winston logger, which makes two things:
+ * 1) Chooses what level of log function it needs to call based on defined type
+ * 2) Parses additional meta options from input and passes them to log function
+ * @param {Object} winstonLogger - Winston logger instance
+ * @param {String} type - logger's internal type
+ * @returns {Object} - custom logger object with only one `log` method
+ */
+function createLoggerWrapper(winstonLogger, type) {
+  var logger = {
+    /**
+     * Function which takes a message and additional info like req object
+     * @param {String} message - A message to send to logs
+     * @param {Object} [opts] - Optional object which can contain req and other meta-data. Just set like this { req: req, foo: bar } and
+     * it will obtain request guid automatically and save other metadata
+     */
+    log: function(message, opts) {
+      var meta = opts || {};
+      if (meta.req) {
+        meta['req-guid'] = meta.req.guid;
+        delete meta.req;
+      }
+      switch (type) {
+        case 'debug':
+          winstonLogger.debug(message, meta);
+          break;
+        case 'warn':
+          winstonLogger.warn(message, meta);
+          break;
+        case 'error':
+          winstonLogger.error(message, meta);
+          break;
+        case 'info':
+        default:
+          winstonLogger.info(message, meta);
+          break;
+      }
+    }
+  };
+  return logger;
+}
+
+/**
+ * Creates new Winston looger with Console and CloudWatchLogs transports.
+ * @param {String} type - logger's internal type; also stream name for CloudWatch Logs transport
+ */
+function createLogger(type) {
   var opts = {
     level: logLevel,
     transports: [
@@ -40,36 +100,20 @@ function createLogger(logStreamName, includeExceptionsHandler) {
         json: false,
         colorize: process.env.NODE_ENV === 'development'
       }),
-      new cloudWatchTransport({
-        logGroupName: groupName,
-        logStreamName: logStreamName,
-        createLogGroup: true,
-        createLogStream: true,
-        awsConfig: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_KEY,
-          region: process.env.AWS_REGION_ID
-        },
-      })
+      createCloudWatchTransport(groupName, type)
     ],
     exitOnError: false
   }
-  if (!!includeExceptionsHandler) {
+  if (type === 'requests') {
     opts.exceptionHandlers = [
-      new cloudWatchTransport({
-        logGroupName: groupName,
-        logStreamName: 'unhandled-errors',
-        createLogGroup: true,
-        createLogStream: true,
-        awsConfig: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_KEY,
-          region: process.env.AWS_REGION_ID
-        },
-      })
+      createCloudWatchTransport(groupName, 'unhandled-errors')
     ]
+    return new winston.Logger(opts);
   }
-  return new winston.Logger(opts);
+  else {
+    var winstonLogger = new winston.Logger(opts);
+    return createLoggerWrapper(winstonLogger, type);
+  }
 }
 
 // create our loggers
