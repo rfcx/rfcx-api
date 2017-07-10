@@ -40,7 +40,11 @@ app.use(expressWinston.logger({
       delete req.headers['x-auth-token'];
     }
     return req[propName];
-  }
+  },
+  ignoreRoute: function(req) {
+    if (req.url === '/health_check') return true;
+    return false;
+  },
 }))
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json({ limit: '5mb' }));
