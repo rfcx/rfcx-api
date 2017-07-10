@@ -68,6 +68,7 @@ function createLoggerWrapper(winstonLogger, type) {
       var meta = opts || {};
       if (meta.req) {
         meta['req-guid'] = meta.req.guid;
+        meta['instance'] = meta.req.instance;
         delete meta.req;
       }
       switch (type) {
