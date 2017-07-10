@@ -35,7 +35,7 @@ app.use(expressWinston.logger({
   winstonInstance: loggers.expressLogger,
   expressFormat: true,
   level: 'info',
-  requestWhitelist: ['guid', 'instance', 'url', 'headers', 'method', 'httpVersion', 'originalUrl', 'query', 'body'],
+  requestWhitelist: ['guid', 'instance', 'url', 'headers', 'method', 'httpVersion', 'originalUrl', 'query', 'body', 'files'],
   requestFilter: function(req, propName) {
     if (propName === 'headers') {
       // remove user token from logging for security reasons
