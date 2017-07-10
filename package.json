@@ -22,12 +22,13 @@
     "csprng": "0.1.2",
     "debug": "2.6.8",
     "express": "4.15.3",
+    "express-request-id": "1.4.0",
+    "express-winston": "2.4.0",
     "fluent-ffmpeg": "2.1.2",
     "knox": "0.9.2",
     "mandrill-api": "1.0.45",
     "moment": "2.18.1",
     "moment-timezone": "0.5.13",
-    "morgan": "1.8.1",
     "multer": "0.1.8",
     "mysql": "2.13.0",
     "newrelic": "1.39.1",
@@ -40,7 +41,9 @@
     "sequelize": "3.30.4",
     "sequelize-cli": "1.9.2",
     "serve-favicon": "2.4.3",
-    "sha.js": "2.4.8"
+    "sha.js": "2.4.8",
+    "winston": "2.3.1",
+    "winston-aws-cloudwatch": "1.5.0"
   },
   "devDependencies": {
     "chai": "3.5.0",
