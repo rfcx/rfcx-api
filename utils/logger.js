@@ -15,6 +15,11 @@
   You can log messages using .log method on each of types (e.g. debugLogger.log('text', { req: req, foo: bar }))
 */
 
+process.env.NODE_LOG_LEVEL = 'debug';
+process.env.CLOUDWATCH_LOGS_GROUP_NAME = 'rfcx-api-staging';
+process.env.CLOUDWATCH_ENABLED = 'true';
+
+
 var winston = require('winston');
 var cloudWatchTransport = require('winston-aws-cloudwatch')
 
