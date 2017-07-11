@@ -36,10 +36,10 @@ router.route("/:guardian_id/checkins")
 
         // during development, we dump the meta json to the console (ultra verbose)
         if (verbose_logging) { console.log(json); }
-        
+
         // retrieve the guardian from the database
         models.Guardian
-          .findOne({ 
+          .findOne({
             where: { guid: req.params.guardian_id }
         }).then(function(dbGuardian){
 
@@ -93,7 +93,7 @@ router.route("/:guardian_id/checkins")
                   returnJson.messages.push({ id: rtrnMessageInfo.android_id, guid: rtrnMessageInfo.guid });
                 });
             }
-            
+
             // parse, review and save screenshots
             var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(json.screenshots,"|","*"), dbGuardian.id, dbGuardian.guid, dbCheckIn.id);
             for (screenShotInfoInd in screenShotInfo) {
@@ -121,7 +121,7 @@ router.route("/:guardian_id/checkins")
 
             // parse, review and save audio
             var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(json.audio,"|","*"), dbGuardian, dbCheckIn);
-            
+
             for (audioInfoInd in audioInfo) {
               checkInHelpers.audio.processUpload(audioInfo[audioInfoInd]).then(function(audioInfoPostUpload){
                 checkInHelpers.audio.saveToS3(audioInfoPostUpload).then(function(audioInfoPostS3Save){
@@ -153,7 +153,7 @@ router.route("/:guardian_id/checkins")
                 if (!!err) { res.status(500).json({msg:"error processing audio upload file"}); }
               });
             }
-            
+
 
           }).catch(function(err){
             console.log("error adding checkin to database | "+err);
@@ -178,7 +178,7 @@ router.route("/:guardian_id/checkins")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
@@ -189,9 +189,9 @@ router.route("/:guardian_id/checkins")
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
         models.GuardianCheckIn
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
@@ -228,9 +228,9 @@ function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
     // LEGACY TIMESTAMP FORMAT
     asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
   } else if (timeStamp != null) {
-    
+
     asDate = new Date(parseInt(timeStamp));
-  
+
   }
   return asDate;
 }
