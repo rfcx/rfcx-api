@@ -272,7 +272,7 @@ exports.saveMeta = {
               })
               .spread(function(dbMetaSoftware, wasCreated){
                 dbMetaSoftware.updated_at = new Date();
-                dbMetaSoftware.save();
+                return dbMetaSoftware.save();
               });
           }
           return true;
