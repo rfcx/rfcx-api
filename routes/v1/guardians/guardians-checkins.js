@@ -160,6 +160,10 @@ router.route("/:guardian_id/checkins")
       .then(function() {
         loggers.debugLogger.log('Guardian checkins endpoint: return json', { req: req, json: returnJson });
         return res.status(200).json(returnJson);
+      })
+      .catch(function(err) {
+        loggers.errorLogger.log('Failed to save checkin', { req: req, err: err });
+        httpError(res, 500, err, 'failed to save checkin');
       });
   })
 ;
