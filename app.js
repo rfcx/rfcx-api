@@ -20,7 +20,8 @@ var express = require("express"),
     cors = require("cors"),
     bodyParser = require("body-parser"),
     addRequestId = require('express-request-id'),
-    addInstanceId = require('./middleware/misc/aws').addInstanceId;
+    addInstanceId = require('./middleware/misc/aws').addInstanceId,
+    toobusy = require('toobusy-js');
     app = express();
 
 app.set("title", "rfcx-api");
@@ -53,6 +54,15 @@ app.use(expressWinston.logger({
     return false;
   },
 }))
+app.use(function(req, res, next) {
+  if (toobusy()) {
+    loggers.errorLogger.log('Server is too busy to handle request', { req: req, info: {
+      url: req.url,
+      body: req.body
+    }});
+  }
+  next();
+});
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(multer(require("./config/multer").config(process.env)));
