@@ -127,6 +127,7 @@ router.route("/:guardian_id/checkins")
         return Promise.all(proms);
       })
       .then(function() {
+        var self = this;
         // parse, review and save audio
         var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio,"|","*"),
                                                   this.dbGuardian, this.dbCheckIn);
@@ -147,8 +148,8 @@ router.route("/:guardian_id/checkins")
             .then(function(audioInfoPostQueue){
               this.audioInfoPostQueue = audioInfoPostQueue;
               returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
-              this.dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
-              return this.dbCheckIn.save();
+              self.dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
+              return self.dbCheckIn.save();
             })
             .then(function() {
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
