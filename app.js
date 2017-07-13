@@ -72,45 +72,68 @@ app.use(passport.initialize());
 // Define/Load Routes
 var routes = {
   "v1": {
-    "guardians": [  require("./routes/v1/guardians/guardians"),
-                    require("./routes/v1/guardians/guardians-software"),
-                    require("./routes/v1/guardians/guardians-checkins"),
-                    require("./routes/v1/guardians/guardians-audio"),
-                    require("./routes/v1/guardians/guardians-audio-analysis"),
-                    require("./routes/v1/guardians/guardians-audio-uploads"),
-                    require("./routes/v1/guardians/guardians-events"),
-                    require("./routes/v1/guardians/guardians-meta"),
-                    require("./routes/v1/guardians/guardians-screenshots"),
-                    require("./routes/v1/guardians/guardians-status"),
-                    require("./routes/v1/guardians/guardians-coverage")
-                  ],
-    "sites":  [ require("./routes/v1/sites/sites"),
-                require("./routes/v1/sites/sites-audio"),
-                require("./routes/v1/sites/sites-guardians"),
-                require("./routes/v1/sites/sites-events"),
-                require("./routes/v1/sites/sites-images")
-              ],
-    "audio": [  require("./routes/v1/audio/audio"),
-                require("./routes/v1/audio/audio-collections"),
-                require("./routes/v1/audio/audio-tags")
-              ],
-    "analysis": [  require("./routes/v1/analysis/analysis"),
-                   require("./routes/v1/analysis/audio-analysis-training-set")
-                ],
-    "users": [ require("./routes/v1/users/users") ],
-    "events": [ require("./routes/v1/events/events") ],
-    "shortlinks": [ require("./routes/v1/shortlinks/shortlinks") ],
-    "player": [ require("./routes/v1/player/player") ],
-    "assets": [ require("./routes/v1/assets/assets") ],
-    "reports": [ require("./routes/v1/reports/reports")],
-
-      "tags": [require("./routes/v1/tags/tags")],
-
-      "datafilters": [require("./routes/v1/datafilters/datafilters")],
-    "sensations": [require("./routes/v1/sensations/sensations")],
-    "perceptions": [require("./routes/v1/perceptions/perceptions-ai")],
-    "messages": [require("./routes/v1/messages/messages")]
-
+    "guardians": [
+      require("./routes/v1/guardians/guardians"),
+      require("./routes/v1/guardians/guardians-software"),
+      require("./routes/v1/guardians/guardians-checkins"),
+      require("./routes/v1/guardians/guardians-audio"),
+      require("./routes/v1/guardians/guardians-audio-analysis"),
+      require("./routes/v1/guardians/guardians-audio-uploads"),
+      require("./routes/v1/guardians/guardians-events"),
+      require("./routes/v1/guardians/guardians-meta"),
+      require("./routes/v1/guardians/guardians-screenshots"),
+      require("./routes/v1/guardians/guardians-status"),
+      require("./routes/v1/guardians/guardians-coverage"),
+    ],
+    "sites": [
+      require("./routes/v1/sites/sites"),
+      require("./routes/v1/sites/sites-audio"),
+      require("./routes/v1/sites/sites-guardians"),
+      require("./routes/v1/sites/sites-events"),
+      require("./routes/v1/sites/sites-images"),
+    ],
+    "audio": [
+      require("./routes/v1/audio/audio"),
+      require("./routes/v1/audio/audio-collections"),
+      require("./routes/v1/audio/audio-tags"),
+    ],
+    "analysis": [
+      require("./routes/v1/analysis/analysis"),
+      require("./routes/v1/analysis/audio-analysis-training-set"),
+    ],
+    "users": [
+      require("./routes/v1/users/users"),
+    ],
+    "events": [
+      require("./routes/v1/events/events"),
+    ],
+    "shortlinks": [
+      require("./routes/v1/shortlinks/shortlinks"),
+    ],
+    "player": [
+      require("./routes/v1/player/player"),
+    ],
+    "assets": [
+      require("./routes/v1/assets/assets"),
+    ],
+    "reports": [
+      require("./routes/v1/reports/reports"),
+    ],
+    "tags": [
+      require("./routes/v1/tags/tags"),
+    ],
+    "datafilters": [
+      require("./routes/v1/datafilters/datafilters"),
+    ],
+    "sensations": [
+      require("./routes/v1/sensations/sensations"),
+    ],
+    "perceptions": [
+      require("./routes/v1/perceptions/perceptions-ai"),
+    ],
+    "messages": [
+      require("./routes/v1/messages/messages"),
+    ],
   },
   "v2": {
   }
