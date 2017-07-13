@@ -179,7 +179,9 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-  res.status(err.status || 500).json({
+  var status = err.status || 500;
+  loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err });
+  res.status(status).json({
     message: err.message,
     error: err
   });
