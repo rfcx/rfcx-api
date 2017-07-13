@@ -13,8 +13,7 @@ var checkInHelpers = require("../../../utils/rfcx-checkin");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
-var Promise = require('bluebird');
-var loggers = require('../../../utils/logger');
+
 
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
@@ -30,141 +29,148 @@ router.route("/:guardian_id/checkins")
       }
     };
 
+
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.meta)
-      .bind({})
       .then(function(json){
-        this.json = json;
-        loggers.debugLogger.log('Guardian checkins endpoint: unzipped json', { req: req, json: json });
+
+        // during development, we dump the meta json to the console (ultra verbose)
+        if (verbose_logging) { console.log(json); }
+        
         // retrieve the guardian from the database
-        return models.Guardian.findOne({
-          where: { guid: req.params.guardian_id }
-        });
-      })
-      .then(function(dbGuardian){
-        // TODO - move into helper method
-        dbGuardian.last_check_in = new Date();
-        dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
-        return dbGuardian.save();
-      })
-      .then((dbGuardian) => {
-        // reload model
-        return dbGuardian.reload();
-      })
-      .then(function(dbGuardian) {
-        this.dbGuardian = dbGuardian;
+        models.Guardian
+          .findOne({ 
+            where: { guid: req.params.guardian_id }
+        }).then(function(dbGuardian){
+
+          // TO DO - move into helper method
+          dbGuardian.last_check_in = new Date();
+          dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
+          dbGuardian.save();
+
           // add a new checkin to the database
-        return models.GuardianCheckIn
-          .create({
-            guardian_id: dbGuardian.id,
-            site_id: dbGuardian.site_id,
-            measured_at: timeStampToDate(this.json.measured_at, this.json.timezone_offset),
-            queued_at: timeStampToDate(this.json.queued_at, this.json.timezone_offset),
-            guardian_queued_checkins: parseInt(this.json.queued_checkins),
-            guardian_skipped_checkins: parseInt(this.json.skipped_checkins),
-            guardian_stashed_checkins: parseInt(this.json.stashed_checkins),
-            is_certified: dbGuardian.is_certified
-        });
-      })
-      .then(function(dbCheckIn){
-        this.dbCheckIn = dbCheckIn;
-        // set checkin guid on global json return object
-        returnJson.checkin_id = dbCheckIn.guid;
-        // save guardian meta data
-        return Promise.all([
-          checkInHelpers.saveMeta.DataTransfer(strArrToJSArr(this.json.data_transfer,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.CPU(strArrToJSArr(this.json.cpu,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.Battery(strArrToJSArr(this.json.battery,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.Power(strArrToJSArr(this.json.power,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.Network(strArrToJSArr(this.json.network,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.Offline(strArrToJSArr(this.json.offline,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.LightMeter(strArrToJSArr(this.json.lightmeter,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.Accelerometer(strArrToJSArr(this.json.accelerometer,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.DiskUsage(strArrToJSArr(this.json.disk_usage,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.GeoLocation(strArrToJSArr(this.json.location,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-        ]);
-      })
-      .then(function() {
-        // save reboot events
-        return checkInHelpers.saveMeta.RebootEvents(strArrToJSArr(this.json.reboots,"|","*"), this.dbGuardian.id, this.dbCheckIn.id);
-      })
-      .then(function() {
-        // save software role versions
-        return checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(this.json.software,"|","*"), this.dbGuardian.id);
-      })
-      .then(function() {
-        // update previous checkin info, if included
-        return checkInHelpers.saveMeta.PreviousCheckIns(strArrToJSArr(this.json.previous_checkins,"|","*"));
-      })
-      .then(function() {
-        // parse, review and save sms messages
-        var messageInfo = checkInHelpers.messages.info(this.json.messages, this.dbGuardian.id, this.dbCheckIn.id,
-                                                       this.json.timezone_offset);
-        var proms = [];
-        for (msgInfoInd in messageInfo) {
-          var prom = checkInHelpers.messages
-            .save(messageInfo[msgInfoInd])
-            .then(function(rtrnMessageInfo){
-              return returnJson.messages.push({ id: rtrnMessageInfo.android_id, guid: rtrnMessageInfo.guid });
-            });
-          proms.push(prom);
-        }
-        return Promise.all(proms);
-      })
-      .then(function() {
-        // parse, review and save screenshots
-        var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(this.json.screenshots,"|","*"),
-                                                             this.dbGuardian.id, this.dbGuardian.guid, this.dbCheckIn.id);
-        var proms = [];
-        for (screenShotInfoInd in screenShotInfo) {
-          var prom = checkInHelpers.screenshots
-            .save(screenShotInfo[screenShotInfoInd])
-            .then(function(rtrnScreenShotInfo){
-              return returnJson.screenshots.push({ id: rtrnScreenShotInfo.origin_id, guid: rtrnScreenShotInfo.screenshot_id });
-            });
-          proms.push(prom);
-        }
-        return Promise.all(proms);
-      })
-      .then(function() {
-        // parse, review and save audio
-        var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio,"|","*"),
-                                                  this.dbGuardian, this.dbCheckIn);
-        var proms = [];
-        for (audioInfoInd in audioInfo) {
-          var prom = checkInHelpers.audio
-            .processUpload(audioInfo[audioInfoInd])
-            .bind({})
-            .then(function(audioInfoPostUpload){
-              return checkInHelpers.audio.saveToS3(audioInfoPostUpload)
-            })
-            .then(function(audioInfoPostS3Save){
-              return checkInHelpers.audio.saveToDb(audioInfoPostS3Save)
-            })
-            .then(function(audioInfoPostDbSave){
-              return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave)
-            })
-            .then(function(audioInfoPostQueue){
-              this.audioInfoPostQueue = audioInfoPostQueue;
-              returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
-              this.dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
-              return this.dbCheckIn.save();
-            })
-            .then(function() {
-              return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
-            });
-          proms.push(prom);
-        }
-        return Promise.all(proms);
-      })
-      .then(function() {
-        loggers.debugLogger.log('Guardian checkins endpoint: return json', { req: req, json: returnJson });
-        return res.status(200).json(returnJson);
-      })
-      .catch(function(err) {
-        loggers.errorLogger.log('Failed to save checkin', { req: req, err: err });
-        httpError(res, 500, err, 'failed to save checkin');
+          models.GuardianCheckIn
+            .create({
+              guardian_id: dbGuardian.id,
+              site_id: dbGuardian.site_id,
+              measured_at: timeStampToDate(json.measured_at, json.timezone_offset),
+              queued_at: timeStampToDate(json.queued_at, json.timezone_offset),
+              guardian_queued_checkins: parseInt(json.queued_checkins),
+              guardian_skipped_checkins: parseInt(json.skipped_checkins),
+              guardian_stashed_checkins: parseInt(json.stashed_checkins),
+              is_certified: dbGuardian.is_certified
+          }).then(function(dbCheckIn){
+
+            // set checkin guid on global json return object
+            returnJson.checkin_id = dbCheckIn.guid;
+
+            // save guardian meta data
+            checkInHelpers.saveMeta.DataTransfer(strArrToJSArr(json.data_transfer,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.CPU(strArrToJSArr(json.cpu,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Battery(strArrToJSArr(json.battery,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Power(strArrToJSArr(json.power,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Network(strArrToJSArr(json.network,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Offline(strArrToJSArr(json.offline,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.LightMeter(strArrToJSArr(json.lightmeter,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.Accelerometer(strArrToJSArr(json.accelerometer,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.DiskUsage(strArrToJSArr(json.disk_usage,"|","*"), dbGuardian.id, dbCheckIn.id);
+            checkInHelpers.saveMeta.GeoLocation(strArrToJSArr(json.location,"|","*"), dbGuardian.id, dbCheckIn.id);
+
+            // save reboot events
+            checkInHelpers.saveMeta.RebootEvents(strArrToJSArr(json.reboots,"|","*"), dbGuardian.id, dbCheckIn.id);
+
+            // save software role versions
+            checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(json.software,"|","*"), dbGuardian.id);
+
+            // update previous checkin info, if included
+            checkInHelpers.saveMeta.PreviousCheckIns(strArrToJSArr(json.previous_checkins,"|","*"));
+
+            // parse, review and save sms messages
+            var messageInfo = checkInHelpers.messages.info(json.messages, dbGuardian.id, dbCheckIn.id, json.timezone_offset);
+            for (msgInfoInd in messageInfo) {
+              checkInHelpers.messages.save(messageInfo[msgInfoInd])
+                .then(function(rtrnMessageInfo){
+                  returnJson.messages.push({ id: rtrnMessageInfo.android_id, guid: rtrnMessageInfo.guid });
+                });
+            }
+            
+            // parse, review and save screenshots
+            var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(json.screenshots,"|","*"), dbGuardian.id, dbGuardian.guid, dbCheckIn.id);
+            for (screenShotInfoInd in screenShotInfo) {
+              checkInHelpers.screenshots.save(screenShotInfo[screenShotInfoInd])
+                .then(function(rtrnScreenShotInfo){
+                  returnJson.screenshots.push({ id: rtrnScreenShotInfo.origin_id, guid: rtrnScreenShotInfo.screenshot_id });
+                });
+            }
+
+            // add messages instructions
+            // returnJson.instructions.messages.push({
+            //   body: "From  "+dbGuardian.guid,
+            //   address: "+14153359205",
+            //   guid: "guid goes here"
+            // });
+
+
+            // TO DO - move into helper method
+            // add prefs instructions as set in database
+            for (guardianInd in dbGuardian.dataValues) {
+              if ((guardianInd.substr(0,6) === "prefs_") && (dbGuardian.dataValues[guardianInd] != null)) {
+           //     returnJson.instructions.prefs[guardianInd.substr(6)] = dbGuardian.dataValues[guardianInd];
+              }
+            }
+
+            // parse, review and save audio
+            var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(json.audio,"|","*"), dbGuardian, dbCheckIn);
+            
+            for (audioInfoInd in audioInfo) {
+              checkInHelpers.audio.processUpload(audioInfo[audioInfoInd]).then(function(audioInfoPostUpload){
+                checkInHelpers.audio.saveToS3(audioInfoPostUpload).then(function(audioInfoPostS3Save){
+                  checkInHelpers.audio.saveToDb(audioInfoPostS3Save).then(function(audioInfoPostDbSave){
+                    checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave).then(function(audioInfoPostQueue){
+
+                        returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
+
+                        dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
+                        dbCheckIn.save();
+                        if (verbose_logging) { console.log(returnJson); }
+                        res.status(200).json(returnJson);
+
+                        checkInHelpers.audio.extractAudioFileMeta(audioInfoPostQueue);
+                    }).catch(function(err){
+                      checkInHelpers.audio.rollBackCheckIn(audioInfoPostDbSave);
+                      if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
+                    });
+                  }).catch(function(err){
+                    checkInHelpers.audio.rollBackCheckIn(audioInfoPostS3Save);
+                    if (!!err) { res.status(500).json({msg:"error adding audio to database"}); }
+                  });
+                }).catch(function(err){
+                  checkInHelpers.audio.rollBackCheckIn(audioInfoPostUpload);
+                  if (!!err) { res.status(500).json({msg:"error saving audio to s3"}); }
+                });
+              }).catch(function(err){
+                checkInHelpers.audio.rollBackCheckIn(audioInfo[audioInfoInd]);
+                if (!!err) { res.status(500).json({msg:"error processing audio upload file"}); }
+              });
+            }
+            
+
+          }).catch(function(err){
+            console.log("error adding checkin to database | "+err);
+            if (!!err) { httpError(res, 500, "database"); }
+          });
+
+      // if we can't find the guardian referenced in the checkin request
+      }).catch(function(err){
+        console.log("failed to find guardian | "+err);
+        if (!!err) { httpError(res, 404, "database"); }
       });
+
+    // catch error on unzipping of gzipped meta json
+    }).catch(function(gZipErr){
+      httpError(res, 500, "parse");
+    });
+
   })
 ;
 
@@ -172,7 +178,7 @@ router.route("/:guardian_id/checkins")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({
+      .findOne({ 
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
@@ -183,9 +189,9 @@ router.route("/:guardian_id/checkins")
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
         models.GuardianCheckIn
-          .findAll({
-            where: dbQuery,
-            include: [ { all: true } ],
+          .findAll({ 
+            where: dbQuery, 
+            include: [ { all: true } ], 
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
@@ -222,9 +228,9 @@ function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
     // LEGACY TIMESTAMP FORMAT
     asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
   } else if (timeStamp != null) {
-
+    
     asDate = new Date(parseInt(timeStamp));
-
+  
   }
   return asDate;
 }

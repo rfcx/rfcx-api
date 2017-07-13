@@ -26,14 +26,6 @@ var logLevel = determineLogLevel(),
 winston.emitErrs = true;
 winston.level = logLevel;
 
-// winston ignores error objects (WTF?!), so we need to reformat them to stay tuned
-function errorAsJSON(e) {
-  return {
-    message: e.message,
-    stack: e.stack
-  }
-}
-
 /**
  * Creates Winston CloudWatchLogs transport with given logGroupName and logStreamName
  * @param {String} logGroupName
@@ -75,19 +67,9 @@ function createLoggerWrapper(winstonLogger, type) {
     log: function(message, opts) {
       var meta = opts || {};
       if (meta.req) {
-        meta.reqGuid = meta.req.guid;
-        meta.instance = meta.req.instance;
+        meta['req-guid'] = meta.req.guid;
+        meta['instance'] = meta.req.instance;
         delete meta.req;
-      }
-      // err, error, e - whatever user would like to send. all error names will be parsed
-      if (meta.err) {
-        meta.err = errorAsJSON(meta.err);
-      }
-      if (meta.error) {
-        meta.error = errorAsJSON(meta.error);
-      }
-      if (meta.e) {
-        meta.e = errorAsJSON(meta.e);
       }
       switch (type) {
         case 'debug':
