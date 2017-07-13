@@ -15,6 +15,9 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
+var sequelize = require("sequelize");
+
+var logDebug = loggers.debugLogger.log;
 
 router.route("/:guardian_id/checkins")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
@@ -35,23 +38,33 @@ router.route("/:guardian_id/checkins")
       .bind({})
       .then(function(json){
         this.json = json;
-        loggers.debugLogger.log('Guardian checkins endpoint: unzipped json', { req: req, json: json });
+        logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json });
         // retrieve the guardian from the database
         return models.Guardian.findOne({
           where: { guid: req.params.guardian_id }
         });
       })
       .then(function(dbGuardian){
-        // TODO - move into helper method
+        if (!dbGuardian) {
+          loggers.errorLogger.log('Guardian with given guid not found', { req: req });
+          throw new sequelize.EmptyResultError('Guardian with given guid not found.');
+        }
+        logDebug('Guardian checkins endpoint: dbGuardian founded', {
+          req: req,
+          guardian: Object.assign({}, dbGuardian.toJSON()),
+        });
         dbGuardian.last_check_in = new Date();
-        dbGuardian.check_in_count = 1+dbGuardian.check_in_count;
+        dbGuardian.check_in_count = 1 + dbGuardian.check_in_count;
         return dbGuardian.save();
       })
       .then((dbGuardian) => {
-        // reload model
         return dbGuardian.reload();
       })
       .then(function(dbGuardian) {
+        logDebug('Guardian checkins endpoint: dbGuardian updated', {
+          req: req,
+          guardian: Object.assign({}, dbGuardian.toJSON()),
+        });
         this.dbGuardian = dbGuardian;
           // add a new checkin to the database
         return models.GuardianCheckIn
@@ -67,6 +80,10 @@ router.route("/:guardian_id/checkins")
         });
       })
       .then(function(dbCheckIn){
+        logDebug('Guardian checkins endpoint: dbCheckIn created', {
+          req: req,
+          guardian: dbCheckIn.toJSON(),
+        });
         this.dbCheckIn = dbCheckIn;
         // set checkin guid on global json return object
         returnJson.checkin_id = dbCheckIn.guid;
@@ -85,26 +102,40 @@ router.route("/:guardian_id/checkins")
         ]);
       })
       .then(function() {
+        logDebug('Guardian checkins endpoint: metadata saved', { req: req });
         // save reboot events
         return checkInHelpers.saveMeta.RebootEvents(strArrToJSArr(this.json.reboots,"|","*"), this.dbGuardian.id, this.dbCheckIn.id);
       })
       .then(function() {
+        logDebug('Guardian checkins endpoint: RebootEvents finished', { req: req });
         // save software role versions
         return checkInHelpers.saveMeta.SoftwareRoleVersion(strArrToJSArr(this.json.software,"|","*"), this.dbGuardian.id);
       })
       .then(function() {
+        logDebug('Guardian checkins endpoint: SoftwareRoleVersion finished', { req: req });
         // update previous checkin info, if included
         return checkInHelpers.saveMeta.PreviousCheckIns(strArrToJSArr(this.json.previous_checkins,"|","*"));
       })
       .then(function() {
+        logDebug('Guardian checkins endpoint: PreviousCheckIns finished', { req: req });
         // parse, review and save sms messages
         var messageInfo = checkInHelpers.messages.info(this.json.messages, this.dbGuardian.id, this.dbCheckIn.id,
                                                        this.json.timezone_offset);
+        logDebug('Guardian checkins endpoint: messageInfo', { req: req, messageInfo: messageInfo });
         var proms = [];
         for (msgInfoInd in messageInfo) {
+          logDebug('Guardian checkins endpoint: started processing message ' + msgInfoInd, {
+            req: req,
+            msgInfoInd: msgInfoInd
+          });
           var prom = checkInHelpers.messages
             .save(messageInfo[msgInfoInd])
             .then(function(rtrnMessageInfo){
+              logDebug('Guardian checkins endpoint: message save finished', {
+                req: req,
+                msgInfoInd: msgInfoInd,
+                rtrnMessageInfo: rtrnMessageInfo,
+              });
               return returnJson.messages.push({ id: rtrnMessageInfo.android_id, guid: rtrnMessageInfo.guid });
             });
           proms.push(prom);
@@ -112,14 +143,25 @@ router.route("/:guardian_id/checkins")
         return Promise.all(proms);
       })
       .then(function() {
+        logDebug('Guardian checkins endpoint: messages processed', { req: req });
         // parse, review and save screenshots
         var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(this.json.screenshots,"|","*"),
                                                              this.dbGuardian.id, this.dbGuardian.guid, this.dbCheckIn.id);
+        logDebug('Guardian checkins endpoint: screenShotInfo', { req: req, screenShotInfo: screenShotInfo });
         var proms = [];
         for (screenShotInfoInd in screenShotInfo) {
+          logDebug('Guardian checkins endpoint: started processing screenshot ' + screenShotInfoInd, {
+            req: req,
+            screenShotInfoInd: screenShotInfoInd
+          });
           var prom = checkInHelpers.screenshots
             .save(screenShotInfo[screenShotInfoInd])
             .then(function(rtrnScreenShotInfo){
+              logDebug('Guardian checkins endpoint: screenshot save finished', {
+                req: req,
+                screenShotInfoInd: screenShotInfoInd,
+                rtrnScreenShotInfo: rtrnScreenShotInfo,
+              });
               return returnJson.screenshots.push({ id: rtrnScreenShotInfo.origin_id, guid: rtrnScreenShotInfo.screenshot_id });
             });
           proms.push(prom);
@@ -127,31 +169,61 @@ router.route("/:guardian_id/checkins")
         return Promise.all(proms);
       })
       .then(function() {
+        logDebug('Guardian checkins endpoint: screenshots processed', { req: req });
         var self = this;
         // parse, review and save audio
         var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio,"|","*"),
                                                   this.dbGuardian, this.dbCheckIn);
+        logDebug('Guardian checkins endpoint: audioInfo', { req: req, audioInfo: audioInfo });
         var proms = [];
         for (audioInfoInd in audioInfo) {
+          logDebug('Guardian checkins endpoint: started processing audio ' + audioInfoInd, {
+            req: req,
+            audioInfoInd: audioInfoInd
+          });
           var prom = checkInHelpers.audio
             .processUpload(audioInfo[audioInfoInd])
             .bind({})
             .then(function(audioInfoPostUpload){
+              logDebug('Guardian checkins endpoint: processUpload finished', {
+                req: req,
+                audioInfoInd: audioInfoInd,
+                audioInfoPostUpload: audioInfoPostUpload,
+              });
               return checkInHelpers.audio.saveToS3(audioInfoPostUpload)
             })
             .then(function(audioInfoPostS3Save){
+              logDebug('Guardian checkins endpoint: saveToS3 finished', {
+                req: req,
+                audioInfoInd: audioInfoInd,
+                audioInfoPostS3Save: audioInfoPostS3Save,
+              });
               return checkInHelpers.audio.saveToDb(audioInfoPostS3Save)
             })
             .then(function(audioInfoPostDbSave){
+              logDebug('Guardian checkins endpoint: saveToDb finished', {
+                req: req,
+                audioInfoInd: audioInfoInd,
+                audioInfoPostDbSave: audioInfoPostDbSave,
+              });
               return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave)
             })
             .then(function(audioInfoPostQueue){
+              logDebug('Guardian checkins endpoint: queueForTaggingByActiveModels finished', {
+                req: req,
+                audioInfoInd: audioInfoInd,
+                audioInfoPostQueue: audioInfoPostQueue,
+              });
               this.audioInfoPostQueue = audioInfoPostQueue;
               returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid });
               self.dbCheckIn.request_latency_api = (new Date()).valueOf()-req.rfcx.request_start_time;
               return self.dbCheckIn.save();
             })
             .then(function() {
+              logDebug('Guardian checkins endpoint: request_latency_api updated', {
+                req: req,
+                audioInfoInd: audioInfoInd,
+              });
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
             });
           proms.push(prom);
@@ -159,7 +231,8 @@ router.route("/:guardian_id/checkins")
         return Promise.all(proms);
       })
       .then(function() {
-        loggers.debugLogger.log('Guardian checkins endpoint: return json', { req: req, json: returnJson });
+        logDebug('Guardian checkins endpoint: audios processed', { req: req });
+        logDebug('Guardian checkins endpoint: return json', { req: req, json: returnJson });
         return res.status(200).json(returnJson);
       })
       .catch(function(err) {
