@@ -8,6 +8,7 @@ var passport = require("passport");
 var httpError = require("../../../utils/http-errors.js");
 var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var loggers = require('../../../utils/logger');
 
 router.route("/:audio_id/tags")
   .post(passport.authenticate("token",{session:false}), function(req, res) {
@@ -159,8 +160,8 @@ router.route("/:audio_id/tags")
         res.status(200).json([]);
       })
       .catch(function(err){
-        console.log("failed to save tags | ", err);
-        if (!!err) { res.status(404).json({ message: err.message || "Failed to save tags", error: { status: 500 } }); }
+        loggers.errorLogger.log('Failed to save tags', { req: req, err: err });
+        httpError(res, 500, err, 'Failed to save tags');
       });
 
   })
