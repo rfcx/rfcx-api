@@ -11,7 +11,7 @@ router.route("/:guardian_id/audio")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
@@ -23,16 +23,16 @@ router.route("/:guardian_id/audio")
         var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
 
         return models.GuardianAudio
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, dbQueryOrder] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
           }).then(function(dbAudio){
 
             if (dbAudio.length < 1) {
-              httpError(res, 404, "database");
+              httpError(req, res, 404, "database");
             } else {
               views.models.guardianAudioJson(req,res,dbAudio)
                 .then(function(json){ res.status(200).json(json); });

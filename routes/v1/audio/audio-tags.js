@@ -21,12 +21,12 @@ router.route("/:audio_id/tags")
     }
     catch (e) {
       loggers.warnLogger.log('Audio tags endpoint: invalid json data', { req: req });
-      return httpError(res, 400, null, 'Failed to parse json data');
+      return httpError(req, res, 400, null, 'Failed to parse json data');
     }
 
     if (!analysisResults.results || !analysisResults.results.length) {
       loggers.warnLogger.log('Audio tags endpoint: request payload doesn\'t contain tags', { req: req });
-      return httpError(res, 400, null, 'Request payload doesn\'t contain tags');
+      return httpError(req, res, 400, null, 'Request payload doesn\'t contain tags');
     }
 
     return models.GuardianAudio
@@ -201,11 +201,11 @@ router.route("/:audio_id/tags")
       })
       .catch(sequelize.EmptyResultError, function(err) {
         loggers.errorLogger.log('Failed to save tags', { req: req, err: err });
-        httpError(res, 404, null, err.message);
+        httpError(req, res, 404, null, err.message);
       })
       .catch(function(err){
         loggers.errorLogger.log('Failed to save tags', { req: req, err: err });
-        httpError(res, 500, err, 'Failed to save tags');
+        httpError(req, res, 500, err, 'Failed to save tags');
       });
 
   })

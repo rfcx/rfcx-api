@@ -129,12 +129,10 @@ router.route("/:guardian_id/software/:software_role")
         );
       })
       .catch(sequelize.EmptyResultError, function(err) {
-        loggers.errorLogger.log('Failed to get latest software versions', { req: req, err: err });
-        httpError(res, 404, null, err.message);
+        httpError(req, res, 404, null, err.message);
       })
       .catch(function(err) {
-        loggers.errorLogger.log('Failed to get latest software versions', { req: req, err: err });
-        httpError(res, 500, err, 'Failed to get latest software versions');
+        httpError(req, res, 500, err, 'Failed to get latest software versions');
       });
   })
 ;

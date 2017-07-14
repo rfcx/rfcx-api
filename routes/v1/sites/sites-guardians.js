@@ -11,23 +11,23 @@ router.route("/:site_id/guardians")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianSite
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.site_id }
       }).then(function(dbSite){
 
         var dbQuery = { site_id: dbSite.id };
 
         return models.Guardian
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ ["last_check_in", "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
           }).then(function(dbGuardians){
 
             if (dbGuardians.length < 1) {
-              httpError(res, 404, "database");
+              httpError(req, res, 404, "database");
             } else {
               res.status(200).json(views.models.guardian(req,res,dbGuardians));
             }

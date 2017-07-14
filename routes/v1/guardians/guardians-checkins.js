@@ -237,11 +237,11 @@ router.route("/:guardian_id/checkins")
       })
       .catch(sequelize.EmptyResultError, function(err) {
         loggers.errorLogger.log('Failed to save checkin', { req: req, err: err });
-        httpError(res, 404, null, err.message);
+        httpError(req, res, 404, null, err.message);
       })
       .catch(function(err) {
         loggers.errorLogger.log('Failed to save checkin', { req: req, err: err });
-        httpError(res, 500, err, 'failed to save checkin');
+        httpError(req, res, 500, err, 'failed to save checkin');
       });
   })
 ;
@@ -270,7 +270,7 @@ router.route("/:guardian_id/checkins")
           }).then(function(dbCheckIn){
 
             if (dbCheckIn.length < 1) {
-              httpError(res, 404, "database");
+              httpError(req, res, 404, "database");
             } else {
               views.models.guardianCheckIns(req,res,dbCheckIn)
                 .then(function(json){ res.status(200).json(json); });
@@ -278,12 +278,12 @@ router.route("/:guardian_id/checkins")
 
           }).catch(function(err){
             console.log(err);
-            if (!!err) { httpError(res, 500, "database"); }
+            if (!!err) { httpError(req, res, 500, "database"); }
           });
 
       }).catch(function(err){
         console.log(err);
-        if (!!err) { httpError(res, 500, "database"); }
+        if (!!err) { httpError(req, res, 500, "database"); }
       });
 
   })
