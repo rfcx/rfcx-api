@@ -13,6 +13,9 @@ var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var loggers = require('../../../utils/logger');
+var sequelize = require("sequelize");
+
+var logDebug = loggers.debugLogger.log;
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)
@@ -32,12 +35,28 @@ router.route("/:guardian_id/software/:software_role")
       })
       .bind({})
       .then(function(dbGuardian) {
+        if (!dbGuardian) {
+          loggers.errorLogger.log('Guardian with given guid not found', { req: req });
+          throw new sequelize.EmptyResultError('Guardian with given guid not found.');
+        }
+        logDebug('Guardian software endpoint: dbGuardian founded', {
+          req: req,
+          guardian: Object.assign({}, dbGuardian.toJSON()),
+        });
         this.dbGuardian = dbGuardian;
         return models.GuardianSoftware.findOne({
           where: { role: req.query.role }
         });
       })
       .then(function(dbSoftware) {
+        if (!dbSoftware) {
+          loggers.errorLogger.log('Software with given guid not found', { req: req });
+          throw new sequelize.EmptyResultError('Software with given guid not found.');
+        }
+        logDebug('Guardian software endpoint: dbSoftware founded', {
+          req: req,
+          software: Object.assign({}, dbSoftware.toJSON()),
+        });
         this.dbSoftware = dbSoftware;
         return models.GuardianSoftwareVersion.findOne({
           where: {
@@ -47,13 +66,25 @@ router.route("/:guardian_id/software/:software_role")
         });
       })
       .then(function(dbSoftwareVersion) {
+        if (!dbSoftwareVersion) {
+          loggers.errorLogger.log('SoftwareVersion with given guid not found', { req: req });
+          throw new sequelize.EmptyResultError('SoftwareVersion with given guid not found.');
+        }
+        logDebug('Guardian software endpoint: dbSoftwareVersion founded', {
+          req: req,
+          softwareVersion: Object.assign({}, dbSoftwareVersion.toJSON()),
+        });
         return models.GuardianMetaUpdateCheckIn.create({
           guardian_id: this.dbGuardian.id,
           version_id: dbSoftwareVersion.id,
           role_id: this.dbSoftware.id
         });
       })
-      .then(function(){
+      .then(function(dbGuardianMetaUpdateCheckIn){
+        logDebug('Guardian software endpoint: dbGuardianMetaUpdateCheckIn created', {
+          req: req,
+          checkin: Object.assign({}, dbGuardianMetaUpdateCheckIn.toJSON()),
+        });
         return models.GuardianMetaBattery.create({
           guardian_id: this.dbGuardian.id,
           check_in_id: null,
@@ -62,7 +93,11 @@ router.route("/:guardian_id/software/:software_role")
           battery_temperature: null
         });
       })
-      .then(function() {
+      .then(function(dbGuardianMetaBattery) {
+        logDebug('Guardian software endpoint: dbGuardianMetaBattery created', {
+          req: req,
+          batteryMeta: Object.assign({}, dbGuardianMetaBattery.toJSON()),
+        });
         var dbQuery = {
           is_available: true
         };
@@ -82,9 +117,20 @@ router.route("/:guardian_id/software/:software_role")
         });
       })
       .then(function(dSoftware) {
+        var jsons = dSoftware.map(function(item) {
+          return item.toJSON();
+        })
+        logDebug('Guardian software endpoint: dSoftware founded', {
+          req: req,
+          softwares: jsons,
+        });
         res.status(200).json(
           (this.dbGuardian.is_updatable) ? views.models.guardianSoftware(req,res,dSoftware) : []
         );
+      })
+      .catch(sequelize.EmptyResultError, function(err) {
+        loggers.errorLogger.log('Failed to get latest software versions', { req: req, err: err });
+        httpError(res, 404, null, err.message);
       })
       .catch(function(err) {
         loggers.errorLogger.log('Failed to get latest software versions', { req: req, err: err });
