@@ -5,17 +5,19 @@ var app = require('../app');
 var models = require("../models");
 var exec = require("child_process").exec;
 
-// console.log('RFCX | Syncing models')
-// models.sequelize.sync()
+// console.log('RFCX | Syncing models\n')
+// models.sequelize.sync({
+//   logging: console.log
+// })
 //   .then(function() {
-//     console.log('RFCX | Models have been synced')
+//     console.log('\nRFCX | Models have been synced')
     // run sequelize-cli migrations from command line
-    var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
-    console.log('RFCX | Migrating db: started')
-    exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
-      console.log('RFCX | Migrating db: ended')
-      console.log(sErr);
-    });
+    // var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
+    // console.log('RFCX | Migrating db: started')
+    // exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
+    //   console.log('RFCX | Migrating db: ended')
+    //   console.log(sErr);
+    // });
 
     console.log('RFCX | Starting server')
     var server = app.listen(app.get('port'), function(){

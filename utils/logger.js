@@ -15,11 +15,6 @@
   You can log messages using .log method on each of types (e.g. debugLogger.log('text', { req: req, foo: bar }))
 */
 
-process.env.NODE_LOG_LEVEL = 'debug';
-process.env.CLOUDWATCH_LOGS_GROUP_NAME = 'rfcx-api-staging';
-process.env.CLOUDWATCH_ENABLED = 'true';
-
-
 var winston = require('winston');
 var cloudWatchTransport = require('winston-aws-cloudwatch')
 
@@ -30,6 +25,14 @@ var logLevel = determineLogLevel(),
 
 winston.emitErrs = true;
 winston.level = logLevel;
+
+// winston ignores error objects (WTF?!), so we need to reformat them to stay tuned
+function errorAsJSON(e) {
+  return {
+    message: e.message,
+    stack: e.stack
+  }
+}
 
 /**
  * Creates Winston CloudWatchLogs transport with given logGroupName and logStreamName
@@ -72,8 +75,19 @@ function createLoggerWrapper(winstonLogger, type) {
     log: function(message, opts) {
       var meta = opts || {};
       if (meta.req) {
-        meta['req-guid'] = meta.req.guid;
+        meta.reqGuid = meta.req.guid;
+        meta.instance = meta.req.instance;
         delete meta.req;
+      }
+      // err, error, e - whatever user would like to send. all error names will be parsed
+      if (meta.err) {
+        meta.err = errorAsJSON(meta.err);
+      }
+      if (meta.error) {
+        meta.error = errorAsJSON(meta.error);
+      }
+      if (meta.e) {
+        meta.e = errorAsJSON(meta.e);
       }
       switch (type) {
         case 'debug':
