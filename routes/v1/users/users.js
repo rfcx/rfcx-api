@@ -14,6 +14,7 @@ const mailService = require('../../../services/mail/mail-service');
 var sensationsService = require("../../../services/sensations/sensations-service");
 var ValidationError = require("../../../utils/converter/validation-error");
 var usersService = require('../../../services/users/users-service');
+var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
 var ApiConverter = require("../../../utils/api-converter");
 
@@ -96,6 +97,20 @@ router.route("/login")
 
   });
 
+router.route("/logout")
+  .post(passport.authenticate("token", { session:false }), function(req,res) {
+
+    return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      .then(tokensService.removeUserTokens)
+      .then((tokensCount) => {
+        res.status(200).json({
+          tokens_removed: tokensCount
+        });
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(e => httpError(res, 500, e, "Error in process of logout."));
+
+  });
 
 router.route("/request-access/app")
   .post(function(req,res){
