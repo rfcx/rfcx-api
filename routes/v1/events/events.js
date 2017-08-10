@@ -14,6 +14,7 @@ var moment = require('moment');
 var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
+var ValidationError = require("../../../utils/converter/validation-error");
 
 function prepareOpts(req) {
 
@@ -127,27 +128,7 @@ function queryData(req) {
 
   const opts = prepareOpts(req);
 
-  let sql = 'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
-                   'GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, GuardianAudioEvent.shadow_latitude, ' +
-                   'GuardianAudioEvent.shadow_longitude, GuardianAudioEvent.reviewer_confirmed, GuardianAudioEvent.created_at, ' +
-                   'GuardianAudioEvent.updated_at, ' +
-                   'Audio.guid AS audio_guid, Audio.measured_at AS audio_measured_at, ' +
-                   'Site.guid AS site_guid, Site.timezone as site_timezone, ' +
-                   'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
-                   'Model.guid AS model_guid, Model.minimal_detection_confidence AS model_minimal_detection_confidence, ' +
-                     'Model.shortname AS model_shortname, ' +
-                   'User.guid AS user_guid, ' +
-                   'EventType.value AS event_type, ' +
-                   'EventValue.value AS event_value ' +
-                   'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
-                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
-                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
-                   'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
-                   'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
-                   'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
-                   'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
-                   'WHERE 1=1 ';
+  let sql = eventsService.eventQueryBase + 'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
@@ -432,31 +413,20 @@ router.route("/types")
       .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Types."));
   });
 
-router.route("/:event_id")
+router.route("/:guid")
   .get(passport.authenticate("token", {session: false}), function (req, res) {
 
-    return models.GuardianEvent
-      .findAll({
-        where: {guid: req.params.event_id},
-        include: [{all: true}],
-        limit: 1
-      }).then(function (dbEvent) {
-
-        if (dbEvent.length < 1) {
-          httpError(res, 404, "database");
-        } else {
-          views.models.guardianEvents(req, res, dbEvent)
-            .then(function (json) {
-              res.status(200).json(json);
-            });
-        }
-
-      }).catch(function (err) {
-        console.log(err);
-        if (!!err) {
-          httpError(res, 500, "database");
-        }
-      });
+    eventsService
+      .getEventByGuid(req.params.guid)
+      .then((event) => {
+        return views.models.guardianAudioEventsJson(req, res, event);
+      })
+      .then((data) => {
+        res.status(200).json(data.events[0]);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(e => httpError(res, 500, e, "GuardianAudioEvent couldn't be found."));
 
   })
 ;
