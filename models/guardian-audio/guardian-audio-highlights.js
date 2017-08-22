@@ -77,7 +77,12 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
-    }
+    },
+    video360_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+    },
   }, {
     classMethods: {
       associate: function(models) {
