@@ -11,6 +11,30 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
+function processAudios(req, res, dbAudio, audioGuids) {
+  if (dbAudio.length < 1) {
+    httpError(res, 404, "database");
+  } else {
+    if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
+    var batch = [];
+    for (i in dbAudio) {
+      batch.push({
+        audio_guid: dbAudio[i].guid,
+        api_url_domain: req.rfcx.api_url_domain,
+        audio_sha1_checksum: dbAudio[i].sha1_checksum,
+        audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
+        audio_s3_path:
+          // auto-generate the asset filepath if it's not stored in the url column
+          (dbAudio[i].url == null)
+            ? assetUtils.getGuardianAssetStoragePath("audio", dbAudio[i].measured_at, dbGuardian.guid, dbAudio[i].Format.file_extension)
+            : dbAudio[i].url.substr(dbAudio[i].url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length),
+      });
+      audioGuids.push(dbAudio[i].guid);
+    }
+    return analysisUtils.batchQueueAudioForAnalysis(process.env.SQS_PERCEPTION_BATCH, modelGuid, batch);
+  }
+}
+
 router.route("/:guardian_id/audio/analysis")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
@@ -54,28 +78,7 @@ router.route("/:guardian_id/audio/analysis")
             offset: req.rfcx.offset
           })
           .then(function(dbAudio){
-            if (dbAudio.length < 1) {
-              httpError(res, 404, "database");
-            } else {
-              if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
-              var batch = [];
-              for (i in dbAudio) {
-                batch.push({
-                  audio_guid: dbAudio[i].guid,
-                  api_url_domain: req.rfcx.api_url_domain,
-                  audio_sha1_checksum: dbAudio[i].sha1_checksum,
-                  audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-                  audio_s3_path:
-                    // auto-generate the asset filepath if it's not stored in the url column
-                    (dbAudio[i].url == null)
-                      ? assetUtils.getGuardianAssetStoragePath("audio", dbAudio[i].measured_at, dbGuardian.guid, dbAudio[i].Format.file_extension)
-                      : dbAudio[i].url.substr(dbAudio[i].url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length),
-                });
-                audioGuids.push(dbAudio[i].guid);
-              }
-
-              return analysisUtils.batchQueueAudioForAnalysis(process.env.SQS_PERCEPTION_BATCH, modelGuid, batch);
-            }
+            return processAudios(req, res, dbAudio, audioGuids);
           })
           .then(function () {
             res.status(200).json(audioGuids);
@@ -94,6 +97,28 @@ router.route("/:guardian_id/audio/analysis")
   })
 ;
 
+router.route("/audio/analysis")
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
+
+    var audioGuids = [];
+    return models.GuardianAudio
+      .findAll({
+        where: { guid: { $in: req.body.guids } },
+        include: [ { all: true } ],
+        limit: 140000,
+      })
+      .then(function(dbAudio){
+        return processAudios(req, res, dbAudio, audioGuids);
+      })
+      .then(function () {
+        res.status(200).json(audioGuids);
+      })
+      .catch(function(err){
+        console.log("failed to requeue audio | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to requeue audio"}); }
+      });
+
+  });
 
 
 module.exports = router;
