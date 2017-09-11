@@ -6,9 +6,9 @@ exports.models = {
   guardianAudioHighlights: function(req,res,dbAudioHighlights) {
 
     var views = getAllViews();
-    
+
     if (!util.isArray(dbAudioHighlights)) { dbAudioHighlights = [dbAudioHighlights]; }
-    
+
     var jsonArray = [];
 
     for (i in dbAudioHighlights) {
@@ -27,7 +27,8 @@ exports.models = {
         description: dbRow.description,
         flickr_photoset_id:  dbRow.flickr_photoset_id || (dbRow.Site? dbRow.Site.flickr_photoset_id : null),
         urls: { audio: null },
-        order: dbRow.order
+        order: dbRow.order,
+        video360_url: dbRow.video360_url,
       };
 
       if (dbRow.Guardian != null) {
@@ -36,7 +37,7 @@ exports.models = {
         if (dbRow.begins_at != null) {
           guardianAudioHighlight.urls.audio += "?starting_after="+dbRow.begins_at.toISOString()+"&order=ascending"+"&limit=3";
         }
-                  
+
       }
       if (dbRow.Site != null) {
         guardianAudioHighlight.timezone_offset = dbRow.Site.timezone_offset;
