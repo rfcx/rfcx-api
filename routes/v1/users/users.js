@@ -235,7 +235,7 @@ router.route("/send-reset-password-link")
       .catch(function(err) {
         if (!!err) {
           console.log(err);
-          httpError(res, 500, "database");
+          httpError(req, res, 500, "database");
         }
       });
 
@@ -253,14 +253,14 @@ router.route("/reset-password")
       .then(function(dbToken) {
         if (!dbToken) {
           // if user specified not existing token, then show a message and cancel password reset
-          httpError(res, 404, null, 'Such token doesn\'t exist. It might be expired or invalid.');
+          httpError(req, res, 404, null, 'Such token doesn\'t exist. It might be expired or invalid.');
           return Promise.reject();
         }
         this.dbToken = dbToken;
         // if token is expired, then show this message to user and cancel password reset. Destroy this token.
         if (new Date(dbToken.expires_at) < new Date()) {
           this.dbToken.destroy();
-          httpError(res, 400, null, 'Your token has expired. Please start reset password process once again.');
+          httpError(req, res, 400, null, 'Your token has expired. Please start reset password process once again.');
           return Promise.reject();
         }
         else {
@@ -275,7 +275,7 @@ router.route("/reset-password")
         // if user was not found, then token has invalid user data. Destroy this token.
         if (!dbUser) {
           this.dbToken.destroy();
-          httpError(res, 400, null, 'Invalid token. Please start reset password process once again.');
+          httpError(req, res, 400, null, 'Invalid token. Please start reset password process once again.');
           return Promise.reject();
         }
         // encrypt user's new password and save it
@@ -303,7 +303,7 @@ router.route("/reset-password")
       .catch(function(err) {
         if (!!err) {
           console.log(err);
-          httpError(res, 500, "database");
+          httpError(req, res, 500, "database");
         }
       });
   });
@@ -312,17 +312,17 @@ router.route("/change-password")
   .post(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
 
     if (!req.body.guid) {
-      return httpError(res, 400, null, 'You need to specify user guid in request payload.');
+      return httpError(req, res, 400, null, 'You need to specify user guid in request payload.');
     }
     if (!req.body.password) {
-      return httpError(res, 400, null, 'You need to specify current password in request payload.');
+      return httpError(req, res, 400, null, 'You need to specify current password in request payload.');
     }
     if (!req.body.newPassword) {
-      return httpError(res, 400, null, 'You need to specify new password in request payload.');
+      return httpError(req, res, 400, null, 'You need to specify new password in request payload.');
     }
     // user must be logged in with his account to change the password
     if (req.body.guid !== req.rfcx.auth_token_info.guid) {
-      return httpError(res, 403, null, 'You are not allowed to change stranger\'s password.');
+      return httpError(req, res, 403, null, 'You are not allowed to change stranger\'s password.');
     }
     models.User
       .findOne({
@@ -330,11 +330,11 @@ router.route("/change-password")
       })
       .then(function(dbUser) {
         if (!dbUser) {
-          httpError(res, 404, null, 'User with specified guid not found.');
+          httpError(req, res, 404, null, 'User with specified guid not found.');
           return Promise.reject();
         }
         if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
-          httpError(res, 403, null, 'Password is incorrect.');
+          httpError(req, res, 403, null, 'Password is incorrect.');
           return Promise.reject();
         }
         var passwordSalt = hash.randomHash(320);
@@ -358,7 +358,7 @@ router.route("/change-password")
       .catch(function(err) {
         if (!!err) {
           console.log(err);
-          httpError(res, 500, "database");
+          httpError(req, res, 500, "database");
         }
       });
   });
@@ -388,11 +388,11 @@ router.route("/checkin")
         return sensationsService.createSensations(serviceParams);
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       // if the user supplied wrong arguments we want to give an error message and have a 400 error code
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       // catch-all for any other that is not based on user input
-      .catch(e => httpError(res, 500, e, "Checkin couldn't be created."));
+      .catch(e => httpError(req, res, 500, e, "Checkin couldn't be created."));
 
   });
 
@@ -407,7 +407,7 @@ router.route("/:user_id")
       }).then(function(dbUser){
 
         if (dbUser.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           res.status(200).json(views.models.users(req,res,dbUser));
         }
@@ -441,9 +441,9 @@ router.route("/:guid/sites")
         data.links.self += req.params.guid + '/sites';
         res.status(200).json(data);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => {console.log('e', e);httpError(res, 500, e, "Couldn't update user-sites relations.")});
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't update user-sites relations.")});
 
   });
 
@@ -459,7 +459,7 @@ router.route("/:user_id")
           where: { guid: req.params.user_id }
         }).then(function(dbUser){
           if (!dbUser) {
-            httpError(res, 404, "database");
+            httpError(req, res, 404, "database");
           } else {
             // now let's update the user info....
             return usersService.updateUserInfo(dbUser, req.body);
@@ -472,8 +472,8 @@ router.route("/:user_id")
           data.links.self += req.params.user_id;
           res.status(200).json(data);
         })
-        .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-        .catch(ValidationError, e => httpError(res, 400, null, e.message))
+        .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+        .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
         .catch(function(err){
           console.log("failed to update user | "+err);
           if (!!err) { res.status(500).json({msg:"failed to update user"}); }
@@ -498,7 +498,7 @@ router.route("/")
         });
         res.status(200).json(data);
       })
-      .catch(e => httpError(res, 500, e, 'Failed to return users.'));
+      .catch(e => httpError(req, res, 500, e, 'Failed to return users.'));
 
   })
 ;

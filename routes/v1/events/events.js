@@ -402,7 +402,7 @@ router.route("/values")
     eventsService
       .getGuardianAudioEventValues()
       .then((data) => { res.status(200).json(data); })
-      .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Values."));
+      .catch(e => httpError(req, res, 500, e, "Could not return Guardian Audio Event Values."));
   });
 
 router.route("/types")
@@ -410,7 +410,7 @@ router.route("/types")
     eventsService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data); })
-      .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Types."));
+      .catch(e => httpError(req, res, 500, e, "Could not return Guardian Audio Event Types."));
   });
 
 router.route("/:guid")
@@ -477,10 +477,10 @@ router.route('/')
 
     var attrsValidity = checkAttrValidity();
     if (!attrsValidity.status) {
-      return httpError(res, 400, null, attrsValidity.missingAttrsStr);
+      return httpError(req, res, 400, null, attrsValidity.missingAttrsStr);
     }
     if (body.guid && !guid.isValid(body.guid)) {
-      return httpError(res, 400, null, 'Guardian Audio Event guid has incorrect format');
+      return httpError(req, res, 400, null, 'Guardian Audio Event guid has incorrect format');
     }
 
     var promises = [];
@@ -503,15 +503,15 @@ router.route('/')
       .then(function (data) {
 
         if (!data[0]) {
-          httpError(res, 404, null, 'Audio with given guid not found');
+          httpError(req, res, 404, null, 'Audio with given guid not found');
           return Promise.reject();
         }
         if (!data[0].Guardian) {
-          httpError(res, 500, null, 'Audio is not associated with any Guardians');
+          httpError(req, res, 500, null, 'Audio is not associated with any Guardians');
           return Promise.reject();
         }
         if (!data[1]) {
-          httpError(res, 404, null, 'Model with given shortname/guid not found');
+          httpError(req, res, 404, null, 'Model with given shortname/guid not found');
           return Promise.reject();
         }
 
@@ -584,10 +584,10 @@ router.route('/')
           if (!!err) {
             console.log(err);
             if (err.name && err.name === 'SequelizeValidationError') {
-              httpError(res, 400, null, 'Input data has incorrect format');
+              httpError(req, res, 400, null, 'Input data has incorrect format');
             }
             else {
-              httpError(res, 500, "database");
+              httpError(req, res, 500, "database");
             }
           }
         });
@@ -605,7 +605,7 @@ router.route("/:event_id/review")
       }).then(function (dbEvent) {
 
       if (dbEvent.length < 1) {
-        httpError(res, 404, "database");
+        httpError(req, res, 404, "database");
       } else {
 
         var reviewerInput = {
@@ -648,7 +648,7 @@ router.route("/:event_id/review")
     }).catch(function (err) {
       console.log(err);
       if (!!err) {
-        httpError(res, 500, "database");
+        httpError(req, res, 500, "database");
       }
     });
 
@@ -662,8 +662,8 @@ router.route("/:guid/confirm")
       .then((data) => {
         res.status(200).json(data);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, "Could not update Event review."));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, "Could not update Event review."));
 
   });
 
@@ -674,8 +674,8 @@ router.route("/:guid/reject")
       .then((data) => {
         res.status(200).json(data);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, "Could not update Event review."));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, "Could not update Event review."));
 
   });
 

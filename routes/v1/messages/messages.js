@@ -46,9 +46,9 @@ router.route("/")
         return messagesService.formatMessage(message);
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(res, 500, e, "Message couldn't be created.")});
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Message couldn't be created.")});
   });
 
 router.route("/")
@@ -76,9 +76,9 @@ router.route("/")
         return messagesService.formatMessages(messages);
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(res, 500, e, "Messages couldn't be founded.")});
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Messages couldn't be founded.")});
 
   });
 

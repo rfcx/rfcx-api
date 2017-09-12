@@ -5,7 +5,7 @@ function requireTokenType(type) {
     // curry
     return function (req, res, next) {
         if(req.rfcx.auth_token_info.type != type) {
-            httpError(res, 403, "token");
+            httpError(req, res, 403, "token");
             req.end();
         } else {
             next();

@@ -28,9 +28,9 @@ router.route("/")
     sensationsService.createSensations(serviceParams)
       .then(result => res.status(200).json(result))
       // if the user supplied wrong arguments we want to give an error message and have a 400 error code
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       // catch-all for any other that is not based on user input
-      .catch(e => httpError(res, 500, e, "Sensations couldn't be created."));
+      .catch(e => httpError(req, res, 500, e, "Sensations couldn't be created."));
   });
 
 module.exports = router;
