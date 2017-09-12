@@ -15,7 +15,10 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
+var websocket = require('../../../utils/websocket');
+var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
+const moment = require("moment-timezone");
 
 var logDebug = loggers.debugLogger.log;
 
@@ -41,7 +44,8 @@ router.route("/:guardian_id/checkins")
         logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json });
         // retrieve the guardian from the database
         return models.Guardian.findOne({
-          where: { guid: req.params.guardian_id }
+          where: { guid: req.params.guardian_id },
+          include: [ { all: true } ],
         });
       })
       .then(function(dbGuardian){
@@ -225,6 +229,42 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
               });
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
+            })
+            .then(function() {
+              return models.GuardianAudio
+                .findOne({
+                  where: { id: audioInfo[audioInfoInd].audio_id },
+                  include: [ { all: true } ]
+                });
+            })
+            .then(function(dbAudio) {
+              let itemAudioInfo = audioInfo[audioInfoInd],
+                  dbAudioObj = itemAudioInfo.dbAudioObj,
+                  timezone   = self.dbGuardian.Site.timezone;
+              let wsObj = {
+                recordTime: {
+                  UTC: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
+                  localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
+                  timezone: timezone
+                },
+                audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
+                location: {
+                  latitude: self.dbGuardian.latitude,
+                  longitude: self.dbGuardian.longitude
+                },
+                length: {
+                  samples: dbAudioObj.capture_sample_count,
+                  timeinMs: dbAudio.Format?
+                    Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
+                },
+                format: {
+                  fileType: dbAudio.Format? dbAudio.Format.mime : null,
+                  sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null
+                },
+                guardianGuid: self.dbGuardian.guid,
+                audioGuid: dbAudio.guid,
+              }
+              websocket.send('CreateAudioSensation', wsObj);
             });
           proms.push(prom);
         }
