@@ -353,7 +353,7 @@ router.route("/:guardian_id/meta2/:meta_type")
 
       }).catch(function (err) {
         console.log("failure to retrieve guardian: " + err);
-        httpError(req, req, res, 404, "database");
+        httpError(req, res, 404, "database");
       });
   })
 ;
