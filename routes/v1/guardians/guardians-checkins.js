@@ -231,6 +231,7 @@ router.route("/:guardian_id/checkins")
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
             })
             .then(function() {
+              logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req });
               return models.GuardianAudio
                 .findOne({
                   where: { id: audioInfo[audioInfoInd].audio_id },
@@ -238,6 +239,10 @@ router.route("/:guardian_id/checkins")
                 });
             })
             .then(function(dbAudio) {
+              logDebug('Guardian checkins endpoint: founded dbAudio', {
+                req: req,
+                dbAudio: dbAudio,
+              });
               let itemAudioInfo = audioInfo[audioInfoInd],
                   dbAudioObj = itemAudioInfo.dbAudioObj,
                   timezone   = self.dbGuardian.Site.timezone;
