@@ -243,32 +243,7 @@ router.route("/:guardian_id/checkins")
                 req: req,
                 dbAudio: dbAudio,
               });
-              let itemAudioInfo = audioInfo[audioInfoInd],
-                  dbAudioObj = itemAudioInfo.dbAudioObj,
-                  timezone   = self.dbGuardian.Site.timezone;
-              let wsObj = {
-                recordTime: {
-                  UTC: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
-                  localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
-                  timezone: timezone
-                },
-                audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
-                location: {
-                  latitude: self.dbGuardian.latitude,
-                  longitude: self.dbGuardian.longitude
-                },
-                length: {
-                  samples: dbAudioObj.capture_sample_count,
-                  timeinMs: dbAudio.Format?
-                    Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
-                },
-                format: {
-                  fileType: dbAudio.Format? dbAudio.Format.mime : null,
-                  sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null
-                },
-                guardianGuid: self.dbGuardian.guid,
-                audioGuid: dbAudio.guid,
-              }
+              let wsObj = checkInHelpers.audio.prepareWsObject(audioInfo, self.dbGuardian, dbAudio);
               websocket.send('createAudioSensation', wsObj);
             });
           proms.push(prom);

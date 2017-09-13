@@ -291,6 +291,35 @@ exports.audio = {
     models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function(dbCheckIn){ dbCheckIn.destroy().then(function(){ console.log("deleted checkin entry"); }); }).catch(function(err){ console.log("failed to delete checkin entry | "+err); });
 
     cleanupCheckInFiles(audioInfo);
+  },
+
+  prepareWsObject(audioInfo, dbGuardian, dbAudio) {
+    let itemAudioInfo = audioInfo[audioInfoInd],
+        dbAudioObj = itemAudioInfo.dbAudioObj,
+        timezone   = dbGuardian.Site.timezone;
+    return {
+      recordTime: {
+        UTC: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
+        localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
+        timezone: timezone
+      },
+      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
+      location: {
+        latitude: dbGuardian.latitude,
+        longitude: dbGuardian.longitude
+      },
+      length: {
+        samples: dbAudioObj.capture_sample_count,
+        timeinMs: dbAudio.Format?
+          Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
+      },
+      format: {
+        fileType: dbAudio.Format? dbAudio.Format.mime : null,
+        sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null
+      },
+      guardianGuid: dbGuardian.guid,
+      audioGuid: dbAudio.guid,
+    };
   }
 
 };

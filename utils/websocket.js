@@ -8,9 +8,6 @@ let isConnected = false;
 socket.on('connect', () => {
   isConnected = true;
   loggers.infoLogger.log('Websocket connected to url ' + websocketUrl);
-  // console.log('websocket connected');
-  // socket connected
-  // socket.emit('server custom event', { my: 'data' });
 });
 
 socket.on('disconnect', () => {
