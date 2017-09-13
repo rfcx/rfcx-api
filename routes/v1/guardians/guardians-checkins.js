@@ -269,7 +269,7 @@ router.route("/:guardian_id/checkins")
                 guardianGuid: self.dbGuardian.guid,
                 audioGuid: dbAudio.guid,
               }
-              websocket.send('CreateAudioSensation', wsObj);
+              websocket.send('createAudioSensation', wsObj);
             });
           proms.push(prom);
         }
