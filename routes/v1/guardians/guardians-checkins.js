@@ -243,7 +243,7 @@ router.route("/:guardian_id/checkins")
                 req: req,
                 dbAudio: dbAudio,
               });
-              let wsObj = checkInHelpers.audio.prepareWsObject(audioInfo, self.dbGuardian, dbAudio);
+              let wsObj = checkInHelpers.audio.prepareWsObject(audioInfo, audioInfoInd, self.dbGuardian, dbAudio);
               websocket.send('createAudioSensation', wsObj);
             });
           proms.push(prom);

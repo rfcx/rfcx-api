@@ -296,7 +296,7 @@ exports.audio = {
     cleanupCheckInFiles(audioInfo);
   },
 
-  prepareWsObject(audioInfo, dbGuardian, dbAudio) {
+  prepareWsObject(audioInfo, audioInfoInd, dbGuardian, dbAudio) {
     let itemAudioInfo = audioInfo[audioInfoInd],
         dbAudioObj = itemAudioInfo.dbAudioObj,
         timezone   = dbGuardian.Site.timezone;
