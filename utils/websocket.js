@@ -25,6 +25,7 @@ socket.connect();
 
 function send(event, opts) {
   opts = opts || {};
+  loggers.debugLogger.log('Websocket: send ', { event: event, message: opts });
   socket.emit(event, opts);
 }
 
