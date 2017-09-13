@@ -303,7 +303,7 @@ exports.audio = {
       recordTime: {
         UTC: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
         localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
-        timezone: timezone
+        timeZone: timezone
       },
       audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
       location: {

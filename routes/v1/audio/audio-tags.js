@@ -10,6 +10,7 @@ var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").an
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var loggers = require('../../../utils/logger');
 var sequelize = require("sequelize");
+var websocket = require('../../../utils/websocket');
 
 var logDebug = loggers.debugLogger.log;
 
@@ -30,7 +31,7 @@ router.route("/:audio_id/tags")
     }
 
     return models.GuardianAudio
-      .findOne( { where: { guid: req.params.audio_id } })
+      .findOne( { where: { guid: req.params.audio_id }, include: [{ all: true }] })
       .bind({})
       .then(function(dbAudio) {
         if (!dbAudio) {
@@ -147,6 +148,10 @@ router.route("/:audio_id/tags")
           req: req,
           tagsJson: tagsJson,
         });
+
+        let wsObj = analysisUtils.prepareWsObject(this.dbAudio, tagsJson);
+        websocket.send('createAudioPerception', wsObj);
+
         if(this.dbModel.generate_event==0){
           logDebug('Audio tags endpoint: model not generating events, finishing', { req: req });
           return tags;
