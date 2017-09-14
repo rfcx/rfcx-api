@@ -313,7 +313,7 @@ exports.audio = {
       },
       length: {
         samples: dbAudioObj.capture_sample_count,
-        timeinMs: dbAudio.Format?
+        timeInMs: dbAudio.Format?
           Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
       },
       format: {
