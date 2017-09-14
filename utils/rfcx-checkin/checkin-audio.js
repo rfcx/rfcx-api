@@ -308,7 +308,8 @@ exports.audio = {
       audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
       location: {
         latitude: dbGuardian.latitude,
-        longitude: dbGuardian.longitude
+        longitude: dbGuardian.longitude,
+        site: dbAudio.Site.guid
       },
       length: {
         samples: dbAudioObj.capture_sample_count,
@@ -317,7 +318,8 @@ exports.audio = {
       },
       format: {
         fileType: dbAudio.Format? dbAudio.Format.mime : null,
-        sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null
+        sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
+        bitDepth: dbAudioObj.capture_bitrate
       },
       guardianGuid: dbGuardian.guid,
       audioGuid: dbAudio.guid,
