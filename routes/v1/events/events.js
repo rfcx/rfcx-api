@@ -18,6 +18,7 @@ var loggers = require('../../../utils/logger');
 var websocket = require('../../../utils/websocket');
 
 var logDebug = loggers.debugLogger.log;
+var logError = loggers.errorLogger.log;
 
 function prepareOpts(req) {
 
@@ -618,7 +619,14 @@ router.route('/')
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
         var excludedGuardians = [];
         if( ! excludedGuardians.includes(this.guardian_id) ){
-          aws.publish("rfcx-detection-alerts-" + this.dbSite.guid, msg);
+          let topic = 'rfcx-detection-alerts-' + this.dbSite.guid;
+          aws.createTopic(topic)
+            .then((data) => {
+              return aws.publish(topic, msg);
+            })
+            .catch((err) => {
+              logError('Event creation request: error creating SNS topic', { req: req, err: err });
+            });
         }
       })
       .catch(function (err) {
