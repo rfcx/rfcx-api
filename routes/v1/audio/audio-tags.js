@@ -149,7 +149,7 @@ router.route("/:audio_id/tags")
           tagsJson: tagsJson,
         });
 
-        let wsObj = analysisUtils.prepareWsObject(this.dbAudio, tagsJson);
+        let wsObj = analysisUtils.prepareWsObject(this.dbAudio, tagsJson, this.dbModel);
         websocket.send('createAudioPerception', wsObj);
 
         if(this.dbModel.generate_event==0){

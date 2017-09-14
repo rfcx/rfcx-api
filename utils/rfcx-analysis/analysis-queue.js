@@ -264,12 +264,15 @@ exports.analysisUtils = {
     }.bind(this));
   },
 
-  prepareWsObject: function(dbAudio, tagsJson) {
+  prepareWsObject: function(dbAudio, tagsJson, creator) {
     let wsObj = [];
     let timezone = dbAudio.Site.timezone;
     tagsJson.forEach((tag) => {
       wsObj.push({
-        type: tag.tagged_by_model !== undefined ? 'ai' : 'user',
+        creator: {
+          type: tag.tagged_by_model !== undefined ? 'ai' : 'user',
+          guid: creator.guid
+        },
         time: {
           start: {
             UTC: moment.tz(tag.begins_at, timezone).toISOString(),
