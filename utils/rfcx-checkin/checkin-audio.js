@@ -319,7 +319,7 @@ exports.audio = {
       format: {
         fileType: dbAudio.Format? dbAudio.Format.mime : null,
         sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
-        bitDepth: dbAudioObj.capture_bitrate
+        bitDepth: itemAudioInfo.capture_bitrate
       },
       guardianGuid: dbGuardian.guid,
       audioGuid: dbAudio.guid,
