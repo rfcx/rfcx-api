@@ -14,6 +14,10 @@ var moment = require('moment');
 var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
+var loggers = require('../../../utils/logger');
+var websocket = require('../../../utils/websocket');
+
+var logDebug = loggers.debugLogger.log;
 
 function prepareOpts(req) {
 
@@ -513,7 +517,7 @@ router.route('/')
 
     promises.push(models.GuardianAudio.findOne({
       where: {guid: attrs.audio_id},
-      include: {model: models.Guardian, as: 'Guardian'}
+      include: [{all: true}]
     }));
     promises.push(models.AudioAnalysisModel.findOne({where: {$or: {shortname: attrs.model, guid: attrs.model}}}));
     promises.push(models.GuardianAudioEventType.findOrCreate({
@@ -526,6 +530,7 @@ router.route('/')
     }));
 
     Promise.all(promises)
+      .bind({})
       .then(function (data) {
 
         if (!data[0]) {
@@ -547,6 +552,9 @@ router.route('/')
         if (attrs['ends_at'] === undefined || attrs['ends_at'] === null) {
             attrs.ends_at = new Date(data[0].measured_at.getTime() + 1000*90);
         }
+
+        this.dbGuardian = data[0].Guardian;
+        this.dbSite = data[0].Site;
 
         // replace names with ids
         attrs.audio_id = data[0].id;
@@ -574,13 +582,20 @@ router.route('/')
       })
       .spread(function (dbGuardianAudioEvent, created) {
         if (created) {
+          dbGuardianAudioEvent.reload({
+            include: [{all: true}]
+          })
+          .then((dbEvent) => {
+            let wsObj = eventsService.prepareWsObject(dbEvent, this.dbSite);
+            websocket.send('createCognition', wsObj);
+          });
           return Promise.resolve(dbGuardianAudioEvent);
         }
         else {
           return models.GuardianAudioEvent
             .update(attrs, {where: {guid: dbGuardianAudioEvent.guid}})
             .spread(function () {
-              return models.GuardianAudioEvent.findOne({where: {guid: dbGuardianAudioEvent.guid}});
+              return models.GuardianAudioEvent.findOne({where: {guid: dbGuardianAudioEvent.guid}, include: [{all: true}]});
             });
         }
       })
@@ -596,27 +611,27 @@ router.route('/')
           model: this.model,
           audio_guid: this.audio_guid,
           // Todo: generate a proper url string, need some sleep but will replace it tomorrow
-          listen: 'https://console.rfcx.org/#/classification/altomayo?guid=' + this.audio_guid +  '&typevalue=chainsaw&access=read'
+          listen: 'https://console.rfcx.org/#/classification?guid=' + this.audio_guid +  '&typevalue=' + this.value + '&access=read'
         };
 
         // currently we only send out alerts.
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
         var excludedGuardians = [];
-        if( ! excludedGuardians.includes(guardian_id) ){
-          return aws.publish("rfcx-detection-alerts", msg);
+        if( ! excludedGuardians.includes(this.guardian_id) ){
+          aws.publish("rfcx-detection-alerts-" + this.dbSite.guid, msg);
         }
-        })
-        .catch(function (err) {
-          if (!!err) {
-            console.log(err);
-            if (err.name && err.name === 'SequelizeValidationError') {
-              httpError(req, res, 400, null, 'Input data has incorrect format');
-            }
-            else {
-              httpError(req, res, 500, "database");
-            }
+      })
+      .catch(function (err) {
+        if (!!err) {
+          console.log(err);
+          if (err.name && err.name === 'SequelizeValidationError') {
+            httpError(req, res, 400, null, 'Input data has incorrect format');
           }
-        });
+          else {
+            httpError(req, res, 500, "database");
+          }
+        }
+      });
 
   });
 
