@@ -290,7 +290,9 @@ exports.analysisUtils = {
           max: dbAudio.Format? dbAudio.Format.sample_rate : 0 // no data for now
         },
         guardianGuid: dbAudio.Guardian.guid,
-        probability: tag.confidence
+        probability: tag.confidence,
+        type: tag.type,
+        value: tag.value
       });
     });
     return wsObj;
