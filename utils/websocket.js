@@ -22,7 +22,7 @@ socket.connect();
 
 function send(event, opts) {
   opts = opts || {};
-  loggers.debugLogger.log('Websocket: send ', { event: event, message: opts });
+  loggers.debugLogger.log('Websocket: send ', { event: event, message: opts, WSConnected: isConnected });
   socket.emit(event, opts);
 }
 
