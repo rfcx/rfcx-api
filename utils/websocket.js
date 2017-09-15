@@ -14,9 +14,9 @@ socket.on('disconnect', () => {
   loggers.infoLogger.log('Websocket disconneted from url ' + websocketUrl);
 });
 
-socket.on('connect_error', () => { this.printError(new Error('Socket connection error')); });
-socket.on('connect_timeout', () => { this.printError(new Error('Socket connection timeout')); });
-socket.on('error', (error) => { this.printError(error); });
+socket.on('connect_error', () => { printError(new Error('Socket connection error')); });
+socket.on('connect_timeout', () => { printError(new Error('Socket connection timeout')); });
+socket.on('error', (error) => { printError(error); });
 
 socket.connect();
 
