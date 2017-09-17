@@ -232,20 +232,25 @@ router.route("/:guardian_id/checkins")
             })
             .then(function() {
               logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req });
-              return models.GuardianAudio
+              models.GuardianAudio
                 .findOne({
                   where: { id: audioInfo[audioInfoInd].audio_id },
                   include: [ { all: true } ]
+                })
+                .then(function(dbAudio) {
+                  logDebug('Guardian checkins endpoint: founded dbAudio', {
+                    req: req,
+                    dbAudio: dbAudio,
+                  });
+                  let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfo[audioInfoInd], self.dbGuardian, dbAudio);
+                  websocket.send('createAudioSensation', wsObj);
+                  return true;
+                })
+                .catch(function(err) {
+                  loggers.errorLogger.log('Failed to send websocket data for guardian checkin', { req: req, err: err });
                 });
+              return true;
             })
-            .then(function(dbAudio) {
-              logDebug('Guardian checkins endpoint: founded dbAudio', {
-                req: req,
-                dbAudio: dbAudio,
-              });
-              let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfo[audioInfoInd], self.dbGuardian, dbAudio);
-              websocket.send('createAudioSensation', wsObj);
-            });
           proms.push(prom);
         }
         return Promise.all(proms);
