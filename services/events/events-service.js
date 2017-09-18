@@ -85,7 +85,7 @@ function prepareWsObject(event, site) {
       }
     },
     location: {
-      coordinates: [guardian.longitude, guardian.latitude],
+      coordinates: [guardian.longitude, guardian.latitude, site.guid],
       type: 'point'
     },
     type: event.Type.value,
