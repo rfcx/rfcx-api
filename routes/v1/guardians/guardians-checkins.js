@@ -231,7 +231,7 @@ router.route("/:guardian_id/checkins")
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
             })
             .then(function() {
-              logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req });
+              logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req, audioInfo: audioInfo, audioInfoInd: audioInfoInd });
               models.GuardianAudio
                 .findOne({
                   where: { id: audioInfo[audioInfoInd].audio_id },
