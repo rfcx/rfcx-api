@@ -57,7 +57,7 @@ router.route("/:audio_id/tags")
         this.dbModel = dbModel;
 
         var removePromises = [];
-
+        let logTagNames = [];
         // if model has already classified this file, then remove all previous tags
         for (var wndwInd in analysisResults.results) {
           if (analysisResults.results.hasOwnProperty(wndwInd)) {
@@ -66,12 +66,7 @@ router.route("/:audio_id/tags")
             for (var tagName in currentWindow.classifications) {
               if (currentWindow.classifications.hasOwnProperty(tagName)) {
                 if (tagName.toLowerCase() !== "ambient") {
-                  logDebug('Audio tags endpoint: remove previous tags', {
-                    req: req,
-                    modelGuid: dbModel.guid,
-                    audioGuid: this.dbAudio.guid,
-                    value: tagName,
-                  });
+                  logTagNames.push(tagName);
                   var promise = models.GuardianAudioTag
                     .destroy({
                       where: {
@@ -85,10 +80,14 @@ router.route("/:audio_id/tags")
                 }
               }
             }
-
           }
         }
-
+        logDebug('Audio tags endpoint: remove previous tags', {
+          req: req,
+          modelGuid: dbModel.guid,
+          audioGuid: this.dbAudio.guid,
+          values: logTagNames,
+        });
         return Promise.all(removePromises);
       })
       .then(function() {
