@@ -194,6 +194,7 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
                 audioInfoPostUpload: audioInfoPostUpload,
               });
+              this.audioInfoCurrent = audioInfo[audioInfoInd];
               return checkInHelpers.audio.saveToS3(audioInfoPostUpload)
             })
             .then(function(audioInfoPostS3Save){
@@ -234,7 +235,7 @@ router.route("/:guardian_id/checkins")
               logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req, audioInfo: audioInfo, audioInfoInd: audioInfoInd });
               models.GuardianAudio
                 .findOne({
-                  where: { id: audioInfo[audioInfoInd].audio_id },
+                  where: { id: this.audioInfoCurrent.audio_id },
                   include: [ { all: true } ]
                 })
                 .then(function(dbAudio) {
