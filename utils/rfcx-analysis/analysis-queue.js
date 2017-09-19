@@ -292,7 +292,8 @@ exports.analysisUtils = {
         guardianGuid: dbAudio.Guardian.guid,
         probability: tag.confidence,
         type: tag.type,
-        value: tag.value
+        value: tag.value,
+        sensationGuids: [dbAudio.guid]
       });
     });
     return wsObj;
