@@ -235,7 +235,7 @@ router.route("/:guardian_id/checkins")
               logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req, audioInfo: audioInfo, audioInfoInd: audioInfoInd });
               models.GuardianAudio
                 .findOne({
-                  where: { id: this.audioInfoCurrent.audio_id },
+                  where: { id: self.audioInfoCurrent.audio_id },
                   include: [ { all: true } ]
                 })
                 .then(function(dbAudio) {
@@ -243,7 +243,7 @@ router.route("/:guardian_id/checkins")
                     req: req,
                     dbAudio: dbAudio,
                   });
-                  let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfo[audioInfoInd], self.dbGuardian, dbAudio);
+                  let wsObj = checkInHelpers.audio.prepareWsObject(req, self.audioInfoCurrent, self.dbGuardian, dbAudio);
                   websocket.send('createAudioSensation', wsObj);
                   return true;
                 })
