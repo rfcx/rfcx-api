@@ -91,7 +91,8 @@ function prepareWsObject(event, site) {
     type: event.Type.value,
     value: event.Value.value,
     probability: event.confidence,
-    sensationGuids: [event.Audio.guid]
+    sensationGuids: [event.Audio.guid],
+    cognitionGuid: event.guid
   }
 }
 
