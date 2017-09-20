@@ -293,7 +293,8 @@ exports.analysisUtils = {
         probability: tag.confidence,
         type: tag.type,
         value: tag.value,
-        sensationGuids: [dbAudio.guid]
+        sensationGuids: [dbAudio.guid],
+        perceptionGuid: tag.guid
       });
     });
     return wsObj;
