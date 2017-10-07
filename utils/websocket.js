@@ -3,10 +3,8 @@ const Promise = require('bluebird');
 const loggers = require('./logger');
 const websocketUrl = process.env.WEBSOCKET_URL;
 let socket = io.connect(websocketUrl);
-let isConnected = false;
 
 socket.on('connect', () => {
-  isConnected = true;
   loggers.infoLogger.log('Websocket connected to url ' + websocketUrl);
 });
 
@@ -22,8 +20,13 @@ socket.connect();
 
 function send(event, opts) {
   opts = opts || {};
-  loggers.debugLogger.log('Websocket: send ', { event: event, message: opts, WSConnected: isConnected });
-  socket.emit(event, opts);
+  if (socket.connected) {
+    loggers.debugLogger.log('Websocket: send ', { event: event, message: opts, WSConnected: socket.connected });
+    socket.emit(event, opts);
+  }
+  else {
+    loggers.debugLogger.log('Websocket: send error - socket not connected', { event: event, message: opts, WSConnected: socket.connected });
+  }
 }
 
 function on() {
