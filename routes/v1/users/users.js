@@ -396,6 +396,35 @@ router.route("/checkin")
 
   });
 
+router.route("/lastcheckin")
+  .get(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
+
+    usersService.getAllUsers()
+      .then(users => {
+        let proms = [];
+        users.forEach(function(user) {
+          let prom = usersService.getUserLastCheckin(user)
+          proms.push(prom);
+        }, this);
+        return Promise.all(proms);
+      })
+      .then(checkins => {
+        // filter out empty results
+        checkins = checkins.filter((checkin) => {
+          return checkin.length;
+        });
+        // format data
+        checkins = checkins.map(checkin => {
+          return usersService.formatCheckin(checkin[0]);
+        })
+        return checkins;
+      })
+      .then(data => {
+        res.status(200).json(data);
+      });
+
+});
+
 // TO DO security measure to ensure that not any user can see any other user
 router.route("/:user_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {

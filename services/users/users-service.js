@@ -3,6 +3,7 @@ var sequelize = require("sequelize");
 var Converter = require("../../utils/converter/converter");
 var Promise = require("bluebird");
 var sitesService = require("../sites/sites-service");
+const sensationsService = require('..//sensations/sensations-service');
 
 function getUserByGuid(guid) {
   return models.User
@@ -25,20 +26,23 @@ function getAllUsers() {
     });
 }
 
-function formatUser(user) {
+function formatUser(user, short) {
+  short = (short === undefined? false : short);
   let userFormatted = {
     guid: user.guid,
     email: user.email,
     firstname: user.firstname,
     lastname: user.lastname,
     username: user.username,
-    accessibleSites: [],
-    defaultSite: user.DefaultSite? user.DefaultSite.guid : null
   };
-  if (user.GuardianSites) {
-    user.GuardianSites.forEach((site) => {
-      userFormatted.accessibleSites.push(site.guid);
-    });
+  if (!short) {
+    userFormatted.accessibleSites = [];
+    userFormatted.defaultSite = user.DefaultSite? user.DefaultSite.guid : null;
+    if (user.GuardianSites) {
+      user.GuardianSites.forEach((site) => {
+        userFormatted.accessibleSites.push(site.guid);
+      });
+    }
   }
   return userFormatted;
 }
@@ -125,6 +129,24 @@ function updateUserInfo(user, params) {
     .then(formatUser);
 }
 
+function getUserLastCheckin(user) {
+  return sensationsService.getLastCheckinByUserId(user.id)
+    .then(data => {
+      if (data.length) {
+        data[0].user = this.formatUser(user, true);
+      }
+      return data;
+    });
+}
+
+function formatCheckin(checkin) {
+  return {
+    latitude: checkin.location.coordinates[0],
+    longitude: checkin.location.coordinates[1],
+    user: checkin.user,
+  };
+}
+
 module.exports = {
   getUserByGuid: getUserByGuid,
   getAllUsers: getAllUsers,
@@ -132,4 +154,6 @@ module.exports = {
   formatUsers: formatUsers,
   updateSiteRelations: updateSiteRelations,
   updateUserInfo: updateUserInfo,
+  getUserLastCheckin: getUserLastCheckin,
+  formatCheckin: formatCheckin,
 };
