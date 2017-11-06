@@ -38,7 +38,6 @@ router.route("/:guardian_id/checkins")
 
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.meta)
-      .bind({})
       .then(function(json){
         this.json = json;
         logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json });
@@ -277,7 +276,7 @@ router.route("/:guardian_id/checkins")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({
+      .findOne({ 
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
@@ -288,9 +287,9 @@ router.route("/:guardian_id/checkins")
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
         models.GuardianCheckIn
-          .findAll({
-            where: dbQuery,
-            include: [ { all: true } ],
+          .findAll({ 
+            where: dbQuery, 
+            include: [ { all: true } ], 
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
@@ -327,9 +326,9 @@ function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
     // LEGACY TIMESTAMP FORMAT
     asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
   } else if (timeStamp != null) {
-
+    
     asDate = new Date(parseInt(timeStamp));
-
+  
   }
   return asDate;
 }

@@ -2,6 +2,41 @@ var models = require("../../models");
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
 
+const eventQueryBase =
+  'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
+    'GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, GuardianAudioEvent.shadow_latitude, ' +
+    'GuardianAudioEvent.shadow_longitude, GuardianAudioEvent.reviewer_confirmed, GuardianAudioEvent.created_at, ' +
+    'GuardianAudioEvent.updated_at, ' +
+    'Audio.guid AS audio_guid, Audio.measured_at AS audio_measured_at, ' +
+    'Site.guid AS site_guid, Site.timezone as site_timezone, ' +
+    'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
+    'Model.guid AS model_guid, Model.minimal_detection_confidence AS model_minimal_detection_confidence, ' +
+      'Model.shortname AS model_shortname, ' +
+    'User.guid AS user_guid, ' +
+    'EventType.value AS event_type, ' +
+    'EventValue.value AS event_value ' +
+    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
+    'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
+    'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
+    'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
+    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
+    'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
+    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ';
+
+function getEventByGuid(guid) {
+
+  let sql = eventQueryBase + 'WHERE GuardianAudioEvent.guid = :guid;';
+  return models.sequelize
+    .query(sql, { replacements: { guid: guid }, type: models.sequelize.QueryTypes.SELECT })
+    .then((event) => {
+      if (!event.length) {
+        throw new sequelize.EmptyResultError('Event with given guid not found.');
+      }
+      return event;
+    });
+}
+
 function formatGuardianAudioEventTypesValues(arr) {
   return arr.map((item) => {
       return item.value;
@@ -97,8 +132,10 @@ function prepareWsObject(event, site) {
 }
 
 module.exports = {
+  getEventByGuid: getEventByGuid,
   getGuardianAudioEventValues: getGuardianAudioEventValues,
   getGuardianAudioEventTypes: getGuardianAudioEventTypes,
   updateEventReview: updateEventReview,
+  eventQueryBase: eventQueryBase,
   prepareWsObject: prepareWsObject,
 };
