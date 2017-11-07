@@ -2,7 +2,9 @@ const io = require('socket.io-client');
 const Promise = require('bluebird');
 const loggers = require('./logger');
 const websocketUrl = process.env.WEBSOCKET_URL;
-let socket = io.connect(websocketUrl);
+let socket = io.connect(websocketUrl, {
+  rejectUnauthorized: false,
+ });
 
 socket.on('connect', () => {
   loggers.infoLogger.log('Websocket connected to url ' + websocketUrl);
