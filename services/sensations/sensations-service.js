@@ -134,8 +134,17 @@ function getSourceTypeIdByName(name) {
 }
 
 function getLastCheckinByUserId(id) {
-  const sql = `SELECT time, location, source_id as user_id from Sensations WHERE source_id=${id} ORDER BY time DESC LIMIT 1;`;
-  return models.sequelize.query(sql, {replacements: { id: id }, type: sequelize.QueryTypes.SELECT});
+  let params = {
+    source_id: id,
+  };
+  return this
+    .getSourceTypeIdByName(models.User.tableName) // tableName === 'Users'
+    .then((source) => {
+      params.source_type = source.id
+      const sql = `SELECT time, location, source_id as user_id from Sensations WHERE
+        source_id=:source_id and source_type=:source_type ORDER BY time DESC LIMIT 1;`;
+      return models.sequelize.query(sql, {replacements: params, type: sequelize.QueryTypes.SELECT});
+    });
 }
 
 module.exports = {
