@@ -17,6 +17,7 @@ var usersService = require('../../../services/users/users-service');
 var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
 var ApiConverter = require("../../../utils/api-converter");
+var secureIp = require('../../../middleware/misc/secure-ip');
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -50,51 +51,85 @@ router.route("/login")
       .findOne({
         where: { email: userInput.email }
       }).then(function(dbUser){
-
         if (dbUser == null) {
-          res.status(401).json({
-            message: "invalid email or password", error: { status: 401 }
-          });
-        } else if (dbUser.auth_password_hash == hash.hashedCredentials(dbUser.auth_password_salt,userInput.pswd)) {
+          res.status(401).json({ message: "invalid email or password", error: { status: 401 } });
+        }
+        else if (dbUser.auth_password_hash == hash.hashedCredentials(dbUser.auth_password_salt,userInput.pswd)) {
 
-          dbUser.last_login_at = new Date();
-          dbUser.save();
+          usersService.refreshLastLogin(dbUser);
 
-          return token.createUserToken({
-            token_type: "login",
-            created_by: req.rfcx.url_path,
-            reference_tag: dbUser.guid,
-            owner_primary_key: dbUser.id,
-            minutes_until_expiration: loginExpirationInMinutes
-          }).then(function(tokenInfo){
-
-            dbUser.VisibleToken = {
-              token: tokenInfo.token,
-              token_expires_at: tokenInfo.token_expires_at
-            };
-
-            return res.status(200).json(views.models.users(req,res,dbUser));
-
-          }).catch(function(err){
-            console.log(err);
-            res.status(500).json({
-              message: err.message, error: { status: 500 }
+          return usersService
+            .createLoginToken({
+              urlPath: req.rfcx.url_path,
+              user: dbUser,
+              expires: loginExpirationInMinutes,
+            })
+            .then(function(tokenInfo){
+              usersService.refreshLastToken(dbUser, tokenInfo);
+              return res.status(200).json(views.models.users(req,res,dbUser));
+            })
+            .catch(function(err){
+              console.log(err);
+              res.status(500).json({ message: err.message, error: { status: 500 } });
             });
-          });
 
         } else {
-          return res.status(401).json({
-            message: "invalid email or password", error: { status: 401 }
-          });
+          return res.status(401).json({ message: "invalid email or password", error: { status: 401 } });
         }
 
       }).catch(function(err){
         console.log(err);
-        res.status(500).json({
-          message: err.message, error: { status: 500 }
-        });
+        res.status(500).json({ message: err.message, error: { status: 500 } });
       });
 
+  });
+
+  router.route("/securelogin")
+    .post(secureIp.checkForYggdrasil, (req, res) => {
+
+      let email = (req.body.email != null) ? req.body.email.toLowerCase() : null;
+      let loginExpirationInMinutes = 1440; // 1 day
+
+      if ((req.body.extended_expiration != null) && (parseInt(req.body.extended_expiration) == 1)) {
+        loginExpirationInMinutes = 5760; // 4 days
+      }
+
+      return models.User
+        .findOne({
+          where: { email },
+          include: [{ all: true }]
+        })
+        .bind({})
+        .then((user) => {
+          if (!user) {
+            return usersService.createUser({
+              email: email,
+              firstname: req.body.firstname,
+              lastname: req.body.lastname,
+            });
+          }
+          return user;
+        })
+        .then((user) => {
+          this.user = user;
+          return usersService.refreshLastLogin(user);
+        })
+        .then(() => {
+          return usersService.createLoginToken({
+            urlPath: req.rfcx.url_path,
+            user: this.user,
+            expires: loginExpirationInMinutes,
+          });
+        })
+        .then((tokenInfo) => {
+          return usersService.refreshLastToken(this.user, tokenInfo);
+        })
+        .then(() => {
+          return res.status(200).json(views.models.users(req, res, this.user));
+        })
+        .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+        .catch(ValidationError, e => httpError(res, 400, null, e.message))
+        .catch(e => httpError(res, 500, e, "Error in process of login."));
   });
 
 router.route("/logout")
