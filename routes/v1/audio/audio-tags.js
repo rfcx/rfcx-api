@@ -10,6 +10,7 @@ var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").an
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var loggers = require('../../../utils/logger');
 var sequelize = require("sequelize");
+var websocket = require('../../../utils/websocket');
 
 var logDebug = loggers.debugLogger.log;
 
@@ -30,7 +31,7 @@ router.route("/:audio_id/tags")
     }
 
     return models.GuardianAudio
-      .findOne( { where: { guid: req.params.audio_id } })
+      .findOne( { where: { guid: req.params.audio_id }, include: [{ all: true }] })
       .bind({})
       .then(function(dbAudio) {
         if (!dbAudio) {
@@ -56,7 +57,7 @@ router.route("/:audio_id/tags")
         this.dbModel = dbModel;
 
         var removePromises = [];
-
+        let logTagNames = [];
         // if model has already classified this file, then remove all previous tags
         for (var wndwInd in analysisResults.results) {
           if (analysisResults.results.hasOwnProperty(wndwInd)) {
@@ -65,12 +66,7 @@ router.route("/:audio_id/tags")
             for (var tagName in currentWindow.classifications) {
               if (currentWindow.classifications.hasOwnProperty(tagName)) {
                 if (tagName.toLowerCase() !== "ambient") {
-                  logDebug('Audio tags endpoint: remove previous tags', {
-                    req: req,
-                    modelGuid: dbModel.guid,
-                    audioGuid: this.dbAudio.guid,
-                    value: tagName,
-                  });
+                  logTagNames.push(tagName);
                   var promise = models.GuardianAudioTag
                     .destroy({
                       where: {
@@ -84,10 +80,14 @@ router.route("/:audio_id/tags")
                 }
               }
             }
-
           }
         }
-
+        logDebug('Audio tags endpoint: remove previous tags', {
+          req: req,
+          modelGuid: dbModel.guid,
+          audioGuid: this.dbAudio.guid,
+          values: logTagNames,
+        });
         return Promise.all(removePromises);
       })
       .then(function() {
@@ -147,6 +147,10 @@ router.route("/:audio_id/tags")
           req: req,
           tagsJson: tagsJson,
         });
+
+        let wsObj = analysisUtils.prepareWsObject(this.dbAudio, tagsJson, this.dbModel);
+        websocket.send('createAudioPerception', wsObj);
+
         if(this.dbModel.generate_event==0){
           logDebug('Audio tags endpoint: model not generating events, finishing', { req: req });
           return tags;

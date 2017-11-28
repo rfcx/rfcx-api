@@ -44,6 +44,10 @@ exports.env = {
 
   NODE_LOG_LEVEL: "info", // error, warn, info, debug
   CLOUDWATCH_ENABLED: false, // cloudwatch should be disabled for developers by default
-  CLOUDWATCH_LOGS_GROUP_NAME: ""
+  CLOUDWATCH_LOGS_GROUP_NAME: "",
+
+  WEBSOCKET_URL: "",
+
+  YGGDRASIL_IP_MASK: "^.*(192\.168\.1\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$",
 
 }

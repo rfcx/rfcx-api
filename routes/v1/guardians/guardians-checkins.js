@@ -15,7 +15,10 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
+var websocket = require('../../../utils/websocket');
+var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
+const moment = require("moment-timezone");
 
 var logDebug = loggers.debugLogger.log;
 
@@ -41,7 +44,8 @@ router.route("/:guardian_id/checkins")
         logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json });
         // retrieve the guardian from the database
         return models.Guardian.findOne({
-          where: { guid: req.params.guardian_id }
+          where: { guid: req.params.guardian_id },
+          include: [ { all: true } ],
         });
       })
       .then(function(dbGuardian){
@@ -190,6 +194,7 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
                 audioInfoPostUpload: audioInfoPostUpload,
               });
+              this.audioInfoCurrent = audioInfo[audioInfoInd];
               return checkInHelpers.audio.saveToS3(audioInfoPostUpload)
             })
             .then(function(audioInfoPostS3Save){
@@ -225,7 +230,29 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
               });
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
-            });
+            })
+            .then(function() {
+              logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req, audioInfo: audioInfo, audioInfoInd: audioInfoInd });
+              let audioInfoCurrent = Object.assign({}, this.audioInfoCurrent);
+              models.GuardianAudio
+                .findOne({
+                  where: { id: audioInfoCurrent.audio_id },
+                  include: [ { all: true } ]
+                })
+                .then(function(dbAudio) {
+                  logDebug('Guardian checkins endpoint: founded dbAudio', {
+                    req: req,
+                    dbAudio: dbAudio,
+                  });
+                  let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
+                  websocket.send('createAudioSensation', wsObj);
+                  return true;
+                })
+                .catch(function(err) {
+                  loggers.errorLogger.log('Failed to send websocket data for guardian checkin', { req: req, err: err });
+                });
+              return true;
+            })
           proms.push(prom);
         }
         return Promise.all(proms);

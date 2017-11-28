@@ -3,6 +3,7 @@ var fs = require("fs");
 var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var models  = require("../../models");
+const moment = require("moment-timezone");
 
 
 function snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel){
@@ -71,48 +72,48 @@ exports.analysisUtils = {
             try {
                 var apiWriteBackEndpoint = "/v1/events";
                 var apiUrlDomain = options.api_url_domain;
-    
+
                 token.createAnonymousToken({
                     token_type: queueName,
                     minutes_until_expiration: 1440,
                     allow_garbage_collection: false,
                     only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
                 }).then(function(tokenInfo){
-    
+
                     var apiTokenGuid = tokenInfo.token_guid,
                         apiToken = tokenInfo.token,
                         apiTokenExpiresAt = tokenInfo.token_expires_at;
-                    
+
                     aws.sns().publish({
                         TopicArn: aws.snsTopicArn(queueName),
                         Message: JSON.stringify({
-    
+
                             api_token_guid: apiTokenGuid,
                             api_token: apiToken,
                             api_token_expires_at: apiTokenExpiresAt,
-                            api_url: apiUrlDomain+apiWriteBackEndpoint, 
-                            cognition_params: cognitionParams, 
-                            event: event 
-    
+                            api_url: apiUrlDomain+apiWriteBackEndpoint,
+                            cognition_params: cognitionParams,
+                            event: event
+
                         })
                     }, function(snsErr, snsData) {
                         if (!!snsErr && !aws.snsIgnoreError()) {
                             console.log(snsErr);
                             reject(new Error(snsErr));
                         } else {
-    
+
                             resolve();
-    
+
                         }
                     });
-    
+
                 }).catch(function(err){
                     console.log("error creating access token for analysis worker | "+err);
                     if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
                     reject(new Error(err));
                 });
-    
-    
+
+
             } catch(err) {
                 console.log(err);
                 reject(err);
@@ -139,7 +140,7 @@ exports.analysisUtils = {
         return new Promise(function(resolve, reject) {
 
             models.AudioAnalysisModel
-            .findOne({ 
+            .findOne({
               where: { guid: analysisModelGuid }
             }).then(function(dbAnalysisModel){
               if (dbAnalysisModel == null) {
@@ -175,7 +176,7 @@ exports.analysisUtils = {
                             aws.sns().publish({
                                 TopicArn: aws.snsTopicArn(queueName),
                                 Message: JSON.stringify({
-                                
+
                                     api_token_guid: apiTokenGuid,
                                     api_token: apiToken,
                                     api_token_expires_at: apiTokenExpiresAt,
@@ -189,14 +190,14 @@ exports.analysisUtils = {
                                     analysis_model_id: analysisModelGuid,
                                     analysis_model_url: analysisModelUrl,
                                     analysis_model_sha1: analysisModelSha1Checksum
-                                    
+
                                   })
                               }, function(snsErr, snsData) {
                                 if (!!snsErr && !aws.snsIgnoreError()) {
                                   console.log(snsErr);
                                   reject(new Error(snsErr));
                                 } else {
-                                  
+
                                   resolve();
 
                                 }
@@ -261,6 +262,42 @@ exports.analysisUtils = {
       });
 
     }.bind(this));
+  },
+
+  prepareWsObject: function(dbAudio, tagsJson, creator) {
+    let wsObj = [];
+    let timezone = dbAudio.Site.timezone;
+    tagsJson.forEach((tag) => {
+      wsObj.push({
+        creator: {
+          type: tag.tagged_by_model !== undefined ? 'ai' : 'user',
+          guid: creator.guid
+        },
+        time: {
+          start: {
+            UTC: moment.tz(tag.begins_at, timezone).toISOString(),
+            localTime: moment.tz(tag.begins_at, timezone).format(),
+            timeZone: timezone
+          },
+          end: {
+            UTC: moment.tz(tag.ends_at, timezone).toISOString(),
+            localTime: moment.tz(tag.ends_at, timezone).format(),
+            timeZone: timezone
+          }
+        },
+        frequency: {
+          min: 0, // no data for now
+          max: dbAudio.Format? dbAudio.Format.sample_rate : 0 // no data for now
+        },
+        guardianGuid: dbAudio.Guardian.guid,
+        probability: tag.confidence,
+        type: tag.type,
+        value: tag.value,
+        sensationGuids: [dbAudio.guid],
+        perceptionGuid: tag.guid
+      });
+    });
+    return wsObj;
   }
 
 };

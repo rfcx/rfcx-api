@@ -1,5 +1,6 @@
 var models = require("../../models");
 var sequelize = require("sequelize");
+const moment = require("moment-timezone");
 
 const eventQueryBase =
   'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
@@ -102,10 +103,39 @@ function updateEventReview(guid, confirmed, user_id) {
     });
 }
 
+function prepareWsObject(event, site) {
+  let timezone = site.timezone;
+  let guardian = event.Guardian;
+  return {
+    time: {
+      start: {
+        UTC: moment.tz(event.begins_at, timezone).toISOString(),
+        localTime: moment.tz(event.begins_at, timezone).format(),
+        timeZone: timezone
+      },
+      end: {
+        UTC: moment.tz(event.ends_at, timezone).toISOString(),
+        localTime: moment.tz(event.ends_at, timezone).format(),
+        timeZone: timezone
+      }
+    },
+    location: {
+      coordinates: [guardian.longitude, guardian.latitude, site.guid],
+      type: 'point'
+    },
+    type: event.Type.value,
+    value: event.Value.value,
+    probability: event.confidence,
+    sensationGuids: [event.Audio.guid],
+    cognitionGuid: event.guid
+  }
+}
+
 module.exports = {
   getEventByGuid: getEventByGuid,
   getGuardianAudioEventValues: getGuardianAudioEventValues,
   getGuardianAudioEventTypes: getGuardianAudioEventTypes,
   updateEventReview: updateEventReview,
   eventQueryBase: eventQueryBase,
+  prepareWsObject: prepareWsObject,
 };
