@@ -144,7 +144,7 @@ exports.audio = {
                     audioInfo.dbAudioObj.save().then(() => {
                       return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
                         .catch(err => {
-                          if (!!err) { console.log("could not create sensations for audio guid "+audioInfo.dbAudioObj.guid); }
+                          if (!!err) { console.log("could not create sensations for audio guid "+audioInfo.dbAudioObj.guid, err); }
                         })
                     });
 
@@ -268,7 +268,7 @@ exports.audio = {
         audioInfo.isSaved.sqs = true;
         return audioInfo;
       });
-      
+
   },
 
 
