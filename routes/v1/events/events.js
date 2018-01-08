@@ -63,6 +63,7 @@ function prepareOpts(req) {
     types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : undefined,
     values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
     sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
+    guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
     models: req.query.models? (Array.isArray(req.query.models)? req.query.models : [req.query.models]) : undefined,
     excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)?
                           req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
@@ -101,6 +102,7 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
+  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
@@ -140,6 +142,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
+  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
