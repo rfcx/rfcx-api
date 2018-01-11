@@ -34,4 +34,33 @@ router.route("/")
       .catch(e => { console.log('e', e); httpError(res, 500, e, "Filter preset couldn't be created.")});
   });
 
+router.route("/:guid")
+  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    var serviceParams = {
+      json: req.body.json,
+    };
+
+    usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      .bind({})
+      .then((user) => {
+        this.user = user;
+        serviceParams.updated_by = user.id;
+        return filterPresetsService.getFilterPresetByGuid(req.params.guid);
+      })
+      .then((filterPreset) => {
+        if (filterPreset.UserCreated.guid !== this.user.guid) {
+          throw new ValidationError('Only user who created filter preset can update it.')
+        }
+        return filterPresetsService.updateFilterPreset(filterPreset, serviceParams);
+      })
+      .then((filterPreset) => {
+        return filterPresetsService.formatFilterPreset(filterPreset);
+      })
+      .then(result => res.status(200).json(result))
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(res, 500, e, "Filter preset couldn't be updated.")});
+  });
+
 module.exports = router;

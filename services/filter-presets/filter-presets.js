@@ -16,6 +16,15 @@ function validateCreateParams(params) {
   return params.validate();
 }
 
+function validateUpdateParams(params) {
+  params = new Converter(params);
+
+  params.convert('json').objToString();
+  params.convert('updated_by').toNonNegativeInt();
+
+  return params.validate();
+}
+
 function formatFilterPreset(filterPreset) {
   return {
     type: filterPreset.type,
@@ -30,7 +39,33 @@ function createFilterPreset(params) {
     });
 }
 
+function getFilterPresetByGuid(guid) {
+  return models.FilterPreset
+    .findOne({
+      where: { guid: guid },
+      include: [{ all: true }]
+    })
+    .then((filterPreset) => {
+      if (!filterPreset) {
+        throw new sequelize.EmptyResultError('Filter Preset with given guid not found.');
+      }
+      return filterPreset;
+    });
+}
+
+function updateFilterPreset(filterPreset, params) {
+  return validateUpdateParams(params)
+    .then(data => {
+      return filterPreset.update(data);
+    })
+    .then(() => {
+      return filterPreset.reload();
+    })
+}
+
 module.exports = {
   createFilterPreset,
   formatFilterPreset,
+  getFilterPresetByGuid,
+  updateFilterPreset,
 }
