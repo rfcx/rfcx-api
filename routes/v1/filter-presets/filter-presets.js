@@ -63,4 +63,17 @@ router.route("/:guid")
       .catch(e => { console.log('e', e); httpError(res, 500, e, "Filter preset couldn't be updated.")});
   });
 
+router.route("/:guid")
+  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+
+    filterPresetsService.getFilterPresetByGuid(req.params.guid)
+      .then((filterPreset) => {
+        return filterPresetsService.formatFilterPreset(filterPreset);
+      })
+      .then(result => res.status(200).json(result))
+      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(res, 500, e, "Can't get filter preset")});
+  });
+
 module.exports = router;
