@@ -147,6 +147,14 @@ module.exports = class Conversion {
     });
   }
 
+  objToString() {
+    this.conversions.push(()=>{
+      if (typeof(this.value) === 'object') {
+        this.value = JSON.stringify(this.value);
+      }
+    });
+  }
+
   toBoolean(){
     this.conversions.push(()=>{
       this.value = (this.value.toString() === 'true' || this.value.toString() === '1');
