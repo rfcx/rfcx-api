@@ -4,6 +4,7 @@ const ValidationError = require("../../utils/converter/validation-error");
 var models  = require("../../models");
 var sequelize = require("sequelize");
 var Promise = require("bluebird");
+const userService = require('../users/users-service');
 
 function validateCreateParams(params) {
   params = new Converter(params);
@@ -29,6 +30,8 @@ function formatFilterPreset(filterPreset) {
   return {
     type: filterPreset.type,
     json: JSON.parse(filterPreset.json),
+    userCreated: userService.formatUser(filterPreset.UserCreated, true),
+    userUpdated: userService.formatUser(filterPreset.UserUpdated, true),
   };
 }
 
@@ -53,6 +56,13 @@ function getFilterPresetByGuid(guid) {
     });
 }
 
+function getFilterPresets() {
+  return models.FilterPreset
+    .findAll({
+      include: [{ all: true }]
+    });
+}
+
 function updateFilterPreset(filterPreset, params) {
   return validateUpdateParams(params)
     .then(data => {
@@ -67,5 +77,6 @@ module.exports = {
   createFilterPreset,
   formatFilterPreset,
   getFilterPresetByGuid,
+  getFilterPresets,
   updateFilterPreset,
 }
