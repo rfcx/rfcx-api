@@ -15,6 +15,7 @@ router.route("/")
   .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 
     var serviceParams = {
+      name: req.body.name,
       type: req.body.type || null,
       json: req.body.json,
     };

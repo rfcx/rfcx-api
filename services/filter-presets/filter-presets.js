@@ -9,8 +9,9 @@ const userService = require('../users/users-service');
 function validateCreateParams(params) {
   params = new Converter(params);
 
-  params.convert('json').objToString();
+  params.convert('name').toString();
   params.convert('type').optional().toString();
+  params.convert('json').objToString();
   params.convert('created_by').toNonNegativeInt();
   params.convert('updated_by').toNonNegativeInt();
 
@@ -28,6 +29,7 @@ function validateUpdateParams(params) {
 
 function formatFilterPreset(filterPreset) {
   return {
+    name: filterPreset.name,
     type: filterPreset.type,
     json: JSON.parse(filterPreset.json),
     userCreated: userService.formatUser(filterPreset.UserCreated, true),
@@ -39,6 +41,11 @@ function createFilterPreset(params) {
   return validateCreateParams(params)
     .then(data => {
       return models.FilterPreset.create(data);
+    })
+    .then((filterPreset) => {
+      return filterPreset.reload({
+        include: [{ all: true }]
+      });
     });
 }
 
@@ -69,8 +76,10 @@ function updateFilterPreset(filterPreset, params) {
       return filterPreset.update(data);
     })
     .then(() => {
-      return filterPreset.reload();
-    })
+      return filterPreset.reload({
+        include: [{ all: true }]
+      });
+    });
 }
 
 module.exports = {
