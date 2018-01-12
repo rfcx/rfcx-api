@@ -7,6 +7,13 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.UUIDV4,
       unique: true
     },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+      }
+    },
     type: {
       type: DataTypes.STRING,
       allowNull: true,
