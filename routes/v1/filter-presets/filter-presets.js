@@ -20,7 +20,16 @@ router.route("/")
       json: req.body.json,
     };
 
-    usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+    filterPresetsService.doesNameExist(serviceParams.name)
+      .then((exist) => {
+        if (exist) {
+          throw new ValidationError('Filter preset with this name already exist.');
+        }
+        return true;
+      })
+      .then(() => {
+        return usersService.getUserByGuid(req.rfcx.auth_token_info.guid);
+      })
       .then((user) => {
         serviceParams.created_by = user.id;
         serviceParams.updated_by = user.id;
@@ -80,7 +89,11 @@ router.route("/:guid")
 router.route("/")
   .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
 
-    filterPresetsService.getFilterPresets()
+    let serviceParams = {
+      type: req.query.type || null,
+    };
+
+    filterPresetsService.getFilterPresets(serviceParams)
       .then((filterPresets) => {
         return filterPresets.map((filterPreset) => {
           return filterPresetsService.formatFilterPreset(filterPreset);

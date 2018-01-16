@@ -29,6 +29,7 @@ function validateUpdateParams(params) {
 
 function formatFilterPreset(filterPreset) {
   return {
+    guid: filterPreset.guid,
     name: filterPreset.name,
     type: filterPreset.type,
     json: JSON.parse(filterPreset.json),
@@ -49,6 +50,16 @@ function createFilterPreset(params) {
     });
 }
 
+function doesNameExist(name) {
+  return models.FilterPreset
+    .findOne({
+      where: { name: name }
+    })
+    .then((filterPreset) => {
+      return !!filterPreset;
+    });
+}
+
 function getFilterPresetByGuid(guid) {
   return models.FilterPreset
     .findOne({
@@ -63,9 +74,12 @@ function getFilterPresetByGuid(guid) {
     });
 }
 
-function getFilterPresets() {
+function getFilterPresets(params) {
+  let opts = {};
+  if (params.type) opts.type = params.type
   return models.FilterPreset
     .findAll({
+      where: opts,
       include: [{ all: true }]
     });
 }
@@ -88,4 +102,5 @@ module.exports = {
   getFilterPresetByGuid,
   getFilterPresets,
   updateFilterPreset,
+  doesNameExist,
 }
