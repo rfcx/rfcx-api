@@ -19,6 +19,13 @@ module.exports = {
       json: {
         type: Sequelize.TEXT('long'),
         allowNull: false
+      },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+        }
       }
     });
 
