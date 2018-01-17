@@ -133,6 +133,9 @@ var routes = {
     "messages": [
       require("./routes/v1/messages/messages"),
     ],
+    "filter-presets": [
+      require("./routes/v1/filter-presets/filter-presets"),
+    ],
   },
   "v2": {
   }
