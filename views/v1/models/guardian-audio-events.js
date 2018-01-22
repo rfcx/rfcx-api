@@ -121,6 +121,8 @@ exports.models = {
             longitude: dbRow.shadow_longitude,
             begins_at: dbRow.begins_at,
             ends_at: dbRow.ends_at,
+            begins_at_local: dbRow.begins_at_local,
+            ends_at_local: dbRow.ends_at_local,
             type: dbRow.event_type,
             value: dbRow.event_value,
             confidence: dbRow.confidence,

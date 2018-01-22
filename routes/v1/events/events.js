@@ -64,6 +64,8 @@ function prepareOpts(req) {
     createdBefore: req.query.created_before,
     startingAfter: req.query.starting_after,
     endingBefore: req.query.ending_before,
+    dayTimeLocalAfter: req.query.daytime_local_after,
+    dayTimeLocalBefore: req.query.daytime_local_before,
     minimumConfidence: req.query.minimum_confidence,
     types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : undefined,
     values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
@@ -104,6 +106,8 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -145,6 +149,8 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
