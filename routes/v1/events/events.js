@@ -64,6 +64,8 @@ function prepareOpts(req) {
     createdBefore: req.query.created_before,
     startingAfter: req.query.starting_after,
     endingBefore: req.query.ending_before,
+    startingAfterLocal: req.query.starting_after_local,
+    endingBeforeLocal: req.query.ending_before_local,
     dayTimeLocalAfter: req.query.daytime_local_after,
     dayTimeLocalBefore: req.query.daytime_local_before,
     minimumConfidence: req.query.minimum_confidence,
@@ -106,6 +108,8 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
   sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
   sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
@@ -149,6 +153,8 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
   sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
   sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
