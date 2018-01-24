@@ -76,7 +76,7 @@ function prepareOpts(req) {
     models: req.query.models? (Array.isArray(req.query.models)? req.query.models : [req.query.models]) : undefined,
     excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)?
                           req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
-    weekdays: req.query.weekdays? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
+    weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
     showExperimental: req.query.showExperimental !== undefined? (req.query.showExperimental === 'true') : undefined,
     omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
     omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
@@ -125,7 +125,7 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
-  sql = sqlUtils.condAdd(sql, opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) in (:weekdays)');
+  sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
@@ -176,7 +176,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
-  sql = sqlUtils.condAdd(sql, opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) in (:weekdays)');
+  sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
