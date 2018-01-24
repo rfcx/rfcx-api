@@ -21,6 +21,11 @@ var ValidationError = require("../../../utils/converter/validation-error");
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
+/**
+ * weekdays[] is an array with numbers [0, 1, 2, 3, 4, 5, 6]
+ * 0 - Monday, 6 is Sunday
+ */
+
 function prepareOpts(req) {
 
   let order, dir;
@@ -64,6 +69,10 @@ function prepareOpts(req) {
     createdBefore: req.query.created_before,
     startingAfter: req.query.starting_after,
     endingBefore: req.query.ending_before,
+    startingAfterLocal: req.query.starting_after_local,
+    endingBeforeLocal: req.query.ending_before_local,
+    dayTimeLocalAfter: req.query.daytime_local_after,
+    dayTimeLocalBefore: req.query.daytime_local_before,
     minimumConfidence: req.query.minimum_confidence,
     types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : undefined,
     values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
@@ -72,6 +81,7 @@ function prepareOpts(req) {
     models: req.query.models? (Array.isArray(req.query.models)? req.query.models : [req.query.models]) : undefined,
     excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)?
                           req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
+    weekdays: req.query.weekdays? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
     showExperimental: req.query.showExperimental !== undefined? (req.query.showExperimental === 'true') : undefined,
     omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
     omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
@@ -103,6 +113,10 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -110,6 +124,7 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
+  sql = sqlUtils.condAdd(sql, opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) in (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
@@ -143,6 +158,10 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -150,6 +169,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
+  sql = sqlUtils.condAdd(sql, opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) in (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
