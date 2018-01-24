@@ -116,7 +116,7 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
   sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
   sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
-  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -161,7 +161,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
   sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
   sql = sqlUtils.condAdd(sql, opts.dayTimeLocalAfter, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
-  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) > :dayTimeLocalBefore');
+  sql = sqlUtils.condAdd(sql, opts.dayTimeLocalBefore, ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
