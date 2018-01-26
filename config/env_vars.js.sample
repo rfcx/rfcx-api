@@ -47,5 +47,6 @@ exports.env = {
   CLOUDWATCH_LOGS_GROUP_NAME: "",
 
   AUTH0_DOMAIN: "",
+  AUTH0_CERT_PATH: "",
 
 }
