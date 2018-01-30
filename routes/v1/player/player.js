@@ -16,14 +16,14 @@ router.route("/login")
     };
 
     if ( process.env.PLAYER_PASSCODES.split(",").indexOf(userInput.pswd) > -1 ) {
-    
+
       return token.createAnonymousToken({
         reference_tag: "stream-web",
         token_type: "stream-web",
         created_by: "stream-web",
         minutes_until_expiration: 1440, // tokens last for a full day
         allow_garbage_collection: false,
-        only_allow_access_to: [ 
+        only_allow_access_to: [
           "^/v1/player/web",
           "^/v1/guardians/[0123456789abcdef]{12}/audio.json$",
           "^/v1/audio/[0123456789abcdef]{8}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{12}/audio.json$"
@@ -39,14 +39,14 @@ router.route("/login")
         });
 
         return null;
-       
+
       }).catch(function(err){
         console.log("error creating access token for audio player | "+err);
         res.status(500).json({});
       });
 
     } else {
-      res.status(401).json({ 
+      res.status(401).json({
         message: "invalid password", error: { status: 401 }
       });
     }
@@ -56,14 +56,12 @@ router.route("/login")
 
 
 router.route("/web")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
-
-
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), function(req, res) {
 
     return models.GuardianAudioHighlight
-      .findAll({ 
+      .findAll({
         where: { group: "web-player" },
-        include: [ { all: true } ], 
+        include: [ { all: true } ],
         order: [ ["order", "ASC"] ]
       }).then(function(dbAudioHighlights){
 
@@ -80,8 +78,7 @@ router.route("/web")
         if (!!err) { res.status(500).json({msg:"failed to find guardian audio highlights"}); }
       });
 
-
-  })
+  });
 ;
 
 module.exports = router;
