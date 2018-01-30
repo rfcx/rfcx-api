@@ -1,21 +1,27 @@
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const path = require('path');
-const fs = require('fs');
+const jwksRsa = require('jwks-rsa-passport-edition');
 
-const cert = fs.readFileSync(path.join(__dirname, process.env.AUTH0_CERT_PATH));
+const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken();
+
+const cert = jwksRsa.passportJwtSecret({
+  cache: true,
+  rateLimit: true,
+  jwksRequestsPerMinute: 5,
+  jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
+});
 
 var opts = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: cert,
+  jwtFromRequest: jwtExtractor,
+  secretOrKeyProvider: cert,
   issuer: `https://${process.env.AUTH0_DOMAIN}/`,
-  audience: `https://${process.env.AUTH0_DOMAIN}/api/v2/`,
   algorithms: ['RS256'],
-  passReqToCallback: false
+  passReqToCallback: true
 };
 
-let jwtStrategy = new JwtStrategy(opts, (jwt_payload, done) => {
-  return done(null, {});
+let jwtStrategy = new JwtStrategy(opts, (req, jwt_payload, done) => {
+  req.rfcx.auth0 = true;
+  done(null, jwt_payload);
 });
 
 exports.JwtStrategy = jwtStrategy;

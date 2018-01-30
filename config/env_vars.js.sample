@@ -51,6 +51,5 @@ exports.env = {
   YGGDRASIL_IP_MASK: "^.*(192\.168\.1\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$",
 
   AUTH0_DOMAIN: "",
-  AUTH0_CERT_PATH: "",
 
 }
