@@ -5,12 +5,12 @@ var regex = require("../../utils/misc/regex.js");
 
 exports.authenticateAs = function(req,token,done,authUser){
 
-  // TO DO 
+  // TO DO
   // need to specify how to exclude access to many irrelevant endpoints (like those intended for guardians)
 
   models.User
     .findOne({
-        where: { guid: authUser.guid }, 
+        where: { guid: authUser.guid },
         include: [ { all: true } ]
     }).then(function(dbUser){
 
@@ -43,7 +43,8 @@ exports.authenticateAs = function(req,token,done,authUser){
                 id: dbUser.Token[i].id,
                 guid: dbUser.guid,
                 owner_id: dbUser.id,
-                owner_guid: dbUser.guid
+                owner_guid: dbUser.guid,
+                userType: 'rfcx'
               };
 
               if (verbose_logging) {

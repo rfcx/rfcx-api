@@ -20,7 +20,7 @@ var opts = {
 };
 
 let jwtStrategy = new JwtStrategy(opts, (req, jwt_payload, done) => {
-  req.rfcx.auth0 = true;
+  jwt_payload.userType = 'auth0';
   done(null, jwt_payload);
 });
 
