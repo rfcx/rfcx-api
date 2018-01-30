@@ -8,14 +8,13 @@ const cert = jwksRsa.passportJwtSecret({
   cache: true,
   rateLimit: true,
   jwksRequestsPerMinute: 5,
-  jwksUri: `https://rfcx.eu.auth0.com/.well-known/jwks.json`
+  jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
 });
 
 var opts = {
   jwtFromRequest: jwtExtractor,
   secretOrKeyProvider: cert,
   issuer: `https://${process.env.AUTH0_DOMAIN}/`,
-  audience: `https://${process.env.AUTH0_DOMAIN}/api/v2/`,
   algorithms: ['RS256'],
   passReqToCallback: true
 };
