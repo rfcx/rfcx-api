@@ -17,16 +17,16 @@ function requireTokenType(type) {
 }
 
 /**
- * Checks if user has required roles to access the endpoint
+ * Checks if user has required role to access the endpoint
  * How to use:
- * var requireRoles = require('..../middleware/authorization/authorization').requireRoles;
- * router.route("/").get(passport.authenticate(['token', 'jwt'], { session:false }), requireRoles(['rfcxUser']), function(req, res) { ... })
+ * var requireRole = require('..../middleware/authorization/authorization').requireRole;
+ * router.route("/").get(passport.authenticate(['token', 'jwt'], { session:false }), requireRole(['rfcxUser']), function(req, res) { ... })
  * @param {Array<String>} expectedRoles
  */
-function requireRoles(expectedRoles) {
+function requireRole(expectedRoles) {
   expectedRoles = (Array.isArray(expectedRoles)? expectedRoles : [expectedRoles]);
   return function(req, res, next) {
-    if (expectedRoles.length === 0){ return next(); }
+    if (expectedRoles.length === 0 || req.user.userType !== 'auth0'){ return next(); }
     if (!req.user) { return res.sendStatus(403); }
     var roles = req.user.roles;
     var allowed = expectedRoles.some((role) => {
@@ -38,5 +38,5 @@ function requireRoles(expectedRoles) {
 
 module.exports = {
   requireTokenType,
-  requireRoles,
+  requireRole,
 };
