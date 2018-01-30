@@ -21,7 +21,7 @@ var opts = {
 
 let jwtStrategy = new JwtStrategy(opts, (req, jwt_payload, done) => {
   req.rfcx.auth0 = true;
-  done(null, {});
+  done(null, jwt_payload);
 });
 
 exports.JwtStrategy = jwtStrategy;

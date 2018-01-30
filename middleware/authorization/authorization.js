@@ -16,6 +16,27 @@ function requireTokenType(type) {
   };
 }
 
+/**
+ * Checks if user has required roles to access the endpoint
+ * How to use:
+ * var requireRoles = require('..../middleware/authorization/authorization').requireRoles;
+ * router.route("/").get(passport.authenticate(['token', 'jwt'], { session:false }), requireRoles(['rfcxUser']), function(req, res) { ... })
+ * @param {Array<String>} expectedRoles
+ */
+function requireRoles(expectedRoles) {
+  expectedRoles = (Array.isArray(expectedRoles)? expectedRoles : [expectedRoles]);
+  return function(req, res, next) {
+    if (expectedRoles.length === 0){ return next(); }
+    if (!req.user) { return res.sendStatus(403); }
+    var roles = req.user.roles;
+    var allowed = expectedRoles.some((role) => {
+      return roles.indexOf(role) !== -1;
+    });
+    return allowed ? next() : res.sendStatus(403);;
+  }
+};
+
 module.exports = {
   requireTokenType,
+  requireRoles,
 };
