@@ -6,10 +6,10 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 var sequelize = require('sequelize');
-var requireRole = require('../../../middleware/authorization/authorization').requireRole;
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt'], { session:false }), requireRole(['rfcxUser', 'admin']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
 
     models.GuardianSite
       .findAll({
