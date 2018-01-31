@@ -4,29 +4,17 @@ var Converter = require("../../utils/converter/converter");
 var Promise = require("bluebird");
 var sitesService = require("../sites/sites-service");
 const sensationsService = require('..//sensations/sensations-service');
-const token = require("../..//utils/internal-rfcx/token.js").token;
-const hash = require('../../utils/misc/hash').hash;
-
-function getUserByParams(params) {
-  return models.User
-    .findOne({
-      where: params,
-      include: [{ all: true }]
-    });
-}
 
 function getUserByGuid(guid) {
-  return getUserByParams({ guid })
+  return models.User
+    .findOne({
+      where: { guid: guid },
+      include: [{ all: true }]
+    })
     .then((user) => {
-      if (!user) { throw new sequelize.EmptyResultError('User with given guid not found.'); }
-      return user;
-    });
-}
-
-function getUserByEmail(email) {
-  return getUserByParams({ email })
-    .then((user) => {
-      if (!user) { throw new sequelize.EmptyResultError('User with given email not found.'); }
+      if (!user) {
+        throw new sequelize.EmptyResultError('User with given guid not found.');
+      }
       return user;
     });
 }
@@ -159,49 +147,8 @@ function formatCheckin(checkin) {
   };
 }
 
-function refreshLastLogin(user) {
-  user.last_login_at = new Date();
-  return user.save();
-}
-
-function refreshLastToken(user, tokenInfo) {
-  user.VisibleToken = {
-    token: tokenInfo.token,
-    token_expires_at: tokenInfo.token_expires_at,
-  };
-  return true;
-}
-
-function createLoginToken(opts) {
-  return token.createUserToken({
-    token_type: 'login',
-    created_by: opts.urlPath,
-    reference_tag: opts.user.guid,
-    owner_primary_key: opts.user.id,
-    minutes_until_expiration: opts.expires,
-  });
-}
-
-function createUser(opts) {
-  const pswd = hash.randomString(20);
-  console.log('\n\npassword!!!', pswd, '\n\n');
-  const password_salt = hash.randomHash(320);
-
-  return models.User
-    .create({
-      type: 'user',
-      firstname: opts.firstname || null,
-      lastname: opts.lastname || null,
-      email: opts.email.toLowerCase(),
-      auth_password_salt: password_salt,
-      auth_password_hash: hash.hashedCredentials(password_salt, pswd),
-      auth_password_updated_at: new Date(),
-    });
-}
-
 module.exports = {
   getUserByGuid: getUserByGuid,
-  getUserByEmail: getUserByEmail,
   getAllUsers: getAllUsers,
   formatUser: formatUser,
   formatUsers: formatUsers,
@@ -209,8 +156,4 @@ module.exports = {
   updateUserInfo: updateUserInfo,
   getUserLastCheckin: getUserLastCheckin,
   formatCheckin: formatCheckin,
-  refreshLastLogin: refreshLastLogin,
-  refreshLastToken: refreshLastToken,
-  createLoginToken: createLoginToken,
-  createUser: createUser,
 };
