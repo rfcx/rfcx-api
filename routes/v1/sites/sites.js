@@ -9,7 +9,7 @@ var sequelize = require('sequelize');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate('token', { session:false }), function(req, res) {
 
     models.GuardianSite
       .findAll({
