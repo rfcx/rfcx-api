@@ -3,20 +3,28 @@ var sequelize = require("sequelize");
 var Converter = require("../../utils/converter/converter");
 var Promise = require("bluebird");
 var sitesService = require("../sites/sites-service");
+const hash = require('../../utils/misc/hash').hash;
+const guid = require('../../utils/misc/guid');
 const sensationsService = require('..//sensations/sensations-service');
 
-function getUserByGuid(guid) {
+function getUserByParams(params) {
   return models.User
     .findOne({
-      where: { guid: guid },
+      where: params,
       include: [{ all: true }]
     })
     .then((user) => {
-      if (!user) {
-        throw new sequelize.EmptyResultError('User with given guid not found.');
-      }
+      if (!user) { throw new sequelize.EmptyResultError('User with given guid not found.'); }
       return user;
     });
+}
+
+function getUserByGuid(guid) {
+  return this.getUserByParams({ guid });
+}
+
+function getUserByEmail(email) {
+  return this.getUserByParams({ email });
 }
 
 function getAllUsers() {
@@ -24,6 +32,65 @@ function getAllUsers() {
     .findAll({
       include: [{ all: true }]
     });
+}
+
+function refreshLastLogin(user) {
+  user.last_login_at = new Date();
+  return user.save()
+             .then(() => {
+               return user.reload({ include: [{ all: true }] });
+             });
+}
+
+function createUser(opts) {
+  let data = combineNewUserData(opts);
+  return models.User
+    .create(data)
+    .then(user => {
+      return user.reload({ include: [{ all: true }] });
+    });
+}
+
+function findOrCreateUser(where, defaults) {
+  let data = combineNewUserData(defaults);
+  return models.User
+    .findOrCreate({
+      where: where,
+      defaults: data,
+    })
+    .bind({})
+    .spread((user, created) => {
+      this.created = created;
+      return user.reload({ include: [{ all: true }] });
+    })
+    .then(user => {
+      return [user, this.created];
+    })
+}
+
+function combineNewUserData(opts) {
+  let passwordData = getPasswordData(opts.password);
+  return {
+    guid: opts.guid || guid.generate(),
+    type: 'user',
+    firstname: opts.firstname || '',
+    lastname: opts.lastname || '',
+    email: opts.email,
+    auth_password_salt: passwordData.auth_password_salt,
+    auth_password_hash: passwordData.auth_password_hash,
+    auth_password_updated_at: passwordData.auth_password_updated_at,
+    rfcx_system: (opts.rfcx_system !== undefined? opts.rfcx_system : false),
+  };
+}
+
+function getPasswordData(password) {
+  password = password || hash.randomString(50);
+  let password_salt = hash.randomHash(320);
+  return {
+    auth_password_salt: password_salt,
+    auth_password_hash: hash.hashedCredentials(password_salt, password),
+    auth_password_updated_at: new Date()
+  };
 }
 
 function formatUser(user, short) {
@@ -148,12 +215,17 @@ function formatCheckin(checkin) {
 }
 
 module.exports = {
-  getUserByGuid: getUserByGuid,
-  getAllUsers: getAllUsers,
-  formatUser: formatUser,
-  formatUsers: formatUsers,
-  updateSiteRelations: updateSiteRelations,
-  updateUserInfo: updateUserInfo,
-  getUserLastCheckin: getUserLastCheckin,
-  formatCheckin: formatCheckin,
+  getUserByParams,
+  getUserByGuid,
+  getUserByEmail,
+  getAllUsers,
+  createUser,
+  findOrCreateUser,
+  refreshLastLogin,
+  formatUser,
+  formatUsers,
+  updateSiteRelations,
+  updateUserInfo,
+  getUserLastCheckin,
+  formatCheckin,
 };
