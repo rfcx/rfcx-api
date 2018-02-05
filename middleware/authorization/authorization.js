@@ -36,7 +36,21 @@ function hasRole(expectedRoles) {
   }
 };
 
+/**
+ * All DB users have attribute rfcx_system. Dev team and old RFCx users have rfcx_system === true
+ * All other users which were authorized through auth0 or other services have rfcx_system === false
+ * This middleware checks if user has rfcx_system set to true and denies access if it's false
+ */
+function isRFCxUser() {
+  return function(req, res, next) {
+    // if (expectedRoles.length === 0 || req.user.userType !== 'auth0'){ return next(); }
+    if (!req.user || req.user.rfcx_system === false) { return res.sendStatus(403); }
+    return  next();
+  }
+}
+
 module.exports = {
   requireTokenType,
   hasRole,
+  isRFCxUser,
 };

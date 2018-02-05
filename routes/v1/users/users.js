@@ -51,11 +51,23 @@ router.route("/login")
         where: { email: userInput.email }
       }).then(function(dbUser){
 
-        if (dbUser == null) {
-          res.status(401).json({
+        if (dbUser === null) {
+          return res.status(401).json({
             message: "invalid email or password", error: { status: 401 }
           });
-        } else if (dbUser.auth_password_hash == hash.hashedCredentials(dbUser.auth_password_salt,userInput.pswd)) {
+        } else {
+
+          if (dbUser.rfcx_system !== undefined && dbUser.rfcx_system === false) {
+            return res.status(403).json({
+              message: 'You don\'t have required permissions', error: { status: 403 }
+            });
+          }
+
+          if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt,userInput.pswd)) {
+            return res.status(401).json({
+              message: "invalid email or password", error: { status: 401 }
+            });
+          }
 
           dbUser.last_login_at = new Date();
           dbUser.save();
@@ -82,10 +94,6 @@ router.route("/login")
             });
           });
 
-        } else {
-          return res.status(401).json({
-            message: "invalid email or password", error: { status: 401 }
-          });
         }
 
       }).catch(function(err){
@@ -140,7 +148,7 @@ router.route("/register")
 
         if (!wasCreated) {
           res.status(409).json({
-            message: "A user with that username or email already exists", error: { status: 409 }
+            message: "A user with such username or email already exists", error: { status: 409 }
           });
         } else {
 
@@ -199,7 +207,8 @@ router.route("/send-reset-password-link")
         // if doesn't exists, simply do nothing
         // don't tell a client that e-mail doesn't exist in terms of security
         // this will prevent us from brute-force users by e-mails
-        if (!dbUser) {
+        // Also don't allow to reset password for users which are not RFCx user (e.g. auth0 users)
+        if (!dbUser || dbUser.rfcx_system === false) {
           res.status(200).json({});
           return Promise.reject();
         }
@@ -273,7 +282,8 @@ router.route("/reset-password")
       })
       .then(function(dbUser) {
         // if user was not found, then token has invalid user data. Destroy this token.
-        if (!dbUser) {
+        // Also do the same if user is not RFCx user (e.g. auth0 user)
+        if (!dbUser || dbUser.rfcx_system === false) {
           this.dbToken.destroy();
           httpError(res, 400, null, 'Invalid token. Please start reset password process once again.');
           return Promise.reject();
@@ -331,6 +341,10 @@ router.route("/change-password")
       .then(function(dbUser) {
         if (!dbUser) {
           httpError(res, 404, null, 'User with specified guid not found.');
+          return Promise.reject();
+        }
+        if (dbUser.rfcx_system !== undefined && dbUser.rfcx_system === false) {
+          httpError(res, 403, null, 'You don\'t have required permissions.');
           return Promise.reject();
         }
         if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
