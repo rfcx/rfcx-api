@@ -42,6 +42,7 @@ function checkDBUser(req, jwtPayload, done) {
       firstname: jwtPayload.firstname,
       lastname: jwtPayload.lastname,
       email: jwtPayload.email,
+      rfcx_system: false,
     }
   )
   .spread((user, created) => {

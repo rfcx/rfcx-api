@@ -79,6 +79,7 @@ function combineNewUserData(opts) {
     auth_password_salt: passwordData.auth_password_salt,
     auth_password_hash: passwordData.auth_password_hash,
     auth_password_updated_at: passwordData.auth_password_updated_at,
+    rfcx_system: (opts.rfcx_system !== undefined? opts.rfcx_system : false),
   };
 }
 

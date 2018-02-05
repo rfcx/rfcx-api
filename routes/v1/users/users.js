@@ -152,6 +152,7 @@ router.route("/register")
           });
         } else {
 
+          dbUser.rfcx_system = true;
           dbUser.type = userInput.type;
           dbUser.firstname = userInput.firstname;
           dbUser.lastname = userInput.lastname;
