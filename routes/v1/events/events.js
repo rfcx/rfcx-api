@@ -97,8 +97,7 @@ function countData(req) {
                    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
                    'WHERE 1=1 ';
 
-  sql = sqlUtils.condAdd(sql, true, ' AND Guardian.latitude != 0');
-  sql = sqlUtils.condAdd(sql, true, ' AND Guardian.longitude != 0');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
@@ -139,8 +138,7 @@ function queryData(req) {
 
   let sql = eventsService.eventQueryBase + 'WHERE 1=1 ';
 
-  sql = sqlUtils.condAdd(sql, true, ' AND Guardian.latitude != 0');
-  sql = sqlUtils.condAdd(sql, true, ' AND Guardian.longitude != 0');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
