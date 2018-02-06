@@ -32,7 +32,7 @@ router.route("/:guardian_id/audio")
           }).then(function(dbAudio){
 
             if (dbAudio.length < 1) {
-              httpError(res, 404, "database");
+              httpError(req, res, 404, "database");
             } else {
               views.models.guardianAudioJson(req,res,dbAudio)
                 .then(function(json){ res.status(200).json(json); });

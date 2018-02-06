@@ -19,7 +19,7 @@ router.route("/")
       }).then(function(dbSite){
 
         if (dbSite.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           res.status(200).json(views.models.guardianSites(req,res,dbSite));
         }
@@ -47,7 +47,7 @@ router.route("/statistics/audio")
       .spread((data) => {
         res.status(200).json(data);
       })
-      .catch(e => httpError(res, 500, e, "Couldn't get sites statistics."));
+      .catch(e => httpError(req, res, 500, e, "Couldn't get sites statistics."));
 
   });
 
@@ -61,7 +61,7 @@ router.route("/:site_id")
       }).then(function(dbSite){
 
         if (dbSite.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           res.status(200).json(views.models.guardianSites(req,res,dbSite));
         }
@@ -83,7 +83,7 @@ router.route("/:site_id/bounds")
       })
       .then(function(dbSite){
         if (!dbSite) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           dbSite.bounds = {
             type: req.body.type,

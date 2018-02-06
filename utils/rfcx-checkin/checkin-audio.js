@@ -14,6 +14,13 @@ var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analy
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
 var SensationsService = require("../../services/sensations/sensations-service");
 
+const moment = require("moment-timezone");
+var urls = require('../../utils/misc/urls');
+
+var loggers = require('../../utils/logger');
+var logDebug = loggers.debugLogger.log;
+var logError = loggers.errorLogger.log;
+
 exports.audio = {
 
   info: function(audioFiles, apiUrlDomain, audioMeta, dbGuardian, dbCheckIn) {
@@ -91,20 +98,18 @@ exports.audio = {
   processUpload: function(audioInfo) {
     return new Promise(function(resolve, reject) {
         try {
-
           // unzip uploaded audio file into upload directory
           audioInfo.unZipStream = fs.createWriteStream(audioInfo.unzipLocalPath);
-          fs.createReadStream(audioInfo.uploadLocalPath).pipe(zlib.createGunzip()).pipe(audioInfo.unZipStream);
+          fs.createReadStream(audioInfo.uploadLocalPath)
+            .pipe(zlib.createGunzip())
+            .pipe(audioInfo.unZipStream);
           // when the output stream closes, proceed asynchronously...
           audioInfo.unZipStream.on("close", function(){
-
             // calculate checksum of unzipped file
             audioInfo.sha1Hash = hash.fileSha1(audioInfo.unzipLocalPath);
             // compare to checksum received from guardian
             if (audioInfo.sha1Hash === audioInfo.guardianSha1Hash) {
-
               resolve(audioInfo);
-
             } else {
               console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo.sha1Hash + " - " + audioInfo.guardianSha1Hash);
               reject(new Error());
@@ -120,66 +125,81 @@ exports.audio = {
   },
 
   extractAudioFileMeta: function(audioInfo) {
+    return new Promise(function(resolve, reject) {
       try {
-        fs.stat(audioInfo.unzipLocalPath, function(statErr,fileStat){
-          if (statErr == null) {
-
-            audioInfo.size = fileStat.size;
-            audioInfo.dbAudioObj.size = audioInfo.size;
-            audioInfo.dbAudioObj.save();
-
-            audioUtils.transcodeToFile( "wav", {
+        fs.stat(audioInfo.unzipLocalPath, function(statErr, fileStat) {
+          if (!!statErr) { reject(statErr); }
+          audioInfo.size = fileStat.size;
+          audioInfo.dbAudioObj.size = audioInfo.size;
+          audioInfo.dbAudioObj.save()
+            .then(() => {
+              return audioUtils.transcodeToFile( "wav", {
                 sourceFilePath: audioInfo.unzipLocalPath,
                 sampleRate: audioInfo.capture_sample_rate
-            }).then(function(wavFilePath){
-
-              fs.stat(wavFilePath, function(wavStatErr,wavFileStat){
-                if (wavStatErr == null) {
-                  audioInfo.wavAudioLocalPath = wavFilePath;
-                  exec(process.env.SOX_PATH+"i -s "+audioInfo.wavAudioLocalPath, function(err,stdout,stderr){
-                    if (stderr.trim().length > 0) { console.log(stderr); }
-                    if (!!err) { console.log(err); }
-
-                    audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
-                    audioInfo.dbAudioObj.save().then(() => {
-                      return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
-                        .catch(err => {
-                          if (!!err) { console.log("could not create sensations for audio guid "+audioInfo.dbAudioObj.guid, err); }
-                        })
-                    });
-
-                    cleanupCheckInFiles(audioInfo);
-
-                  });
-                }
               });
-            }).catch(function(err){
-              console.log(err);
+            })
+            .then(function(wavFilePath) {
+              fs.stat(wavFilePath, function(wavStatErr, wavFileStat) {
+                if (wavStatErr !== null) { reject(wavStatErr); }
+                audioInfo.wavAudioLocalPath = wavFilePath;
+                exec(process.env.SOX_PATH+"i -s "+audioInfo.wavAudioLocalPath, function(err, stdout, stderr) {
+                  if (stderr.trim().length > 0) { console.log(stderr); }
+                  if (!!err) { console.log(err); }
+
+                  audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
+
+                  audioInfo.dbAudioObj.save()
+                    .then(() => {
+                      return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
+                    })
+                    .then(() => {
+                      resolve();
+                    })
+                    .catch((err) => {
+                      logError('ExtractAudioFileMeta: createSensationsFromGuardianAudio error', { err: err });
+                      resolve();
+                    });
+                  cleanupCheckInFiles(audioInfo);
+                });
+              });
+            })
+            .catch(function(err){
+              logError('ExtractAudioFileMeta: audioInfo error', { err: err });
               cleanupCheckInFiles(audioInfo);
+              reject();
             });
-          }
         });
       } catch(err) {
-          console.log(err);
-          cleanupCheckInFiles(audioInfo);
+        logError('ExtractAudioFileMeta: common error', { err: err });
+        cleanupCheckInFiles(audioInfo);
+        reject();
       }
+    })
   },
 
   saveToDb: function(audioInfo) {
-    return new Promise(function(resolve, reject) {
 
-      models.GuardianAudio.create({
-        guardian_id: audioInfo.guardian_id,
-        site_id: audioInfo.site_id,
-        check_in_id: audioInfo.checkin_id,
-        sha1_checksum: audioInfo.sha1Hash,
-        url: null,//"s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
-        capture_bitrate: audioInfo.capture_bitrate,
-        encode_duration: audioInfo.capture_encode_duration,
-        measured_at: audioInfo.measured_at
-      }).then(function(dbAudio){
+    let dbAudioLocal;
 
-        models.GuardianAudioFormat
+    return models.GuardianAudio
+      .findOrCreate({
+        where: {
+          sha1_checksum: audioInfo.sha1Hash
+        },
+        defaults: {
+          guardian_id: audioInfo.guardian_id,
+          site_id: audioInfo.site_id,
+          check_in_id: audioInfo.checkin_id,
+          sha1_checksum: audioInfo.sha1Hash,
+          url: null,//"s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
+          capture_bitrate: audioInfo.capture_bitrate,
+          encode_duration: audioInfo.capture_encode_duration,
+          measured_at: audioInfo.measured_at
+        }
+      })
+      .spread(function(dbAudio, wasCreated){
+        dbAudioLocal = dbAudio;
+        return models.GuardianAudioFormat
           .findOrCreate({
             where: {
               codec: audioInfo.capture_codec,
@@ -189,28 +209,23 @@ exports.audio = {
               target_bit_rate: audioInfo.capture_bitrate,
               is_vbr: audioInfo.capture_is_vbr
             }
-          }).spread(function(dbAudioFormat, wasCreated){
-
-            dbAudio.format_id = dbAudioFormat.id;
-            dbAudio.save();
-
-            audioInfo.isSaved.db = true;
-            audioInfo.dbAudioObj = dbAudio;
-            audioInfo.audio_id = dbAudio.id;
-            audioInfo.audio_guid = dbAudio.guid;
-
-            resolve(audioInfo);
-
-          }).catch(function(err){
-            console.log("error linking audio format to audio entry to database | "+err);
-            reject(new Error(err));
-          });
-
-      }).catch(function(err){
-        console.log("error adding audio to database | "+err);
-        reject(new Error(err));
+          })
+      })
+      .spread(function(dbAudioFormat, wasCreated){
+        dbAudioLocal.format_id = dbAudioFormat.id;
+        return dbAudioLocal.save();
+      })
+      .then(function(dbAudio) {
+        return dbAudio.reload();
+      })
+      .then(function(dbAudio) {
+        audioInfo.isSaved.db = true;
+        audioInfo.dbAudioObj = dbAudio;
+        audioInfo.audio_id = dbAudio.id;
+        audioInfo.audio_guid = dbAudio.guid;
+        return audioInfo;
       });
-    }.bind(this));
+
   },
 
   saveToS3: function(audioInfo) {
@@ -279,6 +294,36 @@ exports.audio = {
     models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function(dbCheckIn){ dbCheckIn.destroy().then(function(){ console.log("deleted checkin entry"); }); }).catch(function(err){ console.log("failed to delete checkin entry | "+err); });
 
     cleanupCheckInFiles(audioInfo);
+  },
+
+  prepareWsObject: function(req, itemAudioInfo, dbGuardian, dbAudio) {
+    let dbAudioObj = itemAudioInfo.dbAudioObj,
+        timezone   = dbGuardian.Site.timezone;
+    return {
+      recordTime: {
+        UTC: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
+        localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
+        timeZone: timezone
+      },
+      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
+      location: {
+        latitude: dbGuardian.latitude,
+        longitude: dbGuardian.longitude,
+        site: dbAudio.Site.guid
+      },
+      length: {
+        samples: dbAudioObj.capture_sample_count,
+        timeInMs: dbAudio.Format?
+          Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
+      },
+      format: {
+        fileType: dbAudio.Format? dbAudio.Format.mime : null,
+        sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
+        bitDepth: itemAudioInfo.capture_bitrate
+      },
+      guardianGuid: dbGuardian.guid,
+      audioGuid: dbAudio.guid,
+    };
   }
 
 };

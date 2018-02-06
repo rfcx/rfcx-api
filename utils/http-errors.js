@@ -1,3 +1,4 @@
+var loggers = require('./logger');
 
 var options = {
 
@@ -23,17 +24,19 @@ var options = {
 
 };
 
-var httpError = function(res, code, context, mes) {
+var httpError = function(req, res, code, context, mes) {
 
   var message = mes? mes : (((context != null) && (options[""+code][""+context] != null)) ? options[""+code][""+context] : options[""+code]["default"]);
-
+  code = parseInt(code);
   var json = {
-      message: message,
-      error: {
-        status: parseInt(code)
-      }
-    };
-  console.log("Error: "+json.message);
+    message: message,
+    error: {
+      status: code
+    }
+  };
+  var logger = code === 400? loggers.warnLogger : loggers.errorLogger;
+  logger.log('Validation error', { req: req, message: message });
+  loggers.debugLogger.log('httpError called with context', { req: req, context: context, message: message });
   res.status(parseInt(code)).json(json);
 };
 

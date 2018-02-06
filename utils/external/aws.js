@@ -71,6 +71,20 @@ exports.aws = function() {
           }
         });
       });
+    },
+
+    createTopic: function(topic) {
+      return new Promise(function (resolve, reject) {
+        that.sns().createTopic({
+          Name: topic + "-" + process.env.NODE_ENV
+        }, function (snsErr, snsData) {
+          if (!!snsErr) {
+            reject(new Error(snsErr));
+          } else {
+            resolve(snsData);
+          }
+        });
+      });
     }
 
   };

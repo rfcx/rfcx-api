@@ -11,7 +11,7 @@ router.route("/:site_id/events")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.GuardianSite
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.site_id }
       }).then(function(dbSite){
 
@@ -23,16 +23,16 @@ router.route("/:site_id/events")
         if (req.query.reviewed != null) { dbQuery.reviewed_at = (req.query.reviewed === "true") ? { $ne: null } : null }
 
         models.GuardianEvent
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
           }).then(function(dbEvents){
 
             if (dbEvents.length < 1) {
-              httpError(res, 404, "database");
+              httpError(req, res, 404, "database");
             } else {
               views.models.guardianEvents(req,res,dbEvents)
                 .then(function(json){ res.status(200).json(json); });

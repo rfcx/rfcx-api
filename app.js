@@ -32,7 +32,6 @@ app.use(addRequestId({
 app.use(addInstanceId);
 app.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.use(cors()); // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
-expressWinston.responseWhitelist.push('body');
 app.use(expressWinston.logger({
   winstonInstance: loggers.expressLogger,
   expressFormat: true,

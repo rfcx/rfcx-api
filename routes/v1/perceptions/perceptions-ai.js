@@ -46,9 +46,9 @@ function processAiCreation(guid, req, res) {
       api.links.self = urls.getApiUrl(req) + '/perceptions/ai';
       res.status(200).json(api);
     })
-    .catch(ValidationError, e => httpError(res, 400, null, e.message))
+    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
     // catch-all for any other that is not based on user input
-    .catch(e => httpError(res, 500, e, `Perception Ai couldn't be created: ${e}`));
+    .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be created: ${e}`));
 }
 
 router.route("/ai")
@@ -72,7 +72,7 @@ router.route("/ai")
       })
       .catch(function(err) {
         console.log("failed to return models | ", err);
-        httpError(res, 500, err, 'failed to return models');
+        httpError(req, res, 500, err, 'failed to return models');
       });
 
   });
@@ -92,8 +92,8 @@ router.route("/ai/:id/precision/events")
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id + '/precision/events';
         res.status(200).json(api);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, `Perception Ai couldn't be found: ${e}`));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be found: ${e}`));
 
   });
 
@@ -112,8 +112,8 @@ router.route("/ai/:id")
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id;
         res.status(200).json(api);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, `Perception Ai couldn't be found: ${e}`));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be found: ${e}`));
 
   });
 
@@ -159,9 +159,9 @@ router.route("/ai/:id")
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id;
         res.status(200).json(api);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => httpError(res, 500, e, `Perception Ai couldn't be updated: ${e}`));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be updated: ${e}`));
 
   });
 

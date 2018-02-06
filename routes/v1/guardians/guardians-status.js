@@ -41,7 +41,7 @@ router.route("/:guardian_id/status")
 
       }).catch(function (err) {
         console.log("failure to retrieve guardian: " + err);
-        httpError(res, 404, "database");
+        httpError(req, res, 404, "database");
       });
   })
 ;

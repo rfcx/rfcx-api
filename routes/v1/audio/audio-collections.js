@@ -24,7 +24,7 @@ router.route("/audio-collections/by-guids")
     var body = req.body;
 
     if (!body.audios || !body.audios.length) {
-      return httpError(res, 400, null, 'Request does not contain audio guids');
+      return httpError(req, res, 400, null, 'Request does not contain audio guids');
     }
 
     // Convert array of objects to object with keys
@@ -77,7 +77,7 @@ router.route("/audio-collections/by-guids")
       .bind({})
       .then(function(dbAudio) {
         if (!dbAudio.length) {
-          return httpError(res, 400, null, 'Database does not contain following guids');
+          return httpError(req, res, 400, null, 'Database does not contain following guids');
         }
 
         this.dbAudio = dbAudio;
@@ -212,7 +212,7 @@ router.route("/audio-collections/:id/data")
       .bind({})
       .then(function(dbGuardianAudioCollection) {
         if (!dbGuardianAudioCollection) {
-          return httpError(res, 404, null, 'Database does not contain following audio collection.');
+          return httpError(req, res, 404, null, 'Database does not contain following audio collection.');
         }
         this.guids = dbGuardianAudioCollection.GuardianAudios.map(function(audio) {
           return audio.guid;
@@ -228,7 +228,7 @@ router.route("/audio-collections/:id/data")
       })
       .then(function(dbAudioAnalysisTrainingSet) {
         if (!dbAudioAnalysisTrainingSet) {
-          return httpError(res, 404, null, 'Audio Collection is not associated with any Training Sets.');
+          return httpError(req, res, 404, null, 'Audio Collection is not associated with any Training Sets.');
         }
         this.eventValue = dbAudioAnalysisTrainingSet.event_value;
         return datafiltersService.getLabelsData({

@@ -283,19 +283,19 @@ router.route('/classified/byannotator')
     var body = req.body;
 
     if (!body.annotatorGuid || !body.annotatorGuid.length) {
-      return httpError(res, 400, null, 'Request does not contain user guid');
+      return httpError(req, res, 400, null, 'Request does not contain user guid');
     }
 
     if (!body.audioCollection && (!body.audioGuids || !body.audioGuids.length)) {
-      return httpError(res, 400, null, 'Request does not contain audio guids');
+      return httpError(req, res, 400, null, 'Request does not contain audio guids');
     }
 
     if (!body.type || !body.type.length) {
-      return httpError(res, 400, null, 'Request does not contain tag type');
+      return httpError(req, res, 400, null, 'Request does not contain tag type');
     }
 
     if (!body.value || !body.value.length) {
-      return httpError(res, 400, null, 'Request does not contain tag value');
+      return httpError(req, res, 400, null, 'Request does not contain tag value');
     }
 
     function getAudioGuids() {
@@ -321,7 +321,7 @@ router.route('/classified/byannotator')
               resolve(audioGuids);
             }).
             catch(function() {
-              httpError(res, 404, null, 'Audio collection with given guid was not found');
+              httpError(req, res, 404, null, 'Audio collection with given guid was not found');
             });
         }
         else {
