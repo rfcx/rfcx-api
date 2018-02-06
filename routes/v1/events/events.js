@@ -15,7 +15,7 @@ var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 var loggers = require('../../../utils/logger');
-var websocket = require('../../../utils/websocket');
+// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var ValidationError = require("../../../utils/converter/validation-error");
 
 var logDebug = loggers.debugLogger.log;
@@ -564,8 +564,8 @@ router.route('/')
             include: [{all: true}]
           })
           .then((dbEvent) => {
-            let wsObj = eventsService.prepareWsObject(dbEvent, this.dbSite);
-            websocket.send('createCognition', wsObj);
+            // let wsObj = eventsService.prepareWsObject(dbEvent, this.dbSite); DISABLE WEBSOCKET FOR PROD
+            // websocket.send('createCognition', wsObj); DISABLE WEBSOCKET FOR PROD
           });
           return Promise.resolve(dbGuardianAudioEvent);
         }

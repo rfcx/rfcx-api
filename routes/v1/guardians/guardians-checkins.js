@@ -15,7 +15,7 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
-var websocket = require('../../../utils/websocket');
+// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
@@ -243,8 +243,8 @@ router.route("/:guardian_id/checkins")
                     req: req,
                     dbAudio: dbAudio,
                   });
-                  let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
-                  websocket.send('createAudioSensation', wsObj);
+                  // let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio); DISABLE WEBSOCKET FOR PROD
+                  // websocket.send('createAudioSensation', wsObj); DISABLE WEBSOCKET FOR PROD
                   return true;
                 })
                 .catch(function(err) {
@@ -276,7 +276,7 @@ router.route("/:guardian_id/checkins")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
@@ -287,9 +287,9 @@ router.route("/:guardian_id/checkins")
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
         models.GuardianCheckIn
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
@@ -326,9 +326,9 @@ function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
     // LEGACY TIMESTAMP FORMAT
     asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
   } else if (timeStamp != null) {
-    
+
     asDate = new Date(parseInt(timeStamp));
-  
+
   }
   return asDate;
 }
