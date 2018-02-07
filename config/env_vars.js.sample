@@ -48,4 +48,6 @@ exports.env = {
 
   AUTH0_DOMAIN: "",
 
+  WEBSOCKET_URL: "",
+
 }

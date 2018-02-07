@@ -16,11 +16,11 @@ router.route("/training-sets")
     var body = req.body;
 
     if (!body.name) {
-      return httpError(res, 400, null, 'Request does not contain set name');
+      return httpError(req, res, 400, null, 'Request does not contain set name');
     }
 
     if (!body.event_value) {
-      return httpError(res, 400, null, 'Request does not contain event value');
+      return httpError(req, res, 400, null, 'Request does not contain event value');
     }
 
     var dataObj = {

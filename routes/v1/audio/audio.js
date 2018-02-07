@@ -169,7 +169,7 @@ router.route("/download/zip")
         archive.finalize();
         return true;
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(function(err) {
         console.log("failed to get audios | "+err);
         if (!!err) { res.status(500).json({msg:"failed to get audios"}); }
@@ -370,7 +370,7 @@ router.route("/nextafter/:audio_id")
       .then(function(dbAudio) {
         // if current audio or next audio was not found, return 404
         if (!dbAudio) {
-          return httpError(res, 404, "database");
+          return httpError(req, res, 404, "database");
         }
         return views.models.guardianAudioJson(req,res,dbAudio)
           .then(function(audioJson){
@@ -420,7 +420,7 @@ router.route("/prevbefore/:audio_id")
       .then(function(dbAudio) {
         // if current audio or next audio was not found, return 404
         if (!dbAudio) {
-          return httpError(res, 404, "database");
+          return httpError(req, res, 404, "database");
         }
         return views.models.guardianAudioJson(req,res,dbAudio)
           .then(function(audioJson){

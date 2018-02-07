@@ -8,7 +8,7 @@ function requireTokenType(type) {
   // curry
   return function (req, res, next) {
     if(req.rfcx.auth_token_info.type != type) {
-      httpError(res, 403, "token");
+      httpError(req, res, 403, "token");
       req.end();
     } else {
       next();
@@ -28,13 +28,30 @@ function hasRole(expectedRoles) {
   return function(req, res, next) {
     if (expectedRoles.length === 0 || req.user.userType !== 'auth0'){ return next(); }
     if (!req.user) { return res.sendStatus(403); }
-    var roles = req.user.roles;
+    let roles = obtainRoles(req.user);
     var allowed = expectedRoles.some((role) => {
       return roles.indexOf(role) !== -1;
     });
     return allowed ? next() : res.sendStatus(403);
   }
 };
+
+function obtainRoles(user) {
+  if (user.roles) { return user.roles; }
+  if (user.scope) {
+    if (typeof user.scope === 'string') {
+      try {
+        let parsedScrope = JSON.parse(user.scope);
+        if (parsedScrope.roles) { return parsedScrope.roles; }
+      }
+      catch (e) { }
+    }
+    else {
+      if (user.scope.roles) { return user.scope.roles; }
+    }
+  }
+  return [];
+}
 
 module.exports = {
   requireTokenType,

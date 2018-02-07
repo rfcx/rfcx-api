@@ -32,7 +32,7 @@ router.route("/")
       .bind({})
       .then(function(dbGuardian){
         if (dbGuardian.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
           return null;
         } else {
           return dbGuardian;
@@ -106,7 +106,7 @@ router.route("/:guardian_id")
       }).then(function(dbGuardian){
 
         if (dbGuardian.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           res.status(200).json(views.models.guardian(req,res,dbGuardian));
         }

@@ -14,7 +14,12 @@ var moment = require('moment');
 var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
+var loggers = require('../../../utils/logger');
+// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var ValidationError = require("../../../utils/converter/validation-error");
+
+var logDebug = loggers.debugLogger.log;
+var logError = loggers.errorLogger.log;
 
 function prepareOpts(req) {
 
@@ -92,6 +97,7 @@ function countData(req) {
                    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
                    'WHERE 1=1 ';
 
+  sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
@@ -132,6 +138,7 @@ function queryData(req) {
 
   let sql = eventsService.eventQueryBase + 'WHERE 1=1 ';
 
+  sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
@@ -405,7 +412,7 @@ router.route("/values")
     eventsService
       .getGuardianAudioEventValues()
       .then((data) => { res.status(200).json(data); })
-      .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Values."));
+      .catch(e => httpError(req, res, 500, e, "Could not return Guardian Audio Event Values."));
   });
 
 router.route("/types")
@@ -413,7 +420,7 @@ router.route("/types")
     eventsService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data); })
-      .catch(e => httpError(res, 500, e, "Could not return Guardian Audio Event Types."));
+      .catch(e => httpError(req, res, 500, e, "Could not return Guardian Audio Event Types."));
   });
 
 router.route("/:guid")
@@ -480,17 +487,17 @@ router.route('/')
 
     var attrsValidity = checkAttrValidity();
     if (!attrsValidity.status) {
-      return httpError(res, 400, null, attrsValidity.missingAttrsStr);
+      return httpError(req, res, 400, null, attrsValidity.missingAttrsStr);
     }
     if (body.guid && !guid.isValid(body.guid)) {
-      return httpError(res, 400, null, 'Guardian Audio Event guid has incorrect format');
+      return httpError(req, res, 400, null, 'Guardian Audio Event guid has incorrect format');
     }
 
     var promises = [];
 
     promises.push(models.GuardianAudio.findOne({
       where: {guid: attrs.audio_id},
-      include: {model: models.Guardian, as: 'Guardian'}
+      include: [{all: true}]
     }));
     promises.push(models.AudioAnalysisModel.findOne({where: {$or: {shortname: attrs.model, guid: attrs.model}}}));
     promises.push(models.GuardianAudioEventType.findOrCreate({
@@ -503,18 +510,19 @@ router.route('/')
     }));
 
     Promise.all(promises)
+      .bind({})
       .then(function (data) {
 
         if (!data[0]) {
-          httpError(res, 404, null, 'Audio with given guid not found');
+          httpError(req, res, 404, null, 'Audio with given guid not found');
           return Promise.reject();
         }
         if (!data[0].Guardian) {
-          httpError(res, 500, null, 'Audio is not associated with any Guardians');
+          httpError(req, res, 500, null, 'Audio is not associated with any Guardians');
           return Promise.reject();
         }
         if (!data[1]) {
-          httpError(res, 404, null, 'Model with given shortname/guid not found');
+          httpError(req, res, 404, null, 'Model with given shortname/guid not found');
           return Promise.reject();
         }
 
@@ -524,6 +532,9 @@ router.route('/')
         if (attrs['ends_at'] === undefined || attrs['ends_at'] === null) {
             attrs.ends_at = new Date(data[0].measured_at.getTime() + 1000*90);
         }
+
+        this.dbGuardian = data[0].Guardian;
+        this.dbSite = data[0].Site;
 
         // replace names with ids
         attrs.audio_id = data[0].id;
@@ -551,13 +562,20 @@ router.route('/')
       })
       .spread(function (dbGuardianAudioEvent, created) {
         if (created) {
+          dbGuardianAudioEvent.reload({
+            include: [{all: true}]
+          })
+          .then((dbEvent) => {
+            // let wsObj = eventsService.prepareWsObject(dbEvent, this.dbSite); DISABLE WEBSOCKET FOR PROD
+            // websocket.send('createCognition', wsObj); DISABLE WEBSOCKET FOR PROD
+          });
           return Promise.resolve(dbGuardianAudioEvent);
         }
         else {
           return models.GuardianAudioEvent
             .update(attrs, {where: {guid: dbGuardianAudioEvent.guid}})
             .spread(function () {
-              return models.GuardianAudioEvent.findOne({where: {guid: dbGuardianAudioEvent.guid}});
+              return models.GuardianAudioEvent.findOne({where: {guid: dbGuardianAudioEvent.guid}, include: [{all: true}]});
             });
         }
       })
@@ -573,27 +591,34 @@ router.route('/')
           model: this.model,
           audio_guid: this.audio_guid,
           // Todo: generate a proper url string, need some sleep but will replace it tomorrow
-          listen: 'https://console.rfcx.org/#/classification/altomayo?guid=' + this.audio_guid +  '&typevalue=chainsaw&access=read'
+          listen: 'https://console.rfcx.org/#/classification?guid=' + this.audio_guid +  '&typevalue=' + this.value + '&access=read'
         };
 
         // currently we only send out alerts.
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
         var excludedGuardians = [];
-        if( ! excludedGuardians.includes(guardian_id) ){
-          return aws.publish("rfcx-detection-alerts", msg);
+        if( ! excludedGuardians.includes(this.guardian_id) ){
+          let topic = 'rfcx-detection-alerts-' + this.dbSite.guid;
+          aws.createTopic(topic)
+            .then((data) => {
+              return aws.publish(topic, msg);
+            })
+            .catch((err) => {
+              logError('Event creation request: error creating SNS topic', { req: req, err: err });
+            });
         }
-        })
-        .catch(function (err) {
-          if (!!err) {
-            console.log(err);
-            if (err.name && err.name === 'SequelizeValidationError') {
-              httpError(res, 400, null, 'Input data has incorrect format');
-            }
-            else {
-              httpError(res, 500, "database");
-            }
+      })
+      .catch(function (err) {
+        if (!!err) {
+          console.log(err);
+          if (err.name && err.name === 'SequelizeValidationError') {
+            httpError(req, res, 400, null, 'Input data has incorrect format');
           }
-        });
+          else {
+            httpError(req, res, 500, "database");
+          }
+        }
+      });
 
   });
 
@@ -608,7 +633,7 @@ router.route("/:event_id/review")
       }).then(function (dbEvent) {
 
       if (dbEvent.length < 1) {
-        httpError(res, 404, "database");
+        httpError(req, res, 404, "database");
       } else {
 
         var reviewerInput = {
@@ -651,7 +676,7 @@ router.route("/:event_id/review")
     }).catch(function (err) {
       console.log(err);
       if (!!err) {
-        httpError(res, 500, "database");
+        httpError(req, res, 500, "database");
       }
     });
 
@@ -665,8 +690,8 @@ router.route("/:guid/confirm")
       .then((data) => {
         res.status(200).json(data);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, "Could not update Event review."));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, "Could not update Event review."));
 
   });
 
@@ -677,8 +702,8 @@ router.route("/:guid/reject")
       .then((data) => {
         res.status(200).json(data);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, "Could not update Event review."));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, "Could not update Event review."));
 
   });
 

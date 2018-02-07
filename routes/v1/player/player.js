@@ -66,7 +66,7 @@ router.route("/web")
       }).then(function(dbAudioHighlights){
 
         if (dbAudioHighlights.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           res.status(200).json({ streams: views.models.guardianAudioHighlights(req,res,dbAudioHighlights) });
         }

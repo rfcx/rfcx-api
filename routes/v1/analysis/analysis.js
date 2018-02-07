@@ -36,11 +36,11 @@ router.route("/methods")
       }).then(function(dbAnalysisMethods){
 
         if (dbAnalysisMethods.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           res.status(200).json(views.models.audioAnalysisMethods(req,res,dbAnalysisMethods));
         }
-        
+
       }).catch(function(err){
         console.log("failed to return analysis methods | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return analysis methods"}); }
@@ -60,7 +60,7 @@ router.route('/models')
       .then(function(dbAnalysisModels){
 
         if (dbAnalysisModels.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
           var api = { type: 'audioAnalysisModels'};
           api.data = dbAnalysisModels.map(function (dbAnalysisModel) {
@@ -250,7 +250,7 @@ router.route('/models/:id')
       .then(function(dbAnalysisModel){
 
         if (dbAnalysisModel.length < 1) {
-          httpError(res, 404, "database");
+          httpError(req, res, 404, "database");
         } else {
 
           // replace ids with `value`s from proper tables
