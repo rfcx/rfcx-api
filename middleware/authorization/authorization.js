@@ -28,7 +28,7 @@ function hasRole(expectedRoles) {
   return function(req, res, next) {
     if (expectedRoles.length === 0 || req.user.userType !== 'auth0'){ return next(); }
     if (!req.user) { return res.sendStatus(403); }
-    var roles = req.user.roles;
+    let roles = obtainRoles(req.user);
     var allowed = expectedRoles.some((role) => {
       return roles.indexOf(role) !== -1;
     });
@@ -47,6 +47,23 @@ function isRFCxUser() {
     if (!req.user || req.user.rfcx_system === false) { return res.sendStatus(403); }
     return  next();
   }
+}
+
+function obtainRoles(user) {
+  if (user.roles) { return user.roles; }
+  if (user.scope) {
+    if (typeof user.scope === 'string') {
+      try {
+        let parsedScrope = JSON.parse(user.scope);
+        if (parsedScrope.roles) { return parsedScrope.roles; }
+      }
+      catch (e) { }
+    }
+    else {
+      if (user.scope.roles) { return user.scope.roles; }
+    }
+  }
+  return [];
 }
 
 module.exports = {
