@@ -1,7 +1,7 @@
 const express = require('express');
 const sequelize = require('sequelize');
 const models = require('../../../models');
-const sqlUtils = require('../../../utils/misc/sql');
+const metricsService = require('../../../services/metrics/metrics-service');
 var router = express.Router();
 
 router.route('/')
@@ -14,21 +14,11 @@ router.route('/')
       guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
     };
 
-    let sql = 'SELECT COUNT(*) as count from GuardianAudio as Audio';
-    sql = sqlUtils.condAdd(sql, opts.sites || opts.startingAfterLocal || opts.startingBeforeLocal,
-      ' LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id');
-    sql = sqlUtils.condAdd(sql, opts.guardians, ' LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id');
-    sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
-
-    sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND CONVERT_TZ(Audio.measured_at, "UTC", Site.timezone) > :startingAfterLocal');
-    sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND CONVERT_TZ(Audio.measured_at, "UTC", Site.timezone) < :startingBeforeLocal');
-    sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
-    sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
-
-    models.sequelize.query(sql, { replacements: opts, type: models.sequelize.QueryTypes.SELECT })
+    metricsService.getAudioCountWithFilters(opts)
       .then(dataArr => {
-        let data = dataArr[0];
-        res.status(200).json({ count: data.count });
+        let count = dataArr[0].count;
+        let times = metricsService.countToTimes(count);
+        res.status(200).json(Object.assign({}, { files: count }, times));
       })
       .catch(function (err) {
         console.log('Error while getting metrics', err);
