@@ -136,6 +136,9 @@ var routes = {
     "filter-presets": [
       require("./routes/v1/filter-presets/filter-presets"),
     ],
+    "metrics": [
+      require("./routes/v1/metrics/metrics"),
+    ],
   },
   "v2": {
   }
