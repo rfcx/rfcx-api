@@ -22,6 +22,7 @@ var moment = require('moment');
 var path = require('path');
 var fs = require('fs');
 var aws = require("../../../utils/external/aws.js").aws();
+var util = require("util");
 
 function filter(req) {
   var order = 'measured_at ASC';
