@@ -75,6 +75,13 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isDate: true
       }
+    },
+    rfcx_system: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+      validate: {
+      }
     }
   }, {
     classMethods: {
