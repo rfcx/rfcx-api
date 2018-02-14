@@ -115,8 +115,8 @@ router.route("/logout")
           tokens_removed: tokensCount
         });
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, "Error in process of logout."));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, "Error in process of logout."));
 
   });
 
@@ -345,7 +345,7 @@ router.route("/change-password")
           return Promise.reject();
         }
         if (dbUser.rfcx_system !== undefined && dbUser.rfcx_system === false) {
-          httpError(res, 403, null, 'You don\'t have required permissions.');
+          httpError(req, res, 403, null, 'You don\'t have required permissions.');
           return Promise.reject();
         }
         if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
