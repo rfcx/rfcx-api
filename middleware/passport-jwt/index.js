@@ -23,6 +23,7 @@ var opts = {
 
 function combineUserData(jwtPayload, user) {
   return Object.assign({}, jwtPayload, {
+    guid: user.guid,
     type: 'user',
     owner_id: user.id,
     owner_guid: user.guid,
