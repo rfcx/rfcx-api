@@ -52,7 +52,7 @@ function processAiCreation(guid, req, res) {
 }
 
 router.route("/ai")
-  .get(passport.authenticate("token",{session:false}), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), (req, res) => {
 
     var converter = new ApiConverter("ai", req);
 

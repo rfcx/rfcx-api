@@ -412,7 +412,7 @@ router.route("/checkin")
   });
 
 router.route("/lastcheckin")
-  .get(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), requireUser, function(req,res) {
 
     usersService.getAllUsers()
       .then(users => {
