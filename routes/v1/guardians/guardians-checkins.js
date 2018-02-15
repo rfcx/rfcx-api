@@ -15,7 +15,7 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
-var websocket = require('../../../utils/websocket');
+// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
@@ -244,8 +244,8 @@ router.route("/:guardian_id/checkins")
                     req: req,
                     dbAudio: dbAudio,
                   });
-                  let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
-                  websocket.send('createAudioSensation', wsObj);
+                  // let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio); DISABLE WEBSOCKET FOR PROD
+                  // websocket.send('createAudioSensation', wsObj); DISABLE WEBSOCKET FOR PROD
                   return true;
                 })
                 .catch(function(err) {

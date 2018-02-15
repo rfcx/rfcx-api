@@ -46,8 +46,8 @@ exports.env = {
   CLOUDWATCH_ENABLED: false, // cloudwatch should be disabled for developers by default
   CLOUDWATCH_LOGS_GROUP_NAME: "",
 
-  WEBSOCKET_URL: "",
-
   AUTH0_DOMAIN: "",
+
+  WEBSOCKET_URL: "",
 
 }

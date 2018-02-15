@@ -9,7 +9,7 @@ var Promise = require("bluebird");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), function(req,res) {
 
     var sitesQuery = {};
 

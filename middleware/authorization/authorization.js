@@ -36,6 +36,23 @@ function hasRole(expectedRoles) {
   }
 };
 
+function obtainRoles(user) {
+  if (user.roles) { return user.roles; }
+  if (user.scope) {
+    if (typeof user.scope === 'string') {
+      try {
+        let parsedScrope = JSON.parse(user.scope);
+        if (parsedScrope.roles) { return parsedScrope.roles; }
+      }
+      catch (e) { }
+    }
+    else {
+      if (user.scope.roles) { return user.scope.roles; }
+    }
+  }
+  return [];
+}
+
 /**
  * All DB users have attribute rfcx_system. Dev team and old RFCx users have rfcx_system === true
  * All other users which were authorized through auth0 or other services have rfcx_system === false

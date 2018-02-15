@@ -256,7 +256,7 @@ router.route("/filter/by-tags")
   });
 
 router.route("/:audio_id")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), function(req,res) {
 
     models.GuardianAudio
       .findOne({
@@ -338,7 +338,7 @@ router.route("/:audio_id/labels")
 ;
 
 router.route("/nextafter/:audio_id")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), function(req,res) {
 
     models.GuardianAudio
       .findOne({
@@ -388,7 +388,7 @@ router.route("/nextafter/:audio_id")
 ;
 
 router.route("/prevbefore/:audio_id")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), function(req,res) {
 
     models.GuardianAudio
       .findOne({

@@ -10,7 +10,7 @@ var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").an
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var loggers = require('../../../utils/logger');
 var sequelize = require("sequelize");
-var websocket = require('../../../utils/websocket');
+// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 
 var logDebug = loggers.debugLogger.log;
 
@@ -149,7 +149,7 @@ router.route("/:audio_id/tags")
         });
 
         let wsObj = analysisUtils.prepareWsObject(this.dbAudio, tagsJson, this.dbModel);
-        websocket.send('createAudioPerception', wsObj);
+        // websocket.send('createAudioPerception', wsObj); DISABLE WEBSOCKET FOR PROD
 
         if(this.dbModel.generate_event==0){
           logDebug('Audio tags endpoint: model not generating events, finishing', { req: req });

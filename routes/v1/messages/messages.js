@@ -14,7 +14,7 @@ var sequelize = require("sequelize");
 var Promise = require("bluebird");
 
 router.route("/")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
 
     // map HTTP params to service params
     var serviceParams = {
@@ -52,7 +52,7 @@ router.route("/")
   });
 
 router.route("/")
-  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
 
     var serviceParams = {
       after: req.query.after,
