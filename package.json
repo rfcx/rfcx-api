@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "./bin/setup; ./bin/start_mqtt;",
+    "start-mqtt": "./bin/setup; ./bin/start_mqtt;",
     "test": "./bin/setup; ./node_modules/.bin/mocha './test/test.*.js' -u bdd",
     "test-remote": "./bin/setup; ./node_modules/.bin/mocha './test/remote.test.*.js' -u bdd",
     "test-all": "./bin/setup; ./node_modules/.bin/mocha -u bdd",
