@@ -1,13 +1,21 @@
 #!/usr/bin/env node
 console.log('----------------------------------\nRFCX | ./bin/start_mqtt started')
-var debug = require('debug')('rfcx-api-mqtt');
-var app = require('../app_mqtt');
+
+var debug = require("debug")("rfcx-api-mqtt");
+var app = require("../app-mqtt");
 var models = require("../models");
 var exec = require("child_process").exec;
 
-console.log('RFCX | Starting server')
-var server = app.listen(app.get('port'), function(){
-  console.log(
-    app.get("title")+" (port "+app.get('port')+") ("+process.env.NODE_ENV+")"
-  );
+exec(process.cwd()+"/bin/setup",function(err,sOut,sErr){
+
+  console.log(sOut);
+
+  console.log('RFCX | Starting server');
+
+  var server = app.listen(app.get('port'), function(){
+    console.log(
+      app.get("title")+" (port "+app.get('port')+") ("+process.env.NODE_ENV+")"
+    );
+  });
+
 });
