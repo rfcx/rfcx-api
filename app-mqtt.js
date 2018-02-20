@@ -15,7 +15,7 @@ var app = { http: express(), mqtt: null };
 
 
 
-app.mqtt = mqtt.connect( "tcp://mqtt.rfcx.org", { clientId: "rfcx-api-mqtt", protocolId: "MQIsdp",  protocolVersion: 3,  connectTimeout: 1000, debug: true });
+app.mqtt = mqtt.connect( "tcp://"+process.env.MQTT_BROKER_HOST, { clientId: "rfcx-api-mqtt", protocolId: "MQIsdp",  protocolVersion: 3,  connectTimeout: 1000, debug: true });
 
 
 
