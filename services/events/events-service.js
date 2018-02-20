@@ -7,6 +7,8 @@ const eventQueryBase =
     'GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, GuardianAudioEvent.shadow_latitude, ' +
     'GuardianAudioEvent.shadow_longitude, GuardianAudioEvent.reviewer_confirmed, GuardianAudioEvent.created_at, ' +
     'GuardianAudioEvent.updated_at, ' +
+    'CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone) as begins_at_local, ' +
+    'CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) as ends_at_local, ' +
     'Audio.guid AS audio_guid, Audio.measured_at AS audio_measured_at, ' +
     'Site.guid AS site_guid, Site.timezone as site_timezone, ' +
     'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +

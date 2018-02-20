@@ -1,6 +1,6 @@
-var util    = require("util"),
-    Promise = require("bluebird"),
-    moment  = require("moment");
+const util    = require("util");
+const Promise = require("bluebird");
+const moment = require("moment-timezone");
 
 function extractLabelValues(dbAudioEvents) {
 
@@ -70,7 +70,7 @@ function countEventsByDates(dbAudioEvents) {
   });
 
   dbAudioEvents.forEach(function(event) {
-    var dateStr = moment(event.begins_at).format('MM/DD/YYYY');
+    var dateStr = moment.tz(event.begins_at, event.site_timezone).format('MM/DD/YYYY');
 
     if (!json.dates[dateStr]) {
       json.dates[dateStr] = {};
@@ -121,6 +121,8 @@ exports.models = {
             longitude: dbRow.shadow_longitude,
             begins_at: dbRow.begins_at,
             ends_at: dbRow.ends_at,
+            begins_at_local: dbRow.begins_at_local,
+            ends_at_local: dbRow.ends_at_local,
             type: dbRow.event_type,
             value: dbRow.event_value,
             confidence: dbRow.confidence,
