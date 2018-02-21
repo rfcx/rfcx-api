@@ -27,7 +27,7 @@ var mqttError = app.mqtt.on("error", function(err){
 });
 
 
-var processMqttCheckIn = require("../utils/rfcx-checkin-mqtt/guardians-checkins-mqtt.js").processMqttCheckIn;
+var mqttData = require("../utils/rfcx-mqtt/guardians-checkins-mqtt.js").mqttData;
 
 var mqttMessage = app.mqtt.on("message", function(topic, data){
   
@@ -42,8 +42,8 @@ var mqttMessage = app.mqtt.on("message", function(topic, data){
         } 
       };
 
-  processMqttCheckIn(data).then(function(json){
-    console.log(json);
-    });
+  mqttData.parseCheckInInput(data).then(function(parsedInputs){
+    console.log(parsedInputs.json);
+  });
 
 });

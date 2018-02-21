@@ -1,20 +1,14 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
 var models  = require("../../../models");
-var express = require("express");
 var fs = require("fs");
 var zlib = require("zlib");
 var util = require("util");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
 var aws = require("../../../utils/external/aws.js").aws();
-var views = require("../../../views/v1");
 var checkInHelpers = require("../../../utils/rfcx-checkin");
-var httpError = require("../../../utils/http-errors.js");
-var passport = require("passport");
-passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
-// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
@@ -22,9 +16,9 @@ const moment = require("moment-timezone");
 var logDebug = loggers.debugLogger.log;
 
 
-exports.mqtt_router = {
+exports.mqttData = {
 
-  processMqttCheckIn: function(mqttData) {
+  parseCheckInInput: function(mqttData) {
     return new Promise(function(resolve, reject) {
         try {
 
@@ -39,11 +33,14 @@ exports.mqtt_router = {
           var screenShotFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
           var logFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
 
+          var checkInInput = {};
 
           zlib.gunzip(mqttData.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
-            var json = JSON.parse(jsonBuffer.toString("utf8"));
+           
+            checkInInput.json = JSON.parse(jsonBuffer.toString("utf8"));
 
-            resolve(JSON.parse(jsonBuffer.toString("utf8")));
+            resolve(checkInInput);
+
           });
 
 
