@@ -25,7 +25,8 @@ app.mqtt.on("error", function(err){
 })
 
 
-var zlib = require("zlib");
+var processMqttCheckIn = require("../utils/rfcx-checkin-mqtt/guardians-checkins-mqtt.js").processMqttCheckIn;
+
 app.mqtt.on("message", function(topic, data){
   
   var rtrnJson = {
@@ -39,28 +40,32 @@ app.mqtt.on("message", function(topic, data){
         } 
       };
 
-
-  var metaLength = 12;
-  var jsonBlobLength = parseInt(data.toString("utf8", 0, metaLength));
-  var audioFileLength = parseInt(data.toString("utf8", metaLength+jsonBlobLength, metaLength+jsonBlobLength+metaLength));
-  var screenShotFileLength = parseInt(data.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength));
-  var logFileLength = parseInt(data.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength));
-
-  var audioFileBuffer = data.slice(metaLength+jsonBlobLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength);
-  var screenShotFileBuffer = data.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
-  var logFileBuffer = data.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
-
-  zlib.gunzip(data.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
-    var json = JSON.parse(jsonBuffer.toString("utf8"));
-
-    app.mqtt.publish("guardians/"+json.guardian_id, 
-//            //  zlib.gzip(
-            new Buffer(JSON.stringify(rtrnJson), "utf8")
-//            //  )
-        );
+  processMqttCheckIn(data).then(function(json){
+    console.log(json);
+    });
 
 
-  });
+//   var metaLength = 12;
+//   var jsonBlobLength = parseInt(data.toString("utf8", 0, metaLength));
+//   var audioFileLength = parseInt(data.toString("utf8", metaLength+jsonBlobLength, metaLength+jsonBlobLength+metaLength));
+//   var screenShotFileLength = parseInt(data.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength));
+//   var logFileLength = parseInt(data.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength));
+
+//   var audioFileBuffer = data.slice(metaLength+jsonBlobLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength);
+//   var screenShotFileBuffer = data.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
+//   var logFileBuffer = data.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
+
+//   zlib.gunzip(data.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
+//     var json = JSON.parse(jsonBuffer.toString("utf8"));
+
+//     app.mqtt.publish("guardians/"+json.guardian_id, 
+// //            //  zlib.gzip(
+//             new Buffer(JSON.stringify(rtrnJson), "utf8")
+// //            //  )
+//         );
+
+
+//   });
 
 
 });
