@@ -23,7 +23,7 @@ app.mqtt = mqtt.connect({
     // certPath: null, // .pem filepath
     // ca: [ ], // array of .pem filepaths
     // rejectUnauthorized: true,
-    // protocolId: "MQIsdp", protocolVersion: 3,  
+    protocolId: "MQIsdp", protocolVersion: 3,  
     connectTimeout: 2000, 
     debug: true 
   });

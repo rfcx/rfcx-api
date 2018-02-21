@@ -15,35 +15,61 @@ var httpServer = app.http.listen(app.http.get('port'), function(){
   console.log("http: "+app.http.get("title")+" (port "+app.http.get('port')+") ("+process.env.NODE_ENV+")");
 });
 
-var mqttConnect = app.mqtt.on("connect", function(){
+app.mqtt.on("connect", function(){
     console.log("mqtt: "+appId+" ("+app.mqtt.options.protocol+"://"+app.mqtt.options.host+":"+app.mqtt.options.port+") ("+process.env.NODE_ENV+")");
     app.mqtt.subscribe("guardians/checkins");
     console.log("mqtt: subscribed to 'guardians/checkins'");
 });
 
-var mqttError = app.mqtt.on("error", function(err){
+app.mqtt.on("error", function(err){
+    console.log("Error");
     console.log(err);
-//    app.mqtt.end()
+   // app.mqtt.end()
 });
 
 
-var mqttData = require("../utils/rfcx-mqtt/guardians-checkins-mqtt.js").mqttData;
 
-var mqttMessage = app.mqtt.on("message", function(topic, data){
+
+
+var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
+
+app.mqtt.on("message", function(topic, data){
+
+  mqttRouter.onMessageCheckin(topic, data).then(function(checkInData){
+
+    console.log(checkInData);
+
+    app.mqtt.publish("guardians/"+checkInData.json.guardian_id, checkInData.rtrn.gzip);
+
+  }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
+});
+
+
+
+
+
+
+// app.mqtt.on("message", function(topic, data){
   
-  var rtrnJson = {
-      checkin_id: null, 
-        audio: [],
-        screenshots: [],
-        logs: [], 
-        messages: [], 
-        instructions: {
-          messages: []
-        } 
-      };
+//   // if (topic == "guardians/checkins") {
 
-  mqttData.parseCheckInInput(data).then(function(parsedInputs){
-    console.log(parsedInputs.json);
-  });
+//   //   var rtrnJson = {
+//   //       checkin_id: null, 
+//   //         audio: [],
+//   //         screenshots: [],
+//   //         logs: [], 
+//   //         messages: [], 
+//   //         instructions: {
+//   //           messages: []
+//   //         } 
+//   //       };
 
-});
+//   //   console.log(rtrnJson);
+
+//   //   // mqttData.parseCheckInInput(data).then(function(parsedInputs){
+//   //   //   console.log(parsedInputs.json);
+//   //   // });
+
+//   // }
+
+// });
