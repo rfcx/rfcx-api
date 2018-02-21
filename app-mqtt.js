@@ -13,20 +13,20 @@ if (process.env.NODE_ENV === "production") {
 var express = require("express"), path = require("path"), favicon = require("serve-favicon"), loggers = require('./utils/logger'), toobusy = require('toobusy-js'), mqtt = require("mqtt");
 var app = { http: express(), mqtt: null };
 
-
-
-app.mqtt = mqtt.connect( "tcp://"+process.env.MQTT_BROKER_HOST, { clientId: "rfcx-api-mqtt", protocolId: "MQIsdp",  protocolVersion: 3,  connectTimeout: 1000, debug: true });
-
-
-
-
-
-
-
-
-
-
-
+app.mqtt = mqtt.connect({ 
+    clientId: "rfcx-api-mqtt-"+process.env.NODE_ENV, 
+    host: process.env.MQTT_BROKER_HOST,
+    port: 1883,
+    // username: null,
+    // password: null,
+    // keyPath: null, // .pem filepath
+    // certPath: null, // .pem filepath
+    // ca: [ ], // array of .pem filepaths
+    // rejectUnauthorized: true,
+    // protocolId: "MQIsdp", protocolVersion: 3,  
+    connectTimeout: 2000, 
+    debug: true 
+  });
 
 
 
@@ -43,7 +43,7 @@ app.http.use(function(req, res, next) { if (toobusy()) { loggers.errorLogger.log
 app.http.use(express.static(path.join(__dirname, "public")));
 
 // Health Check HTTP Endpoint
-var healthCheck = require("./utils/internal-rfcx/health-check.js").healthCheck;
+var healthCheck = require("./utils/rfcx-mqtt/health-check-mqtt.js").healthCheck;
 app.http.get("/health_check", function(req,res){ healthCheck.httpResponse(req,res); });
 
 // Default HTTP Endpoint
@@ -62,24 +62,5 @@ app.http.use(function(err, req, res, next) {
   loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err });
   res.status(status).json({ message: err.message, error: err });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 module.exports = app;
