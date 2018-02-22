@@ -7,9 +7,10 @@ var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 var Promise = require("bluebird");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt'], { session: false }), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
 
     var sitesQuery = {};
 
