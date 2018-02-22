@@ -17,6 +17,7 @@ var usersService = require('../../../services/users/users-service');
 var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
 var ApiConverter = require("../../../utils/api-converter");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -412,7 +413,7 @@ router.route("/checkin")
   });
 
 router.route("/lastcheckin")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), requireUser, function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req,res) {
 
     usersService.getAllUsers()
       .then(users => {

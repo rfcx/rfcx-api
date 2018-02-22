@@ -10,9 +10,10 @@ var usersService = require('../../../services/users/users-service');
 var filterPresetsService = require('../../../services/filter-presets/filter-presets');
 var sequelize = require("sequelize");
 var Promise = require("bluebird");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var serviceParams = {
       name: req.body.name,
@@ -45,7 +46,7 @@ router.route("/")
   });
 
 router.route("/:guid")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var serviceParams = {
       json: req.body.json,
@@ -74,7 +75,7 @@ router.route("/:guid")
   });
 
 router.route("/:guid")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     filterPresetsService.getFilterPresetByGuid(req.params.guid)
       .then((filterPreset) => {
@@ -87,7 +88,7 @@ router.route("/:guid")
   });
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     let serviceParams = {
       type: req.query.type || null,
