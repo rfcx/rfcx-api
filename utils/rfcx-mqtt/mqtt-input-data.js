@@ -18,7 +18,7 @@ var loggers = require('../../utils/logger');
 
 exports.mqttInputData = {
 
-  parseCheckInInput: function(mqttData) {
+  parsecheckInObj: function(mqttData) {
     return new Promise(function(resolve, reject) {
 
         try {
@@ -33,34 +33,34 @@ exports.mqttInputData = {
           var screenShotFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
           var logFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
 
-          var checkInInput = { json: {}, audio: {}, screenshots: {}, logs: {} };
+          var checkInObj = { json: {}, meta: {}, audio: {}, screenshots: {}, logs: {} };
 
           zlib.gunzip(mqttData.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
            
-            checkInInput.json = JSON.parse(jsonBuffer.toString("utf8"));
+            checkInObj.json = JSON.parse(jsonBuffer.toString("utf8"));
 
-            checkInInput.audio.metaArr = (strArrToJSArr(checkInInput.json.audio,"|","*").length == 0) ? [] : strArrToJSArr(checkInInput.json.audio,"|","*")[0];
-            cacheFileBufferToFile(audioFileBuffer, true, checkInInput.audio.metaArr[3]).then(function(audioFileCacheFilePath){
+            checkInObj.audio.metaArr = (strArrToJSArr(checkInObj.json.audio,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.audio,"|","*")[0];
+            cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3]).then(function(audioFileCacheFilePath){
                   
-              checkInInput.audio.filePath = audioFileCacheFilePath;
+              checkInObj.audio.filePath = audioFileCacheFilePath;
 
-              checkInInput.screenshots.metaArr = (strArrToJSArr(checkInInput.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInInput.json.screenshots,"|","*")[0];
-              cacheFileBufferToFile(screenShotFileBuffer, false, checkInInput.screenshots.metaArr[3]).then(function(screenShotCacheFilePath){
+              checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
+              cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3]).then(function(screenShotCacheFilePath){
 
-                checkInInput.screenshots.filePath = screenShotCacheFilePath;
+                checkInObj.screenshots.filePath = screenShotCacheFilePath;
 
-                checkInInput.logs.metaArr = (strArrToJSArr(checkInInput.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInInput.json.logs,"|","*")[0];
-                cacheFileBufferToFile(logFileBuffer, true, checkInInput.logs.metaArr[3]).then(function(logFileCacheFilePath){
+                checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
+                cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3]).then(function(logFileCacheFilePath){
 
-                  checkInInput.logs.filePath = logFileCacheFilePath;
+                  checkInObj.logs.filePath = logFileCacheFilePath;
                 
-                  resolve(checkInInput);
+                  resolve(checkInObj);
 
                 }).catch(function(errLogFileCache){ console.log(errLogFileCache); reject(new Error(errLogFileCache)); });
               }).catch(function(errScreenShotCache){ console.log(errScreenShotCache); reject(new Error(errScreenShotCache)); });
             }).catch(function(errAudioFileCache){ console.log(errAudioFileCache); reject(new Error(errAudioFileCache)); });
           });
-        } catch (errParseCheckInInput) { console.log(errParseCheckInInput); reject(new Error(errParseCheckInInput)); }
+        } catch (errParsecheckInObj) { console.log(errParsecheckInObj); reject(new Error(errParsecheckInObj)); }
     }.bind(this));
   }
 

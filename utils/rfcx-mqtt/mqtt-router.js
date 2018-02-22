@@ -1,6 +1,6 @@
 var Promise = require("bluebird");
 var zlib = require("zlib");
-
+var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
 var mqttInputData = require("../../utils/rfcx-mqtt/mqtt-input-data.js").mqttInputData;
 
 exports.mqttRouter = {
@@ -11,21 +11,24 @@ exports.mqttRouter = {
       if (topic == "guardians/checkins") {
         try {
 
+          // cached file garbage collection... only do garbage collection ~1% of the time
+          if (Math.random() < 0.01 ? true : false) { cachedFiles.cacheDirectoryGarbageCollection(); }
+
           var rtrnObj = { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [], instructions: { messages: [] } };
 
-          mqttInputData.parseCheckInInput(data).then(function(checkInData){
+          mqttInputData.parseCheckInInput(data).then(function(checkInObj){
 
-            if (checkInData.audio.filePath != null) { rtrnObj.audio.push({ id: checkInData.audio.metaArr[1] }); }
-            if (checkInData.screenshots.filePath != null) { rtrnObj.screenshots.push({ id: checkInData.screenshots.metaArr[1] }); }
-            if (checkInData.logs.filePath != null) { rtrnObj.logs.push({ id: checkInData.logs.metaArr[1] }); }
+            if (checkInObj.audio.filePath != null) { rtrnObj.audio.push({ id: checkInObj.audio.metaArr[1] }); }
+            if (checkInObj.screenshots.filePath != null) { rtrnObj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] }); }
+            if (checkInObj.logs.filePath != null) { rtrnObj.logs.push({ id: checkInObj.logs.metaArr[1] }); }
 
 
 
 
             zlib.gzip( new Buffer(JSON.stringify(rtrnObj), "utf8"), function(errJsonGzip, bufJsonGzip) {
               if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
-                checkInData.rtrn = { obj: rtrnObj, gzip: bufJsonGzip };
-                resolve(checkInData);
+                checkInObj.rtrn = { obj: rtrnObj, gzip: bufJsonGzip };
+                resolve(checkInObj);
               }
             });
 
