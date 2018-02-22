@@ -18,7 +18,7 @@ var loggers = require('../../utils/logger');
 
 exports.mqttInputData = {
 
-  parsecheckInObj: function(mqttData) {
+  parsecheckInInput: function(mqttData) {
     return new Promise(function(resolve, reject) {
 
         try {
