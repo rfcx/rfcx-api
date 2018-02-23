@@ -2,6 +2,8 @@ var verbose_logging = (process.env.NODE_ENV !== "production");
 var fs = require("fs");
 var zlib = require("zlib");
 var hash = require("../../utils/misc/hash.js").hash;
+var aws = require("../../utils/external/aws.js").aws();
+var assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 var Promise = require('bluebird');
 var loggers = require('../../utils/logger');
 
@@ -33,28 +35,71 @@ exports.mqttInputData = {
                   
               checkInObj.audio.filePath = audioFileCacheFilePath;
 
-              checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
-              cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.audio.metaArr[2]).then(function(screenShotCacheFilePath){
+              saveAssetFileToS3("audio", checkInObj).then(function(checkInObj){ 
 
-                checkInObj.screenshots.filePath = screenShotCacheFilePath;
+                checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
+                cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.audio.metaArr[2]).then(function(screenShotCacheFilePath){
 
-                checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
-                cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.audio.metaArr[2]).then(function(logFileCacheFilePath){
+                  checkInObj.screenshots.filePath = screenShotCacheFilePath;
 
-                  checkInObj.logs.filePath = logFileCacheFilePath;
-                
-                  resolve(checkInObj);
+                  saveAssetFileToS3("screenshots", checkInObj).then(function(checkInObj){ 
 
-                }).catch(function(errLogFileCache){ console.log(errLogFileCache); reject(new Error(errLogFileCache)); });
-              }).catch(function(errScreenShotCache){ console.log(errScreenShotCache); reject(new Error(errScreenShotCache)); });
+                    checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
+                    cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.audio.metaArr[2]).then(function(logFileCacheFilePath){
+
+                      checkInObj.logs.filePath = logFileCacheFilePath;
+
+                      saveAssetFileToS3("logs", checkInObj).then(function(checkInObj){ 
+                        
+                        resolve(checkInObj);
+
+                      }).catch(function(errLogFileSaveToS3){ console.log(errLogFileSaveToS3); reject(new Error(errLogFileSaveToS3)); });
+                    }).catch(function(errLogFileCache){ console.log(errLogFileCache); reject(new Error(errLogFileCache)); });
+                  }).catch(function(errScreenShotSaveToS3){ console.log(errScreenShotSaveToS3); reject(new Error(errScreenShotSaveToS3)); });
+                }).catch(function(errScreenShotCache){ console.log(errScreenShotCache); reject(new Error(errScreenShotCache)); });
+              }).catch(function(errAudioFileSaveToS3){ console.log(errAudioFileSaveToS3); reject(new Error(errAudioFileSaveToS3)); });
             }).catch(function(errAudioFileCache){ console.log(errAudioFileCache); reject(new Error(errAudioFileCache)); });
           });
         } catch (errParsecheckInObj) { console.log(errParsecheckInObj); reject(new Error(errParsecheckInObj)); }
     }.bind(this));
   }
 
+
+
 };
 
+
+var saveAssetFileToS3 = function(assetType, checkInObj) {
+  return new Promise(function(resolve, reject) {
+
+      try {
+
+        if (checkInObj[assetType].filePath == null) {
+
+          resolve(checkInObj);
+
+        } else {
+
+          var s3Path = assetUtils.getGuardianAssetStoragePath( assetType, new Date(parseInt(checkInObj[assetType].metaArr[1])), checkInObj.json.guardian_guid, checkInObj[assetType].metaArr[2]);
+          var s3Bucket = (assetType == "audio") ? process.env.ASSET_BUCKET_AUDIO : process.env.ASSET_BUCKET_META;
+
+          aws.s3(s3Bucket).putFile(checkInObj[assetType].filePath, s3Path, function(s3SaveErr, s3Res){
+            try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
+            
+            if (!!s3SaveErr) {
+                console.log(s3SaveErr); 
+                reject(new Error(s3SaveErr));
+            } else if ( (200 == s3Res.statusCode) && aws.s3ConfirmSave(s3Res, s3Path) ) {
+              resolve(checkInObj);
+            } else {
+              reject(new Error("asset file ("+assetType+") could not be saved to s3"));
+            }
+          });
+        }
+
+      } catch (errSaveAssetToS3) { console.log(errSaveAssetToS3); reject(new Error(errSaveAssetToS3)); }
+  });
+};
 
 
 var cacheFileBufferToFile = function(fileBuffer, isGZipped, fileSha1Hash, fileExtension) {

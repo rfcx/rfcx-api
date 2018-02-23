@@ -29,8 +29,6 @@ app.mqtt.on("error", function(err){
 
 
 
-
-
 var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
 
 app.mqtt.on("message", function(topic, data){
@@ -44,32 +42,3 @@ app.mqtt.on("message", function(topic, data){
   }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
 });
 
-
-
-
-
-
-// app.mqtt.on("message", function(topic, data){
-  
-//   // if (topic == "guardians/checkins") {
-
-//   //   var rtrnJson = {
-//   //       checkin_id: null, 
-//   //         audio: [],
-//   //         screenshots: [],
-//   //         logs: [], 
-//   //         messages: [], 
-//   //         instructions: {
-//   //           messages: []
-//   //         } 
-//   //       };
-
-//   //   console.log(rtrnJson);
-
-//   //   // mqttData.parseCheckInInput(data).then(function(parsedInputs){
-//   //   //   console.log(parsedInputs.json);
-//   //   // });
-
-//   // }
-
-// });
