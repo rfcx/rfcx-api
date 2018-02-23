@@ -17,7 +17,6 @@ var usersService = require('../../../services/users/users-service');
 var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
 var ApiConverter = require("../../../utils/api-converter");
-var secureIp = require('../../../middleware/misc/secure-ip');
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -51,85 +50,59 @@ router.route("/login")
       .findOne({
         where: { email: userInput.email }
       }).then(function(dbUser){
-        if (dbUser == null) {
-          res.status(401).json({ message: "invalid email or password", error: { status: 401 } });
-        }
-        else if (dbUser.auth_password_hash == hash.hashedCredentials(dbUser.auth_password_salt,userInput.pswd)) {
 
-          usersService.refreshLastLogin(dbUser);
-
-          return usersService
-            .createLoginToken({
-              urlPath: req.rfcx.url_path,
-              user: dbUser,
-              expires: loginExpirationInMinutes,
-            })
-            .then(function(tokenInfo){
-              usersService.refreshLastToken(dbUser, tokenInfo);
-              return res.status(200).json(views.models.users(req,res,dbUser));
-            })
-            .catch(function(err){
-              console.log(err);
-              res.status(500).json({ message: err.message, error: { status: 500 } });
-            });
-
+        if (dbUser === null) {
+          return res.status(401).json({
+            message: "invalid email or password", error: { status: 401 }
+          });
         } else {
-          return res.status(401).json({ message: "invalid email or password", error: { status: 401 } });
+
+          if (dbUser.rfcx_system !== undefined && dbUser.rfcx_system === false) {
+            return res.status(403).json({
+              message: 'You don\'t have required permissions', error: { status: 403 }
+            });
+          }
+
+          if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt,userInput.pswd)) {
+            return res.status(401).json({
+              message: "invalid email or password", error: { status: 401 }
+            });
+          }
+
+          dbUser.last_login_at = new Date();
+          dbUser.save();
+
+          return token.createUserToken({
+            token_type: "login",
+            created_by: req.rfcx.url_path,
+            reference_tag: dbUser.guid,
+            owner_primary_key: dbUser.id,
+            minutes_until_expiration: loginExpirationInMinutes
+          }).then(function(tokenInfo){
+
+            dbUser.VisibleToken = {
+              token: tokenInfo.token,
+              token_expires_at: tokenInfo.token_expires_at
+            };
+
+            return res.status(200).json(views.models.users(req,res,dbUser));
+
+          }).catch(function(err){
+            console.log(err);
+            res.status(500).json({
+              message: err.message, error: { status: 500 }
+            });
+          });
+
         }
 
       }).catch(function(err){
         console.log(err);
-        res.status(500).json({ message: err.message, error: { status: 500 } });
+        res.status(500).json({
+          message: err.message, error: { status: 500 }
+        });
       });
 
-  });
-
-  router.route("/securelogin")
-    .post(secureIp.checkForYggdrasil, (req, res) => {
-
-      let email = (req.body.email != null) ? req.body.email.toLowerCase() : null;
-      let loginExpirationInMinutes = 1440; // 1 day
-
-      if ((req.body.extended_expiration != null) && (parseInt(req.body.extended_expiration) == 1)) {
-        loginExpirationInMinutes = 5760; // 4 days
-      }
-
-      return models.User
-        .findOne({
-          where: { email },
-          include: [{ all: true }]
-        })
-        .bind({})
-        .then((user) => {
-          if (!user) {
-            return usersService.createUser({
-              email: email,
-              firstname: req.body.firstname,
-              lastname: req.body.lastname,
-            });
-          }
-          return user;
-        })
-        .then((user) => {
-          this.user = user;
-          return usersService.refreshLastLogin(user);
-        })
-        .then(() => {
-          return usersService.createLoginToken({
-            urlPath: req.rfcx.url_path,
-            user: this.user,
-            expires: loginExpirationInMinutes,
-          });
-        })
-        .then((tokenInfo) => {
-          return usersService.refreshLastToken(this.user, tokenInfo);
-        })
-        .then(() => {
-          return res.status(200).json(views.models.users(req, res, this.user));
-        })
-        .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-        .catch(ValidationError, e => httpError(res, 400, null, e.message))
-        .catch(e => httpError(res, 500, e, "Error in process of login."));
   });
 
 router.route("/logout")
@@ -175,10 +148,11 @@ router.route("/register")
 
         if (!wasCreated) {
           res.status(409).json({
-            message: "A user with that username or email already exists", error: { status: 409 }
+            message: "A user with such username or email already exists", error: { status: 409 }
           });
         } else {
 
+          dbUser.rfcx_system = true;
           dbUser.type = userInput.type;
           dbUser.firstname = userInput.firstname;
           dbUser.lastname = userInput.lastname;
@@ -234,7 +208,8 @@ router.route("/send-reset-password-link")
         // if doesn't exists, simply do nothing
         // don't tell a client that e-mail doesn't exist in terms of security
         // this will prevent us from brute-force users by e-mails
-        if (!dbUser) {
+        // Also don't allow to reset password for users which are not RFCx user (e.g. auth0 users)
+        if (!dbUser || dbUser.rfcx_system === false) {
           res.status(200).json({});
           return Promise.reject();
         }
@@ -308,7 +283,8 @@ router.route("/reset-password")
       })
       .then(function(dbUser) {
         // if user was not found, then token has invalid user data. Destroy this token.
-        if (!dbUser) {
+        // Also do the same if user is not RFCx user (e.g. auth0 user)
+        if (!dbUser || dbUser.rfcx_system === false) {
           this.dbToken.destroy();
           httpError(req, res, 400, null, 'Invalid token. Please start reset password process once again.');
           return Promise.reject();
@@ -366,6 +342,10 @@ router.route("/change-password")
       .then(function(dbUser) {
         if (!dbUser) {
           httpError(req, res, 404, null, 'User with specified guid not found.');
+          return Promise.reject();
+        }
+        if (dbUser.rfcx_system !== undefined && dbUser.rfcx_system === false) {
+          httpError(res, 403, null, 'You don\'t have required permissions.');
           return Promise.reject();
         }
         if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
