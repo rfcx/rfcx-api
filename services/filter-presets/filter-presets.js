@@ -76,7 +76,11 @@ function getFilterPresetByGuid(guid) {
 
 function getFilterPresets(params) {
   let opts = {};
-  if (params.type) opts.type = params.type
+  if (params.types) {
+    opts.type = {
+      $in: params.types
+    };
+  }
   return models.FilterPreset
     .findAll({
       where: opts,

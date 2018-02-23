@@ -91,7 +91,7 @@ router.route("/")
   .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     let serviceParams = {
-      type: req.query.type || null,
+      types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : null
     };
 
     filterPresetsService.getFilterPresets(serviceParams)
