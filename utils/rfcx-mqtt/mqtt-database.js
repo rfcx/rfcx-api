@@ -203,11 +203,19 @@ exports.checkInDatabase = {
         }
 
     }.bind(this));
+  },
+
+  finalizeCheckIn: function(checkInObj) {
+
+    checkInObj.db.dbGuardian.last_check_in = new Date();
+    checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count;
+    checkInObj.db.dbGuardian.save();
+    checkInObj.db.dbGuardian.reload();
+
   }
 
 
 };
-
 
 
 

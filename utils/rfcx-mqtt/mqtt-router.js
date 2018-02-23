@@ -32,8 +32,7 @@ exports.mqttRouter = {
                       checkInDatabase.createDbScreenShot(checkInObj).then(function(checkInObj){
                         checkInDatabase.createDbLogFile(checkInObj).then(function(checkInObj){
 
-
-                          if (checkInObj.logs.filePath != null) { checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] }); }
+                          checkInDatabase.finalizeCheckIn(checkInObj);
 
                           zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
                             if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
