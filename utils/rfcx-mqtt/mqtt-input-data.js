@@ -34,21 +34,18 @@ exports.mqttInputData = {
             cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3], checkInObj.audio.metaArr[2]).then(function(audioFileCacheFilePath){
                   
               checkInObj.audio.filePath = audioFileCacheFilePath;
-
               saveAssetFileToS3("audio", checkInObj).then(function(checkInObj){ 
 
                 checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
                 cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.audio.metaArr[2]).then(function(screenShotCacheFilePath){
 
                   checkInObj.screenshots.filePath = screenShotCacheFilePath;
-
                   saveAssetFileToS3("screenshots", checkInObj).then(function(checkInObj){ 
 
                     checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
                     cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.audio.metaArr[2]).then(function(logFileCacheFilePath){
 
                       checkInObj.logs.filePath = logFileCacheFilePath;
-
                       saveAssetFileToS3("logs", checkInObj).then(function(checkInObj){ 
                         
                         resolve(checkInObj);

@@ -9,7 +9,6 @@ var assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 //var SensationsService = require("../../services/sensations/sensations-service");
 
 const moment = require("moment-timezone");
-//var urls = require('../../utils/misc/urls');
 
 var loggers = require('../../utils/logger');
 var logDebug = loggers.debugLogger.log;
@@ -22,6 +21,7 @@ exports.checkInAssets = {
       try {
         fs.stat(checkInObj.audio.filePath, function(statErr, fileStat) {
           if (!!statErr) { reject(statErr); }
+          
           checkInObj.audio.meta = {
             size: fileStat.size,
             measuredAt: new Date(parseInt(checkInObj.audio.metaArr[1])),

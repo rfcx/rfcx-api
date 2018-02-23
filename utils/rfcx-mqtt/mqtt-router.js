@@ -37,12 +37,9 @@ exports.mqttRouter = {
                           zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
                             if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
                               checkInObj.rtrn.gzip = bufJsonGzip;
-                              console.log(JSON.stringify(checkInObj.rtrn.obj));
                               resolve(checkInObj);
                             }
                           });
-
-
 
                         }).catch(function(errSaveDbLogs){ console.log(errSaveDbLogs); reject(new Error(errSaveDbLogs)); });
                       }).catch(function(errSaveDbScreenShot){ console.log(errSaveDbScreenShot); reject(new Error(errSaveDbScreenShot)); });
