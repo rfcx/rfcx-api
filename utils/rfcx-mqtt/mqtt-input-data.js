@@ -1,20 +1,9 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-// var models  = require("../../models");
 var fs = require("fs");
 var zlib = require("zlib");
-// var util = require("util");
 var hash = require("../../utils/misc/hash.js").hash;
-// var token = require("../../utils/internal-rfcx/token.js").token;
-// var aws = require("../../utils/external/aws.js").aws();
-// var checkInHelpers = require("../../utils/rfcx-checkin");
 var Promise = require('bluebird');
 var loggers = require('../../utils/logger');
-// var urls = require('../../utils/misc/urls');
-// var sequelize = require("sequelize");
-// const moment = require("moment-timezone");
-
-// var logDebug = loggers.debugLogger.log;
-
 
 exports.mqttInputData = {
 
@@ -33,24 +22,24 @@ exports.mqttInputData = {
           var screenShotFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
           var logFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
 
-          var checkInObj = { json: {}, meta: {}, audio: {}, screenshots: {}, logs: {} };
+          var checkInObj = { json: {}, meta: {}, db: {}, audio: {}, screenshots: {}, logs: {} };
 
           zlib.gunzip(mqttData.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
            
             checkInObj.json = JSON.parse(jsonBuffer.toString("utf8"));
 
             checkInObj.audio.metaArr = (strArrToJSArr(checkInObj.json.audio,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.audio,"|","*")[0];
-            cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3]).then(function(audioFileCacheFilePath){
+            cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3], checkInObj.audio.metaArr[2]).then(function(audioFileCacheFilePath){
                   
               checkInObj.audio.filePath = audioFileCacheFilePath;
 
               checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
-              cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3]).then(function(screenShotCacheFilePath){
+              cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.audio.metaArr[2]).then(function(screenShotCacheFilePath){
 
                 checkInObj.screenshots.filePath = screenShotCacheFilePath;
 
                 checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
-                cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3]).then(function(logFileCacheFilePath){
+                cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.audio.metaArr[2]).then(function(logFileCacheFilePath){
 
                   checkInObj.logs.filePath = logFileCacheFilePath;
                 
@@ -68,14 +57,14 @@ exports.mqttInputData = {
 
 
 
-var cacheFileBufferToFile = function(fileBuffer, isGZipped, fileSha1Hash) {
+var cacheFileBufferToFile = function(fileBuffer, isGZipped, fileSha1Hash, fileExtension) {
     return new Promise(function(resolve, reject) {
       try {
         if (fileBuffer.length == 0) {
           resolve(null);
         } else {
 
-          var tmpFilePath = process.env.CACHE_DIRECTORY+"uploads/"+hash.randomString(36);
+          var tmpFilePath = process.env.CACHE_DIRECTORY+"uploads/"+hash.randomString(36)+"."+fileExtension+(isGZipped ? ".gz" : "");
 
           fs.writeFile(tmpFilePath, fileBuffer, "binary", function(errWriteFile) {
             if (errWriteFile) { console.log(errWriteFile); reject(new Error(errWriteFile)); } else {
@@ -88,7 +77,7 @@ var cacheFileBufferToFile = function(fileBuffer, isGZipped, fileSha1Hash) {
                   }
                 } else {
                   try {
-                    var tmpFilePathUnZipped = process.env.CACHE_DIRECTORY+"uploads/"+hash.randomString(36);
+                    var tmpFilePathUnZipped = process.env.CACHE_DIRECTORY+"uploads/"+hash.randomString(36)+"."+fileExtension;
                     var unZipStream = fs.createWriteStream(tmpFilePathUnZipped);
                     fs.createReadStream(tmpFilePath).pipe(zlib.createGunzip()).pipe(unZipStream);
                     unZipStream.on("close", function(){

@@ -35,11 +35,11 @@ var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
 
 app.mqtt.on("message", function(topic, data){
 
-  mqttRouter.onMessageCheckin(topic, data).then(function(checkInData){
+  mqttRouter.onMessageCheckin(topic, data).then(function(checkInObj){
 
-    console.log(checkInData.json);
+  //  console.log(checkInObj.audio);
 
-    app.mqtt.publish("guardians/"+checkInData.json.guardian_guid, checkInData.rtrn.gzip);
+    app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid, checkInObj.rtrn.gzip);
 
   }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
 });
