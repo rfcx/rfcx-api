@@ -26,6 +26,8 @@ exports.mqttInputData = {
 
           var checkInObj = { json: {}, meta: {}, db: {}, audio: {}, screenshots: {}, logs: {} };
 
+          checkInObj.meta.checkStartTime = new Date();
+
           zlib.gunzip(mqttData.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
            
             checkInObj.json = JSON.parse(jsonBuffer.toString("utf8"));

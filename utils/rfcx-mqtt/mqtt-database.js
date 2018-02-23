@@ -212,6 +212,9 @@ exports.checkInDatabase = {
     checkInObj.db.dbGuardian.save();
     checkInObj.db.dbGuardian.reload();
 
+    checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.checkStartTime.valueOf();
+    checkInObj.db.dbCheckIn.save();
+    checkInObj.db.dbCheckIn.reload();
   }
 
 
