@@ -31,11 +31,11 @@ exports.models = {
 
     // auto-generate the asset filepath if it's not stored in the url column
     var metaStoragePath = (dbRow.url == null)
-                      ? assetUtils.getGuardianAssetStoragePath("screenshots",dbRow.measured_at,dbRow.Guardian.guid,"png")
+                      ? assetUtils.getGuardianAssetStoragePath("screenshots",dbRow.captured_at,dbRow.Guardian.guid,"png")
                       : dbRow.url.substr(dbRow.url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length);
 
 
-      aws.s3(process.env.ASSET_BUCKET_META).getFile(dbRow.url, function(err, result){
+      aws.s3(process.env.ASSET_BUCKET_META).getFile(metaStoragePath, function(err, result){
         if(err) { return next(err); }
 
         // this next line may not be necessary
