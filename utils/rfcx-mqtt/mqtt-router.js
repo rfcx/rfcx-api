@@ -34,12 +34,16 @@ exports.mqttRouter = {
 
                           checkInDatabase.finalizeCheckIn(checkInObj);
 
-                          zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
-                            if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
-                              checkInObj.rtrn.gzip = bufJsonGzip;
-                              resolve(checkInObj);
-                            }
-                          });
+                          processAndCompressReturnJson(checkInObj).then(function(checkInObj){
+
+                            // zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
+                            //   if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
+                            //     checkInObj.rtrn.gzip = bufJsonGzip;
+                                resolve(checkInObj);
+                            //   }
+                            // });
+
+                          }).catch(function(errProcessReturnJson){ console.log(errProcessReturnJson); reject(new Error(errProcessReturnJson)); });
 
                         }).catch(function(errSaveDbLogs){ console.log(errSaveDbLogs); reject(new Error(errSaveDbLogs)); });
                       }).catch(function(errSaveDbScreenShot){ console.log(errSaveDbScreenShot); reject(new Error(errSaveDbScreenShot)); });
@@ -53,8 +57,20 @@ exports.mqttRouter = {
       } else {
         reject(new Error());
       }
-    });
-
+    }.bind(this));
   }
   
+};
+
+var processAndCompressReturnJson = function(checkInObj) {
+  return new Promise(function(resolve,reject){
+
+    zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
+      if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
+        checkInObj.rtrn.gzip = bufJsonGzip;
+        resolve(checkInObj);
+      }
+    });
+
+  }.bind(this));
 };
