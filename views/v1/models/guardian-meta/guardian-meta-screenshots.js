@@ -31,7 +31,7 @@ exports.models = {
 
     // auto-generate the asset filepath if it's not stored in the url column
     var metaStoragePath = (dbRow.url == null)
-                      ? assetUtils.getGuardianAssetStoragePath("screenshots",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
+                      ? assetUtils.getGuardianAssetStoragePath("screenshots",dbRow.measured_at,dbRow.Guardian.guid,"png")
                       : dbRow.url.substr(dbRow.url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length);
 
 
