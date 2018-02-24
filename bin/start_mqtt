@@ -6,7 +6,7 @@ console.log(new String(require("child_process").execSync(process.cwd()+"/bin/set
 var appId = "rfcx-api-mqtt";
 
 var debug = require("debug")(appId);
-var app = require("../app-mqtt");
+var app = require("../app-mqtt.js");
 var models = require("../models");
 
 console.log('RFCX | Starting server');
