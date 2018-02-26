@@ -283,11 +283,25 @@ exports.audio = {
         return Promise.all(promises);
       })
       .then(function() {
-        const stateId = analysisService.findStateByName('perc_queued');
-        let proms = this.dbModels.map((model) => {
-          return analysisService.createEntity(audioInfo.audio_id, model.id, stateId);
-        });
-        Promise.all(proms);
+        analysisService.findStateByName('perc_queued')
+          .then((stateId) => {
+            let proms = this.dbModels.map((model) => {
+              logDebug('queueForTaggingByActiveModels: analysis entries params', {
+                stateId: stateId,
+                audioId: audioInfo.audio_id,
+                modelId: model.id
+              });
+              return analysisService.createEntity(audioInfo.audio_id, model.id, stateId);
+            });
+            return Promise.all(proms);
+          })
+          .then((result) => {
+            logDebug('queueForTaggingByActiveModels: analysis entries res', { result });
+          })
+          .catch((err) => {
+            logDebug('queueForTaggingByActiveModels: analysis entries error', { error: err });
+          });
+
         audioInfo.isSaved.sqs = true;
         return audioInfo;
       });
