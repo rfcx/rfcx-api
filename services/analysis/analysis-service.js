@@ -3,19 +3,19 @@ const ValidationError = require("../../utils/converter/validation-error");
 const models  = require("../../models");
 const Promise = require("bluebird");
 
-function findEntityByParams(audioGuid, AIGuid) {
+function findEntityByParams(guardian_audio_id, audio_analysis_model_id) {
   return models.AudioAnalysisEntity
     .findOne({
       include: [
         {
           model: models.GuardianAudio,
           as: 'Audio',
-          where: { 'guid': audioGuid }
+          where: { 'id': guardian_audio_id }
         },
         {
           modesl: models.AudioAnalysisModel,
           as: 'AI',
-          where: { 'guid': audioGuid }
+          where: { 'id': audio_analysis_model_id }
         }
       ]
     });
