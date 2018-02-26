@@ -284,14 +284,14 @@ exports.audio = {
       })
       .then(function() {
         analysisService.findStateByName('perc_queued')
-          .then((stateId) => {
+          .then((state) => {
             let proms = this.dbModels.map((model) => {
               logDebug('queueForTaggingByActiveModels: analysis entries params', {
-                stateId: stateId,
+                stateId: state.id,
                 audioId: audioInfo.audio_id,
                 modelId: model.id
               });
-              return analysisService.createEntity(audioInfo.audio_id, model.id, stateId);
+              return analysisService.createEntity(audioInfo.audio_id, model.id, state.id);
             });
             return Promise.all(proms);
           })
