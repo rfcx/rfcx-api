@@ -21,6 +21,15 @@ function findEntityByParams(audioGuid, AIGuid) {
     });
 }
 
+function changeEntityState(guardian_audio_id, audio_analysis_model_id, state) {
+  return findEntityByParams(guardian_audio_id, audio_analysis_model_id)
+    .then((entity) => {
+      return entity.update({
+        state
+      });
+    });
+}
+
 function findStateByName(name) {
   return models.AudioAnalysisState
     .findOne({
@@ -39,6 +48,7 @@ function createEntity(guardian_audio_id, audio_analysis_model_id, state) {
 
 module.exports = {
   findEntityByParams,
+  changeEntityState,
   findStateByName,
   createEntity,
 };
