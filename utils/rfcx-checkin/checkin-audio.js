@@ -286,20 +286,12 @@ exports.audio = {
         analysisService.findStateByName('perc_queued')
           .then((state) => {
             let proms = this.dbModels.map((model) => {
-              logDebug('queueForTaggingByActiveModels: analysis entries params', {
-                stateId: state.id,
-                audioId: audioInfo.audio_id,
-                modelId: model.id
-              });
               return analysisService.createEntity(audioInfo.audio_id, model.id, state.id);
             });
             return Promise.all(proms);
           })
-          .then((result) => {
-            logDebug('queueForTaggingByActiveModels: analysis entries res', { result });
-          })
           .catch((err) => {
-            logDebug('queueForTaggingByActiveModels: analysis entries error', { error: err });
+            logError('queueForTaggingByActiveModels: analysis entries error', { error: err });
           });
 
         audioInfo.isSaved.sqs = true;

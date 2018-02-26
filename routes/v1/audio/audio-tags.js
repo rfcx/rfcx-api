@@ -11,6 +11,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var loggers = require('../../../utils/logger');
 var sequelize = require("sequelize");
 var websocket = require('../../../utils/websocket');
+const analysisService = require('../../../services/analysis/analysis-service');
 
 var logDebug = loggers.debugLogger.log;
 
@@ -147,6 +148,11 @@ router.route("/:audio_id/tags")
           req: req,
           tagsJson: tagsJson,
         });
+
+        analysisService.findStateByName('perc_done')
+          .then((state) => {
+            analysisService.changeEntityState(this.dbAudio.id, this.dbModel.id, state.id);
+          });
 
         let wsObj = analysisUtils.prepareWsObject(this.dbAudio, tagsJson, this.dbModel);
         websocket.send('createAudioPerception', wsObj);
