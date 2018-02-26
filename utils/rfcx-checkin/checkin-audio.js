@@ -13,6 +13,7 @@ var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analy
 
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
 var SensationsService = require("../../services/sensations/sensations-service");
+const analysisService = require('../../services/analysis/analysis-service');
 
 const moment = require("moment-timezone");
 var urls = require('../../utils/misc/urls');
@@ -260,7 +261,9 @@ exports.audio = {
       .findAll({
         where: { is_active: true }
       })
+      .bind({})
       .then(function(dbModels) {
+        this.dbModels = dbModels;
         return dbModels.map(function(model) {
           return model.guid;
         });
@@ -280,6 +283,11 @@ exports.audio = {
         return Promise.all(promises);
       })
       .then(function() {
+        const stateId = analysisService.findStateByName('perc_queued');
+        let proms = this.dbModels.map((model) => {
+          return analysisService.createEntity(audioInfo.audio_id, model.id, stateId);
+        });
+        Promise.all(proms);
         audioInfo.isSaved.sqs = true;
         return audioInfo;
       });
