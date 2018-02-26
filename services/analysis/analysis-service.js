@@ -1,3 +1,7 @@
+const sequelize = require("sequelize");
+const ValidationError = require("../../utils/converter/validation-error");
+const models  = require("../../models");
+const Promise = require("bluebird");
 
 function findEntityByParams(audioGuid, AIGuid) {
   return models.AudioAnalysisEntity
