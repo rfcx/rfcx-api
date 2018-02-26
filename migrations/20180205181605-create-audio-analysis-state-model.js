@@ -4,15 +4,10 @@ module.exports = {
   up: function (queryInterface, Sequelize) {
 
     return queryInterface.createTable('AudioAnalysisStates', {
-      guid: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
-        unique: true
-      },
       name: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: false,
+        unique: true,
         validate: {
         }
       },

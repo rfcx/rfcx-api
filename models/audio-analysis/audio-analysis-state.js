@@ -2,24 +2,17 @@
 
 module.exports = function(sequelize, DataTypes) {
   var AudioAnalysisState = sequelize.define("AudioAnalysisState", {
-    guid: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      unique: true
-    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: false,
-      validate: {
-      }
+      unique: true,
+      validate: { }
     },
     description: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: false,
-      validate: {
-      }
+      validate: { }
     },
   }, {
     classMethods: {
@@ -28,7 +21,7 @@ module.exports = function(sequelize, DataTypes) {
       indexes: [
         {
           unique: true,
-          fields: ["guid"]
+          fields: ["name"]
         }
       ]
     },
