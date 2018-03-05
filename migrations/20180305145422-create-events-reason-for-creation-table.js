@@ -5,7 +5,7 @@ module.exports = {
 
     return queryInterface.createTable('GuardianAudioEventReasonsForCreation', {
       name: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true
       }
