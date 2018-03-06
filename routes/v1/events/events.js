@@ -134,8 +134,9 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
-  sql = sqlUtils.condAdd(sql, !opts.reasonsForCreation, ' AND (Reason.name = "pgm" OR GuardianAudioEvent.reason_for_creation IS NULL)');
-  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation, ' AND Reason.name IN (:reasonsForCreation)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.length === 1 && opts.reasonsForCreation[0] === 'pgm',
+    ' AND (Reason.name = "pgm" OR GuardianAudioEvent.reason_for_creation IS NULL)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.length > 1, ' AND Reason.name IN (:reasonsForCreation)');
   sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
@@ -188,8 +189,9 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
-  sql = sqlUtils.condAdd(sql, !opts.reasonsForCreation, ' AND (Reason.name = "pgm" OR GuardianAudioEvent.reason_for_creation IS NULL)');
-  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation, ' AND Reason.name IN (:reasonsForCreation)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.length === 1 && opts.reasonsForCreation[0] === 'pgm',
+    ' AND (Reason.name = "pgm" OR GuardianAudioEvent.reason_for_creation IS NULL)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.length > 1, ' AND Reason.name IN (:reasonsForCreation)');
   sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
