@@ -475,7 +475,7 @@ router.route("/:guid")
 ;
 
 router.route('/')
-  .post(passport.authenticate("token", {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['aiSystem']), function (req, res) {
 
     var converter = new ApiConverter("event", req);
 
