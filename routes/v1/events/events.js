@@ -488,7 +488,8 @@ router.route('/')
       value: body.value,
       begins_at: body.begins_at,
       ends_at: body.ends_at,
-      model: body.model
+      model: body.model,
+      reason_for_creation: body.reason_for_creation || 'pgm', // set `pgm` by default
     };
 
     // default windows to 0 if none are provided
@@ -540,6 +541,9 @@ router.route('/')
       where: {$or: {value: attrs.value, id: attrs.value}},
       defaults: {value: attrs.value}
     }));
+    promises.push(models.GuardianAudioEventReasonForCreation.findOne({
+      where: {name: attrs.reason_for_creation}
+    }));
 
     Promise.all(promises)
       .bind({})
@@ -555,6 +559,10 @@ router.route('/')
         }
         if (!data[1]) {
           httpError(req, res, 404, null, 'Model with given shortname/guid not found');
+          return Promise.reject();
+        }
+        if (!data[4]) {
+          httpError(req, res, 404, null, 'Reason for Creation with given name not found');
           return Promise.reject();
         }
 
@@ -577,6 +585,7 @@ router.route('/')
         this.type = data[2][0].value;
         attrs.value = data[3][0].id;
         this.value = data[3][0].value;
+        attrs.reason_for_creation = data[4].id;
 
         attrs.guardian = data[0].Guardian.id;
         this.guardian = data[0].Guardian.shortname;
