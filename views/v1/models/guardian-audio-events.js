@@ -135,6 +135,7 @@ exports.models = {
             ai_guid: dbRow.model_guid,
             ai_shortname: dbRow.model_shortname,
             ai_min_conf: dbRow.model_minimal_detection_confidence,
+            reason_for_creation: dbRow.reason_for_creation,
           });
 
         }

@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+console.log('----------------------------------\nRFCX | ./bin/start_mqtt started')
+
+console.log(new String(require("child_process").execSync(process.cwd()+"/bin/setup")));
+
+var appId = "rfcx-api-mqtt";
+
+var debug = require("debug")(appId);
+var app = require("../app-mqtt.js");
+var models = require("../models");
+
+console.log('RFCX | Starting server');
+
+var httpServer = app.http.listen(app.http.get('port'), function(){
+  console.log("http: "+app.http.get("title")+" (port "+app.http.get('port')+") ("+process.env.NODE_ENV+")");
+});
+
+app.mqtt.on("connect", function(){
+    console.log("mqtt: "+appId+" ("+app.mqtt.options.protocol+"://"+app.mqtt.options.host+":"+app.mqtt.options.port+") ("+process.env.NODE_ENV+")");
+    app.mqtt.subscribe("guardians/checkins");
+    console.log("mqtt: subscribed to 'guardians/checkins'");
+});
+
+app.mqtt.on("error", function(err){
+    console.log("Error");
+    console.log(err);
+   // app.mqtt.end()
+});
+
+
+
+var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
+
+app.mqtt.on("message", function(topic, data){
+  mqttRouter.onMessageCheckin(topic, data).then(function(checkInObj){
+
+    app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid, checkInObj.rtrn.gzip);
+    console.log(JSON.stringify(checkInObj.rtrn.obj));
+
+  }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
+});
+

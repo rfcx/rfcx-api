@@ -50,4 +50,6 @@ exports.env = {
 
   WEBSOCKET_URL: "",
 
+  MQTT_BROKER_HOST: "mqtt.rfcx.org"
+
 }
