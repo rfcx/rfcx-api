@@ -135,6 +135,11 @@ exports.models = {
             ai_guid: dbRow.model_guid,
             ai_shortname: dbRow.model_shortname,
             ai_min_conf: dbRow.model_minimal_detection_confidence,
+            eventViewerUrl:
+              `${process.env.CONSOLE_BASE_URL}event?guid=${dbRow.guid}&site=${dbRow.site_guid}&guardian=${dbRow.guardian_shortname}` +
+              `&timestamp=${new Date(dbRow.begins_at).valueOf()}&timezone=${dbRow.site_timezone}` +
+              `&coords=${dbRow.shadow_latitude},${dbRow.shadow_longitude}&audioGuid=${dbRow.audio_guid}&value=${dbRow.event_value}` +
+              `${dbRow.reviewer_confirmed !== null? (dbRow.reviewer_confirmed? '&verification=Confirmed' : '&verification=Denied') : ''}`
           });
 
         }
