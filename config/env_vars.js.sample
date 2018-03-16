@@ -41,6 +41,7 @@ exports.env = {
 
   // it must have /#/ at the end
   CONSOLE_BASE_URL: 'http://localhost:3000/#/',
+  DASHBOARD_BASE_URL: 'http://localhost:5555/#/',
 
   NODE_LOG_LEVEL: "info", // error, warn, info, debug
   CLOUDWATCH_ENABLED: false, // cloudwatch should be disabled for developers by default
