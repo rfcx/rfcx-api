@@ -40,8 +40,8 @@ function checkDBUser(req, jwtPayload, done) {
     },
     {
       guid: jwtPayload.guid,
-      firstname: jwtPayload.firstname,
-      lastname: jwtPayload.lastname,
+      firstname: jwtPayload.given_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.given_name : ''),
+      lastname: jwtPayload.family_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.family_name : ''),
       email: jwtPayload.email,
       rfcx_system: false,
     }
