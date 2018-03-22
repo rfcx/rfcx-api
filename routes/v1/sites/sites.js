@@ -18,8 +18,8 @@ router.route("/")
         offset: req.rfcx.offset
       })
       .then((dbSite) => {
-        if (req.query.filter_by_user_guid) {
-          return userService.getUserByGuid(req.query.filter_by_user_guid)
+        if (req.query.filter_by_user !== undefined && req.query.filter_by_user.toString() !== 'false') {
+          return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
             .then((user) => {
               return userService.formatUser(user);
             })
