@@ -16,7 +16,8 @@ const eventQueryBase =
       'Model.shortname AS model_shortname, ' +
     'User.guid AS user_guid, ' +
     'EventType.value AS event_type, ' +
-    'EventValue.value AS event_value ' +
+    'EventValue.value AS event_value, ' +
+    'Reason.name AS reason_for_creation ' +
     'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
     'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
     'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
@@ -24,7 +25,8 @@ const eventQueryBase =
     'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
     'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
     'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
-    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ';
+    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+    'LEFT JOIN GuardianAudioEventReasonsForCreation AS Reason ON GuardianAudioEvent.reason_for_creation = Reason.id ';
 
 function getEventByGuid(guid) {
 

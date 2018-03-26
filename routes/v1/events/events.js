@@ -86,6 +86,7 @@ function prepareOpts(req) {
     omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
     omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
     omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
+    reasonsForCreation: req.query.reasons_for_creation? (Array.isArray(req.query.reasons_for_creation)? req.query.reasons_for_creation : [req.query.reasons_for_creation]) : undefined,
     search: req.query.search? '%' + req.query.search + '%' : undefined,
     order: order? order : undefined,
     dir: dir? dir : undefined,
@@ -105,6 +106,7 @@ function countData(req) {
                    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
                    'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
                    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+                   'LEFT JOIN GuardianAudioEventReasonsForCreation AS Reason ON GuardianAudioEvent.reason_for_creation = Reason.id ' +
                    'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
@@ -131,6 +133,8 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
   sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
@@ -183,6 +187,8 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
   sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
@@ -488,7 +494,8 @@ router.route('/')
       value: body.value,
       begins_at: body.begins_at,
       ends_at: body.ends_at,
-      model: body.model
+      model: body.model,
+      reason_for_creation: body.reason_for_creation || 'pgm', // set `pgm` by default
     };
 
     // default windows to 0 if none are provided
@@ -540,6 +547,9 @@ router.route('/')
       where: {$or: {value: attrs.value, id: attrs.value}},
       defaults: {value: attrs.value}
     }));
+    promises.push(models.GuardianAudioEventReasonForCreation.findOne({
+      where: {name: attrs.reason_for_creation}
+    }));
 
     Promise.all(promises)
       .bind({})
@@ -555,6 +565,10 @@ router.route('/')
         }
         if (!data[1]) {
           httpError(req, res, 404, null, 'Model with given shortname/guid not found');
+          return Promise.reject();
+        }
+        if (!data[4]) {
+          httpError(req, res, 404, null, 'Reason for Creation with given name not found');
           return Promise.reject();
         }
 
@@ -577,6 +591,7 @@ router.route('/')
         this.type = data[2][0].value;
         attrs.value = data[3][0].id;
         this.value = data[3][0].value;
+        attrs.reason_for_creation = data[4].id;
 
         attrs.guardian = data[0].Guardian.id;
         this.guardian = data[0].Guardian.shortname;
