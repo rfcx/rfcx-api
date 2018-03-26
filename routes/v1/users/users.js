@@ -17,6 +17,7 @@ var usersService = require('../../../services/users/users-service');
 var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
 var ApiConverter = require("../../../utils/api-converter");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -115,8 +116,8 @@ router.route("/logout")
           tokens_removed: tokensCount
         });
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(e => httpError(res, 500, e, "Error in process of logout."));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => httpError(req, res, 500, e, "Error in process of logout."));
 
   });
 
@@ -345,7 +346,7 @@ router.route("/change-password")
           return Promise.reject();
         }
         if (dbUser.rfcx_system !== undefined && dbUser.rfcx_system === false) {
-          httpError(res, 403, null, 'You don\'t have required permissions.');
+          httpError(req, res, 403, null, 'You don\'t have required permissions.');
           return Promise.reject();
         }
         if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
@@ -412,7 +413,7 @@ router.route("/checkin")
   });
 
 router.route("/lastcheckin")
-  .get(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req,res) {
 
     usersService.getAllUsers()
       .then(users => {

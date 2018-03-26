@@ -12,9 +12,10 @@ var usersService = require('../../../services/users/users-service');
 var messagesService = require('../../../services/messages/messages-service');
 var sequelize = require("sequelize");
 var Promise = require("bluebird");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
 
     // map HTTP params to service params
     var serviceParams = {
@@ -52,7 +53,7 @@ router.route("/")
   });
 
 router.route("/")
-  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
 
     var serviceParams = {
       after: req.query.after,

@@ -12,6 +12,7 @@ var ApiConverter = require("../../../utils/api-converter");
 var urls = require("../../../utils/misc/urls");
 var sequelize = require("sequelize");
 var guidService = require('../../../utils/misc/guid.js');
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 /**
  * Takes guid and ai attributes and creates AI
@@ -52,7 +53,7 @@ function processAiCreation(guid, req, res) {
 }
 
 router.route("/ai")
-  .get(passport.authenticate("token",{session:false}), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), (req, res) => {
 
     var converter = new ApiConverter("ai", req);
 
