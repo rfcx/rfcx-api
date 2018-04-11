@@ -11,6 +11,7 @@ var Promise = require("bluebird");
 var sqlUtils = require("../../../utils/misc/sql");
 var httpError = require("../../../utils/http-errors.js");
 var urls = require('../../../utils/misc/urls');
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 function createOrUpdateTag(tag) {
 
@@ -117,7 +118,7 @@ function processMany(req, res) {
     });
 }
 router.route("/")
-	.post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
     try {
       if (req.body.data.type == 'tags') {
         processMany(req, res);
@@ -276,7 +277,7 @@ router.route("/:tag_id")
 	});
 
 router.route('/classified/byannotator')
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
 
     var converter = new ApiConverter("tags", req);
 
