@@ -90,6 +90,16 @@ function countEventsByDates(dbAudioEvents) {
   return json.dates;
 }
 
+function combineEventViewerUrl(dbRow) {
+  let query =
+    `guid=${dbRow.guid}&site=${encodeURIComponent(dbRow.site_guid)}&guardian=${encodeURIComponent(dbRow.guardian_shortname)}` +
+    `&timestamp=${new Date(dbRow.begins_at).valueOf()}&timezone=${encodeURIComponent(dbRow.site_timezone)}` +
+    `&coords=${encodeURIComponent(dbRow.shadow_latitude)},${encodeURIComponent(dbRow.shadow_longitude)}` +
+    `&audioGuid=${dbRow.audio_guid}&value=${encodeURIComponent(dbRow.event_value)}` +
+    `${dbRow.reviewer_confirmed !== null? (dbRow.reviewer_confirmed? '&verification=Confirmed' : '&verification=Denied') : ''}`;
+  return `${process.env.DASHBOARD_BASE_URL}event?${query}`;
+}
+
 exports.models = {
 
   guardianAudioEventsJson: function(req,res,dbAudioEvents) {
@@ -136,11 +146,7 @@ exports.models = {
             ai_shortname: dbRow.model_shortname,
             ai_min_conf: dbRow.model_minimal_detection_confidence,
             reason_for_creation: dbRow.reason_for_creation,
-            eventViewerUrl:
-              `${process.env.DASHBOARD_BASE_URL}event?guid=${dbRow.guid}&site=${dbRow.site_guid}&guardian=${dbRow.guardian_shortname}` +
-              `&timestamp=${new Date(dbRow.begins_at).valueOf()}&timezone=${dbRow.site_timezone}` +
-              `&coords=${dbRow.shadow_latitude},${dbRow.shadow_longitude}&audioGuid=${dbRow.audio_guid}&value=${dbRow.event_value}` +
-              `${dbRow.reviewer_confirmed !== null? (dbRow.reviewer_confirmed? '&verification=Confirmed' : '&verification=Denied') : ''}`
+            eventViewerUrl: combineEventViewerUrl(dbRow),
           });
 
         }
