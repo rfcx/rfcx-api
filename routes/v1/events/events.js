@@ -251,7 +251,7 @@ function processStatsByDates(req, res) {
 }
 
 router.route("/event")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
