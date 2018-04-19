@@ -1,6 +1,7 @@
 var models = require("../../models");
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
+var ValidationError = require('../../utils/converter/validation-error');
 
 const eventQueryBase =
   'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
@@ -107,6 +108,31 @@ function updateEventReview(guid, confirmed, user_id) {
     });
 }
 
+function updateEventComment(guid, comment) {
+
+  if (typeof comment !== 'string' && !(comment instanceof String)) {
+    throw new ValidationError('comment attribute must be a string');
+  }
+
+  return models.GuardianAudioEvent
+    .findOne({
+      where: { guid },
+    })
+    .then((event) => {
+      if (!event) {
+        throw new sequelize.EmptyResultError('Event with given guid not found.');
+      }
+      else {
+        event.comment = comment;
+        return event.save();
+      }
+    })
+    .then((event) => {
+      return event.reload({include: [{ all: true } ]});
+    });
+
+}
+
 function prepareWsObject(event, site) {
   let timezone = site.timezone;
   let guardian = event.Guardian;
@@ -142,4 +168,5 @@ module.exports = {
   updateEventReview: updateEventReview,
   eventQueryBase: eventQueryBase,
   prepareWsObject: prepareWsObject,
+  updateEventComment: updateEventComment,
 };
