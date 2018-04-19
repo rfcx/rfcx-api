@@ -731,6 +731,23 @@ router.route("/:event_id/review")
   })
 ;
 
+router.route("/:guid/comment")
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    eventsService
+      .updateEventComment(req.params.guid, req.body.comment)
+      .then((event) => {
+        return views.models.guardianAudioEventsJson(req, res, event);
+      })
+      .then((data) => {
+        res.status(200).json(data.events[0]);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log(e); httpError(req, res, 500, e, "Error in process of saving comment for event")});
+
+  });
+
 router.route("/:guid/confirm")
   .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
