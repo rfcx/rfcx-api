@@ -14,7 +14,11 @@ router.route("/:shortlink_id")
         include: [ { all: true } ]
       }).then(function(dbShortLink){
         
-        res.status(200).json({ shortlink: dbShortLink.url });
+        dbShortLink.access_count = 1 + dbShortLink.access_count;
+        dbShortLink.save();
+        
+        console.log("redirecting client to: '"+dbShortLink.url+"'");
+        res.redirect(301, dbShortLink.url );
 
       }).catch(function(err){
         // console.log("failed to return site | "+err);
