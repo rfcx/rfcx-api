@@ -8,20 +8,23 @@ var httpError = require("../../../utils/http-errors.js");
 router.route("/:shortlink_id")
   .get(function(req,res) {
 
-    res.status(200).json({ shortlink: req.params.shortlink_id });
-
-    // models.GuardianSite
-    //   .findOne({ 
-    //     where: { guid: req.params.site_id },
-    //     include: [ { all: true } ]
-    //   }).then(function(dbSite){
+    models.ShortLink
+      .findOne({ 
+        where: { guid: req.params.shortlink_id },
+        include: [ { all: true } ]
+      }).then(function(dbShortLink){
         
-    //     res.status(200).json(views.models.guardianSites(req,res,dbSite));
+        dbShortLink.access_count = 1 + dbShortLink.access_count;
+        dbShortLink.save();
+        
+        console.log("redirecting client to: '"+dbShortLink.url+"'");
+        res.redirect(301, dbShortLink.url );
 
-    //   }).catch(function(err){
-    //     console.log("failed to return site | "+err);
-    //     if (!!err) { res.status(500).json({msg:"failed to return site"}); }
-    //   });
+      }).catch(function(err){
+        // console.log("failed to return site | "+err);
+        // if (!!err) { res.status(500).json({msg:"failed to return site"}); }
+        res.status(200).json({ shortlink: req.params.shortlink_id });
+      });
 
   })
 ;

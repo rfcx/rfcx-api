@@ -147,6 +147,7 @@ exports.models = {
             ai_min_conf: dbRow.model_minimal_detection_confidence,
             reason_for_creation: dbRow.reason_for_creation,
             eventViewerUrl: combineEventViewerUrl(dbRow),
+            comment: dbRow.comment,
           });
 
         }

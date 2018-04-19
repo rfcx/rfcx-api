@@ -32,7 +32,7 @@ exports.checkInAssets = {
             fileExtension: checkInObj.audio.metaArr[2],
             isVbr: (checkInObj.audio.metaArr[7].toLowerCase() === "vbr"),
             encodeDuration: parseInt(checkInObj.audio.metaArr[8]),
-            mimeType: mimeTypeFromAudioCodec(checkInObj.audio.metaArr[6]),
+            mimeType: assetUtils.mimeTypeFromAudioCodec(checkInObj.audio.metaArr[6]),
             s3Path: assetUtils.getGuardianAssetStoragePath( "audio", new Date(parseInt(checkInObj.audio.metaArr[1])), checkInObj.json.guardian_guid, checkInObj.audio.metaArr[2])
           };
 
@@ -48,7 +48,7 @@ exports.checkInAssets = {
                   if (!!err) { console.log(err); }
 
                   checkInObj.audio.meta.captureSampleCount = parseInt(stdout.trim());
-                  deleteFile(wavFilePath);
+                  assetUtils.deleteLocalFileFromFileSystem(wavFilePath);
                   resolve(checkInObj);
 
                 });
@@ -143,25 +143,5 @@ exports.checkInAssets = {
 
 
 
-var deleteFile = function(filePath) {
-    fs.stat( filePath, function(err, stat) {
-      if (err == null) { fs.unlink( filePath, function(e) { if (e) { console.log(e); } } ); }
-    });
-};
 
-var mimeTypeFromAudioCodec = function(audioCodec) {
-
-  if (audioCodec.toLowerCase() == "opus") {
-    return "audio/ogg";
-  } else if (audioCodec.toLowerCase() == "flac") {
-    return "audio/flac";
-  } else if (audioCodec.toLowerCase() == "aac") {
-    return "audio/mp4";
-  } else if (audioCodec.toLowerCase() == "mp3") {
-    return "audio/mpeg";
-  } else {
-    return null;
-  }
-
-};
 

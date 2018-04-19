@@ -1,3 +1,4 @@
+var fs = require("fs");
 
 exports.assetUtils = {
 
@@ -11,9 +12,28 @@ exports.assetUtils = {
                 +"/"+guardianGuid+"-"+dateTimeString+"."+fileExtension;
 
         return assetStoragePath;
+    },
 
-    }
+	mimeTypeFromAudioCodec: function(audioCodec) {
 
+	  if (audioCodec.toLowerCase() == "opus") {
+	    return "audio/ogg";
+	  } else if (audioCodec.toLowerCase() == "flac") {
+	    return "audio/flac";
+	  } else if (audioCodec.toLowerCase() == "aac") {
+	    return "audio/mp4";
+	  } else if (audioCodec.toLowerCase() == "mp3") {
+	    return "audio/mpeg";
+	  } else {
+	    return null;
+	  }
+	},
+
+	deleteLocalFileFromFileSystem: function(filePath) {
+	    fs.stat( filePath, function(err, stat) {
+	      if (err == null) { fs.unlink( filePath, function(e) { if (e) { console.log(e); } } ); }
+	    });
+	}
 
 };
 
