@@ -20,11 +20,11 @@ function getUserByParams(params) {
 }
 
 function getUserByGuid(guid) {
-  return this.getUserByParams({ guid });
+  return getUserByParams({ guid });
 }
 
 function getUserByEmail(email) {
-  return this.getUserByParams({ email });
+  return getUserByParams({ email });
 }
 
 function getAllUsers() {

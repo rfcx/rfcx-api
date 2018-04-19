@@ -7,15 +7,32 @@ var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 var sequelize = require('sequelize');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const userService = require('../../../services/users/users-service');
 
 router.route("/")
-  .get(passport.authenticate('token', { session:false }), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
     models.GuardianSite
       .findAll({
         where: { is_active: true },
         limit: req.rfcx.limit,
         offset: req.rfcx.offset
-      }).then(function(dbSite){
+      })
+      .then((dbSite) => {
+        if (req.query.filter_by_user !== undefined && req.query.filter_by_user.toString() !== 'false') {
+          return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
+            .then((user) => {
+              return userService.formatUser(user);
+            })
+            .then((user) => {
+              return dbSite.filter((site) => {
+                return user.accessibleSites.includes(site.guid);
+              });
+            });
+        }
+        else {
+          return dbSite;
+        }
+      }).then((dbSite) => {
 
         if (dbSite.length < 1) {
           httpError(req, res, 404, "database");
@@ -23,7 +40,9 @@ router.route("/")
           res.status(200).json(views.models.guardianSites(req,res,dbSite));
         }
 
-      }).catch(function(err){
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(function(err){
         console.log("failed to return site | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return site"}); }
       });

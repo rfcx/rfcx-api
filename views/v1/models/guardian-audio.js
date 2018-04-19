@@ -137,94 +137,87 @@ exports.models = {
       dbRows = [dbRows];
     }
 
-    var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
-
     return new Promise(function (resolve, reject) {
 
       if (!dbRows.length) {
         resolve([]);
       }
 
-      for (i in dbRows) {
+      let proms = [];
+      let jsonArr = [];
 
-        var thisRow = dbRows[i], thisGuid = thisRow.guid;
+      dbRows.forEach((thisRow) => {
+        let guid = thisRow.guid;
 
-        dbRowsByGuid[thisGuid] = thisRow;
-
-        jsonRowsByGuid[thisGuid] = {
-          guid: thisGuid,
-          measured_at: thisRow.measured_at,
-          analyzed_at: thisRow.analyzed_at,
-          size: thisRow.size,
-          duration: null,
-          sample_rate: thisRow.Format? thisRow.Format.sample_rate : null,
-          sha1_checksum: thisRow.sha1_checksum
-        };
-
-        if (thisRow.Format) {
-          jsonRowsByGuid[thisGuid].duration = Math.round(1000 * thisRow.capture_sample_count / thisRow.Format.sample_rate)
-        }
-
-        if (thisRow.Site != null) {
-          jsonRowsByGuid[thisGuid].site_guid = thisRow.Site.guid;
-          jsonRowsByGuid[thisGuid].timezone_offset = thisRow.Site.timezone_offset;
-          jsonRowsByGuid[thisGuid].timezone = thisRow.Site.timezone;
-        }
-        if (thisRow.Guardian != null) {
-          jsonRowsByGuid[thisGuid].guardian_guid = thisRow.Guardian.guid;
-        }
-        if (thisRow.CheckIn != null) {
-          jsonRowsByGuid[thisGuid].checkin_guid = thisRow.CheckIn.guid;
-        }
-
-        if (PARENT_GUID != null) {
-          jsonRowsByGuid[thisGuid].PARENT_GUID = PARENT_GUID;
-        }
-
-        token.createAnonymousToken({
-          reference_tag: thisGuid,
-          token_type: "audio-file",
+        let prom = token.createAnonymousToken({
+          reference_tag: guid,
+          token_type: 'audio-file',
           minutes_until_expiration: 30,
           created_by: null,
           allow_garbage_collection: false,
           only_allow_access_to: [
-            "^/v1/assets/audio/" + thisGuid + ".m4a$",
-            "^/v1/assets/audio/" + thisGuid + ".mp3$",
-            "^/v1/assets/audio/" + thisGuid + ".opus$",
-            "^/v1/assets/audio/" + thisGuid + ".png$"
+            `^/v1/assets/audio/${guid}.m4a$`,
+            `^/v1/assets/audio/${guid}.mp3$`,
+            `^/v1/assets/audio/${guid}.opus$`,
+            `^/v1/assets/audio/${guid}.png$`
           ]
-        }).then(function (tokenInfo) {
-          try {
+        });
 
-            var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid,
-              urlBase = process.env.ASSET_URLBASE + "/audio/" + thisGuid,
-              urlAuthParams = "?auth_user=token/" + tokenInfo.token_guid
-                + "&auth_token=" + tokenInfo.token
-                + "&auth_expires_at=" + tokenInfo.token_expires_at.toISOString();
+        proms.push(prom);
 
-            jsonRowsByGuid[thisGuid].urls = {
-              m4a: urlBase + ".m4a",
-              mp3: urlBase + ".mp3",
-              opus: urlBase + ".opus",
-              png: urlBase + ".png"
+      });
+
+      Promise.all(proms)
+        .then((tokens) => {
+          tokens.forEach((token, index) => {
+            let thisRow = dbRows[index];
+            let json = {
+              guid: thisRow.guid,
+              measured_at: thisRow.measured_at,
+              analyzed_at: thisRow.analyzed_at,
+              size: thisRow.size,
+              duration: null,
+              sample_rate: thisRow.Format? thisRow.Format.sample_rate : null,
+              sha1_checksum: thisRow.sha1_checksum
             };
-
-            jsonRowsByGuid[thisGuid].urls_expire_at = tokenInfo.token_expires_at;
-
-            jsonArray.push(jsonRowsByGuid[thisGuid]);
-            if (jsonArray.length == dbRows.length) {
-              resolve(jsonArray);
+            if (!!thisRow.Format) {
+              json.duration = Math.round(1000 * thisRow.capture_sample_count / thisRow.Format.sample_rate)
+            }
+            if (!!thisRow.Site) {
+              json.site_guid = thisRow.Site.guid;
+              json.timezone_offset = thisRow.Site.timezone_offset;
+              json.timezone = thisRow.Site.timezone;
+            }
+            if (!!thisRow.Guardian) {
+              json.guardian_guid = thisRow.Guardian.guid;
+            }
+            if (!!thisRow.CheckIn) {
+              json.checkin_guid = thisRow.CheckIn.guid;
+            }
+            if (!!PARENT_GUID) {
+              json.PARENT_GUID = PARENT_GUID;
             }
 
-          } catch (e) {
-            reject(e);
-          }
+            let urlBase = `${process.env.ASSET_URLBASE}/audio/${thisRow.guid}`;
+            json.urls = {
+              m4a: `${urlBase}.m4a`,
+              mp3: `${urlBase}.mp3`,
+              opus: `${urlBase}.opus`,
+              png: `${urlBase}.png`
+            };
 
-        }).catch(function (err) {
+            json.urls_expire_at = token.token_expires_at;
+
+            jsonArr.push(json);
+          });
+
+          resolve(jsonArr);
+        })
+        .catch((err) => {
           console.log("failed to create anonymous token | " + err);
           reject(new Error(err));
         });
-      }
+
     });
 
   },
