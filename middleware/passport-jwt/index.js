@@ -34,12 +34,12 @@ function checkDBUser(req, jwtPayload, done) {
   userService.findOrCreateUser(
     {
       $or: {
-        guid: jwtPayload.guid,
+        guid: jwtPayload.guid || jwtPayload["https://rfcx.org/app_metadata"].guid,
         email: jwtPayload.email,
       }
     },
     {
-      guid: jwtPayload.guid,
+      guid: jwtPayload.guid || jwtPayload["https://rfcx.org/app_metadata"].guid,
       firstname: jwtPayload.given_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.given_name : ''),
       lastname: jwtPayload.family_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.family_name : ''),
       email: jwtPayload.email,
