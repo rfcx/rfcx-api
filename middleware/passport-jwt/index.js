@@ -54,6 +54,7 @@ function checkDBUser(req, jwtPayload, done) {
     let info = combineUserData(jwtPayload, user);
     req.rfcx.auth_token_info = info;
     done(null, req.rfcx.auth_token_info);
+    return true;
   })
   .catch(e => {
     done(e);
