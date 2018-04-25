@@ -38,7 +38,10 @@ function hasRole(expectedRoles) {
 
 function obtainRoles(user) {
   if (user.roles) { return user.roles; }
-  if (user["https://rfcx.org/app_metadata"].authorization.roles) { return user["https://rfcx.org/app_metadata"].authorization.roles}
+  let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
+  if (user[rfcxAppMetaUrl] && user[rfcxAppMetaUrl].authorization && user[rfcxAppMetaUrl].authorization.roles) {
+    return user[rfcxAppMetaUrl].authorization.roles
+  }
   if (user.scope) {
     if (typeof user.scope === 'string') {
       try {
