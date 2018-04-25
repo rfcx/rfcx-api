@@ -31,15 +31,16 @@ function combineUserData(jwtPayload, user) {
 }
 
 function checkDBUser(req, jwtPayload, done) {
+  let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
   userService.findOrCreateUser(
     {
       $or: {
-        guid: jwtPayload.guid,
+        guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : ''),
         email: jwtPayload.email,
       }
     },
     {
-      guid: jwtPayload.guid,
+      guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : ''),
       firstname: jwtPayload.given_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.given_name : ''),
       lastname: jwtPayload.family_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.family_name : ''),
       email: jwtPayload.email,
@@ -53,6 +54,7 @@ function checkDBUser(req, jwtPayload, done) {
     let info = combineUserData(jwtPayload, user);
     req.rfcx.auth_token_info = info;
     done(null, req.rfcx.auth_token_info);
+    return true;
   })
   .catch(e => {
     done(e);
