@@ -2,6 +2,7 @@ const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const jwksRsa = require('jwks-rsa-passport-edition');
 const userService = require('../../services/users/users-service');
+const guid = require('../../utils/misc/guid');
 const sequelize = require("sequelize");
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken();
@@ -32,6 +33,15 @@ function combineUserData(jwtPayload, user) {
 
 function checkDBUser(req, jwtPayload, done) {
   let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
+
+  // if request was sent from userless account (like GAIA), then use static user
+  if (!jwtPayload.email && !jwtPayload.guid) {
+    jwtPayload.email = 'userless@rfcx.org';
+    jwtPayload.given_name = 'userless';
+    jwtPayload.family_name = 'rfcx';
+    jwtPayload.guid = guid.generate();
+  }
+
   userService.findOrCreateUser(
     {
       $or: {
@@ -41,9 +51,9 @@ function checkDBUser(req, jwtPayload, done) {
     },
     {
       guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : ''),
+      email: jwtPayload.email,
       firstname: jwtPayload.given_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.given_name : ''),
       lastname: jwtPayload.family_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.family_name : ''),
-      email: jwtPayload.email,
       rfcx_system: false,
     }
   )
