@@ -6,9 +6,9 @@ exports.models = {
   guardianSites: function(req,res,dbSites) {
 
     var views = getAllViews();
-    
+
     if (!util.isArray(dbSites)) { dbSites = [dbSites]; }
-    
+
     var jsonArray = [];
 
     for (i in dbSites) {
@@ -22,7 +22,8 @@ exports.models = {
         cartodb_map_id: dbRow.cartodb_map_id,
         flickr_photoset_id: dbRow.flickr_photoset_id,
         is_active: dbRow.is_active,
-        bounds: dbRow.bounds
+        bounds: dbRow.bounds,
+        timezone: dbRow.timezone,
       };
 
       if (dbRow.Guardian != null) { guardianSite.guardians = views.models.guardian(req,res,dbRow.Guardian); }
