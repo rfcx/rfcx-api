@@ -56,7 +56,7 @@ function arePayloadsValid(payloads) {
  */
 function send(payloads) {
   return new Promise((resolve, reject) => {
-    if (!this.isReady) {
+    if (!isReady) {
       let msg = 'Kafka Service: service is not ready to send messages.'
       logError(msg);
       return reject(new Error(msg));
