@@ -34,6 +34,30 @@ router.route("/donations/:donation_id")
   })
 ;
 
+router.route("/donations")
+  .get(passport.authenticate("token",{session:false}), function(req,res) {
+
+    models.AdoptProtectDonation
+      .findAll({
+        where: { donor_email: req.query.donor_email.toLowerCase() },
+        include: [ { all: true } ],
+        limit: 1
+      }).then(function(dbAdoptProtectDonation){
+
+        if (dbAdoptProtectDonation.length < 1) {
+          httpError(req, res, 404, "database");
+        } else {
+          res.status(200).json(views.models.adoptProtectDonations(req,res,dbAdoptProtectDonation));
+        }
+
+      }).catch(function(err){
+        console.log("failed to return adopt protect donation | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return adopt protect donation"}); }
+      });
+
+  })
+;
+
 
 
 module.exports = router;
