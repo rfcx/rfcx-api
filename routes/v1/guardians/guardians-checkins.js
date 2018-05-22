@@ -19,6 +19,7 @@ var loggers = require('../../../utils/logger');
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
+const kafka = require('../../../services/kafka/kafka-service');
 
 var logDebug = loggers.debugLogger.log;
 
@@ -243,9 +244,11 @@ router.route("/:guardian_id/checkins")
                     req: req,
                     dbAudio: dbAudio,
                   });
+                  let kafObj = checkInHelpers.audio.prepareKafkaObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
+                  return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
+                              .then(kafka.send);
                   // let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio); DISABLE WEBSOCKET FOR PROD
                   // websocket.send('createAudioSensation', wsObj); DISABLE WEBSOCKET FOR PROD
-                  return true;
                 })
                 .catch(function(err) {
                   loggers.errorLogger.log('Failed to send websocket data for guardian checkin', { req: req, err: err });
