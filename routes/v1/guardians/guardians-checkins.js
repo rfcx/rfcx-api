@@ -19,6 +19,7 @@ var websocket = require('../../../utils/websocket');
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
+const kafka = require('../../../services/kafka/kafka-service');
 
 var logDebug = loggers.debugLogger.log;
 
@@ -244,9 +245,12 @@ router.route("/:guardian_id/checkins")
                     req: req,
                     dbAudio: dbAudio,
                   });
-                  let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
-                  websocket.send('createAudioSensation', wsObj);
-                  return true;
+                  let kafObj = checkInHelpers.audio.prepareKafkaObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
+                  logDebug('Guardian checkins endpoint: kafka message', { req: req, message: kafObj, });
+                  return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
+                              .then(kafka.send);
+                  // let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio); DISABLE WEBSOCKET FOR PROD
+                  // websocket.send('createAudioSensation', wsObj); DISABLE WEBSOCKET FOR PROD
                 })
                 .catch(function(err) {
                   loggers.errorLogger.log('Failed to send websocket data for guardian checkin', { req: req, err: err });
@@ -277,7 +281,7 @@ router.route("/:guardian_id/checkins")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
@@ -288,9 +292,9 @@ router.route("/:guardian_id/checkins")
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
 
         models.GuardianCheckIn
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
@@ -327,9 +331,9 @@ function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
     // LEGACY TIMESTAMP FORMAT
     asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
   } else if (timeStamp != null) {
-    
+
     asDate = new Date(parseInt(timeStamp));
-  
+
   }
   return asDate;
 }
