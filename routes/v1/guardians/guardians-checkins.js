@@ -245,6 +245,7 @@ router.route("/:guardian_id/checkins")
                     dbAudio: dbAudio,
                   });
                   let kafObj = checkInHelpers.audio.prepareKafkaObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
+                  logDebug('Guardian checkins endpoint: kafka message', { req: req, message: kafObj, });
                   return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
                               .then(kafka.send);
                   // let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio); DISABLE WEBSOCKET FOR PROD
