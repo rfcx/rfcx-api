@@ -16,13 +16,18 @@ function getSpectrogramUrl(req, guid) {
 }
 
 function getAudioAssetsUrl(req, guid, extension) {
-    return getApiUrl(req) + '/assets/audio/' + guid + '.' + extension;
+    return `${getApiUrl(req)}/assets/audio/${guid}.${extension}`;
+}
+
+function getSpectrogramAssetsUrl(req, guid, extension) {
+    return `${getApiUrl(req)}/assets/audio/${guid}.png`;
 }
 
 module.exports = {
-    getBaseUrl: getBaseUrl,
-    getApiUrl: getApiUrl,
-    getAudioUrl: getAudioUrl,
-    getSpectrogramUrl: getSpectrogramUrl,
-    getAudioAssetsUrl: getAudioAssetsUrl
+    getBaseUrl,
+    getApiUrl,
+    getAudioUrl,
+    getSpectrogramUrl,
+    getAudioAssetsUrl,
+    getSpectrogramAssetsUrl
 };
