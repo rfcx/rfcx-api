@@ -24,8 +24,13 @@ exports.models = {
         donation_context: dbRow.donation_context,
         donation_currency: dbRow.donation_currency,
         area_hectares: dbRow.area_hectares,
-        area_polygon: dbRow.area_polygon,
-        area_site: null,
+        area_polygon: (dbRow.area_polygon == null) ? null : JSON.parse(dbRow.area_polygon),
+        area_site: (dbRow.AreaSite == null) ? null : {
+          guid: dbRow.AreaSite.guid,
+          name: dbRow.AreaSite.name,
+          description: dbRow.AreaSite.description,
+          timezone: dbRow.AreaSite.timezone
+        },
         area_stream: {
            urls: {
              audio: "/v1/guardians/96a9956ef249/audio.json?order=ascending&limit=3"
@@ -33,8 +38,7 @@ exports.models = {
         }
       };
 
-      if (dbRow.AreaSite != null) { adoptProtectDonation.area_site = views.models.guardianSites(req,res,dbRow.AreaSite)[0]; }
-
+  
       jsonArray.push(adoptProtectDonation);
     }
     return jsonArray;
