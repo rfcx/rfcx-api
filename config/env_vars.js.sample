@@ -53,4 +53,6 @@ exports.env = {
 
   MQTT_BROKER_HOST: "mqtt.rfcx.org"
 
+  KAFKA_HOST: ""
+
 }
