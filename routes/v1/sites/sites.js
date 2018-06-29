@@ -53,10 +53,11 @@ router.route("/")
 router.route("/statistics/audio")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
-    const sql = 'SELECT s.guid as guid, s.name as name, s.created_at as created_at, ' +
-                  'SUM(a.capture_sample_count / f.sample_rate / 60 /60) as sum FROM GuardianAudio a ' +
-                  'INNER JOIN GuardianAudioFormats f ON a.format_id = f.id INNER JOIN GuardianSites s ON ' +
-                  'a.site_id = s.id group by s.guid;';
+    const sql = `SELECT s.guid as guid, s.name as name, s.created_at as created_at, SUM(a.capture_sample_count / f.sample_rate / 3600) as sum
+                 FROM GuardianAudio a
+                 INNER JOIN GuardianSites s ON a.site_id = s.id
+                 INNER JOIN GuardianAudioFormats f ON a.format_id = f.id
+                 GROUP BY s.id;`;
 
     models.sequelize
       .query(sql, {
