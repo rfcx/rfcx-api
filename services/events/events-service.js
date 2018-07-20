@@ -21,8 +21,8 @@ const eventQueryBase =
     'Reason.name AS reason_for_creation ' +
     'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
     'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-    'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
     'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+    'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
     'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
     'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
     'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
