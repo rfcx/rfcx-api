@@ -19,7 +19,8 @@ exports.models = {
   guardianAudioFile: function (req, res, dbRow) {
 
     var output_file_extension = req.rfcx.content_type,
-      output_file_name = dbRow.guid + "." + output_file_extension;
+        output_file_name = dbRow.guid + "." + output_file_extension,
+        is_output_enhanced = false;
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
@@ -46,8 +47,8 @@ exports.models = {
           console.log("transcoding " + dbRow.Format.file_extension + " audio to " + output_file_extension);
 
           audioUtils.transcodeToFile(output_file_extension, {
-            enhanced: /*(output_file_extension === "mp3"),*/ false,
-            bitRate: /*(output_file_extension === "mp3") ? "32k" :*/ "16k",
+            enhanced: is_output_enhanced,
+            bitRate: is_output_enhanced ? "32k" : "16k",
             sampleRate: dbRow.Format.sample_rate,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
@@ -68,6 +69,64 @@ exports.models = {
       });
 
   },
+
+
+  guardianAudioAmplitude: function (req, res, dbRow) {
+
+    return new Promise(function (resolve, reject) {
+
+      // auto-generate the asset filepath if it's not stored in the url column
+      var audioStorageUrl = (dbRow.url == null)
+              ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
+              : dbRow.url;
+
+      audioUtils.cacheSourceAudio(audioStorageUrl)
+        .then(function (sourceFilePath) {
+
+          audioUtils.transcodeToFile("wav", {
+            enhanced: false,
+            sampleRate: dbRow.Format.sample_rate,
+            sourceFilePath: sourceFilePath
+          }).then(function (outputFilePath) {
+
+            var clipSize = 0.5;
+            var soxExec = "";
+
+            for (var i = 0; i < ((dbRow.capture_sample_count/dbRow.Format.sample_rate)/clipSize); i++) {
+              if (i > 0) { soxExec += " && "; }
+              soxExec += "echo \"$("+process.env.SOX_PATH+" "+outputFilePath+" -n trim "+(clipSize*i)+" "+clipSize+" stat 2>&1)\""
+                          +" | grep \"RMS\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'";
+            }
+
+            exec(soxExec, function (err, stdout, stderr) {
+
+              if (stderr.trim().length > 0) { console.log(stderr); }
+              if (!!err) { console.log(err); }
+              fs.unlink(outputFilePath, function (e) { if (e) { console.log(e); } });
+
+              var allStringAmplitudes = stdout.trim().split("\n");
+              var allAmplitudes = [];
+              for (var i = 0; i < allStringAmplitudes.length; i++) {
+                allAmplitudes.push(parseFloat(allStringAmplitudes[i]));
+              }
+
+              resolve(allAmplitudes);
+
+            });
+
+          }).catch(function (err) {
+            console.log(err);
+            reject(new Error(err));
+          });
+
+        }).catch(function (err) {
+          reject(new Error(err));
+        });
+
+      });
+
+  },
+
 
 
   guardianAudioSpectrogram: function (req, res, dbRow) {
