@@ -89,13 +89,17 @@ exports.models = {
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
 
-            var clipSize = 0.5;
+            var amplitudeType = "RMS";
+            var allowedWindowDurations = [ 250, 500, 1000, 2000 ];
+            var windowDurationMs = (allowedWindowDurations.indexOf(parseInt(req.query.window_duration)) >= 0) ? parseInt(req.query.window_duration) : 500;
+            var windowDurationSec = windowDurationMs / 1000;
+
             var soxExec = "";
 
-            for (var i = 0; i < ((dbRow.capture_sample_count/dbRow.Format.sample_rate)/clipSize); i++) {
+            for (var i = 0; i < ((dbRow.capture_sample_count/dbRow.Format.sample_rate)/windowDurationSec); i++) {
               if (i > 0) { soxExec += " && "; }
-              soxExec += "echo \"$("+process.env.SOX_PATH+" "+outputFilePath+" -n trim "+(clipSize*i)+" "+clipSize+" stat 2>&1)\""
-                          +" | grep \"RMS\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'";
+              soxExec += "echo \"$("+process.env.SOX_PATH+" "+outputFilePath+" -n trim "+(windowDurationSec*i)+" "+windowDurationSec+" stat 2>&1)\""
+                          +" | grep \""+amplitudeType+"\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'";
             }
 
             exec(soxExec, function (err, stdout, stderr) {
@@ -110,7 +114,15 @@ exports.models = {
                 allAmplitudes.push(parseFloat(allStringAmplitudes[i]));
               }
 
-              resolve(allAmplitudes);
+              resolve([{
+                guid: dbRow.guid,
+                duration: Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
+                amplitude: {
+                  window_duration: windowDurationMs,
+                  type: amplitudeType.toLowerCase(),
+                  values: allAmplitudes
+                }
+              }]);
 
             });
 
