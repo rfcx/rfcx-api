@@ -46,8 +46,8 @@ exports.models = {
           console.log("transcoding " + dbRow.Format.file_extension + " audio to " + output_file_extension);
 
           audioUtils.transcodeToFile(output_file_extension, {
-            enhanced: (output_file_extension === "mp3"),
-            bitRate: (output_file_extension === "mp3") ? "32k" : "16k",
+            enhanced: /*(output_file_extension === "mp3"),*/ false,
+            bitRate: /*(output_file_extension === "mp3") ? "32k" :*/ "16k",
             sampleRate: dbRow.Format.sample_rate,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
