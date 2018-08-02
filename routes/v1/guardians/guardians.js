@@ -52,7 +52,7 @@ router.route("/")
                     model: models.Guardian,
                     as: 'Guardian',
                     where: {
-                      'guid': guardian.guid
+                      id: guardian.id
                     }
                   }]
                 });

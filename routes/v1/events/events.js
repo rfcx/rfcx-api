@@ -56,7 +56,7 @@ function prepareOpts(req) {
         order = 'GuardianAudioEvent.reviewer_confirmed';
         break;
       default:
-        order = 'GuardianAudioEvent.guid';
+        order = 'GuardianAudioEvent.begins_at';
         break;
     }
   }
@@ -89,8 +89,8 @@ function prepareOpts(req) {
     omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
     reasonsForCreation: req.query.reasons_for_creation? (Array.isArray(req.query.reasons_for_creation)? req.query.reasons_for_creation : [req.query.reasons_for_creation]) : undefined,
     search: req.query.search? '%' + req.query.search + '%' : undefined,
-    order: order? order : undefined,
-    dir: dir? dir : undefined,
+    order: order? order : 'GuardianAudioEvent.begins_at',
+    dir: dir? dir : 'ASC',
   };
 }
 
@@ -98,11 +98,11 @@ function countData(req) {
 
   const opts = prepareOpts(req);
 
-  let sql = 'SELECT COUNT(*) AS total ' +
+  let sql = 'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone ' +
                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
                    'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
                    'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
                    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
                    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
                    'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
@@ -117,16 +117,8 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter),
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore),
-    ' AND (TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' OR TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore)');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
-  sql = sqlUtils.condAdd(sql, (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudioEvent.begins_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND GuardianAudioEvent.ends_at < DATE_ADD(:endingBeforeLocal, INTERVAL 14 HOUR)');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -136,7 +128,6 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
-  sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
@@ -152,9 +143,14 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
 
-  return models.sequelize.query(sql,
-    { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-  )
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((events) => {
+      let evs = filterEventsWithTz(opts, events);
+      return evs.length;
+    });
 
 }
 
@@ -171,16 +167,8 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter),
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore),
-    ' AND (TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' OR TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore)');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
-  sql = sqlUtils.condAdd(sql, (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudioEvent.begins_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND GuardianAudioEvent.ends_at < DATE_ADD(:endingBeforeLocal, INTERVAL 14 HOUR)');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -190,7 +178,6 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
-  sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
@@ -208,10 +195,60 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
   sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
-  return models.sequelize.query(sql,
-    { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-  )
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((events) => {
+      return filterEventsWithTz(opts, events);
+    });
 
+}
+
+function filterEventsWithTz(opts, events) {
+  return events.filter((event) => {
+    let beginsAtTz = moment.tz(event.begins_at, event.site_timezone),
+        endsAtTz = moment.tz(event.ends_at, event.site_timezone);
+
+    if (opts.startingAfterLocal) {
+      if (beginsAtTz < moment.tz(opts.startingAfterLocal, event.site_timezone)) {
+        return false;
+      }
+    }
+    if (opts.endingBeforeLocal) {
+      if (endsAtTz > moment.tz(opts.endingBeforeLocal, event.site_timezone)) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter) {
+      if (beginsAtTz.format('HH:mm:ss') < opts.dayTimeLocalAfter || endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore) {
+      if (beginsAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter && endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore) {
+      if (beginsAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter) {
+        return false;
+      }
+    }
+    if (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore) {
+      if (endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.weekdays) { // we receive an array like ['0', '1', '2', '3', '4', '5', '6'], where `0` means Monday
+      // momentjs by default starts day with Sunday, so we will get ISO weekday
+      // (which starts from Monday, but is 1..7) and subtract 1
+      if ( !opts.weekdays.includes( `${parseInt(beginsAtTz.format('E')) - 1}` ) ) {
+        return false;
+      }
+    }
+    return true;
+  });
 }
 
 function processStatsByDates(req, res) {
@@ -294,8 +331,8 @@ router.route("/event/datatable")
 
     countData(req)
       .bind({})
-      .then(function(data) {
-        this.total = data[0].total;
+      .then(function(total) {
+        this.total = total;
         return queryData(req);
       })
       .then(function (dbEvents) {
