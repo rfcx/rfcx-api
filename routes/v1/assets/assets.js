@@ -45,6 +45,37 @@ router.route("/audio/:audio_id")
   })
 ;
 
+
+
+router.route("/audio/amplitude/:audio_id")
+  .get(function(req,res) {
+
+    return models.GuardianAudio
+      .findOne({ 
+        where: { guid: req.params.audio_id }, 
+        include: [{ all: true }]
+      }).then(function(dbAudio){
+
+        if (!dbAudio) {
+          return res.status(404).json({msg: "Audio with given guid not found."});
+        }
+
+          
+          views.models.guardianAudioAmplitude(req,res,dbAudio)
+            .then(function(audioAmplitudeJson){
+              res.status(200).json(audioAmplitudeJson);
+          });
+
+        return null;
+        
+      }).catch(function(err){
+        console.log("failed to return audio amplitude | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return audio amplitude"}); }
+      });
+
+  })
+;
+
 router.route("/screenshots/:screenshot_id")
   .get(function(req,res) {
 

@@ -23,11 +23,16 @@ function getSpectrogramAssetsUrl(req, guid, extension) {
     return `${getApiUrl(req)}/assets/audio/${guid}.png`;
 }
 
+function getAmplitudeAssetsUrl(req, guid) {
+    return `${getApiUrl(req)}/assets/audio/amplitude/${guid}.json`;
+}
+
 module.exports = {
     getBaseUrl,
     getApiUrl,
     getAudioUrl,
     getSpectrogramUrl,
     getAudioAssetsUrl,
-    getSpectrogramAssetsUrl
+    getSpectrogramAssetsUrl,
+    getAmplitudeAssetsUrl
 };

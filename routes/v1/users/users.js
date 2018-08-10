@@ -14,10 +14,12 @@ const mailService = require('../../../services/mail/mail-service');
 var sensationsService = require("../../../services/sensations/sensations-service");
 var ValidationError = require("../../../utils/converter/validation-error");
 var usersService = require('../../../services/users/users-service');
+var auth0Service = require('../../../services/auth0/auth0-service');
 var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
 var ApiConverter = require("../../../utils/api-converter");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+var Converter = require("../../../utils/converter/converter");
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -197,7 +199,7 @@ router.route("/register")
   });
 
 router.route("/send-reset-password-link")
-  .post(function(req,res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['usersAdmin']), function(req,res) {
 
     // first of all, check if user with requested e-mail exists
     models.User
@@ -448,6 +450,157 @@ router.route("/touchapi")
     res.status(200).json({ success: true });
   });
 
+router.route("/create")
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('email').toString();
+    params.convert('guid').toString();
+    params.convert('password').optional().toString();
+    params.convert('firstname').toString();
+    params.convert('lastname').toString();
+    params.convert('rfcx_system').optional().toBoolean();
+
+    params.validate()
+      .then(() => {
+        return usersService.findOrCreateUser(
+          {
+            $or: {
+              guid: transformedParams.guid,
+              email: transformedParams.email,
+            }
+          },
+          {
+            guid: transformedParams.guid,
+            email: transformedParams.email,
+            firstname: transformedParams.firstname,
+            lastname: transformedParams.lastname,
+            rfcx_system: transformedParams.rfcx_system === true,
+            password: transformedParams.password || null
+          }
+        )
+      })
+      .spread((user, created) => {
+        res.status(200).json(user);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
+router.route("/auth0/create-user")
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('email').toString();
+    params.convert('guid').optional().toString();
+    params.convert('password').optional().toString();
+    params.convert('firstname').toString();
+    params.convert('lastname').toString();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getNewToken();
+      })
+      .then((tokenData) => {
+        return auth0Service.createAuth0User(tokenData, transformedParams);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
+router.route("/auth0/roles")
+  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    auth0Service.getNewAuthToken()
+      .then((tokenData) => {
+        return auth0Service.getAllRoles(tokenData);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+  });
+
+router.route("/auth0/clients")
+  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    auth0Service.getNewToken()
+      .then((tokenData) => {
+        return auth0Service.getAllClients(tokenData);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+  });
+
+router.route("/auth0/:user_guid/roles")
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('roles').toArray();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getNewAuthToken()
+      })
+      .then((tokenData) => {
+        return auth0Service.assignRolesToUser(tokenData, req.params.user_guid, req.body.roles);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
+router.route("/auth0/send-change-password-email")
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('email').toString();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getNewToken()
+      })
+      .then((tokenData) => {
+        return auth0Service.sendChangePasswordEmail(tokenData, req.body.email);
+      })
+      .then((body) => {
+        res.status(200).json({ result: body });
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
 // TO DO security measure to ensure that not any user can see any other user
 router.route("/:user_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
@@ -475,7 +628,7 @@ router.route("/:user_id")
 ;
 
 router.route("/:guid/sites")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
 
     let converter = new ApiConverter("user", req);
     let serviceParams = {
