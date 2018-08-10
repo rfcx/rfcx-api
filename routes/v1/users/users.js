@@ -199,7 +199,7 @@ router.route("/register")
   });
 
 router.route("/send-reset-password-link")
-  .post(function(req,res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['usersAdmin']), function(req,res) {
 
     // first of all, check if user with requested e-mail exists
     models.User
@@ -450,8 +450,50 @@ router.route("/touchapi")
     res.status(200).json({ success: true });
   });
 
+router.route("/create")
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('email').toString();
+    params.convert('guid').toString();
+    params.convert('password').optional().toString();
+    params.convert('firstname').toString();
+    params.convert('lastname').toString();
+    params.convert('rfcx_system').optional().toBoolean();
+
+    params.validate()
+      .then(() => {
+        return usersService.findOrCreateUser(
+          {
+            $or: {
+              guid: transformedParams.guid,
+              email: transformedParams.email,
+            }
+          },
+          {
+            guid: transformedParams.guid,
+            email: transformedParams.email,
+            firstname: transformedParams.firstname,
+            lastname: transformedParams.lastname,
+            rfcx_system: transformedParams.rfcx_system === true,
+            password: transformedParams.password || null
+          }
+        )
+      })
+      .spread((user, created) => {
+        res.status(200).json(user);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
 router.route("/auth0/create-user")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -480,7 +522,7 @@ router.route("/auth0/create-user")
   });
 
 router.route("/auth0/roles")
-  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     auth0Service.getNewAuthToken()
       .then((tokenData) => {
@@ -494,8 +536,23 @@ router.route("/auth0/roles")
       });
   });
 
+router.route("/auth0/clients")
+  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    auth0Service.getNewToken()
+      .then((tokenData) => {
+        return auth0Service.getAllClients(tokenData);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+  });
+
 router.route("/auth0/:user_guid/roles")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -520,12 +577,12 @@ router.route("/auth0/:user_guid/roles")
   });
 
 router.route("/auth0/send-change-password-email")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
-    params.convert('email').toArray();
+    params.convert('email').toString();
 
     params.validate()
       .then(() => {
@@ -535,7 +592,7 @@ router.route("/auth0/send-change-password-email")
         return auth0Service.sendChangePasswordEmail(tokenData, req.body.email);
       })
       .then((body) => {
-        res.status(200).json(body);
+        res.status(200).json({ result: body });
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch((err) => {
@@ -571,7 +628,7 @@ router.route("/:user_id")
 ;
 
 router.route("/:guid/sites")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
 
     let converter = new ApiConverter("user", req);
     let serviceParams = {

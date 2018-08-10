@@ -93,6 +93,31 @@ function getAllRoles(tokenData) {
 
 }
 
+function getAllClients(tokenData) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'GET',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/clients`,
+      json: true,
+      headers: {
+        'Authorization': `${tokenData.token_type} ${tokenData.access_token}`,
+      },
+      qs: {
+        fields: 'name,description,client_id,app_type,logo_uri'
+      }
+    }, (err, res, body) => {
+      if (err) {
+        reject(err);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
 function assignRolesToUser(tokenData, userGuid, rolesGuids) {
 
   rolesGuids = util.isArray(rolesGuids)? rolesGuids : [ rolesGuids ];
@@ -130,9 +155,6 @@ function sendChangePasswordEmail(tokenData, email) {
         client_id: `${process.env.AUTH0_CLIENT_ID}`,
         connection: `${process.env.AUTH0_DEFAULT_DB_CONNECTION}`,
         email
-        // client_secret: `${process.env.AUTH0_CLIENT_SECRET}`,
-        // audience: audience,
-        // grant_type: 'client_credentials'
       }
     };
     request(options, (error, response, body) => {
@@ -151,6 +173,7 @@ module.exports = {
   getNewAuthToken,
   createAuth0User,
   getAllRoles,
+  getAllClients,
   assignRolesToUser,
   sendChangePasswordEmail,
 };
