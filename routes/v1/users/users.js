@@ -593,7 +593,7 @@ router.route("/auth0/:user_guid/roles")
         return auth0Service.getNewAuthToken()
       })
       .then((tokenData) => {
-        return auth0Service.assignRolesToUser(tokenData, req.params.user_guid, req.body.roles);
+        return auth0Service.assignRolesToUser(tokenData, req.params.user_guid, transformedParams.roles);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -609,7 +609,7 @@ router.route("/auth0/:user_guid/roles")
   .delete(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
+    let params = new Converter(req.query, transformedParams);
 
     params.convert('roles').toArray();
 
@@ -618,7 +618,7 @@ router.route("/auth0/:user_guid/roles")
         return auth0Service.getNewAuthToken()
       })
       .then((tokenData) => {
-        return auth0Service.deleteRolesFromUser(tokenData, req.params.user_guid, req.body.roles);
+        return auth0Service.deleteRolesFromUser(tokenData, req.params.user_guid, transformedParams.roles);
       })
       .then((body) => {
         res.status(200).json(body);
