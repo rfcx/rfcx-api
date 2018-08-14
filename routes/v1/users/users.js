@@ -199,7 +199,7 @@ router.route("/register")
   });
 
 router.route("/send-reset-password-link")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['usersAdmin']), function(req,res) {
+  .post(function(req, res) {
 
     // first of all, check if user with requested e-mail exists
     models.User
@@ -521,6 +521,35 @@ router.route("/auth0/create-user")
 
   });
 
+router.route("/auth0/users")
+  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('per_page').optional().toInt();
+    params.convert('page').optional().toInt();
+    params.convert('include_totals').optional().toBoolean();
+    params.convert('sort').optional().toString();
+    params.convert('fields').optional().toString();
+    params.convert('include_fields').optional().toBoolean();
+    params.convert('q').optional().toString();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getNewToken();
+      })
+      .then((tokenData) => {
+        return auth0Service.getUsers(tokenData, transformedParams);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+  });
+
 router.route("/auth0/roles")
   .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
@@ -570,6 +599,47 @@ router.route("/auth0/:user_guid/roles")
         res.status(200).json(body);
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
+router.route("/auth0/:user_guid/roles")
+  .delete(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('roles').toArray();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getNewAuthToken()
+      })
+      .then((tokenData) => {
+        return auth0Service.deleteRolesFromUser(tokenData, req.params.user_guid, req.body.roles);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
+router.route("/auth0/:user_guid/roles")
+  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    auth0Service.getNewAuthToken()
+      .then((tokenData) => {
+        return auth0Service.getUserRoles(tokenData, req.params.user_guid);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
       .catch((err) => {
         res.status(500).json({ err });
       });
