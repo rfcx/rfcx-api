@@ -71,6 +71,37 @@ function createAuth0User(tokenData, opts) {
 
 }
 
+function getUsers(tokenData, params) {
+
+  return new Promise(function(resolve, reject) {
+    let qs = {};
+    if (params) {
+      ['per_page', 'page', 'include_totals', 'sort', 'fields', 'include_fields', 'q'].forEach((param) => {
+        if (params[param] !== undefined) {
+          qs[param] = params[param];
+        }
+      });
+    }
+    request({
+      method: 'GET',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+      json: true,
+      headers: {
+        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+      },
+      qs
+    }, (err, response, body) => {
+      if (err) {
+        reject(err);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
 function getAllRoles(tokenData) {
 
   return new Promise(function(resolve, reject) {
@@ -144,6 +175,54 @@ function assignRolesToUser(tokenData, userGuid, rolesGuids) {
 
 }
 
+function deleteRolesFromUser(tokenData, userGuid, rolesGuids) {
+
+  rolesGuids = util.isArray(rolesGuids)? rolesGuids : [ rolesGuids ];
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'DELETE',
+      uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
+      json: true,
+      headers: {
+        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+        'Content-type': 'application/json',
+      },
+      body: rolesGuids,
+    }, (err, res, body) => {
+      if (err) {
+        reject(err);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
+function getUserRoles(tokenData, userGuid) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'GET',
+      uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
+      json: true,
+      headers: {
+        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+      },
+    }, (err, res, body) => {
+      if (err) {
+        reject(err);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
 function sendChangePasswordEmail(tokenData, email) {
   return new Promise((resolve, reject) => {
     var options = {
@@ -172,8 +251,11 @@ module.exports = {
   getNewToken,
   getNewAuthToken,
   createAuth0User,
+  getUsers,
   getAllRoles,
   getAllClients,
   assignRolesToUser,
+  deleteRolesFromUser,
+  getUserRoles,
   sendChangePasswordEmail,
 };
