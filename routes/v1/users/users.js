@@ -697,7 +697,7 @@ router.route("/:user_id")
   })
 ;
 
-router.route("/:id/sites")
+router.route("/:id/info")
   .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
 
     usersService.getUserByGuidOrEmail(req.params.id)
@@ -740,7 +740,7 @@ router.route("/:guid/sites")
 
 // TO DO security measure to ensure that not any user can see any other user
 router.route("/:user_id")
-  .post(passport.authenticate("token",{session:false}), function(req,res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['usersAdmin']), function(req,res) {
 
     let converter = new ApiConverter("user", req);
     // This must be replaced with AWS user roles

@@ -112,6 +112,7 @@ function formatUser(user, short) {
     firstname: user.firstname,
     lastname: user.lastname,
     username: user.username,
+    rfcx_system: user.rfcx_system,
   };
   if (!short) {
     userFormatted.accessibleSites = [];
@@ -198,12 +199,17 @@ function updateDefaultSite(user, siteGuid) {
 }
 
 function updateUserInfo(user, params) {
-  // only one attribute for now...
-  // when there will be more attributes, we need to update logic of this function
-  if (params.defaultSite) {
-    return updateDefaultSite(user, params.defaultSite);
+  let proms = [];
+  if (params.rfcx_system !== undefined) {
+    proms.push(user.update({ rfcx_system: params.rfcx_system }));
   }
-  return getUserByGuid(user.guid)
+  if (params.defaultSite) {
+    proms.push(updateDefaultSite(user, params.defaultSite));
+  }
+  return Promise.all(proms)
+    .then(() => {
+      return getUserByGuid(user.guid)
+    })
     .then(formatUser);
 }
 
