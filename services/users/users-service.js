@@ -29,6 +29,15 @@ function getUserByEmail(email) {
   return getUserByParams({ email });
 }
 
+function getUserByGuidOrEmail(field) {
+  return getUserByParams({
+    $or: {
+      guid: field,
+      email: field
+    }
+  });
+}
+
 function getAllUsers() {
   return models.User
     .findAll({
@@ -220,6 +229,7 @@ module.exports = {
   getUserByParams,
   getUserByGuid,
   getUserByEmail,
+  getUserByGuidOrEmail,
   getAllUsers,
   createUser,
   findOrCreateUser,
