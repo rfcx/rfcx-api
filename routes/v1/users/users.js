@@ -593,7 +593,7 @@ router.route("/auth0/:user_guid/roles")
         return auth0Service.getNewAuthToken()
       })
       .then((tokenData) => {
-        return auth0Service.assignRolesToUser(tokenData, req.params.user_guid, req.body.roles);
+        return auth0Service.assignRolesToUser(tokenData, req.params.user_guid, transformedParams.roles);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -609,7 +609,7 @@ router.route("/auth0/:user_guid/roles")
   .delete(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
+    let params = new Converter(req.query, transformedParams);
 
     params.convert('roles').toArray();
 
@@ -618,7 +618,7 @@ router.route("/auth0/:user_guid/roles")
         return auth0Service.getNewAuthToken()
       })
       .then((tokenData) => {
-        return auth0Service.deleteRolesFromUser(tokenData, req.params.user_guid, req.body.roles);
+        return auth0Service.deleteRolesFromUser(tokenData, req.params.user_guid, transformedParams.roles);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -696,6 +696,22 @@ router.route("/:user_id")
 
   })
 ;
+
+router.route("/:id/sites")
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
+
+    usersService.getUserByGuidOrEmail(req.params.id)
+      .then((user) => {
+        return usersService.formatUser(user);
+      })
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't update user-sites relations.")});
+
+  });
 
 router.route("/:guid/sites")
   .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
