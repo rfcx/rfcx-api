@@ -21,7 +21,7 @@ var express = require("express"),
     bodyParser = require("body-parser"),
     addRequestId = require('express-request-id'),
     addInstanceId = require('./middleware/misc/aws').addInstanceId,
-    toobusy = require('toobusy-js');
+    toobusy = require('toobusy-js'),
     app = express();
 
 app.set("title", "rfcx-api");

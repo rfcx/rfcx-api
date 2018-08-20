@@ -42,6 +42,7 @@
     "passport-accesstoken": "0.1.0",
     "passport-jwt": "3.0.1",
     "passport-local": "1.0.0",
+    "redis": "2.8.0",
     "request": "2.81.0",
     "request-promise": "4.2.1",
     "sequelize": "3.30.4",

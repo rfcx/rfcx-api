@@ -61,4 +61,7 @@ exports.env = {
 
   KAFKA_HOST: ""
 
+  REDIS_HOST: ""
+  REDIS_PORT: ""
+
 }

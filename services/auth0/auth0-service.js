@@ -3,6 +3,45 @@ const Promise = require('bluebird');
 const util    = require('util');
 const guid    = require('../../utils/misc/guid');
 const hash    = require('../../utils/misc/hash').hash;
+const redisClient = require('../../utils/redis');
+
+function getToken() {
+  let tokenName = `auth0_token_${process.env.NODE_ENV}`;
+  return getTokenFromRedis(tokenName)
+    .then((token) => {
+      if (!token) {
+        return this.getNewToken()
+          .then((tokenData) => {
+            saveTokenToRedis(tokenName, tokenData);
+            return tokenData.access_token;
+          });
+      }
+      return token;
+    });
+}
+
+function getAuthToken() {
+  let tokenName = `auth0_auth_token_${process.env.NODE_ENV}`;
+  return getTokenFromRedis(tokenName)
+    .then((token) => {
+      if (!token) {
+        return this.getNewAuthToken()
+          .then((tokenData) => {
+            saveTokenToRedis(tokenName, tokenData);
+            return tokenData.access_token;
+          });
+      }
+      return token;
+    });
+}
+
+function saveTokenToRedis(tokenName, tokenData) {
+  redisClient.set(tokenName, tokenData.access_token, 'EX', tokenData.expires_in);
+}
+
+function getTokenFromRedis(tokenType) {
+  return redisClient.getAsync(tokenType);
+}
 
 function getNewToken(audience) {
   audience = audience || `https://${process.env.AUTH0_DOMAIN}/api/v2/`;
@@ -34,7 +73,7 @@ function getNewAuthToken() {
   return this.getNewToken(process.env.AUTH0_AUTHZ_AUDIENCE);
 }
 
-function createAuth0User(tokenData, opts) {
+function createAuth0User(token, opts) {
 
   return new Promise(function(resolve, reject) {
     request({
@@ -42,7 +81,7 @@ function createAuth0User(tokenData, opts) {
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
       json: true,
       headers: {
-        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+        authorization: `Bearer ${token}`,
         'Content-type': 'application/json',
       },
       body: {
@@ -71,7 +110,7 @@ function createAuth0User(tokenData, opts) {
 
 }
 
-function getUsers(tokenData, params) {
+function getUsers(token, params) {
 
   return new Promise(function(resolve, reject) {
     let qs = {};
@@ -87,7 +126,7 @@ function getUsers(tokenData, params) {
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
       json: true,
       headers: {
-        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+        authorization: `Bearer ${token}`,
       },
       qs
     }, (err, response, body) => {
@@ -102,7 +141,7 @@ function getUsers(tokenData, params) {
 
 }
 
-function getAllRoles(tokenData) {
+function getAllRoles(token) {
 
   return new Promise(function(resolve, reject) {
     request({
@@ -110,7 +149,7 @@ function getAllRoles(tokenData) {
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/roles`,
       json: true,
       headers: {
-        'Authorization': `${tokenData.token_type} ${tokenData.access_token}`,
+        'Authorization': `Bearer ${token}`,
       },
     }, (err, res, body) => {
       if (err) {
@@ -124,7 +163,7 @@ function getAllRoles(tokenData) {
 
 }
 
-function getAllClients(tokenData) {
+function getAllClients(token) {
 
   return new Promise(function(resolve, reject) {
     request({
@@ -132,7 +171,7 @@ function getAllClients(tokenData) {
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/clients`,
       json: true,
       headers: {
-        'Authorization': `${tokenData.token_type} ${tokenData.access_token}`,
+        'Authorization': `Bearer ${token}`,
       },
       qs: {
         fields: 'name,description,client_id,app_type,logo_uri'
@@ -149,7 +188,7 @@ function getAllClients(tokenData) {
 
 }
 
-function assignRolesToUser(tokenData, userGuid, rolesGuids) {
+function assignRolesToUser(token, userGuid, rolesGuids) {
 
   rolesGuids = util.isArray(rolesGuids)? rolesGuids : [ rolesGuids ];
 
@@ -159,7 +198,7 @@ function assignRolesToUser(tokenData, userGuid, rolesGuids) {
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
       json: true,
       headers: {
-        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+        authorization: `Bearer ${token}`,
         'Content-type': 'application/json',
       },
       body: rolesGuids,
@@ -175,7 +214,7 @@ function assignRolesToUser(tokenData, userGuid, rolesGuids) {
 
 }
 
-function deleteRolesFromUser(tokenData, userGuid, rolesGuids) {
+function deleteRolesFromUser(token, userGuid, rolesGuids) {
 
   rolesGuids = util.isArray(rolesGuids)? rolesGuids : [ rolesGuids ];
 
@@ -185,7 +224,7 @@ function deleteRolesFromUser(tokenData, userGuid, rolesGuids) {
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
       json: true,
       headers: {
-        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+        authorization: `Bearer ${token}`,
         'Content-type': 'application/json',
       },
       body: rolesGuids,
@@ -201,7 +240,7 @@ function deleteRolesFromUser(tokenData, userGuid, rolesGuids) {
 
 }
 
-function getUserRoles(tokenData, userGuid) {
+function getUserRoles(token, userGuid) {
 
   return new Promise(function(resolve, reject) {
     request({
@@ -209,7 +248,7 @@ function getUserRoles(tokenData, userGuid) {
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
       json: true,
       headers: {
-        authorization: `${tokenData.token_type} ${tokenData.access_token}`,
+        authorization: `Bearer ${token}`,
       },
     }, (err, res, body) => {
       if (err) {
@@ -223,7 +262,7 @@ function getUserRoles(tokenData, userGuid) {
 
 }
 
-function sendChangePasswordEmail(tokenData, email) {
+function sendChangePasswordEmail(token, email) {
   return new Promise((resolve, reject) => {
     var options = {
       method: 'POST',
@@ -248,6 +287,8 @@ function sendChangePasswordEmail(tokenData, email) {
 }
 
 module.exports = {
+  getToken,
+  getAuthToken,
   getNewToken,
   getNewAuthToken,
   createAuth0User,
