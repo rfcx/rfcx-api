@@ -506,10 +506,10 @@ router.route("/auth0/create-user")
 
     params.validate()
       .then(() => {
-        return auth0Service.getNewToken();
+        return auth0Service.getToken();
       })
-      .then((tokenData) => {
-        return auth0Service.createAuth0User(tokenData, transformedParams);
+      .then((token) => {
+        return auth0Service.createAuth0User(token, transformedParams);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -537,10 +537,11 @@ router.route("/auth0/users")
 
     params.validate()
       .then(() => {
-        return auth0Service.getNewToken();
+        return auth0Service.getToken();
       })
-      .then((tokenData) => {
-        return auth0Service.getUsers(tokenData, transformedParams);
+      .then((token) => {
+        console.log('tokeeeen', token);
+        return auth0Service.getUsers(token, transformedParams);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -553,9 +554,9 @@ router.route("/auth0/users")
 router.route("/auth0/roles")
   .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
-    auth0Service.getNewAuthToken()
-      .then((tokenData) => {
-        return auth0Service.getAllRoles(tokenData);
+    auth0Service.getAuthToken()
+      .then((token) => {
+        return auth0Service.getAllRoles(token);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -568,9 +569,9 @@ router.route("/auth0/roles")
 router.route("/auth0/clients")
   .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
-    auth0Service.getNewToken()
-      .then((tokenData) => {
-        return auth0Service.getAllClients(tokenData);
+    auth0Service.getToken()
+      .then((token) => {
+        return auth0Service.getAllClients(token);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -590,10 +591,10 @@ router.route("/auth0/:user_guid/roles")
 
     params.validate()
       .then(() => {
-        return auth0Service.getNewAuthToken()
+        return auth0Service.getAuthToken()
       })
-      .then((tokenData) => {
-        return auth0Service.assignRolesToUser(tokenData, req.params.user_guid, transformedParams.roles);
+      .then((token) => {
+        return auth0Service.assignRolesToUser(token, req.params.user_guid, transformedParams.roles);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -615,10 +616,10 @@ router.route("/auth0/:user_guid/roles")
 
     params.validate()
       .then(() => {
-        return auth0Service.getNewAuthToken()
+        return auth0Service.getAuthToken()
       })
-      .then((tokenData) => {
-        return auth0Service.deleteRolesFromUser(tokenData, req.params.user_guid, transformedParams.roles);
+      .then((token) => {
+        return auth0Service.deleteRolesFromUser(token, req.params.user_guid, transformedParams.roles);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -633,9 +634,9 @@ router.route("/auth0/:user_guid/roles")
 router.route("/auth0/:user_guid/roles")
   .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
-    auth0Service.getNewAuthToken()
-      .then((tokenData) => {
-        return auth0Service.getUserRoles(tokenData, req.params.user_guid);
+    auth0Service.getAuthToken()
+      .then((token) => {
+        return auth0Service.getUserRoles(token, req.params.user_guid);
       })
       .then((body) => {
         res.status(200).json(body);
@@ -656,10 +657,10 @@ router.route("/auth0/send-change-password-email")
 
     params.validate()
       .then(() => {
-        return auth0Service.getNewToken()
+        return auth0Service.getToken()
       })
-      .then((tokenData) => {
-        return auth0Service.sendChangePasswordEmail(tokenData, req.body.email);
+      .then((token) => {
+        return auth0Service.sendChangePasswordEmail(token, req.body.email);
       })
       .then((body) => {
         res.status(200).json({ result: body });
