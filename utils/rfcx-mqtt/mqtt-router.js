@@ -7,19 +7,6 @@ var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").chec
 
 exports.mqttRouter = {
 
-  processAndCompressReturnJson: function(checkInObj) {
-    return new Promise(function(resolve,reject){
-      try {
-        zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
-          if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
-            checkInObj.rtrn.gzip = bufJsonGzip;
-            resolve(checkInObj);
-          }
-        });
-      } catch (errProcessReturnJson) { console.log(errProcessReturnJson); reject(new Error(errProcessReturnJson)); }
-    }.bind(this));
-  },
-
   onMessageCheckin: function(topic, data) {
 
     return new Promise(function(resolve,reject){
@@ -49,7 +36,7 @@ exports.mqttRouter = {
 
                           checkInDatabase.finalizeCheckIn(checkInObj);
 
-                          this.processAndCompressReturnJson(checkInObj).then(function(checkInObj){
+                          processAndCompressReturnJson(checkInObj).then(function(checkInObj){
 
                             resolve(checkInObj);
 
@@ -74,16 +61,16 @@ exports.mqttRouter = {
   
 };
 
-// var processAndCompressReturnJson = function(checkInObj) {
-//   return new Promise(function(resolve,reject){
-
-//     zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
-//       if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
-//         checkInObj.rtrn.gzip = bufJsonGzip;
-//         resolve(checkInObj);
-//       }
-//     });
-
-//   }.bind(this));
-// };
+var processAndCompressReturnJson = function(checkInObj) {
+    return new Promise(function(resolve,reject){
+      try {
+        zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
+          if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
+            checkInObj.rtrn.gzip = bufJsonGzip;
+            resolve(checkInObj);
+          }
+        });
+      } catch (errProcessReturnJson) { console.log(errProcessReturnJson); reject(new Error(errProcessReturnJson)); }
+    }.bind(this));
+};
 
