@@ -18,7 +18,7 @@ exports.mqttRouter = {
           
           mqttInputData.parseCheckInInput(data).then(function(checkInObj){
             
-            checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: []/*, instructions: { messages: [] }*/ } };
+            checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [], instructions: { messages: [] } } };
             
             checkInDatabase.getDbGuardian(checkInObj).then(function(checkInObj){  
               checkInAssets.extractAudioFileMeta(checkInObj).then(function(checkInObj){
