@@ -30,15 +30,33 @@ app.mqtt.on("error", function(err){
 
 
 var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
+var mqttInstructions = require("../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
 
 app.mqtt.on("message", function(topic, data){
   mqttRouter.onMessageCheckin(topic, data).then(function(checkInObj){
 
-    app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid, checkInObj.rtrn.gzip);
+    app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid+"/guardian/checkins", checkInObj.rtrn.gzip);
     console.log(JSON.stringify(checkInObj.rtrn.obj));
 
- //   app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid+"/instructions", checkInObj.instructions);
+
+
+          mqttInstructions.setupInstructionAction( checkInObj.db.dbGuardian, "guardian" ).then(function(instructionObj){
+            mqttInstructions.processAndCompressInstructionJson(instructionObj).then(function(instructionObj){
+
+              app.mqtt.publish(instructionObj.mqtt.topic, instructionObj.rtrn.gzip);
+              console.log(JSON.stringify(instructionObj.rtrn.obj));
+
+            }).catch(function(errProcessInstructionJson){ console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); });
+          }).catch(function(errSetupInstructionAction){ console.log(errSetupInstructionAction); });
+
+
+
+
 
   }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
 });
+
+
+
+
 

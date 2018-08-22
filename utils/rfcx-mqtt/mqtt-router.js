@@ -5,14 +5,27 @@ var mqttInputData = require("../../utils/rfcx-mqtt/mqtt-input-data.js").mqttInpu
 var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInDatabase;
 var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").checkInAssets;
 
-var checkInInstructions = require("../../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
-
 exports.mqttRouter = {
+
+  processAndCompressReturnJson: function(checkInObj) {
+    return new Promise(function(resolve,reject){
+      try {
+        zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
+          if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
+            checkInObj.rtrn.gzip = bufJsonGzip;
+            resolve(checkInObj);
+          }
+        });
+      } catch (errProcessReturnJson) { console.log(errProcessReturnJson); reject(new Error(errProcessReturnJson)); }
+    }.bind(this));
+  },
 
   onMessageCheckin: function(topic, data) {
 
     return new Promise(function(resolve,reject){
+
       if (topic == "guardians/checkins") {
+
         try {
 
           // cached file garbage collection... only do garbage collection ~1% of the time
@@ -20,7 +33,7 @@ exports.mqttRouter = {
           
           mqttInputData.parseCheckInInput(data).then(function(checkInObj){
             
-            checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [], instructions: { messages: [] } } };
+            checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
             
             checkInDatabase.getDbGuardian(checkInObj).then(function(checkInObj){  
               checkInAssets.extractAudioFileMeta(checkInObj).then(function(checkInObj){
@@ -36,7 +49,7 @@ exports.mqttRouter = {
 
                           checkInDatabase.finalizeCheckIn(checkInObj);
 
-                          processAndCompressReturnJson(checkInObj).then(function(checkInObj){
+                          this.processAndCompressReturnJson(checkInObj).then(function(checkInObj){
 
                             resolve(checkInObj);
 
@@ -50,7 +63,9 @@ exports.mqttRouter = {
               }).catch(function(errAudioMetaExtraction){ console.log(errAudioMetaExtraction); reject(new Error(errAudioMetaExtraction)); });
             }).catch(function(errGetDbGuardian){ console.log(errGetDbGuardian); reject(new Error(errGetDbGuardian)); });
           }).catch(function(errParseCheckInInput){ console.log(errParseCheckInInput); reject(new Error(errParseCheckInInput)); });
+
         } catch (errOnMessageCheckin) { console.log(errOnMessageCheckin); reject(new Error(errOnMessageCheckin)); }
+      
       } else {
         reject(new Error());
       }
@@ -59,16 +74,16 @@ exports.mqttRouter = {
   
 };
 
-var processAndCompressReturnJson = function(checkInObj) {
-  return new Promise(function(resolve,reject){
+// var processAndCompressReturnJson = function(checkInObj) {
+//   return new Promise(function(resolve,reject){
 
-    zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
-      if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
-        checkInObj.rtrn.gzip = bufJsonGzip;
-        resolve(checkInObj);
-      }
-    });
+//     zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
+//       if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
+//         checkInObj.rtrn.gzip = bufJsonGzip;
+//         resolve(checkInObj);
+//       }
+//     });
 
-  }.bind(this));
-};
+//   }.bind(this));
+// };
 
