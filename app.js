@@ -139,6 +139,9 @@ var routes = {
     "metrics": [
       require("./routes/v1/metrics/metrics"),
     ],
+    "adopt-protect": [
+      require("./routes/v1/adopt-protect/donations"),
+    ]
   },
   "v2": {
   }

@@ -7,7 +7,7 @@ var audioFormatSettings = {
         mp3: {
             extension: "mp3", codec: "libmp3lame", outputFormat: "mp3", mime: "audio/mpeg",
             inputOptions: [],
-            outputOptions: [ "-b:a 32k" ]
+            outputOptions: [ "-b:a 16k" ]
         },
         opus: { 
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",

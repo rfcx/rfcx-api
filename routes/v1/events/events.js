@@ -101,8 +101,8 @@ function countData(req) {
   let sql = 'SELECT COUNT(*) AS total ' +
                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
                    'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
                    'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
                    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
                    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
                    'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
@@ -730,6 +730,23 @@ router.route("/:event_id/review")
 
   })
 ;
+
+router.route("/:guid/comment")
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    eventsService
+      .updateEventComment(req.params.guid, req.body.comment)
+      .then((event) => {
+        return views.models.guardianAudioEventsJson(req, res, event);
+      })
+      .then((data) => {
+        res.status(200).json(data.events[0]);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log(e); httpError(req, res, 500, e, "Error in process of saving comment for event")});
+
+  });
 
 router.route("/:guid/confirm")
   .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {

@@ -60,7 +60,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: null
-    }
+    },
+    comment: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true,
+      defaultValue: null
+    },
   }, {
     classMethods: {
       associate: function(models) {

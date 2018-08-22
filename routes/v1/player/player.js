@@ -26,7 +26,10 @@ router.route("/login")
         only_allow_access_to: [
           "^/v1/player/web",
           "^/v1/guardians/[0123456789abcdef]{12}/audio.json$",
-          "^/v1/audio/[0123456789abcdef]{8}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{12}/audio.json$"
+          "^/v1/audio/[0123456789abcdef]{8}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{12}/audio.json$",
+
+          "^/v1/adopt-protect/donations.json$",
+          "^/v1/adopt-protect/donations/[0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ]{8}.json$"
           ]
       }).then(function(tokenInfo){
 
