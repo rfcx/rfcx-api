@@ -37,6 +37,8 @@ app.mqtt.on("message", function(topic, data){
     app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid, checkInObj.rtrn.gzip);
     console.log(JSON.stringify(checkInObj.rtrn.obj));
 
+    app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid+"/instructions", new Buffer(JSON.stringify( { instructions: { messages: [] } } ), "utf8"));
+
   }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
 });
 
