@@ -36,7 +36,13 @@ exports.mqttRouter = {
 
                           processAndCompressReturnJson(checkInObj).then(function(checkInObj){
 
+        processAndCompressInstructionJson(checkInObj).then(function(checkInObj){
+
                             resolve(checkInObj);
+
+    }).catch(function(errProcessInstructionJson){ console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); });
+
+
 
                           }).catch(function(errProcessReturnJson){ console.log(errProcessReturnJson); reject(new Error(errProcessReturnJson)); });
 
@@ -63,6 +69,21 @@ var processAndCompressReturnJson = function(checkInObj) {
     zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
       if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
         checkInObj.rtrn.gzip = bufJsonGzip;
+        resolve(checkInObj);
+      }
+    });
+
+  }.bind(this));
+};
+
+var processAndCompressInstructionJson = function(checkInObj) {
+  return new Promise(function(resolve,reject){
+
+    var instructionJson = { instructions: { messages: [] } };
+
+    zlib.gzip( new Buffer(JSON.stringify(instructionJson), "utf8"), function(errJsonGzip, bufJsonGzip) {
+      if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
+        checkInObj.instructions = bufJsonGzip;
         resolve(checkInObj);
       }
     });
