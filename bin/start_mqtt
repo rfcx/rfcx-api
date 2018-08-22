@@ -29,8 +29,10 @@ app.mqtt.on("error", function(err){
 
 
 
-var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
 var mqttInstructions = require("../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
+var mqttPublish = require("../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
+
+var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
 
 app.mqtt.on("message", function(topic, data){
   mqttRouter.onMessageCheckin(topic, data).then(function(checkInObj){
@@ -41,7 +43,7 @@ app.mqtt.on("message", function(topic, data){
 
 
           mqttInstructions.setupInstructionAction( checkInObj.db.dbGuardian, "guardian" ).then(function(instructionObj){
-            mqttInstructions.processAndCompressInstructionJson(instructionObj).then(function(instructionObj){
+            mqttPublish.processAndCompressPublishJson(instructionObj).then(function(instructionObj){
 
               app.mqtt.publish(instructionObj.mqtt.topic, instructionObj.rtrn.gzip);
               console.log(JSON.stringify(instructionObj.rtrn.obj));

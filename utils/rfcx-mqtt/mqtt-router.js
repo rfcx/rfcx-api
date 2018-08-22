@@ -4,6 +4,7 @@ var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFil
 var mqttInputData = require("../../utils/rfcx-mqtt/mqtt-input-data.js").mqttInputData;
 var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInDatabase;
 var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").checkInAssets;
+var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 
 exports.mqttRouter = {
 
@@ -36,7 +37,7 @@ exports.mqttRouter = {
 
                           checkInDatabase.finalizeCheckIn(checkInObj);
 
-                          processAndCompressReturnJson(checkInObj).then(function(checkInObj){
+                          mqttPublish.processAndCompressPublishJson(checkInObj).then(function(checkInObj){
 
                             resolve(checkInObj);
 
@@ -61,16 +62,4 @@ exports.mqttRouter = {
   
 };
 
-var processAndCompressReturnJson = function(checkInObj) {
-    return new Promise(function(resolve,reject){
-      try {
-        zlib.gzip( new Buffer(JSON.stringify(checkInObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
-          if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
-            checkInObj.rtrn.gzip = bufJsonGzip;
-            resolve(checkInObj);
-          }
-        });
-      } catch (errProcessReturnJson) { console.log(errProcessReturnJson); reject(new Error(errProcessReturnJson)); }
-    }.bind(this));
-};
 

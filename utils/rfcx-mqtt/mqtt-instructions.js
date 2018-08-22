@@ -30,21 +30,6 @@ exports.mqttInstructions = {
 
         } catch (errParseInstructionObj) { console.log(errParseInstructionObj); reject(new Error(errParseInstructionObj)); }
     }.bind(this));
-  },
-
-
-
-  processAndCompressInstructionJson: function(instructionObj) {
-    return new Promise(function(resolve, reject) {
-      try {
-        zlib.gzip( new Buffer(JSON.stringify(instructionObj.rtrn.obj), "utf8"), function(errJsonGzip, bufJsonGzip) {
-          if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)); } else {
-            instructionObj.rtrn.gzip = bufJsonGzip;
-            resolve(instructionObj);
-          }
-        });
-      } catch (errProcessInstructionJson) { console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); }
-    }.bind(this));
   }
 
 
