@@ -13,6 +13,7 @@ var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analy
 
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
 var SensationsService = require("../../services/sensations/sensations-service");
+const analysisService = require('../../services/analysis/analysis-service');
 
 const moment = require("moment-timezone");
 var urls = require('../../utils/misc/urls');
@@ -260,7 +261,9 @@ exports.audio = {
       .findAll({
         where: { is_active: true }
       })
+      .bind({})
       .then(function(dbModels) {
+        this.dbModels = dbModels;
         return dbModels.map(function(model) {
           return model.guid;
         });
@@ -280,6 +283,17 @@ exports.audio = {
         return Promise.all(promises);
       })
       .then(function() {
+        analysisService.findStateByName('perc_queued')
+          .then((state) => {
+            let proms = this.dbModels.map((model) => {
+              return analysisService.createEntity(audioInfo.audio_id, model.id, state.id);
+            });
+            return Promise.all(proms);
+          })
+          .catch((err) => {
+            logError('queueForTaggingByActiveModels: analysis entries error', { error: err });
+          });
+
         audioInfo.isSaved.sqs = true;
         return audioInfo;
       });
@@ -324,7 +338,31 @@ exports.audio = {
       guardianGuid: dbGuardian.guid,
       audioGuid: dbAudio.guid,
     };
-  }
+  },
+
+  prepareKafkaObject: (req, itemAudioInfo, dbGuardian, dbAudio) => {
+    let dbAudioObj = itemAudioInfo.dbAudioObj,
+        timezone   = dbGuardian.Site.timezone;
+    return {
+      fileType: dbAudio.Format? dbAudio.Format.mime : null,
+      sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
+      bitDepth: itemAudioInfo.capture_bitrate,
+      timeInMs: dbAudio.Format? Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null,
+      samples: dbAudioObj.capture_sample_count,
+      utc: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
+      localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
+      timeZone: timezone,
+      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
+      lat: dbGuardian.latitude,
+      long: dbGuardian.longitude,
+      guardianGuid: dbGuardian.guid,
+      audioGuid: dbAudio.guid,
+      site: dbAudio.Site.name,
+      spectrogramUrl: urls.getSpectrogramAssetsUrl(req, dbAudio.guid),
+      s3bucket: process.env.ASSET_BUCKET_AUDIO,
+      s3path: itemAudioInfo.s3Path,
+    };
+  },
 
 };
 

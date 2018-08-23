@@ -10,9 +10,10 @@ var usersService = require('../../../services/users/users-service');
 var filterPresetsService = require('../../../services/filter-presets/filter-presets');
 var sequelize = require("sequelize");
 var Promise = require("bluebird");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var serviceParams = {
       name: req.body.name,
@@ -39,13 +40,13 @@ router.route("/")
         return filterPresetsService.formatFilterPreset(filterPreset);
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(res, 500, e, "Filter preset couldn't be created.")});
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Filter preset couldn't be created.")});
   });
 
 router.route("/:guid")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var serviceParams = {
       json: req.body.json,
@@ -68,26 +69,26 @@ router.route("/:guid")
         return filterPresetsService.formatFilterPreset(filterPreset);
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(res, 500, e, "Filter preset couldn't be updated.")});
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Filter preset couldn't be updated.")});
   });
 
 router.route("/:guid")
-  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     filterPresetsService.getFilterPresetByGuid(req.params.guid)
       .then((filterPreset) => {
         return filterPresetsService.formatFilterPreset(filterPreset);
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(res, 500, e, "Can't get filter preset")});
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Can't get filter preset")});
   });
 
 router.route("/")
-  .get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     let serviceParams = {
       types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : null
@@ -100,9 +101,9 @@ router.route("/")
         });
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(res, 500, e, "Can't get filter presets")});
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Can't get filter presets")});
   });
 
 module.exports = router;

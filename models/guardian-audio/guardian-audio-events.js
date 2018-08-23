@@ -60,7 +60,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: null
-    }
+    },
+    comment: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true,
+      defaultValue: null
+    },
   }, {
     classMethods: {
       associate: function(models) {
@@ -70,6 +75,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianAudioEvent.belongsTo(models.AudioAnalysisModel, { as: 'Model', foreignKey: "model" });
         GuardianAudioEvent.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: "guardian" });
         GuardianAudioEvent.belongsTo(models.User, { as: "User", foreignKey: "reviewed_by" });
+        GuardianAudioEvent.belongsTo(models.GuardianAudioEventReasonForCreation, { as: "Reason", foreignKey: "reason_for_creation" });
       },
       indexes: [
         {

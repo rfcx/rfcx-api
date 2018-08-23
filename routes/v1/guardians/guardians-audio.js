@@ -6,9 +6,10 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/:guardian_id/audio")
-  .get(passport.authenticate(['token', 'jwt'],{ session:false }), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session:false }), function(req, res) {
 
     models.Guardian
       .findOne({

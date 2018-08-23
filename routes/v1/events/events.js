@@ -17,6 +17,7 @@ var sqlUtils = require("../../../utils/misc/sql");
 var loggers = require('../../../utils/logger');
 // var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var ValidationError = require("../../../utils/converter/validation-error");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -86,6 +87,7 @@ function prepareOpts(req) {
     omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
     omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
     omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
+    reasonsForCreation: req.query.reasons_for_creation? (Array.isArray(req.query.reasons_for_creation)? req.query.reasons_for_creation : [req.query.reasons_for_creation]) : undefined,
     search: req.query.search? '%' + req.query.search + '%' : undefined,
     order: order? order : undefined,
     dir: dir? dir : undefined,
@@ -99,12 +101,13 @@ function countData(req) {
   let sql = 'SELECT COUNT(*) AS total ' +
                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
                    'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
                    'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
                    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
                    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
                    'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
                    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+                   'LEFT JOIN GuardianAudioEventReasonsForCreation AS Reason ON GuardianAudioEvent.reason_for_creation = Reason.id ' +
                    'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
@@ -131,6 +134,8 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
   sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
@@ -183,6 +188,8 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
+  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
   sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
@@ -244,7 +251,7 @@ function processStatsByDates(req, res) {
 }
 
 router.route("/event")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
@@ -283,7 +290,7 @@ router.route("/event")
   });
 
 router.route("/event/datatable")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     countData(req)
       .bind({})
@@ -306,7 +313,7 @@ router.route("/event/datatable")
   });
 
 router.route("/stats/guardian")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
@@ -345,10 +352,10 @@ router.route("/stats/guardian")
   });
 
 router.route("/stats/dates")
-  .get(passport.authenticate("token", {session: false}), processStatsByDates);
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), processStatsByDates);
 
 router.route("/stats/weekly")
-  .get(passport.authenticate("token", {session: false}), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -362,7 +369,7 @@ router.route("/stats/weekly")
   });
 
 router.route("/stats/monthly")
-  .get(passport.authenticate("token", {session: false}), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -376,7 +383,7 @@ router.route("/stats/monthly")
   });
 
 router.route("/stats/half-year")
-  .get(passport.authenticate("token", {session: false}), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -390,7 +397,7 @@ router.route("/stats/half-year")
   });
 
 router.route("/stats/year")
-  .get(passport.authenticate("token", {session: false}), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -440,7 +447,7 @@ router.route("/tuning")
   });
 
 router.route("/values")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
     eventsService
       .getGuardianAudioEventValues()
       .then((data) => { res.status(200).json(data); })
@@ -448,7 +455,7 @@ router.route("/values")
   });
 
 router.route("/types")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
     eventsService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data); })
@@ -456,7 +463,7 @@ router.route("/types")
   });
 
 router.route("/:guid")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     eventsService
       .getEventByGuid(req.params.guid)
@@ -466,9 +473,9 @@ router.route("/:guid")
       .then((data) => {
         res.status(200).json(data.events[0]);
       })
-      .catch(sequelize.EmptyResultError, e => httpError(res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(res, 400, null, e.message))
-      .catch(e => httpError(res, 500, e, "GuardianAudioEvent couldn't be found."));
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, "GuardianAudioEvent couldn't be found."));
 
   })
 ;
@@ -488,7 +495,8 @@ router.route('/')
       value: body.value,
       begins_at: body.begins_at,
       ends_at: body.ends_at,
-      model: body.model
+      model: body.model,
+      reason_for_creation: body.reason_for_creation || 'pgm', // set `pgm` by default
     };
 
     // default windows to 0 if none are provided
@@ -540,6 +548,9 @@ router.route('/')
       where: {$or: {value: attrs.value, id: attrs.value}},
       defaults: {value: attrs.value}
     }));
+    promises.push(models.GuardianAudioEventReasonForCreation.findOne({
+      where: {name: attrs.reason_for_creation}
+    }));
 
     Promise.all(promises)
       .bind({})
@@ -555,6 +566,10 @@ router.route('/')
         }
         if (!data[1]) {
           httpError(req, res, 404, null, 'Model with given shortname/guid not found');
+          return Promise.reject();
+        }
+        if (!data[4]) {
+          httpError(req, res, 404, null, 'Reason for Creation with given name not found');
           return Promise.reject();
         }
 
@@ -577,6 +592,7 @@ router.route('/')
         this.type = data[2][0].value;
         attrs.value = data[3][0].id;
         this.value = data[3][0].value;
+        attrs.reason_for_creation = data[4].id;
 
         attrs.guardian = data[0].Guardian.id;
         this.guardian = data[0].Guardian.shortname;
@@ -655,7 +671,7 @@ router.route('/')
   });
 
 router.route("/:event_id/review")
-  .post(passport.authenticate("token", {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     models.GuardianEvent
       .findAll({
@@ -715,8 +731,25 @@ router.route("/:event_id/review")
   })
 ;
 
+router.route("/:guid/comment")
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    eventsService
+      .updateEventComment(req.params.guid, req.body.comment)
+      .then((event) => {
+        return views.models.guardianAudioEventsJson(req, res, event);
+      })
+      .then((data) => {
+        res.status(200).json(data.events[0]);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { console.log(e); httpError(req, res, 500, e, "Error in process of saving comment for event")});
+
+  });
+
 router.route("/:guid/confirm")
-  .post(passport.authenticate("token", {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, true, req.rfcx.auth_token_info.owner_id)
       .then((data) => {
@@ -728,7 +761,7 @@ router.route("/:guid/confirm")
   });
 
 router.route("/:guid/reject")
-  .post(passport.authenticate("token", {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, false, req.rfcx.auth_token_info.owner_id)
       .then((data) => {

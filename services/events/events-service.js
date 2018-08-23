@@ -1,12 +1,13 @@
 var models = require("../../models");
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
+var ValidationError = require('../../utils/converter/validation-error');
 
 const eventQueryBase =
   'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
     'GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, GuardianAudioEvent.shadow_latitude, ' +
     'GuardianAudioEvent.shadow_longitude, GuardianAudioEvent.reviewer_confirmed, GuardianAudioEvent.created_at, ' +
-    'GuardianAudioEvent.updated_at, ' +
+    'GuardianAudioEvent.updated_at, GuardianAudioEvent.comment, ' +
     'CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone) as begins_at_local, ' +
     'CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) as ends_at_local, ' +
     'Audio.guid AS audio_guid, Audio.measured_at AS audio_measured_at, ' +
@@ -16,15 +17,17 @@ const eventQueryBase =
       'Model.shortname AS model_shortname, ' +
     'User.guid AS user_guid, ' +
     'EventType.value AS event_type, ' +
-    'EventValue.value AS event_value ' +
+    'EventValue.value AS event_value, ' +
+    'Reason.name AS reason_for_creation ' +
     'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
     'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-    'LEFT JOIN GuardianSites AS Site ON Audio.site_id = Site.id ' +
     'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+    'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
     'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
     'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
     'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
-    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ';
+    'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
+    'LEFT JOIN GuardianAudioEventReasonsForCreation AS Reason ON GuardianAudioEvent.reason_for_creation = Reason.id ';
 
 function getEventByGuid(guid) {
 
@@ -105,6 +108,31 @@ function updateEventReview(guid, confirmed, user_id) {
     });
 }
 
+function updateEventComment(guid, comment) {
+
+  if (typeof comment !== 'string' && !(comment instanceof String)) {
+    throw new ValidationError('comment attribute must be a string');
+  }
+
+  return models.GuardianAudioEvent
+    .findOne({
+      where: { guid },
+    })
+    .then((event) => {
+      if (!event) {
+        throw new sequelize.EmptyResultError('Event with given guid not found.');
+      }
+      else {
+        event.comment = comment;
+        return event.save();
+      }
+    })
+    .then((event) => {
+      return event.reload({include: [{ all: true } ]});
+    });
+
+}
+
 function prepareWsObject(event, site) {
   let timezone = site.timezone;
   let guardian = event.Guardian;
@@ -140,4 +168,5 @@ module.exports = {
   updateEventReview: updateEventReview,
   eventQueryBase: eventQueryBase,
   prepareWsObject: prepareWsObject,
+  updateEventComment: updateEventComment,
 };
