@@ -1,25 +1,35 @@
-var verbose_logging = (process.env.NODE_ENV !== "production");
-var fs = require("fs");
-var zlib = require("zlib");
-var hash = require("../../utils/misc/hash.js").hash;
-var aws = require("../../utils/external/aws.js").aws();
-var assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 var Promise = require('bluebird');
-var loggers = require('../../utils/logger');
+var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 
-exports.mqttInstructions = {
+ var mqttInstructions = {
+
+  sendInstruction: function(appMqtt, guardianGuid, guardianRole) {
+    return new Promise(function(resolve,reject){
+      try {
+
+        this.setupInstructionAction( guardianGuid, guardianRole ).then(function(instructionObj){
+          mqttPublish.processAndCompressPublishJson(instructionObj).then(function(instructionObj){
+
+            appMqtt.publish(instructionObj.mqtt.topic, instructionObj.rtrn.gzip);
+            console.log(JSON.stringify(instructionObj.rtrn.obj));
+
+          }).catch(function(errProcessInstructionJson){ console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); });
+        }).catch(function(errSetupInstructionAction){ console.log(errSetupInstructionAction); });
+
+     } catch (errSendInstruction) { console.log(errSendInstruction); reject(new Error(errSendInstruction)); }
+    }.bind(this));
+  },
 
 
-  setupInstructionAction: function( dbGuardian, appRole ) {
+  setupInstructionAction: function( guardianGuid, guardianRole ) {
     return new Promise(function(resolve, reject) {
         try {
 
           var instructionObj = { 
             mqtt: { 
-              topic: "guardians/"+dbGuardian.guid+"/"+appRole.toLowerCase()+"/instructions" 
+              topic: "guardians/"+guardianGuid+"/"+guardianRole.toLowerCase()+"/instructions" 
             }, 
             db: { 
-              dbGuardian: dbGuardian 
             },
             rtrn: {
               obj: { instruction_id: null, messages: [], prefs: [] }
@@ -36,6 +46,6 @@ exports.mqttInstructions = {
 
 };
 
-
+exports.mqttInstructions = mqttInstructions;
 
 
