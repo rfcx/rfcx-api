@@ -51,7 +51,7 @@ app.mqtt.on("message", function(topic, data){
 
     mqttCheckInRouter.onMessageCheckin(data).then(function(checkInObj){
       app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid+"/guardian/checkins", checkInObj.rtrn.gzip);
-      console.log(JSON.stringify(checkInObj.rtrn.obj));
+      console.log(checkInObj.json.guardian_guid+": "+JSON.stringify(checkInObj.rtrn.obj));
     }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
 
   }
