@@ -31,12 +31,14 @@ app.mqtt.on("error", function(err){
 
 var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
 
-app.mqtt.on("message", function(topic, data){
-  mqttRouter.onMessageCheckin(topic, data).then(function(checkInObj){
-
-    app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid, checkInObj.rtrn.gzip);
-    console.log(JSON.stringify(checkInObj.rtrn.obj));
-
-  }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
+app.mqtt.on("message", (topic, data) => {
+  mqttRouter.onMessageCheckin(topic, data)
+    .then((checkInObj) => {
+      app.mqtt.publish(`guardians/${checkInObj.json.guardian_guid}`, checkInObj.rtrn.gzip);
+      console.log(JSON.stringify(checkInObj.rtrn.obj));
+    })
+    .catch((errOnMessageCheckin) => {
+      console.log(errOnMessageCheckin);
+    });
 });
 

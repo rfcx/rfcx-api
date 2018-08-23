@@ -21,7 +21,7 @@ exports.checkInAssets = {
       try {
         fs.stat(checkInObj.audio.filePath, function(statErr, fileStat) {
           if (!!statErr) { reject(statErr); }
-          
+
           checkInObj.audio.meta = {
             size: fileStat.size,
             measuredAt: new Date(parseInt(checkInObj.audio.metaArr[1])),
@@ -37,24 +37,25 @@ exports.checkInAssets = {
           };
 
           audioUtils.transcodeToFile( "wav", {
-              sourceFilePath: checkInObj.audio.filePath,
-              sampleRate: checkInObj.audio.meta.sampleRate
-            }).then(function(wavFilePath){
-              fs.stat(wavFilePath, function(wavStatErr, wavFileStat) {
-                if (wavStatErr !== null) { reject(wavStatErr); }
+            sourceFilePath: checkInObj.audio.filePath,
+            sampleRate: checkInObj.audio.meta.sampleRate
+          })
+          .then(function(wavFilePath){
+            fs.stat(wavFilePath, function(wavStatErr, wavFileStat) {
+              if (wavStatErr !== null) { reject(wavStatErr); }
 
-                exec(process.env.SOX_PATH+"i -s "+wavFilePath, function(err, stdout, stderr) {
-                  if (stderr.trim().length > 0) { console.log(stderr); }
-                  if (!!err) { console.log(err); }
+              exec(process.env.SOX_PATH+"i -s "+wavFilePath, function(err, stdout, stderr) {
+                if (stderr.trim().length > 0) { console.log(stderr); }
+                if (!!err) { console.log(err); }
 
-                  checkInObj.audio.meta.captureSampleCount = parseInt(stdout.trim());
-                  assetUtils.deleteLocalFileFromFileSystem(wavFilePath);
-                  resolve(checkInObj);
-
-                });
+                checkInObj.audio.meta.captureSampleCount = parseInt(stdout.trim());
+                assetUtils.deleteLocalFileFromFileSystem(wavFilePath);
+                resolve(checkInObj);
 
               });
+
             });
+          });
 
         });
       } catch(err) {

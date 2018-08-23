@@ -11,198 +11,226 @@ var loggers = require('../../utils/logger');
 exports.checkInDatabase = {
 
   getDbGuardian: function(checkInObj) {
-    return new Promise(function(resolve, reject) {
-        try {
-          models.Guardian.findOne({
-              where: { guid: checkInObj.json.guardian_guid },
-              include: [ { all: true } ]
-            }).then(function(dbGuardian){
 
-              checkInObj.db.dbGuardian = dbGuardian;
-              resolve(checkInObj);
+    return models.Guardian
+      .findOne({
+        where: { guid: checkInObj.json.guardian_guid },
+        include: [ { all: true } ]
+      })
+      .then(function(dbGuardian){
+        checkInObj.db.dbGuardian = dbGuardian;
+        return checkInObj;
+    });
 
-          }).catch(function(errGetDbGuardianQuery){ console.log(errGetDbGuardianQuery); reject(new Error(errGetDbGuardianQuery)); });
-        } catch (errGetDbGuardian) { console.log(errGetDbGuardian); reject(new Error(errGetDbGuardian)); }
-    }.bind(this));
   },
 
   createDbCheckIn: function(checkInObj) {
-    return new Promise(function(resolve, reject) {
-        try {
 
-          models.GuardianCheckIn.create({
-            guardian_id: checkInObj.db.dbGuardian.id,
-            site_id: checkInObj.db.dbGuardian.site_id,
-            measured_at: new Date(parseInt(checkInObj.json.measured_at)),
-            queued_at: new Date(parseInt(checkInObj.json.queued_at)),
-            guardian_queued_checkins: parseInt(checkInObj.json.queued_checkins),
-            guardian_skipped_checkins: parseInt(checkInObj.json.skipped_checkins),
-            guardian_stashed_checkins: parseInt(checkInObj.json.stashed_checkins),
-            is_certified: checkInObj.db.dbGuardian.is_certified
-          }).then(function(dbCheckIn){
+    let opts;
+    try {
+      opts = {
+        guardian_id: checkInObj.db.dbGuardian.id,
+        site_id: checkInObj.db.dbGuardian.site_id,
+        measured_at: new Date(parseInt(checkInObj.json.measured_at)),
+        queued_at: new Date(parseInt(checkInObj.json.queued_at)),
+        guardian_queued_checkins: parseInt(checkInObj.json.queued_checkins),
+        guardian_skipped_checkins: parseInt(checkInObj.json.skipped_checkins),
+        guardian_stashed_checkins: parseInt(checkInObj.json.stashed_checkins),
+        is_certified: checkInObj.db.dbGuardian.is_certified,
+      }
+    } catch (e) {
+      return Promise.reject(e);
+    }
 
-            checkInObj.db.dbCheckIn = dbCheckIn;
-            checkInObj.rtrn.obj.checkin_id = dbCheckIn.guid;
-            resolve(checkInObj);
-
-          }).catch(function(errCreateDbCheckInQuery){ console.log(errCreateDbCheckInQuery); reject(new Error(errCreateDbCheckInQuery)); });
-        } catch (errCreateDbCheckIn) { console.log(errCreateDbCheckIn); reject(new Error(errCreateDbCheckIn)); }
-    }.bind(this));
+    return models.GuardianCheckIn.create(opts)
+      .then(function(dbCheckIn){
+        checkInObj.db.dbCheckIn = dbCheckIn;
+        checkInObj.rtrn.obj.checkin_id = dbCheckIn.guid;
+        return checkInObj;
+      });
   },
 
   saveDbMessages: function(checkInObj) {
-    return new Promise(function(resolve, reject) {
-      var msgs = [];
-      try {
-        var msgInfo = 
-          smsMessages.info(
-            checkInObj.json.messages, checkInObj.db.dbGuardian.id, 
-            checkInObj.db.dbCheckIn.id, checkInObj.json.timezone_offset
-          );
-        for (msgInfoInd in msgInfo) {
-          smsMessages.save(msgInfo[msgInfoInd]).then(function(rtrnMsgs){ }).catch(function(errSaveMsg){ console.log(errSaveMsg); });
-          msgs.push({ id: msgInfo[msgInfoInd].android_id });
-        }
-        resolve(msgs);
-      } catch (errSaveDbMessages) { console.log(errSaveDbMessages); reject(new Error(errSaveDbMessages)); }
-    }.bind(this));
+
+    let msgs = [],
+        msgInfo,
+        proms = [];
+    try {
+      msgInfo = smsMessages.info(
+        checkInObj.json.messages, checkInObj.db.dbGuardian.id,
+        checkInObj.db.dbCheckIn.id, checkInObj.json.timezone_offset
+      );
+    } catch (e) {
+      return Promise.reject(e);
+    }
+
+    for (msgInfoInd in msgInfo) {
+      msgs.push({ id: msgInfo[msgInfoInd].android_id });
+      proms.push(smsMessages.save(msgInfo[msgInfoInd]));
+    }
+    return Promise.all(proms)
+      .then(() => {
+        return msgs;
+      });
+
   },
 
   createDbSaveMeta: function(checkInObj) {
-    try {
 
-      var guardianId = checkInObj.db.dbGuardian.id, checkInId = checkInObj.db.dbCheckIn.id;
+    let guardianId = checkInObj.db.dbGuardian.id,
+        checkInId  = checkInObj.db.dbCheckIn.id;
 
-      saveMeta.DataTransfer(strArrToJSArr(checkInObj.json.data_transfer,"|","*"), guardianId, checkInId);
-      saveMeta.CPU(strArrToJSArr(checkInObj.json.cpu,"|","*"), guardianId, checkInId);
-      saveMeta.Battery(strArrToJSArr(checkInObj.json.battery,"|","*"), guardianId, checkInId);
-      saveMeta.Power(strArrToJSArr(checkInObj.json.power,"|","*"), guardianId, checkInId);
-      saveMeta.Network(strArrToJSArr(checkInObj.json.network,"|","*"), guardianId, checkInId);
-      saveMeta.Offline(strArrToJSArr(checkInObj.json.offline,"|","*"), guardianId, checkInId);
-      saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter,"|","*"), guardianId, checkInId);
-      saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer,"|","*"), guardianId, checkInId);
-      saveMeta.DiskUsage(strArrToJSArr(checkInObj.json.disk_usage,"|","*"), guardianId, checkInId);
-      saveMeta.GeoLocation(strArrToJSArr(checkInObj.json.location,"|","*"), guardianId, checkInId);
+    let proms = [
+      saveMeta.DataTransfer(strArrToJSArr(checkInObj.json.data_transfer,"|","*"), guardianId, checkInId),
+      saveMeta.CPU(strArrToJSArr(checkInObj.json.cpu,"|","*"), guardianId, checkInId),
+      saveMeta.Battery(strArrToJSArr(checkInObj.json.battery,"|","*"), guardianId, checkInId),
+      saveMeta.Power(strArrToJSArr(checkInObj.json.power,"|","*"), guardianId, checkInId),
+      saveMeta.Network(strArrToJSArr(checkInObj.json.network,"|","*"), guardianId, checkInId),
+      saveMeta.Offline(strArrToJSArr(checkInObj.json.offline,"|","*"), guardianId, checkInId),
+      saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter,"|","*"), guardianId, checkInId),
+      saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer,"|","*"), guardianId, checkInId),
+      saveMeta.DiskUsage(strArrToJSArr(checkInObj.json.disk_usage,"|","*"), guardianId, checkInId),
+      saveMeta.GeoLocation(strArrToJSArr(checkInObj.json.location,"|","*"), guardianId, checkInId),
 
-      saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots,"|","*"), guardianId, checkInId);
-      saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software,"|","*"), guardianId);
-      saveMeta.PreviousCheckIns(strArrToJSArr(checkInObj.json.previous_checkins,"|","*"));
+      saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots,"|","*"), guardianId, checkInId),
+      saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software,"|","*"), guardianId),
+      saveMeta.PreviousCheckIns(strArrToJSArr(checkInObj.json.previous_checkins,"|","*")),
+    ];
 
-    } catch (errDbSaveMeta) { console.log(errDbSaveMeta); reject(new Error(errDbSaveMeta)); }
+    return Promise.all(proms);
+
   },
 
   createDbAudio: function(checkInObj) {
-    return new Promise(function(resolve, reject) {
+    // return new Promise(function(resolve, reject) {
 
       let dbAudioLocal;
 
-      models.GuardianAudio.findOrCreate({
+    return models.GuardianAudio.findOrCreate({
+      where: {
+        sha1_checksum: checkInObj.audio.meta.sha1CheckSum
+      },
+      defaults: {
+        guardian_id: checkInObj.db.dbGuardian.id,
+        site_id: checkInObj.db.dbGuardian.site_id,
+        check_in_id: checkInObj.db.dbCheckIn.id,
+        sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
+        url: null,
+        capture_bitrate: checkInObj.audio.meta.bitRate,
+        encode_duration: checkInObj.audio.meta.encodeDuration,
+        measured_at: checkInObj.audio.meta.measuredAt,
+        capture_sample_count: checkInObj.audio.meta.captureSampleCount,
+        size: checkInObj.audio.meta.size
+      }
+    })
+    .spread(function(dbAudio, wasCreated){
+      dbAudioLocal = dbAudio;
+      return models.GuardianAudioFormat.findOrCreate({
         where: {
-          sha1_checksum: checkInObj.audio.meta.sha1CheckSum
-        },
-        defaults: {
-          guardian_id: checkInObj.db.dbGuardian.id,
-          site_id: checkInObj.db.dbGuardian.site_id,
-          check_in_id: checkInObj.db.dbCheckIn.id,
-          sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
-          url: null,
-          capture_bitrate: checkInObj.audio.meta.bitRate,
-          encode_duration: checkInObj.audio.meta.encodeDuration,
-          measured_at: checkInObj.audio.meta.measuredAt,
-          capture_sample_count: checkInObj.audio.meta.captureSampleCount,
-          size: checkInObj.audio.meta.size
+          codec: checkInObj.audio.meta.audioCodec,
+          mime: checkInObj.audio.meta.mimeType,
+          file_extension: checkInObj.audio.meta.fileExtension,
+          sample_rate: checkInObj.audio.meta.sampleRate,
+          target_bit_rate: checkInObj.audio.meta.bitRate,
+          is_vbr: checkInObj.audio.meta.isVbr
         }
-      }).spread(function(dbAudio, wasCreated){
-        dbAudioLocal = dbAudio;
-        return models.GuardianAudioFormat.findOrCreate({
-            where: {
-              codec: checkInObj.audio.meta.audioCodec,
-              mime: checkInObj.audio.meta.mimeType,
-              file_extension: checkInObj.audio.meta.fileExtension,
-              sample_rate: checkInObj.audio.meta.sampleRate,
-              target_bit_rate: checkInObj.audio.meta.bitRate,
-              is_vbr: checkInObj.audio.meta.isVbr
-            }
-          })
-      }).spread(function(dbAudioFormat, wasCreated){
-        dbAudioLocal.format_id = dbAudioFormat.id;
-        return dbAudioLocal.save();
-      })
-      .then(function(dbAudio) {
-        return dbAudio.reload();
-      }).then(function(dbAudio) {
-        checkInObj.db.dbAudio= dbAudio;
-        checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] });
-        resolve(checkInObj);
-      }).catch(function(errCreateDbAudioQuery){ console.log(errCreateDbAudioQuery); reject(new Error(errCreateDbAudioQuery)); });
+      });
+    })
+    .spread(function(dbAudioFormat, wasCreated){
+      dbAudioLocal.format_id = dbAudioFormat.id;
+      return dbAudioLocal.save();
+    })
+    .then(function(dbAudio) {
+      return dbAudio.reload();
+    })
+    .then(function(dbAudio) {
+      checkInObj.db.dbAudio= dbAudio;
+      checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] });
+      return checkInObj;
+      // resolve(checkInObj);
+    });
+      // .catch(function(errCreateDbAudioQuery){ console.log(errCreateDbAudioQuery); reject(new Error(errCreateDbAudioQuery)); });
 
-    }.bind(this));
+    // }.bind(this));
   },
 
   createDbScreenShot: function(checkInObj) {
-    return new Promise(function(resolve, reject) {
+    // return new Promise(function(resolve, reject) {
 
-        if (checkInObj.screenshots.filePath == null) {
-          resolve(checkInObj);
-        } else {
+    if (checkInObj.screenshots.filePath == null) {
+      return Promise.resolve(checkInObj);
+      // resolve(checkInObj);
+    } else {
 
-          fs.stat(checkInObj.screenshots.filePath, function(statErr, fileStat) {
-            if (!!statErr) { reject(statErr); }
-
-            models.GuardianMetaScreenShot.findOrCreate({
-              where: {
-                sha1_checksum: checkInObj.screenshots.metaArr[3]
-              },
-              defaults: {
-                guardian_id: checkInObj.db.dbGuardian.id,
-                sha1_checksum: checkInObj.screenshots.metaArr[3],
-                url: null,
-                captured_at: new Date(parseInt(checkInObj.screenshots.metaArr[1])),
-                size: fileStat.size
-              }
-            }).then(function(dbScreenShot) {
-              checkInObj.db.dbScreenShot= dbScreenShot;
-              checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
-              resolve(checkInObj);
-            }).catch(function(errCreateDbScreenShotQuery){ console.log(errCreateDbScreenShotQuery); reject(new Error(errCreateDbScreenShotQuery)); });
-
-          });
+      fs.stat(checkInObj.screenshots.filePath, function(statErr, fileStat) {
+        if (!!statErr) {
+          // reject(statErr);
+          return Promise.reject(statErr);
         }
 
-    }.bind(this));
+        return models.GuardianMetaScreenShot.findOrCreate({
+          where: {
+            sha1_checksum: checkInObj.screenshots.metaArr[3]
+          },
+          defaults: {
+            guardian_id: checkInObj.db.dbGuardian.id,
+            sha1_checksum: checkInObj.screenshots.metaArr[3],
+            url: null,
+            captured_at: new Date(parseInt(checkInObj.screenshots.metaArr[1])),
+            size: fileStat.size
+          }
+        })
+        .then(function(dbScreenShot) {
+          checkInObj.db.dbScreenShot= dbScreenShot;
+          checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
+          return checkInObj;
+          // resolve(checkInObj);
+        });
+        // .catch(function(errCreateDbScreenShotQuery){ console.log(errCreateDbScreenShotQuery); reject(new Error(errCreateDbScreenShotQuery)); });
+
+      });
+    }
+
+    // }.bind(this));
   },
 
   createDbLogFile: function(checkInObj) {
-    return new Promise(function(resolve, reject) {
+    // return new Promise(function(resolve, reject) {
 
-        if (checkInObj.logs.filePath == null) {
-          resolve(checkInObj);
-        } else {
+    if (checkInObj.logs.filePath == null) {
+      return Promise.resolve(checkInObj);
+      // resolve(checkInObj);
+    } else {
 
-          fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
-            if (!!statErr) { reject(statErr); }
-
-            models.GuardianMetaLogs.findOrCreate({
-              where: {
-                sha1_checksum: checkInObj.logs.metaArr[3]
-              },
-              defaults: {
-                guardian_id: checkInObj.db.dbGuardian.id,
-                sha1_checksum: checkInObj.logs.metaArr[3],
-                url: null,
-                captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
-                size: fileStat.size
-              }
-            }).then(function(dbLogs) {
-              checkInObj.db.dbLogs= dbLogs;
-              checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
-              resolve(checkInObj);
-            }).catch(function(errCreateDbLogsQuery){ console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
-
-          });
+      fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
+        if (!!statErr) {
+          return Promise.reject(statErr);
         }
 
-    }.bind(this));
+        return models.GuardianMetaLogs.findOrCreate({
+          where: {
+            sha1_checksum: checkInObj.logs.metaArr[3]
+          },
+          defaults: {
+            guardian_id: checkInObj.db.dbGuardian.id,
+            sha1_checksum: checkInObj.logs.metaArr[3],
+            url: null,
+            captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
+            size: fileStat.size
+          }
+        })
+        .then(function(dbLogs) {
+          checkInObj.db.dbLogs= dbLogs;
+          checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
+          return checkInObj;
+          // resolve(checkInObj);
+        })
+        // .catch(function(errCreateDbLogsQuery){ console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
+
+      });
+    }
+
+    // }.bind(this));
   },
 
   finalizeCheckIn: function(checkInObj) {

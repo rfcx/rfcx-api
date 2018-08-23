@@ -5,7 +5,7 @@ exports.cachedFiles = {
   cacheDirectoryGarbageCollection: function() {
 
     var maxAgeInMinutes = 20;
-    
+
     var tmpDir = process.env.CACHE_DIRECTORY;
     var subDir = "uploads";
 
@@ -16,13 +16,12 @@ exports.cachedFiles = {
             if ((((new Date()).valueOf()-fileStats.mtime.valueOf())/60000) > maxAgeInMinutes) {
               fs.unlink(tmpDir+"/"+subDir+"/"+innerFileName,function(err){ if (err) console.log(err); });
             }
-          });        
-        }); 
+          });
+        });
       });
     }
-    
 
   }
-  
+
 };
 
