@@ -88,7 +88,7 @@ app.http.get('/',function(req,res){
 app.http.use(function(req, res, next) { var err = new Error('Not Found'); err.status = 404; next(err); });
 app.http.use(function(err, req, res, next) {
   var status = err.status || 500;
-  loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err });
+  if (status != 404) { loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err }); }
   res.status(status).json({ message: err.message, error: err });
 });
 
