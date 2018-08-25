@@ -184,8 +184,6 @@ exports.checkInDatabase = {
           fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
             if (!!statErr) { reject(statErr); }
 
-          console.log("saving logfile to database...");
-          
             models.GuardianMetaLogs.findOrCreate({
               where: {
                 sha1_checksum: checkInObj.logs.metaArr[3]
@@ -198,6 +196,7 @@ exports.checkInDatabase = {
                 size: fileStat.size
               }
             }).then(function(dbLogs) {
+              console.log("saved to database...");
               checkInObj.db.dbLogs= dbLogs;
               checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
               resolve(checkInObj);
