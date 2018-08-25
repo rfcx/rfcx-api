@@ -179,8 +179,6 @@ exports.checkInDatabase = {
           resolve(checkInObj);
         } else {
 
-          console.log("saving logfile to database...");
-
           fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
             if (!!statErr) { reject(statErr); }
 
@@ -196,7 +194,6 @@ exports.checkInDatabase = {
                 size: fileStat.size
               }
             }).then(function(dbLogs) {
-              console.log("saved to database...");
               checkInObj.db.dbLogs= dbLogs;
               checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
               resolve(checkInObj);
