@@ -69,11 +69,11 @@ var healthCheck = require("./utils/rfcx-mqtt/health-check-mqtt.js").healthCheck;
 app.http.get("/health_check", function(req,res){ healthCheck.httpResponse(req,res); });
 
 
-var mqttInstructions = require("./utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
-app.http.get("/instructions", function(req,res){ 
-  mqttInstructions.sendInstruction(app.mqtt, "3f55b79d5967", "guardian");
-  healthCheck.httpResponse(req,res);
-});
+// var mqttInstructions = require("./utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
+// app.http.get("/instructions", function(req,res){ 
+//   mqttInstructions.sendInstruction(app.mqtt, "3f55b79d5967", "guardian");
+//   healthCheck.httpResponse(req,res);
+// });
 
 // Default HTTP Endpoint
 app.http.get('/',function(req,res){
