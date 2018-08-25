@@ -200,8 +200,8 @@ exports.checkInDatabase = {
               checkInObj.db.dbLogs= dbLogs;
               checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
               resolve(checkInObj);
-            }).catch(function(errCreateDbLogsQuery){ console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
-
+            }).catch(function(errCreateDbLogsQuery){ console.log("failed 1"); console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
+            console.log("after 1");
           });
         }
 
