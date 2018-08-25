@@ -182,9 +182,9 @@ exports.checkInDatabase = {
           console.log("saving logfile to database...");
 
           fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
-            if (!!statErr) { console.log("failed on filestat"); reject(statErr); }
+            if (!!statErr) { reject(statErr); }
 
-            models.GuardianMetaLogs.findOrCreate({
+            models.GuardianMetaLog.findOrCreate({
               where: {
                 sha1_checksum: checkInObj.logs.metaArr[3]
               },
@@ -200,8 +200,8 @@ exports.checkInDatabase = {
               checkInObj.db.dbLogs= dbLogs;
               checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
               resolve(checkInObj);
-            }).catch(function(errCreateDbLogsQuery){ console.log("failed 1"); console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
-            console.log("after 1");
+            }).catch(function(errCreateDbLogsQuery){ console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
+            
           });
         }
 
