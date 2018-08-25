@@ -182,7 +182,7 @@ exports.checkInDatabase = {
           console.log("saving logfile to database...");
 
           fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
-            if (!!statErr) { reject(statErr); }
+            if (!!statErr) { console.log("failed on filestat"); reject(statErr); }
 
             models.GuardianMetaLogs.findOrCreate({
               where: {
