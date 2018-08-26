@@ -30,6 +30,12 @@ exports.checkInDatabase = {
     return new Promise(function(resolve, reject) {
         try {
 
+          var checkInStats = {}, checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
+          for (vInd in roleArr) { 
+            checkInStats[checkInStatArray[vInd][0]] = checkInStatArray[vInd][1];
+          }
+          console.log(JSON.stringify(checkInStats));
+
           models.GuardianCheckIn.create({
             guardian_id: checkInObj.db.dbGuardian.id,
             site_id: checkInObj.db.dbGuardian.site_id,
