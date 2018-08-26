@@ -31,7 +31,7 @@ exports.checkInDatabase = {
         try {
 
           var checkInStats = {}, checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
-          for (vInd in roleArr) { 
+          for (vInd in checkInStatArray) { 
             checkInStats[checkInStatArray[vInd][0]] = checkInStatArray[vInd][1];
           }
           console.log(JSON.stringify(checkInStats));
