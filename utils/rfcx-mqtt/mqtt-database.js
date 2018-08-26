@@ -32,9 +32,8 @@ exports.checkInDatabase = {
 
           var checkInStats = {}, checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
           for (vInd in checkInStatArray) { 
-            checkInStats[checkInStatArray[vInd][0]] = checkInStatArray[vInd][1];
+            checkInObj.json[checkInStatArray[vInd][0]+"_checkins"] = checkInStatArray[vInd][1];
           }
-          console.log(JSON.stringify(checkInStats));
 
           models.GuardianCheckIn.create({
             guardian_id: checkInObj.db.dbGuardian.id,
