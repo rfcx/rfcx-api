@@ -9,49 +9,46 @@ exports.mqttCheckInRouter = {
 
   onMessageCheckin: function(data) {
 
-    return new Promise(function(resolve,reject){
-      try {
+    // cached file garbage collection... only do garbage collection ~1% of the time
+    if (Math.random() < 0.01 ? true : false) { cachedFiles.cacheDirectoryGarbageCollection(); }
 
-        // cached file garbage collection... only do garbage collection ~1% of the time
-        if (Math.random() < 0.01 ? true : false) { cachedFiles.cacheDirectoryGarbageCollection(); }
-        
-        mqttInputData.parseCheckInInput(data).then(function(checkInObj){
-          
-          checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
-          
-          checkInDatabase.getDbGuardian(checkInObj).then(function(checkInObj){  
-            checkInAssets.extractAudioFileMeta(checkInObj).then(function(checkInObj){
-
-              checkInDatabase.createDbCheckIn(checkInObj).then(function(checkInObj){
-                checkInDatabase.saveDbMessages(checkInObj).then(function(savedMsgs){
-                  checkInObj.rtrn.obj.messages = savedMsgs;
-                  checkInDatabase.createDbSaveMeta(checkInObj);
-
-                  checkInDatabase.createDbAudio(checkInObj).then(function(checkInObj){
-                    checkInDatabase.createDbScreenShot(checkInObj).then(function(checkInObj){
-                      checkInDatabase.createDbLogFile(checkInObj).then(function(checkInObj){
-
-                        checkInDatabase.finalizeCheckIn(checkInObj);
-
-                        mqttPublish.processAndCompressPublishJson(checkInObj).then(function(checkInObj){
-
-                          resolve(checkInObj);
-
-                        }).catch(function(errProcessReturnJson){ console.log(errProcessReturnJson); reject(new Error(errProcessReturnJson)); });
-
-                      }).catch(function(errSaveDbLogs){ console.log(errSaveDbLogs); reject(new Error(errSaveDbLogs)); });
-                    }).catch(function(errSaveDbScreenShot){ console.log(errSaveDbScreenShot); reject(new Error(errSaveDbScreenShot)); });
-                  }).catch(function(errSaveDbAudio){ console.log(errSaveDbAudio); reject(new Error(errSaveDbAudio)); });
-                }).catch(function(errSaveSms){ console.log(errSaveSms); reject(new Error(errSaveSms)); });
-              }).catch(function(errCreateDbCheckIn){ console.log(errCreateDbCheckIn); reject(new Error(errCreateDbCheckIn)); });
-            }).catch(function(errAudioMetaExtraction){ console.log(errAudioMetaExtraction); reject(new Error(errAudioMetaExtraction)); });
-          }).catch(function(errGetDbGuardian){ console.log(errGetDbGuardian); reject(new Error(errGetDbGuardian)); });
-        }).catch(function(errParseCheckInInput){ console.log(errParseCheckInInput); reject(new Error(errParseCheckInInput)); });
-
-      } catch (errOnMessageCheckin) { console.log(errOnMessageCheckin); reject(new Error(errOnMessageCheckin)); }
-    }.bind(this));
+    mqttInputData.parseCheckInInput(data)
+      .bind({})
+      .then((checkInObj) => {
+        checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
+        this.checkInObj = checkInObj;
+        return checkInDatabase.getDbGuardian(checkInObj);
+      })
+      .then((checkInObj) => {
+        return checkInAssets.extractAudioFileMeta(checkInObj);
+      })
+      .then((checkInObj) => {
+        return checkInDatabase.createDbCheckIn(checkInObj);
+      })
+      .then((checkInObj) => {
+        return checkInDatabase.saveDbMessages(checkInObj);
+      })
+      .then((savedMsgs) => {
+        this.checkInObj.rtrn.obj.messages = savedMsgs;
+        return checkInDatabase.createDbSaveMeta(checkInObj);
+      })
+      .then(() => {
+        return checkInDatabase.createDbAudio(this.checkInObj);
+      })
+      .then((checkInObj) => {
+        return checkInDatabase.createDbScreenShot(checkInObj)
+      })
+      .then((checkInObj) => {
+        return checkInDatabase.createDbLogFile(checkInObj)
+      })
+      .then((checkInObj) => {
+        return checkInDatabase.finalizeCheckIn(checkInObj);
+      })
+      .then(() => {
+        return mqttPublish.processAndCompressPublishJson(checkInObj)
+      });
   }
-  
+
 };
 
 

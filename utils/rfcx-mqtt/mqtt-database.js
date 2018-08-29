@@ -26,28 +26,33 @@ exports.checkInDatabase = {
 
   createDbCheckIn: function(checkInObj) {
 
-    var checkInStats = {},
-        checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
-    for (vInd in checkInStatArray) {
-      checkInObj.json[checkInStatArray[vInd][0]+"_checkins"] = checkInStatArray[vInd][1];
+    try {
+      let checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
+      for (vInd in checkInStatArray) {
+        checkInObj.json[checkInStatArray[vInd][0]+"_checkins"] = checkInStatArray[vInd][1];
+      }
+
+      let opts = {
+        guardian_id: checkInObj.db.dbGuardian.id,
+        site_id: checkInObj.db.dbGuardian.site_id,
+        measured_at: new Date(parseInt(checkInObj.json.measured_at)),
+        queued_at: new Date(parseInt(checkInObj.json.queued_at)),
+        guardian_queued_checkins: parseInt(checkInObj.json.queued_checkins),
+        guardian_skipped_checkins: parseInt(checkInObj.json.skipped_checkins),
+        guardian_stashed_checkins: parseInt(checkInObj.json.stashed_checkins),
+        is_certified: checkInObj.db.dbGuardian.is_certified
+      };
+    } catch (e) {
+      return Promise.reject(e);
     }
 
-    models.GuardianCheckIn.create({
-      guardian_id: checkInObj.db.dbGuardian.id,
-      site_id: checkInObj.db.dbGuardian.site_id,
-      measured_at: new Date(parseInt(checkInObj.json.measured_at)),
-      queued_at: new Date(parseInt(checkInObj.json.queued_at)),
-      guardian_queued_checkins: parseInt(checkInObj.json.queued_checkins),
-      guardian_skipped_checkins: parseInt(checkInObj.json.skipped_checkins),
-      guardian_stashed_checkins: parseInt(checkInObj.json.stashed_checkins),
-      is_certified: checkInObj.db.dbGuardian.is_certified
-    }).then(function(dbCheckIn){
-
-      checkInObj.db.dbCheckIn = dbCheckIn;
-      checkInObj.rtrn.obj.checkin_id = dbCheckIn.guid;
-      resolve(checkInObj);
-
-    }).catch(function(errCreateDbCheckInQuery){ console.log(errCreateDbCheckInQuery); reject(new Error(errCreateDbCheckInQuery)); });
+    return models.GuardianCheckIn
+      .create(opts)
+      .then(function(dbCheckIn){
+        checkInObj.db.dbCheckIn = dbCheckIn;
+        checkInObj.rtrn.obj.checkin_id = dbCheckIn.guid;
+        return checkInObj;
+      });
 
   },
 
@@ -103,9 +108,8 @@ exports.checkInDatabase = {
   },
 
   createDbAudio: function(checkInObj) {
-    // return new Promise(function(resolve, reject) {
 
-      let dbAudioLocal;
+    let dbAudioLocal;
 
     return models.GuardianAudio.findOrCreate({
       where: {
@@ -148,102 +152,107 @@ exports.checkInDatabase = {
       checkInObj.db.dbAudio= dbAudio;
       checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] });
       return checkInObj;
-      // resolve(checkInObj);
     });
-      // .catch(function(errCreateDbAudioQuery){ console.log(errCreateDbAudioQuery); reject(new Error(errCreateDbAudioQuery)); });
-
-    // }.bind(this));
   },
 
   createDbScreenShot: function(checkInObj) {
-    // return new Promise(function(resolve, reject) {
 
     if (checkInObj.screenshots.filePath == null) {
       return Promise.resolve(checkInObj);
-      // resolve(checkInObj);
-    } else {
-
-      fs.stat(checkInObj.screenshots.filePath, function(statErr, fileStat) {
-        if (!!statErr) {
-          // reject(statErr);
-          return Promise.reject(statErr);
-        }
-
-        return models.GuardianMetaScreenShot.findOrCreate({
-          where: {
-            sha1_checksum: checkInObj.screenshots.metaArr[3]
-          },
-          defaults: {
-            guardian_id: checkInObj.db.dbGuardian.id,
-            sha1_checksum: checkInObj.screenshots.metaArr[3],
-            url: null,
-            captured_at: new Date(parseInt(checkInObj.screenshots.metaArr[1])),
-            size: fileStat.size
-          }
-        })
-        .then(function(dbScreenShot) {
-          checkInObj.db.dbScreenShot= dbScreenShot;
-          checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
-          return checkInObj;
-          // resolve(checkInObj);
-        });
-        // .catch(function(errCreateDbScreenShotQuery){ console.log(errCreateDbScreenShotQuery); reject(new Error(errCreateDbScreenShotQuery)); });
-
-      });
     }
 
-    // }.bind(this));
+    fs.stat(checkInObj.screenshots.filePath, function(statErr, fileStat) {
+      if (!!statErr) {
+        return Promise.reject(statErr);
+      }
+
+      let defaults = {};
+      try {
+        defaults = {
+          guardian_id: checkInObj.db.dbGuardian.id,
+          sha1_checksum: checkInObj.screenshots.metaArr[3],
+          url: null,
+          captured_at: new Date(parseInt(checkInObj.screenshots.metaArr[1])),
+          size: fileStat.size
+        }
+      } catch(e) {
+        return Promise.reject(e);
+      }
+
+      return models.GuardianMetaScreenShot.findOrCreate({
+        where: {
+          sha1_checksum: checkInObj.screenshots.metaArr[3]
+        },
+        defaults
+      })
+      .then(function(dbScreenShot) {
+        checkInObj.db.dbScreenShot= dbScreenShot;
+        checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
+        return checkInObj;
+      });
+
+    });
   },
 
   createDbLogFile: function(checkInObj) {
-    return new Promise(function(resolve, reject) {
 
-      if (checkInObj.logs.filePath == null) {
-        resolve(checkInObj);
-      } else {
+    if (checkInObj.logs.filePath == null) {
+      return Promise.resolve(checkInObj);
+    }
 
-        fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
-          if (!!statErr) { reject(statErr); }
-
-          models.GuardianMetaLog.findOrCreate({
-            where: {
-              sha1_checksum: checkInObj.logs.metaArr[3]
-            },
-            defaults: {
-              guardian_id: checkInObj.db.dbGuardian.id,
-              sha1_checksum: checkInObj.logs.metaArr[3],
-              url: null,
-              captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
-              size: fileStat.size
-            }
-          }).then(function(dbLogs) {
-            checkInObj.db.dbLogs= dbLogs;
-            checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
-            resolve(checkInObj);
-          }).catch(function(errCreateDbLogsQuery){ console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
-
-        });
+    fs.stat(checkInObj.logs.filePath, (statErr, fileStat) => {
+      if (!!statErr) {
+        return Promise.reject(statErr);
       }
-    })
+
+      let defaults = {};
+      try {
+        defaults = {
+          guardian_id: checkInObj.db.dbGuardian.id,
+          sha1_checksum: checkInObj.logs.metaArr[3],
+          url: null,
+          captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
+          size: fileStat.size
+        };
+      } catch(e) {
+        return Promise.reject(e);
+      }
+
+      return models.GuardianMetaLog.findOrCreate({
+        where: {
+          sha1_checksum: checkInObj.logs.metaArr[3]
+        },
+        defaults
+      })
+      .then(function(dbLogs) {
+        checkInObj.db.dbLogs= dbLogs;
+        checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
+        return checkInObj;
+      });
+
+    });
   },
 
   finalizeCheckIn: function(checkInObj) {
 
     checkInObj.db.dbGuardian.last_check_in = new Date();
     checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count;
-    checkInObj.db.dbGuardian.save();
-    checkInObj.db.dbGuardian.reload();
-
     checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.checkStartTime.valueOf();
-    checkInObj.db.dbCheckIn.save();
-    checkInObj.db.dbCheckIn.reload();
+    return Promise.all([
+      checkInObj.db.dbGuardian.save(),
+      checkInObj.db.dbCheckIn.save()
+    ])
+      .then(() => {
+        return Promise.all([
+          checkInObj.db.dbGuardian.reload(),
+          checkInObj.db.dbCheckIn.reload()
+        ])
+      });
+
   }
 
 
 };
-
-
-
 
 function strArrToJSArr(str,delimA,delimB) {
   if ((str == null) || (str.length == 0)) { return []; }
