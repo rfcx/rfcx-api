@@ -1,5 +1,4 @@
 const moment = require("moment-timezone");
-const urls = require('../misc/urls');
 
 function prepareKafkaObject (itemAudioInfo, dbGuardian, dbAudio) {
   let dbAudioObj = itemAudioInfo.dbAudioObj,
