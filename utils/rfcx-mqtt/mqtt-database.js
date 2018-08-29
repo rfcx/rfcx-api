@@ -26,28 +26,29 @@ exports.checkInDatabase = {
 
   createDbCheckIn: function(checkInObj) {
 
-    let opts;
-    try {
-      opts = {
-        guardian_id: checkInObj.db.dbGuardian.id,
-        site_id: checkInObj.db.dbGuardian.site_id,
-        measured_at: new Date(parseInt(checkInObj.json.measured_at)),
-        queued_at: new Date(parseInt(checkInObj.json.queued_at)),
-        guardian_queued_checkins: parseInt(checkInObj.json.queued_checkins),
-        guardian_skipped_checkins: parseInt(checkInObj.json.skipped_checkins),
-        guardian_stashed_checkins: parseInt(checkInObj.json.stashed_checkins),
-        is_certified: checkInObj.db.dbGuardian.is_certified,
-      }
-    } catch (e) {
-      return Promise.reject(e);
+    var checkInStats = {},
+        checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
+    for (vInd in checkInStatArray) {
+      checkInObj.json[checkInStatArray[vInd][0]+"_checkins"] = checkInStatArray[vInd][1];
     }
 
-    return models.GuardianCheckIn.create(opts)
-      .then(function(dbCheckIn){
-        checkInObj.db.dbCheckIn = dbCheckIn;
-        checkInObj.rtrn.obj.checkin_id = dbCheckIn.guid;
-        return checkInObj;
-      });
+    models.GuardianCheckIn.create({
+      guardian_id: checkInObj.db.dbGuardian.id,
+      site_id: checkInObj.db.dbGuardian.site_id,
+      measured_at: new Date(parseInt(checkInObj.json.measured_at)),
+      queued_at: new Date(parseInt(checkInObj.json.queued_at)),
+      guardian_queued_checkins: parseInt(checkInObj.json.queued_checkins),
+      guardian_skipped_checkins: parseInt(checkInObj.json.skipped_checkins),
+      guardian_stashed_checkins: parseInt(checkInObj.json.stashed_checkins),
+      is_certified: checkInObj.db.dbGuardian.is_certified
+    }).then(function(dbCheckIn){
+
+      checkInObj.db.dbCheckIn = dbCheckIn;
+      checkInObj.rtrn.obj.checkin_id = dbCheckIn.guid;
+      resolve(checkInObj);
+
+    }).catch(function(errCreateDbCheckInQuery){ console.log(errCreateDbCheckInQuery); reject(new Error(errCreateDbCheckInQuery)); });
+
   },
 
   saveDbMessages: function(checkInObj) {
@@ -195,42 +196,35 @@ exports.checkInDatabase = {
   },
 
   createDbLogFile: function(checkInObj) {
-    // return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
 
-    if (checkInObj.logs.filePath == null) {
-      return Promise.resolve(checkInObj);
-      // resolve(checkInObj);
-    } else {
+      if (checkInObj.logs.filePath == null) {
+        resolve(checkInObj);
+      } else {
 
-      fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
-        if (!!statErr) {
-          return Promise.reject(statErr);
-        }
+        fs.stat(checkInObj.logs.filePath, function(statErr, fileStat) {
+          if (!!statErr) { reject(statErr); }
 
-        return models.GuardianMetaLogs.findOrCreate({
-          where: {
-            sha1_checksum: checkInObj.logs.metaArr[3]
-          },
-          defaults: {
-            guardian_id: checkInObj.db.dbGuardian.id,
-            sha1_checksum: checkInObj.logs.metaArr[3],
-            url: null,
-            captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
-            size: fileStat.size
-          }
-        })
-        .then(function(dbLogs) {
-          checkInObj.db.dbLogs= dbLogs;
-          checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
-          return checkInObj;
-          // resolve(checkInObj);
-        })
-        // .catch(function(errCreateDbLogsQuery){ console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
+          models.GuardianMetaLog.findOrCreate({
+            where: {
+              sha1_checksum: checkInObj.logs.metaArr[3]
+            },
+            defaults: {
+              guardian_id: checkInObj.db.dbGuardian.id,
+              sha1_checksum: checkInObj.logs.metaArr[3],
+              url: null,
+              captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
+              size: fileStat.size
+            }
+          }).then(function(dbLogs) {
+            checkInObj.db.dbLogs= dbLogs;
+            checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
+            resolve(checkInObj);
+          }).catch(function(errCreateDbLogsQuery){ console.log(errCreateDbLogsQuery); reject(new Error(errCreateDbLogsQuery)); });
 
-      });
-    }
-
-    // }.bind(this));
+        });
+      }
+    })
   },
 
   finalizeCheckIn: function(checkInObj) {

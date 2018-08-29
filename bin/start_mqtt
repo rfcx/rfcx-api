@@ -29,16 +29,31 @@ app.mqtt.on("error", function(err){
 
 
 
-var mqttRouter = require("../utils/rfcx-mqtt/mqtt-router.js").mqttRouter;
+// var mqttInstructions = require("../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
+// var mqttPublish = require("../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
+
+// mqttInstructions.setupInstructionAction( checkInObj.db.dbGuardian, "guardian" ).then(function(instructionObj){
+//   mqttPublish.processAndCompressPublishJson(instructionObj).then(function(instructionObj){
+
+//     app.mqtt.publish(instructionObj.mqtt.topic, instructionObj.rtrn.gzip);
+//     console.log(JSON.stringify(instructionObj.rtrn.obj));
+
+//   }).catch(function(errProcessInstructionJson){ console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); });
+// }).catch(function(errSetupInstructionAction){ console.log(errSetupInstructionAction); });
+
+
+
+var mqttCheckInRouter = require("../utils/rfcx-mqtt/mqtt-checkin-router.js").mqttCheckInRouter;
 
 app.mqtt.on("message", (topic, data) => {
-  mqttRouter.onMessageCheckin(topic, data)
-    .then((checkInObj) => {
-      app.mqtt.publish(`guardians/${checkInObj.json.guardian_guid}`, checkInObj.rtrn.gzip);
-      console.log(JSON.stringify(checkInObj.rtrn.obj));
-    })
-    .catch((errOnMessageCheckin) => {
-      console.log(errOnMessageCheckin);
-    });
+  if (topic === "guardians/checkins") {
+    mqttCheckInRouter.onMessageCheckin(data)
+      .then((checkInObj) => {
+        app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid+"/guardian/checkins", checkInObj.rtrn.gzip);
+        console.log(checkInObj.json.guardian_guid+": "+JSON.stringify(checkInObj.rtrn.obj));
+      })
+      .catch((errOnMessageCheckin) => {
+        console.log(errOnMessageCheckin);
+      });
+  }
 });
-

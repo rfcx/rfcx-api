@@ -68,6 +68,13 @@ app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-register
 var healthCheck = require("./utils/rfcx-mqtt/health-check-mqtt.js").healthCheck;
 app.http.get("/health_check", function(req,res){ healthCheck.httpResponse(req,res); });
 
+
+// var mqttInstructions = require("./utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
+// app.http.get("/instructions", function(req,res){ 
+//   mqttInstructions.sendInstruction(app.mqtt, "3f55b79d5967", "guardian");
+//   healthCheck.httpResponse(req,res);
+// });
+
 // Default HTTP Endpoint
 app.http.get('/',function(req,res){
   res.status(200).json({
@@ -81,7 +88,7 @@ app.http.get('/',function(req,res){
 app.http.use(function(req, res, next) { var err = new Error('Not Found'); err.status = 404; next(err); });
 app.http.use(function(err, req, res, next) {
   var status = err.status || 500;
-  loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err });
+  if (status != 404) { loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err }); }
   res.status(status).json({ message: err.message, error: err });
 });
 
