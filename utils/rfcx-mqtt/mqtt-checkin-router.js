@@ -4,6 +4,7 @@ var mqttInputData = require("../../utils/rfcx-mqtt/mqtt-input-data.js").mqttInpu
 var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInDatabase;
 var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").checkInAssets;
 var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
+var mqttKafka = require('../../utils/rfcx-mqtt/mqtt-kafka');
 
 exports.mqttCheckInRouter = {
 
@@ -46,7 +47,12 @@ exports.mqttCheckInRouter = {
       })
       .then(() => {
         return mqttPublish.processAndCompressPublishJson(checkInObj)
-      });
+      })
+      .then(() => {
+        let kafObj = mqttKafka.prepareKafkaObject(checkInObj, checkInObj.db.dbGuardian, checkInObj.db.dbAudio);
+        return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
+                    .then(kafka.send);
+      })
   }
 
 };

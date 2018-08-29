@@ -149,7 +149,7 @@ exports.checkInDatabase = {
       return dbAudio.reload();
     })
     .then(function(dbAudio) {
-      checkInObj.db.dbAudio= dbAudio;
+      checkInObj.db.dbAudio = dbAudio;
       checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] });
       return checkInObj;
     });
