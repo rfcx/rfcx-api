@@ -37,6 +37,10 @@ router.route("/:guid/software")
 
     models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
       .then((versionData) => {
+        if (!versionData.length) {
+          httpError(req, res, 404, null, 'Guardian or software versions not found.');
+          return;
+        }
         let result = {};
         versionData.forEach((item) => {
           result[item.role] = {
