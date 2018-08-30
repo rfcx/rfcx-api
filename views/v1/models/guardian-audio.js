@@ -20,7 +20,7 @@ exports.models = {
 
     var output_file_extension = req.rfcx.content_type,
         output_file_name = dbRow.guid + "." + output_file_extension,
-        is_output_enhanced = false;
+        is_output_enhanced = (output_file_extension === "mp3");
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)

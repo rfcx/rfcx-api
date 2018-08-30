@@ -7,12 +7,12 @@ var audioFormatSettings = {
         mp3: {
             extension: "mp3", codec: "libmp3lame", outputFormat: "mp3", mime: "audio/mpeg",
             inputOptions: [],
-            outputOptions: [ "-b:a 16k" ]
+            outputOptions: [ "-b:a 32k" ]
         },
         opus: { 
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
             inputOptions: [],
-            outputOptions: [ "-b:a 16k", "-compression_level 7", "-application audio", "-vbr on"  ]
+            outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ]
         },
         wav: { 
             extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
