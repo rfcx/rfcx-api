@@ -47,6 +47,30 @@ exports.models = {
     }
     return jsonArray;
 
+  },
+
+  guardianPublicInfo: function(dbGuardian) {
+
+    if (!util.isArray(dbGuardian)) { dbGuardian = [dbGuardian]; }
+
+    var jsonArray = [];
+
+    for (i in dbGuardian) {
+
+      var dbRow = dbGuardian[i];
+
+      var guardian = {
+        guid: dbRow.guid,
+        shortname: dbRow.shortname,
+        site_name: dbRow.Site.name,
+        site_description: dbRow.Site.description,
+        timezone: dbRow.Site.timezone,
+      };
+
+      jsonArray.push(guardian);
+    }
+    return jsonArray;
+
   }
 
 

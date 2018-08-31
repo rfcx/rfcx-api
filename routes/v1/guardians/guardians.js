@@ -120,6 +120,29 @@ router.route("/:guardian_id")
   })
 ;
 
+router.route("/:guardian_id/public-info")
+  .get(passport.authenticate("token", { session:false }), function(req, res) {
+
+    models.Guardian
+      .findOne({
+        where: { guid: req.params.guardian_id },
+        include: [ { all: true } ],
+      })
+      .then(function(dbGuardian) {
+        if (!dbGuardian) {
+          httpError(req, res, 404, "database");
+        } else {
+          res.status(200).json(views.models.guardianPublicInfo(dbGuardian)[0]);
+        }
+      })
+      .catch(function(err){
+        console.log("failed to return guardian | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return guardian"}); }
+      });
+
+  })
+;
+
 router.route("/register")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
