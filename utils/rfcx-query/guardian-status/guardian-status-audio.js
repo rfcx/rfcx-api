@@ -52,11 +52,13 @@ exports.guardianStatusAudio = {
               }).then(function(dbStatus){
 
                   return models.GuardianAudio
-                    .findOne({ 
-                      where: dbWhere, 
+                    .findOne({
+                      where: dbWhere,
                       include: [{ all: true }]
                     }).then(function(dbAudio){
-
+                      if (!dbAudio) {
+                        resolve(0);
+                      }
                       resolve(Math.round(10000*parseInt(1000*dbStatus.dataValues.sample_count_sum/dbAudio.Format.sample_rate)/(parseInt(intervalInHours)*3600000))/100);
 
                       return null;
@@ -64,8 +66,8 @@ exports.guardianStatusAudio = {
                     }).catch(function(err){
                       console.log(err);
                       reject(new Error(err));
-                    });       
-                               
+                    });
+
               }).catch(function(err){
                 console.log(err);
                 reject(new Error(err));
