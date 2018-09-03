@@ -45,7 +45,7 @@ exports.audioUtils = {
                     "Content-Length": audioFileStat.size,
                     "Accept-Ranges": "bytes 0-"+(audioFileStat.size-1)+"/"+audioFileStat.size,
                     "Cache-Control": "max-age=600",
-                    "Content-Disposition": "filename="+fileName
+                    "Content-Disposition": "attachment; filename="+fileName
                   });
 
                   fs.createReadStream(filePathToServe)
