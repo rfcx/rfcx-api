@@ -1,7 +1,8 @@
 const rp = require("request-promise");
 const ValidationError = require('../../utils/converter/validation-error');
-const mandrill = require('mandrill-api/mandrill');
 const Promise = require('bluebird');
+const mandrill = require('mandrill-api/mandrill');
+const mandrill_client = new mandrill.Mandrill(process.env.MANDRILL_KEY);
 
 module.exports = {
   subsribeToList: function (listId, email) {
@@ -28,7 +29,6 @@ module.exports = {
   sendMail: function(email_address, name, subject, message){
 
     return new Promise(function(resolve, reject) {
-      const mandrill_client = new mandrill.Mandrill(process.env.MANDRILL_KEY);
       var msg = {
         "text": message,
         "subject": subject,
@@ -51,10 +51,43 @@ module.exports = {
 
     });
 
+  },
 
+  sendMessage: (opts) => {
 
+    return new Promise(function(resolve, reject) {
 
+      let message = {
+        text: opts.text? opts.text : null,
+        html: opts.html? opts.html : null,
+        subject: opts.subject || 'Information',
+        from_email: opts.from_email || 'contact@rfcx.org',
+        from_name: opts.from_name || 'Rainforest Connection',
+        to: [{
+          email: opts.email,
+          name: opts.name? opts.name : null,
+          type: 'to'
+        }],
+        important: opts.important !== undefined? opts.important : null,
+        bcc_address: opts.bcc_address? opts.bcc_address : null,
+        auth_text: true,
+        auto_html: true,
+      };
 
+      mandrill_client.messages
+        .send({
+          message,
+          async: true
+        },
+        () => {
+          resolve({success: true});
+        },
+        (e) => {
+          reject(e);
+        });
+
+    });
 
   }
+
 };

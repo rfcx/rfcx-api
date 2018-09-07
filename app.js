@@ -141,7 +141,10 @@ var routes = {
     ],
     "adopt-protect": [
       require("./routes/v1/adopt-protect/donations"),
-    ]
+    ],
+    "forms": [
+      require("./routes/v1/forms/contact"),
+    ],
   },
   "v2": {
   }
