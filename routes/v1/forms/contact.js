@@ -6,6 +6,7 @@ const sequelize = require("sequelize");
 const Promise = require("bluebird");
 const Converter = require("../../../utils/converter/converter");
 const mailService = require('../../../services/mail/mail-service');
+const contactMessagesService = require('../../../services/contact-messages/contact-messages-service');
 
 router.route("/contact")
   .post((req, res) => {
@@ -18,6 +19,13 @@ router.route("/contact")
     params.convert('message').toString();
 
     params.validate()
+      .then(() => {
+        return contactMessagesService.createMessage({
+          email: transformedParams['_replyto'],
+          subject: transformedParams['_subject'],
+          message: transformedParams.message,
+        });
+      })
       .then(() => {
         return mailService.renderContactFormEmail({
           _replyto: transformedParams['_replyto'],
