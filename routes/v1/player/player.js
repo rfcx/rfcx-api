@@ -25,6 +25,7 @@ router.route("/login")
         allow_garbage_collection: false,
         only_allow_access_to: [
           "^/v1/player/web",
+          "^/v1/guardians/[0123456789abcdef]{12}/public-info",
           "^/v1/guardians/[0123456789abcdef]{12}/audio.json$",
           "^/v1/audio/[0123456789abcdef]{8}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{12}/audio.json$",
 
