@@ -6,7 +6,7 @@ function prepareKafkaObject (itemAudioInfo, dbGuardian, dbAudio) {
   return {
     fileType: dbAudio.Format? dbAudio.Format.mime : null,
     sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
-    bitDepth: dbAudio.capture_bitrate,
+    bitDepth: itemAudioInfo.audio.meta.bitRate,
     timeInMs: dbAudio.Format? Math.round(1000 * dbAudio.capture_sample_count / dbAudio.Format.sample_rate) : null,
     samples: dbAudio.capture_sample_count,
     utc: moment.tz(dbAudio.measured_at, timezone).toISOString(),
@@ -17,7 +17,7 @@ function prepareKafkaObject (itemAudioInfo, dbGuardian, dbAudio) {
     long: dbGuardian.longitude,
     guardianGuid: dbGuardian.guid,
     audioGuid: dbAudio.guid,
-    site: dbAudio.Site.name,
+    site: dbGuardian.Site.name,
     spectrogramUrl: `${process.env.ASSET_URLBASE}/audio/${dbAudio.guid}.png`,
     s3bucket: process.env.ASSET_BUCKET_AUDIO,
     s3path: itemAudioInfo.audio.meta.s3Path,

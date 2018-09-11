@@ -22,50 +22,50 @@ exports.mqttCheckInRouter = {
       .then((checkInObj) => {
         checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
         this.checkInObj = checkInObj;
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.getDbGuardian(checkInObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInAssets.extractAudioFileMeta(checkInObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> extractAudioFileMeta', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> extractAudioFileMeta', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.createDbCheckIn(checkInObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbCheckIn', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbCheckIn', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.saveDbMessages(checkInObj);
       })
       .then((savedMsgs) => {
         this.checkInObj.rtrn.obj.messages = savedMsgs;
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> saveDbMessages', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
-        return checkInDatabase.createDbSaveMeta(checkInObj);
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> saveDbMessages', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        return checkInDatabase.createDbSaveMeta(this.checkInObj);
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbSaveMeta', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbSaveMeta', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
         return checkInDatabase.createDbAudio(this.checkInObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbAudio', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbAudio', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.createDbScreenShot(checkInObj)
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbScreenShot', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbScreenShot', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.createDbLogFile(checkInObj)
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.finalizeCheckIn(checkInObj);
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
-        return mqttPublish.processAndCompressPublishJson(checkInObj)
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        return mqttPublish.processAndCompressPublishJson(this.checkInObj)
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> processAndCompressPublishJson', { checkInObj: JSON.parse(JSON.stringify(checkInObj))});
-        let kafObj = mqttKafka.prepareKafkaObject(checkInObj, checkInObj.db.dbGuardian, checkInObj.db.dbAudio);
-        logDebug('mqttCheckInRouter -> onMessageCheckin Kafka object', { kafObj: kafObj });
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> processAndCompressPublishJson', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        let kafObj = mqttKafka.prepareKafkaObject(this.checkInObj, this.checkInObj.db.dbGuardian, this.checkInObj.db.dbAudio);
+        logDebug('mqttCheckInRouter -> onMessageCheckin Kafka object', { kafObj });
         return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
                     .then(kafka.send);
       })

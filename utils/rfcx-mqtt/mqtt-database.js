@@ -17,22 +17,26 @@ exports.checkInDatabase = {
         where: { guid: checkInObj.json.guardian_guid },
         include: [ { all: true } ]
       })
-      .then(function(dbGuardian){
+      .then((dbGuardian) => {
+        if (!dbGuardian) {
+          return Promise.reject(`Couldn't find guardian with guid ${checkInObj.json.guardian_guid}`);
+        }
         checkInObj.db.dbGuardian = dbGuardian;
         return checkInObj;
-    });
+      });
 
   },
 
   createDbCheckIn: function(checkInObj) {
 
+    let opts;
     try {
       let checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
       for (vInd in checkInStatArray) {
         checkInObj.json[checkInStatArray[vInd][0]+"_checkins"] = checkInStatArray[vInd][1];
       }
 
-      let opts = {
+      opts = {
         guardian_id: checkInObj.db.dbGuardian.id,
         site_id: checkInObj.db.dbGuardian.site_id,
         measured_at: new Date(parseInt(checkInObj.json.measured_at)),
@@ -48,7 +52,7 @@ exports.checkInDatabase = {
 
     return models.GuardianCheckIn
       .create(opts)
-      .then(function(dbCheckIn){
+      .then((dbCheckIn) => {
         checkInObj.db.dbCheckIn = dbCheckIn;
         checkInObj.rtrn.obj.checkin_id = dbCheckIn.guid;
         return checkInObj;
@@ -146,7 +150,7 @@ exports.checkInDatabase = {
       return dbAudioLocal.save();
     })
     .then(function(dbAudio) {
-      return dbAudio.reload();
+      return dbAudio.reload({include: [{ all: true } ]});
     })
     .then(function(dbAudio) {
       checkInObj.db.dbAudio = dbAudio;
@@ -157,7 +161,7 @@ exports.checkInDatabase = {
 
   createDbScreenShot: function(checkInObj) {
 
-    if (checkInObj.screenshots.filePath == null) {
+    if (checkInObj.screenshots.filePath === null) {
       return Promise.resolve(checkInObj);
     }
 
