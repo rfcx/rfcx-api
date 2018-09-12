@@ -17,9 +17,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaCPU.bulkCreate(dbMetaCPU);
-      // .then(function(){ }).catch(function(err){
-      //   console.log("failed to create GuardianMetaCPU | "+err);
-      // });
   },
 
   Battery: function(metaBattery, guardianId, checkInId) {
@@ -37,9 +34,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaBattery.bulkCreate(dbMetaBattery);
-      // .then(function(){ }).catch(function(err){
-      //   console.log("failed to create GuardianMetaBattery | "+err);
-      // });
   },
 
   Power: function(metaPower, guardianId, checkInId) {
@@ -57,10 +51,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaPower.bulkCreate(dbMetaPower);
-      // .then(function(){ }).catch(function(err){
-      //   console.log("failed to create GuardianMetaPower | "+err);
-      // });
-
   },
 
   Network: function(metaNetwork, guardianId, checkInId) {
@@ -79,9 +69,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork);
-      // .then(function(){ }).catch(function(err){
-      //   console.log("failed to create GuardianMetaNetwork | "+err);
-      // });
   },
 
   DataTransfer: function(metaDataTransfer, guardianId, checkInId) {
@@ -102,9 +89,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaDataTransfer.bulkCreate(dbMetaDataTransfer);
-    // .then(function(){ }).catch(function(err){
-    //     console.log("failed to create GuardianMetaDataTransfer | "+err);
-    //   });
   },
 
   Offline: function(metaOffline, guardianId, checkInId) {
@@ -122,9 +106,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaOffline.bulkCreate(dbMetaOffline);
-    // .then(function(){ }).catch(function(err){
-    //     console.log("failed to create GuardianMetaOffline | "+err);
-    //   });
   },
 
   LightMeter: function(metaLightMeter, guardianId, checkInId) {
@@ -141,9 +122,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaLightMeter.bulkCreate(dbMetaLightMeter);
-    // .then(function(){ }).catch(function(err){
-    //     console.log("failed to create GuardianMetaLightMeter | "+err);
-    //   });
   },
 
   Accelerometer: function(metaAccelerometer, guardianId, checkInId) {
@@ -164,9 +142,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaAccelerometer.bulkCreate(dbMetaAccelerometer);
-    // .then(function(){ }).catch(function(err){
-    //     console.log("failed to create GuardianMetaAccelerometer | "+err);
-    //   });
   },
 
   GeoLocation: function(metaLocation, guardianId, checkInId) {
@@ -187,9 +162,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaGeoLocation.bulkCreate(dbMetaGeoLocation);
-    // .then(function(){ }).catch(function(err){
-    //     console.log("failed to create GuardianMetaGeoLocation | "+err);
-    //   });
   },
 
   DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
@@ -214,9 +186,6 @@ exports.saveMeta = {
     };
 
     return models.GuardianMetaDiskUsage.create(opts);
-    // .then(function(dbGuardianMetaDiskUsage){ }).catch(function(err){
-    //     console.log("failed to create GuardianMetaDiskUsage | "+err);
-    //   });
   },
 
   PreviousCheckIns: function(previousCheckIns) {
@@ -225,12 +194,12 @@ exports.saveMeta = {
         .findOne({
           where: { guid: previousCheckIns[prvChkInInd][0] }
         })
-        .then(function(dbPreviousCheckIn){
+        .then((dbPreviousCheckIn) => {
+          if (!dbPreviousCheckIn) {
+            return Promise.reject(`Couldn't find previous checkin with guid "${previousCheckIns[prvChkInInd][0]}".`)
+          }
           dbPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1];
           return dbPreviousCheckIn.save();
-        })
-        .catch(function(err){
-          console.log("error finding/updating previous checkin id: "+previousCheckIns[prvChkInInd][0]);
         });
     }
   },
@@ -248,9 +217,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaReboot.bulkCreate(dbMetaRebootEvents);
-    // .then(function(){ }).catch(function(err){
-    //     console.log("failed to create GuardianMetaReboot | "+err);
-    //   });
   },
 
   SoftwareRoleVersion: function(roleArr, guardianId) {
@@ -261,31 +227,31 @@ exports.saveMeta = {
         .findOne({
           where: { role: roleArr[vInd][0] }
         })
-        .then(function(dbSoftwareRole){
-          models.GuardianSoftwareVersion
+        .then((dbSoftwareRole) => {
+          if (!dbSoftwareRole) {
+            return Promise.reject(`Role "${roleArr[vInd][0]}" was not found.`);
+          }
+          return models.GuardianSoftwareVersion
             .findAll({
               where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] },
               order: [ ["created_at", "DESC"] ],
               limit: 1
           })
-          .then(function(dbSoftwareRoleVersion) {
+          .then((dbSoftwareRoleVersion) => {
             if (dbSoftwareRoleVersion.length < 1) {
-              //    console.log("software role "+dbSoftwareRole.role+", version "+roleVersions[dbSoftwareRole.role]+" is not [yet] in the database.");
+              return Promise.reject(`Software role "${dbSoftwareRole.role}, version "${roleVersions[dbSoftwareRole.role]}" is not [yet] in the database.`)
             } else {
-              models.GuardianMetaSoftwareVersion
+              return models.GuardianMetaSoftwareVersion
                 .findOrCreate({
                   where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
                 })
-                .spread(function(dbMetaSoftware, wasCreated){
+                .spread((dbMetaSoftware, wasCreated) => {
                   dbMetaSoftware.updated_at = new Date();
                   return dbMetaSoftware.save();
-                })
-                .catch(function(err){ console.log(err); });
+                });
             }
           })
-          .catch(function(err){ console.log(err); });
         })
-        .catch(function(err){ console.log(err); });
     }
   }
 

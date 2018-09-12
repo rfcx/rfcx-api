@@ -5,6 +5,7 @@ var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInD
 var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").checkInAssets;
 var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 var mqttKafka = require('../../utils/rfcx-mqtt/mqtt-kafka');
+var kafka = require('../../services/kafka/kafka-service');
 var loggers = require('../../utils/logger');
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -50,13 +51,13 @@ exports.mqttCheckInRouter = {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbAudio', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.createDbScreenShot(checkInObj)
       })
-      .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbScreenShot', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
-        return checkInDatabase.createDbLogFile(checkInObj)
+      .then(() => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbScreenShot', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        return checkInDatabase.createDbLogFile(this.checkInObj)
       })
-      .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
-        return checkInDatabase.finalizeCheckIn(checkInObj);
+      .then(() => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        return checkInDatabase.finalizeCheckIn(this.checkInObj);
       })
       .then(() => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});

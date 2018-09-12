@@ -200,7 +200,7 @@ exports.checkInDatabase = {
 
   createDbLogFile: function(checkInObj) {
 
-    if (checkInObj.logs.filePath == null) {
+    if (checkInObj.logs.filePath === null) {
       return Promise.resolve(checkInObj);
     }
 

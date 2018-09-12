@@ -31,7 +31,7 @@ exports.healthCheck = {
         rtrnJson.healthy = isConnected;
         res.status(isConnected ? 200 : 500).json(rtrnJson);
       }).catch(function(err){
-        if (!!err) { 
+        if (!!err) {
           console.log(err.message);
           rtrnJson.healthy = false;
           res.status(500).json(rtrnJson);
@@ -39,5 +39,5 @@ exports.healthCheck = {
       });
 
   }
-  
+
 };

@@ -50,7 +50,7 @@ app.mqtt.on("error", function(err){
 var mqttCheckInRouter = require("../utils/rfcx-mqtt/mqtt-checkin-router.js").mqttCheckInRouter;
 
 app.mqtt.on("message", (topic, data) => {
-  logDebug('new mqtt message', { topic, data });
+  logDebug('new mqtt message', { topic });
   if (topic === "guardians/checkins") {
     logDebug('mqtt message', { topic });
 
