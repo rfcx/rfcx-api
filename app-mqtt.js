@@ -18,6 +18,7 @@ app.mqtt = mqtt.connect({
     clientId: "rfcx-api-mqtt-"+process.env.NODE_ENV, 
     host: process.env.MQTT_BROKER_HOST,
     port: 1883,
+    protocol: "tcp",
     // username: null,
     // password: null,
     // keyPath: null, // .pem filepath
