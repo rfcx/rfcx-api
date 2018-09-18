@@ -63,13 +63,13 @@ exports.mqttCheckInRouter = {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
         return mqttPublish.processAndCompressPublishJson(this.checkInObj)
       })
-      .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> processAndCompressPublishJson', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        let kafObj = mqttKafka.prepareKafkaObject(this.checkInObj, this.checkInObj.db.dbGuardian, this.checkInObj.db.dbAudio);
-        logDebug('mqttCheckInRouter -> onMessageCheckin Kafka object', { kafObj });
-        return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
-                    .then(kafka.send);
-      })
+      // .then(() => {
+      //   logDebug('mqttCheckInRouter -> onMessageCheckin -> processAndCompressPublishJson', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+      //   let kafObj = mqttKafka.prepareKafkaObject(this.checkInObj, this.checkInObj.db.dbGuardian, this.checkInObj.db.dbAudio);
+      //   logDebug('mqttCheckInRouter -> onMessageCheckin Kafka object', { kafObj });
+      //   return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
+      //               .then(kafka.send);
+      // })
   }
 
 };
