@@ -18,7 +18,7 @@ exports.mqttCheckInRouter = {
     // cached file garbage collection... only do garbage collection ~1% of the time
     if (Math.random() < 0.01 ? true : false) { cachedFiles.cacheDirectoryGarbageCollection(); }
 
-    mqttInputData.parseCheckInInput(data)
+    return mqttInputData.parseCheckInInput(data)
       .bind({})
       .then((checkInObj) => {
         checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
