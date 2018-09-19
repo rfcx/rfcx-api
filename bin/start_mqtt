@@ -56,11 +56,11 @@ app.mqtt.on("message", (topic, data) => {
 
     mqttCheckInRouter.onMessageCheckin(data)
       .then((checkInObj) => {
-        app.mqtt.publish(`guardians/${checkInObj.json.guardian_guid}/guardian/checkins`, checkInObj.rtrn.gzip);
         logDebug('mqtt message return object', {
           guardian_guid: checkInObj.json.guardian_guid,
-          returnObj: checkInObj.rtrn.obj
+          returnObj: checkInObj.rtrn
         });
+        app.mqtt.publish(`guardians/${checkInObj.json.guardian_guid}/guardian/checkins`, checkInObj.rtrn.gzip);
       })
       .catch((err) => {
         // TODO: We need to send a report back to guardian with error information here
