@@ -84,6 +84,15 @@ module.exports = class Conversion {
     return this;
   }
 
+  nonEmpty() {
+    this.conversions.push(() => {
+      if(!this.value.length) {
+        this.throwError(`is empty`);
+      }
+    });
+    return this;
+  }
+
   toLatitude() {
     this.toFloat();
     this.minimum(-90.0);
@@ -145,6 +154,14 @@ module.exports = class Conversion {
     this.conversions.push(()=>{
       this.value = this.value.toString();
     });
+    return this;
+  }
+
+  trim() {
+    this.conversions.push(()=>{
+      this.value = this.value.trim();
+    });
+    return this;
   }
 
   objToString() {
@@ -153,6 +170,7 @@ module.exports = class Conversion {
         this.value = JSON.stringify(this.value);
       }
     });
+    return this;
   }
 
   toBoolean(){
