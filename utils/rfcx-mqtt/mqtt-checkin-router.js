@@ -4,8 +4,7 @@ var mqttInputData = require("../../utils/rfcx-mqtt/mqtt-input-data.js").mqttInpu
 var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInDatabase;
 var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").checkInAssets;
 var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
-var mqttKafka = require('../../utils/rfcx-mqtt/mqtt-kafka');
-var kafka = require('../../services/kafka/kafka-service');
+var checkInHelpers = require("../../utils/rfcx-checkin");
 var loggers = require('../../utils/logger');
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -57,19 +56,25 @@ exports.mqttCheckInRouter = {
       })
       .then(() => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        let audioInfo = {
+          audio_guid: this.checkInObj.db.dbAudio.guid,
+          audio_id: this.checkInObj.db.dbAudio.id,
+          api_url_domain: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}`,
+          audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
+          audio_s3_path: this.checkInObj.audio.meta.s3Path,
+          audio_sha1_checksum: this.checkInObj.audio.meta.sha1CheckSum,
+        };
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels:audioInfo', { audioInfo });
+        return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfo);
+      })
+      .then(() => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
         return checkInDatabase.finalizeCheckIn(this.checkInObj);
       })
       .then(() => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
         return mqttPublish.processAndCompressPublishJson(this.checkInObj)
-      })
-      // .then(() => {
-      //   logDebug('mqttCheckInRouter -> onMessageCheckin -> processAndCompressPublishJson', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-      //   let kafObj = mqttKafka.prepareKafkaObject(this.checkInObj, this.checkInObj.db.dbGuardian, this.checkInObj.db.dbAudio);
-      //   logDebug('mqttCheckInRouter -> onMessageCheckin Kafka object', { kafObj });
-      //   return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
-      //               .then(kafka.send);
-      // })
+      });
   }
 
 };

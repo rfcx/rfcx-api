@@ -203,9 +203,12 @@ exports.analysisUtils = {
                                 }
                             });
 
-                        }).catch(function(err){
+                        })
+                        .catch(function(err){
                             console.log("error creating access token for analysis worker | "+err);
-                            if (!!err) { res.status(500).json({msg:"error creating access token for analysis worker"}); }
+                            if (!!err && res) {
+                              res.status(500).json({msg:"error creating access token for analysis worker"}
+                            ); }
                             reject(new Error(err));
                         });
 

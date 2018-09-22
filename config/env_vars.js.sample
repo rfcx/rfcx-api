@@ -52,8 +52,11 @@ exports.env = {
 
   WEBSOCKET_URL: "",
 
-  MQTT_BROKER_HOST: "mqtt.rfcx.org"
+  MQTT_BROKER_HOST: "mqtt.rfcx.org",
 
-  KAFKA_HOST: ""
+  KAFKA_HOST: "",
+
+  REST_PROTOCOL: "httos",
+  REST_HOST: "api.rfcx.org",
 
 }
