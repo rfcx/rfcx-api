@@ -1,6 +1,10 @@
 var AWS = require("aws-sdk");
 var S3 = useAWSMocks() ? require("faux-knox") : require("knox");
 
+var loggers = require('../logger');
+var logDebug = loggers.debugLogger.log;
+var logError = loggers.errorLogger.log;
+
 exports.aws = function() {
 
   var that = {

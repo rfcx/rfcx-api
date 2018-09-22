@@ -62,6 +62,7 @@ exports.mqttCheckInRouter = {
           api_url_domain: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}`,
           audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
           audio_s3_path: this.checkInObj.audio.meta.s3Path,
+          s3Path: this.checkInObj.audio.meta.s3Path,
           audio_sha1_checksum: this.checkInObj.audio.meta.sha1CheckSum,
         };
         logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels:audioInfo', { audioInfo });
