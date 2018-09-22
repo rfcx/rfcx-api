@@ -4,6 +4,9 @@ var token = require("../../utils/internal-rfcx/token.js").token;
 var aws = require("../../utils/external/aws.js").aws();
 var models  = require("../../models");
 const moment = require("moment-timezone");
+var loggers = require('../../utils/logger');
+var logDebug = loggers.debugLogger.log;
+var logError = loggers.errorLogger.log;
 
 
 function snsPublishAsync(queueName, options, tokenInfo, dbAnalysisModel){
@@ -143,9 +146,10 @@ exports.analysisUtils = {
             .findOne({
               where: { guid: analysisModelGuid }
             }).then(function(dbAnalysisModel){
+              logDebug('queueAudioForAnalysis: model', { dbAnalysisModel: !!dbAnalysisModel });
               if (dbAnalysisModel == null) {
                 console.log("failed to find analysis model");
-                reject(new Error());
+                reject(new Error('failed to find analysis model'));
               } else {
 
                 try {
@@ -167,6 +171,8 @@ exports.analysisUtils = {
                             allow_garbage_collection: false,
                             only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
                         }).then(function(tokenInfo){
+
+                          logDebug('queueAudioForAnalysis: createAnonymousToken', { tokenInfo });
 
                             var apiTokenGuid = tokenInfo.token_guid,
                                 apiToken = tokenInfo.token,
@@ -193,6 +199,7 @@ exports.analysisUtils = {
 
                                   })
                               }, function(snsErr, snsData) {
+                                logDebug('queueAudioForAnalysis: sns publish', { snsData });
                                 if (!!snsErr && !aws.snsIgnoreError()) {
                                   console.log(snsErr);
                                   reject(new Error(snsErr));
