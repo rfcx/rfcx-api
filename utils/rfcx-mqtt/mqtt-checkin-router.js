@@ -22,7 +22,10 @@ exports.mqttCheckInRouter = {
       .then((checkInObj) => {
         checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
         this.checkInObj = checkInObj;
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', {
+          checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
+          checkInObjJson: JSON.parse(JSON.stringify(checkInObj.json)),
+        });
         return checkInDatabase.getDbGuardian(checkInObj);
       })
       .then((checkInObj) => {
