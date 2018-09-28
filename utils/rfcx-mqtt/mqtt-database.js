@@ -237,6 +237,37 @@ exports.checkInDatabase = {
     });
   },
 
+  setGuardianCoordinates: (checkInObj) => {
+
+    if (!checkInObj.json.location) {
+      return Promise.resolve();
+    }
+
+    let coordsArr = strArrToJSArr(checkInObj.json.location, '|', '*');
+    if (!coordsArr.length) {
+      return Promise.resolve();
+    }
+    // get only last coordinate in array
+    let lastCoord = coordsArr[coordsArr.length - 1];
+    let latitude = parseFloat(lastCoord[1]);
+    let longitude = parseFloat(lastCoord[2]);
+
+    // do not update coordinates if they were not changed
+    if (checkInObj.db.dbGuardian.latitude !== latitude || checkInObj.db.dbGuardian.longitude !== longitude) {
+      checkInObj.db.dbGuardian.latitude = latitude;
+      checkInObj.db.dbGuardian.longitude = longitude;
+
+      return checkInObj.db.dbGuardian.save()
+        .then(() => {
+          return checkInObj.db.dbGuardian.reload();
+        });
+    }
+    else {
+      return Promise.resolve();
+    }
+
+  },
+
   finalizeCheckIn: function(checkInObj) {
 
     checkInObj.db.dbGuardian.last_check_in = new Date();

@@ -34,7 +34,11 @@ exports.mqttCheckInRouter = {
       })
       .then((checkInObj) => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> extractAudioFileMeta', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
-        return checkInDatabase.createDbCheckIn(checkInObj);
+        return checkInDatabase.setGuardianCoordinates(checkInObj)
+      })
+      .then(() => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> setGuardianCoordinates', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        return checkInDatabase.createDbCheckIn(this.checkInObj);
       })
       .then((checkInObj) => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbCheckIn', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
