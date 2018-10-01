@@ -29,11 +29,17 @@ exports.mqttCheckInRouter = {
         return checkInDatabase.getDbGuardian(checkInObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', {
+          checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
+          guardian: checkInObj.db.dbGuardian.guid,
+        });
         return checkInAssets.extractAudioFileMeta(checkInObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> extractAudioFileMeta', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> extractAudioFileMeta', {
+          checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
+          audioMeta: JSON.parse(JSON.stringify(checkInObj.audio.meta)),
+        });
         return checkInDatabase.setGuardianCoordinates(checkInObj)
       })
       .then(() => {
@@ -41,7 +47,10 @@ exports.mqttCheckInRouter = {
         return checkInDatabase.createDbCheckIn(this.checkInObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbCheckIn', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbCheckIn', {
+          checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
+          checkInGuid: checkInObj.db.dbCheckIn.guid,
+        });
         return checkInDatabase.saveDbMessages(checkInObj);
       })
       .then((savedMsgs) => {

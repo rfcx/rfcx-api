@@ -270,9 +270,14 @@ exports.checkInDatabase = {
 
   finalizeCheckIn: function(checkInObj) {
 
-    checkInObj.db.dbGuardian.last_check_in = new Date();
-    checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count;
-    checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.checkStartTime.valueOf();
+    try {
+      checkInObj.db.dbGuardian.last_check_in = new Date();
+      checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count;
+      checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.checkStartTime.valueOf();
+    }
+    catch (e) {
+      return Promise.reject(e);
+    }
     return Promise.all([
       checkInObj.db.dbGuardian.save(),
       checkInObj.db.dbCheckIn.save()
