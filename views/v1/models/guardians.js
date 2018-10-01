@@ -36,6 +36,7 @@ exports.models = {
             last_checkin_at: dbRow.last_update_check_in
           }
         },
+        last_sync: dbRow.last_sync? dbRow.last_sync : null,
         site: dbRow.Site? {
           guid: dbRow.Site.guid,
           name: dbRow.Site.name

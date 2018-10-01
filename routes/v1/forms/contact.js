@@ -14,9 +14,9 @@ router.route("/contact")
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
-    params.convert('_replyto').toString();
-    params.convert('_subject').toString();
-    params.convert('message').toString();
+    params.convert('_replyto').toString().trim().nonEmpty();
+    params.convert('_subject').toString().trim().nonEmpty();
+    params.convert('message').toString().trim().nonEmpty();
 
     params.validate()
       .then(() => {
