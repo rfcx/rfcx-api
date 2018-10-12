@@ -521,6 +521,33 @@ router.route("/auth0/create-user")
 
   });
 
+router.route("/auth0/update-user")
+  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('guid').toString();
+    params.convert('defaultSite').optional().toString();
+    params.convert('accessibleSites').optional().toArray();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getToken();
+      })
+      .then((token) => {
+        return auth0Service.updateAuth0User(token, transformedParams);
+      })
+      .then((body) => {
+        res.status(200).json(body);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
 router.route("/auth0/users")
   .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
