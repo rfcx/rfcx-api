@@ -710,7 +710,7 @@ router.route("/:id/info")
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't update user-sites relations.")});
+      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't get user info.")});
 
   });
 
