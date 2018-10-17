@@ -60,7 +60,7 @@ router.route("/login")
 
 
 router.route("/web")
-  .get(passport.authenticate(['token', 'jwt'], { session:false }), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), function(req, res) {
 
     return models.GuardianAudioHighlight
       .findAll({

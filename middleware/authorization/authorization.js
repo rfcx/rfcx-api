@@ -1,7 +1,8 @@
 var httpError = require('../../utils/http-errors');
 var passport = require("passport");
 passport.use(require("../passport-token").TokenStrategy);
-passport.use(require('../passport-jwt').JwtStrategy);
+passport.use('jwt', require('../passport-jwt').JwtStrategy);
+passport.use('jwt-custom', require('../passport-jwt').JwtStrategyCustom);
 
 // Factory method to create a token type authorization middleware
 function requireTokenType(type) {
@@ -20,7 +21,7 @@ function requireTokenType(type) {
  * Checks if user has required role to access the endpoint
  * How to use:
  * var hasRole = require('..../middleware/authorization/authorization').hasRole;
- * router.route("/").get(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) { ... })
+ * router.route("/").get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) { ... })
  * @param {Array<String>} expectedRoles
  */
 function hasRole(expectedRoles) {

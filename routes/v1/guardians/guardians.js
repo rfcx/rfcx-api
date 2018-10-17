@@ -10,7 +10,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
 
     var sitesQuery = {};
 

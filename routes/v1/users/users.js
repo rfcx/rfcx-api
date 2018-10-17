@@ -415,7 +415,7 @@ router.route("/checkin")
   });
 
 router.route("/lastcheckin")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req,res) {
 
     usersService.getAllUsers()
       .then(users => {
@@ -726,7 +726,7 @@ router.route("/:user_id")
 ;
 
 router.route("/:id/info")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
 
     usersService.getUserByGuidOrEmail(req.params.id)
       .then((user) => {
@@ -742,7 +742,7 @@ router.route("/:id/info")
   });
 
 router.route("/:guid/sites")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
 
     let converter = new ApiConverter("user", req);
     let serviceParams = {
@@ -768,7 +768,7 @@ router.route("/:guid/sites")
 
 // TO DO security measure to ensure that not any user can see any other user
 router.route("/:user_id")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['usersAdmin']), function(req,res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function(req,res) {
 
     let converter = new ApiConverter("user", req);
     // This must be replaced with AWS user roles

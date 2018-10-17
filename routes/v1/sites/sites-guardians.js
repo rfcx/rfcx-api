@@ -14,7 +14,7 @@ var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
 router.route("/:site_id/guardians")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), (req, res) => {
 
     models.GuardianSite
       .findOne({
