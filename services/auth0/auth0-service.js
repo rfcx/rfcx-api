@@ -9,14 +9,14 @@ function getToken() {
   let tokenName = `auth0_token_${process.env.NODE_ENV}`;
   return getTokenFromRedis(tokenName)
     .then((token) => {
-      if (!token) {
+      // if (!token) {
         return this.getNewToken()
           .then((tokenData) => {
             saveTokenToRedis(tokenName, tokenData);
             return tokenData.access_token;
           });
-      }
-      return token;
+      // }
+      // return token;
     });
 }
 
