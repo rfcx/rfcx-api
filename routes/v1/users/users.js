@@ -451,7 +451,7 @@ router.route("/touchapi")
   });
 
 router.route("/create")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -493,7 +493,7 @@ router.route("/create")
   });
 
 router.route("/auth0/create-user")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -522,7 +522,7 @@ router.route("/auth0/create-user")
   });
 
 router.route("/auth0/update-user")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -549,7 +549,7 @@ router.route("/auth0/update-user")
   });
 
 router.route("/auth0/users")
-  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.query, transformedParams);
@@ -579,7 +579,7 @@ router.route("/auth0/users")
   });
 
 router.route("/auth0/roles")
-  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     auth0Service.getAuthToken()
       .then((token) => {
@@ -594,7 +594,7 @@ router.route("/auth0/roles")
   });
 
 router.route("/auth0/clients")
-  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     auth0Service.getToken()
       .then((token) => {
@@ -609,7 +609,7 @@ router.route("/auth0/clients")
   });
 
 router.route("/auth0/:user_guid/roles")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -634,7 +634,7 @@ router.route("/auth0/:user_guid/roles")
   });
 
 router.route("/auth0/:user_guid/roles")
-  .delete(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .delete(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.query, transformedParams);
@@ -659,7 +659,7 @@ router.route("/auth0/:user_guid/roles")
   });
 
 router.route("/auth0/:user_guid/roles")
-  .get(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     auth0Service.getAuthToken()
       .then((token) => {
@@ -675,7 +675,7 @@ router.route("/auth0/:user_guid/roles")
   });
 
 router.route("/auth0/send-change-password-email")
-  .post(passport.authenticate(['jwt'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
