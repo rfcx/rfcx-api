@@ -622,6 +622,7 @@ router.route('/')
 
         // replace names with ids
         attrs.audio_id = data[0].id;
+        attrs.audio_guid = data[0].guid;
         this.audio_guid = data[0].guid;
         attrs.model = data[1].id;
         this.model = data[1].shortname;
