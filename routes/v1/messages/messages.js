@@ -25,11 +25,11 @@ router.route("/")
       longitude: req.body.longitude
     };
 
-    usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+    usersService.getUserByGuidOrEmail(req.rfcx.auth_token_info.guid)
       .then((userFrom) => {
         serviceParams.from_user = userFrom.id;
         if (req.body.userTo) {
-          return usersService.getUserByGuid(req.body.userTo);
+          return usersService.getUserByGuidOrEmail(req.body.userTo);
         }
         return null;
       })
@@ -62,8 +62,8 @@ router.route("/")
 
     var prePromises = [];
 
-    prePromises.push(req.query.from === undefined? Promise.resolve(undefined) : usersService.getUserByGuid(req.query.from));
-    prePromises.push(req.query.to === undefined? Promise.resolve(undefined) : usersService.getUserByGuid(req.query.to));
+    prePromises.push(req.query.from === undefined? Promise.resolve(undefined) : usersService.getUserByGuidOrEmail(req.query.from));
+    prePromises.push(req.query.to === undefined? Promise.resolve(undefined) : usersService.getUserByGuidOrEmail(req.query.to));
     prePromises.push(req.query.type === undefined? Promise.resolve(undefined) : messagesService.getTypeByName(req.query.type));
 
     Promise.all(prePromises)
