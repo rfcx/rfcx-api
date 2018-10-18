@@ -66,6 +66,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: null
     },
+    audio_guid: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      defaultValue: null
+    },
   }, {
     classMethods: {
       associate: function(models) {
