@@ -15,7 +15,7 @@ var Promise = require("bluebird");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
 
     // map HTTP params to service params
     var serviceParams = {
@@ -53,7 +53,7 @@ router.route("/")
   });
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
 
     var serviceParams = {
       after: req.query.after,

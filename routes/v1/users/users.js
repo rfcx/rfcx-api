@@ -446,7 +446,7 @@ router.route("/lastcheckin")
 // this request does nothing in terms of response, but it's created to check if user from jwt
 // exist in our database, and if not, create it
 router.route("/touchapi")
-  .get(passport.authenticate('jwt', { session: false }), function(req, res) {
+  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function(req, res) {
     res.status(200).json({ success: true });
   });
 
