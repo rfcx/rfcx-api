@@ -38,7 +38,7 @@ function prepareOpts(req) {
     }
     switch (req.query.order) {
       case 'audio_guid':
-        order = 'Audio.guid';
+        order = 'GuardianAudioEvent.audio_guid';
         break;
       case 'site':
         order = 'Site.name';
@@ -100,8 +100,7 @@ function countData(req) {
 
   let sql = 'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone ' +
                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
-                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN Guardians AS Guardian ON GuardianAudioEvent.guardian = Guardian.id ' +
                    'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
                    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
                    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
@@ -111,6 +110,7 @@ function countData(req) {
                    'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
@@ -134,7 +134,7 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
   sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
   sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
@@ -161,6 +161,7 @@ function queryData(req) {
   let sql = eventsService.eventQueryBase + 'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
@@ -184,7 +185,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
   sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
   sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
