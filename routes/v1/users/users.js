@@ -382,7 +382,7 @@ router.route("/change-password")
   });
 
 router.route("/checkin")
-  .post(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function(req,res) {
 
     // map HTTP params to service params
     var serviceParams = {
