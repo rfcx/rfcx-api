@@ -710,7 +710,7 @@ router.route('/')
   });
 
 router.route("/:event_id/review")
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     models.GuardianEvent
       .findAll({
@@ -771,7 +771,7 @@ router.route("/:event_id/review")
 ;
 
 router.route("/:guid/comment")
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService
       .updateEventComment(req.params.guid, req.body.comment)
@@ -788,7 +788,7 @@ router.route("/:guid/comment")
   });
 
 router.route("/:guid/confirm")
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, true, req.rfcx.auth_token_info.owner_id)
       .then((data) => {
@@ -800,7 +800,7 @@ router.route("/:guid/confirm")
   });
 
 router.route("/:guid/reject")
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, false, req.rfcx.auth_token_info.owner_id)
       .then((data) => {

@@ -7,11 +7,12 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var ApiConverter = require("../../../utils/api-converter");
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 
-// create new report 
+// create new report
 router.route("/")
-	.post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+	.post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function(req,res) {
 		var converter = new ApiConverter("report", req);
 		var apiReport = converter.mapApiToSequelize(req.body);
 		apiReport.reporter = req.rfcx.auth_token_info.owner_id;
@@ -35,9 +36,9 @@ router.route("/")
 
 	});
 
-// retrieve one report 
+// retrieve one report
 router.route("/:report_id")
-	.get(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
+	.get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function(req,res) {
 		var converter = new ApiConverter("report", req);
 
 		models.Report
