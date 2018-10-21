@@ -10,60 +10,64 @@ var loggers = require('../../utils/logger');
 exports.mqttInputData = {
 
   parseCheckInInput: function(mqttData) {
+
     return new Promise(function(resolve, reject) {
 
-        try {
+      try {
 
-          var metaLength = 12;
-          var jsonBlobLength = parseInt(mqttData.toString("utf8", 0, metaLength));
-          var audioFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength, metaLength+jsonBlobLength+metaLength));
-          var screenShotFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength));
-          var logFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength));
+        var metaLength = 12;
+        var jsonBlobLength = parseInt(mqttData.toString("utf8", 0, metaLength));
+        var audioFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength, metaLength+jsonBlobLength+metaLength));
+        var screenShotFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength));
+        var logFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength));
 
-          var audioFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength);
-          var screenShotFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
-          var logFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
+        var audioFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength);
+        var screenShotFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
+        var logFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
 
-          var checkInObj = { json: {}, meta: {}, db: {}, audio: {}, screenshots: {}, logs: {} };
+        var checkInObj = { json: {}, meta: {}, db: {}, audio: {}, screenshots: {}, logs: {} };
 
-          checkInObj.meta.checkStartTime = new Date();
+        checkInObj.meta.checkStartTime = new Date();
 
-          zlib.gunzip(mqttData.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
-           
-            checkInObj.json = JSON.parse(jsonBuffer.toString("utf8"));
+        zlib.gunzip(mqttData.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
 
-            checkInObj.audio.metaArr = (strArrToJSArr(checkInObj.json.audio,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.audio,"|","*")[0];
-            cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3], checkInObj.audio.metaArr[2]).then(function(audioFileCacheFilePath){
-                  
-              checkInObj.audio.filePath = audioFileCacheFilePath;
-              saveAssetFileToS3("audio", checkInObj).then(function(checkInObj){ 
+          checkInObj.json = JSON.parse(jsonBuffer.toString("utf8"));
 
-                checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
-                cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.audio.metaArr[2]).then(function(screenShotCacheFilePath){
-
-                  checkInObj.screenshots.filePath = screenShotCacheFilePath;
-                  saveAssetFileToS3("screenshots", checkInObj).then(function(checkInObj){ 
-
-                    checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
-                    cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.audio.metaArr[2]).then(function(logFileCacheFilePath){
-
-                      checkInObj.logs.filePath = logFileCacheFilePath;
-                      saveAssetFileToS3("logs", checkInObj).then(function(checkInObj){ 
-                        
-                        resolve(checkInObj);
-
-                      }).catch(function(errLogFileSaveToS3){ console.log(errLogFileSaveToS3); reject(new Error(errLogFileSaveToS3)); });
-                    }).catch(function(errLogFileCache){ console.log(errLogFileCache); reject(new Error(errLogFileCache)); });
-                  }).catch(function(errScreenShotSaveToS3){ console.log(errScreenShotSaveToS3); reject(new Error(errScreenShotSaveToS3)); });
-                }).catch(function(errScreenShotCache){ console.log(errScreenShotCache); reject(new Error(errScreenShotCache)); });
-              }).catch(function(errAudioFileSaveToS3){ console.log(errAudioFileSaveToS3); reject(new Error(errAudioFileSaveToS3)); });
-            }).catch(function(errAudioFileCache){ console.log(errAudioFileCache); reject(new Error(errAudioFileCache)); });
-          });
-        } catch (errParsecheckInObj) { console.log(errParsecheckInObj); reject(new Error(errParsecheckInObj)); }
+          checkInObj.audio.metaArr = (strArrToJSArr(checkInObj.json.audio,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.audio,"|","*")[0];
+          cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3], checkInObj.audio.metaArr[2])
+            .then(function(audioFileCacheFilePath) {
+                checkInObj.audio.filePath = audioFileCacheFilePath;
+                return saveAssetFileToS3("audio", checkInObj);
+            })
+            .then(function(checkInObj) {
+              checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
+              return cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.audio.metaArr[2])
+            })
+            .then(function(screenShotCacheFilePath) {
+              checkInObj.screenshots.filePath = screenShotCacheFilePath;
+              return saveAssetFileToS3("screenshots", checkInObj);
+            })
+            .then(function(checkInObj) {
+              checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
+              return cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.audio.metaArr[2]);
+            })
+            .then(function(logFileCacheFilePath) {
+              checkInObj.logs.filePath = logFileCacheFilePath;
+              return saveAssetFileToS3("logs", checkInObj);
+            })
+            .then(function(checkInObj) {
+              resolve(checkInObj);
+            })
+            .catch((err) => {
+              reject(err);
+            })
+        });
+      } catch (errParsecheckInObj) {
+        console.log(errParsecheckInObj);
+        reject(errParsecheckInObj);
+      }
     }.bind(this));
   }
-
-
 
 };
 
@@ -84,9 +88,9 @@ var saveAssetFileToS3 = function(assetType, checkInObj) {
 
           aws.s3(s3Bucket).putFile(checkInObj[assetType].filePath, s3Path, function(s3SaveErr, s3Res){
             try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
-            
+
             if (!!s3SaveErr) {
-                console.log(s3SaveErr); 
+                console.log(s3SaveErr);
                 reject(new Error(s3SaveErr));
             } else if ( (200 == s3Res.statusCode) && aws.s3ConfirmSave(s3Res, s3Path) ) {
               resolve(checkInObj);

@@ -9,6 +9,10 @@ var debug = require("debug")(appId);
 var app = require("../app-mqtt.js");
 var models = require("../models");
 
+const loggers = require('../utils/logger');
+const logDebug = loggers.debugLogger.log;
+const logError = loggers.errorLogger.log;
+
 console.log('RFCX | Starting server');
 
 var httpServer = app.http.listen(app.http.get('port'), function(){
@@ -45,20 +49,23 @@ app.mqtt.on("error", function(err){
 
 var mqttCheckInRouter = require("../utils/rfcx-mqtt/mqtt-checkin-router.js").mqttCheckInRouter;
 
-app.mqtt.on("message", function(topic, data){
+app.mqtt.on("message", (topic, data) => {
+  logDebug('new mqtt message', { topic });
+  if (topic === "guardians/checkins") {
+    logDebug('mqtt message', { topic });
 
-  if (topic == "guardians/checkins") {
-
-    mqttCheckInRouter.onMessageCheckin(data).then(function(checkInObj){
-      app.mqtt.publish("guardians/"+checkInObj.json.guardian_guid+"/guardian/checkins", checkInObj.rtrn.gzip);
-      console.log(checkInObj.json.guardian_guid+": "+JSON.stringify(checkInObj.rtrn.obj));
-    }).catch(function(errOnMessageCheckin){ console.log(errOnMessageCheckin); });
-
+    mqttCheckInRouter.onMessageCheckin(data)
+      .then((checkInObj) => {
+        logDebug('mqtt message return object', {
+          guardian_guid: checkInObj.json.guardian_guid,
+          returnObj: checkInObj.rtrn
+        });
+        app.mqtt.publish(`guardians/${checkInObj.json.guardian_guid}/guardian/checkins`, checkInObj.rtrn.gzip);
+      })
+      .catch((err) => {
+        // TODO: We need to send a report back to guardian with error information here
+        logDebug('mqtt message return object', err);
+        logError('mqtt message error', err);
+      });
   }
-
 });
-
-
-
-
-

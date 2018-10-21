@@ -263,12 +263,14 @@ exports.audio = {
       })
       .bind({})
       .then(function(dbModels) {
+        logDebug('queueForTaggingByActiveModels: models', { length: dbModels.length });
         this.dbModels = dbModels;
         return dbModels.map(function(model) {
           return model.guid;
         });
       })
       .then(function(modelGuids) {
+        logDebug('queueForTaggingByActiveModels: models guids', { guids: modelGuids });
         var promises = [];
         for (i in modelGuids) {
           var prom = analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuids[i], {
@@ -283,8 +285,10 @@ exports.audio = {
         return Promise.all(promises);
       })
       .then(function() {
+        logDebug('queueForTaggingByActiveModels: after queueAudioForAnalysis');
         analysisService.findStateByName('perc_queued')
           .then((state) => {
+            logDebug('queueForTaggingByActiveModels: state', { state: state.id });
             let proms = this.dbModels.map((model) => {
               return analysisService.createEntity(audioInfo.audio_id, model.id, state.id);
             });
@@ -294,7 +298,8 @@ exports.audio = {
             logError('queueForTaggingByActiveModels: analysis entries error', { error: err });
           });
 
-        audioInfo.isSaved.sqs = true;
+        audioInfo.isSaved? audioInfo.isSaved.sqs = true : audioInfo.isSaved = { sqs: true };
+        logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
         return audioInfo;
       });
 
