@@ -151,6 +151,9 @@ exports.models = {
         "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
     };
 
+    if (req.query.width != null) { specSettings.specWidth = parseInt(req.query.width); }
+    if (req.query.height != null) { specSettings.specHeight = parseInt(req.query.height); }
+
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
               ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
