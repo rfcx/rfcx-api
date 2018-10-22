@@ -9,14 +9,14 @@ function getToken() {
   let tokenName = `auth0_token_${process.env.NODE_ENV}`;
   return getTokenFromRedis(tokenName)
     .then((token) => {
-      if (!token) {
+      // if (!token) {
         return this.getNewToken()
           .then((tokenData) => {
             saveTokenToRedis(tokenName, tokenData);
             return tokenData.access_token;
           });
-      }
-      return token;
+      // }
+      // return token;
     });
 }
 
@@ -97,6 +97,35 @@ function createAuth0User(token, opts) {
         email_verified: false,
         verify_email: false,
         app_metadata: {}
+      },
+    }, (err, response, body) => {
+      if (err) {
+        reject(err);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
+function updateAuth0User(token, opts) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'PATCH',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.guid}`,
+      json: true,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json',
+      },
+      body: {
+        app_metadata: {
+          accessibleSites: opts.accessibleSites,
+          defaultSite: opts.defaultSite
+        }
       },
     }, (err, response, body) => {
       if (err) {
@@ -292,6 +321,7 @@ module.exports = {
   getNewToken,
   getNewAuthToken,
   createAuth0User,
+  updateAuth0User,
   getUsers,
   getAllRoles,
   getAllClients,

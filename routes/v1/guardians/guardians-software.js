@@ -19,7 +19,7 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 var logDebug = loggers.debugLogger.log;
 
 router.route("/:guid/software")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), (req, res) => {
 
     let query = `
       SELECT soft.role as role, ver.version as version

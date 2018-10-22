@@ -38,7 +38,7 @@ function prepareOpts(req) {
     }
     switch (req.query.order) {
       case 'audio_guid':
-        order = 'Audio.guid';
+        order = 'GuardianAudioEvent.audio_guid';
         break;
       case 'site':
         order = 'Site.name';
@@ -100,8 +100,7 @@ function countData(req) {
 
   let sql = 'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone ' +
                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
-                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN Guardians AS Guardian ON GuardianAudioEvent.guardian = Guardian.id ' +
                    'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
                    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
                    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
@@ -111,6 +110,7 @@ function countData(req) {
                    'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
@@ -134,7 +134,7 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
   sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
   sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
@@ -161,6 +161,7 @@ function queryData(req) {
   let sql = eventsService.eventQueryBase + 'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
@@ -184,7 +185,7 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
   sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
   sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
@@ -288,7 +289,7 @@ function processStatsByDates(req, res) {
 }
 
 router.route("/event")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
@@ -327,7 +328,7 @@ router.route("/event")
   });
 
 router.route("/event/datatable")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     countData(req)
       .bind({})
@@ -350,7 +351,7 @@ router.route("/event/datatable")
   });
 
 router.route("/stats/guardian")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
@@ -389,10 +390,10 @@ router.route("/stats/guardian")
   });
 
 router.route("/stats/dates")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), processStatsByDates);
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), processStatsByDates);
 
 router.route("/stats/weekly")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -406,7 +407,7 @@ router.route("/stats/weekly")
   });
 
 router.route("/stats/monthly")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -420,7 +421,7 @@ router.route("/stats/monthly")
   });
 
 router.route("/stats/half-year")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -434,7 +435,7 @@ router.route("/stats/half-year")
   });
 
 router.route("/stats/year")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -484,7 +485,7 @@ router.route("/tuning")
   });
 
 router.route("/values")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
     eventsService
       .getGuardianAudioEventValues()
       .then((data) => { res.status(200).json(data); })
@@ -492,7 +493,7 @@ router.route("/values")
   });
 
 router.route("/types")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
     eventsService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data); })
@@ -500,7 +501,7 @@ router.route("/types")
   });
 
 router.route("/:guid")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     eventsService
       .getEventByGuid(req.params.guid)
@@ -622,6 +623,7 @@ router.route('/')
 
         // replace names with ids
         attrs.audio_id = data[0].id;
+        attrs.audio_guid = data[0].guid;
         this.audio_guid = data[0].guid;
         attrs.model = data[1].id;
         this.model = data[1].shortname;
@@ -708,7 +710,7 @@ router.route('/')
   });
 
 router.route("/:event_id/review")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     models.GuardianEvent
       .findAll({
@@ -769,7 +771,7 @@ router.route("/:event_id/review")
 ;
 
 router.route("/:guid/comment")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService
       .updateEventComment(req.params.guid, req.body.comment)
@@ -786,7 +788,7 @@ router.route("/:guid/comment")
   });
 
 router.route("/:guid/confirm")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, true, req.rfcx.auth_token_info.owner_id)
       .then((data) => {
@@ -798,7 +800,7 @@ router.route("/:guid/confirm")
   });
 
 router.route("/:guid/reject")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, false, req.rfcx.auth_token_info.owner_id)
       .then((data) => {

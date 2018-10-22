@@ -14,13 +14,16 @@ const cert = jwksRsa.passportJwtSecret({
   jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
 });
 
-var opts = {
+const baseOpts = {
   jwtFromRequest: jwtExtractor,
   secretOrKeyProvider: cert,
   issuer: `https://${process.env.AUTH0_DOMAIN}/`,
   algorithms: ['RS256'],
-  passReqToCallback: true
+  passReqToCallback: true,
 };
+
+const opts       = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_DOMAIN}/` });
+const optsCustom = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_CUSTOM_DOMAIN}/` });
 
 function combineUserData(jwtPayload, user) {
   return Object.assign({}, jwtPayload, {
@@ -71,9 +74,15 @@ function checkDBUser(req, jwtPayload, done) {
   });
 }
 
-let jwtStrategy = new JwtStrategy(opts, (req, jwtPayload, done) => {
+function jwtCallback(req, jwtPayload, done) {
   jwtPayload.userType = 'auth0';
   checkDBUser(req, jwtPayload, done);
-});
+}
 
-exports.JwtStrategy = jwtStrategy;
+let jwtStrategy       = new JwtStrategy(opts,       jwtCallback);
+let jwtStrategyCustom = new JwtStrategy(optsCustom, jwtCallback);
+
+module.exports = {
+  JwtStrategy: jwtStrategy,
+  JwtStrategyCustom: jwtStrategyCustom,
+}

@@ -7,10 +7,9 @@ const eventQueryBase =
   'SELECT GuardianAudioEvent.guid, GuardianAudioEvent.confidence, GuardianAudioEvent.windows, ' +
     'GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, GuardianAudioEvent.shadow_latitude, ' +
     'GuardianAudioEvent.shadow_longitude, GuardianAudioEvent.reviewer_confirmed, GuardianAudioEvent.created_at, ' +
-    'GuardianAudioEvent.updated_at, GuardianAudioEvent.comment, ' +
+    'GuardianAudioEvent.updated_at, GuardianAudioEvent.comment, GuardianAudioEvent.audio_guid, ' +
     'CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone) as begins_at_local, ' +
     'CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) as ends_at_local, ' +
-    'Audio.guid AS audio_guid, Audio.measured_at AS audio_measured_at, ' +
     'Site.guid AS site_guid, Site.timezone as site_timezone, ' +
     'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
     'Model.guid AS model_guid, Model.minimal_detection_confidence AS model_minimal_detection_confidence, ' +
@@ -20,8 +19,7 @@ const eventQueryBase =
     'EventValue.value AS event_value, ' +
     'Reason.name AS reason_for_creation ' +
     'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
-    'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-    'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+    'LEFT JOIN Guardians AS Guardian ON GuardianAudioEvent.guardian = Guardian.id ' +
     'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
     'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
     'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
