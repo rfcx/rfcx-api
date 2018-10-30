@@ -24,6 +24,7 @@
     "express": "4.15.3",
     "express-request-id": "1.4.0",
     "express-winston": "2.4.0",
+    "firebase-admin": "6.1.0",
     "fluent-ffmpeg": "2.1.2",
     "handlebars": "4.0.12",
     "imagemagick": "0.1.3",

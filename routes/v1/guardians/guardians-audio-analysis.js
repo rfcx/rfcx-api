@@ -11,9 +11,10 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
-function processAudios(req, res, dbAudio, audioGuids) {
+function processAudios(req, res, dbAudio, dbGuardian, audioGuids, modelGuid) {
   if (dbAudio.length < 1) {
-    httpError(res, 404, "database");
+    httpError(req, res, 404, null, 'No audios found');
+    return Promise.reject();
   } else {
     if (!util.isArray(dbAudio)) { dbAudio = [dbAudio]; }
     var batch = [];
@@ -69,6 +70,7 @@ router.route("/:guardian_id/audio/analysis")
 
         var modelGuid = req.query.model_id;
         var audioGuids = [];
+
         return models.GuardianAudio
           .findAll({
             where: dbQuery,
@@ -78,13 +80,13 @@ router.route("/:guardian_id/audio/analysis")
             offset: req.rfcx.offset
           })
           .then(function(dbAudio){
-            return processAudios(req, res, dbAudio, audioGuids);
+            return processAudios(req, res, dbAudio, dbGuardian, audioGuids, modelGuid);
           })
           .then(function () {
             res.status(200).json(audioGuids);
           })
           .catch(function(err){
-            console.log("failed to requeue audio | "+err);
+            console.log("failed to requeue audio | ", err);
             if (!!err) { res.status(500).json({msg:"failed to requeue audio"}); }
           });
 

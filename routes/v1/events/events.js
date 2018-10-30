@@ -18,6 +18,7 @@ var loggers = require('../../../utils/logger');
 var websocket = require('../../../utils/websocket');
 var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+var firebaseService = require('../../../services/firebase/firebase-service');
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -620,6 +621,7 @@ router.route('/')
 
         this.dbGuardian = data[0].Guardian;
         this.dbSite = data[0].Site;
+        this.dbModel = data[1];
 
         // replace names with ids
         attrs.audio_id = data[0].id;
@@ -669,6 +671,37 @@ router.route('/')
       .then(function (data) {
         var apiEvent = converter.mapSequelizeToApi(data);
         res.status(200).json(apiEvent);
+      })
+      .then(function() {
+        // send Firebase push notification to required topic
+        try {
+          let opts = {
+            app: 'rangerApp',
+            topic: this.dbSite.guid,
+            data: {
+              type: this.type,
+              value: this.value,
+              audio_guid: this.audio_guid,
+              latitude: `${this.dbGuardian.latitude}`,
+              longitude: `${this.dbGuardian.longitude}`,
+              guardian_guid: this.dbGuardian.guid,
+              site_guid: this.dbSite.guid,
+              ai_guid: this.dbModel.guid,
+            },
+            title: `New ${this.type}`,
+            body: `A ${this.value} detected from ${this.guardian}`
+          };
+          firebaseService.sendToTopic(opts)
+            .then((response) => {
+              logDebug(`Firebase message sent to ${this.dbSite.guid} topic`, { req, response });
+            })
+            .catch((err) => {
+              logError(`Error sending Firebase message to ${this.dbSite.guid} topic`, { req, err });
+            });
+        } catch (e) {
+          logError(`Error sending Firebase message to ${this.dbSite.guid} topic`, { req, err: e });
+        }
+        return true;
       })
       .then(function () {
         var msg = {
