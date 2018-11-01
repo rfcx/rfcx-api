@@ -11,6 +11,20 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
+router.route("/group/:shortname")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), (req, res) => {
+
+    guardianGroupService
+      .getGroupByShortname(req.params.shortname)
+      .then((dbGroup) => {
+        return guardianGroupService.formatGroup(dbGroup, true);
+      })
+      .then((data) => { res.status(200).json(data); })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || "Could not get GuardianGroup with given shortname."));
+
+  });
+
 router.route("/group")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), (req, res) => {
 
@@ -21,7 +35,21 @@ router.route("/group")
       })
       .then((data) => { res.status(200).json(data); })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || "Could not create GuardianGroup with provided params."));
+      .catch(e => httpError(req, res, 500, e, e.message || "Could not create GuardianGroup with given params."));
+
+  });
+
+router.route("/group/:shortname")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), (req, res) => {
+
+    guardianGroupService
+      .updateGroup(req.params.shortname, req.body)
+      .then((dbGroup) => {
+        return guardianGroupService.formatGroup(dbGroup, true);
+      })
+      .then((data) => { res.status(200).json(data); })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || "Could not update GuardianGroup with given params."));
 
   });
 

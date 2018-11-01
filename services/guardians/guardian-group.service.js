@@ -55,7 +55,7 @@ function doesGroupExist(shortname, name) {
 }
 
 function createGroup(opts) {
-  return validateGroupParams(opts)
+  return validateCreateGroupParams(opts)
     .bind({})
     .then(data => {
       this.data = data;
@@ -63,7 +63,7 @@ function createGroup(opts) {
     })
     .then((exist) => {
       if (exist) {
-        throw new ValidationError('Guardian with this shortname or name already exists.');
+        throw new ValidationError('Group with this shortname or name already exists.');
       }
       return models.GuardianGroup.create(this.data);
     })
@@ -73,6 +73,18 @@ function createGroup(opts) {
       }
       return group.reload({ include: [{ all: true }] });
     })
+}
+
+function updateGroup(shortname, opts) {
+  return validateGuardiansRelationsParams(opts)
+    .bind({})
+    .then((data) => {
+      this.data = data;
+      return getGroupByShortname(shortname);
+    })
+    .then((group) => {
+      return updateGuardiansGroupRelations(group, this.data);
+    });
 }
 
 function updateGuardiansGroupRelations(group, params) {
@@ -113,7 +125,7 @@ function formatGroups(groups, extended) {
   });
 }
 
-function validateGroupParams(data) {
+function validateCreateGroupParams(data) {
   let transformedParams = {};
   let params = new Converter(data, transformedParams);
 
@@ -150,6 +162,7 @@ module.exports = {
   getGroupByShortname,
   getAllGroups,
   createGroup,
+  updateGroup,
   updateGuardiansGroupRelations,
   formatGroup,
   formatGroups,
