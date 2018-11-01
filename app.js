@@ -83,6 +83,7 @@ var routes = {
       require("./routes/v1/guardians/guardians-screenshots"),
       require("./routes/v1/guardians/guardians-status"),
       require("./routes/v1/guardians/guardians-coverage"),
+      require("./routes/v1/guardians/guardians-groups"),
     ],
     "sites": [
       require("./routes/v1/sites/sites"),

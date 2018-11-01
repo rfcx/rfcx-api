@@ -7,8 +7,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       unique: true,
       validate: {
-        isLowercase: true,
-        notContains: ' '
+        isLowercase: {
+          args: true,
+          msg: 'shortname should be lowercase'
+        },
+        notContains: {
+          args: ' ',
+          msg: 'shortname should not contain spaces'
+        },
       }
     },
     name: {
@@ -29,7 +35,6 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        GuardianGroup.belongsTo(models.GuardianSite, { foreignKey: 'site_id', as: 'Site' });
         GuardianGroup.belongsToMany(models.Guardian, { through: 'GuardianGroupRelation' });
       },
       indexes: [
