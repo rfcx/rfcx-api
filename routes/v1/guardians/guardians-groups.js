@@ -11,6 +11,20 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
+router.route("/groups")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+
+    guardianGroupService
+      .getAllGroups(true)
+      .then((dbGroups) => {
+        return guardianGroupService.formatGroups(dbGroups, true);
+      })
+      .then((data) => { res.status(200).json(data); })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || "Could not get GuardianGroup with given shortname."));
+
+  });
+
 router.route("/group/:shortname")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), (req, res) => {
 

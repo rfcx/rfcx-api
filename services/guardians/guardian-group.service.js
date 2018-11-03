@@ -21,7 +21,7 @@ function getAllGroups(extended) {
   if (extended) {
     opts.include = [{ all: true }];
   }
-  return models.Group
+  return models.GuardianGroup
     .findAll(opts);
 }
 
@@ -112,9 +112,12 @@ function formatGroup(group, extended) {
     description: group.description,
   };
   if (extended) {
-    data.guardians = group.Guardians.map((guardian) => {
-      return guardian.guid;
-    });
+    data.guardians = group.Guardians? group.Guardians.map((guardian) => {
+      return {
+        guid: guardian.guid,
+        name: guardian.shortname,
+      };
+    }) : [];
   }
   return data;
 }
