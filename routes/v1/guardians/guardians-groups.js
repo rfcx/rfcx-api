@@ -67,6 +67,17 @@ router.route("/group/:shortname")
 
   });
 
+router.route("/group/:shortname")
+  .delete(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), (req, res) => {
+
+    guardianGroupService
+      .deleteGroupByShortname(req.params.shortname)
+      .then(() => { res.status(200).json({ success: true }); })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || "Could not update GuardianGroup with given params."));
+
+  });
+
 module.exports = router;
 
 

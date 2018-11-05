@@ -87,6 +87,10 @@ function updateGroup(shortname, opts) {
     });
 }
 
+function deleteGroupByShortname(shortname) {
+  return models.GuardianGroup.destroy({ where: { shortname } });
+}
+
 function updateGuardiansGroupRelations(group, params) {
   return validateGuardiansRelationsParams(params)
     .bind({})
@@ -166,6 +170,7 @@ module.exports = {
   getAllGroups,
   createGroup,
   updateGroup,
+  deleteGroupByShortname,
   updateGuardiansGroupRelations,
   formatGroup,
   formatGroups,
