@@ -71,23 +71,6 @@ function isRFCxUser() {
   }
 }
 
-function obtainRoles(user) {
-  if (user.roles) { return user.roles; }
-  if (user.scope) {
-    if (typeof user.scope === 'string') {
-      try {
-        let parsedScrope = JSON.parse(user.scope);
-        if (parsedScrope.roles) { return parsedScrope.roles; }
-      }
-      catch (e) { }
-    }
-    else {
-      if (user.scope.roles) { return user.scope.roles; }
-    }
-  }
-  return [];
-}
-
 module.exports = {
   requireTokenType,
   hasRole,
