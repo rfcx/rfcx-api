@@ -109,6 +109,15 @@ function updateGuardiansGroupRelations(group, params) {
     });
 }
 
+function getAllGroupsForGuardianId(guardian_id) {
+  return models.GuardianGroup.findAll({
+    include: [{
+      model: models.Guardian,
+      where: { id: guardian_id }
+    }]
+  });
+}
+
 function formatGroup(group, extended) {
   let data = {
     shortname: group.shortname,
@@ -174,4 +183,5 @@ module.exports = {
   updateGuardiansGroupRelations,
   formatGroup,
   formatGroups,
+  getAllGroupsForGuardianId,
 };

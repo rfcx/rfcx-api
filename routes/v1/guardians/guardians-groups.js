@@ -12,7 +12,7 @@ var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
 router.route("/groups")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'guardiansSitesAdmin']), function(req, res) {
 
     guardianGroupService
       .getAllGroups(true)
@@ -26,7 +26,7 @@ router.route("/groups")
   });
 
 router.route("/group/:shortname")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'guardiansSitesAdmin']), (req, res) => {
 
     guardianGroupService
       .getGroupByShortname(req.params.shortname)
