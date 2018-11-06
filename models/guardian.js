@@ -151,6 +151,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         Guardian.belongsTo(models.GuardianSite, {as: 'Site'});
+        Guardian.belongsToMany(models.GuardianGroup, { through: models.GuardianGroupRelation });
       },
       indexes: [
         {
