@@ -384,33 +384,27 @@ router.route("/change-password")
 router.route("/checkin")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function(req,res) {
 
-    // map HTTP params to service params
-    var serviceParams = {
-      data_type: '0',
-      data_id: '0',
-      latitude: req.body.latitude,
-      longitude: req.body.longitude,
-      starting_after: req.body.time,
-      ending_before: req.body.time
-    };
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
 
-    usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
-      .then((user) => {
-        serviceParams.source_id = user.id;
-        return sensationsService.getSourceTypeIdByName(models.User.tableName); // tableName === 'Users'
+    params.convert('latitude').toFloat();
+    params.convert('longitude').toFloat();
+    params.convert('time').toString();
+
+    params.validate()
+      .then(() => {
+        return usersService.getUserByGuid(req.rfcx.auth_token_info.guid);
       })
-      .then((source) => {
-        serviceParams.source_type = source.id;
+      .then((user) => {
+        transformedParams.user_id = user.id;
       })
       .then(() => {
-        return sensationsService.createSensations(serviceParams);
+        return usersService.createUserLocation(transformedParams);
       })
       .then(result => res.status(200).json(result))
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      // if the user supplied wrong arguments we want to give an error message and have a 400 error code
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      // catch-all for any other that is not based on user input
-      .catch(e => httpError(req, res, 500, e, "Checkin couldn't be created."));
+      .catch(e => httpError(req, res, 500, e, e.message || `Checkin couldn't be created.`));
 
   });
 
