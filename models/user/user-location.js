@@ -2,25 +2,33 @@
 
 module.exports = function(sequelize, DataTypes) {
   var UserLocation = sequelize.define("UserLocation", {
-    location: {
-      type: DataTypes.GEOGRAPHY('POINT'),
+    latitude: {
+      type: DataTypes.FLOAT,
       allowNull: false,
-      get: function() {
-        var geoPoint = this.getDataValue('location');
-        return (geoPoint === null) ? null : geoPoint.coordinates;
-      },
-      set: function(coords) {
-        if (coords === null) {
-          this.setDataValue('location', null);
-        } else {
-          this.setDataValue('location', { type: 'Point', coordinates: coords });
+      validate: {
+        isFloat: true,
+        min: {
+          args: -90,
+          msg: 'latitude should be equal to or greater than -90'
+        },
+        max: {
+          args: 90,
+          msg: 'latitude should be equal to or less than 90'
         }
-      },
-      validations: {
-        isCoordinateArray: function(value) {
-          if (!_.isArray(value) || value.length !== 2) {
-            throw new Error('Must be an array with 2 elements');
-          }
+      }
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        isFloat: true,
+        min: {
+          args: -180,
+          msg: 'longitude should be equal to or greater than -180'
+        },
+        max: {
+          args: 180,
+          msg: 'longitude should be equal to or less than 180'
         }
       }
     },
@@ -36,12 +44,7 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         UserLocation.belongsTo(models.User, { as: 'Location', foreignKey: 'user_id' });
       },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
+      indexes: []
     },
     tableName: "UserLocations"
   });
