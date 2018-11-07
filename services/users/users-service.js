@@ -231,6 +231,10 @@ function formatCheckin(checkin) {
   };
 }
 
+function createUserLocation(data) {
+  return models.UserLocation.create(data);
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
@@ -246,4 +250,5 @@ module.exports = {
   updateUserInfo,
   getUserLastCheckin,
   formatCheckin,
+  createUserLocation,
 };
