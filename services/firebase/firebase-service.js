@@ -44,6 +44,7 @@ function createPlatformSpecificFields(title, body) {
       notification: {
         title,
         body,
+        sound: 'default',
       }
     },
     apns: {
