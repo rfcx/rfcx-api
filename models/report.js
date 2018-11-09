@@ -20,8 +20,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       validate: {
         isFloat: true,
-        min: -90,
-        max: 90
+        min: {
+          args: [-90],
+          msg: 'lat should be greater or equal to -90'
+        },
+        max: {
+          args: [90],
+          msg: 'lat should be equal or less than 90'
+        }
       }
     },
     long: {
@@ -29,29 +35,42 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       validate: {
         isFloat: true,
-        min: -180,
-        max: 180
+        min: {
+          args: [-180],
+          msg: 'long should be greater or equal to -180'
+        },
+        max: {
+          args: [180],
+          msg: 'long should be equal or less than 180'
+        }
       }
     },
     distance: { // 0 is immediate area (nearby), 50 is not far away (but not visible), 100 very far (faintly heard)
       type: DataTypes.INTEGER,
-      validate: {
-        isInt: true,
-        min: 0,
-        max: 100
-      },
       allowNull: true,
-    },
-    age_estimate: {
-      type: DataTypes.INTEGER,
       validate: {
         isInt: true,
         min: {
-          args: 0,
-          msg: 'age_estimate should be equal or greater than 0'
+          args: [0],
+          msg: 'distance should be equal or greater than 0'
         },
         max: {
-          args: 30,
+          args: [100],
+          msg: 'distance should be equal or less than 100'
+        }
+      },
+    },
+    age_estimate: { // 0 = happening now, 10 = in the last 24 hours, 20 = in the last week, 30 = in the last month
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        isInt: true,
+        min: {
+          args: [0],
+          msg: 'age_estimate should be greater or equal to 0'
+        },
+        max: {
+          args: [30],
           msg: 'age_estimate should be equal or less than 30'
         }
       },

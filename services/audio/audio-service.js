@@ -1,8 +1,5 @@
-// var Converter = require("../../utils/converter/converter");
-// var models = require("../../models");
-// var views = require("../../views/v1");
-// var Promise = require("bluebird");
 var urlUtil = require("../../utils/misc/urls");
+var audioUtils = require("../../utils/rfcx-audio").audioUtils;
 
 function getGuidsFromDbAudios(dbAudios) {
   return dbAudios.map((audio) => {
@@ -16,7 +13,19 @@ function combineAssetsUrls(req, guids, extension) {
   });
 }
 
+function serveAudioFromS3(res, filename, s3Bucket, s3Path) {
+
+  var audioStorageUrl = `s3://${s3Bucket}/${s3Path}/${filename}`;
+
+  return audioUtils.cacheSourceAudio(audioStorageUrl)
+    .then(({ sourceFilePath, headers }) => {
+      audioUtils.serveAudioFromFile(res, sourceFilePath, filename, (headers? headers['content-type'] : null))
+    });
+
+}
+
 module.exports = {
-  getGuidsFromDbAudios: getGuidsFromDbAudios,
-  combineAssetsUrls: combineAssetsUrls
+  getGuidsFromDbAudios,
+  combineAssetsUrls,
+  serveAudioFromS3,
 };
