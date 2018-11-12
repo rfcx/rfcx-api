@@ -61,6 +61,11 @@ function formatReport(report) {
       lastname: report.User.lastname,
       email: report.User.email,
     },
+    site: {
+      guid: report.Site.guid,
+      name: report.Site.name,
+      timezone: report.Site.timezone,
+    },
   };
 }
 
