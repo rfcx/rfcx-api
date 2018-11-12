@@ -27,9 +27,8 @@ exports.models = {
               ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
               : dbRow.url;
 
-
     audioUtils.cacheSourceAudio(audioStorageUrl)
-      .then(function (sourceFilePath) {
+      .then(function ({ sourceFilePath }) {
 
         if (dbRow.Format.file_extension === output_file_extension) {
 
@@ -81,7 +80,7 @@ exports.models = {
               : dbRow.url;
 
       audioUtils.cacheSourceAudio(audioStorageUrl)
-        .then(function (sourceFilePath) {
+        .then(function ({ sourceFilePath }) {
 
           audioUtils.transcodeToFile("wav", {
             enhanced: false,
@@ -160,7 +159,7 @@ exports.models = {
               : dbRow.url;
 
     audioUtils.cacheSourceAudio(audioStorageUrl)
-      .then(function (sourceFilePath) {
+      .then(function ({ sourceFilePath }) {
 
         var ffmpegSox = process.env.FFMPEG_PATH + " -i " + sourceFilePath + " -loglevel panic -nostdin"
             + " -ac 1 -ar " + dbRow.Format.sample_rate
