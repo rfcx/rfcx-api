@@ -11,6 +11,7 @@ var requireUser = require("../../../middleware/authorization/authorization").req
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const reportsService = require('../../../services/reports/reports-service');
 const usersService = require('../../../services/users/users-service');
+const sitesService = require('../../../services/sites/sites-service');
 const guid = require('../../../utils/misc/guid');
 const Converter = require("../../../utils/converter/converter");
 const ValidationError = require("../../../utils/converter/validation-error");
@@ -27,6 +28,7 @@ router.route("/")
     params.convert('long').toFloat();
     params.convert('reported_at').toString();
     params.convert('value').toString();
+    params.convert('site').toString();
     params.convert('distance').optional().toNonNegativeInt();
     params.convert('age_estimate').toNonNegativeInt();
 
@@ -37,6 +39,10 @@ router.route("/")
       .then((user) => {
         transformedParams.reporter = user.id;
         transformedParams.guid = guid.generate();
+        return sitesService.getSiteByGuid(transformedParams.site);
+      })
+      .then((site) => {
+        transformedParams.site = site.id;
         return models.GuardianAudioEventValue.findOrCreate({
           where:    { value: transformedParams.value },
           defaults: { value: transformedParams.value }

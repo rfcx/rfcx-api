@@ -84,6 +84,7 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
+        Report.belongsTo(models.GuardianSite, { as: "Site", foreignKey: "site" });
         Report.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
         Report.belongsTo(models.User, { foreignKey: 'reporter' });
       }
