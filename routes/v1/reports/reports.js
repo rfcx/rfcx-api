@@ -17,9 +17,8 @@ const Converter = require("../../../utils/converter/converter");
 const ValidationError = require("../../../utils/converter/validation-error");
 const httpError = require("../../../utils/http-errors.js");
 
-// create new report
 router.route("/")
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function(req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -72,7 +71,7 @@ router.route("/")
   });
 
 router.route("/:guid")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     return reportsService.getReportByGuid(req.params.guid)
       .then((dbReport) => {
@@ -84,6 +83,13 @@ router.route("/:guid")
       .catch(e => {console.log('e', e); httpError(req, res, 500, e, e.message || `Could not find report.`)});
 
   });
+
+  router.route("/")
+    .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+
+
+
+    });
 
 
 module.exports = router;
