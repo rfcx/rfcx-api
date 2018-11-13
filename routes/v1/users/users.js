@@ -386,25 +386,32 @@ router.route("/checkin")
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
+    let singleMode = req.body.locations === undefined;
 
-    params.convert('latitude').toFloat();
-    params.convert('longitude').toFloat();
-    params.convert('time').toString();
+    if (singleMode) {
+      params.convert('latitude').toFloat();
+      params.convert('longitude').toFloat();
+      params.convert('time').toString();
+    }
+    else {
+      params.convert('locations').toArray();
+    }
 
     params.validate()
       .then(() => {
         return usersService.getUserByGuid(req.rfcx.auth_token_info.guid);
       })
       .then((user) => {
-        transformedParams.user_id = user.id;
-      })
-      .then(() => {
-        return usersService.createUserLocation(transformedParams);
+        let locations = singleMode? [transformedParams] : transformedParams.locations;
+        locations.forEach((item) => {
+          item.user_id = user.id;
+        });
+        return usersService.createUserLocations(locations);
       })
       .then(result => res.status(200).json(result))
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || `Checkin couldn't be created.`));
+      .catch(e => httpError(req, res, 500, e, e.message || `Checkin couldn't be created. Please check input params.`));
 
   });
 

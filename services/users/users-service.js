@@ -235,6 +235,10 @@ function createUserLocation(data) {
   return models.UserLocation.create(data);
 }
 
+function createUserLocations(data) {
+  return models.UserLocation.bulkCreate(data, { validate: true });
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
@@ -251,4 +255,5 @@ module.exports = {
   getUserLastCheckin,
   formatCheckin,
   createUserLocation,
+  createUserLocations,
 };
