@@ -14,6 +14,7 @@ const mailService = require('../../../services/mail/mail-service');
 var sensationsService = require("../../../services/sensations/sensations-service");
 var ValidationError = require("../../../utils/converter/validation-error");
 var usersService = require('../../../services/users/users-service');
+var sitesService = require('../../../services/sites/sites-service');
 var auth0Service = require('../../../services/auth0/auth0-service');
 var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
@@ -456,8 +457,7 @@ router.route("/code")
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
-    let roles = ['rfcxUser'];
-    let siteGuid = 'tembe';
+    const roles = ['rfcxUser'];
 
     params.convert('code').toString().toLowerCase();
 
@@ -469,6 +469,9 @@ router.route("/code")
       .then((user) => {
         this.user = user;
         this.userId = req.rfcx.auth_token_info.auth0_user_id || req.rfcx.auth_token_info.guid;
+        return sitesService.getSiteByGuid(transformedParams.code);
+      })
+      .then(() => {
         return auth0Service.getAuthToken();
       })
       .then((token) => {
@@ -488,15 +491,15 @@ router.route("/code")
       .then(() => {
         return auth0Service.updateAuth0User(this.token, {
           guid: this.userId,
-          defaultSite: siteGuid,
-          accessibleSites: [siteGuid]
+          defaultSite: transformedParams.code,
+          accessibleSites: [ transformedParams.code ]
         });
       })
       .then(() => {
-        return usersService.updateSiteRelations(this.user, { sites: [ siteGuid ] });
+        return usersService.updateSiteRelations(this.user, { sites: [ transformedParams.code ] });
       })
       .then(() => {
-        return usersService.updateDefaultSite(this.user, siteGuid);
+        return usersService.updateDefaultSite(this.user, transformedParams.code);
       })
       .then(() => {
         res.status(200).json({ success: true });
