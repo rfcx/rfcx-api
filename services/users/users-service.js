@@ -251,6 +251,7 @@ module.exports = {
   formatUser,
   formatUsers,
   updateSiteRelations,
+  updateDefaultSite,
   updateUserInfo,
   getUserLastCheckin,
   formatCheckin,

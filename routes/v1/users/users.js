@@ -451,6 +451,64 @@ router.route("/touchapi")
     res.status(200).json({ success: true });
   });
 
+router.route("/code")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function(req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+    let roles = ['rfcxUser'];
+    let siteGuid = 'tembe';
+
+    params.convert('code').toString().toLowerCase();
+
+    params.validate()
+      .then(() => {
+        return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      })
+      .bind({})
+      .then((user) => {
+        this.user = user;
+        this.userId = req.rfcx.auth_token_info.auth0_user_id || req.rfcx.auth_token_info.guid;
+        return auth0Service.getAuthToken();
+      })
+      .then((token) => {
+        this.authToken = token;
+        return auth0Service.getToken();
+      })
+      .then((token) => {
+        this.token = token;
+        return auth0Service.getAllRolesByLabels(this.authToken, roles)
+      })
+      .then((roles) => {
+        let rolesGuids = roles.map((role) => {
+          return role._id;
+        });
+        return auth0Service.assignRolesToUser(this.authToken, this.userId, rolesGuids);
+      })
+      .then(() => {
+        return auth0Service.updateAuth0User(this.token, {
+          guid: this.userId,
+          defaultSite: siteGuid,
+          accessibleSites: [siteGuid]
+        });
+      })
+      .then(() => {
+        return usersService.updateSiteRelations(this.user, { sites: [ siteGuid ] });
+      })
+      .then(() => {
+        return usersService.updateDefaultSite(this.user, siteGuid);
+      })
+      .then(() => {
+        res.status(200).json({ success: true });
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        err.success = false;
+        res.status(500).json( err );
+      });
+
+  });
+
 router.route("/create")
   .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
@@ -568,7 +626,6 @@ router.route("/auth0/users")
         return auth0Service.getToken();
       })
       .then((token) => {
-        console.log('tokeeeen', token);
         return auth0Service.getUsers(token, transformedParams);
       })
       .then((body) => {
