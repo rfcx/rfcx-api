@@ -503,12 +503,16 @@ router.route("/code")
       })
       .then(() => {
         res.status(200).json({ success: true });
+        let userName = (this.user.firstname && this.user.lastname) ? `${this.user.firstname} ${this.user.lastname}` : 'No name user';
+        mailService.sendMessage({
+          from_name: 'RFCx Users Management',
+          email: 'contact@rfcx.org',
+          subject: 'User has got access',
+          html: `<b>${userName}</b> has got access to <b>${transformedParams.code}</b> site with <b>${roles.join(', ')}</b> role. </br>User guid <b>${this.user.guid}"</b>, user email ${this.user.email}`
+        });
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch((err) => {
-        err.success = false;
-        res.status(500).json( err );
-      });
+      .catch(e => httpError(req, res, 500, e, `Invalid code.`));
 
   });
 
