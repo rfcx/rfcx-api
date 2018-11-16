@@ -14,6 +14,7 @@ const mailService = require('../../../services/mail/mail-service');
 var sensationsService = require("../../../services/sensations/sensations-service");
 var ValidationError = require("../../../utils/converter/validation-error");
 var usersService = require('../../../services/users/users-service');
+var sitesService = require('../../../services/sites/sites-service');
 var auth0Service = require('../../../services/auth0/auth0-service');
 var tokensService = require('../../../services/tokens/tokens-service');
 var sequelize = require("sequelize");
@@ -451,6 +452,70 @@ router.route("/touchapi")
     res.status(200).json({ success: true });
   });
 
+router.route("/code")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function(req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+    const roles = ['rfcxUser'];
+
+    params.convert('code').toString().toLowerCase();
+
+    params.validate()
+      .then(() => {
+        return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      })
+      .bind({})
+      .then((user) => {
+        this.user = user;
+        this.userId = req.rfcx.auth_token_info.auth0_user_id || req.rfcx.auth_token_info.guid;
+        return sitesService.getSiteByGuid(transformedParams.code);
+      })
+      .then(() => {
+        return auth0Service.getAuthToken();
+      })
+      .then((token) => {
+        this.authToken = token;
+        return auth0Service.getToken();
+      })
+      .then((token) => {
+        this.token = token;
+        return auth0Service.getAllRolesByLabels(this.authToken, roles)
+      })
+      .then((roles) => {
+        let rolesGuids = roles.map((role) => {
+          return role._id;
+        });
+        return auth0Service.assignRolesToUser(this.authToken, this.userId, rolesGuids);
+      })
+      .then(() => {
+        return auth0Service.updateAuth0User(this.token, {
+          guid: this.userId,
+          defaultSite: transformedParams.code,
+          accessibleSites: [ transformedParams.code ]
+        });
+      })
+      .then(() => {
+        return usersService.updateSiteRelations(this.user, { sites: [ transformedParams.code ] });
+      })
+      .then(() => {
+        return usersService.updateDefaultSite(this.user, transformedParams.code);
+      })
+      .then(() => {
+        res.status(200).json({ success: true });
+        let userName = (this.user.firstname && this.user.lastname) ? `${this.user.firstname} ${this.user.lastname}` : 'No name user';
+        mailService.sendMessage({
+          from_name: 'RFCx Users Management',
+          email: 'contact@rfcx.org',
+          subject: 'User has got access',
+          html: `<b>${userName}</b> has got access to <b>${transformedParams.code}</b> site with <b>${roles.join(', ')}</b> role. </br>User guid <b>${this.user.guid}"</b>, user email ${this.user.email}`
+        });
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, `Invalid code.`));
+
+  });
+
 router.route("/create")
   .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
@@ -568,7 +633,6 @@ router.route("/auth0/users")
         return auth0Service.getToken();
       })
       .then((token) => {
-        console.log('tokeeeen', token);
         return auth0Service.getUsers(token, transformedParams);
       })
       .then((body) => {

@@ -9,14 +9,14 @@ function getToken() {
   let tokenName = `auth0_token_${process.env.NODE_ENV}`;
   return getTokenFromRedis(tokenName)
     .then((token) => {
-      // if (!token) {
+      if (!token) {
         return this.getNewToken()
           .then((tokenData) => {
             saveTokenToRedis(tokenName, tokenData);
             return tokenData.access_token;
           });
-      // }
-      // return token;
+      }
+      return token;
     });
 }
 
@@ -62,6 +62,9 @@ function getNewToken(audience) {
       if (error) {
         reject(error);
       }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
       else {
         resolve(body);
       }
@@ -102,6 +105,9 @@ function createAuth0User(token, opts) {
       if (err) {
         reject(err);
       }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
       else {
         resolve(body);
       }
@@ -130,6 +136,9 @@ function updateAuth0User(token, opts) {
     }, (err, response, body) => {
       if (err) {
         reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
       }
       else {
         resolve(body);
@@ -162,6 +171,9 @@ function getUsers(token, params) {
       if (err) {
         reject(err);
       }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
       else {
         resolve(body);
       }
@@ -184,11 +196,50 @@ function getAllRoles(token) {
       if (err) {
         reject(err);
       }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
       else {
         resolve(body);
       }
     });
   });
+
+}
+
+function getAllRoles(token) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'GET',
+      uri: `https://${process.env.AUTH0_EXTENSION_URL}/roles`,
+      json: true,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }, (err, res, body) => {
+      if (err) {
+        reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
+function getAllRolesByLabels(token, names) {
+
+  return getAllRoles(token)
+    .then((data) => {
+      return data.roles.filter((role) => {
+        return names.includes(role.name);
+      });
+    });
 
 }
 
@@ -208,6 +259,9 @@ function getAllClients(token) {
     }, (err, res, body) => {
       if (err) {
         reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
       }
       else {
         resolve(body);
@@ -235,6 +289,9 @@ function assignRolesToUser(token, userGuid, rolesGuids) {
       if (err) {
         reject(err);
       }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
       else {
         resolve(body);
       }
@@ -261,6 +318,9 @@ function deleteRolesFromUser(token, userGuid, rolesGuids) {
       if (err) {
         reject(err);
       }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
       else {
         resolve(body);
       }
@@ -282,6 +342,9 @@ function getUserRoles(token, userGuid) {
     }, (err, res, body) => {
       if (err) {
         reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
       }
       else {
         resolve(body);
@@ -308,6 +371,9 @@ function sendChangePasswordEmail(token, email) {
       if (error) {
         reject(error);
       }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
       else {
         resolve(body);
       }
@@ -324,6 +390,7 @@ module.exports = {
   updateAuth0User,
   getUsers,
   getAllRoles,
+  getAllRolesByLabels,
   getAllClients,
   assignRolesToUser,
   deleteRolesFromUser,
