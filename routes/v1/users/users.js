@@ -468,7 +468,7 @@ router.route("/code")
       .bind({})
       .then((user) => {
         this.user = user;
-        this.userId = req.rfcx.auth_token_info.auth0_user_id || req.rfcx.auth_token_info.guid;
+        this.userId = req.rfcx.auth_token_info.sub || req.rfcx.auth_token_info.guid;
         return sitesService.getSiteByGuid(transformedParams.code);
       })
       .then(() => {
@@ -508,7 +508,7 @@ router.route("/code")
           from_name: 'RFCx Users Management',
           email: 'contact@rfcx.org',
           subject: 'User has got access',
-          html: `<b>${userName}</b> has got access to <b>${transformedParams.code}</b> site with <b>${roles.join(', ')}</b> role. </br>User guid <b>${this.user.guid}"</b>, user email ${this.user.email}`
+          html: `<b>${userName}</b> has got access to <b>${transformedParams.code}</b> site with <b>${roles.join(', ')}</b> role. </br>User guid <b>${this.user.guid}</b>, user email ${this.user.email}`
         });
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))

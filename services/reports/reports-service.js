@@ -10,6 +10,59 @@ const path = require('path')
 const guid = require('../../utils/misc/guid');
 const S3Service = require('../s3/s3-service');
 
+function prepareFilterOpts(req) {
+
+  let order, dir;
+  if (req.query.order) {
+    order;
+    dir = 'ASC';
+    if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
+      dir = req.query.dir.toUpperCase();
+    }
+    switch (req.query.order) {
+      case 'site':
+        order = 'Site.name';
+        break;
+      case 'longitude':
+        order = 'Report.long';
+        break;
+      case 'latitude':
+        order = 'Report.lat';
+        break;
+      case 'created_at':
+        order = 'Report.created_at';
+        break;
+      case 'distance':
+        order = 'Report.distance';
+        break;
+      case 'value':
+        order = 'Value.value';
+        break;
+      case 'age_estimate':
+        order = 'Report.age_estimate';
+        break;
+      case 'reported_at':
+      default:
+        order = 'Report.reported_at';
+        break;
+    }
+  }
+
+  return {
+    limit: req.query.limit? parseInt(req.query.limit) : 10000,
+    offset: req.query.offset? parseInt(req.query.offset) : 0,
+    updatedAfter: req.query.updated_after,
+    updatedBefore: req.query.updated_before,
+    createdAfter: req.query.created_after,
+    createdBefore: req.query.created_before,
+    values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
+    sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
+    search: req.query.search? '%' + req.query.search + '%' : undefined,
+    order: order? order : 'Report.reported_at',
+    dir: dir? dir : 'ASC',
+  };
+}
+
 function getReportByGuid(guid) {
   return models.Report
     .findOne({
@@ -75,6 +128,7 @@ function getS3PathForReportAudio(time) {
 }
 
 module.exports = {
+  prepareFilterOpts,
   getReportByGuid,
   createReport,
   uploadAudio,
