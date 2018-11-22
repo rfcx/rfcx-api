@@ -160,6 +160,14 @@ exports.models = {
     var specRotate = (req.query.rotate == null) ? 0 : parseInt(req.query.rotate);
     if ((specRotate != 90) && (specRotate != 180) && (specRotate != 270)) { specRotate = 0; }
 
+    var clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate);
+
+    var clipOffset = (req.query.offset == null) ? 0 : (parseInt(req.query.offset) / 1000);
+    if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 1) { clipOffset = 0; }
+
+    var clipDuration = (req.query.duration == null) ? clipDurationFull : (parseInt(req.query.duration) / 1000);
+    if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset); } else if (clipDuration < 1) { clipDuration = clipDurationFull; }
+
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
               ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
@@ -172,13 +180,14 @@ exports.models = {
             process.env.FFMPEG_PATH 
               + " -i " + sourceFilePath + " -loglevel panic -nostdin"
               + " -ac 1 -ar " + dbRow.Format.sample_rate
+              + " -ss " + clipOffset + " -t " + clipDuration
               + " -f sox - "
             + " | " + process.env.SOX_PATH 
               + " -t sox - -n spectrogram -h -r"
               + " -o " + tmpFilePath+"-sox.png"
               + " -x " + specWidth + " -y " + specHeight
               + " -w " + soxSettings.windowFunc + " -z " + soxSettings.zAxis + " -s"
-              + " -d " + (dbRow.capture_sample_count / dbRow.Format.sample_rate);
+              + " -d " + clipDuration;
 
         var imageMagick = 
             (specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
