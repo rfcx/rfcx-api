@@ -163,10 +163,10 @@ exports.models = {
     var clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate);
 
     var clipOffset = (req.query.offset == null) ? 0 : (parseInt(req.query.offset) / 1000);
-    if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 1) { clipOffset = 0; }
+    if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 0) { clipOffset = 0; }
 
     var clipDuration = (req.query.duration == null) ? clipDurationFull : (parseInt(req.query.duration) / 1000);
-    if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset); } else if (clipDuration < 1) { clipDuration = clipDurationFull; }
+    if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset); } else if (clipDuration < 0) { clipDuration = (clipDurationFull - clipOffset); }
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
