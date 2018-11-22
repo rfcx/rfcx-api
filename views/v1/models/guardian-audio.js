@@ -227,7 +227,7 @@ exports.models = {
           token_type: 'audio-file',
           minutes_until_expiration: 30,
           created_by: null,
-          allow_garbage_collection: false,
+          allow_garbage_collection: true,
           only_allow_access_to: [
             `^/v1/assets/audio/${guid}.m4a$`,
             `^/v1/assets/audio/${guid}.mp3$`,
