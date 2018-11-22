@@ -181,14 +181,13 @@ exports.models = {
               + " -d " + (dbRow.capture_sample_count / dbRow.Format.sample_rate);
 
         var imageMagick = 
-            (specRotate == 0) ? " && cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png" :
-            " && " + process.env.IMAGEMAGICK_PATH
-              + " " + tmpFilePath + "-sox.png" + " -rotate " + specRotate + " " + tmpFilePath + "-rotated.png";
+            (specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
+            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + specRotate + " " + tmpFilePath + "-rotated.png";
 
         var pngCrush = 
-            " && " + process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
+            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
 
-        exec( ffmpegSox + imageMagick + pngCrush, function (err, stdout, stderr) {
+        exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
 
           if (stderr.trim().length > 0) {
             console.log(stderr);
