@@ -18,6 +18,8 @@ var loggers = require('../../../utils/logger');
 // var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+var firebaseService = require('../../../services/firebase/firebase-service');
+var guardianGroupService = require('../../../services/guardians/guardian-group.service');
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -38,7 +40,7 @@ function prepareOpts(req) {
     }
     switch (req.query.order) {
       case 'audio_guid':
-        order = 'Audio.guid';
+        order = 'GuardianAudioEvent.audio_guid';
         break;
       case 'site':
         order = 'Site.name';
@@ -56,7 +58,7 @@ function prepareOpts(req) {
         order = 'GuardianAudioEvent.reviewer_confirmed';
         break;
       default:
-        order = 'GuardianAudioEvent.guid';
+        order = 'GuardianAudioEvent.begins_at';
         break;
     }
   }
@@ -89,8 +91,8 @@ function prepareOpts(req) {
     omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
     reasonsForCreation: req.query.reasons_for_creation? (Array.isArray(req.query.reasons_for_creation)? req.query.reasons_for_creation : [req.query.reasons_for_creation]) : undefined,
     search: req.query.search? '%' + req.query.search + '%' : undefined,
-    order: order? order : undefined,
-    dir: dir? dir : undefined,
+    order: order? order : 'GuardianAudioEvent.begins_at',
+    dir: dir? dir : 'ASC',
   };
 }
 
@@ -98,10 +100,9 @@ function countData(req) {
 
   const opts = prepareOpts(req);
 
-  let sql = 'SELECT COUNT(*) AS total ' +
+  let sql = 'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone ' +
                    'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
-                   'LEFT JOIN GuardianAudio AS Audio ON GuardianAudioEvent.audio_id = Audio.id ' +
-                   'LEFT JOIN Guardians AS Guardian ON Audio.guardian_id = Guardian.id ' +
+                   'LEFT JOIN Guardians AS Guardian ON GuardianAudioEvent.guardian = Guardian.id ' +
                    'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
                    'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
                    'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
@@ -111,22 +112,15 @@ function countData(req) {
                    'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter),
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore),
-    ' AND (TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' OR TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore)');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
-  sql = sqlUtils.condAdd(sql, (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudioEvent.begins_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND GuardianAudioEvent.ends_at < DATE_ADD(:endingBeforeLocal, INTERVAL 14 HOUR)');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -136,14 +130,13 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
-  sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
   sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
   sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
@@ -152,9 +145,14 @@ function countData(req) {
   sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
 
-  return models.sequelize.query(sql,
-    { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-  )
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((events) => {
+      let evs = filterEventsWithTz(opts, events);
+      return evs.length;
+    });
 
 }
 
@@ -165,22 +163,15 @@ function queryData(req) {
   let sql = eventsService.eventQueryBase + 'WHERE 1=1 ';
 
   sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
+  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND (CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :startingAfterLocal');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone) < :endingBeforeLocal');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter),
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore),
-    ' AND (TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter' +
-    ' OR TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore)');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) > :dayTimeLocalAfter');
-  sql = sqlUtils.condAdd(sql, (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore), ' AND TIME(CONVERT_TZ(GuardianAudioEvent.ends_at, "UTC", Site.timezone)) < :dayTimeLocalBefore');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudioEvent.begins_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
+  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND GuardianAudioEvent.ends_at < DATE_ADD(:endingBeforeLocal, INTERVAL 14 HOUR)');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
   sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
@@ -190,14 +181,13 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
-  sql = sqlUtils.condAdd(sql, !!opts.weekdays, ' AND WEEKDAY(CONVERT_TZ(GuardianAudioEvent.begins_at, "UTC", Site.timezone)) IN (:weekdays)');
   sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
   sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
   sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
   sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
   sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Audio.guid LIKE :search');
+  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
   sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
@@ -208,10 +198,60 @@ function queryData(req) {
   sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
   sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
-  return models.sequelize.query(sql,
-    { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-  )
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((events) => {
+      return filterEventsWithTz(opts, events);
+    });
 
+}
+
+function filterEventsWithTz(opts, events) {
+  return events.filter((event) => {
+    let beginsAtTz = moment.tz(event.begins_at, event.site_timezone),
+        endsAtTz = moment.tz(event.ends_at, event.site_timezone);
+
+    if (opts.startingAfterLocal) {
+      if (beginsAtTz < moment.tz(opts.startingAfterLocal, event.site_timezone)) {
+        return false;
+      }
+    }
+    if (opts.endingBeforeLocal) {
+      if (endsAtTz > moment.tz(opts.endingBeforeLocal, event.site_timezone)) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter) {
+      if (beginsAtTz.format('HH:mm:ss') < opts.dayTimeLocalAfter || endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore) {
+      if (beginsAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter && endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore) {
+      if (beginsAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter) {
+        return false;
+      }
+    }
+    if (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore) {
+      if (endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.weekdays) { // we receive an array like ['0', '1', '2', '3', '4', '5', '6'], where `0` means Monday
+      // momentjs by default starts day with Sunday, so we will get ISO weekday
+      // (which starts from Monday, but is 1..7) and subtract 1
+      if ( !opts.weekdays.includes( `${parseInt(beginsAtTz.format('E')) - 1}` ) ) {
+        return false;
+      }
+    }
+    return true;
+  });
 }
 
 function processStatsByDates(req, res) {
@@ -251,7 +291,7 @@ function processStatsByDates(req, res) {
 }
 
 router.route("/event")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
@@ -290,12 +330,12 @@ router.route("/event")
   });
 
 router.route("/event/datatable")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     countData(req)
       .bind({})
-      .then(function(data) {
-        this.total = data[0].total;
+      .then(function(total) {
+        this.total = total;
         return queryData(req);
       })
       .then(function (dbEvents) {
@@ -313,7 +353,7 @@ router.route("/event/datatable")
   });
 
 router.route("/stats/guardian")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var contentType = req.rfcx.content_type;
     var isFile = false;
@@ -352,10 +392,10 @@ router.route("/stats/guardian")
   });
 
 router.route("/stats/dates")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), processStatsByDates);
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), processStatsByDates);
 
 router.route("/stats/weekly")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -369,7 +409,7 @@ router.route("/stats/weekly")
   });
 
 router.route("/stats/monthly")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -383,7 +423,7 @@ router.route("/stats/monthly")
   });
 
 router.route("/stats/half-year")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -397,7 +437,7 @@ router.route("/stats/half-year")
   });
 
 router.route("/stats/year")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
     if (!req.query) {
       req.query = {};
@@ -447,7 +487,7 @@ router.route("/tuning")
   });
 
 router.route("/values")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
     eventsService
       .getGuardianAudioEventValues()
       .then((data) => { res.status(200).json(data); })
@@ -455,7 +495,7 @@ router.route("/values")
   });
 
 router.route("/types")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
     eventsService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data); })
@@ -463,7 +503,7 @@ router.route("/types")
   });
 
 router.route("/:guid")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     eventsService
       .getEventByGuid(req.params.guid)
@@ -580,11 +620,14 @@ router.route('/')
             attrs.ends_at = new Date(data[0].measured_at.getTime() + 1000*90);
         }
 
+        this.dbAudio = data[0];
         this.dbGuardian = data[0].Guardian;
         this.dbSite = data[0].Site;
+        this.dbModel = data[1];
 
         // replace names with ids
         attrs.audio_id = data[0].id;
+        attrs.audio_guid = data[0].guid;
         this.audio_guid = data[0].guid;
         attrs.model = data[1].id;
         this.model = data[1].shortname;
@@ -631,6 +674,45 @@ router.route('/')
         var apiEvent = converter.mapSequelizeToApi(data);
         res.status(200).json(apiEvent);
       })
+      .then(function() {
+        // send notiication only if audio was created in last 2 hours
+        if (moment.tz('UTC').diff(moment.tz(this.dbAudio.measured_at, 'UTC'), 'hours') < 2) {
+          guardianGroupService.getAllGroupsForGuardianId(this.dbGuardian.id)
+            .then((dbGuardianGroups) => {
+              dbGuardianGroups.forEach((dbGuardianGroup) => {
+                // send Firebase push notification to required topic
+                try {
+                  let opts = {
+                    app: 'rangerApp',
+                    topic: dbGuardianGroup.shortname,
+                    data: {
+                      type: this.type,
+                      value: this.value,
+                      audio_guid: this.audio_guid,
+                      latitude: `${this.dbGuardian.latitude}`,
+                      longitude: `${this.dbGuardian.longitude}`,
+                      guardian_guid: this.dbGuardian.guid,
+                      site_guid: this.dbSite.guid,
+                      ai_guid: this.dbModel.guid,
+                    },
+                    title: `New ${this.type}`,
+                    body: `A ${this.value} detected from ${this.guardian}`
+                  };
+                  firebaseService.sendToTopic(opts)
+                    .then((response) => {
+                      logDebug(`Firebase message sent to ${this.dbSite.guid} topic`, { req, response });
+                    })
+                    .catch((err) => {
+                      logError(`Error sending Firebase message to ${this.dbSite.guid} topic`, { req, err });
+                    });
+                } catch (e) {
+                  logError(`Error sending Firebase message to ${this.dbSite.guid} topic`, { req, err: e });
+                }
+              });
+            });
+        }
+        return true;
+      })
       .then(function () {
         var msg = {
           type: this.type,
@@ -671,7 +753,7 @@ router.route('/')
   });
 
 router.route("/:event_id/review")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     models.GuardianEvent
       .findAll({
@@ -732,7 +814,7 @@ router.route("/:event_id/review")
 ;
 
 router.route("/:guid/comment")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService
       .updateEventComment(req.params.guid, req.body.comment)
@@ -749,7 +831,7 @@ router.route("/:guid/comment")
   });
 
 router.route("/:guid/confirm")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, true, req.rfcx.auth_token_info.owner_id)
       .then((data) => {
@@ -761,7 +843,7 @@ router.route("/:guid/confirm")
   });
 
 router.route("/:guid/reject")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), function (req, res) {
 
     eventsService.updateEventReview(req.params.guid, false, req.rfcx.auth_token_info.owner_id)
       .then((data) => {

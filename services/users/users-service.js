@@ -3,6 +3,8 @@ var sequelize = require("sequelize");
 var Converter = require("../../utils/converter/converter");
 var Promise = require("bluebird");
 var sitesService = require("../sites/sites-service");
+const util = require('util');
+const request = require('request');
 const hash = require('../../utils/misc/hash').hash;
 const guid = require('../../utils/misc/guid');
 const sensationsService = require('..//sensations/sensations-service');
@@ -25,6 +27,15 @@ function getUserByGuid(guid) {
 
 function getUserByEmail(email) {
   return getUserByParams({ email });
+}
+
+function getUserByGuidOrEmail(field) {
+  return getUserByParams({
+    $or: {
+      guid: field,
+      email: field
+    }
+  });
 }
 
 function getAllUsers() {
@@ -101,6 +112,7 @@ function formatUser(user, short) {
     firstname: user.firstname,
     lastname: user.lastname,
     username: user.username,
+    rfcx_system: user.rfcx_system,
   };
   if (!short) {
     userFormatted.accessibleSites = [];
@@ -187,12 +199,17 @@ function updateDefaultSite(user, siteGuid) {
 }
 
 function updateUserInfo(user, params) {
-  // only one attribute for now...
-  // when there will be more attributes, we need to update logic of this function
-  if (params.defaultSite) {
-    return updateDefaultSite(user, params.defaultSite);
+  let proms = [];
+  if (params.rfcx_system !== undefined) {
+    proms.push(user.update({ rfcx_system: params.rfcx_system }));
   }
-  return getUserByGuid(user.guid)
+  if (params.defaultSite) {
+    proms.push(updateDefaultSite(user, params.defaultSite));
+  }
+  return Promise.all(proms)
+    .then(() => {
+      return getUserByGuid(user.guid)
+    })
     .then(formatUser);
 }
 
@@ -214,10 +231,19 @@ function formatCheckin(checkin) {
   };
 }
 
+function createUserLocation(data) {
+  return models.UserLocation.create(data);
+}
+
+function createUserLocations(data) {
+  return models.UserLocation.bulkCreate(data, { validate: true });
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
   getUserByEmail,
+  getUserByGuidOrEmail,
   getAllUsers,
   createUser,
   findOrCreateUser,
@@ -225,7 +251,10 @@ module.exports = {
   formatUser,
   formatUsers,
   updateSiteRelations,
+  updateDefaultSite,
   updateUserInfo,
   getUserLastCheckin,
   formatCheckin,
+  createUserLocation,
+  createUserLocations,
 };

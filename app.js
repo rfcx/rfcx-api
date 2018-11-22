@@ -21,7 +21,7 @@ var express = require("express"),
     bodyParser = require("body-parser"),
     addRequestId = require('express-request-id'),
     addInstanceId = require('./middleware/misc/aws').addInstanceId,
-    toobusy = require('toobusy-js');
+    toobusy = require('toobusy-js'),
     app = express();
 
 app.set("title", "rfcx-api");
@@ -72,6 +72,7 @@ app.use(passport.initialize());
 var routes = {
   "v1": {
     "guardians": [
+      require("./routes/v1/guardians/guardians-groups"),
       require("./routes/v1/guardians/guardians"),
       require("./routes/v1/guardians/guardians-software"),
       require("./routes/v1/guardians/guardians-checkins"),
@@ -141,7 +142,10 @@ var routes = {
     ],
     "adopt-protect": [
       require("./routes/v1/adopt-protect/donations"),
-    ]
+    ],
+    "forms": [
+      require("./routes/v1/forms/contact"),
+    ],
   },
   "v2": {
   }

@@ -13,7 +13,7 @@ var Promise = require("bluebird");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var serviceParams = {
       name: req.body.name,
@@ -46,7 +46,7 @@ router.route("/")
   });
 
 router.route("/:guid")
-  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     var serviceParams = {
       json: req.body.json,
@@ -75,7 +75,7 @@ router.route("/:guid")
   });
 
 router.route("/:guid")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     filterPresetsService.getFilterPresetByGuid(req.params.guid)
       .then((filterPreset) => {
@@ -88,7 +88,7 @@ router.route("/:guid")
   });
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     let serviceParams = {
       types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : null

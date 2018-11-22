@@ -7,9 +7,10 @@ var queryHelpers = require("../../../utils/rfcx-query");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 router.route("/:guardian_id/status")
-  .get(passport.authenticate("token", {session: false}), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), (req, res) => {
 
     models.Guardian
       .findOne({

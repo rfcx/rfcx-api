@@ -22,9 +22,10 @@ router.route("/login")
         token_type: "stream-web",
         created_by: "stream-web",
         minutes_until_expiration: 1440, // tokens last for a full day
-        allow_garbage_collection: false,
+        allow_garbage_collection: true,
         only_allow_access_to: [
           "^/v1/player/web",
+          "^/v1/guardians/[0123456789abcdef]{12}/public-info",
           "^/v1/guardians/[0123456789abcdef]{12}/audio.json$",
           "^/v1/audio/[0123456789abcdef]{8}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{4}-[0123456789abcdef]{12}/audio.json$",
 
@@ -59,7 +60,7 @@ router.route("/login")
 
 
 router.route("/web")
-  .get(passport.authenticate(['token', 'jwt'], { session:false }), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), function(req, res) {
 
     return models.GuardianAudioHighlight
       .findAll({

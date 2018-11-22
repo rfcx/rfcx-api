@@ -20,16 +20,15 @@ exports.models = {
 
     var output_file_extension = req.rfcx.content_type,
         output_file_name = dbRow.guid + "." + output_file_extension,
-        is_output_enhanced = false;
+        is_output_enhanced = (output_file_extension === "mp3");
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
               ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
               : dbRow.url;
 
-
     audioUtils.cacheSourceAudio(audioStorageUrl)
-      .then(function (sourceFilePath) {
+      .then(function ({ sourceFilePath }) {
 
         if (dbRow.Format.file_extension === output_file_extension) {
 
@@ -81,7 +80,7 @@ exports.models = {
               : dbRow.url;
 
       audioUtils.cacheSourceAudio(audioStorageUrl)
-        .then(function (sourceFilePath) {
+        .then(function ({ sourceFilePath }) {
 
           audioUtils.transcodeToFile("wav", {
             enhanced: false,
@@ -151,13 +150,16 @@ exports.models = {
         "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
     };
 
+    if (req.query.width != null) { specSettings.specWidth = parseInt(req.query.width); }
+    if (req.query.height != null) { specSettings.specHeight = parseInt(req.query.height); }
+
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
               ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
               : dbRow.url;
 
     audioUtils.cacheSourceAudio(audioStorageUrl)
-      .then(function (sourceFilePath) {
+      .then(function ({ sourceFilePath }) {
 
         var ffmpegSox = process.env.FFMPEG_PATH + " -i " + sourceFilePath + " -loglevel panic -nostdin"
             + " -ac 1 -ar " + dbRow.Format.sample_rate
@@ -225,7 +227,7 @@ exports.models = {
           token_type: 'audio-file',
           minutes_until_expiration: 30,
           created_by: null,
-          allow_garbage_collection: false,
+          allow_garbage_collection: true,
           only_allow_access_to: [
             `^/v1/assets/audio/${guid}.m4a$`,
             `^/v1/assets/audio/${guid}.mp3$`,

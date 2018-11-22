@@ -11,7 +11,7 @@ exports.models = {
     var views = getAllViews();
 
     if (!util.isArray(dbRows)) { dbRows = [dbRows]; }
-    
+
     var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
 
     return new Promise(function(resolve,reject){
@@ -66,14 +66,14 @@ exports.models = {
               token_type: "event-audio-file",
               minutes_until_expiration: 60,
               created_by: null,
-              allow_garbage_collection: false,
+              allow_garbage_collection: true,
               only_allow_access_to: [ "^/v1/events/"+thisGuid+".mp3$" ]
             }).then(function(tokenInfo){
                 try {
 
                   var thisRow = dbRowsByGuid[tokenInfo.reference_tag], thisGuid = thisRow.guid;
 
-                  jsonRowsByGuid[thisGuid].url = 
+                  jsonRowsByGuid[thisGuid].url =
                       req.rfcx.api_url_domain+"/v1/events/"+thisGuid+".mp3"
                       +"?auth_user=token/"+tokenInfo.token_guid
                       +"&auth_token="+tokenInfo.token
@@ -99,7 +99,7 @@ exports.models = {
 
                       });
                   }
-                  
+
                 } catch (e) {
                   reject(e);
                 }
@@ -121,7 +121,7 @@ exports.models = {
     var views = getAllViews();
 
     if (!util.isArray(dbRows)) { dbRows = [dbRows]; }
-    
+
     var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
 
     return new Promise(function(resolve,reject){

@@ -19,6 +19,7 @@ exports.env = {
   ASSET_BUCKET_AUDIO: "rfcx-guardian-ark-development",
   ASSET_BUCKET_META: "rfcx-guardian-meta-development",
   ASSET_BUCKET_ZIP: "rfcx-zip",
+  ASSET_BUCKET_REPORT: "rfcx-report-development",
   ASSET_URLBASE: "http://localhost:8080/v1/assets",
 
   PLAYER_PASSCODES: "0000,1111",
@@ -49,6 +50,11 @@ exports.env = {
   CLOUDWATCH_LOGS_GROUP_NAME: "",
 
   AUTH0_DOMAIN: "",
+  AUTH0_EXTENSION_URL: "",
+  AUTH0_CLIENT_ID: "",
+  AUTH0_CLIENT_SECRET: "",
+  AUTH0_AUTHZ_AUDIENCE: "",
+  AUTH0_DEFAULT_DB_CONNECTION: "",
 
   WEBSOCKET_URL: "",
 
@@ -56,7 +62,13 @@ exports.env = {
 
   KAFKA_HOST: "",
 
-  REST_PROTOCOL: "httos",
-  REST_HOST: "api.rfcx.org",
+  REDIS_HOST: "",
+  REDIS_PORT: "",
+
+  FIREBASE_PRIVATE_KEY_RANGER_APP: "",
+  FIREBASE_CLIENT_EMAIL_RANGER_APP: "",
+
+  FIREBASE_PRIVATE_KEY_PLAYER_APP: "",
+  FIREBASE_CLIENT_EMAIL_PLAYER_APP: "",
 
 }

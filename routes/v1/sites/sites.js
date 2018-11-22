@@ -10,7 +10,7 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 const userService = require('../../../services/users/users-service');
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
     models.GuardianSite
       .findAll({
         where: { is_active: true },

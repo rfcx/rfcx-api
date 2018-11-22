@@ -14,8 +14,49 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var loggers = require('../../../utils/logger');
 var sequelize = require("sequelize");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 var logDebug = loggers.debugLogger.log;
+
+router.route("/:guid/software")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), (req, res) => {
+
+    let query = `
+      SELECT soft.role as role, ver.version as version
+      FROM GuardianMetaSoftwareVersions AS metaver
+      INNER JOIN (
+        SELECT MAX(last_checkin_at) as last_checkin, software_id, version_id, guardian_id
+        FROM GuardianMetaSoftwareVersions
+        GROUP BY software_id
+      ) metaver_recent ON metaver.software_id = metaver_recent.software_id
+      INNER JOIN GuardianSoftwareVersions AS ver ON metaver.version_id = ver.id
+      INNER JOIN GuardianSoftware AS soft ON soft.id = ver.software_role_id
+      INNER JOIN Guardians AS g ON metaver.guardian_id = g.id
+      WHERE g.guid = "${req.params.guid}";
+    `;
+
+    models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
+      .then((versionData) => {
+        if (!versionData.length) {
+          httpError(req, res, 404, null, 'Guardian or software versions not found.');
+          return;
+        }
+        let result = {};
+        versionData.forEach((item) => {
+          result[item.role] = {
+            version: item.version
+          };
+        });
+        return result;
+      })
+      .then((versions) => {
+        res.status(200).json(versions);
+      })
+      .catch(function(err) {
+        httpError(req, res, 500, err, 'Failed to get guardian software versions');
+      });
+
+  });
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)

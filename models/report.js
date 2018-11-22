@@ -1,32 +1,92 @@
 'use strict';
 
-// Creates a repository of reports for incidents
-// like 'heard a chainsaw' or 'poacher sighting'
 module.exports = function(sequelize, DataTypes) {
   var Report = sequelize.define('Report', {
     guid: {
       type:DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
       unique: true
     },
-    start_time: DataTypes.DATE,
-    end_time: DataTypes.DATE,
-    long: DataTypes.REAL,
-    lat: DataTypes.REAL,
-    type: DataTypes.STRING,
+    reported_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: {
+        isDate: true
+      }
+    },
+    lat: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        isFloat: true,
+        min: {
+          args: [-90],
+          msg: 'lat should be greater or equal to -90'
+        },
+        max: {
+          args: [90],
+          msg: 'lat should be equal or less than 90'
+        }
+      }
+    },
+    long: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        isFloat: true,
+        min: {
+          args: [-180],
+          msg: 'long should be greater or equal to -180'
+        },
+        max: {
+          args: [180],
+          msg: 'long should be equal or less than 180'
+        }
+      }
+    },
     distance: { // 0 is immediate area (nearby), 50 is not far away (but not visible), 100 very far (faintly heard)
       type: DataTypes.INTEGER,
+      allowNull: true,
       validate: {
         isInt: true,
-        min: 0,
-        max: 100
+        min: {
+          args: [0],
+          msg: 'distance should be equal or greater than 0'
+        },
+        max: {
+          args: [100],
+          msg: 'distance should be equal or less than 100'
+        }
       },
-      allowNull: true
+    },
+    age_estimate: { // 0 = happening now, 10 = in the last 24 hours, 20 = in the last week, 30 = in the last month
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        isInt: true,
+        min: {
+          args: [0],
+          msg: 'age_estimate should be greater or equal to 0'
+        },
+        max: {
+          args: [30],
+          msg: 'age_estimate should be equal or less than 30'
+        }
+      },
+    },
+    audio: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: { }
     }
   }, {
     classMethods: {
       associate: function(models) {
-        Report.belongsTo(models.User, {foreignKey: 'reporter'});
+        Report.belongsTo(models.GuardianSite, { as: "Site", foreignKey: "site" });
+        Report.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
+        Report.belongsTo(models.User, { foreignKey: 'reporter' });
       }
     }
   });
