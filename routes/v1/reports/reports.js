@@ -80,16 +80,30 @@ router.route("/:guid")
       .then(result => res.status(200).json(result))
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => {console.log('e', e); httpError(req, res, 500, e, e.message || `Could not find report.`)});
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not find report.`));
 
   });
 
-  router.route("/")
-    .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+router.route("/")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
+    reportsService.countData(req)
+      .bind({})
+      .then((total) => {
+        this.total = total;
+        return reportsService.queryData(req);
+      })
+      .then((reports) => {
+        res.status(200).send({
+          reports: reportsService.formatRawReports(reports),
+          total: this.total,
+        });
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not find reports.`));
 
-
-    });
+  });
 
 
 module.exports = router;
