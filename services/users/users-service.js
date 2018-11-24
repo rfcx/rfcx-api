@@ -231,6 +231,14 @@ function formatCheckin(checkin) {
   };
 }
 
+function createUserLocation(data) {
+  return models.UserLocation.create(data);
+}
+
+function createUserLocations(data) {
+  return models.UserLocation.bulkCreate(data, { validate: true });
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
@@ -243,7 +251,10 @@ module.exports = {
   formatUser,
   formatUsers,
   updateSiteRelations,
+  updateDefaultSite,
   updateUserInfo,
   getUserLastCheckin,
   formatCheckin,
+  createUserLocation,
+  createUserLocations,
 };

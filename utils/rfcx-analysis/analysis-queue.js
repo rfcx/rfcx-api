@@ -76,7 +76,7 @@ exports.analysisUtils = {
                 token.createAnonymousToken({
                     token_type: queueName,
                     minutes_until_expiration: 1440,
-                    allow_garbage_collection: false,
+                    allow_garbage_collection: true,
                     only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
                 }).then(function(tokenInfo){
 
@@ -164,7 +164,7 @@ exports.analysisUtils = {
                         token.createAnonymousToken({
                             token_type: "audio-analysis-queue",
                             minutes_until_expiration: 1440,
-                            allow_garbage_collection: false,
+                            allow_garbage_collection: true,
                             only_allow_access_to: [ "^"+apiWriteBackEndpoint+"$" ]
                         }).then(function(tokenInfo){
 
@@ -241,7 +241,7 @@ exports.analysisUtils = {
             return token.createAnonymousToken({
               token_type: "audio-analysis-queue",
               minutes_until_expiration: 1440,
-              allow_garbage_collection: false,
+              allow_garbage_collection: true,
               only_allow_access_to: [ "^"+endpointAccess+"$" ]
             }).then(function(tokenInfo){
              return Promise.map(batch, function (options) {

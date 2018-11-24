@@ -16,32 +16,30 @@ module.exports = class Converter {
     this.conversions = [];
   };
 
-
   convert(property) {
     let conversion = new Conversion(this.validatedObject, property, this.transformedObject);
     this.conversions.push(conversion);
     return conversion;
   }
 
-
   validate() {
-    return Promise.resolve().then(() => {
-      let exceptions = [];
-      for(var conversion of this.conversions) {
-        try
-        {
-          conversion.execute();
+    return Promise.resolve()
+      .then(() => {
+        let exceptions = [];
+        for(var conversion of this.conversions) {
+          try {
+            conversion.execute();
+          }
+          catch (e) {
+            exceptions.push(e.message);
+          }
         }
-        catch (e){
-          exceptions.push(e.message);
+        if (exceptions.length === 0) {
+          return this.transformedObject;
         }
-      }
-      if(exceptions.length == 0){
-        return this.transformedObject;
-      } else {
-        throw new ValidationError(`Validation errors: ${exceptions.join("; ")}.`);
-
-      }
-    })
+        else {
+          throw new ValidationError(`Validation errors: ${exceptions.join("; ")}.`);
+        }
+      });
   }
 };

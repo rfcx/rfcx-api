@@ -22,7 +22,7 @@ router.route("/login")
         token_type: "stream-web",
         created_by: "stream-web",
         minutes_until_expiration: 1440, // tokens last for a full day
-        allow_garbage_collection: false,
+        allow_garbage_collection: true,
         only_allow_access_to: [
           "^/v1/player/web",
           "^/v1/guardians/[0123456789abcdef]{12}/public-info",

@@ -72,6 +72,7 @@ app.use(passport.initialize());
 var routes = {
   "v1": {
     "guardians": [
+      require("./routes/v1/guardians/guardians-groups"),
       require("./routes/v1/guardians/guardians"),
       require("./routes/v1/guardians/guardians-software"),
       require("./routes/v1/guardians/guardians-checkins"),

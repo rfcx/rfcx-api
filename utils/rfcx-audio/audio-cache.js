@@ -27,7 +27,7 @@ exports.audioUtils = {
                     tempWriteStream.on("finish", function(){
                         fs.stat(sourceFilePath, function(statErr,fileStat){
                             if (statErr == null) {
-                                resolve(sourceFilePath);
+                                resolve({ sourceFilePath, headers: s3Res.headers });
                             } else {
                                 console.log("Audio file not found...");
                                 reject(new Error());

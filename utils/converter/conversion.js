@@ -157,6 +157,20 @@ module.exports = class Conversion {
     return this;
   }
 
+  toLowerCase(){
+    this.conversions.push(()=>{
+      this.value = this.value.toLowerCase();
+    });
+    return this;
+  }
+
+  toUpperCase(){
+    this.conversions.push(()=>{
+      this.value = this.value.toUpperCase();
+    });
+    return this;
+  }
+
   trim() {
     this.conversions.push(()=>{
       this.value = this.value.trim();
