@@ -193,7 +193,8 @@ exports.models = {
             : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + specRotate + " " + tmpFilePath + "-rotated.png";
 
         var pngCrush = 
-            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
+            "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
+//            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
 
         exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
 
