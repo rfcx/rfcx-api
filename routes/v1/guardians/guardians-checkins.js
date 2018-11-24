@@ -15,7 +15,7 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
-// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
+var websocket = require('../../../utils/websocket');
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
@@ -39,6 +39,7 @@ router.route("/:guardian_id/checkins")
 
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.meta)
+      .bind({})
       .then(function(json){
         this.json = json;
         logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json });
@@ -356,5 +357,3 @@ function strArrToJSArr(str,delimA,delimB) {
     return [];
   }
 }
-
-

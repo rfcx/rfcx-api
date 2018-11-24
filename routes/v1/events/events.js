@@ -15,7 +15,7 @@ var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 var loggers = require('../../../utils/logger');
-// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
+var websocket = require('../../../utils/websocket');
 var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 var firebaseService = require('../../../services/firebase/firebase-service');
@@ -521,7 +521,7 @@ router.route("/:guid")
 ;
 
 router.route('/')
-  .post(passport.authenticate("token", {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['aiSystem']), function (req, res) {
 
     var converter = new ApiConverter("event", req);
 
@@ -657,8 +657,8 @@ router.route('/')
             include: [{all: true}]
           })
           .then((dbEvent) => {
-            // let wsObj = eventsService.prepareWsObject(dbEvent, this.dbSite); DISABLE WEBSOCKET FOR PROD
-            // websocket.send('createCognition', wsObj); DISABLE WEBSOCKET FOR PROD
+            let wsObj = eventsService.prepareWsObject(dbEvent, this.dbSite);
+            websocket.send('createCognition', wsObj);
           });
           return Promise.resolve(dbGuardianAudioEvent);
         }
