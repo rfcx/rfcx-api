@@ -83,7 +83,9 @@ router.route("/:guardian_id/audio/analysis")
             return processAudios(req, res, dbAudio, dbGuardian, audioGuids, modelGuid);
           })
           .then(function () {
-            res.status(200).json(audioGuids);
+            res.status(200).json({
+              queued_count: audioGuids.length
+            });
           })
           .catch(function(err){
             console.log("failed to requeue audio | ", err);
