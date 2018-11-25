@@ -22,11 +22,11 @@ for d in $(cal $MM $YYYY | grep "^ *[0-9]"); do
 
   echo "$DATE_DAY - AM";
   SET_QUEUE_AM=`curl -s -X POST -H "x-auth-user: user/$API_USER" -H "x-auth-token: $API_TOKEN" -H "Content-Type: application/json" -H "Cache-Control: no-cache" "https://api.rfcx.org/v1/guardians/$GUARDIAN_GUID/audio/analysis?ending_before=$DATE_DAY$TIME_NOON&starting_after=$DATE_DAY$TIME_AM&model_id=$MODEL_GUID";`;  
-  # sleep 0.3;
+  sleep 0.25;
 
   echo "$DATE_DAY - PM";
   SET_QUEUE_PM=`curl -s -X POST -H "x-auth-user: user/$API_USER" -H "x-auth-token: $API_TOKEN" -H "Content-Type: application/json" -H "Cache-Control: no-cache" "https://api.rfcx.org/v1/guardians/$GUARDIAN_GUID/audio/analysis?ending_before=$DATE_DAY$TIME_PM&starting_after=$DATE_DAY$TIME_NOON&model_id=$MODEL_GUID";`;  
-  sleep 0.3;
+  sleep 0.25;
 
 done
 
