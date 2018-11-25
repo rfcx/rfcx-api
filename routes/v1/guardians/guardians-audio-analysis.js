@@ -11,7 +11,7 @@ passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
 
-function processAudios(req, res, dbAudio, dbGuardian, audioGuids, modelGuid) {
+function processAudios(req, res, dbAudio, audioGuids, modelGuid) {
   if (dbAudio.length < 1) {
     httpError(req, res, 404, null, 'No audios found');
     return Promise.reject();
@@ -27,7 +27,7 @@ function processAudios(req, res, dbAudio, dbGuardian, audioGuids, modelGuid) {
         audio_s3_path:
           // auto-generate the asset filepath if it's not stored in the url column
           (dbAudio[i].url == null)
-            ? assetUtils.getGuardianAssetStoragePath("audio", dbAudio[i].measured_at, dbGuardian.guid, dbAudio[i].Format.file_extension)
+            ? assetUtils.getGuardianAssetStoragePath("audio", dbAudio[i].measured_at, dbAudio[i].Guardian.guid, dbAudio[i].Format.file_extension)
             : dbAudio[i].url.substr(dbAudio[i].url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length),
       });
       audioGuids.push(dbAudio[i].guid);
@@ -80,7 +80,7 @@ router.route("/:guardian_id/audio/analysis")
             offset: req.rfcx.offset
           })
           .then(function(dbAudio){
-            return processAudios(req, res, dbAudio, dbGuardian, audioGuids, modelGuid);
+            return processAudios(req, res, dbAudio, audioGuids, modelGuid);
           })
           .then(function () {
             res.status(200).json({
@@ -145,7 +145,7 @@ router.route("/sites/:site_id/audio/analysis")
             offset: req.rfcx.offset
           })
           .then(function(dbAudio){
-            return processAudios(req, res, dbAudio, dbAudio.Guardian, audioGuids, modelGuid);
+            return processAudios(req, res, dbAudio, audioGuids, modelGuid);
           })
           .then(function () {
             res.status(200).json({
