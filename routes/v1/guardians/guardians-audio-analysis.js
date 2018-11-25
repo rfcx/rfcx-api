@@ -82,7 +82,7 @@ router.route("/:guardian_id/audio/analysis")
             offset: req.rfcx.offset
           })
           .then(function(dbAudio){
-            return processAudios(req, res, dbAudio, audioGuids);
+            return processAudios(req, res, dbAudio, dbGuardian, audioGuids, modelGuid);
           })
           .then(function () {
             res.status(200).json({
