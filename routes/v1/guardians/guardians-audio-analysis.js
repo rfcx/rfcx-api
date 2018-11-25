@@ -101,6 +101,71 @@ router.route("/:guardian_id/audio/analysis")
   })
 ;
 
+router.route("/sites/:site_id/audio/analysis")
+  .post(passport.authenticate("token",{session:false}), function(req,res) {
+
+    models.GuardianSite
+      .findOne({
+        where: { guid: req.params.site_id }
+      })
+      .then(function(dbSite) {
+
+        var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
+
+        var dbQuery = { site_id: dbSite.id };
+        var dateClmn = "measured_at";
+        if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
+        if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
+        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gte"] = req.rfcx.starting_after; }
+
+        var createdClmn = "created_at";
+        if ((req.query.created_before != null) || (req.query.created_after != null)) {
+          dbQuery[createdClmn] = {};
+        }
+        if (req.query.created_before != null) {
+            dbQuery[createdClmn]["$lt"] = req.query.created_before ;
+        }
+        if (req.query.created_after != null) {
+          dbQuery[createdClmn]["$gte"] = req.query.created_after;
+        }
+
+        if (req.query.manual_upload){
+          dbQuery.check_in_id = null
+        }
+
+        var modelGuid = req.query.model_id;
+        var audioGuids = [];
+
+        return models.GuardianAudio
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
+            order: [ [dateClmn, dbQueryOrder] ],
+            limit: 140000,//req.rfcx.limit,
+            offset: req.rfcx.offset
+          })
+          .then(function(dbAudio){
+            return processAudios(req, res, dbAudio, dbAudio.Guardian, audioGuids, modelGuid);
+          })
+          .then(function () {
+            res.status(200).json({
+              queued_count: audioGuids.length
+            });
+          })
+          .catch(function(err){
+            console.log("failed to requeue audio | ", err);
+            if (!!err) { res.status(500).json({msg:"failed to requeue audio"}); }
+          });
+
+      })
+      .catch(function(err){
+        console.log("failed to find site | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to find site"}); }
+      });
+
+  })
+;
+
 router.route("/audio/analysis")
   .post(passport.authenticate("token",{session:false}), function(req,res) {
 
