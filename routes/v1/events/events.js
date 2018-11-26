@@ -254,7 +254,7 @@ router.route("/:guid")
 ;
 
 router.route('/')
-  .post(passport.authenticate("token", {session: false}), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], {session: false}), hasRole(['aiSystem']), function (req, res) {
 
     var converter = new ApiConverter("event", req);
 
@@ -386,13 +386,6 @@ router.route('/')
       })
       .spread(function (dbGuardianAudioEvent, created) {
         if (created) {
-          dbGuardianAudioEvent.reload({
-            include: [{all: true}]
-          })
-          .then((dbEvent) => {
-            // let wsObj = eventsService.prepareWsObject(dbEvent, this.dbSite); DISABLE WEBSOCKET FOR PROD
-            // websocket.send('createCognition', wsObj); DISABLE WEBSOCKET FOR PROD
-          });
           return Promise.resolve(dbGuardianAudioEvent);
         }
         else {

@@ -7,6 +7,7 @@ exports.env = {
   FFMPEG_PATH: "/usr/bin/ffmpeg",
   SOX_PATH: "/usr/bin/sox",
   IMAGEMAGICK_PATH: "/usr/bin/convert",
+  PNGCRUSH_PATH: "/usr/bin/pngcrush",
 
   AWS_ACCESS_KEY_ID: "",
   AWS_SECRET_KEY: "",

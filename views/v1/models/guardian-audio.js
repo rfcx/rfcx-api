@@ -142,16 +142,30 @@ exports.models = {
 
   guardianAudioSpectrogram: function (req, res, dbRow) {
 
-    var specSettings = {
-      tmpFilePath: process.env.CACHE_DIRECTORY + "ffmpeg/" + hash.randomString(32) + ".png",
-      specWidth: 2048, specHeight: 512,
+    var soxSettings = {
       zAxis: 95, // color range in dB, ranging from 20 to 180
       windowFunc: // window function options listed below (select only one)
         "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
     };
 
-    if (req.query.width != null) { specSettings.specWidth = parseInt(req.query.width); }
-    if (req.query.height != null) { specSettings.specHeight = parseInt(req.query.height); }
+    var tmpFilePath = process.env.CACHE_DIRECTORY + "ffmpeg/" + hash.randomString(32);
+
+    var specWidth = (req.query.width == null) ? 2048 : parseInt(req.query.width);
+    if (specWidth > 4096) { specWidth = 4096; } else if (specWidth < 1) { specWidth = 1; }
+
+    var specHeight = (req.query.height == null) ? 512 : parseInt(req.query.height);
+    if (specHeight > 1024) { specHeight = 1024; } else if (specHeight < 1) { specHeight = 1; }
+
+    var specRotate = (req.query.rotate == null) ? 0 : parseInt(req.query.rotate);
+    if ((specRotate != 90) && (specRotate != 180) && (specRotate != 270)) { specRotate = 0; }
+
+    var clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate);
+
+    var clipOffset = (req.query.offset == null) ? 0 : (parseInt(req.query.offset) / 1000);
+    if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 0) { clipOffset = 0; }
+
+    var clipDuration = (req.query.duration == null) ? clipDurationFull : (parseInt(req.query.duration) / 1000);
+    if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset); } else if (clipDuration < 0) { clipDuration = (clipDurationFull - clipOffset); }
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
@@ -161,17 +175,28 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
 
-        var ffmpegSox = process.env.FFMPEG_PATH + " -i " + sourceFilePath + " -loglevel panic -nostdin"
-            + " -ac 1 -ar " + dbRow.Format.sample_rate
-            + " -f sox - "
-            + " | " + process.env.SOX_PATH + " -t sox - -n spectrogram -h -r"
-            + " -o " + specSettings.tmpFilePath
-            + " -x " + specSettings.specWidth + " -y " + specSettings.specHeight
-            + " -w " + specSettings.windowFunc + " -z " + specSettings.zAxis + " -s"
-            + " -d " + (dbRow.capture_sample_count / dbRow.Format.sample_rate)
-          ;
+        var ffmpegSox = 
+            process.env.FFMPEG_PATH 
+              + " -i " + sourceFilePath + " -loglevel panic -nostdin"
+              + " -ac 1 -ar " + dbRow.Format.sample_rate
+              + " -ss " + clipOffset + " -t " + clipDuration
+              + " -f sox - "
+            + " | " + process.env.SOX_PATH 
+              + " -t sox - -n spectrogram -h -r"
+              + " -o " + tmpFilePath+"-sox.png"
+              + " -x " + specWidth + " -y " + specHeight
+              + " -w " + soxSettings.windowFunc + " -z " + soxSettings.zAxis + " -s"
+              + " -d " + clipDuration;
 
-        exec(ffmpegSox, function (err, stdout, stderr) {
+        var imageMagick = 
+            (specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
+            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + specRotate + " " + tmpFilePath + "-rotated.png";
+
+        var pngCrush = 
+            "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
+//            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
+
+        exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
 
           if (stderr.trim().length > 0) {
             console.log(stderr);
@@ -180,13 +205,11 @@ exports.models = {
             console.log(err);
           }
 
-          fs.unlink(sourceFilePath, function (e) {
-            if (e) {
-              console.log(e);
-            }
-          });
+          fs.unlink(sourceFilePath, function (e) { if (e) { console.log(e); } });
+          fs.unlink(tmpFilePath+"-sox.png", function (e) { if (e) { console.log(e); } });
+          fs.unlink(tmpFilePath+"-rotated.png", function (e) { if (e) { console.log(e); } });
 
-          audioUtils.serveAudioFromFile(res, specSettings.tmpFilePath, dbRow.guid + ".png", "image/png")
+          audioUtils.serveAudioFromFile(res, tmpFilePath+"-final.png", dbRow.guid + ".png", "image/png")
             .then(function () {
               // should we do/log anything if we're successful?
             }).catch(function (err) {
