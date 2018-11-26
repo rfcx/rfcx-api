@@ -47,7 +47,7 @@ function checkDBUser(req, jwtPayload, done) {
 
   // if request was sent from account which doesn't have email (like Facebook, created with a phone number)
   if (!jwtPayload.email && jwtPayload.guid) {
-    jwtPayload.email = `${jwtPayload.guid}-facebook@rfcx.org`;
+    jwtPayload.email = `${jwtPayload.guid}@rfcx.org`;
   }
 
   userService.findOrCreateUser(
