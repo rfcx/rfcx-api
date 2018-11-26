@@ -15,7 +15,6 @@ var eventsService = require('../../../services/events/events-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 var loggers = require('../../../utils/logger');
-// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 var firebaseService = require('../../../services/firebase/firebase-service');
@@ -23,272 +22,6 @@ var guardianGroupService = require('../../../services/guardians/guardian-group.s
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
-
-/**
- * weekdays[] is an array with numbers [0, 1, 2, 3, 4, 5, 6]
- * 0 - Monday, 6 is Sunday
- */
-
-function prepareOpts(req) {
-
-  let order, dir;
-  if (req.query.order) {
-    order;
-    dir = 'ASC';
-    if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
-      dir = req.query.dir.toUpperCase();
-    }
-    switch (req.query.order) {
-      case 'audio_guid':
-        order = 'GuardianAudioEvent.audio_guid';
-        break;
-      case 'site':
-        order = 'Site.name';
-        break;
-      case 'guardian_shortname':
-        order = 'Guardian.shortname';
-        break;
-      case 'begins_at':
-        order = 'GuardianAudioEvent.begins_at';
-        break;
-      case 'reviewed_by':
-        order = 'User.email';
-        break;
-      case 'reviewer_confirmed':
-        order = 'GuardianAudioEvent.reviewer_confirmed';
-        break;
-      default:
-        order = 'GuardianAudioEvent.begins_at';
-        break;
-    }
-  }
-
-  return {
-    limit: req.query.limit? parseInt(req.query.limit) : 10000,
-    offset: req.query.offset? parseInt(req.query.offset) : 0,
-    updatedAfter: req.query.updated_after,
-    updatedBefore: req.query.updated_before,
-    createdAfter: req.query.created_after,
-    createdBefore: req.query.created_before,
-    startingAfter: req.query.starting_after,
-    endingBefore: req.query.ending_before,
-    startingAfterLocal: req.query.starting_after_local,
-    endingBeforeLocal: req.query.ending_before_local,
-    dayTimeLocalAfter: req.query.daytime_local_after,
-    dayTimeLocalBefore: req.query.daytime_local_before,
-    minimumConfidence: req.query.minimum_confidence,
-    types: req.query.types? (Array.isArray(req.query.types)? req.query.types : [req.query.types]) : undefined,
-    values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
-    sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
-    guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
-    models: req.query.models? (Array.isArray(req.query.models)? req.query.models : [req.query.models]) : undefined,
-    excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)?
-                          req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
-    weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
-    showExperimental: req.query.showExperimental !== undefined? (req.query.showExperimental === 'true') : undefined,
-    omitFalsePositives: req.query.omit_false_positives !== undefined? (req.query.omit_false_positives === 'true') : true,
-    omitUnreviewed: req.query.omit_unreviewed !== undefined? (req.query.omit_unreviewed === 'true') : false,
-    omitReviewed: req.query.omit_reviewed !== undefined? (req.query.omit_reviewed === 'true') : false,
-    reasonsForCreation: req.query.reasons_for_creation? (Array.isArray(req.query.reasons_for_creation)? req.query.reasons_for_creation : [req.query.reasons_for_creation]) : undefined,
-    search: req.query.search? '%' + req.query.search + '%' : undefined,
-    order: order? order : 'GuardianAudioEvent.begins_at',
-    dir: dir? dir : 'ASC',
-  };
-}
-
-function countData(req) {
-
-  const opts = prepareOpts(req);
-
-  let sql = 'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone ' +
-                   'FROM GuardianAudioEvents AS GuardianAudioEvent ' +
-                   'LEFT JOIN Guardians AS Guardian ON GuardianAudioEvent.guardian = Guardian.id ' +
-                   'LEFT JOIN GuardianSites AS Site ON Guardian.site_id = Site.id ' +
-                   'LEFT JOIN AudioAnalysisModels AS Model ON GuardianAudioEvent.model = Model.id ' +
-                   'LEFT JOIN Users AS User ON GuardianAudioEvent.reviewed_by = User.id ' +
-                   'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
-                   'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
-                   'LEFT JOIN GuardianAudioEventReasonsForCreation AS Reason ON GuardianAudioEvent.reason_for_creation = Reason.id ' +
-                   'WHERE 1=1 ';
-
-  sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
-  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
-  sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
-  sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
-  sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
-  sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
-  sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudioEvent.begins_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND GuardianAudioEvent.ends_at < DATE_ADD(:endingBeforeLocal, INTERVAL 14 HOUR)');
-  sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
-  sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
-  sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
-  sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
-  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
-  sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
-  sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
-  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
-  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
-  sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
-  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS FALSE');
-  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
-  sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
-  sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
-  sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.guid LIKE :search OR User.firstname LIKE :search OR User.lastname LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.email LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
-
-  return models.sequelize
-    .query(sql,
-      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-    )
-    .then((events) => {
-      let evs = filterEventsWithTz(opts, events);
-      return evs.length;
-    });
-
-}
-
-function queryData(req) {
-
-  const opts = prepareOpts(req);
-
-  let sql = eventsService.eventQueryBase + 'WHERE 1=1 ';
-
-  sql = sqlUtils.condAdd(sql, true, ' AND !(Guardian.latitude = 0 AND Guardian.longitude = 0)');
-  sql = sqlUtils.condAdd(sql, true, ' AND !(GuardianAudioEvent.shadow_latitude = 0 AND GuardianAudioEvent.shadow_longitude = 0)');
-  sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioEvent.updated_at > :updatedAfter');
-  sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioEvent.updated_at < :updatedBefore');
-  sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioEvent.created_at > :createdAfter');
-  sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudioEvent.created_at < :createdBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudioEvent.begins_at > :startingAfter');
-  sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND GuardianAudioEvent.ends_at < :endingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudioEvent.begins_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND GuardianAudioEvent.ends_at < DATE_ADD(:endingBeforeLocal, INTERVAL 14 HOUR)');
-  sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND GuardianAudioEvent.confidence >= :minimumConfidence');
-  sql = sqlUtils.condAdd(sql, opts.types, ' AND EventType.value IN (:types)');
-  sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
-  sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
-  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
-  sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
-  sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
-  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
-  sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') === -1, ' AND Reason.name IN (:reasonsForCreation)');
-  sql = sqlUtils.condAdd(sql, !opts.showExperimental, ' AND Model.experimental IS NOT TRUE');
-  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && !opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT FALSE');
-  sql = sqlUtils.condAdd(sql, opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS TRUE');
-  sql = sqlUtils.condAdd(sql, !opts.omitFalsePositives && opts.omitUnreviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NOT NULL');
-  sql = sqlUtils.condAdd(sql, opts.omitReviewed, ' AND GuardianAudioEvent.reviewer_confirmed IS NULL');
-  sql = sqlUtils.condAdd(sql, opts.search, ' AND (GuardianAudioEvent.guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR GuardianAudioEvent.audio_guid LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Site.guid LIKE :search OR Site.name LIKE :search OR Site.description LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Guardian.guid LIKE :search OR Guardian.shortname LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR Model.guid LIKE :search OR Model.shortname LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.guid LIKE :search OR User.firstname LIKE :search OR User.lastname LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR User.email LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventType.value LIKE :search');
-  sql = sqlUtils.condAdd(sql, opts.search, ' OR EventValue.value LIKE :search)');
-  sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
-  sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
-
-  return models.sequelize
-    .query(sql,
-      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-    )
-    .then((events) => {
-      return filterEventsWithTz(opts, events);
-    });
-
-}
-
-function filterEventsWithTz(opts, events) {
-  return events.filter((event) => {
-    let beginsAtTz = moment.tz(event.begins_at, event.site_timezone),
-        endsAtTz = moment.tz(event.ends_at, event.site_timezone);
-
-    if (opts.startingAfterLocal) {
-      if (beginsAtTz < moment.tz(opts.startingAfterLocal, event.site_timezone)) {
-        return false;
-      }
-    }
-    if (opts.endingBeforeLocal) {
-      if (endsAtTz > moment.tz(opts.endingBeforeLocal, event.site_timezone)) {
-        return false;
-      }
-    }
-    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter) {
-      if (beginsAtTz.format('HH:mm:ss') < opts.dayTimeLocalAfter || endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
-        return false;
-      }
-    }
-    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore) {
-      if (beginsAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter && endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
-        return false;
-      }
-    }
-    if (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore) {
-      if (beginsAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter) {
-        return false;
-      }
-    }
-    if (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore) {
-      if (endsAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
-        return false;
-      }
-    }
-    if (opts.weekdays) { // we receive an array like ['0', '1', '2', '3', '4', '5', '6'], where `0` means Monday
-      // momentjs by default starts day with Sunday, so we will get ISO weekday
-      // (which starts from Monday, but is 1..7) and subtract 1
-      if ( !opts.weekdays.includes( `${parseInt(beginsAtTz.format('E')) - 1}` ) ) {
-        return false;
-      }
-    }
-    return true;
-  });
-}
-
-function processStatsByDates(req, res) {
-  var contentType = req.rfcx.content_type;
-  var isFile = false;
-  if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
-    isFile = true;
-  }
-
-  queryData(req)
-    .then(function (dbEvents) {
-      if (contentType === 'json') {
-        return views.models.guardianAudioEventsByDatesJson(req, res, dbEvents)
-          .then(function (json) {
-            // if client requested json file, then respond with file
-            // if not, respond with simple json
-            res.contentType(isFile ? 'text/json' : 'application/json');
-            if (isFile) {
-              res.attachment('event.json');
-            }
-            res.status(200).send(json);
-          });
-      }
-      else if (contentType === 'csv') {
-        return views.models.guardianAudioEventsByDatesCSV(req, res, dbEvents)
-          .then(function (csv) {
-            res.contentType('text/csv');
-            res.attachment('event.csv');
-            res.status(200).send(csv);
-          });
-      }
-    })
-    .catch(function (err) {
-      console.log('Error while searching Audio Events', arguments);
-      res.status(500).json({msg: err});
-    });
-}
 
 router.route("/event")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
@@ -299,7 +32,7 @@ router.route("/event")
       isFile = true;
     }
 
-    queryData(req)
+    return eventsService.queryData(req)
       .then(function (dbEvents) {
         if (contentType === 'json') {
           return views.models.guardianAudioEventsJson(req, res, dbEvents)
@@ -332,11 +65,11 @@ router.route("/event")
 router.route("/event/datatable")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
-    countData(req)
+    return eventsService.countData(req)
       .bind({})
       .then(function(total) {
         this.total = total;
-        return queryData(req);
+        return eventsService.queryData(req);
       })
       .then(function (dbEvents) {
         return views.models.guardianAudioEventsJson(req, res, dbEvents);
@@ -361,7 +94,7 @@ router.route("/stats/guardian")
       isFile = true;
     }
 
-    queryData(req)
+    return eventsService.queryData(req)
       .then(function (dbEvents) {
         if (contentType === 'json') {
           return views.models.guardianAudioEventsByGuardianJson(req, res, dbEvents)
@@ -392,7 +125,7 @@ router.route("/stats/guardian")
   });
 
 router.route("/stats/dates")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), processStatsByDates);
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), eventsService.processStatsByDates);
 
 router.route("/stats/weekly")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
@@ -404,7 +137,7 @@ router.route("/stats/weekly")
     var dateStr = moment().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss');
     req.query.starting_after = dateStr;
 
-    processStatsByDates(req, res);
+    return eventsService.processStatsByDates(req, res);
 
   });
 
@@ -418,7 +151,7 @@ router.route("/stats/monthly")
     var dateStr = moment().subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss');
     req.query.starting_after = dateStr;
 
-    processStatsByDates(req, res);
+    return eventsService.processStatsByDates(req, res);
 
   });
 
@@ -432,7 +165,7 @@ router.route("/stats/half-year")
     var dateStr = moment().subtract(6, 'month').format('YYYY-MM-DD HH:mm:ss');
     req.query.starting_after = dateStr;
 
-    processStatsByDates(req, res);
+    return eventsService.processStatsByDates(req, res);
 
   });
 
@@ -446,7 +179,7 @@ router.route("/stats/year")
     var dateStr = moment().subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss');
     req.query.starting_after = dateStr;
 
-    processStatsByDates(req, res);
+    return eventsService.processStatsByDates(req, res);
 
   });
 
