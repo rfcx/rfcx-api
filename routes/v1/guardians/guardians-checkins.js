@@ -18,7 +18,6 @@ var loggers = require('../../../utils/logger');
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
-const kafka = require('../../../services/kafka/kafka-service');
 
 var logDebug = loggers.debugLogger.log;
 
