@@ -314,6 +314,20 @@ function getGuardianAudioEventValues() {
     });
 }
 
+function getAllGuardianAudioEventValuesByValues(values) {
+  let proms = [];
+  values.forEach((value) => {
+    const prom = models.GuardianAudioEventValue
+      .findOne({ where: { value } })
+      .then((eventValue) => {
+        if (!eventValue) { throw new sequelize.EmptyResultError(`EventValue with given value not found: ${value}`); }
+        return eventValue;
+      });
+    proms.push(prom);
+  });
+  return Promise.all(proms);
+}
+
 function getGuardianAudioEventTypes() {
   return models.GuardianAudioEventType
     .findAll()
@@ -435,4 +449,5 @@ module.exports = {
   eventQueryGuardianGroupsJoin,
   prepareWsObject,
   updateEventComment,
+  getAllGuardianAudioEventValuesByValues,
 };
