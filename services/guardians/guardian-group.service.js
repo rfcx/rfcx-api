@@ -140,10 +140,15 @@ function updateGuardianGroupEventValuesRelations(group, params) {
 
 function getAllGroupsForGuardianId(guardian_id) {
   return models.GuardianGroup.findAll({
-    include: [{
-      model: models.Guardian,
-      where: { id: guardian_id }
-    }]
+    include: [
+      {
+        model: models.Guardian,
+        where: { id: guardian_id }
+      },
+      {
+        model: models.GuardianAudioEventValue,
+      },
+    ]
   });
 }
 
