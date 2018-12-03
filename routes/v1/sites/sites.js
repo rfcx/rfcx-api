@@ -71,7 +71,7 @@ router.route("/statistics/audio")
   });
 
 router.route("/:site_id")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
 
     models.GuardianSite
       .findAll({
