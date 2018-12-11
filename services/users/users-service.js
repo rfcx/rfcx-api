@@ -32,11 +32,12 @@ function getUserByEmail(email) {
   return getUserByParams({ email });
 }
 
-function getUserByGuidOrEmail(field) {
+function getUserByGuidOrEmail(field1, field2) {
+  field2 = field2 || field1;
   return getUserByParams({
     $or: {
-      guid: field,
-      email: field
+      guid: field1,
+      email: field2
     }
   });
 }
