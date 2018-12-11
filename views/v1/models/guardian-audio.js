@@ -142,30 +142,9 @@ exports.models = {
 
   guardianAudioSpectrogram: function (req, res, dbRow) {
 
-    var soxSettings = {
-      zAxis: 95, // color range in dB, ranging from 20 to 180
-      windowFunc: // window function options listed below (select only one)
-        "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
-    };
-
     var tmpFilePath = process.env.CACHE_DIRECTORY + "ffmpeg/" + hash.randomString(32);
 
-    var specWidth = (req.query.width == null) ? 2048 : parseInt(req.query.width);
-    if (specWidth > 4096) { specWidth = 4096; } else if (specWidth < 1) { specWidth = 1; }
-
-    var specHeight = (req.query.height == null) ? 512 : parseInt(req.query.height);
-    if (specHeight > 1024) { specHeight = 1024; } else if (specHeight < 1) { specHeight = 1; }
-
-    var specRotate = (req.query.rotate == null) ? 0 : parseInt(req.query.rotate);
-    if ((specRotate != 90) && (specRotate != 180) && (specRotate != 270)) { specRotate = 0; }
-
-    var clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate);
-
-    var clipOffset = (req.query.offset == null) ? 0 : (parseInt(req.query.offset) / 1000);
-    if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 0) { clipOffset = 0; }
-
-    var clipDuration = (req.query.duration == null) ? clipDurationFull : (parseInt(req.query.duration) / 1000);
-    if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset); } else if (clipDuration < 0) { clipDuration = (clipDurationFull - clipOffset); }
+    var queryParams = parsePermittedQueryParams( req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate) );
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
@@ -179,22 +158,22 @@ exports.models = {
             process.env.FFMPEG_PATH 
               + " -i " + sourceFilePath + " -loglevel panic -nostdin"
               + " -ac 1 -ar " + dbRow.Format.sample_rate
-              + " -ss " + clipOffset + " -t " + clipDuration
+              + " -ss " + queryParams.clipOffset + " -t " + queryParams.clipDuration
               + " -f sox - "
             + " | " + process.env.SOX_PATH 
               + " -t sox - -n spectrogram -h -r"
               + " -o " + tmpFilePath+"-sox.png"
-              + " -x " + specWidth + " -y " + specHeight
-              + " -w " + soxSettings.windowFunc + " -z " + soxSettings.zAxis + " -s"
-              + " -d " + clipDuration;
+              + " -x " + queryParams.specWidth + " -y " + queryParams.specHeight
+              + " -w " + queryParams.specWindowFunc + " -z " + queryParams.specZaxis + " -s"
+              + " -d " + queryParams.clipDuration;
 
         var imageMagick = 
-            (specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
-            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + specRotate + " " + tmpFilePath + "-rotated.png";
+            (queryParams.specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
+            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + queryParams.specRotate + " " + tmpFilePath + "-rotated.png";
 
         var pngCrush = 
-            "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
-//            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
+            // "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
+            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
 
         exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
 
@@ -369,4 +348,44 @@ exports.models = {
 
 
 };
+
+
+function parsePermittedQueryParams( queryParams, clipDurationFull ) {
+
+    var specWidth = (queryParams.width == null) ? 2048 : parseInt(queryParams.width);
+    if (specWidth > 4096) { specWidth = 4096; } else if (specWidth < 1) { specWidth = 1; }
+
+    var specHeight = (queryParams.height == null) ? 512 : parseInt(queryParams.height);
+    if (specHeight > 1024) { specHeight = 1024; } else if (specHeight < 1) { specHeight = 1; }
+
+    var specRotate = (queryParams.rotate == null) ? 0 : parseInt(queryParams.rotate);
+    if ((specRotate != 90) && (specRotate != 180) && (specRotate != 270)) { specRotate = 0; }
+
+    var specZaxis = (queryParams.z_axis == null) ? 95 : parseInt(queryParams.z_axis);
+    if (specZaxis > 180) { specZaxis = 180; } else if (specZaxis < 20) { specZaxis = 20; }
+
+    var specWindowFunc = (queryParams.window_function == null) ? "Dolph" : queryParams.window_function;
+    if ((specWindowFunc != "Hann") && (specWindowFunc != "Hamming") && (specWindowFunc != "Bartlett") && (specWindowFunc != "Rectangular") && (specWindowFunc != "Kaiser")) { specWindowFunc = "Dolph"; }
+
+
+
+    var clipOffset = (queryParams.offset == null) ? 0 : (parseInt(queryParams.offset) / 1000);
+    if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 0) { clipOffset = 0; }
+
+    var clipDuration = (queryParams.duration == null) ? clipDurationFull : (parseInt(queryParams.duration) / 1000);
+    if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset); } else if (clipDuration < 0) { clipDuration = (clipDurationFull - clipOffset); }
+
+
+    return {
+      specWidth: specWidth,
+      specHeight: specHeight,
+      specRotate: specRotate,
+      specZaxis: specZaxis,
+      specWindowFunc: specWindowFunc,
+      clipOffset: clipOffset,
+      clipDuration: clipDuration
+    }
+
+}
+
 
