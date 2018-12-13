@@ -193,7 +193,7 @@ router.route("/:audio_id/tags")
 
           site_guid: "tembe",
           site_timezone: "America/Belem",
-          guardian_guid: "c9d541166e12",
+          guardian_guid: this.dbAudio.Guardian.guid,
           guardian_latitude: 0,
           guardian_longitude: 0
 
