@@ -191,8 +191,8 @@ router.route("/:audio_id/tags")
           model_value: this.cognitionValue,
           model_value_id: this.dbModel.event_value,
 
-          site_guid: this.dbAudio.GuardianSite.guid,
-          site_timezone: this.dbAudio.GuardianSite.timezone,
+          site_guid: this.dbAudio.Site.guid,
+          site_timezone: this.dbAudio.Site.timezone,
           guardian_guid: this.dbAudio.Guardian.guid,
           guardian_latitude: this.dbAudio.Guardian.latitude,
           guardian_longitude: this.dbAudio.Guardian.longitude
