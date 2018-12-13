@@ -189,7 +189,13 @@ router.route("/:audio_id/tags")
           model_name: this.dbModel.shortname,
           model_guid: this.dbModel.guid,
           model_value: this.cognitionValue,
-          model_value_id: this.dbModel.event_value
+          model_value_id: this.dbModel.event_value,
+
+          site_guid: "tembe",
+          site_timezone: "America/Belem",
+          guardian_guid: "c9d541166e12",
+          guardian_latitude: 0,
+          guardian_longitude: 0
 
         };
 
