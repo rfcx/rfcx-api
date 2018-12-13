@@ -191,11 +191,11 @@ router.route("/:audio_id/tags")
           model_value: this.cognitionValue,
           model_value_id: this.dbModel.event_value,
 
-          site_guid: "tembe",
-          site_timezone: "America/Belem",
+          site_guid: this.dbAudio.GuardianSite.guid,
+          site_timezone: this.dbAudio.GuardianSite.timezone,
           guardian_guid: this.dbAudio.Guardian.guid,
-          guardian_latitude: 0,
-          guardian_longitude: 0
+          guardian_latitude: this.dbAudio.Guardian.latitude,
+          guardian_longitude: this.dbAudio.Guardian.longitude
 
         };
 
