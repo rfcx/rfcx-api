@@ -186,16 +186,16 @@ router.route("/:audio_id/tags")
           audio_id: req.params.audio_id,
           model:  this.dbModel.shortname,
 
-          model_name: this.dbModel.shortname,
-          model_guid: this.dbModel.guid,
-          model_value: this.cognitionValue,
-          model_value_id: this.dbModel.event_value,
+          model_name: ""+this.dbModel.shortname,
+          model_guid: ""+this.dbModel.guid,
+          model_value: ""+this.cognitionValue,
+          model_value_id: ""+this.dbModel.event_value,
 
-          site_guid: this.dbAudio.Site.guid,
-          site_timezone: this.dbAudio.Site.timezone,
-          guardian_guid: this.dbAudio.Guardian.guid,
-          guardian_latitude: this.dbAudio.Guardian.latitude,
-          guardian_longitude: this.dbAudio.Guardian.longitude
+          site_guid: ""+this.dbAudio.Site.guid,
+          site_timezone: ""+this.dbAudio.Site.timezone,
+          guardian_guid: ""+this.dbAudio.Guardian.guid,
+          guardian_latitude: ""+this.dbAudio.Guardian.latitude,
+          guardian_longitude: ""+this.dbAudio.Guardian.longitude
 
         };
 
