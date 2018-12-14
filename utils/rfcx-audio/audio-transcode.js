@@ -10,9 +10,9 @@ var audioFormatSettings = {
             outputOptions: [ "-b:a 32k" ]
         },
         opus: { 
-            extension: "opus", codec: "copy"/*"libopus"*/, outputFormat: "opus", mime: "audio/ogg",
+            extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
             inputOptions: [],
-            outputOptions: [ /*"-b:a 16k", "-compression_level 9",*/ "-application audio"/*, "-vbr on"*/  ]
+            outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ]
         },
         wav: { 
             extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
@@ -49,15 +49,18 @@ exports.audioUtils = {
                         var ffmpegOutputOptions = [];
                         if (inputParams.clipOffset != null) { ffmpegOutputOptions.push("-ss "+inputParams.clipOffset); }
                         if (inputParams.clipDuration != null) { ffmpegOutputOptions.push("-t "+inputParams.clipDuration); }
-                        var preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced);
-                        for (i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]); }
+
+                        if (!inputParams.copyCodecInsteadOfTranscode) {
+                           var preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced);
+                            for (i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]); }
+                        }
 
                         new ffmpeg(inputParams.sourceFilePath)
                             .input(inputParams.sourceFilePath)
                             .inputOptions(ffmpegInputOptions)
                             .outputOptions(ffmpegOutputOptions)
                             .outputFormat(audioFormatSettings[audioFormat].outputFormat)
-                            .audioCodec(audioFormatSettings[audioFormat].codec)
+                            .audioCodec((inputParams.copyCodecInsteadOfTranscode) ? "copy" : audioFormatSettings[audioFormat].codec)
                             .audioFrequency(inputParams.sampleRate)
                             .audioChannels((inputParams.enhanced) ? 2 : 1)
                      //       .audioBitrate(inputParams.bitRate)

@@ -54,6 +54,7 @@ exports.models = {
             sampleRate: dbRow.Format.sample_rate,
             clipOffset: queryParams.clipOffset,
             clipDuration: queryParams.clipDuration,
+            copyCodecInsteadOfTranscode: (dbRow.Format.file_extension === output_file_extension),
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
             audioUtils.serveAudioFromFile(res, outputFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
