@@ -99,13 +99,12 @@ exports.models = {
           }).then(function (outputFilePath) {
 
             var amplitudeType = "RMS";
-            var windowDurationSec = queryParams.amplitudeWindowDuration / 1000;
 
             var soxExec = "";
 
-            for (var i = 0; i < ((dbRow.capture_sample_count/dbRow.Format.sample_rate)/windowDurationSec); i++) {
+            for (var i = 0; i < (queryParams.clipDuration/queryParams.amplitudeWindowDuration); i++) {
               if (i > 0) { soxExec += " && "; }
-              soxExec += "echo \"$("+process.env.SOX_PATH+" "+outputFilePath+" -n trim "+(windowDurationSec*i)+" "+windowDurationSec+" stat 2>&1)\""
+              soxExec += "echo \"$("+process.env.SOX_PATH+" "+outputFilePath+" -n trim "+(queryParams.amplitudeWindowDuration*i)+" "+queryParams.amplitudeWindowDuration+" stat 2>&1)\""
                           +" | grep \""+amplitudeType+"\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'";
             }
 
@@ -125,9 +124,8 @@ exports.models = {
                 guid: dbRow.guid,
                 offset: Math.round( 1000 * queryParams.clipOffset ),
                 duration: Math.round( 1000 * queryParams.clipDuration ),
-//                duration: Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
                 amplitude: {
-                  window_duration: queryParams.amplitudeWindowDuration,
+                  window_duration: Math.round( 1000 * queryParams.amplitudeWindowDuration ),
                   type: amplitudeType.toLowerCase(),
                   values: allAmplitudes
                 }
@@ -401,7 +399,7 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
       specRotate: specRotate,
       specZaxis: specZaxis,
       specWindowFunc: specWindowFunc.substr(0,1).toUpperCase()+specWindowFunc.substr(1),
-      amplitudeWindowDuration: amplitudeWindowDuration,
+      amplitudeWindowDuration: amplitudeWindowDuration / 1000,
       clipOffset: clipOffset,
       clipDuration: clipDuration
     }
