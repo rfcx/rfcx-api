@@ -10,9 +10,9 @@ var audioFormatSettings = {
             outputOptions: [ "-b:a 32k" ]
         },
         opus: { 
-            extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
+            extension: "opus", codec: "copy"/*"libopus"*/, outputFormat: "opus", mime: "audio/ogg",
             inputOptions: [],
-            outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ]
+            outputOptions: [ /*"-b:a 16k", "-compression_level 9",*/ "-application audio"/*, "-vbr on"*/  ]
         },
         wav: { 
             extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
