@@ -20,7 +20,10 @@ exports.models = {
 
     var output_file_extension = req.rfcx.content_type,
         output_file_name = dbRow.guid + "." + output_file_extension,
-        is_output_enhanced = (output_file_extension === "mp3");
+        is_output_enhanced = (output_file_extension === "mp3"),
+
+        clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate),
+        queryParams = parsePermittedQueryParams( req.query, clipDurationFull );
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
@@ -30,10 +33,10 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
 
-        if (dbRow.Format.file_extension === output_file_extension) {
+        if (    (dbRow.Format.file_extension === output_file_extension)
+            &&  ( Math.round(1000*queryParams.clipDuration)/1000 == Math.round(1000*clipDurationFull)/1000 ) ) {
 
           console.log("serving " + output_file_extension + " file without transcoding");
-
           audioUtils.serveAudioFromFile(res, sourceFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
             .then(function () {
               // should we do/log anything if we're successful?
@@ -49,6 +52,9 @@ exports.models = {
             enhanced: is_output_enhanced,
             bitRate: is_output_enhanced ? "32k" : "16k",
             sampleRate: dbRow.Format.sample_rate,
+            clipOffset: queryParams.clipOffset,
+            clipDuration: queryParams.clipDuration,
+            copyCodecInsteadOfTranscode: (dbRow.Format.file_extension === output_file_extension),
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
             audioUtils.serveAudioFromFile(res, outputFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
@@ -74,6 +80,8 @@ exports.models = {
 
     return new Promise(function (resolve, reject) {
 
+      var queryParams = parsePermittedQueryParams( req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate) );
+
       // auto-generate the asset filepath if it's not stored in the url column
       var audioStorageUrl = (dbRow.url == null)
               ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
@@ -85,19 +93,18 @@ exports.models = {
           audioUtils.transcodeToFile("wav", {
             enhanced: false,
             sampleRate: dbRow.Format.sample_rate,
+            clipOffset: queryParams.clipOffset,
+            clipDuration: queryParams.clipDuration,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
 
             var amplitudeType = "RMS";
-            var allowedWindowDurations = [ 250, 500, 1000, 2000 ];
-            var windowDurationMs = (allowedWindowDurations.indexOf(parseInt(req.query.window_duration)) >= 0) ? parseInt(req.query.window_duration) : 500;
-            var windowDurationSec = windowDurationMs / 1000;
 
             var soxExec = "";
 
-            for (var i = 0; i < ((dbRow.capture_sample_count/dbRow.Format.sample_rate)/windowDurationSec); i++) {
+            for (var i = 0; i < (queryParams.clipDuration/queryParams.amplitudeWindowDuration); i++) {
               if (i > 0) { soxExec += " && "; }
-              soxExec += "echo \"$("+process.env.SOX_PATH+" "+outputFilePath+" -n trim "+(windowDurationSec*i)+" "+windowDurationSec+" stat 2>&1)\""
+              soxExec += "echo \"$("+process.env.SOX_PATH+" "+outputFilePath+" -n trim "+(queryParams.amplitudeWindowDuration*i)+" "+queryParams.amplitudeWindowDuration+" stat 2>&1)\""
                           +" | grep \""+amplitudeType+"\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'";
             }
 
@@ -115,9 +122,10 @@ exports.models = {
 
               resolve([{
                 guid: dbRow.guid,
-                duration: Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
+                offset: Math.round( 1000 * queryParams.clipOffset ),
+                duration: Math.round( 1000 * queryParams.clipDuration ),
                 amplitude: {
-                  window_duration: windowDurationMs,
+                  window_duration: Math.round( 1000 * queryParams.amplitudeWindowDuration ),
                   type: amplitudeType.toLowerCase(),
                   values: allAmplitudes
                 }
@@ -142,16 +150,9 @@ exports.models = {
 
   guardianAudioSpectrogram: function (req, res, dbRow) {
 
-    var specSettings = {
-      tmpFilePath: process.env.CACHE_DIRECTORY + "ffmpeg/" + hash.randomString(32) + ".png",
-      specWidth: 2048, specHeight: 512,
-      zAxis: 95, // color range in dB, ranging from 20 to 180
-      windowFunc: // window function options listed below (select only one)
-        "Dolph" //  "Hann"  "Hamming"  "Bartlett"  "Rectangular"  "Kaiser"
-    };
+    var tmpFilePath = process.env.CACHE_DIRECTORY + "ffmpeg/" + hash.randomString(32);
 
-    if (req.query.width != null) { specSettings.specWidth = parseInt(req.query.width); }
-    if (req.query.height != null) { specSettings.specHeight = parseInt(req.query.height); }
+    var queryParams = parsePermittedQueryParams( req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate) );
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
@@ -161,17 +162,28 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
 
-        var ffmpegSox = process.env.FFMPEG_PATH + " -i " + sourceFilePath + " -loglevel panic -nostdin"
-            + " -ac 1 -ar " + dbRow.Format.sample_rate
-            + " -f sox - "
-            + " | " + process.env.SOX_PATH + " -t sox - -n spectrogram -h -r"
-            + " -o " + specSettings.tmpFilePath
-            + " -x " + specSettings.specWidth + " -y " + specSettings.specHeight
-            + " -w " + specSettings.windowFunc + " -z " + specSettings.zAxis + " -s"
-            + " -d " + (dbRow.capture_sample_count / dbRow.Format.sample_rate)
-          ;
+        var ffmpegSox = 
+            process.env.FFMPEG_PATH 
+              + " -i " + sourceFilePath + " -loglevel panic -nostdin"
+              + " -ac 1 -ar " + dbRow.Format.sample_rate
+              + " -ss " + queryParams.clipOffset + " -t " + queryParams.clipDuration
+              + " -f sox - "
+            + " | " + process.env.SOX_PATH 
+              + " -t sox - -n spectrogram -h -r"
+              + " -o " + tmpFilePath+"-sox.png"
+              + " -x " + queryParams.specWidth + " -y " + queryParams.specHeight
+              + " -w " + queryParams.specWindowFunc + " -z " + queryParams.specZaxis + " -s"
+              + " -d " + queryParams.clipDuration;
 
-        exec(ffmpegSox, function (err, stdout, stderr) {
+        var imageMagick = 
+            (queryParams.specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
+            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + queryParams.specRotate + " " + tmpFilePath + "-rotated.png";
+
+        var pngCrush = 
+            // "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
+            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
+
+        exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
 
           if (stderr.trim().length > 0) {
             console.log(stderr);
@@ -180,13 +192,11 @@ exports.models = {
             console.log(err);
           }
 
-          fs.unlink(sourceFilePath, function (e) {
-            if (e) {
-              console.log(e);
-            }
-          });
+          fs.unlink(sourceFilePath, function (e) { if (e) { console.log(e); } });
+          fs.unlink(tmpFilePath+"-sox.png", function (e) { if (e) { console.log(e); } });
+          fs.unlink(tmpFilePath+"-rotated.png", function (e) { if (e) { console.log(e); } });
 
-          audioUtils.serveAudioFromFile(res, specSettings.tmpFilePath, dbRow.guid + ".png", "image/png")
+          audioUtils.serveAudioFromFile(res, tmpFilePath+"-final.png", dbRow.guid + ".png", "image/png")
             .then(function () {
               // should we do/log anything if we're successful?
             }).catch(function (err) {
@@ -346,4 +356,54 @@ exports.models = {
 
 
 };
+
+
+function parsePermittedQueryParams( queryParams, clipDurationFull ) {
+
+    // Spectrogram Image Dimensions & Rotation
+
+    var specWidth = (queryParams.width == null) ? 2048 : parseInt(queryParams.width);
+    if (specWidth > 4096) { specWidth = 4096; } else if (specWidth < 1) { specWidth = 1; }
+
+    var specHeight = (queryParams.height == null) ? 512 : parseInt(queryParams.height);
+    if (specHeight > 1024) { specHeight = 1024; } else if (specHeight < 1) { specHeight = 1; }
+
+    var specRotate = (queryParams.rotate == null) ? 0 : parseInt(queryParams.rotate);
+    if ((specRotate != 90) && (specRotate != 180) && (specRotate != 270)) { specRotate = 0; }
+
+    // Spectrogram SOX Customization Parameters
+
+    var specZaxis = (queryParams.z_axis == null) ? 95 : parseInt(queryParams.z_axis);
+    if (specZaxis > 180) { specZaxis = 180; } else if (specZaxis < 20) { specZaxis = 20; }
+
+    var specWindowFunc = (queryParams.window_function == null) ? "dolph" : queryParams.window_function.trim().toLowerCase();
+    if ( [ "dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser" ].indexOf(specWindowFunc) < 0 ) { specWindowFunc = "dolph"; }
+
+    // Amplitude Analysis Customization Parameters
+
+    var amplitudeWindowDuration = (queryParams.window_duration == null) ? 500 : parseInt(queryParams.window_duration);
+    if ( [ 250, 500, 1000, 2000 ].indexOf(amplitudeWindowDuration) < 0 ) { amplitudeWindowDuration = 500; }
+
+    // Audio Clipping Parameters
+
+    var clipOffset = (queryParams.offset == null) ? 0 : (parseInt(queryParams.offset) / 1000);
+    if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 0) { clipOffset = 0; }
+
+    var clipDuration = (queryParams.duration == null) ? clipDurationFull : (parseInt(queryParams.duration) / 1000);
+    if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset); } else if (clipDuration < 0) { clipDuration = (clipDurationFull - clipOffset); }
+
+
+    return {
+      specWidth: specWidth,
+      specHeight: specHeight,
+      specRotate: specRotate,
+      specZaxis: specZaxis,
+      specWindowFunc: specWindowFunc.substr(0,1).toUpperCase()+specWindowFunc.substr(1),
+      amplitudeWindowDuration: amplitudeWindowDuration / 1000,
+      clipOffset: clipOffset,
+      clipDuration: clipDuration
+    }
+
+}
+
 

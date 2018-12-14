@@ -10,7 +10,6 @@ var analysisUtils = require("../../../utils/rfcx-analysis/analysis-queue.js").an
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var loggers = require('../../../utils/logger');
 var sequelize = require("sequelize");
-// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 const analysisService = require('../../../services/analysis/analysis-service');
 
 var logDebug = loggers.debugLogger.log;
@@ -154,9 +153,6 @@ router.route("/:audio_id/tags")
             analysisService.changeEntityState(this.dbAudio.id, this.dbModel.id, state.id);
           });
 
-        let wsObj = analysisUtils.prepareWsObject(this.dbAudio, tagsJson, this.dbModel);
-        // websocket.send('createAudioPerception', wsObj); DISABLE WEBSOCKET FOR PROD
-
         if(this.dbModel.generate_event==0){
           logDebug('Audio tags endpoint: model not generating events, finishing', { req: req });
           return tags;
@@ -183,12 +179,35 @@ router.route("/:audio_id/tags")
 
 
         var createdEvent = {
+
+          // these attributes are for the legacy RFCx window-counting cognition layer
           type: this.dbModel.event_type,
           value: this.dbModel.event_value,
           begins_at: this.eventBeginsAt,
           ends_at: this.eventEndsAt,
           audio_id: req.params.audio_id,
-          model:  this.dbModel.shortname
+          model:  this.dbModel.shortname,
+
+          // these attributes are for the SAP integrated cognition layer
+          model_name: ""+this.dbModel.shortname,
+          model_guid: ""+this.dbModel.guid,
+          model_value: ""+this.cognitionValue,
+          model_value_id: ""+this.dbModel.event_value,
+          model_window_duration: "2000",
+
+          site_guid: ""+this.dbAudio.Site.guid,
+          site_timezone: ""+this.dbAudio.Site.timezone,
+
+          guardian_guid: ""+this.dbAudio.Guardian.guid,
+          guardian_latitude: ""+this.dbAudio.Guardian.latitude,
+          guardian_longitude: ""+this.dbAudio.Guardian.longitude,
+
+          audio_guid: ""+this.dbAudio.guid,
+          audio_begins_at: this.dbAudio.measured_at,
+
+          event_type: "alert_sap",
+          event_type_id: "3"
+
         };
 
         var options = {

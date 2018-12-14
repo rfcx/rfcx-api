@@ -8,6 +8,9 @@ const request = require('request');
 const hash = require('../../utils/misc/hash').hash;
 const guid = require('../../utils/misc/guid');
 const sensationsService = require('..//sensations/sensations-service');
+const moment = require("moment-timezone");
+const ValidationError = require('../../utils/converter/validation-error');
+const sqlUtils = require("../../utils/misc/sql");
 
 function getUserByParams(params) {
   return models.User
@@ -29,11 +32,12 @@ function getUserByEmail(email) {
   return getUserByParams({ email });
 }
 
-function getUserByGuidOrEmail(field) {
+function getUserByGuidOrEmail(field1, field2) {
+  field2 = field2 || field1;
   return getUserByParams({
     $or: {
-      guid: field,
-      email: field
+      guid: field1,
+      email: field2
     }
   });
 }
@@ -239,6 +243,74 @@ function createUserLocations(data) {
   return models.UserLocation.bulkCreate(data, { validate: true });
 }
 
+function getLocations(req) {
+
+  let dir = 'DESC';
+  if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
+    dir = req.query.dir.toUpperCase();
+  }
+
+  let opts = {
+    limit: req.query.limit? parseInt(req.query.limit) : 10000,
+    offset: req.query.offset? parseInt(req.query.offset) : 0,
+    afterTime: req.query.after_time,
+    beforeTime: req.query.before_time,
+    afterLocalTime: req.query.after_local_time,
+    beforeLocalTime: req.query.before_local_time,
+    users: req.query.users? (Array.isArray(req.query.users)? req.query.users : [req.query.users]) : undefined,
+    sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
+    order: 'Location.time',
+    dir: dir,
+  };
+
+  let sql = `SELECT Location.latitude, Location.longitude, Location.time,
+                    User.firstname, User.lastname, User.email, User.guid as user_guid,
+                    DefaultSite.guid as site_guid, DefaultSite.timezone as site_timezone
+             FROM UserLocations AS Location
+             LEFT JOIN Users AS User ON Location.user_id = User.id
+             LEFT JOIN GuardianSites AS DefaultSite ON User.default_site = DefaultSite.id`;
+
+  sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
+  sql = sqlUtils.condAdd(sql, opts.afterTime, ' AND Location.time > :afterTime');
+  sql = sqlUtils.condAdd(sql, opts.beforeTime, ' AND Location.time < :beforeTime');
+  sql = sqlUtils.condAdd(sql, opts.afterLocalTime, ' AND Location.time > DATE_SUB(:afterLocalTime, INTERVAL 12 HOUR)');
+  sql = sqlUtils.condAdd(sql, opts.beforeLocalTime, ' AND Location.time < DATE_ADD(:beforeLocalTime, INTERVAL 14 HOUR)');
+  sql = sqlUtils.condAdd(sql, opts.users, ' AND User.guid IN (:users)');
+  sql = sqlUtils.condAdd(sql, opts.sites, ' AND DefaultSite.guid IN (:sites)');
+  sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+  sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
+
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((locations) => {
+      return filterWithTz(opts, locations);
+    });
+
+}
+
+function filterWithTz(opts, locations) {
+  if (!opts.afterLocalTime && !opts.beforeLocalTime) {
+    return locations;
+  }
+  return locations.filter((location) => {
+    let timeTz = moment.tz(location.time, location.site_timezone);
+
+    if (opts.afterLocalTime) {
+      if (timeTz < moment.tz(opts.afterLocalTime, location.site_timezone)) {
+        return false;
+      }
+    }
+    if (opts.beforeLocalTime) {
+      if (timeTz > moment.tz(opts.beforeLocalTime, location.site_timezone)) {
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
@@ -257,4 +329,5 @@ module.exports = {
   formatCheckin,
   createUserLocation,
   createUserLocations,
+  getLocations,
 };

@@ -3,6 +3,7 @@ var sequelize = require("sequelize");
 var Converter = require('../../utils/converter/converter');
 var Promise = require("bluebird");
 var ValidationError = require("../../utils/converter/validation-error");
+var eventsService = require('../events/events-service');
 
 function getGroupByShortname(shortname) {
   return models.GuardianGroup
@@ -68,22 +69,32 @@ function createGroup(opts) {
       return models.GuardianGroup.create(this.data);
     })
     .then(group => {
+      this.group = group;
       if (opts.guardians) {
         return updateGuardiansGroupRelations(group, opts);
       }
-      return group.reload({ include: [{ all: true }] });
+      return Promise.resolve(true);
     })
+    .then(() => {
+      if (opts.event_values) {
+        return updateGuardianGroupEventValuesRelations(this.group, opts);
+      }
+      return Promise.resolve(true);
+    })
+    .then(() => {
+      return this.group.reload({ include: [{ all: true }] });
+    });
 }
 
 function updateGroup(shortname, opts) {
-  return validateGuardiansRelationsParams(opts)
+  return getGroupByShortname(shortname)
     .bind({})
-    .then((data) => {
-      this.data = data;
-      return getGroupByShortname(shortname);
-    })
     .then((group) => {
-      return updateGuardiansGroupRelations(group, this.data);
+      this.group = group;
+      return updateGuardiansGroupRelations(group, opts);
+    })
+    .then(() => {
+      return updateGuardianGroupEventValuesRelations(this.group, opts);
     });
 }
 
@@ -109,12 +120,35 @@ function updateGuardiansGroupRelations(group, params) {
     });
 }
 
+function updateGuardianGroupEventValuesRelations(group, params) {
+  return validateGuardianGroupEventValuesRelationsParams(params)
+    .bind({})
+    .then(data => {
+      return eventsService.getAllGuardianAudioEventValuesByValues(data.event_values);
+    })
+    .then(eventValues => {
+      this.eventValues = eventValues;
+      return clearGuardianGroupEventValuesRelationsForGroup(group);
+    })
+    .then(() => {
+      return attachEventValuesToGroup(this.eventValues, group);
+    })
+    .then(() => {
+      return group.reload({ include: [{ all: true }] });
+    });
+}
+
 function getAllGroupsForGuardianId(guardian_id) {
   return models.GuardianGroup.findAll({
-    include: [{
-      model: models.Guardian,
-      where: { id: guardian_id }
-    }]
+    include: [
+      {
+        model: models.Guardian,
+        where: { id: guardian_id }
+      },
+      {
+        model: models.GuardianAudioEventValue,
+      },
+    ]
   });
 }
 
@@ -130,6 +164,9 @@ function formatGroup(group, extended) {
         guid: guardian.guid,
         name: guardian.shortname,
       };
+    }) : [];
+    data.event_values = group.GuardianAudioEventValues? group.GuardianAudioEventValues.map((eventValue) => {
+      return eventValue.value;
     }) : [];
   }
   return data;
@@ -169,6 +206,28 @@ function attachGuardiansToGroup(guardians, group) {
   let proms = [];
   guardians.forEach(guardian => {
     let prom = group.addGuardian(guardian);
+    proms.push(prom);
+  });
+  return Promise.all(proms);
+}
+
+function validateGuardianGroupEventValuesRelationsParams(data) {
+  let transformedParams = {};
+  let params = new Converter(data, transformedParams);
+
+  params.convert('event_values').toArray();
+
+  return params.validate();
+};
+
+function clearGuardianGroupEventValuesRelationsForGroup(group) {
+  return models.GuardianGroupGuardianAudioEventValueRelation.destroy({ where: { guardian_group_id: group.id } });
+}
+
+function attachEventValuesToGroup(eventValues, group) {
+  let proms = [];
+  eventValues.forEach(value => {
+    let prom = group.addGuardianAudioEventValue(value);
     proms.push(prom);
   });
   return Promise.all(proms);

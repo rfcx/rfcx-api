@@ -42,14 +42,27 @@ exports.audioUtils = {
                 fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
                     if (statErr == null) {
 
-                        var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf(".")+1)+audioFormat;
-                        
+                        var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"_."+audioFormat;
+
+                        var ffmpegInputOptions = getInputOptions(audioFormat,inputParams.enhanced);
+
+                        var copyCodecInsteadOfTranscode = (inputParams.copyCodecInsteadOfTranscode == null) ? false : inputParams.copyCodecInsteadOfTranscode;
+
+                        var ffmpegOutputOptions = [];
+                        if (inputParams.clipOffset != null) { ffmpegOutputOptions.push("-ss "+inputParams.clipOffset); }
+                        if (inputParams.clipDuration != null) { ffmpegOutputOptions.push("-t "+inputParams.clipDuration); }
+
+                        if (!copyCodecInsteadOfTranscode) {
+                           var preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced);
+                            for (i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]); }
+                        }
+
                         new ffmpeg(inputParams.sourceFilePath)
                             .input(inputParams.sourceFilePath)
-                            .inputOptions(getInputOptions(audioFormat,inputParams.enhanced))
-                            .outputOptions(getOutputOptions(audioFormat,inputParams.enhanced))
+                            .inputOptions(ffmpegInputOptions)
+                            .outputOptions(ffmpegOutputOptions)
                             .outputFormat(audioFormatSettings[audioFormat].outputFormat)
-                            .audioCodec(audioFormatSettings[audioFormat].codec)
+                            .audioCodec((copyCodecInsteadOfTranscode) ? "copy" : audioFormatSettings[audioFormat].codec)
                             .audioFrequency(inputParams.sampleRate)
                             .audioChannels((inputParams.enhanced) ? 2 : 1)
                      //       .audioBitrate(inputParams.bitRate)
@@ -73,77 +86,6 @@ exports.audioUtils = {
             }
         }.bind(this));
     },
-
-    // transcodeToWavFile: function(audioFormat, inputParams) {
-    //     return new Promise(function(resolve, reject) {
-    //         try {
-    //             fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
-    //                 if (statErr == null) {
-
-    //                     var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf(".")+1)+audioFormat;
-                        
-    //                     new ffmpeg(inputParams.sourceFilePath)
-    //                         .input(inputParams.sourceFilePath)
-    //                         .inputOptions(getInputOptions(audioFormat,inputParams.enhanced))
-    //                         .outputOptions(getOutputOptions(audioFormat,inputParams.enhanced))
-    //                         .outputFormat(audioFormatSettings[audioFormat].outputFormat)
-    //                         .audioCodec(audioFormatSettings[audioFormat].codec)
-    //                         .audioFrequency(inputParams.sampleRate)
-    //                         .audioChannels((inputParams.enhanced) ? 2 : 1)
-    //                  //       .audioBitrate(inputParams.bitRate)
-    //                         .save(transcodedFilePath)
-    //                         .on("error",function(err,stdout,stderr){
-    //                             console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-    //                         })
-    //                         .on("end",function(){
-    //                             fs.unlink(inputParams.sourceFilePath,function(e){if(e){console.log(e);}});
-    //                             resolve(transcodedFilePath);
-    //                         });
-    //                 } else {
-    //                     console.log("failed to locate source audio | " + err);
-    //                     reject(new Error(err));
-    //                 }
-    //             });           
-
-    //         } catch(err) {
-    //             console.log("failed to transcode audio to "+audioFormat+" | " + err);
-    //             reject(new Error(err));
-    //         }
-    //     }.bind(this));
-    // },
-
-
-    transcodeToOpus: function(inputParams) {
-        return new Promise(function(resolve, reject) {
-            try {
-                fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
-                    if (statErr == null) {
-                        resolve(
-                            new ffmpeg(inputParams.sourceFilePath)
-                                .input(inputParams.sourceFilePath)
-                                .outputOptions(getOutputOptions("opus",inputParams.enhanced))
-                                .outputFormat(audioFormatSettings.opus.outputFormat)
-                                .audioCodec(audioFormatSettings.opus.codec)
-                                .audioFrequency(inputParams.sampleRate)
-                                .audioChannels((inputParams.enhanced) ? 2 : 1)
-                                .audioBitrate(inputParams.bitRate)
-                                // .on("error",function(err,stdout,stderr){
-                                //     console.log('an error occurred: '+err.message+', stdout: '+stdout+', stderr: '+stderr);
-                                // })
-                        );  
-                    } else {
-                        console.log("failed to locate source audio | " + err);
-                        reject(new Error(err));
-                    }
-                });           
-
-            } catch(err) {
-                console.log("failed to transcode audio to opus | " + err);
-                reject(new Error(err));
-            }
-        }.bind(this));
-    }
-
 
 };
 

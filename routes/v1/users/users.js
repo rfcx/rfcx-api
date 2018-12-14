@@ -416,6 +416,17 @@ router.route("/checkin")
 
   });
 
+router.route("/locations")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), (req,res) => {
+
+    return usersService.getLocations(req)
+      .then(result => res.status(200).json(result))
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Cannot get users locations`));
+
+  });
+
 router.route("/lastcheckin")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req,res) {
 
@@ -764,6 +775,38 @@ router.route("/auth0/send-change-password-email")
 
   });
 
+router.route("/:id/info")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
+
+    usersService.getUserByGuidOrEmail(req.params.id)
+      .then((user) => {
+        return usersService.formatUser(user);
+      })
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't get user info.")});
+
+  });
+
+router.route("/info")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
+
+    usersService.getUserByGuidOrEmail(req.query.guid, req.query.email)
+      .then((user) => {
+        return usersService.formatUser(user);
+      })
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't get user info.")});
+
+  });
+
 // TO DO security measure to ensure that not any user can see any other user
 router.route("/:user_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
@@ -789,22 +832,6 @@ router.route("/:user_id")
 
   })
 ;
-
-router.route("/:id/info")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
-
-    usersService.getUserByGuidOrEmail(req.params.id)
-      .then((user) => {
-        return usersService.formatUser(user);
-      })
-      .then((data) => {
-        res.status(200).json(data);
-      })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't get user info.")});
-
-  });
 
 router.route("/:guid/sites")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {

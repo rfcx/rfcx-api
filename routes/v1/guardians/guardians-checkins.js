@@ -15,11 +15,9 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require('bluebird');
 var loggers = require('../../../utils/logger');
-// var websocket = require('../../../utils/websocket'); DISABLE WEBSOCKET FOR PROD
 var urls = require('../../../utils/misc/urls');
 var sequelize = require("sequelize");
 const moment = require("moment-timezone");
-const kafka = require('../../../services/kafka/kafka-service');
 
 var logDebug = loggers.debugLogger.log;
 
@@ -39,6 +37,7 @@ router.route("/:guardian_id/checkins")
 
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.meta)
+      .bind({})
       .then(function(json){
         this.json = json;
         logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json });
@@ -231,31 +230,6 @@ router.route("/:guardian_id/checkins")
               });
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
             })
-            // .then(function() {
-              // logDebug('Guardian checkins endpoint: extracted audio file meta', { req: req, audioInfo: audioInfo, audioInfoInd: audioInfoInd });
-              // let audioInfoCurrent = Object.assign({}, this.audioInfoCurrent);
-              // models.GuardianAudio
-              //   .findOne({
-              //     where: { id: audioInfoCurrent.audio_id },
-              //     include: [ { all: true } ]
-              //   })
-              //   .then(function(dbAudio) {
-              //     logDebug('Guardian checkins endpoint: founded dbAudio', {
-              //       req: req,
-              //       dbAudio: dbAudio,
-              //     });
-              //     let kafObj = checkInHelpers.audio.prepareKafkaObject(req, audioInfoCurrent, self.dbGuardian, dbAudio);
-              //     logDebug('Guardian checkins endpoint: kafka message', { req: req, message: kafObj, });
-              //     return kafka.preparePayloadItem('Sensation', JSON.stringify(kafObj))
-              //                 .then(kafka.send);
-              //     // let wsObj = checkInHelpers.audio.prepareWsObject(req, audioInfoCurrent, self.dbGuardian, dbAudio); DISABLE WEBSOCKET FOR PROD
-              //     // websocket.send('createAudioSensation', wsObj); DISABLE WEBSOCKET FOR PROD
-              //   })
-              //   .catch(function(err) {
-              //     loggers.errorLogger.log('Failed to send websocket data for guardian checkin', { req: req, err: err });
-              //   });
-            //   return true;
-            // })
           proms.push(prom);
         }
         return Promise.all(proms);
@@ -356,5 +330,3 @@ function strArrToJSArr(str,delimA,delimB) {
     return [];
   }
 }
-
-

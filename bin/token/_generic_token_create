@@ -45,6 +45,13 @@ for (var i = 0; i < howManyTokens; i++) {
             token: tkn.token, 
             expires_at: tkn.token_expires_at.toISOString()
           }); 
+          if (rtrnTokens.length == howManyTokens) { 
+            for (var j = 0; j < howManyTokens; j++) { 
+              console.log("token/"+rtrnTokens[j].guid); 
+              console.log(rtrnTokens[j].token); 
+            }
+            console.log("");
+          }
         }).done();
       break;
 
