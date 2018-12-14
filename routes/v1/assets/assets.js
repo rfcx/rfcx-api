@@ -108,7 +108,7 @@ router.route("/report/audio/:guid").get(function(req, res) {
       let filename = `${req.params.guid}.${req.rfcx.content_type}`;
       let s3Bucket = process.env.ASSET_BUCKET_REPORT;
       let s3Path = reportsService.getS3PathForReportAudio(dbReport.reported_at);
-      return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path);
+      return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path, !!req.query.inline);
     })
     .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
     .catch(ValidationError, e => httpError(req, res, 400, null, e.message))

@@ -3,7 +3,7 @@ var fs = require("fs");
 
 exports.audioUtils = {
 
-    serveAudioFromFile: function(res,filePathToServe,fileName,mimeType) {
+    serveAudioFromFile: function(res, filePathToServe, fileName, mimeType, inline) {
 
         return new Promise(function(resolve, reject) {
             try {
@@ -12,13 +12,20 @@ exports.audioUtils = {
 
                 if (statErr == null) {
 
-                  res.writeHead(200, {
+                  let headers = {
                     "Content-Type": mimeType,
                     "Content-Length": audioFileStat.size,
-                    "Accept-Ranges": "bytes 0-"+(audioFileStat.size-1)+"/"+audioFileStat.size,
-            //        "Content-Disposition": "attachment; filename="+fileName,    // this forces SaveAs/Download function in browser
+                    "Accept-Ranges": `bytes 0-${audioFileStat.size-1}/${audioFileStat.size}`,
+                    "Content-Disposition": `attachment; filename=${fileName}`,
                     "Cache-Control": "max-age=600"
-                  });
+                  }
+
+                  // if we'd like to play audio in browser instead of downloading it
+                  if (inline) {
+                    delete headers['Content-Disposition'];
+                  }
+
+                  res.writeHead(200, headers);
 
                   fs.createReadStream(filePathToServe)
                     .on("end",function(){

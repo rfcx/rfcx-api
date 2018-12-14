@@ -13,13 +13,13 @@ function combineAssetsUrls(req, guids, extension) {
   });
 }
 
-function serveAudioFromS3(res, filename, s3Bucket, s3Path) {
+function serveAudioFromS3(res, filename, s3Bucket, s3Path, inline) {
 
   var audioStorageUrl = `s3://${s3Bucket}/${s3Path}/${filename}`;
 
   return audioUtils.cacheSourceAudio(audioStorageUrl)
     .then(({ sourceFilePath, headers }) => {
-      audioUtils.serveAudioFromFile(res, sourceFilePath, filename, (headers? headers['content-type'] : null))
+      audioUtils.serveAudioFromFile(res, sourceFilePath, filename, (headers? headers['content-type'] : null), inline)
     });
 
 }
