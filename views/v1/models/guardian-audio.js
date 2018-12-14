@@ -123,8 +123,8 @@ exports.models = {
 
               resolve([{
                 guid: dbRow.guid,
-                offset: Math.round(1000 * queryParams.clipOffset),
-                duration: Math.round(1000 * queryParams.clipDuration),//Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
+            //    offset: Math.round(1000 * queryParams.clipOffset),
+                duration: /*Math.round(1000 * queryParams.clipDuration),*/Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
                 amplitude: {
                   window_duration: queryParams.amplitudeWindowDuration,
                   type: amplitudeType.toLowerCase(),
