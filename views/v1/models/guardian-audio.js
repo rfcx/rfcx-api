@@ -22,6 +22,8 @@ exports.models = {
         output_file_name = dbRow.guid + "." + output_file_extension,
         is_output_enhanced = (output_file_extension === "mp3");
 
+    var queryParams = parsePermittedQueryParams( req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate) );
+
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
               ? "s3://"+process.env.ASSET_BUCKET_AUDIO+assetUtils.getGuardianAssetStoragePath("audio",dbRow.measured_at,dbRow.Guardian.guid,dbRow.Format.file_extension)
@@ -73,6 +75,8 @@ exports.models = {
   guardianAudioAmplitude: function (req, res, dbRow) {
 
     return new Promise(function (resolve, reject) {
+
+      var queryParams = parsePermittedQueryParams( req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate) );
 
       // auto-generate the asset filepath if it's not stored in the url column
       var audioStorageUrl = (dbRow.url == null)
@@ -352,6 +356,8 @@ exports.models = {
 
 function parsePermittedQueryParams( queryParams, clipDurationFull ) {
 
+    // Spectrogram Image Dimensions & Rotation
+
     var specWidth = (queryParams.width == null) ? 2048 : parseInt(queryParams.width);
     if (specWidth > 4096) { specWidth = 4096; } else if (specWidth < 1) { specWidth = 1; }
 
@@ -361,13 +367,16 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
     var specRotate = (queryParams.rotate == null) ? 0 : parseInt(queryParams.rotate);
     if ((specRotate != 90) && (specRotate != 180) && (specRotate != 270)) { specRotate = 0; }
 
+    // Spectrogram SOX Customization Parameters
+
     var specZaxis = (queryParams.z_axis == null) ? 95 : parseInt(queryParams.z_axis);
     if (specZaxis > 180) { specZaxis = 180; } else if (specZaxis < 20) { specZaxis = 20; }
 
-    var specWindowFunc = (queryParams.window_function == null) ? "Dolph" : queryParams.window_function;
-    if ((specWindowFunc != "Hann") && (specWindowFunc != "Hamming") && (specWindowFunc != "Bartlett") && (specWindowFunc != "Rectangular") && (specWindowFunc != "Kaiser")) { specWindowFunc = "Dolph"; }
+    var specWindowFunc = (queryParams.window_function == null) ? "dolph" : queryParams.window_function.toLowerCase();
+    if (    (specWindowFunc != "hann") && (specWindowFunc != "hamming") && (specWindowFunc != "bartlett") 
+        && (specWindowFunc != "rectangular") && (specWindowFunc != "kaiser")) { specWindowFunc = "dolph"; }
 
-
+    // Audio Clipping Parameters
 
     var clipOffset = (queryParams.offset == null) ? 0 : (parseInt(queryParams.offset) / 1000);
     if (clipOffset > clipDurationFull) { clipOffset = 0; } else if (clipOffset < 0) { clipOffset = 0; }
@@ -381,7 +390,7 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
       specHeight: specHeight,
       specRotate: specRotate,
       specZaxis: specZaxis,
-      specWindowFunc: specWindowFunc,
+      specWindowFunc: specWindowFunc.substr(0,1).toUpperCase()+specWindowFunc.substr(1),
       clipOffset: clipOffset,
       clipDuration: clipDuration
     }
