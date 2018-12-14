@@ -378,8 +378,6 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
 
     var specWindowFunc = (queryParams.window_function == null) ? "dolph" : queryParams.window_function.trim().toLowerCase();
     if ( [ "dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser" ].indexOf(specWindowFunc) < 0 ) { specWindowFunc = "dolph"; }
-    // if (    (specWindowFunc != "hann") && (specWindowFunc != "hamming") && (specWindowFunc != "bartlett") 
-    //     && (specWindowFunc != "rectangular") && (specWindowFunc != "kaiser")) { specWindowFunc = "dolph"; }
 
     // Audio Clipping Parameters
 

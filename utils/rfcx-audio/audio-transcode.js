@@ -46,11 +46,13 @@ exports.audioUtils = {
 
                         var ffmpegInputOptions = getInputOptions(audioFormat,inputParams.enhanced);
 
+                        var copyCodecInsteadOfTranscode = (inputParams.copyCodecInsteadOfTranscode == null) ? false : inputParams.copyCodecInsteadOfTranscode;
+
                         var ffmpegOutputOptions = [];
                         if (inputParams.clipOffset != null) { ffmpegOutputOptions.push("-ss "+inputParams.clipOffset); }
                         if (inputParams.clipDuration != null) { ffmpegOutputOptions.push("-t "+inputParams.clipDuration); }
 
-                        if (!inputParams.copyCodecInsteadOfTranscode) {
+                        if (!copyCodecInsteadOfTranscode) {
                            var preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced);
                             for (i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]); }
                         }
@@ -60,7 +62,7 @@ exports.audioUtils = {
                             .inputOptions(ffmpegInputOptions)
                             .outputOptions(ffmpegOutputOptions)
                             .outputFormat(audioFormatSettings[audioFormat].outputFormat)
-                            .audioCodec((inputParams.copyCodecInsteadOfTranscode) ? "copy" : audioFormatSettings[audioFormat].codec)
+                            .audioCodec((copyCodecInsteadOfTranscode) ? "copy" : audioFormatSettings[audioFormat].codec)
                             .audioFrequency(inputParams.sampleRate)
                             .audioChannels((inputParams.enhanced) ? 2 : 1)
                      //       .audioBitrate(inputParams.bitRate)
