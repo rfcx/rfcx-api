@@ -93,13 +93,13 @@ exports.models = {
           audioUtils.transcodeToFile("wav", {
             enhanced: false,
             sampleRate: dbRow.Format.sample_rate,
+            clipOffset: queryParams.clipOffset,
+            clipDuration: queryParams.clipDuration,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
 
             var amplitudeType = "RMS";
-            var allowedWindowDurations = [ 250, 500, 1000, 2000 ];
-            var windowDurationMs = (allowedWindowDurations.indexOf(parseInt(req.query.window_duration)) >= 0) ? parseInt(req.query.window_duration) : 500;
-            var windowDurationSec = windowDurationMs / 1000;
+            var windowDurationSec = queryParams.amplitudeWindowDuration / 1000;
 
             var soxExec = "";
 
@@ -123,9 +123,10 @@ exports.models = {
 
               resolve([{
                 guid: dbRow.guid,
-                duration: Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
+                offset: Math.round(1000 * queryParams.clipOffset),
+                duration: Math.round(1000 * queryParams.clipDuration),//Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
                 amplitude: {
-                  window_duration: windowDurationMs,
+                  window_duration: queryParams.amplitudeWindowDuration,
                   type: amplitudeType.toLowerCase(),
                   values: allAmplitudes
                 }
@@ -379,6 +380,11 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
     var specWindowFunc = (queryParams.window_function == null) ? "dolph" : queryParams.window_function.trim().toLowerCase();
     if ( [ "dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser" ].indexOf(specWindowFunc) < 0 ) { specWindowFunc = "dolph"; }
 
+    // Amplitude Analysis Customization Parameters
+
+    var amplitudeWindowDuration = (queryParams.window_duration == null) ? 500 : parseInt(req.query.window_duration);
+    if ( [ 250, 500, 1000, 2000 ].indexOf(amplitudeWindowDuration) < 0 ) { amplitudeWindowDuration = 500; }
+
     // Audio Clipping Parameters
 
     var clipOffset = (queryParams.offset == null) ? 0 : (parseInt(queryParams.offset) / 1000);
@@ -394,6 +400,7 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
       specRotate: specRotate,
       specZaxis: specZaxis,
       specWindowFunc: specWindowFunc.substr(0,1).toUpperCase()+specWindowFunc.substr(1),
+      amplitudeWindowDuration: amplitudeWindowDuration,
       clipOffset: clipOffset,
       clipDuration: clipDuration
     }
