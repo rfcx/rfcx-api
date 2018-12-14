@@ -93,8 +93,8 @@ exports.models = {
           audioUtils.transcodeToFile("wav", {
             enhanced: false,
             sampleRate: dbRow.Format.sample_rate,
-            clipOffset: queryParams.clipOffset,
-            clipDuration: queryParams.clipDuration,
+            // clipOffset: queryParams.clipOffset,
+            // clipDuration: queryParams.clipDuration,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
 
