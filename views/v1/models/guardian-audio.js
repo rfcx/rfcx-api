@@ -382,7 +382,7 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
     // Amplitude Analysis Customization Parameters
 
     var amplitudeWindowDuration = (queryParams.window_duration == null) ? 500 : parseInt(queryParams.window_duration);
-    if ( [ 250, 500, 1000, 2000 ].indexOf(amplitudeWindowDuration) < 0 ) { amplitudeWindowDuration = 500; }
+    if ( [ 100, 250, 500, 1000, 2000 ].indexOf(amplitudeWindowDuration) < 0 ) { amplitudeWindowDuration = 500; }
 
     // Audio Clipping Parameters
 
