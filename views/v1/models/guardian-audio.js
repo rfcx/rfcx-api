@@ -93,8 +93,6 @@ exports.models = {
           audioUtils.transcodeToFile("wav", {
             enhanced: false,
             sampleRate: dbRow.Format.sample_rate,
-            // clipOffset: queryParams.clipOffset,
-            // clipDuration: queryParams.clipDuration,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
 
@@ -123,8 +121,7 @@ exports.models = {
 
               resolve([{
                 guid: dbRow.guid,
-            //    offset: Math.round(1000 * queryParams.clipOffset),
-                duration: /*Math.round(1000 * queryParams.clipDuration),*/Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
+                duration: Math.round(1000 * dbRow.capture_sample_count / dbRow.Format.sample_rate),
                 amplitude: {
                   window_duration: queryParams.amplitudeWindowDuration,
                   type: amplitudeType.toLowerCase(),
