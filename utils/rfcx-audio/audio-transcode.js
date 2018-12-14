@@ -42,7 +42,7 @@ exports.audioUtils = {
                 fs.stat(inputParams.sourceFilePath, function(statErr,fileStat){
                     if (statErr == null) {
 
-                        var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf(".")+1)+audioFormat;
+                        var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf("."))+"_."+audioFormat;
 
                         var ffmpegInputOptions = getInputOptions(audioFormat,inputParams.enhanced);
 

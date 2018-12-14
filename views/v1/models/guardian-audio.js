@@ -33,7 +33,8 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
 
-        if ( (dbRow.Format.file_extension === output_file_extension) && (queryParams.clipDuration == clipDurationFull) ) {
+        if (    (dbRow.Format.file_extension === output_file_extension)
+            &&  ( Math.round(1000*queryParams.clipDuration)/1000 == Math.round(1000*clipDurationFull)/1000 ) ) {
 
           console.log("serving " + output_file_extension + " file without transcoding");
           audioUtils.serveAudioFromFile(res, sourceFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
