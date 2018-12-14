@@ -20,9 +20,10 @@ exports.models = {
 
     var output_file_extension = req.rfcx.content_type,
         output_file_name = dbRow.guid + "." + output_file_extension,
-        is_output_enhanced = (output_file_extension === "mp3");
+        is_output_enhanced = (output_file_extension === "mp3"),
 
-    var queryParams = parsePermittedQueryParams( req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate) );
+        clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate),
+        queryParams = parsePermittedQueryParams( req.query, clipDurationFull );
 
     // auto-generate the asset filepath if it's not stored in the url column
     var audioStorageUrl = (dbRow.url == null)
@@ -32,10 +33,9 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
 
-        if (dbRow.Format.file_extension === output_file_extension) {
+        if ( (dbRow.Format.file_extension === output_file_extension) && (queryParams.clipDuration === clipDurationFull) ) {
 
           console.log("serving " + output_file_extension + " file without transcoding");
-
           audioUtils.serveAudioFromFile(res, sourceFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
             .then(function () {
               // should we do/log anything if we're successful?
@@ -51,6 +51,8 @@ exports.models = {
             enhanced: is_output_enhanced,
             bitRate: is_output_enhanced ? "32k" : "16k",
             sampleRate: dbRow.Format.sample_rate,
+            clipOffset: queryParams.clipOffset,
+            clipDuration: queryParams.clipDuration,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
             audioUtils.serveAudioFromFile(res, outputFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
@@ -372,9 +374,10 @@ function parsePermittedQueryParams( queryParams, clipDurationFull ) {
     var specZaxis = (queryParams.z_axis == null) ? 95 : parseInt(queryParams.z_axis);
     if (specZaxis > 180) { specZaxis = 180; } else if (specZaxis < 20) { specZaxis = 20; }
 
-    var specWindowFunc = (queryParams.window_function == null) ? "dolph" : queryParams.window_function.toLowerCase();
-    if (    (specWindowFunc != "hann") && (specWindowFunc != "hamming") && (specWindowFunc != "bartlett") 
-        && (specWindowFunc != "rectangular") && (specWindowFunc != "kaiser")) { specWindowFunc = "dolph"; }
+    var specWindowFunc = (queryParams.window_function == null) ? "dolph" : queryParams.window_function.trim().toLowerCase();
+    if ( [ "dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser" ].indexOf(specWindowFunc) < 0 ) { specWindowFunc = "dolph"; }
+    // if (    (specWindowFunc != "hann") && (specWindowFunc != "hamming") && (specWindowFunc != "bartlett") 
+    //     && (specWindowFunc != "rectangular") && (specWindowFunc != "kaiser")) { specWindowFunc = "dolph"; }
 
     // Audio Clipping Parameters
 

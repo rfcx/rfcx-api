@@ -43,11 +43,19 @@ exports.audioUtils = {
                     if (statErr == null) {
 
                         var transcodedFilePath = inputParams.sourceFilePath.substr(0,inputParams.sourceFilePath.lastIndexOf(".")+1)+audioFormat;
-                        
+
+                        var ffmpegInputOptions = getInputOptions(audioFormat,inputParams.enhanced);
+
+                        var ffmpegOutputOptions = [];
+                        if (inputParams.clipOffset != null) { ffmpegOutputOptions.push("-ss "+inputParams.clipOffset); }
+                        if (inputParams.clipDuration != null) { ffmpegOutputOptions.push("-t "+inputParams.clipDuration); }
+                        var preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced);
+                        for (i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]); }
+
                         new ffmpeg(inputParams.sourceFilePath)
                             .input(inputParams.sourceFilePath)
-                            .inputOptions(getInputOptions(audioFormat,inputParams.enhanced))
-                            .outputOptions(getOutputOptions(audioFormat,inputParams.enhanced))
+                            .inputOptions(ffmpegInputOptions)
+                            .outputOptions(ffmpegOutputOptions)
                             .outputFormat(audioFormatSettings[audioFormat].outputFormat)
                             .audioCodec(audioFormatSettings[audioFormat].codec)
                             .audioFrequency(inputParams.sampleRate)
