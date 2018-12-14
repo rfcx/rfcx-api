@@ -65,79 +65,7 @@ exports.checkInAssets = {
     }.bind(this));
   }
 
-/*
-  queueForTaggingByActiveModels: function(audioInfo) {
 
-    return models.AudioAnalysisModel
-      .findAll({
-        where: { is_active: true }
-      })
-      .then(function(dbModels) {
-        return dbModels.map(function(model) {
-          return model.guid;
-        });
-      })
-      .then(function(modelGuids) {
-        var promises = [];
-        for (i in modelGuids) {
-          var prom = analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuids[i], {
-            audio_guid: audioInfo.audio_guid,
-            api_url_domain: audioInfo.api_url_domain,
-            audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-            audio_s3_path: audioInfo.s3Path,
-            audio_sha1_checksum: audioInfo.sha1Hash,
-          });
-          promises.push(prom);
-        }
-        return Promise.all(promises);
-      })
-      .then(function() {
-        audioInfo.isSaved.sqs = true;
-        return audioInfo;
-      });
-
-  },
-*/
-/*
-  rollBackCheckIn: function(audioInfo) {
-
-    models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo.sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
-
-    models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function(dbCheckIn){ dbCheckIn.destroy().then(function(){ console.log("deleted checkin entry"); }); }).catch(function(err){ console.log("failed to delete checkin entry | "+err); });
-
-    cleanupCheckInFiles(audioInfo);
-  },
-
-  prepareWsObject: function(req, itemAudioInfo, dbGuardian, dbAudio) {
-    let dbAudioObj = itemAudioInfo.dbAudioObj,
-        timezone   = dbGuardian.Site.timezone;
-    return {
-      recordTime: {
-        UTC: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
-        localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
-        timeZone: timezone
-      },
-      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
-      location: {
-        latitude: dbGuardian.latitude,
-        longitude: dbGuardian.longitude,
-        site: dbAudio.Site.guid
-      },
-      length: {
-        samples: dbAudioObj.capture_sample_count,
-        timeInMs: dbAudio.Format?
-          Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
-      },
-      format: {
-        fileType: dbAudio.Format? dbAudio.Format.mime : null,
-        sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
-        bitDepth: itemAudioInfo.capture_bitrate
-      },
-      guardianGuid: dbGuardian.guid,
-      audioGuid: dbAudio.guid,
-    };
-  }
-*/
 
 
 };

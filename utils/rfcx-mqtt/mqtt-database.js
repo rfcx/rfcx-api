@@ -100,7 +100,7 @@ exports.checkInDatabase = {
       saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter,"|","*"), guardianId, checkInId),
       saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer,"|","*"), guardianId, checkInId),
       saveMeta.DiskUsage(strArrToJSArr(checkInObj.json.disk_usage,"|","*"), guardianId, checkInId),
-      saveMeta.GeoLocation(strArrToJSArr(checkInObj.json.location,"|","*"), guardianId, checkInId),
+      saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition,"|","*"), guardianId, checkInId),
 
       saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots,"|","*"), guardianId, checkInId),
       saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software,"|","*"), guardianId),

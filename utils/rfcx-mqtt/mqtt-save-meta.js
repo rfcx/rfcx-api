@@ -144,24 +144,27 @@ exports.saveMeta = {
     return models.GuardianMetaAccelerometer.bulkCreate(dbMetaAccelerometer);
   },
 
-  GeoLocation: function(metaLocation, guardianId, checkInId) {
+  GeoPosition: function(metaPosition, guardianId, checkInId) {
 
-    var dbMetaGeoLocation = [];
+    var dbMetaGeoPosition = [];
 
-    for (locInd in metaLocation) {
-      if (metaLocation[locInd][1] != null) {
-        dbMetaGeoLocation.push({
-          guardian_id: guardianId,
-          check_in_id: checkInId,
-          measured_at: new Date(parseInt(metaLocation[locInd][0])),
-          latitude: parseFloat(metaLocation[locInd][1]),
-          longitude: parseFloat(metaLocation[locInd][2]),
-          precision: parseFloat(metaLocation[locInd][3])
+    for (locInd in metaPosition) {
+      if (metaPosition[locInd][1] != null) {
+        var latLng = metaPosition[locInd][1].split(",");
+        var accAlt = metaPosition[locInd][2].split(",");
+        dbMetaGeoPosition.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaPosition[locInd][0])),
+            latitude: parseFloat(latLng[0]),
+            longitude: parseFloat(latLng[1]),
+            accuracy: parseInt(accAlt[0]),
+            altitude: parseInt(accAlt[1])
         });
       }
     }
 
-    return models.GuardianMetaGeoLocation.bulkCreate(dbMetaGeoLocation);
+    return models.GuardianMetaGeoPosition.bulkCreate(dbMetaGeoPosition);
   },
 
   DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
