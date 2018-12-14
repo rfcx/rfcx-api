@@ -203,7 +203,10 @@ router.route("/:audio_id/tags")
           guardian_longitude: ""+this.dbAudio.Guardian.longitude,
 
           audio_guid: ""+this.dbAudio.guid,
-          audio_begins_at: this.dbAudio.measured_at
+          audio_begins_at: this.dbAudio.measured_at,
+
+          event_type: "alert_sap",
+          event_type_id: "3"
 
         };
 
