@@ -402,7 +402,7 @@ router.route('/')
       })
       .then(function() {
         // send notiication only if audio was created in last 2 hours
-        if (moment.tz('UTC').diff(moment.tz(this.dbAudio.measured_at, 'UTC'), 'hours') < 2) {
+        if (this.type === 'alert' && moment.tz('UTC').diff(moment.tz(this.dbAudio.measured_at, 'UTC'), 'hours') < 2) {
           guardianGroupService.getAllGroupsForGuardianId(this.dbGuardian.id)
             .then((dbGuardianGroups) => {
               dbGuardianGroups.forEach((dbGuardianGroup) => {
