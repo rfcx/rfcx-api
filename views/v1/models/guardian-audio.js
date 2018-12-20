@@ -37,7 +37,7 @@ exports.models = {
             &&  ( Math.round(1000*queryParams.clipDuration)/1000 == Math.round(1000*clipDurationFull)/1000 ) ) {
 
           console.log("serving " + output_file_extension + " file without transcoding");
-          audioUtils.serveAudioFromFile(res, sourceFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
+          audioUtils.serveAudioFromFile(res, sourceFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime, !!req.query.inline)
             .then(function () {
               // should we do/log anything if we're successful?
             }).catch(function (err) {
@@ -57,7 +57,7 @@ exports.models = {
             copyCodecInsteadOfTranscode: (dbRow.Format.file_extension === output_file_extension),
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
-            audioUtils.serveAudioFromFile(res, outputFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime)
+            audioUtils.serveAudioFromFile(res, outputFilePath, output_file_name, audioUtils.formatSettings[output_file_extension].mime, !!req.query.inline)
               .then(function () {
                 // should we do/log anything if we're successful?
               }).catch(function (err) {
@@ -162,24 +162,24 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
 
-        var ffmpegSox = 
-            process.env.FFMPEG_PATH 
+        var ffmpegSox =
+            process.env.FFMPEG_PATH
               + " -i " + sourceFilePath + " -loglevel panic -nostdin"
               + " -ac 1 -ar " + dbRow.Format.sample_rate
               + " -ss " + queryParams.clipOffset + " -t " + queryParams.clipDuration
               + " -f sox - "
-            + " | " + process.env.SOX_PATH 
+            + " | " + process.env.SOX_PATH
               + " -t sox - -n spectrogram -h -r"
               + " -o " + tmpFilePath+"-sox.png"
               + " -x " + queryParams.specWidth + " -y " + queryParams.specHeight
               + " -w " + queryParams.specWindowFunc + " -z " + queryParams.specZaxis + " -s"
               + " -d " + queryParams.clipDuration;
 
-        var imageMagick = 
+        var imageMagick =
             (queryParams.specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
             : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + queryParams.specRotate + " " + tmpFilePath + "-rotated.png";
 
-        var pngCrush = 
+        var pngCrush =
             // "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
             process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
 
@@ -196,7 +196,7 @@ exports.models = {
           fs.unlink(tmpFilePath+"-sox.png", function (e) { if (e) { console.log(e); } });
           fs.unlink(tmpFilePath+"-rotated.png", function (e) { if (e) { console.log(e); } });
 
-          audioUtils.serveAudioFromFile(res, tmpFilePath+"-final.png", dbRow.guid + ".png", "image/png")
+          audioUtils.serveAudioFromFile(res, tmpFilePath+"-final.png", dbRow.guid + ".png", "image/png", !!req.query.inline)
             .then(function () {
               // should we do/log anything if we're successful?
             }).catch(function (err) {
