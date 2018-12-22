@@ -167,6 +167,25 @@ exports.saveMeta = {
     return models.GuardianMetaGeoPosition.bulkCreate(dbMetaGeoPosition);
   },
 
+  DateTimeOffset: function(metaDateTimeOffset, guardianId, checkInId) {
+
+    var dbMetaDateTimeOffset = [];
+
+    for (dtoInd in metaDateTimeOffset) {
+      if (metaDateTimeOffset[dtoInd][2] != null) {
+        dbMetaDateTimeOffset.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaDateTimeOffset[dtoInd][0])),
+            source: metaDateTimeOffset[dtoInd][1],
+            system_clock_offset: parseInt(metaDateTimeOffset[dtoInd][2])
+        });
+      }
+    }
+
+    return models.GuardianMetaDateTimeOffset.bulkCreate(dbMetaDateTimeOffset);
+  },
+
   DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
 
     var diskUsage = { internal: {}, external: {} };
