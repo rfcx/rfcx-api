@@ -67,8 +67,7 @@ exports.checkInDatabase = {
         proms = [];
     try {
       msgInfo = smsMessages.info(
-        checkInObj.json.messages, checkInObj.db.dbGuardian.id,
-        checkInObj.db.dbCheckIn.id, checkInObj.json.timezone_offset
+        checkInObj.json.messages, checkInObj.db.dbGuardian.id, checkInObj.db.dbCheckIn.id
       );
     } catch (e) {
       return Promise.reject(e);
