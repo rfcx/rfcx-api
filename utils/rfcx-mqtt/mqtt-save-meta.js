@@ -186,6 +186,25 @@ exports.saveMeta = {
     return models.GuardianMetaDateTimeOffset.bulkCreate(dbMetaDateTimeOffset);
   },
 
+  MqttBrokerConnection: function(metaBrokerConnection, guardianId, checkInId) {
+
+    var dbMetaBrokerConnection = [];
+
+    for (brkrInd in metaBrokerConnection) {
+      if (metaBrokerConnection[brkrInd][2] != null) {
+        dbMetaBrokerConnection.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
+            connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
+            broker_uri: metaBrokerConnection[brkrInd][2]
+        });
+      }
+    }
+
+    return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection);
+  },
+
   DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
 
     var diskUsage = { internal: {}, external: {} };

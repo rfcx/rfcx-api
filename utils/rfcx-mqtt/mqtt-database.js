@@ -101,6 +101,7 @@ exports.checkInDatabase = {
       saveMeta.DiskUsage(strArrToJSArr(checkInObj.json.disk_usage,"|","*"), guardianId, checkInId),
       saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition,"|","*"), guardianId, checkInId),
       saveMeta.DateTimeOffset(strArrToJSArr(checkInObj.json.datetime_offsets,"|","*"), guardianId, checkInId),
+      saveMeta.MqttBrokerConnection(strArrToJSArr(checkInObj.json.broker_connections,"|","*"), guardianId, checkInId),
 
       saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots,"|","*"), guardianId, checkInId),
       saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software,"|","*"), guardianId),
