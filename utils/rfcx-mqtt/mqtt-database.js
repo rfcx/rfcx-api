@@ -244,17 +244,20 @@ exports.checkInDatabase = {
       return Promise.resolve();
     }
 
-    let coordsArr = strArrToJSArr(checkInObj.json.location, '|', '*');
+    let coordsArr = strArrToJSArr(checkInObj.json.geoposition, '|', '*');
     if (!coordsArr.length) {
       return Promise.resolve();
     }
     // get only last coordinate in array
     let lastCoord = coordsArr[coordsArr.length - 1];
-    let latitude = parseFloat(lastCoord[1]);
-    let longitude = parseFloat(lastCoord[2]);
+    let latitude = parseFloat(lastCoord[1].split(",")[0]);
+    let longitude = parseFloat(lastCoord[1].split(",")[1]);
+    let accuracy = parseInt(lastCoord[2].split(",")[0]);
 
     // do not update coordinates if they were not changed
-    if (checkInObj.db.dbGuardian.latitude !== latitude || checkInObj.db.dbGuardian.longitude !== longitude) {
+    if (    (accuracy <= 50) // only save coordinates if the accuracy of the measurement is within 50 meters
+        &&  (checkInObj.db.dbGuardian.latitude !== latitude) || (checkInObj.db.dbGuardian.longitude !== longitude)
+      ) {
       checkInObj.db.dbGuardian.latitude = latitude;
       checkInObj.db.dbGuardian.longitude = longitude;
 
