@@ -32,8 +32,14 @@ exports.checkInDatabase = {
     let opts;
     try {
       let checkInStatArray = strArrToJSArr(checkInObj.json.checkins,"|","*");
+      checkInObj.json.checkins_to_verify = [];
       for (vInd in checkInStatArray) {
         checkInObj.json[checkInStatArray[vInd][0]+"_checkins"] = checkInStatArray[vInd][1];
+        if (checkInStatArray[vInd].length > 2) {
+          for (i = 2; i < checkInStatArray[vInd].length; i++) {
+            checkInObj.json.checkins_to_verify.push(checkInStatArray[vInd][i]);
+          }
+        }
       }
 
       opts = {
