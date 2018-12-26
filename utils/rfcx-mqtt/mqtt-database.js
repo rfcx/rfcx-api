@@ -260,10 +260,10 @@ exports.checkInDatabase = {
     let longitude = parseFloat(lastCoord[1].split(",")[1]);
     let accuracy = parseInt(lastCoord[2].split(",")[0]);
 
-    // do not update coordinates if they were not changed
-    if (    (accuracy <= 50) // only save coordinates if the accuracy of the measurement is within 50 meters
-        &&  (checkInObj.db.dbGuardian.latitude !== latitude) || (checkInObj.db.dbGuardian.longitude !== longitude)
-      ) {
+    // do not update coordinates if they were not changed or latitude or longitude are undefined or zero
+    // only save coordinates if the accuracy of the measurement is within 50 meters
+    if (!!latitude && !!longitude && accuracy <= 50 &&
+        (checkInObj.db.dbGuardian.latitude !== latitude) || (checkInObj.db.dbGuardian.longitude !== longitude)) {
       checkInObj.db.dbGuardian.latitude = latitude;
       checkInObj.db.dbGuardian.longitude = longitude;
 
