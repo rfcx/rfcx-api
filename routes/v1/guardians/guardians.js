@@ -157,7 +157,7 @@ router.route("/register")
           guid: guardianInput.guid,
           shortname: "_"+guardianInput.guid.substr(0,4),
           latitude: 0,
-          longitude: 0
+          longitude: 0 
         }
       }).spread(function(dbGuardian, wasCreated){
 
@@ -171,6 +171,7 @@ router.route("/register")
           dbGuardian.auth_token_salt = token_salt;
           dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt,guardianInput.token);
           dbGuardian.auth_token_updated_at = new Date();
+          dbGuardian.site_id = 2;
           dbGuardian.save();
 
           res.status(200).json(
