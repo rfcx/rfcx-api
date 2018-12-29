@@ -153,7 +153,12 @@ router.route("/register")
 
     models.Guardian
       .findOrCreate({
-        where: { guid: guardianInput.guid }
+        where: { 
+          guid: guardianInput.guid,
+          shortname: "_"+guardianInput.guid.substr(0,4),
+          latitude: 0,
+          longitude: 0
+        }
       }).spread(function(dbGuardian, wasCreated){
 
         if (!wasCreated) {
