@@ -246,7 +246,7 @@ exports.checkInDatabase = {
 
   setGuardianCoordinates: (checkInObj) => {
 
-    if (!checkInObj.json.location) {
+    if (!checkInObj.json.geoposition) {
       return Promise.resolve();
     }
 
