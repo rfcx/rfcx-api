@@ -184,8 +184,8 @@ exports.saveMeta = {
           }
 
           if (metaHardware.phone != null) {
-            dbMetaHardware.phone_imsi = metaHardware.phone.imsi;
-            dbMetaHardware.phone_imei = metaHardware.phone.imei;
+            dbMetaHardware.phone_imsi = (metaHardware.phone.imsi != null) ? metaHardware.phone.imsi : null;
+            dbMetaHardware.phone_imei = (metaHardware.phone.imei != null) ? metaHardware.phone.imei : null;
           }
 
           dbMetaHardware.updated_at = new Date();
