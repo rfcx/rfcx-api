@@ -167,6 +167,34 @@ exports.saveMeta = {
     return models.GuardianMetaGeoPosition.bulkCreate(dbMetaGeoPosition);
   },
 
+  Hardware: function(metaHardware, guardianId) {
+
+      return models.GuardianMetaHardware
+        .findOrCreate({
+          where: { guardian_id: guardianId }
+        })
+        .spread((dbMetaHardware, wasCreated) => {
+
+          if (metaHardware.hardware != null) {
+            dbMetaHardware.manufacturer = metaHardware.hardware.manufacturer;
+            dbMetaHardware.model = metaHardware.hardware.model;
+            dbMetaHardware.brand = metaHardware.hardware.brand;
+            dbMetaHardware.product = metaHardware.hardware.product;
+            dbMetaHardware.android_version = metaHardware.hardware.android;
+          }
+
+          if (metaHardware.phone != null) {
+            dbMetaHardware.phone_imsi = metaHardware.phone.imsi;
+            dbMetaHardware.phone_imei = metaHardware.phone.imei;
+          }
+
+          dbMetaHardware.updated_at = new Date();
+          return dbMetaHardware.save();
+
+        });
+
+  },
+
   DateTimeOffset: function(metaDateTimeOffset, guardianId, checkInId) {
 
     var dbMetaDateTimeOffset = [];
