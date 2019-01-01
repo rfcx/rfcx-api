@@ -2,6 +2,27 @@
 module.exports = function(sequelize, DataTypes) {
   var GuardianMetaHardware = sequelize.define('GuardianMetaHardware', {
 
+    phone_imei: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+    
+    phone_imsi: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+
+    android_version: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },  
+
     manufacturer: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -30,13 +51,6 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
 
-    android_version: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },  
-
     phone_sim_carrier: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -51,19 +65,12 @@ module.exports = function(sequelize, DataTypes) {
       }
     },  
 
-    phone_imsi: {
+    phone_sim_number: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
       }
-    },
-
-    phone_imei: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
+    },  
 
     description: {
       type: DataTypes.STRING,
