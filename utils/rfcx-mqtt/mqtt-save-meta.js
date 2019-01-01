@@ -186,6 +186,9 @@ exports.saveMeta = {
           if (metaHardware.phone != null) {
             dbMetaHardware.phone_imsi = (metaHardware.phone.imsi != null) ? metaHardware.phone.imsi : null;
             dbMetaHardware.phone_imei = (metaHardware.phone.imei != null) ? metaHardware.phone.imei : null;
+            dbMetaHardware.phone_sim_serial = (metaHardware.phone.sim != null) ? metaHardware.phone.sim : null;
+            dbMetaHardware.phone_sim_number = (metaHardware.phone.number != null) ? metaHardware.phone.number : null;
+            dbMetaHardware.phone_sim_carrier = (metaHardware.phone.carrier != null) ? metaHardware.phone.carrier : null;
           }
 
           dbMetaHardware.updated_at = new Date();
