@@ -176,12 +176,12 @@ exports.models = {
               + " -d " + queryParams.clipDuration;
 
         var imageMagick =
-            (queryParams.specRotate == 0) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
-            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + queryParams.specRotate + " " + tmpFilePath + "-rotated.png";
+            /*(queryParams.specRotate == 0) ?*/ "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"/*
+            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + queryParams.specRotate + " " + tmpFilePath + "-rotated.png"*/;
 
         var pngCrush =
-            // "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
-            process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
+             "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png";
+            // process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
 
         exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
 
