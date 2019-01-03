@@ -311,7 +311,15 @@ exports.saveMeta = {
           })
           .then((dbSoftwareRoleVersion) => {
             if (dbSoftwareRoleVersion.length < 1) {
-              return Promise.reject(`Software role "${dbSoftwareRole.role}, version "${roleVersions[dbSoftwareRole.role]}" is not [yet] in the database.`)
+              return models.GuardianSoftwareVersion
+                .findOrCreate({
+                  where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] }
+                })
+                .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
+                  dbSoftwareRoleVersionInsertion.updated_at = new Date();
+                  return dbSoftwareRoleVersionInsertion.save();
+                });
+//              return Promise.reject(`Software role "${dbSoftwareRole.role}, version "${roleVersions[dbSoftwareRole.role]}" is not [yet] in the database.`)
             } else {
               return models.GuardianMetaSoftwareVersion
                 .findOrCreate({
