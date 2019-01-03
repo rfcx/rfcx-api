@@ -1,24 +1,37 @@
 #!/usr/bin/env node
 
-var arr = [];
+var stringLength = 9;
+
+var reps = 4;
 
 
 function randomStr() {
-	var len = 8;
   var str = "";
-  var key = "0123456789abcdefghijklmnopqrstuvwxyz";
+  var key = "0123456789abcdef";//ghijklmnopqrstuvwxyz";
 
-  for (var i = 0; i < len; i++)
+  for (var i = 0; i < stringLength; i++)
     str += key.charAt(Math.floor(Math.random() * key.length));
 
   return str;
 }
 
-do {
-	var s = randomStr();
-	if (arr.indexOf(s) > -1) { break; }
-	arr.push(s);
-}
-while (true);
+var sum = 0;
 
-console.log(arr.length);
+for (var i = 1; i <= reps; i++) {
+	var arr = [];
+
+	var start = Math.round((new Date()).valueOf()/1000);
+
+	do {
+		var s = randomStr();
+		if (arr.indexOf(s) > -1) { break; }
+		arr.push(s);
+	}
+	while (true);
+
+	sum += arr.length;
+
+	console.log(i+") "+arr.length+" ("+(Math.round((new Date()).valueOf()/1000)-start)+" seconds)");
+}
+
+console.log("avg: "+Math.round(sum/reps));
