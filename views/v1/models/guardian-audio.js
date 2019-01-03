@@ -184,7 +184,7 @@ exports.models = {
             : process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
 
         exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
-
+ 
           if (stderr.trim().length > 0) {
             console.log(stderr);
           }
