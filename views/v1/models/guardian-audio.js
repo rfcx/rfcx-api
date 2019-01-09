@@ -13,6 +13,10 @@ function getAllViews() {
   return require("../../../views/v1");
 }
 
+var loggers = require('../../../utils/logger');
+var logDebug = loggers.debugLogger.log;
+var logError = loggers.errorLogger.log;
+var logInfo = loggers.infoLogger.log;
 
 exports.models = {
 
@@ -175,16 +179,19 @@ exports.models = {
               + " -w " + queryParams.specWindowFunc + " -z " + queryParams.specZaxis + " -s"
               + " -d " + queryParams.clipDuration;
 
-        var imageMagick =
-            ((queryParams.specRotate == 0) || (process.env.IMAGEMAGICK_PATH == null)) ? "cp " + tmpFilePath + "-sox.png " + tmpFilePath + "-rotated.png"
-            : process.env.IMAGEMAGICK_PATH + " " + tmpFilePath + "-sox.png" + " -rotate " + queryParams.specRotate + " " + tmpFilePath + "-rotated.png";
+        var imageMagick = ((queryParams.specRotate == 0) || (process.env.IMAGEMAGICK_PATH == null)) ?
+          `cp ${tmpFilePath}-sox.png ${tmpFilePath}-rotated.png` :
+          `${process.env.IMAGEMAGICK_PATH} ${tmpFilePath}-sox.png -rotate ${queryParams.specRotate} ${tmpFilePath}-rotated.png`;
 
-        var pngCrush =
-            (process.env.PNGCRUSH_PATH == null) ? "cp " + tmpFilePath + "-rotated.png " + tmpFilePath + "-final.png"
-            : process.env.PNGCRUSH_PATH + " " + tmpFilePath + "-rotated.png" + " " + tmpFilePath + "-final.png";
+        var pngCrush = (process.env.PNGCRUSH_PATH == null) ?
+          `cp ${tmpFilePath}-rotated.png ${tmpFilePath}-final.png` :
+          `${process.env.PNGCRUSH_PATH} ${tmpFilePath}-rotated.png ${tmpFilePath}-final.png`;
+
+        logInfo(`imageMagick val: ${imageMagick}`);
+        logInfo(`pngCrush val: ${pngCrush}`);
 
         exec( ffmpegSox + " && " + imageMagick + " && " + pngCrush, function (err, stdout, stderr) {
- 
+
           if (stderr.trim().length > 0) {
             console.log(stderr);
           }
