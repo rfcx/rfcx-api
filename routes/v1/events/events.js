@@ -425,7 +425,7 @@ router.route('/')
                         site_guid: this.dbSite.guid,
                         ai_guid: this.dbModel.guid,
                       },
-                      title: `New ${this.type}`,
+                      title: `Rainforest Connection`,
                       body: `A ${this.value} detected from ${this.guardian}`
                     };
                     firebaseService.sendToTopic(opts)
