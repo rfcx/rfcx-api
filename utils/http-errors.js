@@ -35,7 +35,7 @@ var httpError = function(req, res, code, context, mes) {
     }
   };
   var logger = code === 400? loggers.warnLogger : loggers.errorLogger;
-  logger.log('Validation error', { req: req, message: message });
+  logger.log('Validation error', { req, message, context, });
   loggers.debugLogger.log('httpError called with context', { req: req, context: context, message: message });
   res.status(parseInt(code)).json(json);
 };
