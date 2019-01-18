@@ -182,13 +182,13 @@ function filterWithTz(opts, reports) {
   return reports.filter((report) => {
     let reportedAtTz = moment.tz(report.reported_at, report.site_timezone);
 
-    if (opts.startingAfterLocal) {
-      if (reportedAtTz < moment.tz(opts.startingAfterLocal, report.site_timezone)) {
+    if (opts.reportedAfterLocal) {
+      if (reportedAtTz < moment.tz(opts.reportedAfterLocal, report.site_timezone)) {
         return false;
       }
     }
-    if (opts.endingBeforeLocal) {
-      if (reportedAtTz > moment.tz(opts.endingBeforeLocal, report.site_timezone)) {
+    if (opts.reportedBeforeLocal) {
+      if (reportedAtTz > moment.tz(opts.reportedBeforeLocal, report.site_timezone)) {
         return false;
       }
     }
