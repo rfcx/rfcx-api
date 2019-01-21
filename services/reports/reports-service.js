@@ -73,6 +73,9 @@ function prepareFilterOpts(req) {
     reportedBefore: req.query.reported_before,
     reportedAfterLocal: req.query.reported_after_local,
     reportedBeforeLocal: req.query.reported_before_local,
+    dayTimeLocalAfter: req.query.daytime_local_after,
+    dayTimeLocalBefore: req.query.daytime_local_before,
+    weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
     latitude: req.query.latitude? parseFloat(req.query.latitude) : undefined,
     minLatitude: req.query.min_latitude? parseFloat(req.query.min_latitude) : undefined,
     maxLatitude: req.query.max_latitude? parseFloat(req.query.max_latitude) : undefined,
@@ -189,6 +192,33 @@ function filterWithTz(opts, reports) {
     }
     if (opts.reportedBeforeLocal) {
       if (reportedAtTz > moment.tz(opts.reportedBeforeLocal, report.site_timezone)) {
+        return false;
+      }
+    }
+    if (opts.weekdays) { // we receive an array like ['0', '1', '2', '3', '4', '5', '6'], where `0` means Monday
+      // momentjs by default starts day with Sunday, so we will get ISO weekday
+      // (which starts from Monday, but is 1..7) and subtract 1
+      if ( !opts.weekdays.includes( `${parseInt(reportedAtTz.format('E')) - 1}` ) ) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter) {
+      if (reportedAtTz.format('HH:mm:ss') < opts.dayTimeLocalAfter || reportedAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore) {
+      if (reportedAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter && reportedAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore) {
+      if (reportedAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter) {
+        return false;
+      }
+    }
+    if (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore) {
+      if (reportedAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
         return false;
       }
     }
