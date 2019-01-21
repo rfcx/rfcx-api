@@ -257,6 +257,9 @@ function getLocations(req) {
     beforeTime: req.query.before_time,
     afterLocalTime: req.query.after_local_time,
     beforeLocalTime: req.query.before_local_time,
+    dayTimeLocalAfter: req.query.daytime_local_after,
+    dayTimeLocalBefore: req.query.daytime_local_before,
+    weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
     users: req.query.users? (Array.isArray(req.query.users)? req.query.users : [req.query.users]) : undefined,
     sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
     order: 'Location.time',
@@ -304,6 +307,33 @@ function filterWithTz(opts, locations) {
     }
     if (opts.beforeLocalTime) {
       if (timeTz > moment.tz(opts.beforeLocalTime, location.site_timezone)) {
+        return false;
+      }
+    }
+    if (opts.weekdays) { // we receive an array like ['0', '1', '2', '3', '4', '5', '6'], where `0` means Monday
+      // momentjs by default starts day with Sunday, so we will get ISO weekday
+      // (which starts from Monday, but is 1..7) and subtract 1
+      if ( !opts.weekdays.includes( `${parseInt(timeTz.format('E')) - 1}` ) ) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter) {
+      if (timeTz.format('HH:mm:ss') < opts.dayTimeLocalAfter || timeTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore) {
+      if (timeTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter && timeTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
+        return false;
+      }
+    }
+    if (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore) {
+      if (timeTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter) {
+        return false;
+      }
+    }
+    if (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore) {
+      if (timeTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
         return false;
       }
     }
