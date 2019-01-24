@@ -1,8 +1,10 @@
 var models = require("../../models");
 var sequelize = require("sequelize");
+var Promise = require("bluebird");
 const moment = require("moment-timezone");
 var ValidationError = require('../../utils/converter/validation-error');
 var sqlUtils = require("../../utils/misc/sql");
+const guardianGroupService = require('../guardians/guardian-group-service');
 
 const eventQueryCountSelect =
   'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone ';
@@ -31,10 +33,6 @@ const eventQueryJoins =
   'LEFT JOIN GuardianAudioEventTypes AS EventType ON GuardianAudioEvent.type = EventType.id ' +
   'LEFT JOIN GuardianAudioEventValues AS EventValue ON GuardianAudioEvent.value = EventValue.id ' +
   'LEFT JOIN GuardianAudioEventReasonsForCreation AS Reason ON GuardianAudioEvent.reason_for_creation = Reason.id ';
-
-const eventQueryGuardianGroupsJoin =
-  'LEFT JOIN GuardianGroupRelations AS GuardianGroupRelation ON GuardianGroupRelation.guardian_id = Guardian.id ' +
-  'LEFT JOIN GuardianGroups AS GuardianGroup ON GuardianGroup.id = GuardianGroupRelation.guardian_group_id ';
 
 /**
  * weekdays[] is an array with numbers [0, 1, 2, 3, 4, 5, 6]
@@ -75,7 +73,7 @@ function prepareOpts(req) {
     }
   }
 
-  return {
+  let opts = {
     limit: req.query.limit? parseInt(req.query.limit) : 10000,
     offset: req.query.offset? parseInt(req.query.offset) : 0,
     updatedAfter: req.query.updated_after,
@@ -107,6 +105,32 @@ function prepareOpts(req) {
     order: order? order : 'GuardianAudioEvent.begins_at',
     dir: dir? dir : 'ASC',
   };
+
+  if (opts.guardianGroups) {
+    return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
+      .then((groups) => {
+        let guardians = [];
+        let values = [];
+        groups.forEach((group) => {
+          group.Guardians.forEach((guardian) => {
+            if (!guardians.includes(guardian.guid)) {
+              guardians.push(guardian.guid);
+            }
+          });
+          group.GuardianAudioEventValues.forEach((value) => {
+            if (!values.includes(value.value)) {
+              values.push(value.value);
+            }
+          });
+        });
+        opts.guardians = guardians;
+        opts.values = values;
+        return opts;
+      });
+  }
+  else {
+    return Promise.resolve(opts);
+  }
 }
 
 /*
@@ -137,7 +161,6 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.values, ' AND EventValue.value IN (:values)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
-  sql = sqlUtils.condAdd(sql, opts.guardianGroups, ' AND GuardianGroup.shortname IN (:guardianGroups)');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND (Model.guid IN (:models) OR Model.shortname IN (:models))');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.reasonsForCreation && opts.reasonsForCreation.indexOf('pgm') !== -1, ' AND (Reason.name IN (:reasonsForCreation) OR GuardianAudioEvent.reason_for_creation IS NULL)');
@@ -161,46 +184,41 @@ function addGetQueryParams(sql, opts) {
 
 function countData(req) {
 
-  const opts = prepareOpts(req);
+  return prepareOpts(req)
+    .then((opts) => {
+      let sql = `${eventQueryCountSelect} FROM GuardianAudioEvents AS GuardianAudioEvent ${eventQueryJoins} `;
+      sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
+      sql = addGetQueryParams(sql, opts);
 
-  let sql = `${eventQueryCountSelect} FROM GuardianAudioEvents AS GuardianAudioEvent ${eventQueryJoins} `;
-
-  sql = sqlUtils.condAdd(sql, opts.guardianGroups, eventQueryGuardianGroupsJoin);
-  sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
-
-  sql = addGetQueryParams(sql, opts);
-
-  return models.sequelize
-    .query(sql,
-      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-    )
-    .then((events) => {
-      let evs = filterEventsWithTz(opts, events);
-      return evs.length;
+      return models.sequelize
+        .query(sql,
+          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+        )
+        .then((events) => {
+          let evs = filterEventsWithTz(opts, events);
+          return evs.length;
+        });
     });
 
 }
 
 function queryData(req) {
 
-  const opts = prepareOpts(req);
+  return prepareOpts(req)
+    .then((opts) => {
+      let sql = `${eventQuerySelect} FROM GuardianAudioEvents AS GuardianAudioEvent ${eventQueryJoins} `;
+      sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
+      sql = addGetQueryParams(sql, opts);
+      sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+      sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
-  let sql = `${eventQuerySelect} FROM GuardianAudioEvents AS GuardianAudioEvent ${eventQueryJoins} `;
-
-  sql = sqlUtils.condAdd(sql, opts.guardianGroups, eventQueryGuardianGroupsJoin);
-  sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
-
-  sql = addGetQueryParams(sql, opts);
-
-  sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
-  sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
-
-  return models.sequelize
-    .query(sql,
-      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-    )
-    .then((events) => {
-      return filterEventsWithTz(opts, events);
+      return models.sequelize
+        .query(sql,
+          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+        )
+        .then((events) => {
+          return filterEventsWithTz(opts, events);
+        });
     });
 
 }
@@ -288,7 +306,6 @@ function processStatsByDates(req, res) {
 }
 
 function getEventByGuid(guid) {
-
   let sql = eventQueryBase + 'WHERE GuardianAudioEvent.guid = :guid;';
   return models.sequelize
     .query(sql, { replacements: { guid: guid }, type: models.sequelize.QueryTypes.SELECT })
@@ -297,42 +314,6 @@ function getEventByGuid(guid) {
         throw new sequelize.EmptyResultError('Event with given guid not found.');
       }
       return event;
-    });
-}
-
-function formatGuardianAudioEventTypesValues(arr) {
-  return arr.map((item) => {
-      return item.value;
-    });
-}
-
-function getGuardianAudioEventValues() {
-  return models.GuardianAudioEventValue
-    .findAll()
-    .then((data) => {
-      return formatGuardianAudioEventTypesValues(data);
-    });
-}
-
-function getAllGuardianAudioEventValuesByValues(values) {
-  let proms = [];
-  values.forEach((value) => {
-    const prom = models.GuardianAudioEventValue
-      .findOne({ where: { value } })
-      .then((eventValue) => {
-        if (!eventValue) { throw new sequelize.EmptyResultError(`EventValue with given value not found: ${value}`); }
-        return eventValue;
-      });
-    proms.push(prom);
-  });
-  return Promise.all(proms);
-}
-
-function getGuardianAudioEventTypes() {
-  return models.GuardianAudioEventType
-    .findAll()
-    .then((data) => {
-      return formatGuardianAudioEventTypesValues(data);
     });
 }
 
@@ -440,14 +421,10 @@ module.exports = {
   queryData,
   processStatsByDates,
   getEventByGuid,
-  getGuardianAudioEventValues,
-  getGuardianAudioEventTypes,
   updateEventReview,
   eventQueryCountSelect,
   eventQuerySelect,
   eventQueryJoins,
-  eventQueryGuardianGroupsJoin,
   prepareWsObject,
   updateEventComment,
-  getAllGuardianAudioEventValuesByValues,
 };

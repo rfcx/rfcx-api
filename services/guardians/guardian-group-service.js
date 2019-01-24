@@ -3,7 +3,7 @@ var sequelize = require("sequelize");
 var Converter = require('../../utils/converter/converter');
 var Promise = require("bluebird");
 var ValidationError = require("../../utils/converter/validation-error");
-var eventsService = require('../events/events-service');
+const eventValueService = require('../events/event-value-service');
 
 function getGroupByShortname(shortname) {
   return models.GuardianGroup
@@ -15,6 +15,14 @@ function getGroupByShortname(shortname) {
       if (!group) { throw new sequelize.EmptyResultError('GuardianGroup with given shortname not found.'); }
       return group;
     });
+}
+
+function getGroupsByShortnames(shortnames) {
+  let proms = [];
+  shortnames.forEach((shortname) => {
+    proms.push(getGroupByShortname(shortname));
+  });
+  return Promise.all(proms);
 }
 
 function getAllGroups(extended) {
@@ -124,7 +132,7 @@ function updateGuardianGroupEventValuesRelations(group, params) {
   return validateGuardianGroupEventValuesRelationsParams(params)
     .bind({})
     .then(data => {
-      return eventsService.getAllGuardianAudioEventValuesByValues(data.event_values);
+      return eventValueService.getAllGuardianAudioEventValuesByValues(data.event_values);
     })
     .then(eventValues => {
       this.eventValues = eventValues;
@@ -235,6 +243,7 @@ function attachEventValuesToGroup(eventValues, group) {
 
 module.exports = {
   getGroupByShortname,
+  getGroupsByShortnames,
   getAllGroups,
   createGroup,
   updateGroup,

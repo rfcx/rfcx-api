@@ -12,13 +12,15 @@ var ApiConverter = require("../../../utils/api-converter");
 var aws = require("../../../utils/external/aws.js").aws();
 var moment = require('moment');
 var eventsService = require('../../../services/events/events-service');
+var eventValueService = require('../../../services/events/event-value-service');
+var eventTypeService = require('../../../services/events/event-type-service');
 var sequelize = require("sequelize");
 var sqlUtils = require("../../../utils/misc/sql");
 var loggers = require('../../../utils/logger');
 var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 var firebaseService = require('../../../services/firebase/firebase-service');
-var guardianGroupService = require('../../../services/guardians/guardian-group.service');
+var guardianGroupService = require('../../../services/guardians/guardian-group-service');
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -221,7 +223,7 @@ router.route("/tuning")
 
 router.route("/values")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
-    eventsService
+    eventValueService
       .getGuardianAudioEventValues()
       .then((data) => { res.status(200).json(data); })
       .catch(e => httpError(req, res, 500, e, "Could not return Guardian Audio Event Values."));
@@ -229,7 +231,7 @@ router.route("/values")
 
 router.route("/types")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
-    eventsService
+    eventTypeService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data); })
       .catch(e => httpError(req, res, 500, e, "Could not return Guardian Audio Event Types."));
