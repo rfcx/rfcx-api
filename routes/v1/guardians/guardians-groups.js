@@ -5,7 +5,7 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var loggers = require('../../../utils/logger');
 var ValidationError = require("../../../utils/converter/validation-error");
-var guardianGroupService = require('../../../services/guardians/guardian-group.service');
+var guardianGroupService = require('../../../services/guardians/guardian-group-service');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 var logDebug = loggers.debugLogger.log;
