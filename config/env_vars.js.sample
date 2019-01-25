@@ -73,5 +73,7 @@ exports.env = {
   FIREBASE_CLIENT_EMAIL_PLAYER_APP: "",
 
   STRIPE_SECRET_KEY: "",
+  CLASSY_CLIENT_ID: "",
+  CLASSY_CLIENT_SECRET: "",
 
 }

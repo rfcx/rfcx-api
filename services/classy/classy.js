@@ -6,7 +6,9 @@ function requestAccessToken(client_id, client_secret) {
     var options = {
       method: 'POST',
       url: `https://api.classy.org/oauth2/auth`,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
       json: true,
       body: {
         client_id,
