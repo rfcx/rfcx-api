@@ -105,29 +105,34 @@ router.route('/classy/save-stripe-donation')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), (req, res) => {
 
     let transformedParams = {};
-    let params = new Converter(req.query, transformedParams);
+    let params = new Converter(req.body, transformedParams);
 
     params.convert('campaign_id').toString();
     params.convert('member_email_address').toString();
     params.convert('billing_first_name').optional().toString();
     params.convert('billing_last_name').optional().toString();
-    params.convert('token').toString();
+    params.convert('check_number').toString();
     params.convert('price').toFloat();
+    params.convert('description').optional().toString();
+    params.convert('token').toString();
 
     params.validate()
       .then(() => {
         return classyService.saveCampaignTransaction(
           transformedParams.campaign_id,
-          transformedParams.member_email_address,
+          {
+            member_email_address: transformedParams.member_email_address,
+            billing_first_name: transformedParams.billing_first_name,
+            billing_last_name: transformedParams.billing_last_name,
+          },
           [{
-            // overhead_amount: 25, ???
             price: transformedParams.price,
             product_name: 'Offline transaction',
             type: 'donation'
           }],
           {
-            // check_number: '123456', ???
-            description: '',
+            check_number: transformedParams.check_number,
+            description: transformedParams.description || '',
             payment_type: 'other',
             sync_third_party: true
           },
