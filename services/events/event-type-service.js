@@ -4,7 +4,7 @@ var Promise = require("bluebird");
 
 function getAllGuardianAudioEventTypesByValues(values) {
   let proms = [];
-  values.forEach((value) => {
+  (values || []).forEach((value) => {
     const prom = models.GuardianAudioEventType
       .findOne({ where: { value } })
       .then((eventType) => {

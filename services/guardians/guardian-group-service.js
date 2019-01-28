@@ -4,6 +4,7 @@ var Converter = require('../../utils/converter/converter');
 var Promise = require("bluebird");
 var ValidationError = require("../../utils/converter/validation-error");
 const eventValueService = require('../events/event-value-service');
+const eventTypeService = require('../events/event-type-service');
 
 function getGroupByShortname(shortname) {
   return models.GuardianGroup
@@ -90,6 +91,12 @@ function createGroup(opts) {
       return Promise.resolve(true);
     })
     .then(() => {
+      if (opts.event_types) {
+        return updateGuardianGroupEventTypesRelations(this.group, opts);
+      }
+      return Promise.resolve(true);
+    })
+    .then(() => {
       return this.group.reload({ include: [{ all: true }] });
     });
 }
@@ -103,6 +110,9 @@ function updateGroup(shortname, opts) {
     })
     .then(() => {
       return updateGuardianGroupEventValuesRelations(this.group, opts);
+    })
+    .then(() => {
+      return updateGuardianGroupEventTypesRelations(this.group, opts);
     });
 }
 
@@ -146,6 +156,24 @@ function updateGuardianGroupEventValuesRelations(group, params) {
     });
 }
 
+function updateGuardianGroupEventTypesRelations(group, params) {
+  return validateGuardianGroupEventTypesRelationsParams(params)
+    .bind({})
+    .then(data => {
+      return eventTypeService.getAllGuardianAudioEventTypesByValues(data.event_types);
+    })
+    .then(eventTypes => {
+      this.eventTypes = eventTypes;
+      return clearGuardianGroupEventTypesRelationsForGroup(group);
+    })
+    .then(() => {
+      return attachEventTypesToGroup(this.eventTypes, group);
+    })
+    .then(() => {
+      return group.reload({ include: [{ all: true }] });
+    });
+}
+
 function getAllGroupsForGuardianId(guardian_id) {
   return models.GuardianGroup.findAll({
     include: [
@@ -175,6 +203,9 @@ function formatGroup(group, extended) {
     }) : [];
     data.event_values = group.GuardianAudioEventValues? group.GuardianAudioEventValues.map((eventValue) => {
       return eventValue.value;
+    }) : [];
+    data.event_types = group.GuardianAudioEventTypes? group.GuardianAudioEventTypes.map((eventType) => {
+      return eventType.value;
     }) : [];
   }
   return data;
@@ -228,14 +259,36 @@ function validateGuardianGroupEventValuesRelationsParams(data) {
   return params.validate();
 };
 
+function validateGuardianGroupEventTypesRelationsParams(data) {
+  let transformedParams = {};
+  let params = new Converter(data, transformedParams);
+
+  params.convert('event_types').toArray();
+
+  return params.validate();
+};
+
 function clearGuardianGroupEventValuesRelationsForGroup(group) {
   return models.GuardianGroupGuardianAudioEventValueRelation.destroy({ where: { guardian_group_id: group.id } });
 }
 
+function clearGuardianGroupEventTypesRelationsForGroup(group) {
+  return models.GuardianGroupGuardianAudioEventTypeRelation.destroy({ where: { guardian_group_id: group.id } });
+}
+
 function attachEventValuesToGroup(eventValues, group) {
   let proms = [];
-  eventValues.forEach(value => {
+  (eventValues || []).forEach(value => {
     let prom = group.addGuardianAudioEventValue(value);
+    proms.push(prom);
+  });
+  return Promise.all(proms);
+}
+
+function attachEventTypesToGroup(eventTypes, group) {
+  let proms = [];
+  (eventTypes || []).forEach(value => {
+    let prom = group.addGuardianAudioEventType(value);
     proms.push(prom);
   });
   return Promise.all(proms);

@@ -10,6 +10,7 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
+        GuardianAudioEventType.belongsToMany(models.GuardianGroup, { through: models.GuardianGroupGuardianAudioEventTypeRelation });
       },
       indexes: [
       ]

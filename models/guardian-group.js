@@ -37,6 +37,7 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         GuardianGroup.belongsToMany(models.Guardian, { through: models.GuardianGroupRelation });
         GuardianGroup.belongsToMany(models.GuardianAudioEventValue, { through: models.GuardianGroupGuardianAudioEventValueRelation });
+        GuardianGroup.belongsToMany(models.GuardianAudioEventType, { through: models.GuardianGroupGuardianAudioEventTypeRelation });
       },
       indexes: [
         {
