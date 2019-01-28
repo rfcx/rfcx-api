@@ -111,20 +111,27 @@ function prepareOpts(req) {
       .then((groups) => {
         let guardians = [];
         let values = [];
+        let types = [];
         groups.forEach((group) => {
-          group.Guardians.forEach((guardian) => {
+          (group.Guardians || []).forEach((guardian) => {
             if (!guardians.includes(guardian.guid)) {
               guardians.push(guardian.guid);
             }
           });
-          group.GuardianAudioEventValues.forEach((value) => {
+          (group.GuardianAudioEventValues || []).forEach((value) => {
             if (!values.includes(value.value)) {
               values.push(value.value);
+            }
+          });
+          (group.GuardianAudioEventTypes || []).forEach((type) => {
+            if (!types.includes(type.value)) {
+              types.push(type.value);
             }
           });
         });
         opts.guardians = guardians;
         opts.values = values;
+        opts.types = types;
         return opts;
       });
   }
