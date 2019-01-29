@@ -161,6 +161,7 @@ router.route('/stripe/classy')
     params.convert('member_email_address').toString();
     params.convert('billing_first_name').optional().toString();
     params.convert('billing_last_name').optional().toString();
+    params.convert('is_anonymous').optional().toBoolean();
 
     params.validate()
       .bind({})
@@ -186,6 +187,7 @@ router.route('/stripe/classy')
             member_email_address: transformedParams.member_email_address,
             billing_first_name: transformedParams.billing_first_name,
             billing_last_name: transformedParams.billing_last_name,
+            is_anonymous: transformedParams.is_anonymous,
           },
           [{
             price: transformedParams.amount,
