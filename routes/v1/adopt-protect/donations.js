@@ -153,7 +153,7 @@ router.route('/stripe/classy')
     let params = new Converter(req.body, transformedParams);
 
     params.convert('token').toString();
-    params.convert('amount').toFloat();
+    params.convert('amount').toFloat(); // in dollars
     params.convert('currency').toString();
     params.convert('description').toString();
 
@@ -166,7 +166,7 @@ router.route('/stripe/classy')
       .bind({})
       .then(() => {
         return stripe.charges.create({
-          amount: transformedParams.amount,
+          amount: transformedParams.amount * 100, // Stripe expects that this value is in cents
           currency: transformedParams.currency,
           description: transformedParams.description,
           source: transformedParams.token,
