@@ -146,4 +146,68 @@ router.route('/classy/save-stripe-donation')
 
 });
 
+router.route('/stripe/classy')
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('token').toString();
+    params.convert('amount').toFloat();
+    params.convert('currency').toString();
+    params.convert('description').toString();
+
+    params.convert('campaign_id').toString();
+    params.convert('member_email_address').toString();
+    params.convert('billing_first_name').optional().toString();
+    params.convert('billing_last_name').optional().toString();
+
+    params.validate()
+      .bind({})
+      .then(() => {
+        return stripe.charges.create({
+          amount: transformedParams.amount,
+          currency: transformedParams.currency,
+          description: transformedParams.description,
+          source: transformedParams.token,
+        });
+      })
+      .then((stripeData) => {
+        if (stripeData.status !== 'succeeded') {
+          throw new ValidationError(stripeData.failure_message || 'Error creating Stripe charge.');
+        }
+        this.stripeData = stripeData;
+        return classyService.requestAccessToken(process.env.CLASSY_CLIENT_ID, process.env.CLASSY_CLIENT_SECRET);
+      })
+      .then((classyTokenData) => {
+        return classyService.saveCampaignTransaction(
+          transformedParams.campaign_id,
+          {
+            member_email_address: transformedParams.member_email_address,
+            billing_first_name: transformedParams.billing_first_name,
+            billing_last_name: transformedParams.billing_last_name,
+          },
+          [{
+            price: transformedParams.amount,
+            product_name: 'Offline transaction',
+            type: 'donation'
+          }],
+          {
+            description: transformedParams.description || '',
+            payment_type: 'other',
+            sync_third_party: true
+          },
+          classyTokenData.access_token);
+      })
+      .then((classyData) => {
+        res.status(200).json({
+          stripe: this.stripeData,
+          classy: classyData
+        });
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || 'Error while processing the donation.'));
+
+  });
+
 module.exports = router;
