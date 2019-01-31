@@ -11,8 +11,35 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
+// returns guardian groups bases on accessibleSites user attribute
 router.route("/groups")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'guardiansSitesAdmin']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+
+    let params = {
+      extended: true,
+    };
+    if (req.rfcx.auth_token_info) {
+      try {
+        params.sites = req.rfcx.auth_token_info['https://rfcx.org/app_metadata'].accessibleSites || [];
+      }
+      catch(e) {
+        params.sites = [];
+      }
+    }
+
+    guardianGroupService
+      .getGroups(params)
+      .then((dbGroups) => {
+        return guardianGroupService.formatGroups(dbGroups, true);
+      })
+      .then((data) => { res.status(200).json(data); })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || "Could not get GuardianGroups."));
+
+  });
+
+router.route("/groups/admin")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), function(req, res) {
 
     guardianGroupService
       .getAllGroups(true)
@@ -21,7 +48,7 @@ router.route("/groups")
       })
       .then((data) => { res.status(200).json(data); })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || "Could not get GuardianGroup with given shortname."));
+      .catch(e => httpError(req, res, 500, e, e.message || "Could not get GuardianGroups."));
 
   });
 

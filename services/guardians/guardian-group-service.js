@@ -27,6 +27,33 @@ function getGroupsByShortnames(shortnames) {
   return Promise.all(proms);
 }
 
+function getGroups(params) {
+  let opts = {
+    where: {}
+  };
+  if (params.extended) {
+    opts.include = [{ all: true }];
+  }
+  return Promise.resolve(undefined)
+    .then(() => {
+      if (params.sites) {
+        return siteService.getSitesByGuids(params.sites, true)
+          .then((sites) => {
+            return sites
+              .filter((site) => { return !!site; })
+              .map((site) => { return site.id; });
+          });
+      }
+      return Promise.resolve();
+    })
+    .then((siteIds) => {
+      if (siteIds) {
+        opts.where.site = { $in: siteIds }
+      }
+      return models.GuardianGroup.findAll(opts);
+    })
+}
+
 function getAllGroups(extended) {
   let opts = {};
   if (extended) {
@@ -320,6 +347,7 @@ module.exports = {
   getGroupByShortname,
   getGroupsByShortnames,
   getAllGroups,
+  getGroups,
   createGroup,
   updateGroup,
   deleteGroupByShortname,
