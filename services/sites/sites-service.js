@@ -15,5 +15,5 @@ function getSiteByGuid(guid) {
 }
 
 module.exports = {
-  getSiteByGuid: getSiteByGuid,
+  getSiteByGuid,
 }

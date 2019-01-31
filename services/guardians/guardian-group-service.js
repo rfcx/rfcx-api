@@ -5,6 +5,7 @@ var Promise = require("bluebird");
 var ValidationError = require("../../utils/converter/validation-error");
 const eventValueService = require('../events/event-value-service');
 const eventTypeService = require('../events/event-type-service');
+const siteService = require('../sites/sites-service');
 
 function getGroupByShortname(shortname) {
   return models.GuardianGroup
@@ -75,6 +76,15 @@ function createGroup(opts) {
       if (exist) {
         throw new ValidationError('Group with this shortname or name already exists.');
       }
+      if (this.data.site) {
+        return siteService.getSiteByGuid(this.data.site);
+      }
+      return Promise.resolve(null);
+    })
+    .then((site) => {
+      if (site) {
+        this.data.site = site.id;
+      }
       return models.GuardianGroup.create(this.data);
     })
     .then(group => {
@@ -106,7 +116,17 @@ function updateGroup(shortname, opts) {
     .bind({})
     .then((group) => {
       this.group = group;
-      return updateGuardiansGroupRelations(group, opts);
+      if (opts.site) {
+        return siteService.getSiteByGuid(opts.site)
+          .then((site) => {
+            this.group.site = site.id;
+            return this.group.save();
+          });
+      }
+      return Promise.resolve();
+    })
+    .then(() => {
+      return updateGuardiansGroupRelations(this.group, opts);
     })
     .then(() => {
       return updateGuardianGroupEventValuesRelations(this.group, opts);
@@ -207,6 +227,7 @@ function formatGroup(group, extended) {
     data.event_types = group.GuardianAudioEventTypes? group.GuardianAudioEventTypes.map((eventType) => {
       return eventType.value;
     }) : [];
+    data.site = group.Site? group.Site.guid : null;
   }
   return data;
 }
@@ -224,6 +245,7 @@ function validateCreateGroupParams(data) {
   params.convert('shortname').toString().trim().nonEmpty();
   params.convert('name').toString().trim().nonEmpty();
   params.convert('description').toString().trim().optional();
+  params.convert('site').toString().trim().optional();
 
   return params.validate();
 }
