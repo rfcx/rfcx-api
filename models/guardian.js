@@ -156,7 +156,13 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true,
         min: 1
       }
-    }
+    },
+    notes: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {}
+    },
   }, {
     classMethods: {
       associate: function(models) {

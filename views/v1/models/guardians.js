@@ -41,7 +41,8 @@ exports.models = {
           guid: dbRow.Site.guid,
           name: dbRow.Site.name
         } : null,
-        last_audio: dbRow.last_audio? dbRow.last_audio : null
+        last_audio: dbRow.last_audio? dbRow.last_audio : null,
+        notes: dbRow.notes || null,
       };
 
       jsonArray.push(guardian);
