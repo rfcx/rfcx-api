@@ -37,6 +37,7 @@ function saveCampaignTransaction(campaignId, memberInfo, items, offlinePaymentIn
     member_email_address: memberInfo.member_email_address,
     items: items,
     offline_payment_info: offlinePaymentInfo,
+    is_anonymous: !!memberInfo.is_anonymous,
   };
   if (memberInfo.billing_first_name) {
     body.billing_first_name = memberInfo.billing_first_name;
