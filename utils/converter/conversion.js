@@ -202,4 +202,15 @@ module.exports = class Conversion {
     });
     return this;
   }
+
+  isObject() {
+    this.conversions.push(() => {
+      if (!util.isObject(this.value)) {
+        this.throwError(`${this.value} is not an object`);
+      }
+    });
+
+    return this;
+  }
+
 };

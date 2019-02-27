@@ -146,6 +146,9 @@ var routes = {
     "forms": [
       require("./routes/v1/forms/contact"),
     ],
+    "pdf": [
+      require("./routes/v1/pdf/pdf"),
+    ],
   },
   "v2": {
   }
