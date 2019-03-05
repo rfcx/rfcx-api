@@ -3,7 +3,7 @@ function getAllViews() { return require("../../../views/v1"); }
 
 exports.models = {
 
-  guardianSites: function(req,res,dbSites) {
+  guardianSites: function(req, res, dbSites, extended) {
 
     var views = getAllViews();
 
@@ -25,6 +25,14 @@ exports.models = {
         bounds: dbRow.bounds,
         timezone: dbRow.timezone,
       };
+
+      if (extended) {
+        guardianSite.map_image_url = dbRow.map_image_url;
+        guardianSite.globe_icon_url = dbRow.globe_icon_url;
+        guardianSite.classy_campaign_id = dbRow.classy_campaign_id;
+        guardianSite.protected_area = dbRow.protected_area;
+        guardianSite.backstory = dbRow.backstory;
+      }
 
       if (dbRow.Guardian != null) { guardianSite.guardians = views.models.guardian(req,res,dbRow.Guardian); }
 

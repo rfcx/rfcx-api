@@ -7,13 +7,22 @@ var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 var sequelize = require('sequelize');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+var Converter = require("../../../utils/converter/converter");
+var ValidationError = require("../../../utils/converter/validation-error");
 const userService = require('../../../services/users/users-service');
+const sitesService = require('../../../services/sites/sites-service');
 
 router.route("/")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
+
+    let where = {};
+    if (req.query.include_inactive !== 'true') {
+      where.is_active = true;
+    }
+
     models.GuardianSite
       .findAll({
-        where: { is_active: true },
+        where,
         limit: req.rfcx.limit,
         offset: req.rfcx.offset
       })
@@ -37,7 +46,7 @@ router.route("/")
         if (dbSite.length < 1) {
           httpError(req, res, 404, "database");
         } else {
-          res.status(200).json(views.models.guardianSites(req,res,dbSite));
+          res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'));
         }
 
       })
@@ -82,7 +91,7 @@ router.route("/:site_id")
         if (dbSite.length < 1) {
           httpError(req, res, 404, "database");
         } else {
-          res.status(200).json(views.models.guardianSites(req,res,dbSite));
+          res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'));
         }
 
       }).catch(function(err){
@@ -93,8 +102,42 @@ router.route("/:site_id")
   })
 ;
 
+router.route("/:guid")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['guardiansSitesAdmin']), function(req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('name').optional().toString();
+    params.convert('description').optional().toString();
+    params.convert('timezone').optional().toString();
+    params.convert('bounds').optional().toArray();
+    params.convert('map_image_url').optional().toString();
+    params.convert('globe_icon_url').optional().toString();
+    params.convert('classy_campaign_id').optional().toString();
+    params.convert('protected_area').optional().toNonNegativeInt();
+    params.convert('backstory').optional().toString();
+    params.convert('is_active').optional().toBoolean();
+
+    params.validate()
+      .then(() => {
+        return sitesService.getSiteByGuid(req.params.guid);
+      })
+      .then((site) => {
+        return sitesService.updateSiteAttrs(site, transformedParams);
+      })
+      .then((site) => {
+        return sitesService.formatSite(site, true);
+      })
+      .then(result => res.status(200).json(result))
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not update the site.`));
+
+  });
+
 router.route("/:site_id/bounds")
-  .post(passport.authenticate("token",{session:false}), function(req,res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['guardiansSitesAdmin']), function(req, res) {
 
     models.GuardianSite
       .findOne({
@@ -119,8 +162,7 @@ router.route("/:site_id/bounds")
         if (!!err) { res.status(500).json({msg:"Error updating site bounds. Check params please."}); }
       });
 
-  })
-;
+  });
 
 
 

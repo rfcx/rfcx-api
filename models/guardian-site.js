@@ -62,7 +62,33 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
       }
-    }
+    },
+    map_image_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: { }
+    },
+    globe_icon_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: { }
+    },
+    classy_campaign_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: { }
+    },
+    protected_area: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true
+      }
+    },
+    backstory: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true
+    },
   }, {
     classMethods: {
       associate: function(models) {
