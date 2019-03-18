@@ -24,6 +24,9 @@ var fs = require('fs');
 var aws = require("../../../utils/external/aws.js").aws();
 var util = require("util");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const audioService = require('../../../services/audio/audio-service');
+const Converter = require("../../../utils/converter/converter");
+const ValidationError = require("../../../utils/converter/validation-error");
 
 function filter(req) {
   var order = 'measured_at ASC';
@@ -91,6 +94,19 @@ function getFilenameFromUrl(url) {
   const splittedUrl = url.split('/');
   return splittedUrl[splittedUrl.length - 1];
 }
+
+router.route("/")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+
+    return audioService.queryData(req)
+      .then((data) => {
+        res.status(200).send(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not find audio files.`));
+
+  });
 
 router.route("/filter")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
