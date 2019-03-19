@@ -6,10 +6,11 @@ const executeService = require('../../../services/execute-service');
 const passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 
 
 router.route("/:guardian_id/coverage")
-  .get(passport.authenticate("token",{session:false}),requireUser, function(req,res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
 
     var serviceReq = {
       guardian_id: req.params.guardian_id,
