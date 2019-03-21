@@ -309,6 +309,35 @@ router.route("/:audio_id/createSensations")
       });
   });
 
+router.route("/:guid/boxes")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('boxes').toArray();
+
+    params.validate()
+      .bind({})
+      .then(() => {
+        return audioService.getAudioByGuid(req.params.guid);
+      })
+      .then((audio) => {
+        this.audio = audio;
+        return audioService.removeBoxesForAudioFromUser(audio, req.rfcx.auth_token_info.owner_id);
+      })
+      .then(() => {
+        return audioService.createBoxesForAudio(this.audio, transformedParams.boxes, req.rfcx.auth_token_info.owner_id);
+      })
+      .then((data) => {
+        res.status(200).send(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not create boxes for audio file.`));
+
+  });
+
 
 // implements a majority vote for each sample in the audio file
 router.route("/:audio_id/labels")

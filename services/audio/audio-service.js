@@ -203,14 +203,54 @@ function combineAssetsUrls(req, guids, extension) {
 }
 
 function serveAudioFromS3(res, filename, s3Bucket, s3Path, inline) {
-
   var audioStorageUrl = `s3://${s3Bucket}/${s3Path}/${filename}`;
 
   return audioUtils.cacheSourceAudio(audioStorageUrl)
     .then(({ sourceFilePath, headers }) => {
       audioUtils.serveAudioFromFile(res, sourceFilePath, filename, (headers? headers['content-type'] : null), inline)
     });
+}
 
+function getAudioByGuid(guid) {
+  return models.GuardianAudio
+    .findOne({
+      where: { guid },
+      include: [{ all: true }]
+    })
+    .then((item) => {
+      if (!item) { throw new sequelize.EmptyResultError('Audio with given guid not found.'); }
+      return item;
+    });
+}
+
+function removeBoxesForAudioFromUser(audio, user_id) {
+  // remove all previous labels for this file from this user
+  return models.GuardianAudioBox.destroy({ where: { audio_id: audio.id, created_by: user_id } });
+}
+
+function createBoxesForAudio(audio, boxes, user_id) {
+  let proms = [];
+  boxes.forEach((box) => {
+    let prom = models.GuardianAudioEventValue.findOrCreate({
+      where: { $or: { value: box.label, id: box.label }},
+      defaults: { value: box.label }
+    })
+    .spread((eventValue, created) => {
+      return models.GuardianAudioBox.create({
+        confidence: box.confidence || 1,
+        freq_min: box.freq_min,
+        freq_max: box.freq_max,
+        begins_at: box.begins_at,
+        ends_at: box.ends_at,
+        audio_guid: audio.guid,
+        audio_id: audio.id,
+        created_by: user_id,
+        value: eventValue.id,
+      });
+    });
+    proms.push(prom);
+  });
+  return Promise.all(proms);
 }
 
 module.exports = {
@@ -218,4 +258,7 @@ module.exports = {
   getGuidsFromDbAudios,
   combineAssetsUrls,
   serveAudioFromS3,
+  getAudioByGuid,
+  removeBoxesForAudioFromUser,
+  createBoxesForAudio,
 };
