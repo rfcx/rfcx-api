@@ -25,6 +25,7 @@ var aws = require("../../../utils/external/aws.js").aws();
 var util = require("util");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const audioService = require('../../../services/audio/audio-service');
+const boxesService = require('../../../services/audio/boxes-service');
 const Converter = require("../../../utils/converter/converter");
 const ValidationError = require("../../../utils/converter/validation-error");
 
@@ -269,6 +270,23 @@ router.route("/filter/by-tags")
         console.log("failed to return audios | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return audios"}); }
       });
+
+  });
+
+router.route("/labels")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    return boxesService.queryData(req)
+      .then((data) => {
+        boxesService.calculateTimeOffsetsInSeconds(data.labels);
+        return data;
+      })
+      .then((data) => {
+        res.status(200).send(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not find audio labels data.`));
 
   });
 
