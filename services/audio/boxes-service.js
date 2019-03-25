@@ -200,7 +200,20 @@ function calculateTimeOffsetsInSeconds(labels) {
   })
 }
 
+function combineAudioUrls(labels) {
+  labels.forEach((label) => {
+    let urlBase = `${process.env.ASSET_URLBASE}/audio/${label.audio_guid}`;
+    label.urls = {
+      m4a: `${urlBase}.m4a`,
+      mp3: `${urlBase}.mp3`,
+      opus: `${urlBase}.opus`,
+      png: `${urlBase}.png`
+    };
+  })
+}
+
 module.exports = {
   queryData,
   calculateTimeOffsetsInSeconds,
+  combineAudioUrls,
 };

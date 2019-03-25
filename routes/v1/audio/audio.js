@@ -279,6 +279,7 @@ router.route("/labels")
     return boxesService.queryData(req)
       .then((data) => {
         boxesService.calculateTimeOffsetsInSeconds(data.labels);
+        boxesService.combineAudioUrls(data.labels);
         return data;
       })
       .then((data) => {
