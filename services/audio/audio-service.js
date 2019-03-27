@@ -14,12 +14,14 @@ const querySelect =
     'Site.guid AS site_guid, Site.name as site_name, Site.timezone as site_timezone, ' +
     'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
     'Format.codec as codec, Format.mime as mime, Format.file_extension as file_extension, Format.sample_rate as sample_rate, ' +
-    'Format.is_vbr as vbr, Format.target_bit_rate as target_bit_rate ';
+    'Format.is_vbr as vbr, Format.target_bit_rate as target_bit_rate, ' +
+    'COUNT(DISTINCT GuardianAudioBox.id) as audio_box_count ';
 
 const queryJoins =
   'LEFT JOIN Guardians AS Guardian ON GuardianAudio.guardian_id = Guardian.id ' +
   'LEFT JOIN GuardianSites AS Site ON GuardianAudio.site_id = Site.id ' +
-  'LEFT JOIN GuardianAudioFormats AS Format ON GuardianAudio.format_id = Format.id ';
+  'LEFT JOIN GuardianAudioFormats AS Format ON GuardianAudio.format_id = Format.id ' +
+  'LEFT JOIN GuardianAudioBoxes AS GuardianAudioBox ON GuardianAudio.id = GuardianAudioBox.audio_id ';
 
 /**
  * weekdays[] is an array with numbers [0, 1, 2, 3, 4, 5, 6]
@@ -119,6 +121,7 @@ function queryData(req) {
       let sql = `${querySelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} `;
       sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
       sql = addGetQueryParams(sql, opts);
+      sql = sqlUtils.condAdd(sql, true, ' GROUP BY GuardianAudio.id ');
       sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
 
       return models.sequelize
