@@ -76,6 +76,7 @@ function prepareOpts(req) {
     // guardianGroups: req.query.guardian_groups? (Array.isArray(req.query.guardian_groups)? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
     // excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
     // weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
+    userId: (req.query.per_user === 'true' && req.rfcx && req.rfcx.auth_token_info && req.rfcx.auth_token_info.owner_id)? req.rfcx.auth_token_info.owner_id : undefined,
     order: order? order : 'GuardianAudioBox.begins_at',
     dir: dir? dir : 'ASC',
   };
@@ -109,6 +110,7 @@ function addGetQueryParams(sql, opts) {
   // sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.audios, ' AND GuardianAudio.guid IN (:audios)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
+  sql = sqlUtils.condAdd(sql, opts.userId, ' AND GuardianAudioBox.created_by = :userId');
   sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudioBox.updated_at > :updatedAfter');
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudioBox.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudioBox.created_at > :createdAfter');
