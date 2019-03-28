@@ -2,24 +2,24 @@ var Promise = require("bluebird");
 var ffmpeg = require("fluent-ffmpeg");
 var fs = require("fs");
 
-var audioFormatSettings = { 
+var audioFormatSettings = {
 
         mp3: {
             extension: "mp3", codec: "libmp3lame", outputFormat: "mp3", mime: "audio/mpeg",
             inputOptions: [],
             outputOptions: [ "-b:a 32k" ]
         },
-        opus: { 
+        opus: {
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
             inputOptions: [],
             outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ]
         },
-        wav: { 
+        wav: {
             extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
             inputOptions: [ "-flags +bitexact" ],
-            outputOptions: []
+            outputOptions: [ "-b:a 24k" ]
         },
-        flac: { 
+        flac: {
             extension: "flac", codec: "flac", outputFormat: "flac", mime: "audio/flac",
             inputOptions: [],
             outputOptions: [ "-sample_fmt s16" ]
@@ -78,7 +78,7 @@ exports.audioUtils = {
                         console.log("failed to locate source audio | " + err);
                         reject(new Error(err));
                     }
-                });           
+                });
 
             } catch(err) {
                 console.log("failed to transcode audio to "+audioFormat+" | " + err);

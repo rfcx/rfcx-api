@@ -54,7 +54,7 @@ exports.models = {
 
           audioUtils.transcodeToFile(output_file_extension, {
             enhanced: is_output_enhanced,
-            bitRate: req.query.bitRate? req.query.bitRate : (is_output_enhanced ? "32k" : "16k"),
+            bitRate: is_output_enhanced ? "32k" : "16k",
             sampleRate: req.query.sampleRate? parseInt(req.query.sampleRate) : dbRow.Format.sample_rate,
             clipOffset: queryParams.clipOffset,
             clipDuration: queryParams.clipDuration,
