@@ -17,7 +17,7 @@ var audioFormatSettings = {
         wav: {
             extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
             inputOptions: [ "-flags +bitexact" ],
-            outputOptions: [ "-b:a 24k" ]
+            outputOptions: []
         },
         flac: {
             extension: "flac", codec: "flac", outputFormat: "flac", mime: "audio/flac",
