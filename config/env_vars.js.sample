@@ -31,6 +31,10 @@ exports.env = {
   DB_PASSWORD: "",
   DB_PORT: 3306,
 
+  NEO4J_URL: "",
+  NEO4J_USER: "",
+  NEO4J_PASSWORD: "",
+
   SQS_PERCEPTION_BATCH: "rfcx-perception-batch",
 
   NEW_RELIC_KEY: "",
