@@ -7,27 +7,32 @@ var audioFormatSettings = {
         mp3: {
             extension: "mp3", codec: "libmp3lame", outputFormat: "mp3", mime: "audio/mpeg",
             inputOptions: [],
-            outputOptions: [ "-b:a 32k" ]
+            outputOptions: [ "-b:a 32k" ],
+            maxValues: { sampleRate: 48000 }
         },
         opus: {
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
             inputOptions: [],
-            outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ]
+            outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ],
+            maxValues: { sampleRate: 48000 }
         },
         wav: {
             extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
             inputOptions: [ "-flags +bitexact" ],
-            outputOptions: []
+            outputOptions: [],
+            maxValues: { sampleRate: 192000 }
         },
         flac: {
             extension: "flac", codec: "flac", outputFormat: "flac", mime: "audio/flac",
             inputOptions: [],
-            outputOptions: [ "-sample_fmt s16" ]
+            outputOptions: [ "-sample_fmt s16" ],
+            maxValues: { sampleRate: 192000 }
         },
         m4a: {
             extension: "m4a", codec: "libfdk_aac", outputFormat: "m4a", mime: "audio/mp4",
             inputOptions: [],
-            outputOptions: [ "-b:a 16k" ]
+            outputOptions: [ "-b:a 16k" ],
+            maxValues: { sampleRate: 48000 }
         }
 
     };
@@ -51,6 +56,10 @@ exports.audioUtils = {
                         var ffmpegOutputOptions = [];
                         if (inputParams.clipOffset != null) { ffmpegOutputOptions.push("-ss "+inputParams.clipOffset); }
                         if (inputParams.clipDuration != null) { ffmpegOutputOptions.push("-t "+inputParams.clipDuration); }
+
+                        if (inputParams.sampleRate > audioFormatSettings[audioFormat].maxValues.sampleRate) {
+                            inputParams.sampleRate = audioFormatSettings[audioFormat].maxValues.sampleRate;
+                        }
 
                         if (!copyCodecInsteadOfTranscode) {
                            var preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced);
@@ -106,4 +115,3 @@ function getOutputOptions(format,isEnhanced) {
     for (i in audioFormatSettings[format].outputOptions) { outputOptions.push(audioFormatSettings[format].outputOptions[i]); }
     return outputOptions;
 }
-
