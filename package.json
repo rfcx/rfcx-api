@@ -39,6 +39,7 @@
     "mqtt": "2.15.3",
     "multer": "0.1.8",
     "mysql": "2.13.0",
+    "neo4j-driver": "1.7.3",
     "newrelic": "1.39.1",
     "parallel-download": "1.1.0",
     "passport": "0.3.2",

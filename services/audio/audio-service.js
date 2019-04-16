@@ -129,12 +129,11 @@ function queryData(req) {
           { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
         )
         .then((audios) => {
-          this.total = audios.length;
           return filterWithTz(opts, audios);
         })
         .then((audios) => {
           return {
-            total: this.total,
+            total: audios.length,
             audios: limitAndOffset(opts, audios)
           }
         })

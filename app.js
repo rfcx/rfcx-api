@@ -150,7 +150,10 @@ var routes = {
       require("./routes/v1/pdf/pdf"),
     ],
   },
-  "v2": {
+  v2: {
+    events: [
+      require("./routes/v2/events/events"),
+    ],
   }
 };
 
