@@ -36,7 +36,7 @@ function prepareOpts(req) {
     guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
     models: req.query.models? (Array.isArray(req.query.models)? req.query.models : [req.query.models]) : undefined,
     weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
-    order: order? order : 'measured_at',
+    order: order? order : 'ev.audioMeasuredAt',
     dir: dir? dir : 'ASC',
   };
 
@@ -101,6 +101,10 @@ function filterWithTz(opts, items) {
   });
 }
 
+function limitAndOffset(opts, items) {
+  return items.slice(opts.offset, opts.offset + opts.limit);
+}
+
 function queryData(req) {
 
   return prepareOpts(req)
@@ -119,7 +123,8 @@ function queryData(req) {
       let query = `MATCH (ev:event)<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' RETURN ev');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label');
+      query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
       const resultPromise = session.run(query, newOpts);
@@ -127,16 +132,52 @@ function queryData(req) {
       return resultPromise.then(result => {
         session.close();
         return result.records.map((record) => {
-          return record.get(0).properties;
+          let event = record.get(0).properties;
+          let ai = record.get(1).properties;
+          event.aiName = ai.name;
+          event.aiGuid = ai.guid;
+          let assetUrlBase = `${process.env.ASSET_URLBASE}/audio/${event.audioGuid}`;
+          event.urls = {
+            mp3: `${assetUrlBase}.mp3`,
+            png: `${assetUrlBase}.png`,
+            opus: `${assetUrlBase}.opus`
+          },
+          event.value = record.get(2);
+          return event;
         });
       });
     })
     .then((items) => {
       return filterWithTz(this.opts, items);
+    })
+    .then((items) => {
+      return {
+        total: items.length,
+        events: limitAndOffset(this.opts, items)
+      };
+    })
+
+}
+
+function queryWindowsForEvent(eventGuid) {
+
+  let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai) ` +
+              `MATCH (ai)-[:has_audioWindowSet]->(:audioWindowSet {audioGuid: ev.audioGuid})-[:contains]->(aw:audioWindow) ` +
+              `RETURN aw ORDER BY aw.start`;
+
+  const session = neo4j.session();
+  const resultPromise = session.run(query, { eventGuid });
+
+  return resultPromise.then(result => {
+    session.close();
+    return result.records.map((record) => {
+      return record.get(0).properties;
     });
+  });
 
 }
 
 module.exports = {
   queryData,
+  queryWindowsForEvent,
 };
