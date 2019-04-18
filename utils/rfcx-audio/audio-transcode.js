@@ -7,27 +7,47 @@ var audioFormatSettings = {
         mp3: {
             extension: "mp3", codec: "libmp3lame", outputFormat: "mp3", mime: "audio/mpeg",
             inputOptions: [],
-            outputOptions: [ "-b:a 32k" ]
+            outputOptions: [ "-b:a 32k" ],
+            maxValues: {
+                sampleRate: 48000,
+                maxOutputOptions: [ "-b:a 96k" ]
+            }
         },
         opus: {
             extension: "opus", codec: "libopus", outputFormat: "opus", mime: "audio/ogg",
             inputOptions: [],
-            outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ]
+            outputOptions: [ "-b:a 16k", "-compression_level 9", "-application audio", "-vbr on"  ],
+            maxValues: {
+                sampleRate: 48000,
+                maxOutputOptions: [ "-b:a 48k", "-compression_level 9", "-application audio", "-vbr on" ]
+            }
         },
         wav: {
             extension: "wav", codec: "pcm_s16le", outputFormat: "wav", mime: "audio/wav",
             inputOptions: [ "-flags +bitexact" ],
-            outputOptions: []
+            outputOptions: [],
+            maxValues: {
+                sampleRate: 192000,
+                maxOutputOptions: [ "-flags +bitexact" ]
+            }
         },
         flac: {
             extension: "flac", codec: "flac", outputFormat: "flac", mime: "audio/flac",
             inputOptions: [],
-            outputOptions: [ "-sample_fmt s16" ]
+            outputOptions: [ "-sample_fmt s16" ],
+            maxValues: {
+                sampleRate: 192000,
+                maxOutputOptions: [ "-sample_fmt s16" ]
+            }
         },
         m4a: {
             extension: "m4a", codec: "libfdk_aac", outputFormat: "m4a", mime: "audio/mp4",
             inputOptions: [],
-            outputOptions: [ "-b:a 16k" ]
+            outputOptions: [ "-b:a 16k" ],
+            maxValues: {
+                sampleRate: 48000,
+                maxOutputOptions: [ "-b:a 48k" ]
+            }
         }
 
     };
@@ -52,10 +72,14 @@ exports.audioUtils = {
                         if (inputParams.clipOffset != null) { ffmpegOutputOptions.push("-ss "+inputParams.clipOffset); }
                         if (inputParams.clipDuration != null) { ffmpegOutputOptions.push("-t "+inputParams.clipDuration); }
 
-                        if (!copyCodecInsteadOfTranscode) {
-                           var preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced);
-                            for (i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]); }
+                        var preOutputOpts = [];
+                        if (inputParams.sampleRate > audioFormatSettings[audioFormat].maxValues.sampleRate) {
+                            inputParams.sampleRate = audioFormatSettings[audioFormat].maxValues.sampleRate;
+                            preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced,true);
+                        } else if (!copyCodecInsteadOfTranscode) {
+                            preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced,false);
                         }
+                        for (i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]); }
 
                         new ffmpeg(inputParams.sourceFilePath)
                             .input(inputParams.sourceFilePath)
@@ -97,13 +121,17 @@ function getInputOptions(format,isEnhanced) {
     return inputOptions;
 }
 
-function getOutputOptions(format,isEnhanced) {
+function getOutputOptions(format,isEnhanced,useMaxValues) {
     var enhancedOutputOptions = [
             "-filter_complex", "[0:a][1:a]amerge=inputs=2[aout]",
             "-map", "[aout]"
         ],
-        outputOptions = (isEnhanced) ? enhancedOutputOptions : [];
-    for (i in audioFormatSettings[format].outputOptions) { outputOptions.push(audioFormatSettings[format].outputOptions[i]); }
+    outputOptions = (isEnhanced) ? enhancedOutputOptions : [];
+
+    if (useMaxValues) {
+        for (i in audioFormatSettings[format].maxValues.maxOutputOptions) { outputOptions.push(audioFormatSettings[format].maxValues.maxOutputOptions[i]); }
+    } else {
+        for (i in audioFormatSettings[format].outputOptions) { outputOptions.push(audioFormatSettings[format].outputOptions[i]); }
+    }
     return outputOptions;
 }
-
