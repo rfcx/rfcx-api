@@ -157,12 +157,7 @@ function getUsers(token, params) {
     if (params) {
       ['per_page', 'page', 'include_totals', 'sort', 'fields', 'include_fields', 'q'].forEach((param) => {
         if (params[param] !== undefined) {
-          if (param === 'q') {
-            qs[param] = `name: ${params[param]}* OR email: ${params[param]}*`;
-          }
-          else {
-            qs[param] = params[param];
-          }
+          qs[param] = params[param];
         }
       });
     }
