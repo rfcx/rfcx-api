@@ -6,7 +6,7 @@ module.exports = {
     return queryInterface.createTable('Attachments', {
       guid: {
         type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        defaultValue: Sequelize.UUIDV4,
         allowNull: false,
         unique: true
       },
