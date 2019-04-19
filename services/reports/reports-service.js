@@ -11,6 +11,7 @@ const guid = require('../../utils/misc/guid');
 const S3Service = require('../s3/s3-service');
 const sqlUtils = require("../../utils/misc/sql");
 const loggers = require('../../utils/logger');
+const attachmentService = require('../attachment/attachment-service');
 
 const reportsQueryBase =
   `SELECT Report.guid, Report.reported_at, Report.created_at, Report.updated_at, Report.lat, Report.long, Report.distance,
@@ -230,7 +231,12 @@ function getReportByGuid(guid) {
   return models.Report
     .findOne({
       where: { guid },
-      include: [{ all: true }]
+      include: [
+        { model: models.GuardianSite, as: "Site" },
+        { model: models.GuardianAudioEventValue, as: 'Value' },
+        { model: models.User, },
+        { model: models.Attachment, include: [{ all: true }]},
+      ]
     })
     .then((report) => {
       if (!report) { throw new sequelize.EmptyResultError('Report with given guid not found.'); }
@@ -269,6 +275,7 @@ function formatReport(report) {
       name: report.Site.name,
       timezone: report.Site.timezone,
     },
+    attachments: report.Attachments? attachmentService.formatAttachments(report.Attachments) : [],
   };
 }
 

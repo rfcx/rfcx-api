@@ -131,7 +131,7 @@ router.route("/:guid/attachments")
             let prom = attachmentService.createAttachment({
               guid: file.rfcxGuid,
               reported_at: transformedParams.time,
-              url: `${process.env.ASSET_URLBASE}/attachment/${file.rfcxGuid}${path.extname(file.originalname)}`,
+              url: `${process.env.ASSET_URLBASE}/attachments/${file.rfcxGuid}${path.extname(file.originalname)}`,
               type_id: transformedParams.type_id,
               user_id: transformedParams.user_id,
             });

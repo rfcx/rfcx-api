@@ -117,7 +117,7 @@ router.route("/report/audio/:guid").get(function(req, res) {
 
 });
 
-router.route("/attachment/:guid").get(function(req, res) {
+router.route("/attachments/:guid").get(function(req, res) {
 
   return attachmentService.getAttachmentByGuid(req.params.guid)
     .then((dbAttachment) => {
