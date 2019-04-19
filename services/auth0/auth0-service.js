@@ -151,7 +151,9 @@ function updateAuth0User(token, opts) {
 function getUsers(token, params) {
 
   return new Promise(function(resolve, reject) {
-    let qs = {};
+    let qs = {
+      search_engine: 'v3',
+    };
     if (params) {
       ['per_page', 'page', 'include_totals', 'sort', 'fields', 'include_fields', 'q'].forEach((param) => {
         if (params[param] !== undefined) {
@@ -159,6 +161,7 @@ function getUsers(token, params) {
         }
       });
     }
+
     request({
       method: 'GET',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
