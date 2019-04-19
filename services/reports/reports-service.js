@@ -11,6 +11,7 @@ const guid = require('../../utils/misc/guid');
 const S3Service = require('../s3/s3-service');
 const sqlUtils = require("../../utils/misc/sql");
 const loggers = require('../../utils/logger');
+const attachmentService = require('../attachment/attachment-service');
 
 const reportsQueryBase =
   `SELECT Report.guid, Report.reported_at, Report.created_at, Report.updated_at, Report.lat, Report.long, Report.distance,
@@ -230,7 +231,12 @@ function getReportByGuid(guid) {
   return models.Report
     .findOne({
       where: { guid },
-      include: [{ all: true }]
+      include: [
+        { model: models.GuardianSite, as: "Site" },
+        { model: models.GuardianAudioEventValue, as: 'Value' },
+        { model: models.User, },
+        { model: models.Attachment, include: [{ all: true }]},
+      ]
     })
     .then((report) => {
       if (!report) { throw new sequelize.EmptyResultError('Report with given guid not found.'); }
@@ -245,20 +251,6 @@ function createReport(data) {
     .then(report => {
       return report.reload({ include: [{ all: true }] });
     });
-}
-
-function uploadAudio(file, guid, time) {
-  let s3Path = getS3PathForReportAudio(time);
-  let fileName = `${guid}${path.extname(file.originalname)}`;
-  return new Promise((resolve, reject) => {
-    S3Service.putObject(file.path, `/${s3Path}/${fileName}`, process.env.ASSET_BUCKET_REPORT)
-      .then(() => {
-        resolve(fileName);
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
 }
 
 function formatReport(report) {
@@ -283,6 +275,7 @@ function formatReport(report) {
       name: report.Site.name,
       timezone: report.Site.timezone,
     },
+    attachments: report.Attachments? attachmentService.formatAttachments(report.Attachments) : [],
   };
 }
 
@@ -315,9 +308,13 @@ function formatRawReports(reports) {
   return reports.map(formatRaWReport);
 }
 
-function getS3PathForReportAudio(time) {
-  let momentTime = moment.tz(time, 'UTC');
-  return `audio/${momentTime.format('YYYY')}/${momentTime.format('MM')}/${momentTime.format('DD')}`;
+function attachAttachmentsToReport(attachments, report) {
+  let proms = [];
+  attachments.forEach(attachment => {
+    let prom = report.addAttachment(attachment);
+    proms.push(prom);
+  });
+  return Promise.all(proms);
 }
 
 module.exports = {
@@ -325,9 +322,8 @@ module.exports = {
   queryData,
   getReportByGuid,
   createReport,
-  uploadAudio,
   formatReport,
   formatRaWReport,
   formatRawReports,
-  getS3PathForReportAudio,
+  attachAttachmentsToReport,
 };
