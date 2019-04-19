@@ -8,6 +8,7 @@ const Promise = require("bluebird");
 const sequelize = require("sequelize");
 const ValidationError = require("../../../utils/converter/validation-error");
 const reportsService = require('../../../services/reports/reports-service');
+const attachmentService = require('../../../services/attachment/attachment-service');
 const audioService = require('../../../services/audio/audio-service');
 
 router.route("/audio/:audio_id")
@@ -107,7 +108,22 @@ router.route("/report/audio/:guid").get(function(req, res) {
     .then((dbReport) => {
       let filename = `${req.params.guid}.${req.rfcx.content_type}`;
       let s3Bucket = process.env.ASSET_BUCKET_REPORT;
-      let s3Path = reportsService.getS3PathForReportAudio(dbReport.reported_at);
+      let s3Path = attachmentService.getS3PathForType('audio', dbReport.reported_at);
+      return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path, !!req.query.inline);
+    })
+    .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+    .catch(e => httpError(req, res, 500, e, e.message || `Could not find report audio.`));
+
+});
+
+router.route("/attachment/:guid").get(function(req, res) {
+
+  return attachmentService.getAttachmentByGuid(req.params.guid)
+    .then((dbAttachment) => {
+      let filename = `${req.params.guid}.${req.rfcx.content_type}`;
+      let s3Bucket = process.env.ASSET_BUCKET_ATTACHMENT;
+      let s3Path = attachmentService.getS3PathForType(dbAttachment.Type.type, dbAttachment.reported_at);
       return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path, !!req.query.inline);
     })
     .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))

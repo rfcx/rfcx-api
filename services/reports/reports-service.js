@@ -247,20 +247,6 @@ function createReport(data) {
     });
 }
 
-function uploadAudio(file, guid, time) {
-  let s3Path = getS3PathForReportAudio(time);
-  let fileName = `${guid}${path.extname(file.originalname)}`;
-  return new Promise((resolve, reject) => {
-    S3Service.putObject(file.path, `/${s3Path}/${fileName}`, process.env.ASSET_BUCKET_REPORT)
-      .then(() => {
-        resolve(fileName);
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
-}
-
 function formatReport(report) {
   return {
     guid: report.guid,
@@ -315,9 +301,13 @@ function formatRawReports(reports) {
   return reports.map(formatRaWReport);
 }
 
-function getS3PathForReportAudio(time) {
-  let momentTime = moment.tz(time, 'UTC');
-  return `audio/${momentTime.format('YYYY')}/${momentTime.format('MM')}/${momentTime.format('DD')}`;
+function attachAttachmentsToReport(attachments, report) {
+  let proms = [];
+  attachments.forEach(attachment => {
+    let prom = report.addAttachment(attachment);
+    proms.push(prom);
+  });
+  return Promise.all(proms);
 }
 
 module.exports = {
@@ -325,9 +315,8 @@ module.exports = {
   queryData,
   getReportByGuid,
   createReport,
-  uploadAudio,
   formatReport,
   formatRaWReport,
   formatRawReports,
-  getS3PathForReportAudio,
+  attachAttachmentsToReport,
 };
