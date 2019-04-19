@@ -49,7 +49,13 @@ router.route("/")
         transformedParams.value = dbGuardianAudioEventValue[0].id;
         if (req.files && req.files.audio) {
           let fileName = `${transformedParams.guid}${path.extname(req.files.audio.originalname)}`;
-          return attachmentService.uploadAttachment('audio', fileName, process.env.ASSET_BUCKET_REPORT, transformedParams.reported_at);
+          return attachmentService.uploadAttachment({
+            filePath: req.files.audio.path,
+            fileName: fileName,
+            type: 'audio',
+            bucket: process.env.ASSET_BUCKET_REPORT,
+            time: transformedParams.reported_at,
+          });
         }
         return null;
       })
