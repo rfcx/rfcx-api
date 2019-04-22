@@ -39,6 +39,8 @@ router.route("/:site_id/guardians")
           throw new sequelize.EmptyResultError(`No guardians were found for site "${this.dbSite.guid}".`);
         }
         this.dbGuardians = dbGuardians;
+      })
+      .then(() => {
         if (req.query.include_last_sync) {
           let proms = [];
           this.dbGuardians.forEach((dbGuardan) => {
@@ -49,6 +51,7 @@ router.route("/:site_id/guardians")
             .then((dbMetaBattery) => {
               if (dbMetaBattery) {
                 dbGuardan.last_sync = dbMetaBattery.measured_at;
+                dbGuardan.battery_percent = dbMetaBattery.battery_percent;
               }
               return true;
             });
@@ -56,9 +59,7 @@ router.route("/:site_id/guardians")
           });
           return Promise.all(proms);
         }
-        else {
-          return Promise.resolve();
-        }
+        return Promise.resolve();
       })
       .then(() => {
         res.status(200).json(views.models.guardian(req, res, this.dbGuardians));
