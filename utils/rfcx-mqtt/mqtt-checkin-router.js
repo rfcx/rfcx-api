@@ -8,6 +8,7 @@ var checkInHelpers = require("../../utils/rfcx-checkin");
 var loggers = require('../../utils/logger');
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
+var SensationsService = require('../../services/sensations/sensations-service')
 
 exports.mqttCheckInRouter = {
 
@@ -90,8 +91,12 @@ exports.mqttCheckInRouter = {
       })
       .then(() => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        return SensationsService.createSensationsFromGuardianAudio(this.checkInObj.db.dbAudio.guid);
+      })
+      .then((sensations) => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createSensationsFromGuardianAudio', { sensations });
         return mqttPublish.processAndCompressPublishJson(this.checkInObj)
-      });
+      })
   }
 
 };
