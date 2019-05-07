@@ -195,7 +195,8 @@ exports.audio = {
           url: null,//"s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
           capture_bitrate: audioInfo.capture_bitrate,
           encode_duration: audioInfo.capture_encode_duration,
-          measured_at: audioInfo.measured_at
+          measured_at: audioInfo.measured_at,
+          measured_at_local: moment.tz(audioInfo.measured_at, (audioInfo.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),
         }
       })
       .spread(function(dbAudio, wasCreated){

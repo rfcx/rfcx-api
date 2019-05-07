@@ -34,6 +34,13 @@ exports.mqttCheckInRouter = {
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           guardian: checkInObj.db.dbGuardian.guid,
         });
+        return checkInDatabase.getDbSite(checkInObj);
+      })
+      .then((checkInObj) => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbSite', {
+          checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
+          site: checkInObj.db.dbSite.guid,
+        });
         return checkInAssets.extractAudioFileMeta(checkInObj);
       })
       .then((checkInObj) => {
