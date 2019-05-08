@@ -69,17 +69,23 @@ router.route("/:guardian_id/checkins")
           guardian: Object.assign({}, dbGuardian.toJSON()),
         });
         this.dbGuardian = dbGuardian;
-          // add a new checkin to the database
+        return models.GuardianSite.fineOne({
+          where: { id: this.dbGuardian.site_id }
+        });
+      })
+      .then((dbSite) => {
+        this.dbSite = dbSite;
+        // add a new checkin to the database
         return models.GuardianCheckIn
           .create({
-            guardian_id: dbGuardian.id,
-            site_id: dbGuardian.site_id,
+            guardian_id: this.dbGuardian.id,
+            site_id: this.dbGuardian.site_id,
             measured_at: timeStampToDate(this.json.measured_at, this.json.timezone_offset),
             queued_at: timeStampToDate(this.json.queued_at, this.json.timezone_offset),
             guardian_queued_checkins: parseInt(this.json.queued_checkins),
             guardian_skipped_checkins: parseInt(this.json.skipped_checkins),
             guardian_stashed_checkins: parseInt(this.json.stashed_checkins),
-            is_certified: dbGuardian.is_certified
+            is_certified: this.dbGuardian.is_certified
         });
       })
       .then(function(dbCheckIn){
@@ -202,6 +208,7 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
                 audioInfoPostS3Save: audioInfoPostS3Save,
               });
+              audioInfoPostS3Save.timezone = this.dbSite.timezone;
               return checkInHelpers.audio.saveToDb(audioInfoPostS3Save)
             })
             .then(function(audioInfoPostDbSave){

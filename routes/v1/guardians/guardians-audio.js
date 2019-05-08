@@ -56,30 +56,39 @@ router.route("/:guardian_id/audio")
 
 
 router.route("/:guardian_id/audio")
-  .post(passport.authenticate("token",{session:false}), function(req,res) {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), function(req, res) {
 
-    models.Guardian.findOne({ where: { guid: req.params.guardian_id }
-    }).then(function(dbGuardian){
-      if(dbGuardian == null){
-        throw new Error(`Guardian with guid ${req.params.guardian_id} not found.`);
-      }
-      console.info("Creating Audio for guardian : " + req.params.guardian_id);
-      req.body.guardian_id = dbGuardian.id;
-      req.body.site_id = dbGuardian.site_id;
-      return views.models.transformCreateAudioRequestToModel(req.body);
-    }).then(function(dbModel){
-      console.info(dbModel);
-      return models.GuardianAudio.create(dbModel);
-    }).then(function(result){
-      res.status(200).json(result);
-    }).catch(function (err) {
-      if(!err){
-        console.info("Error was thrown without supplying an error message; please add a specific error message");
-        err = "generic error.";
-      }
-      console.error(`Manual Audio Upload had error: ${err}`);
-      res.status(500).json({msg: "Failed to create audio: " + err});
-    });
+    models.Guardian
+      .findOne({
+        where: { guid: req.params.guardian_id }
+      })
+      .then((dbGuardian) => {
+        if (!dbGuardian) {
+          throw new Error(`Guardian with guid ${req.params.guardian_id} not found.`);
+        }
+        console.info("Creating Audio for guardian : " + req.params.guardian_id);
+        req.body.guardian_id = dbGuardian.id;
+        req.body.site_id = dbGuardian.site_id;
+        return models.GuardianSite.findOne({ where: { id: dbGuardian.site_id } });
+      })
+      .then((dbSite) => {
+        req.body.timezone = dbSite.timezone;
+        return views.models.transformCreateAudioRequestToModel(req.body);
+      })
+      .then((dbModel) => {
+        return models.GuardianAudio.create(dbModel);
+      })
+      .then((result) => {
+        res.status(200).json(result);
+      })
+      .catch((err) => {
+        if (!err) {
+          console.info("Error was thrown without supplying an error message; please add a specific error message");
+          err = "generic error.";
+        }
+        console.error(`Manual Audio Upload had error: ${err}`);
+        res.status(500).json({msg: "Failed to create audio: " + err});
+      });
   });
 
 
