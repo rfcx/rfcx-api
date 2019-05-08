@@ -74,6 +74,10 @@ router.route("/:guardian_id/checkins")
         });
       })
       .then((dbSite) => {
+        logDebug('Guardian checkins endpoint: dbSite found', {
+          req: req,
+          site: Object.assign({}, dbSite.toJSON()),
+        });
         this.dbSite = dbSite;
         // add a new checkin to the database
         return models.GuardianCheckIn
