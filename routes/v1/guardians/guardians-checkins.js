@@ -69,7 +69,7 @@ router.route("/:guardian_id/checkins")
           guardian: Object.assign({}, dbGuardian.toJSON()),
         });
         this.dbGuardian = dbGuardian;
-        return models.GuardianSite.fineOne({
+        return models.GuardianSite.findOne({
           where: { id: this.dbGuardian.site_id }
         });
       })
