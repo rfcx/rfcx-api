@@ -14,8 +14,7 @@ exports.checkInDatabase = {
 
     return models.GuardianSite
       .findOne({
-        where: { id: checkInObj.db.dbGuardian.site_id },
-        include: [ { all: true } ]
+        where: { id: checkInObj.db.dbGuardian.site_id }
       })
       .then((dbSite) => {
         if (!dbSite) {
