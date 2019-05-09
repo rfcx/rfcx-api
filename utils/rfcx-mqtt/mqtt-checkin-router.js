@@ -33,6 +33,7 @@ exports.mqttCheckInRouter = {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', {
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           guardian: checkInObj.db.dbGuardian.guid,
+          site_id: checkInObj.db.dbGuardian.site_id,
         });
         return checkInDatabase.getDbSite(checkInObj);
       })

@@ -1,6 +1,4 @@
 const Promise = require("bluebird");
-const moment = require('moment-timezone');
-
 const urlUtil = require("../../utils/misc/urls");
 const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 const models = require("../../models");
@@ -16,6 +14,9 @@ const querySelect =
     'Format.codec as codec, Format.mime as mime, Format.file_extension as file_extension, Format.sample_rate as sample_rate, ' +
     'Format.is_vbr as vbr, Format.target_bit_rate as target_bit_rate, ' +
     'COUNT(DISTINCT GuardianAudioBox.id) as audio_box_count ';
+
+const countSelect =
+  'SELECT COUNT(*) as total ';
 
 const queryJoins =
   'LEFT JOIN Guardians AS Guardian ON GuardianAudio.guardian_id = Guardian.id ' +
@@ -101,8 +102,17 @@ function prepareOpts(req) {
 function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudio.measured_at > :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.startingBefore, ' AND GuardianAudio.measured_at < :startingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudio.measured_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
-  sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND GuardianAudio.measured_at < DATE_ADD(:startingBeforeLocal, INTERVAL 14 HOUR)');
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudio.measured_at_local > :startingAfterLocal');
+  sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND GuardianAudio.measured_at_local < :startingBeforeLocal');
+  sql = sqlUtils.condAdd(sql, opts.weekdays, ' AND WEEKDAY(GuardianAudio.measured_at_local) IN (:weekdays)');
+  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter),
+    ' AND TIME(GuardianAudio.measured_at_local) > :dayTimeLocalAfter' +
+    ' AND TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore');
+  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore),
+    ' AND (TIME(GuardianAudio.measured_at_local) > :dayTimeLocalAfter' +
+    ' OR TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore)');
+  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore), ' AND TIME(GuardianAudio.measured_at_local) > :dayTimeLocalAfter');
+  sql = sqlUtils.condAdd(sql, (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore), ' AND TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore');
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
@@ -118,78 +128,29 @@ function queryData(req) {
   return prepareOpts(req)
     .bind({})
     .then((opts) => {
-      let sql = `${querySelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} `;
-      sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
-      sql = addGetQueryParams(sql, opts);
-      sql = sqlUtils.condAdd(sql, true, ' GROUP BY GuardianAudio.id ');
-      sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+      let queryParams = addGetQueryParams('', opts);
+
+      let sqlCount = `${countSelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams}`;
+
+      let sqlQuery = `${querySelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams} GROUP BY GuardianAudio.id`;
+      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.limit, ' LIMIT ' + opts.limit);
+      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' OFFSET ' + opts.offset);
+
+      let response = {};
 
       return models.sequelize
-        .query(sql,
-          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-        )
-        .then((audios) => {
-          return filterWithTz(opts, audios);
+        .query(sqlCount, { replacements: opts, type: models.sequelize.QueryTypes.SELECT })
+        .then((data) => {
+          response.total = data[0].total;
+          return models.sequelize.query(sqlQuery, { replacements: opts, type: models.sequelize.QueryTypes.SELECT })
         })
         .then((audios) => {
-          return {
-            total: audios.length,
-            audios: limitAndOffset(opts, audios)
-          }
-        })
+          response.audios = audios;
+          return response;
+        });
     });
 
-}
-
-function filterWithTz(opts, audios) {
-  return audios.filter((audio) => {
-    let siteTimezone = audio.site_timezone || 'UTC';
-    let measuredAtTz = moment.tz(audio.measured_at, siteTimezone);
-
-    if (opts.startingAfterLocal) {
-      if (measuredAtTz < moment.tz(opts.startingAfterLocal, siteTimezone)) {
-        return false;
-      }
-    }
-    if (opts.startingBeforeLocal) {
-      if (measuredAtTz > moment.tz(opts.startingBeforeLocal, siteTimezone)) {
-        return false;
-      }
-    }
-    if (opts.weekdays) {
-      // we receive an array like ['0', '1', '2', '3', '4', '5', '6'], where `0` means Monday
-      // momentjs by default starts day with Sunday, so we will get ISO weekday
-      // (which starts from Monday, but is 1..7) and subtract 1
-      if ( !opts.weekdays.includes( `${parseInt(measuredAtTz.format('E')) - 1}` ) ) {
-        return false;
-      }
-    }
-    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter) {
-      if (measuredAtTz.format('HH:mm:ss') < opts.dayTimeLocalAfter || measuredAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
-        return false;
-      }
-    }
-    if (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore) {
-      if (measuredAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter && measuredAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
-        return false;
-      }
-    }
-    if (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore) {
-      if (measuredAtTz.format('HH:mm:ss') <= opts.dayTimeLocalAfter) {
-        return false;
-      }
-    }
-    if (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore) {
-      if (measuredAtTz.format('HH:mm:ss') >= opts.dayTimeLocalBefore) {
-        return false;
-      }
-    }
-    return true;
-  });
-}
-
-function limitAndOffset(opts, audios) {
-  return audios.slice(opts.offset, opts.offset + opts.limit);
 }
 
 function getGuidsFromDbAudios(dbAudios) {
