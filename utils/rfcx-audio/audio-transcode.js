@@ -73,7 +73,7 @@ exports.audioUtils = {
                         if (inputParams.clipDuration != null) { ffmpegOutputOptions.push("-t "+inputParams.clipDuration); }
 
                         var preOutputOpts = [];
-                        if (inputParams.sampleRate > audioFormatSettings[audioFormat].maxValues.sampleRate) {
+                        if (inputParams.sampleRate > (0.8 * audioFormatSettings[audioFormat].maxValues.sampleRate)) {
                             inputParams.sampleRate = audioFormatSettings[audioFormat].maxValues.sampleRate;
                             preOutputOpts = getOutputOptions(audioFormat,inputParams.enhanced,true);
                         } else if (!copyCodecInsteadOfTranscode) {
