@@ -5,6 +5,11 @@ var path      = require("path");
 var Sequelize = require("sequelize");
 var env       = process.env.NODE_ENV || "development";
 var config    = require(process.cwd() + '/config/config.json')[env];
+if (env === 'development') {
+  config.logging = function(str) {
+    console.log('\nSQL QUERY----------------------------------\n', str, '\n----------------------------------');
+  }
+}
 var sequelize = new Sequelize(config.database, config.username, config.password, config);
 var db        = {};
 

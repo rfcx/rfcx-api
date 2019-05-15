@@ -6,9 +6,25 @@ var saveMeta = require("../../utils/rfcx-mqtt/mqtt-save-meta.js").saveMeta;
 var smsMessages = require("../../utils/rfcx-mqtt/mqtt-sms.js").messages;
 var Promise = require('bluebird');
 var loggers = require('../../utils/logger');
-
+const moment = require('moment-timezone');
 
 exports.checkInDatabase = {
+
+  getDbSite: function(checkInObj) {
+
+    return models.GuardianSite
+      .findOne({
+        where: { id: checkInObj.db.dbGuardian.site_id }
+      })
+      .then((dbSite) => {
+        if (!dbSite) {
+          return Promise.reject(`Couldn't find site with id ${checkInObj.db.dbGuardian.site_id}`);
+        }
+        checkInObj.db.dbSite = dbSite;
+        return checkInObj;
+      });
+
+  },
 
   getDbGuardian: function(checkInObj) {
 
@@ -137,6 +153,7 @@ exports.checkInDatabase = {
         capture_bitrate: checkInObj.audio.meta.bitRate,
         encode_duration: checkInObj.audio.meta.encodeDuration,
         measured_at: checkInObj.audio.meta.measuredAt,
+        measured_at_local: moment.tz(checkInObj.audio.meta.measuredAt, (checkInObj.db.dbSite.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),
         capture_sample_count: checkInObj.audio.meta.captureSampleCount,
         size: checkInObj.audio.meta.size
       }

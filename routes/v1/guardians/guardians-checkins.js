@@ -69,7 +69,7 @@ router.route("/:guardian_id/checkins")
           guardian: Object.assign({}, dbGuardian.toJSON()),
         });
         this.dbGuardian = dbGuardian;
-          // add a new checkin to the database
+        // add a new checkin to the database
         return models.GuardianCheckIn
           .create({
             guardian_id: dbGuardian.id,
@@ -202,6 +202,7 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
                 audioInfoPostS3Save: audioInfoPostS3Save,
               });
+              audioInfoPostS3Save.timezone = self.dbGuardian.Site? self.dbGuardian.Site.timezone : 'UTC';
               return checkInHelpers.audio.saveToDb(audioInfoPostS3Save)
             })
             .then(function(audioInfoPostDbSave){

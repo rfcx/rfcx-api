@@ -3,6 +3,7 @@ var Promise = require("bluebird");
 var aws = require("../../../utils/external/aws.js").aws();
 var exec = require("child_process").exec;
 var ffmpeg = require("fluent-ffmpeg");
+const moment = require('moment-timezone');
 var fs = require("fs");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
@@ -349,12 +350,13 @@ exports.models = {
       // default
       var modelObj = {};
 
-
       // copy attributes to make sure that the request doesn't set columns we don't want it to set
       for(var i=0; i < requiredAttributes.length; i++){
         var attr = requiredAttributes[i];
         modelObj[attr] = reqObj[attr];
       }
+
+      modelObj.measured_at_local = moment.tz(reqObj.measured_at, (reqObj.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS');
 
       return modelObj;
     });
