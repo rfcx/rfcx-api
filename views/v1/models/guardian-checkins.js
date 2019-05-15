@@ -10,13 +10,13 @@ exports.models = {
     var views = getAllViews();
 
     if (!util.isArray(dbRows)) { dbRows = [dbRows]; }
-    
+
     var jsonArray = [], jsonRowsByGuid = {}, dbRowsByGuid = {};
 
     return new Promise(function(resolve,reject){
 
       for (i in dbRows) {
-        
+
         var thisRow = dbRows[i], thisGuid = thisRow.guid;
 
         dbRowsByGuid[thisGuid] = thisRow;
@@ -42,13 +42,13 @@ exports.models = {
 
         if (thisRow.Site != null) { jsonRowsByGuid[thisGuid].site = views.models.guardianSites(req,res,thisRow.Guardian)[0]; }
         if (thisRow.Guardian != null) { jsonRowsByGuid[thisGuid].guardian = views.models.guardian(req,res,thisRow.Guardian)[0]; }
-        
+
         if (thisRow.MetaMessages != null) { jsonRowsByGuid[thisGuid].messages = views.models.guardianMetaMessages(req,res,thisRow.MetaMessages); }
 
         if (thisRow.MetaCPU != null) { jsonRowsByGuid[thisGuid].meta.cpu = views.models.guardianMetaCPU(req,res,thisRow.MetaCPU); }
         if (thisRow.MetaDataTransfer != null) { jsonRowsByGuid[thisGuid].meta.data_transfer = views.models.guardianMetaDataTransfer(req,res,thisRow.MetaDataTransfer); }
         if (thisRow.MetaBattery != null) { jsonRowsByGuid[thisGuid].meta.battery = views.models.guardianMetaBattery(req,res,thisRow.MetaBattery); }
-        if (thisRow.MetaLightMeter != null) { jsonRowsByGuid[thisGuid].meta.light_meter = views.models.guardianMetaLightMeter(req,res,thisRow.MetaLightMeter); }      
+        if (thisRow.MetaLightMeter != null) { jsonRowsByGuid[thisGuid].meta.light_meter = views.models.guardianMetaLightMeter(req,res,thisRow.MetaLightMeter); }
         if (thisRow.MetaNetwork != null) { jsonRowsByGuid[thisGuid].meta.network = views.models.guardianMetaNetwork(req,res,thisRow.MetaNetwork); }
         if (thisRow.MetaOffline != null) { jsonRowsByGuid[thisGuid].meta.offline = views.models.guardianMetaOffline(req,res,thisRow.MetaOffline); }
         if (thisRow.MetaPower != null) { jsonRowsByGuid[thisGuid].meta.power = views.models.guardianMetaPower(req,res,thisRow.MetaPower); }
