@@ -8,6 +8,7 @@ var checkInHelpers = require("../../utils/rfcx-checkin");
 var loggers = require('../../utils/logger');
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
+var SensationsService = require('../../services/sensations/sensations-service')
 
 exports.mqttCheckInRouter = {
 
@@ -32,6 +33,14 @@ exports.mqttCheckInRouter = {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', {
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           guardian: checkInObj.db.dbGuardian.guid,
+          site_id: checkInObj.db.dbGuardian.site_id,
+        });
+        return checkInDatabase.getDbSite(checkInObj);
+      })
+      .then((checkInObj) => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbSite', {
+          checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
+          site: checkInObj.db.dbSite.guid,
         });
         return checkInAssets.extractAudioFileMeta(checkInObj);
       })
@@ -90,8 +99,12 @@ exports.mqttCheckInRouter = {
       })
       .then(() => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
+        return SensationsService.createSensationsFromGuardianAudio(this.checkInObj.db.dbAudio.guid);
+      })
+      .then((sensations) => {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createSensationsFromGuardianAudio', { sensations });
         return mqttPublish.processAndCompressPublishJson(this.checkInObj)
-      });
+      })
   }
 
 };

@@ -14,6 +14,13 @@ module.exports = function(sequelize, DataTypes) {
         isDate: true
       }
     },
+    measured_at_local: {
+      type: DataTypes.DATE(3),
+      allowNull: true,
+      validate: {
+        isDate: true
+      }
+    },
     analyzed_at: {
       type: DataTypes.DATE(3),
       validate: {
