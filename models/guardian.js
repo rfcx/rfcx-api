@@ -22,6 +22,13 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
+    is_visible: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+      validate: {
+      }
+    },
     phone_number: {
       type: DataTypes.STRING,
       allowNull: true,
