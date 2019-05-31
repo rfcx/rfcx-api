@@ -151,6 +151,9 @@ var routes = {
     ],
   },
   v2: {
+    ais: [
+      require("./routes/v2/ais/ais"),
+    ],
     events: [
       require("./routes/v2/events/events"),
     ],
