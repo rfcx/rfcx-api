@@ -19,11 +19,17 @@ const reportsQueryBase =
   CONVERT_TZ(Report.reported_at, "UTC", Site.timezone) as reported_at_local,
   Site.guid AS site_guid, Site.name as site_name, Site.timezone as site_timezone,
   User.guid AS user_guid, User.firstname AS user_firstname, User.lastname AS user_lastname, User.email AS user_email,
-  Value.value AS value
+  Value.value AS value, Attachment.guid AS attachment_guid, Attachment.reported_at AS attachment_reported_at,
+  Attachment.url AS attachment_url, Reporter.guid AS attachment_user_guid, Reporter.firstname AS attachment_user_firstname,
+  Reporter.lastname AS attachment_user_lastname, Reporter.email AS attachment_user_email,Type.type AS attachment_type
   FROM Reports AS Report
   LEFT JOIN GuardianSites AS Site ON Report.site = Site.id
   LEFT JOIN Users AS User ON Report.reporter = User.id
-  LEFT JOIN GuardianAudioEventValues AS Value ON Report.value = Value.id `;
+  LEFT JOIN GuardianAudioEventValues AS Value ON Report.value = Value.id
+  LEFT JOIN ReportAttachmentRelations AS ReportAttachmentRelation ON Report.id = ReportAttachmentRelation.report_id
+  LEFT JOIN Attachments AS Attachment ON ReportAttachmentRelation.attachment_id = Attachment.id
+  LEFT JOIN Users AS Reporter ON Attachment.user_id = Reporter.id
+  LEFT JOIN AttachmentTypes AS Type ON Attachment.type_id = Type.id `;
 
 function prepareFilterOpts(req) {
 
@@ -176,10 +182,52 @@ function queryData(req) {
     .query(sql,
       { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
     )
-    .then((events) => {
-      return filterWithTz(opts, events);
+    .then((reports) => {
+      return combineReportsWithAttachments(reports);
+    })
+    .then((reports) => {
+      return filterWithTz(opts, reports);
     });
 
+}
+
+function combineReportsWithAttachments(reports) {
+  let resArr = [];
+  reports.forEach((report) => {
+    let reportInResArr = resArr.find((item) => {
+      return item.guid === report.guid;
+    });
+    if (reportInResArr) {
+      reportInResArr.attachments.push(formatReportAttachment(report));
+    }
+    else {
+      report.attachments = [];
+      if (report.attachment_guid) {
+        report.attachments.push(formatReportAttachment(report));
+      }
+      delete report.attachment_guid;
+      delete report.attachment_reported_at;
+      delete report.attachment_url;
+      delete report.attachment_type;
+      resArr.push(report);
+    }
+  });
+  return resArr;
+}
+
+function formatReportAttachment(report) {
+  return {
+    guid: report.attachment_guid,
+    reported_at: report.attachment_reported_at,
+    url: report.attachment_url,
+    reporter: {
+      guid: report.attachment_user_guid,
+      firstname: report.attachment_user_firstname,
+      lastname: report.attachment_user_lastname,
+      email: report.attachment_user_email,
+    },
+    type: report.attachment_type
+  };
 }
 
 function filterWithTz(opts, reports) {
@@ -301,6 +349,7 @@ function formatRaWReport(report) {
       name: report.site_name,
       timezone: report.site_timezone,
     },
+    attachments: report.attachments? report.attachments : [],
   };
 }
 
@@ -326,4 +375,5 @@ module.exports = {
   formatRaWReport,
   formatRawReports,
   attachAttachmentsToReport,
+  formatReportAttachment,
 };
