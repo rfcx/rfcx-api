@@ -57,6 +57,11 @@ function refreshLastLogin(user) {
              });
 }
 
+function removeUserByGuidFromMySQL(opts) {
+  return models.User
+    .destroy({ where: { guid: opts.guid } });
+}
+
 function createUser(opts) {
   let data = combineNewUserData(opts);
   return models.User
@@ -360,4 +365,5 @@ module.exports = {
   createUserLocation,
   createUserLocations,
   getLocations,
+  removeUserByGuidFromMySQL,
 };

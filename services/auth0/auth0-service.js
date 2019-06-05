@@ -116,6 +116,32 @@ function createAuth0User(token, opts) {
 
 }
 
+function deleteAuth0User(token, guid) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'DELETE',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${guid}`,
+      json: true,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json',
+      },
+    }, (err, response, body) => {
+      if (err) {
+        reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
 function updateAuth0User(token, opts) {
 
   return new Promise(function(resolve, reject) {
@@ -399,4 +425,5 @@ module.exports = {
   deleteRolesFromUser,
   getUserRoles,
   sendChangePasswordEmail,
+  deleteAuth0User,
 };

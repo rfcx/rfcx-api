@@ -527,6 +527,42 @@ router.route("/code")
 
   });
 
+router.route("/delete")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('guid').toString();
+    params.convert('user_id').toString();
+
+    params.validate()
+      .then(() => {
+        // just to be sure that user exist in DB
+        return usersService.getUserByGuid(transformedParams.guid);
+      })
+      .then(() => {
+        return auth0Service.getToken();
+      })
+      .then((token) => {
+        return auth0Service.deleteAuth0User(token, transformedParams.user_id);
+      })
+      .then(() => {
+        return usersService.removeUserByGuidFromMySQL({ guid: transformedParams.guid });
+      })
+      .then(() => {
+        res.status(200).json({ success: true });
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
+
+
 router.route("/create")
   .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
