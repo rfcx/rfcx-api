@@ -174,6 +174,35 @@ function updateAuth0User(token, opts) {
 
 }
 
+function updateAuth0UserPassword(token, opts, password) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'PATCH',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.user_id}`,
+      json: true,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json',
+      },
+      body: {
+        password: password,
+      },
+    }, (err, response, body) => {
+      if (err) {
+        reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
 function getUsers(token, params) {
 
   return new Promise(function(resolve, reject) {
@@ -426,4 +455,5 @@ module.exports = {
   getUserRoles,
   sendChangePasswordEmail,
   deleteAuth0User,
+  updateAuth0UserPassword,
 };
