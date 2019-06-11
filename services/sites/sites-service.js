@@ -15,6 +15,14 @@ function getSiteByGuid(guid, ignoreMissing) {
     });
 }
 
+function createSite(data) {
+  return models.GuardianSite
+    .create(data)
+    .then(site => {
+      return site.reload({ include: [{ all: true }] });
+    });
+}
+
 function getSitesByGuids(guids, ignoreMissing) {
   let proms = [];
   (guids || []).forEach((guid) => {
@@ -65,4 +73,5 @@ module.exports = {
   getSitesByGuids,
   updateSiteAttrs,
   formatSite,
+  createSite,
 }
