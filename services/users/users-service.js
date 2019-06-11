@@ -113,6 +113,20 @@ function getPasswordData(password) {
   };
 }
 
+function updateMySQLUserPassword(password, guid) {
+  return getUserByGuid(guid)
+    .then((user) => {
+      let passwordData = getPasswordData(password);
+      user.auth_password_salt = passwordData.auth_password_salt;
+      user.auth_password_hash = passwordData.auth_password_hash;
+      user.auth_password_updated_at = passwordData.auth_password_updated_at;
+      return user.save();
+    })
+    .then((user) => {
+      return user.reload({ include: [{ all: true }] });
+    });
+}
+
 function formatUser(user, short) {
   short = (short === undefined? false : short);
   let userFormatted = {
@@ -366,4 +380,5 @@ module.exports = {
   createUserLocations,
   getLocations,
   removeUserByGuidFromMySQL,
+  updateMySQLUserPassword,
 };

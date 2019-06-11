@@ -661,6 +661,48 @@ router.route("/auth0/update-user")
 
   });
 
+  router.route("/reset-user-password")
+    .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+      let transformedParams = {};
+      let params = new Converter(req.body, transformedParams);
+
+      params.convert('guid').toString();
+      params.convert('user_id').toString();
+      params.convert('email').toString();
+
+      params.validate()
+        .then(() => {
+          return auth0Service.getToken();
+        })
+        .bind({})
+        .then((token) => {
+          this.password = hash.randomString(50);
+          console.log('\n\nthis.password', this.password, "\n\n");
+          return auth0Service.updateAuth0UserPassword(token, transformedParams, this.password);
+        })
+        .then(() => {
+          return usersService.updateMySQLUserPassword(this.password, transformedParams.guid);
+        })
+        .then((user) => {
+          return mailService.sendTextMail({
+            email_address: transformedParams.email,
+            recipient_name: user.firstname || 'RFCx User',
+            subject: 'Password has been reset',
+            message: `Your password has been reset by administrator. You can set new password at https://dashboard.rfcx.org/login`
+          });
+        })
+        .then((body) => {
+          res.status(200).json(body);
+        })
+        .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+        .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+        .catch((err) => {
+          res.status(500).json({ err });
+        });
+
+  });
+
 router.route("/auth0/users")
   .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
