@@ -128,7 +128,7 @@ function queryData(req) {
       let query = `MATCH (ev:event)<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -148,6 +148,7 @@ function queryData(req) {
             opus: `${assetUrlBase}.opus`
           },
           event.value = record.get(2);
+          event.label = record.get(3);
           return event;
         });
       });
