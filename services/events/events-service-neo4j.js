@@ -1,8 +1,13 @@
 var Promise = require("bluebird");
 const moment = require("moment-timezone");
 var ValidationError = require('../../utils/converter/validation-error');
+var EmptyResultError = require('../../utils/converter/empty-result-error');
 var sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
+const firebaseService = require('../firebase/firebase-service');
+const guardianGroupService = require('../guardians/guardian-group-service');
+const loggers  = require('../../utils/logger');
+const logError = loggers.errorLogger.log;
 
 function prepareOpts(req) {
 
@@ -177,7 +182,67 @@ function queryWindowsForEvent(eventGuid) {
 
 }
 
+function getEventInfoByGuid(eventGuid) {
+
+  let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai) ` +
+              `MATCH (ai)-[:classifies]->(en:entity) ` +
+              `RETURN ev as event, ai as ai, en as entity`;
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, { eventGuid }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return {
+        event: record.get(0).properties,
+        ai: record.get(1).properties,
+        entity: record.get(2).properties,
+      };
+    })[0];
+  });
+
+}
+
+function sendPushNotificationsForEvent(data) {
+  if (moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
+    return guardianGroupService.getAllGroupsForGuardianId(data.guardian_id)
+      .then((dbGuardianGroups) => {
+        dbGuardianGroups.forEach((dbGuardianGroup) => {
+          // send notiication only if guardian group allows this value of notification
+          if (dbGuardianGroup.GuardianAudioEventValues && dbGuardianGroup.GuardianAudioEventValues.find((dbEventValue) => { return dbEventValue.value === data.value; })) {
+            let opts = {
+              app: 'rangerApp',
+              topic: dbGuardianGroup.shortname,
+              data: {
+                type: data.type || 'alert',
+                value: data.value,
+                audio_guid: data.audio_guid,
+                latitude: `${data.latitude}`,
+                longitude: `${data.longitude}`,
+                guardian_guid: data.guardian_guid,
+                site_guid: data.site_guid,
+                ai_guid: data.ai_guid,
+              },
+              title: `Rainforest Connection`,
+              body: `A ${data.value} detected from ${data.guardian_shortname}`
+            };
+            firebaseService.sendToTopic(opts)
+              .catch((err) => {
+                logError(`Error sending Firebase message for audio ${data.audio_guid} to ${dbGuardianGroup.shortname} topic`, { req, err });
+              });
+          }
+        });
+      });
+  }
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
+  getEventInfoByGuid,
+  sendPushNotificationsForEvent,
 };
