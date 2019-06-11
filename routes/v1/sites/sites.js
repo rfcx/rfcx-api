@@ -164,6 +164,42 @@ router.route("/:site_id/bounds")
 
   });
 
+router.route("/")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('guid').toString();
+    params.convert('name').toString();
+    params.convert('description').optional().toString();
+    params.convert('timezone').toString().isValidTimezone();
+    params.convert('bounds').optional().toArray();
+    params.convert('map_image_url').optional().toString();
+    params.convert('globe_icon_url').optional().toString();
+    params.convert('classy_campaign_id').optional().toString();
+    params.convert('protected_area').optional().toNonNegativeInt();
+    params.convert('backstory').optional().toString();
+    params.convert('is_active').optional().toBoolean();
+    params.convert('cartodb_map_id').optional().toString();
+    params.convert('flickr_photoset_id').optional().toString();
+    params.convert('timezone_offset').optional().toInt();
+
+    params.validate()
+      .then(() => {
+        return sitesService.createSite(transformedParams)
+      })
+      .then((site) => {
+        res.status(200).json(site);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
 
 
 module.exports = router;
