@@ -213,4 +213,11 @@ module.exports = class Conversion {
     return this;
   }
 
+  isValidTimezone() {
+    if (moment.tz.zone(this.src[this.property]) === null) {
+      return this.throwError(`${this.src[this.property]} is not valid timezone`);
+    };
+    return this;
+  }
+
 };
