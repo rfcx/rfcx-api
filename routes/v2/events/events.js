@@ -47,7 +47,7 @@ router.route("/:guid/trigger")
       })
       .then((guardian) => {
         this.guardian = guardian;
-        let notificationData = {
+        this.notificationData = {
           audio_guid: this.eventData.event.audioGuid,
           measured_at: this.eventData.event.audioMeasuredAt,
           value: this.eventData.entity.rfcxLabel,
@@ -58,11 +58,15 @@ router.route("/:guid/trigger")
           longitude: this.guardian.longitude,
           site_guid: this.eventData.event.siteGuid,
           ai_guid: this.eventData.ai.guid,
+          ai_name: this.eventData.ai.name,
         };
-        return eventsServiceNeo4j.sendPushNotificationsForEvent(notificationData);
+        return eventsServiceNeo4j.sendPushNotificationsForEvent(this.notificationData);
       })
-      .then((result) => {
-        res.status(200).send({ result });
+      .then(() => {
+        return eventsServiceNeo4j.sendSNSForEvent(this.notificationData);
+      })
+      .then(() => {
+        res.status(200).send({ success: true });
       })
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
