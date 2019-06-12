@@ -57,8 +57,7 @@ function initializeSequelize() {
         //     });
         //   })
         //   .catch(function(err) {
-        //     console.log('RFCX | Error in syncing models:');
-        //     console.log(JSON.stringify(err));
+        //     console.log('RFCX | Error in syncing models:', err);
         //   });
       }
     });
