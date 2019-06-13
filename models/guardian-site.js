@@ -104,7 +104,7 @@ module.exports = function(sequelize, DataTypes) {
         GuardianSite.hasMany(models.GuardianEvent, {as: "Event", foreignKey: "site_id"});
         GuardianSite.hasMany(models.GuardianGroup, {as: "GuardianGroup", foreignKey: "site"});
         GuardianSite.belongsToMany(models.User, { through: 'UserSiteRelation' });
-        GuardianSite.belongsTo(models.User, { as: 'User', foreignKey: "user_id" });
+        GuardianSite.belongsTo(models.User, { as: 'User', foreignKey: "user_id", constraints: false });
       },
       indexes: [
         {
