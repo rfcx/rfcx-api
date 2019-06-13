@@ -63,9 +63,6 @@ router.route("/:guid/trigger")
         return eventsServiceNeo4j.sendPushNotificationsForEvent(this.notificationData);
       })
       .then(() => {
-        return eventsServiceNeo4j.sendSNSForEvent(this.notificationData);
-      })
-      .then(() => {
         res.status(200).send({ success: true });
       })
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
