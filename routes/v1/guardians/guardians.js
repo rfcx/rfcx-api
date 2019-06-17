@@ -8,6 +8,9 @@ var passport = require("passport");
 var Promise = require("bluebird");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const siteService = require('../../../services/sites/sites-service');
+const usersService = require('../../../services/users/users-service');
+var Converter = require("../../../utils/converter/converter");
 
 router.route("/")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
@@ -144,42 +147,70 @@ router.route("/:guardian_id/public-info")
 ;
 
 router.route("/register")
-  .post(passport.authenticate("token",{session:false}), function(req,res) {
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['guardianCreator']), function(req,res) {
 
-    var guardianInput = {
-      guid: req.body.guid.toLowerCase(),
-      token: req.body.token.toLowerCase()
-    };
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
 
-    models.Guardian
-      .findOrCreate({
-        where: { 
-          guid: guardianInput.guid,
-          shortname: "_"+guardianInput.guid.substr(0,4),
-          latitude: 0,
-          longitude: 0 
-        }
-      }).spread(function(dbGuardian, wasCreated){
+    params.convert('guid').toString().toLowerCase();
+    params.convert('token').toString().toLowerCase();
+    params.convert('site_guid').optional().toString().toLowerCase();
 
-        if (!wasCreated) {
+    params.validate()
+      .then(() => {
+        return models.Guardian
+          .findOrCreate({
+            where: {
+              guid: transformedParams.guid,
+              shortname: `_${transformedParams.guid.substr(0,4)}`,
+              latitude: 0,
+              longitude: 0
+            }
+          })
+      })
+      .spread((dbGuardian, created) => {
+        if (!created) {
           res.status(200).json(
             views.models.guardian(req,res,dbGuardian)
-            );
+          );
+          return true;
         } else {
 
           var token_salt = hash.randomHash(320);
           dbGuardian.auth_token_salt = token_salt;
-          dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt,guardianInput.token);
+          dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt,transformedParams.token);
           dbGuardian.auth_token_updated_at = new Date();
-          dbGuardian.site_id = 2;
-          dbGuardian.save();
 
-          res.status(200).json(
-            views.models.guardian(req,res,dbGuardian)
-            );
-
+          return dbGuardian.save()
+            .bind({})
+            .then((dbGuardian) => {
+              this.dbGuardian = dbGuardian;
+              let siteGuid = transformedParams.site_guid? transformedParams.site_guid : 'derc'; // "RFCx lab" (derc) by default
+              return siteService.getSiteByGuid(siteGuid);
+            })
+            .then((site) => {
+              this.dbGuardian.site_id = site.id;
+              return this.dbGuardian;
+            })
+            .then((dbGuardian) => {
+              if (req.rfcx.auth_token_info.userType === 'auth0') {
+                return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+                  .then((user) => {
+                    dbGuardian.creator = user.id;
+                    dbGuardian.is_private = true;
+                    return dbGuardian.save();
+                  });
+              }
+              else { return this.dbGuardian; };
+            })
+            .then((dbGuardian) => {
+              res.status(200).json(
+                views.models.guardian(req,res, dbGuardian)
+              );
+            })
         }
-      }).catch(function(err){
+      })
+      .catch(function(err){
         console.log(err);
         res.status(500).json({
           message: err.message, error: { status: 500 }
