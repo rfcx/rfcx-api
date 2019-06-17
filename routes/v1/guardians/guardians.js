@@ -190,7 +190,7 @@ router.route("/register")
             })
             .then((site) => {
               this.dbGuardian.site_id = site.id;
-              return this.dbGuardian;
+              return this.dbGuardian.save();
             })
             .then((dbGuardian) => {
               if (req.rfcx.auth_token_info.userType === 'auth0') {
