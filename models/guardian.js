@@ -170,11 +170,18 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {}
     },
+    is_private: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+      validate: { }
+    },
   }, {
     classMethods: {
       associate: function(models) {
         Guardian.belongsTo(models.GuardianSite, {as: 'Site'});
         Guardian.belongsToMany(models.GuardianGroup, { through: models.GuardianGroupRelation });
+        Guardian.belongsTo(models.User, { as: 'User', foreignKey: "creator" });
       },
       indexes: [
         {
