@@ -31,13 +31,13 @@ function formatGuardian(guardian) {
       latitude: guardian.latitude,
       longitude: guardian.longitude,
       notes: guardian.notes,
-      phone_number: guardian.is_visible,
+      phone_number: guardian.phone_number,
       user: guardian.User?
         {
           firstname: guardian.User.firstname,
           lastname: guardian.User.lastname,
           guid: guardian.User.guid,
-          email: guardian.User.guid
+          email: guardian.User.guid.email
         } : null,
       site: guardian.Site?
         {
