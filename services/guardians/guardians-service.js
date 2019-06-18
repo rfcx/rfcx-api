@@ -24,30 +24,28 @@ function getGuardiansByGuids(guids, ignoreMissing) {
 }
 
 function formatGuardian(guardian) {
-  return new Promise((resolve, reject) => {
-    let guardianFormatted = {
-      guid: guardian.guid,
-      shortname: guardian.shortname,
-      latitude: guardian.latitude,
-      longitude: guardian.longitude,
-      notes: guardian.notes,
-      phone_number: guardian.phone_number,
-      user: guardian.User?
-        {
-          firstname: guardian.User.firstname,
-          lastname: guardian.User.lastname,
-          guid: guardian.User.guid,
-          email: guardian.User.email
-        } : null,
-      site: guardian.Site?
-        {
-          guid: guardian.Site.guid,
-          name: guardian.Site.name,
-          timezone: guardian.Site.timezone,
-        } : null,
-    };
-    resolve(guardianFormatted);
-  });
+  let guardianFormatted = {
+    guid: guardian.guid,
+    shortname: guardian.shortname,
+    latitude: guardian.latitude,
+    longitude: guardian.longitude,
+    notes: guardian.notes,
+    phone_number: guardian.phone_number,
+    user: guardian.User?
+      {
+        firstname: guardian.User.firstname,
+        lastname: guardian.User.lastname,
+        guid: guardian.User.guid,
+        email: guardian.User.email
+      } : null,
+    site: guardian.Site?
+      {
+        guid: guardian.Site.guid,
+        name: guardian.Site.name,
+        timezone: guardian.Site.timezone,
+      } : null,
+  };
+  return guardianFormatted;
 }
 
 function formatGuardians(guardians) {
