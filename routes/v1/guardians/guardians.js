@@ -6,10 +6,12 @@ var views = require("../../../views/v1");
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 var Promise = require("bluebird");
-passport.use(require("../../../middleware/passport-token").TokenStrategy);
+var sequelize = require("sequelize");
+var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const siteService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');
+const guardiansService = require('../../../services/guardians/guardians-service');
 var Converter = require("../../../utils/converter/converter");
 
 router.route("/")
@@ -98,6 +100,28 @@ router.route("/")
 
   })
 ;
+
+router.route("/my")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      .then((user) => {
+        return models.Guardian
+          .findAll({
+            where: { creator: user.id, is_private: true},
+            include: [ { all: true } ],
+          });
+      })
+      .then((guardians) => {
+        return guardiansService.formatGuardians(guardians);
+      })
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => {console.log('e', e);httpError(req, res, 500, e, "Couldn't get your guardians.")});
+  });
 
 router.route("/:guardian_id")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
