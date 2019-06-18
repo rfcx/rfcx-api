@@ -31,9 +31,28 @@ function formatGuardian(guardian) {
       latitude: guardian.latitude,
       longitude: guardian.longitude,
       notes: guardian.notes,
-      is_visible: guardian.is_visible,
+      phone_number: guardian.is_visible,
+      user: guardian.User?
+        {
+          firstname: guardian.User.firstname,
+          lastname: guardian.User.lastname,
+          guid: guardian.User.guid,
+          email: guardian.User.guid
+        } : null,
+      site: guardian.Site?
+        {
+          guid: guardian.Site.guid,
+          name: guardian.Site.name,
+          timezone: guardian.Site.timezone,
+        } : null,
     };
     resolve(guardianFormatted);
+  });
+}
+
+function formatGuardians(guardians) {
+  return guardians.map((guardian) => {
+    return formatGuardian(guardian);
   });
 }
 
@@ -41,4 +60,5 @@ module.exports = {
   getGuardianByGuid,
   getGuardiansByGuids,
   formatGuardian,
+  formatGuardians,
 }
