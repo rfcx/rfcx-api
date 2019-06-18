@@ -37,7 +37,7 @@ function formatGuardian(guardian) {
           firstname: guardian.User.firstname,
           lastname: guardian.User.lastname,
           guid: guardian.User.guid,
-          email: guardian.User.guid.email
+          email: guardian.User.email
         } : null,
       site: guardian.Site?
         {
