@@ -20,7 +20,8 @@ const queryJoins =
   'LEFT JOIN GuardianAudio AS GuardianAudio ON GuardianAudioBox.audio_id = GuardianAudio.id ' +
   'LEFT JOIN GuardianSites AS Site ON GuardianAudio.site_id = Site.id ' +
   'LEFT JOIN GuardianAudioEventValues AS Value ON GuardianAudioBox.value = Value.id ' +
-  'LEFT JOIN Users AS User ON GuardianAudioBox.created_by = User.id ';
+  'LEFT JOIN Users AS User ON GuardianAudioBox.created_by = User.id ' +
+  'LEFT JOIN Guardians AS Guardian ON GuardianAudio.guardian_id = Guardian.id';
 
 /**
  * weekdays[] is an array with numbers [0, 1, 2, 3, 4, 5, 6]
@@ -72,7 +73,7 @@ function prepareOpts(req) {
     // will sort by audio files END
     audios: req.query.audios? (Array.isArray(req.query.audios)? req.query.audios : [req.query.audios]) : undefined,
     sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
-    // guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
+    guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
     // guardianGroups: req.query.guardian_groups? (Array.isArray(req.query.guardian_groups)? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
     // excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
     // weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
@@ -106,7 +107,7 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingBefore, ' AND GuardianAudio.measured_at < :startingBefore');
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudio.measured_at > DATE_SUB(:startingAfterLocal, INTERVAL 12 HOUR)');
   sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND GuardianAudio.measured_at < DATE_ADD(:startingBeforeLocal, INTERVAL 14 HOUR)');
-  // sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
+  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   // sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
   sql = sqlUtils.condAdd(sql, opts.audios, ' AND GuardianAudio.guid IN (:audios)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
