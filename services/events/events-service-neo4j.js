@@ -8,6 +8,7 @@ const firebaseService = require('../firebase/firebase-service');
 const guardianGroupService = require('../guardians/guardian-group-service');
 const loggers  = require('../../utils/logger');
 const logError = loggers.errorLogger.log;
+const aws = require("../../utils/external/aws.js").aws();
 
 function prepareOpts(req) {
 
@@ -241,9 +242,32 @@ function sendPushNotificationsForEvent(data) {
   }
 }
 
+function sendSNSForEvent(data) {
+  if (moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
+    var msg = {
+      type: data.type || 'alert',
+      detected: data.value,
+      guardian: data.guardian_shortname,
+      model: data.ai_name,
+      audio_guid: data.audio_guid,
+      listen: `${process.env.ASSET_URLBASE}/audio/${data.audio_guid}.mp3?inline=true`
+    };
+
+    let topic = `rfcx-detection-alerts-${data.site_guid}`;
+    aws.createTopic(topic)
+      .then((data) => {
+        return aws.publish(topic, msg);
+      })
+      .catch((err) => {
+        logError(`Error sending SNS message for audio ${data.audio_guid} to ${topic} topic`, { req, err });
+      });
+  }
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
   getEventInfoByGuid,
   sendPushNotificationsForEvent,
+  sendSNSForEvent,
 };
