@@ -3,6 +3,8 @@ var router = express.Router();
 const passport = require("passport");
 const httpError = require("../../../utils/http-errors.js");
 const eventsServiceNeo4j = require('../../../services/events/events-service-neo4j');
+const usersService = require('../../../services/users/users-service');
+const usersServiceNeo4j = require('../../../services/users/users-service-neo4j');
 const ValidationError = require("../../../utils/converter/validation-error");
 const EmptyResultError = require('../../../utils/converter/empty-result-error');
 const guardiansService = require('../../../services/guardians/guardians-service');
@@ -68,6 +70,42 @@ router.route("/:guid/trigger")
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => { httpError(req, res, 500, e, "Error while triggering event notification."); console.log(e) });
+
+  });
+
+router.route("/:guid/review")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('confirmed').toBoolean();
+    params.convert('windows').toArray();
+
+    let user = usersService.getUserDataFromReq(req);
+
+    return params.validate()
+      .then(() => {
+        return usersServiceNeo4j.ensureUserExistsNeo4j(user);
+      })
+      .then(() => {
+        return eventsServiceNeo4j.clearEventReview(req.params.guid, user);
+      })
+      .then(() => {
+        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user);
+      })
+      .then(() => {
+        return eventsServiceNeo4j.clearAudioWindowsReview(transformedParams.windows, user);
+      })
+      .then(() => {
+        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user);
+      })
+      .then(() => {
+        res.status(200).send({ success: true });
+      })
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, "Error while saving review data."); console.log(e) });
 
   });
 

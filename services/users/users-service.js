@@ -360,6 +360,15 @@ function filterWithTz(opts, locations) {
   });
 }
 
+function getUserDataFromReq(req) {
+  return {
+    guid: req.rfcx.auth_token_info.guid,
+    firstname: req.rfcx.auth_token_info.given_name,
+    lastname: req.rfcx.auth_token_info.family_name,
+    email: req.rfcx.auth_token_info.email,
+  }
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
@@ -381,4 +390,5 @@ module.exports = {
   getLocations,
   removeUserByGuidFromMySQL,
   updateMySQLUserPassword,
+  getUserDataFromReq,
 };

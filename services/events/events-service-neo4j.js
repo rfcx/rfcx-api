@@ -264,10 +264,104 @@ function sendSNSForEvent(data) {
   }
 }
 
+function clearEventReview(guid, user) {
+
+  let query = 'MATCH (ev:event {guid: {guid}}) ' +
+              'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]-(:user { guid: {userGuid}, email: {userEmail} }) ' +
+              'DETACH DELETE re ' +
+              'RETURN ev as event';
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, { guid, userGuid: user.guid, userEmail: user.email }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
+
+}
+
+function reviewEvent(guid, confirmed, user) {
+
+  let query = `MATCH (ev:event {guid: {guid}}), (user:user {guid: {userGuid}, email: {userEmail}})` +
+              `MERGE (ev)-[:has_review]->(:review {confirmed: {confirmed}})<-[:created]-(user) ` +
+              `RETURN ev as event`;
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, {
+    guid,
+    confirmed,
+    userGuid: user.guid,
+    userEmail: user.email,
+  }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
+
+}
+
+function clearAudioWindowsReview(windowsData, user) {
+  const session = neo4j.session();
+  let proms = [];
+  windowsData.forEach((item) => {
+    let query = 'MATCH (aw:audioWindow {guid: {guid}}) ' +
+                'OPTIONAL MATCH (aw)-[:has_review]->(re:review)<-[:created]-(:user { guid: {userGuid}, email: {userEmail} }) ' +
+                'DETACH DELETE re ' +
+                'RETURN aw as audioWindow';
+    let resultPromise = Promise.resolve(session.run(query, { guid: item.guid, userGuid: user.guid, userEmail: user.email }));
+    proms.push(resultPromise);
+  });
+  return Promise.all(proms)
+    .then(() => {
+      session.close();
+      return true;
+    });
+}
+
+function reviewAudioWindows(windowsData, user) {
+  const session = neo4j.session();
+  let proms = [];
+  windowsData.forEach((item) => {
+    let query = `MATCH (aw:audioWindow {guid: {guid}}) ` +
+                `MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ` +
+                `MERGE (aw)-[:has_review]->(:review {confirmed: {confirmed}})<-[:created]-(user) ` +
+                `RETURN aw as audioWindow`;
+
+    let resultPromise = Promise.resolve(session.run(query, {
+      guid: item.guid,
+      confirmed: item.confirmed,
+      userGuid: user.guid,
+      userEmail: user.email,
+    }));
+    proms.push(resultPromise);
+  });
+  return Promise.all(proms)
+    .then(() => {
+      session.close();
+      return true;
+    });
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
   getEventInfoByGuid,
   sendPushNotificationsForEvent,
   sendSNSForEvent,
+  clearEventReview,
+  reviewEvent,
+  reviewAudioWindows,
+  clearAudioWindowsReview,
 };
