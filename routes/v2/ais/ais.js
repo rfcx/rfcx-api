@@ -23,6 +23,42 @@ router.route("/")
 
   });
 
+router.route("/create")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('name').toString();
+    params.convert('aiCollectionGuid').toString();
+    params.convert('aiGuid').toString();
+    params.convert('lexicalEntryId').toString();
+    params.convert('userGuid').toString();
+    params.convert('stepSeconds').toNonNegativeInt().toFloat();
+    params.convert('minWinwowsCount').toInt();
+    params.convert('maxWindowsCount').toInt();
+    params.convert('minConfidence').toFloat();
+    params.convert('maxConfidence').toFloat();
+    params.convert('minBoxPercent').toInt();
+    params.convert('public').toBoolean();
+    params.convert('guardiansWhitelist').toArray();
+
+    params.validate()
+      .then(() => {
+        console.log('transformedParams---->>>>>>>', transformedParams);
+        return aiService.createAi(transformedParams);
+      })
+      .then((data) => {
+        console.log('data_________', data);
+        res.status(200).json(data);
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message); console.log(e, 'AI_________400>>>>>>>>', ValidationError)})
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message); console.log('AI_________404>>>>>>>>', e, EmptyResultError)})
+      .catch(e => { httpError(req, res, 500, e, "Error while creating the AI."); console.log('AI_________500>>>>>>>>', e) });
+
+  });
+
+
 router.route("/:guid")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 

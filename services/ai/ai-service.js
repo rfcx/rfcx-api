@@ -69,8 +69,44 @@ function updateAiByGuid(guid, opts) {
 
 }
 
+function createAi(opts) {
+
+  let query = `MATCH (:\`lemon#LexicalEntry\` { id:"wn/${opts.lexicalEntryId.split(/[#]/)[0]}-n"})-[:\`lemon#sense\`]->({\`wdo#sense_number\`:${opts.lexicalEntryId.slice(-1)}})-[:\`lemon#reference\`]->(valueType) with valueType
+  MATCH (u:user{guid: "${opts.userGuid}"})
+  CREATE (aic:aiCollection{name:"${opts.name}", guid:"${opts.aiCollectionGuid}", created: TIMESTAMP()})
+  CREATE (aic)-[:requires]->(t:task)
+  CREATE (aic)-[:has_ai]->(ai:ai{name:"${opts.name} v1", guid:"${opts.aiGuid}", trainingDone:false, accuracy: 0.0,
+  stepSeconds: ${opts.stepSeconds}, minWinwowsCount: ${opts.minWinwowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
+  minConfidence: ${opts.minConfidence}, maxConfidence: ${opts.maxConfidence}, minBoxPercent: ${opts.minBoxPercent},
+  public: ${opts.public}, guardiansWhitelist: ${guardians}})
+  CREATE (aic)-[:current_ai]->(ai)
+  CREATE (aic)-[:previous_ai]->(ai)
+  MERGE (u)<-[:has_aiCollectionSet]-(aics:aiCollectionSet)
+  CREATE (aics)-[:contains]->(aic)
+  CREATE (valueType)<-[:classifies]-(aic)
+  CREATE (valueType)<-[:classifies]-(ai)
+  return ai, aic `;
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, opts));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (result.records && !result.records.length) {
+      throw new EmptyResultError("AI not created.");
+    }
+    return result.records.map((record) => {
+      let ai = Object.assign({}, record.get(0).properties);
+      ai.label = record.get(1).properties['w3#label[]'];
+      return ai;
+    })[0];
+  });
+
+}
+
 module.exports = {
   getPublicAis,
   getPublicAiByGuid,
   updateAiByGuid,
+  createAi,
 };
