@@ -129,7 +129,9 @@ function queryData(req) {
       let query = `MATCH (ev:event)<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = true WITH ev, ai, val, COUNT(re) as confirmed');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = false WITH ev, ai, val, confirmed, COUNT(re) as rejected');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, confirmed, rejected');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -150,6 +152,8 @@ function queryData(req) {
           },
           event.value = record.get(2);
           event.label = record.get(3);
+          event.confirmed = record.get(4) || 0;
+          event.rejected = record.get(5) || 0;
           return event;
         });
       });
@@ -264,10 +268,104 @@ function sendSNSForEvent(data) {
   }
 }
 
+function clearEventReview(guid, user) {
+
+  let query = 'MATCH (ev:event {guid: {guid}}) ' +
+              'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]-(:user { guid: {userGuid}, email: {userEmail} }) ' +
+              'DETACH DELETE re ' +
+              'RETURN ev as event';
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, { guid, userGuid: user.guid, userEmail: user.email }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
+
+}
+
+function reviewEvent(guid, confirmed, user) {
+
+  let query = `MATCH (ev:event {guid: {guid}}), (user:user {guid: {userGuid}, email: {userEmail}})` +
+              `MERGE (ev)-[:has_review]->(:review {confirmed: {confirmed}})<-[:created]-(user) ` +
+              `RETURN ev as event`;
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, {
+    guid,
+    confirmed,
+    userGuid: user.guid,
+    userEmail: user.email,
+  }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
+
+}
+
+function clearAudioWindowsReview(windowsData, user) {
+  const session = neo4j.session();
+  let proms = [];
+  windowsData.forEach((item) => {
+    let query = 'MATCH (aw:audioWindow {guid: {guid}}) ' +
+                'OPTIONAL MATCH (aw)-[:has_review]->(re:review)<-[:created]-(:user { guid: {userGuid}, email: {userEmail} }) ' +
+                'DETACH DELETE re ' +
+                'RETURN aw as audioWindow';
+    let resultPromise = Promise.resolve(session.run(query, { guid: item.guid, userGuid: user.guid, userEmail: user.email }));
+    proms.push(resultPromise);
+  });
+  return Promise.all(proms)
+    .then(() => {
+      session.close();
+      return true;
+    });
+}
+
+function reviewAudioWindows(windowsData, user) {
+  const session = neo4j.session();
+  let proms = [];
+  windowsData.forEach((item) => {
+    let query = `MATCH (aw:audioWindow {guid: {guid}}) ` +
+                `MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ` +
+                `MERGE (aw)-[:has_review]->(:review {confirmed: {confirmed}})<-[:created]-(user) ` +
+                `RETURN aw as audioWindow`;
+
+    let resultPromise = Promise.resolve(session.run(query, {
+      guid: item.guid,
+      confirmed: item.confirmed,
+      userGuid: user.guid,
+      userEmail: user.email,
+    }));
+    proms.push(resultPromise);
+  });
+  return Promise.all(proms)
+    .then(() => {
+      session.close();
+      return true;
+    });
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
   getEventInfoByGuid,
   sendPushNotificationsForEvent,
   sendSNSForEvent,
+  clearEventReview,
+  reviewEvent,
+  reviewAudioWindows,
+  clearAudioWindowsReview,
 };
