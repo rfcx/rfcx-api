@@ -129,7 +129,9 @@ function queryData(req) {
       let query = `MATCH (ev:event)<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = true WITH ev, ai, val, COUNT(re) as confirmed');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = false WITH ev, ai, val, confirmed, COUNT(re) as rejected');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, confirmed, rejected');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -150,6 +152,8 @@ function queryData(req) {
           },
           event.value = record.get(2);
           event.label = record.get(3);
+          event.confirmed = record.get(4) || 0;
+          event.rejected = record.get(5) || 0;
           return event;
         });
       });
