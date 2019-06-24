@@ -33,7 +33,6 @@ router.route("/create")
     params.convert('aiCollectionGuid').toString();
     params.convert('aiGuid').toString();
     params.convert('lexicalEntryId').toString();
-    params.convert('userGuid').toString();
     params.convert('stepSeconds').toNonNegativeInt().toFloat();
     params.convert('minWinwowsCount').toInt();
     params.convert('maxWindowsCount').toInt();
@@ -45,16 +44,15 @@ router.route("/create")
 
     params.validate()
       .then(() => {
-        console.log('transformedParams---->>>>>>>', transformedParams);
+        transformedParams.userGuid = req.rfcx.auth_token_info.guid;
         return aiService.createAi(transformedParams);
       })
       .then((data) => {
-        console.log('data_________', data);
         res.status(200).json(data);
       })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message); console.log(e, 'AI_________400>>>>>>>>', ValidationError)})
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message); console.log('AI_________404>>>>>>>>', e, EmptyResultError)})
-      .catch(e => { httpError(req, res, 500, e, "Error while creating the AI."); console.log('AI_________500>>>>>>>>', e) });
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message)})
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message)})
+      .catch(e => { httpError(req, res, 500, e, "Error while creating the AI.")});
 
   });
 

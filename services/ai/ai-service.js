@@ -10,7 +10,7 @@ function getPublicAis(opts) {
   let query = `MATCH (ai:ai {public: true})-[:classifies]->(en:entity) RETURN ai, en as entity`;
 
   const session = neo4j.session();
-  const resultPromise = session.run(query, opts);
+  const resultPromise = Promise.resolve(session.run(query, opts));
 
   return resultPromise.then(result => {
     session.close();
@@ -78,14 +78,16 @@ function createAi(opts) {
   CREATE (aic)-[:has_ai]->(ai:ai{name:"${opts.name} v1", guid:"${opts.aiGuid}", trainingDone:false, accuracy: 0.0,
   stepSeconds: ${opts.stepSeconds}, minWinwowsCount: ${opts.minWinwowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
   minConfidence: ${opts.minConfidence}, maxConfidence: ${opts.maxConfidence}, minBoxPercent: ${opts.minBoxPercent},
-  public: ${opts.public}, guardiansWhitelist: ${guardians}})
+  public: ${opts.public}})
   CREATE (aic)-[:current_ai]->(ai)
   CREATE (aic)-[:previous_ai]->(ai)
   MERGE (u)<-[:has_aiCollectionSet]-(aics:aiCollectionSet)
   CREATE (aics)-[:contains]->(aic)
   CREATE (valueType)<-[:classifies]-(aic)
-  CREATE (valueType)<-[:classifies]-(ai)
-  return ai, aic `;
+  CREATE (valueType)<-[:classifies]-(ai) `;
+
+  query = sqlUtils.condAdd(query, opts.guardiansWhitelist !== undefined, ' SET ai.guardiansWhitelist = {guardiansWhitelist}');
+  query = sqlUtils.condAdd(query, true, ' RETURN ai, aic');
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
