@@ -126,11 +126,11 @@ function queryData(req) {
         newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
       }
 
-      let query = `MATCH (ev:event)<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = true WITH ev, ai, val, COUNT(re) as confirmed');
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = false WITH ev, ai, val, confirmed, COUNT(re) as rejected');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re1:revieц) WHERE re1.confirmed = true WITH ev, evs, ai, val, COUNT(re1) as confirmed');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re2:review) WHERE re2.confirmed = false WITH ev, evs, ai, val, confirmed, COUNT(re2) as rejected');
       query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, confirmed, rejected');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
