@@ -24,12 +24,12 @@ function getUserByParams(params, ignoreMissing) {
     });
 }
 
-function getUserByGuid(guid) {
-  return getUserByParams({ guid });
+function getUserByGuid(guid, ignoreMissing) {
+  return getUserByParams({ guid }, ignoreMissing);
 }
 
-function getUserByEmail(email) {
-  return getUserByParams({ email });
+function getUserByEmail(email, ignoreMissing) {
+  return getUserByParams({ email }, ignoreMissing);
 }
 
 function getUserByGuidOrEmail(field1, field2) {
