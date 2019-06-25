@@ -12,14 +12,14 @@ const moment = require("moment-timezone");
 const ValidationError = require('../../utils/converter/validation-error');
 const sqlUtils = require("../../utils/misc/sql");
 
-function getUserByParams(params) {
+function getUserByParams(params, ignoreMissing) {
   return models.User
     .findOne({
       where: params,
       include: [{ all: true }]
     })
     .then((user) => {
-      if (!user) { throw new sequelize.EmptyResultError('User with given guid not found.'); }
+      if (!user && !ignoreMissing) { throw new sequelize.EmptyResultError('User with given guid not found.'); }
       return user;
     });
 }

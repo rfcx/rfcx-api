@@ -539,7 +539,7 @@ router.route("/delete")
     params.validate()
       .then(() => {
         // just to be sure that user exist in DB
-        return usersService.getUserByGuid(transformedParams.guid);
+        return usersService.getUserByGuid(transformedParams.guid, true);
       })
       .then(() => {
         return auth0Service.getToken();
