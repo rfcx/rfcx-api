@@ -34,17 +34,17 @@ router.route("/create")
     params.convert('aiGuid').toString();
     params.convert('lexicalEntryId').toString();
     params.convert('stepSeconds').toNonNegativeInt().toFloat();
-    params.convert('minWinwowsCount').toInt();
+    params.convert('minWindowsCount').toInt();
     params.convert('maxWindowsCount').toInt();
     params.convert('minConfidence').toFloat();
     params.convert('maxConfidence').toFloat();
     params.convert('minBoxPercent').toInt();
     params.convert('public').toBoolean();
     params.convert('guardiansWhitelist').toArray();
+    params.convert('version').toInt().minimum(1);
 
     params.validate()
       .then(() => {
-        transformedParams.userGuid = req.rfcx.auth_token_info.guid;
         return aiService.createAi(transformedParams);
       })
       .then((data) => {
