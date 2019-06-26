@@ -83,22 +83,23 @@ router.route("/:guid/review")
     params.convert('windows').toArray();
 
     let user = usersService.getUserDataFromReq(req);
+    let timestamp = (new Date()).valueOf();
 
     return params.validate()
       .then(() => {
         return usersServiceNeo4j.ensureUserExistsNeo4j(user);
       })
       .then(() => {
-        return eventsServiceNeo4j.clearEventReview(req.params.guid, user);
+        return eventsServiceNeo4j.clearEventReview(req.params.guid);
       })
       .then(() => {
-        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user);
+        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp);
       })
       .then(() => {
-        return eventsServiceNeo4j.clearAudioWindowsReview(transformedParams.windows, user);
+        return eventsServiceNeo4j.clearAudioWindowsReview(transformedParams.windows);
       })
       .then(() => {
-        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user);
+        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp);
       })
       .then(() => {
         res.status(200).send({ success: true });
