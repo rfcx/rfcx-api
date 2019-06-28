@@ -52,7 +52,7 @@ function prepareOpts(req) {
 
 function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND ev.audioMeasuredAt < {endingBeforeLocal}');
+  sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND ev.confidence >= {minimumConfidence}');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND val["w3#label[]"] IN {values}');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND ev.siteGuid IN {sites}');
@@ -126,12 +126,13 @@ function queryData(req) {
         newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
       }
 
-      let query = `MATCH (ev:event)<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = true WITH ev, ai, val, COUNT(re) as confirmed');
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review) WHERE re.confirmed = false WITH ev, ai, val, confirmed, COUNT(re) as rejected');
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, confirmed, rejected');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re1:review) WHERE re1.confirmed = true WITH ev, evs, ai, val, COUNT(re1) as confirmed');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re2:review) WHERE re2.confirmed = false WITH ev, evs, ai, val, confirmed, COUNT(re2) as rejected');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user)WITH ev, evs, ai, val, confirmed, rejected, user');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, confirmed, rejected, user');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -154,6 +155,8 @@ function queryData(req) {
           event.label = record.get(3);
           event.confirmed = record.get(4) || 0;
           event.rejected = record.get(5) || 0;
+          let reviewer = record.get(6);
+          event.reviewer = reviewer? reviewer.properties : null;
           return event;
         });
       });
@@ -170,11 +173,59 @@ function queryData(req) {
 
 }
 
+function queryReviews(req) {
+
+  return prepareOpts(req)
+    .bind({})
+    .then((opts) => {
+      this.opts = opts;
+
+      let newOpts = Object.assign({}, opts)
+      if (newOpts.startingAfterLocal) {
+        newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
+      }
+      if (newOpts.startingBeforeLocal) {
+        newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      }
+
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review) `;
+      query = sqlUtils.condAdd(query, true, ' MATCH (evs)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity)');
+      query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
+      query = sqlUtils.condAdd(query, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
+      query = sqlUtils.condAdd(query, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
+      query = sqlUtils.condAdd(query, opts.values, ' AND val["w3#label[]"] IN {values}');
+      query = sqlUtils.condAdd(query, opts.sites, ' AND ev.siteGuid IN {sites}');
+      query = sqlUtils.condAdd(query, opts.guardians, ' AND ev.guardianGuid IN {guardians}');
+      query = sqlUtils.condAdd(query, opts.models, ' AND ai.guid IN {models}');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, COLLECT({start: aw.start, end: aw.end, confirmed: re.confirmed}) as reviewData');
+      query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
+
+      const session = neo4j.session();
+      const resultPromise = session.run(query, newOpts);
+
+      return resultPromise.then(result => {
+        session.close();
+        return result.records.map((record) => {
+          let event = record.get(0).properties;
+          event.value = record.get(1);
+          event.label = record.get(2);
+          event.audioWindows = record.get(3);
+          return event;
+        });
+      });
+    })
+    .then((items) => {
+      return filterWithTz(this.opts, items);
+    });
+
+}
+
 function queryWindowsForEvent(eventGuid) {
 
   let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai) ` +
               `MATCH (ai)-[:has_audioWindowSet]->(:audioWindowSet {audioGuid: ev.audioGuid})-[:contains]->(aw:audioWindow) ` +
-              `RETURN aw ORDER BY aw.start`;
+              `OPTIONAL MATCH (aw)-[:has_review]->(re:review) ` +
+              `RETURN aw, re.confirmed as confirmed ORDER BY aw.start`;
 
   const session = neo4j.session();
   const resultPromise = session.run(query, { eventGuid });
@@ -182,7 +233,9 @@ function queryWindowsForEvent(eventGuid) {
   return resultPromise.then(result => {
     session.close();
     return result.records.map((record) => {
-      return record.get(0).properties;
+      let obj = record.get(0).properties
+      obj.confirmed = record.get(1);
+      return obj;
     });
   });
 
@@ -268,15 +321,15 @@ function sendSNSForEvent(data) {
   }
 }
 
-function clearEventReview(guid, user) {
+function clearEventReview(guid) {
 
   let query = 'MATCH (ev:event {guid: {guid}}) ' +
-              'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]-(:user { guid: {userGuid}, email: {userEmail} }) ' +
+              'OPTIONAL MATCH (ev)-[:has_review]->(re:review) ' +
               'DETACH DELETE re ' +
               'RETURN ev as event';
 
   const session = neo4j.session();
-  const resultPromise = Promise.resolve(session.run(query, { guid, userGuid: user.guid, userEmail: user.email }));
+  const resultPromise = Promise.resolve(session.run(query, { guid }));
 
   return resultPromise.then(result => {
     session.close();
@@ -290,10 +343,10 @@ function clearEventReview(guid, user) {
 
 }
 
-function reviewEvent(guid, confirmed, user) {
+function reviewEvent(guid, confirmed, user, timestamp) {
 
   let query = `MATCH (ev:event {guid: {guid}}), (user:user {guid: {userGuid}, email: {userEmail}})` +
-              `MERGE (ev)-[:has_review]->(:review {confirmed: {confirmed}})<-[:created]-(user) ` +
+              `MERGE (ev)-[:has_review]->(:review { confirmed: {confirmed}, created: {timestamp} })<-[:created]-(user) ` +
               `RETURN ev as event`;
 
   const session = neo4j.session();
@@ -302,6 +355,7 @@ function reviewEvent(guid, confirmed, user) {
     confirmed,
     userGuid: user.guid,
     userEmail: user.email,
+    timestamp,
   }));
 
   return resultPromise.then(result => {
@@ -316,15 +370,15 @@ function reviewEvent(guid, confirmed, user) {
 
 }
 
-function clearAudioWindowsReview(windowsData, user) {
+function clearAudioWindowsReview(windowsData) {
   const session = neo4j.session();
   let proms = [];
   windowsData.forEach((item) => {
     let query = 'MATCH (aw:audioWindow {guid: {guid}}) ' +
-                'OPTIONAL MATCH (aw)-[:has_review]->(re:review)<-[:created]-(:user { guid: {userGuid}, email: {userEmail} }) ' +
+                'OPTIONAL MATCH (aw)-[:has_review]->(re:review) ' +
                 'DETACH DELETE re ' +
                 'RETURN aw as audioWindow';
-    let resultPromise = Promise.resolve(session.run(query, { guid: item.guid, userGuid: user.guid, userEmail: user.email }));
+    let resultPromise = Promise.resolve(session.run(query, { guid: item.guid }));
     proms.push(resultPromise);
   });
   return Promise.all(proms)
@@ -334,13 +388,13 @@ function clearAudioWindowsReview(windowsData, user) {
     });
 }
 
-function reviewAudioWindows(windowsData, user) {
+function reviewAudioWindows(windowsData, user, timestamp) {
   const session = neo4j.session();
   let proms = [];
   windowsData.forEach((item) => {
     let query = `MATCH (aw:audioWindow {guid: {guid}}) ` +
                 `MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ` +
-                `MERGE (aw)-[:has_review]->(:review {confirmed: {confirmed}})<-[:created]-(user) ` +
+                `MERGE (aw)-[:has_review]->(:review {confirmed: {confirmed}, created: {timestamp} })<-[:created]-(user) ` +
                 `RETURN aw as audioWindow`;
 
     let resultPromise = Promise.resolve(session.run(query, {
@@ -348,6 +402,7 @@ function reviewAudioWindows(windowsData, user) {
       confirmed: item.confirmed,
       userGuid: user.guid,
       userEmail: user.email,
+      timestamp,
     }));
     proms.push(resultPromise);
   });
@@ -361,6 +416,7 @@ function reviewAudioWindows(windowsData, user) {
 module.exports = {
   queryData,
   queryWindowsForEvent,
+  queryReviews,
   getEventInfoByGuid,
   sendPushNotificationsForEvent,
   sendSNSForEvent,

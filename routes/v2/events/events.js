@@ -26,6 +26,18 @@ router.route("/")
 
   });
 
+router.route("/reviews")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    return eventsServiceNeo4j.queryReviews(req)
+      .then(function(json) {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, "Error while searching reviews."); console.log(e) });
+
+  });
+
 router.route("/:guid/windows")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
 
@@ -83,22 +95,23 @@ router.route("/:guid/review")
     params.convert('windows').toArray();
 
     let user = usersService.getUserDataFromReq(req);
+    let timestamp = (new Date()).valueOf();
 
     return params.validate()
       .then(() => {
         return usersServiceNeo4j.ensureUserExistsNeo4j(user);
       })
       .then(() => {
-        return eventsServiceNeo4j.clearEventReview(req.params.guid, user);
+        return eventsServiceNeo4j.clearEventReview(req.params.guid);
       })
       .then(() => {
-        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user);
+        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp);
       })
       .then(() => {
-        return eventsServiceNeo4j.clearAudioWindowsReview(transformedParams.windows, user);
+        return eventsServiceNeo4j.clearAudioWindowsReview(transformedParams.windows);
       })
       .then(() => {
-        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user);
+        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp);
       })
       .then(() => {
         res.status(200).send({ success: true });
