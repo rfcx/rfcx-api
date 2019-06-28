@@ -26,6 +26,18 @@ router.route("/")
 
   });
 
+router.route("/reviews")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    return eventsServiceNeo4j.queryReviews(req)
+      .then(function(json) {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, "Error while searching reviews."); console.log(e) });
+
+  });
+
 router.route("/:guid/windows")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
 

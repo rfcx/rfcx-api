@@ -52,7 +52,7 @@ function prepareOpts(req) {
 
 function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND ev.audioMeasuredAt < {endingBeforeLocal}');
+  sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND ev.confidence >= {minimumConfidence}');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND val["w3#label[]"] IN {values}');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND ev.siteGuid IN {sites}');
@@ -170,6 +170,53 @@ function queryData(req) {
         events: limitAndOffset(this.opts, items)
       };
     })
+
+}
+
+function queryReviews(req) {
+
+  return prepareOpts(req)
+    .bind({})
+    .then((opts) => {
+      this.opts = opts;
+
+      let newOpts = Object.assign({}, opts)
+      if (newOpts.startingAfterLocal) {
+        newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
+      }
+      if (newOpts.startingBeforeLocal) {
+        newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      }
+
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review) `;
+      query = sqlUtils.condAdd(query, true, ' MATCH (evs)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity)');
+      query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
+      query = sqlUtils.condAdd(query, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
+      query = sqlUtils.condAdd(query, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
+      query = sqlUtils.condAdd(query, opts.values, ' AND val["w3#label[]"] IN {values}');
+      query = sqlUtils.condAdd(query, opts.sites, ' AND ev.siteGuid IN {sites}');
+      query = sqlUtils.condAdd(query, opts.guardians, ' AND ev.guardianGuid IN {guardians}');
+      query = sqlUtils.condAdd(query, opts.models, ' AND ai.guid IN {models}');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, COLLECT({start: aw.start, end: aw.end, confirmed: re.confirmed}) as reviewData');
+      query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
+
+      const session = neo4j.session();
+      const resultPromise = session.run(query, newOpts);
+
+      return resultPromise.then(result => {
+        session.close();
+        return result.records.map((record) => {
+          let event = record.get(0).properties;
+          event.value = record.get(1);
+          event.label = record.get(2);
+          event.audioWindows = record.get(3);
+          return event;
+        });
+      });
+    })
+    .then((items) => {
+      return filterWithTz(this.opts, items);
+    });
 
 }
 
@@ -369,6 +416,7 @@ function reviewAudioWindows(windowsData, user, timestamp) {
 module.exports = {
   queryData,
   queryWindowsForEvent,
+  queryReviews,
   getEventInfoByGuid,
   sendPushNotificationsForEvent,
   sendSNSForEvent,
