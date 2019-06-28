@@ -2,8 +2,8 @@ const request = require('request');
 const Promise = require('bluebird');
 const util    = require('util');
 const guid    = require('../../utils/misc/guid');
-const hash    = require('../../utils/misc/hash').hash;
 const redisClient = require('../../utils/redis');
+const generator = require('generate-password');
 
 function getToken() {
   let tokenName = `auth0_token_${process.env.NODE_ENV}`;
@@ -77,7 +77,15 @@ function getNewAuthToken() {
 }
 
 function createAuth0User(token, opts) {
-
+  if (!opts.password) {
+    opts.password = generator.generate({
+      length: 20,
+      numbers: true,
+      symbols: true,
+      uppercase: true,
+      excludeSimilarCharacters: true,
+    });
+  }
   return new Promise(function(resolve, reject) {
     request({
       method: 'POST',
@@ -91,7 +99,7 @@ function createAuth0User(token, opts) {
         user_id: opts.guid || guid.generate(),
         connection: process.env.AUTH0_DEFAULT_DB_CONNECTION,
         email: opts.email,
-        password: opts.password || hash.randomString(50),
+        password: opts.password,
         user_metadata: {
           given_name: opts.firstname,
           family_name: opts.lastname,
