@@ -21,7 +21,8 @@ exports.env = {
   ASSET_BUCKET_META: "rfcx-guardian-meta-development",
   ASSET_BUCKET_ZIP: "rfcx-zip",
   ASSET_BUCKET_REPORT: "rfcx-report-development",
-  ASSET_BUCKET_ATTACHMENT: "rfcx-attachment-development"
+  ASSET_BUCKET_ATTACHMENT: "rfcx-attachment-development",
+  ASSET_BUCKET_AI: "rfcx-ai-dev",
   ASSET_URLBASE: "http://localhost:8080/v1/assets",
 
   PLAYER_PASSCODES: "0000,1111",
