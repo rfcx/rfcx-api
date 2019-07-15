@@ -3,6 +3,7 @@ var ValidationError = require('../../utils/converter/validation-error');
 var EmptyResultError = require('../../utils/converter/empty-result-error');
 var sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
+const S3Service = require('../s3/s3-service');
 
 function getPublicAis(opts) {
 
@@ -124,9 +125,14 @@ function createAi(opts) {
 
 }
 
+function uploadAIFile(opts) {
+  return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket);
+}
+
 module.exports = {
   getPublicAis,
   getPublicAiByGuid,
   updateAiByGuid,
   createAi,
+  uploadAIFile,
 };

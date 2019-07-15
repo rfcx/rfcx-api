@@ -7,6 +7,7 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error');
 const hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const Converter = require("../../../utils/converter/converter");
 const aiService = require('../../../services/ai/ai-service');
+var sequelize = require("sequelize");
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -56,6 +57,21 @@ router.route("/create")
 
   });
 
+router.route("/upload-file")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
+
+    let opts = {
+      filePath: req.files.file.path,
+      fileName: req.files.file.originalname,
+      bucket: process.env.ASSET_BUCKET_AI,
+    }
+    return aiService.uploadAIFile(opts)
+      .then(result => res.status(200).json(result))
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `File couldn't be uploaded.`));
+
+  });
 
 router.route("/:guid")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
