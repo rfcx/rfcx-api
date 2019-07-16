@@ -444,11 +444,11 @@ function formatReviewsForFiles(reviews) {
       name: `${review.audioGuid}.json`,
       content: JSON.stringify({
         audioGuid: review.audioGuid,
-        label: review.label,
         windows: review.audioWindows.map((window) => {
           return {
             xmin: window.start/1000,
             xmax: window.end/1000,
+            label: review.label,
             type: window.confirmed !== undefined? window.confirmed === true : null,
           };
         })

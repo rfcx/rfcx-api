@@ -24,10 +24,15 @@ var fs = require('fs');
 var aws = require("../../../utils/external/aws.js").aws();
 var util = require("util");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const archiveUtil = require('../../../utils/misc/archive');
+const dirUtil = require('../../../utils/misc/dir');
+const fileUtil = require('../../../utils/misc/file');
+const guidUtil = require('../../../utils/misc/guid');
 const audioService = require('../../../services/audio/audio-service');
 const boxesService = require('../../../services/audio/boxes-service');
 const Converter = require("../../../utils/converter/converter");
 const ValidationError = require("../../../utils/converter/validation-error");
+const EmptyResultError = require('../../../utils/converter/empty-result-error');
 
 function filter(req) {
   var order = 'measured_at ASC';
@@ -276,7 +281,7 @@ router.route("/filter/by-tags")
 router.route("/labels")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 
-    return boxesService.queryData(req)
+    return boxesService.getData(req)
       .then((data) => {
         boxesService.calculateTimeOffsetsInSeconds(data.labels);
         boxesService.combineAudioUrls(data.labels);
@@ -288,6 +293,34 @@ router.route("/labels")
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => httpError(req, res, 500, e, e.message || `Could not find audio labels data.`));
+
+  });
+
+router.route("/labels/download")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    let tempGuid = guidUtil.generate();
+    let annotationsPath = path.join(process.env.CACHE_DIRECTORY, 'annotations');
+
+    return dirUtil.ensureDirExists(annotationsPath)
+      .then(() => {
+        return boxesService.queryData(req)
+      })
+      .then((labels) => {
+        if (!labels.length) {
+          throw new EmptyResultError('No annotations found for requested parameters.');
+        }
+        boxesService.calculateTimeOffsetsInSeconds(labels);
+        return boxesService.formatDataForDownload(labels);
+      })
+      .then((files) => {
+        return archiveUtil.archiveStrings(annotationsPath, `annotations-${tempGuid}.zip`, files);
+      })
+      .then((zipPath) => {
+        return fileUtil.serveFile(res, zipPath, 'annotations.zip', 'application/zip, application/octet-stream', !!req.query.inline);
+      })
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => { console.log(e); httpError(req, res, 500, e, "Error while searching for annotations."); })
 
   });
 
