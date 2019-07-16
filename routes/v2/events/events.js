@@ -1,8 +1,14 @@
 const express = require("express");
 var router = express.Router();
+const path = require('path');
 const passport = require("passport");
 const httpError = require("../../../utils/http-errors.js");
+const archiveUtil = require('../../../utils/misc/archive');
+const dirUtil = require('../../../utils/misc/dir');
+const fileUtil = require('../../../utils/misc/file');
+const guidUtil = require('../../../utils/misc/guid');
 const eventsServiceNeo4j = require('../../../services/events/events-service-neo4j');
+const audioUtils = require('../../../utils/rfcx-audio/audio-serve').audioUtils;
 const usersService = require('../../../services/users/users-service');
 const usersServiceNeo4j = require('../../../services/users/users-service-neo4j');
 const ValidationError = require("../../../utils/converter/validation-error");
@@ -35,6 +41,33 @@ router.route("/reviews")
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => { httpError(req, res, 500, e, "Error while searching reviews."); console.log(e) });
+
+  });
+
+router.route("/reviews/download")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+
+    let tempGuid = guidUtil.generate();
+    let reviewsPath = path.join(process.env.CACHE_DIRECTORY, 'reviews');
+
+    return dirUtil.ensureDirExists(reviewsPath)
+      .then(() => {
+        return eventsServiceNeo4j.queryReviews(req);
+      })
+      .then((data) => {
+        if (!data.length) {
+          throw new EmptyResultError('No reviews found for requested parameters.');
+        }
+        return eventsServiceNeo4j.formatReviewsForFiles(data);
+      })
+      .then((files) => {
+        return archiveUtil.archiveStrings(reviewsPath, `reviews-${tempGuid}.zip`, files);
+      })
+      .then((zipPath) => {
+        return fileUtil.serveFile(res, zipPath, 'reviews.zip', 'application/zip, application/octet-stream', !!req.query.inline);
+      })
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => { console.log(e); httpError(req, res, 500, e, "Error while searching reviews."); })
 
   });
 

@@ -1,4 +1,6 @@
 var Promise = require("bluebird");
+const fs = require('fs');
+const path = require('path');
 const moment = require("moment-timezone");
 var ValidationError = require('../../utils/converter/validation-error');
 var EmptyResultError = require('../../utils/converter/empty-result-error');
@@ -6,6 +8,7 @@ var sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
 const firebaseService = require('../firebase/firebase-service');
 const guardianGroupService = require('../guardians/guardian-group-service');
+const textGridService = require('../textgrid/textgrid-service');
 const loggers  = require('../../utils/logger');
 const logError = loggers.errorLogger.log;
 const aws = require("../../utils/external/aws.js").aws();
@@ -413,6 +416,47 @@ function reviewAudioWindows(windowsData, user, timestamp) {
     });
 }
 
+function generateTextGridContent(tempPath, reviews) {
+  let proms = [];
+  reviews.forEach((item, i) => {
+    item.xmin_global = 0;
+    item.xmax_global = 90;
+    item.size = 1;
+    let filePath = path.join(tempPath, `${item.audioGuid}.textgrid`);
+    let textGridStr = textGridService.prepareTextGrid(item);
+    let prom = new Promise((resolve, reject) => {
+      var stream = fs.createWriteStream(filePath);
+      stream.once('open', function(fd) {
+        stream.write(textGridStr);
+        stream.end();
+        stream.on('finish', () => { resolve(filePath); });
+        stream.on('error', reject);
+      });
+    });
+    proms.push(prom);
+  });
+  return Promise.all(proms);
+}
+
+function formatReviewsForFiles(reviews) {
+  return reviews.map((review) => {
+    return {
+      name: `${review.audioGuid}.json`,
+      content: JSON.stringify({
+        audioGuid: review.audioGuid,
+        label: review.label,
+        windows: review.audioWindows.map((window) => {
+          return {
+            xmin: window.start/1000,
+            xmax: window.end/1000,
+            type: window.confirmed !== undefined? window.confirmed === true : null,
+          };
+        })
+      }, null, 4),
+    };
+  })
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
@@ -424,4 +468,6 @@ module.exports = {
   reviewEvent,
   reviewAudioWindows,
   clearAudioWindowsReview,
+  generateTextGridContent,
+  formatReviewsForFiles,
 };
