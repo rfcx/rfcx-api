@@ -8,6 +8,7 @@ const hasRole = require('../../../middleware/authorization/authorization').hasRo
 const Converter = require("../../../utils/converter/converter");
 const aiService = require('../../../services/ai/ai-service');
 var sequelize = require("sequelize");
+const pathCompleteExtname = require('path-complete-extname');
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -80,12 +81,22 @@ router.route("/create")
 
   });
 
-router.route("/upload-file")
+router.route("/:guid/upload-file")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
+
+    let allowedExtensions = ['.tar.gz'];
+    let file = req.files.file;
+    if (!file) {
+      return httpError(req, res, 400, null, 'No file provided.');
+    }
+    let extension = pathCompleteExtname(file.originalname);
+    if (!allowedExtensions.includes(extension)) {
+      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`);
+    }
 
     let opts = {
       filePath: req.files.file.path,
-      fileName: req.files.file.originalname,
+      fileName: `${req.params.guid}${extension}`,
       bucket: process.env.ASSET_BUCKET_AI,
     }
     return aiService.uploadAIFile(opts)
