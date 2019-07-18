@@ -13,7 +13,7 @@ var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin', 'systemUser']), function (req, res) {
 
     return aiService.getPublicAis()
       .then(function(json) {
@@ -24,14 +24,38 @@ router.route("/")
 
   });
 
+router.route("/collections")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
+
+    return aiService.getPublicCollections()
+      .then(function(json) {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, 'Error while getting public AICs.'); console.log(e) });
+
+  });
+
+router.route("/collections/:guid")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
+
+    return aiService.getPublicCollectionAndAisByGuid(req.params.guid)
+      .then(function(json) {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, `Error while getting collection and ais by guid.`); console.log(e) });
+
+  });
+
 router.route("/create")
-  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
     params.convert('name').toString();
-    params.convert('aiCollectionGuid').toString();
+    params.convert('aiCollectionGuid').optional().toString();
     params.convert('aiGuid').toString();
     params.convert('lexicalEntryId').toString();
     params.convert('stepSeconds').toNonNegativeInt().toFloat();
@@ -42,7 +66,6 @@ router.route("/create")
     params.convert('minBoxPercent').toInt();
     params.convert('public').toBoolean();
     params.convert('guardiansWhitelist').toArray();
-    params.convert('version').toInt().minimum(1);
 
     params.validate()
       .then(() => {
@@ -53,7 +76,7 @@ router.route("/create")
       })
       .catch(ValidationError, e => { httpError(req, res, 400, null, e.message)})
       .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message)})
-      .catch(e => { httpError(req, res, 500, e, "Error while creating the AI.")});
+      .catch(e => { httpError(req, res, 500, e, "Error while creating the AI."); console.log(e)});
 
   });
 
@@ -86,10 +109,26 @@ router.route("/:guid")
 
   });
 
+// AI model update
+
 router.route("/:guid")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
 
-    return aiService.updateAiByGuid(req.params.guid, req.body)
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('stepSeconds').toNonNegativeInt().toFloat();
+    params.convert('minWindowsCount').toInt();
+    params.convert('maxWindowsCount').toInt();
+    params.convert('minConfidence').toFloat();
+    params.convert('maxConfidence').toFloat();
+    params.convert('minBoxPercent').toInt();
+    params.convert('guardians').toArray();
+
+    params.validate()
+      .then(() => {
+        return aiService.updateAiByGuid(req.params.guid, transformedParams)
+      })
       .then(function(json) {
         res.status(200).send(json);
       })
