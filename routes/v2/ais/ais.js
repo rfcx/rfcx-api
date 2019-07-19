@@ -55,10 +55,10 @@ router.route("/create")
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
-    params.convert('name').toString();
+    params.convert('name').optional().toString();
     params.convert('aiCollectionGuid').optional().toString();
     params.convert('aiGuid').toString();
-    params.convert('lexicalEntryId').toString();
+    params.convert('lexicalEntryId').optional().toString();
     params.convert('stepSeconds').toNonNegativeInt().toFloat();
     params.convert('minWindowsCount').toInt();
     params.convert('maxWindowsCount').toInt();

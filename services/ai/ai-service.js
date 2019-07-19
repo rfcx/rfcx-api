@@ -147,7 +147,7 @@ function createAi(opts) {
     let createQuery =
       `MATCH (aic:aiCollection { guid: "${opts.aiCollectionGuid}" })-[:classifies]->(en:entity)
        MATCH (aic)-[:previous_ai]->(prevai:ai)
-       CREATE (ai:ai { created: TIMESTAMP(), name: "${opts.name} v"+(prevai.version + 1), guid:"${opts.aiGuid}",
+       CREATE (ai:ai { created: TIMESTAMP(), name: aic.name + " v"+(prevai.version + 1), guid:"${opts.aiGuid}",
          stepSeconds: ${opts.stepSeconds}, minWindowsCount: ${opts.minWindowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
          minConfidence: ${opts.minConfidence}, maxConfidence: ${opts.maxConfidence}, minBoxPercent: ${opts.minBoxPercent},
          public: ${opts.public}, version: (prevai.version + 1), guardiansWhitelist: {guardiansWhitelist}})
