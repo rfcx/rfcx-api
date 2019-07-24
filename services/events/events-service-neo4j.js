@@ -1,4 +1,6 @@
 var Promise = require("bluebird");
+const fs = require('fs');
+const path = require('path');
 const moment = require("moment-timezone");
 var ValidationError = require('../../utils/converter/validation-error');
 var EmptyResultError = require('../../utils/converter/empty-result-error');
@@ -6,8 +8,10 @@ var sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
 const firebaseService = require('../firebase/firebase-service');
 const guardianGroupService = require('../guardians/guardian-group-service');
+const textGridService = require('../textgrid/textgrid-service');
 const loggers  = require('../../utils/logger');
 const logError = loggers.errorLogger.log;
+const aws = require("../../utils/external/aws.js").aws();
 
 function prepareOpts(req) {
 
@@ -51,7 +55,7 @@ function prepareOpts(req) {
 
 function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
-  sql = sqlUtils.condAdd(sql, opts.endingBeforeLocal, ' AND ev.audioMeasuredAt < {endingBeforeLocal}');
+  sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND ev.confidence >= {minimumConfidence}');
   sql = sqlUtils.condAdd(sql, opts.values, ' AND val["w3#label[]"] IN {values}');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND ev.siteGuid IN {sites}');
@@ -125,10 +129,13 @@ function queryData(req) {
         newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
       }
 
-      let query = `MATCH (ev:event)<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re1:review) WHERE re1.confirmed = true WITH ev, evs, ai, val, COUNT(re1) as confirmed');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re2:review) WHERE re2.confirmed = false WITH ev, evs, ai, val, confirmed, COUNT(re2) as rejected');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user)WITH ev, evs, ai, val, confirmed, rejected, user');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, confirmed, rejected, user');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -149,6 +156,10 @@ function queryData(req) {
           },
           event.value = record.get(2);
           event.label = record.get(3);
+          event.confirmed = record.get(4) || 0;
+          event.rejected = record.get(5) || 0;
+          let reviewer = record.get(6);
+          event.reviewer = reviewer? reviewer.properties : null;
           return event;
         });
       });
@@ -165,11 +176,59 @@ function queryData(req) {
 
 }
 
+function queryReviews(req) {
+
+  return prepareOpts(req)
+    .bind({})
+    .then((opts) => {
+      this.opts = opts;
+
+      let newOpts = Object.assign({}, opts)
+      if (newOpts.startingAfterLocal) {
+        newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
+      }
+      if (newOpts.startingBeforeLocal) {
+        newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      }
+
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review) `;
+      query = sqlUtils.condAdd(query, true, ' MATCH (evs)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity)');
+      query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
+      query = sqlUtils.condAdd(query, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
+      query = sqlUtils.condAdd(query, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
+      query = sqlUtils.condAdd(query, opts.values, ' AND val["w3#label[]"] IN {values}');
+      query = sqlUtils.condAdd(query, opts.sites, ' AND ev.siteGuid IN {sites}');
+      query = sqlUtils.condAdd(query, opts.guardians, ' AND ev.guardianGuid IN {guardians}');
+      query = sqlUtils.condAdd(query, opts.models, ' AND ai.guid IN {models}');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, COLLECT({start: aw.start, end: aw.end, confirmed: re.confirmed}) as reviewData');
+      query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
+
+      const session = neo4j.session();
+      const resultPromise = session.run(query, newOpts);
+
+      return resultPromise.then(result => {
+        session.close();
+        return result.records.map((record) => {
+          let event = record.get(0).properties;
+          event.value = record.get(1);
+          event.label = record.get(2);
+          event.audioWindows = record.get(3);
+          return event;
+        });
+      });
+    })
+    .then((items) => {
+      return filterWithTz(this.opts, items);
+    });
+
+}
+
 function queryWindowsForEvent(eventGuid) {
 
   let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai) ` +
               `MATCH (ai)-[:has_audioWindowSet]->(:audioWindowSet {audioGuid: ev.audioGuid})-[:contains]->(aw:audioWindow) ` +
-              `RETURN aw ORDER BY aw.start`;
+              `OPTIONAL MATCH (aw)-[:has_review]->(re:review) ` +
+              `RETURN aw, re.confirmed as confirmed ORDER BY aw.start`;
 
   const session = neo4j.session();
   const resultPromise = session.run(query, { eventGuid });
@@ -177,7 +236,9 @@ function queryWindowsForEvent(eventGuid) {
   return resultPromise.then(result => {
     session.close();
     return result.records.map((record) => {
-      return record.get(0).properties;
+      let obj = record.get(0).properties
+      obj.confirmed = record.get(1);
+      return obj;
     });
   });
 
@@ -241,9 +302,172 @@ function sendPushNotificationsForEvent(data) {
   }
 }
 
+function sendSNSForEvent(data) {
+  if (moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
+    var msg = {
+      type: data.type || 'alert',
+      detected: data.value,
+      guardian: data.guardian_shortname,
+      model: data.ai_name,
+      audio_guid: data.audio_guid,
+      listen: `${process.env.ASSET_URLBASE}/audio/${data.audio_guid}.mp3?inline=true`
+    };
+
+    let topic = `rfcx-detection-alerts-${data.site_guid}`;
+    aws.createTopic(topic)
+      .then((data) => {
+        return aws.publish(topic, msg);
+      })
+      .catch((err) => {
+        logError(`Error sending SNS message for audio ${data.audio_guid} to ${topic} topic`, { req, err });
+      });
+  }
+}
+
+function clearEventReview(guid) {
+
+  let query = 'MATCH (ev:event {guid: {guid}}) ' +
+              'OPTIONAL MATCH (ev)-[:has_review]->(re:review) ' +
+              'DETACH DELETE re ' +
+              'RETURN ev as event';
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, { guid }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
+
+}
+
+function reviewEvent(guid, confirmed, user, timestamp) {
+
+  let query = `MATCH (ev:event {guid: {guid}}), (user:user {guid: {userGuid}, email: {userEmail}})` +
+              `MERGE (ev)-[:has_review]->(:review { confirmed: {confirmed}, created: {timestamp} })<-[:created]-(user) ` +
+              `RETURN ev as event`;
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, {
+    guid,
+    confirmed,
+    userGuid: user.guid,
+    userEmail: user.email,
+    timestamp,
+  }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
+
+}
+
+function clearAudioWindowsReview(windowsData) {
+  const session = neo4j.session();
+  let proms = [];
+  windowsData.forEach((item) => {
+    let query = 'MATCH (aw:audioWindow {guid: {guid}}) ' +
+                'OPTIONAL MATCH (aw)-[:has_review]->(re:review) ' +
+                'DETACH DELETE re ' +
+                'RETURN aw as audioWindow';
+    let resultPromise = Promise.resolve(session.run(query, { guid: item.guid }));
+    proms.push(resultPromise);
+  });
+  return Promise.all(proms)
+    .then(() => {
+      session.close();
+      return true;
+    });
+}
+
+function reviewAudioWindows(windowsData, user, timestamp) {
+  const session = neo4j.session();
+  let proms = [];
+  windowsData.forEach((item) => {
+    let query = `MATCH (aw:audioWindow {guid: {guid}}) ` +
+                `MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ` +
+                `MERGE (aw)-[:has_review]->(:review {confirmed: {confirmed}, created: {timestamp} })<-[:created]-(user) ` +
+                `RETURN aw as audioWindow`;
+
+    let resultPromise = Promise.resolve(session.run(query, {
+      guid: item.guid,
+      confirmed: item.confirmed,
+      userGuid: user.guid,
+      userEmail: user.email,
+      timestamp,
+    }));
+    proms.push(resultPromise);
+  });
+  return Promise.all(proms)
+    .then(() => {
+      session.close();
+      return true;
+    });
+}
+
+function generateTextGridContent(tempPath, reviews) {
+  let proms = [];
+  reviews.forEach((item, i) => {
+    item.xmin_global = 0;
+    item.xmax_global = 90;
+    item.size = 1;
+    let filePath = path.join(tempPath, `${item.audioGuid}.textgrid`);
+    let textGridStr = textGridService.prepareTextGrid(item);
+    let prom = new Promise((resolve, reject) => {
+      var stream = fs.createWriteStream(filePath);
+      stream.once('open', function(fd) {
+        stream.write(textGridStr);
+        stream.end();
+        stream.on('finish', () => { resolve(filePath); });
+        stream.on('error', reject);
+      });
+    });
+    proms.push(prom);
+  });
+  return Promise.all(proms);
+}
+
+function formatReviewsForFiles(reviews) {
+  return reviews.map((review) => {
+    return {
+      name: `${review.audioGuid}.json`,
+      content: JSON.stringify({
+        audioGuid: review.audioGuid,
+        windows: review.audioWindows.map((window) => {
+          return {
+            xmin: window.start/1000,
+            xmax: window.end/1000,
+            label: review.label,
+            type: window.confirmed !== undefined? window.confirmed === true : null,
+          };
+        })
+      }, null, 4),
+    };
+  })
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
+  queryReviews,
   getEventInfoByGuid,
   sendPushNotificationsForEvent,
+  sendSNSForEvent,
+  clearEventReview,
+  reviewEvent,
+  reviewAudioWindows,
+  clearAudioWindowsReview,
+  generateTextGridContent,
+  formatReviewsForFiles,
 };

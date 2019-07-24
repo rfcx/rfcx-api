@@ -538,8 +538,11 @@ router.route("/delete")
 
     params.validate()
       .then(() => {
-        // just to be sure that user exist in DB
-        return usersService.getUserByGuid(transformedParams.guid);
+        // there might be cases when user exists in Auth0 but doesn't exist in MySQL
+        if (transformedParams.guid === '') {
+          return true;
+        }
+        return usersService.getUserByGuid(transformedParams.guid, true);
       })
       .then(() => {
         return auth0Service.getToken();
@@ -548,6 +551,9 @@ router.route("/delete")
         return auth0Service.deleteAuth0User(token, transformedParams.user_id);
       })
       .then(() => {
+        if (transformedParams.guid === '') {
+          return true;
+        }
         return usersService.removeUserByGuidFromMySQL({ guid: transformedParams.guid });
       })
       .then(() => {
