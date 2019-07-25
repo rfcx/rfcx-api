@@ -157,6 +157,9 @@ var routes = {
     events: [
       require("./routes/v2/events/events"),
     ],
+    guardians: [
+      require("./routes/v2/guardians/guardians"),
+    ],
   }
 };
 

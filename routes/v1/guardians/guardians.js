@@ -101,6 +101,36 @@ router.route("/")
   })
 ;
 
+// Guardian update
+
+router.route("/:guid")
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['guardianCreator']), function(req,res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('shortname').optional().toString();
+    params.convert('latitude').optional().toFloat();
+    params.convert('longitude').optional().toFloat();
+    params.convert('is_visible').optional().toBoolean();
+
+    params.validate()
+      return guardiansService.getGuardianByGuid(req.params.guid)
+        .then((guardian) => {
+          return guardiansService.updateGuardian(guardian, transformedParams);
+        })
+        .then((guardian) => {
+          return guardiansService.formatGuardian(guardian);
+        })
+        .then(function(json) {
+          res.status(200).send(json);
+        })
+        .catch(ValidationError, e => { httpError(req, res, 400, null, e.message); })
+        .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message); })
+        .catch(e => { httpError(req, res, 500, e, "Error while updating the Guardian."); });
+
+  });
+
 router.route("/my")
   .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 

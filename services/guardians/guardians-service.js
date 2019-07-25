@@ -5,7 +5,8 @@ const Promise = require('bluebird');
 function getGuardianByGuid(guid, ignoreMissing) {
   return models.Guardian
     .findOne({
-      where: { guid: guid }
+      where: { guid: guid },
+      include: [{ all: true }],
     })
     .then((item) => {
       if (!item && !ignoreMissing) {
@@ -31,6 +32,7 @@ function formatGuardian(guardian) {
     longitude: guardian.longitude,
     notes: guardian.notes,
     phone_number: guardian.phone_number,
+    is_visible: guardian.is_visible,
     user: guardian.User?
       {
         firstname: guardian.User.firstname,
@@ -54,9 +56,23 @@ function formatGuardians(guardians) {
   });
 }
 
+function updateGuardian(guardian, attrs) {
+  let allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible'];
+  allowedAttrs.forEach((allowedAttr) => {
+    if (attrs[allowedAttr] !== undefined) {
+      guardian[allowedAttr] = attrs[allowedAttr];
+    }
+  });
+  return guardian.save()
+    .then(() => {
+      return guardian.reload({ include: [{ all: true }] });
+    });
+}
+
 module.exports = {
   getGuardianByGuid,
   getGuardiansByGuids,
   formatGuardian,
   formatGuardians,
+  updateGuardian,
 }
