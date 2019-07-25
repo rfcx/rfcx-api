@@ -9,6 +9,7 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 var Promise = require("bluebird");
 var ApiConverter = require("../../../utils/api-converter");
+const Converter = require("../../../utils/converter/converter");
 var aws = require("../../../utils/external/aws.js").aws();
 var moment = require('moment');
 var eventsService = require('../../../services/events/events-service');
@@ -223,10 +224,36 @@ router.route("/tuning")
 
 router.route("/values")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
-    eventValueService
-      .getGuardianAudioEventValues()
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('high_level_key').optional().toString();
+
+    params.validate()
+      .then(() => {
+        return eventValueService.getGuardianAudioEventValues(transformedParams);
+      })
       .then((data) => { res.status(200).json(data); })
-      .catch(e => httpError(req, res, 500, e, "Could not return Guardian Audio Event Values."));
+      .catch(e => { httpError(req, res, 500, e, "Could not return Guardian Audio Event Values."); console.log(e)});
+
+  });
+
+router.route("/high-level-keys")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('search').toString().trim().nonEmpty().minLength(3);
+
+    params.validate()
+      .then(() => {
+        return eventValueService.searchForHighLevelKeys(transformedParams.search)
+      })
+      .then((data) => { res.status(200).json(data); })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => {httpError(req, res, 500, e, "Could not search for high level keys of audio labels."); console.log(e)});
   });
 
 router.route("/types")

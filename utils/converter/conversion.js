@@ -49,14 +49,14 @@ module.exports = class Conversion {
   }
 
   throwError(message){
-    throw new Error(`Parameter ${this.property}: ${message}`);
+    throw new Error(`Parameter '${this.property}' ${message}`);
   }
 
   toFloat() {
     this.conversions.push(() => {
       let newValue = parseFloat(this.value);
       if (isNaN(newValue)){
-        this.throwError(`${this.value} should be a float but it is not`);
+        this.throwError(`should be a float`);
       }
       this.value = newValue;
     });
@@ -67,7 +67,7 @@ module.exports = class Conversion {
   minimum(a) {
     this.conversions.push(() => {
       if(this.value < a) {
-        this.throwError(`${this.value} is smaller than the minimum ${a}`);
+        this.throwError(`is smaller than the minimum ${a}`);
       }
     });
 
@@ -77,7 +77,27 @@ module.exports = class Conversion {
   maximum(b) {
     this.conversions.push(() => {
       if(this.value > b) {
-        this.throwError(`${this.value} is larger than the max ${b}`);
+        this.throwError(`is larger than the max ${b}`);
+      }
+    });
+
+    return this;
+  }
+
+  minLength(a) {
+    this.conversions.push(() => {
+      if(this.value.length < a) {
+        this.throwError(`is shorter than min length of ${a} symbols`);
+      }
+    });
+
+    return this;
+  }
+
+  maxLength(b) {
+    this.conversions.push(() => {
+      if(this.value.length > b) {
+        this.throwError(`is longer than the max length of ${b} symbols`);
       }
     });
 
@@ -114,7 +134,7 @@ module.exports = class Conversion {
       let newValue = moment.tz(this.value, tz);
 
       if (isNaN(newValue)) {
-        this.throwError(`${this.value} should be a ISO8601 DateTime string but it is not`);
+        this.throwError(`should be a ISO8601 DateTime string`);
       }
 
       this.value = newValue;
@@ -135,7 +155,7 @@ module.exports = class Conversion {
       let newValue = parseInt(this.value);
 
       if (isNaN(newValue)) {
-        this.throwError(`${this.value} should be an integer but it is not`);
+        this.throwError(`should be an integer`);
       }
 
       this.value = newValue;
@@ -206,7 +226,7 @@ module.exports = class Conversion {
   isObject() {
     this.conversions.push(() => {
       if (!util.isObject(this.value)) {
-        this.throwError(`${this.value} is not an object`);
+        this.throwError(`is not an object`);
       }
     });
 

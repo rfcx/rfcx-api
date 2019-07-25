@@ -98,7 +98,7 @@ function prepareOpts(req) {
   //     });
   // }
   // else {
-    return Promise.resolve(opts);
+    return opts;
   // }
 }
 
@@ -119,30 +119,34 @@ function addGetQueryParams(sql, opts) {
   return sql;
 }
 
-function queryData(req) {
+function getData(req) {
 
-  return prepareOpts(req)
-    .bind({})
-    .then((opts) => {
-      let sql = `${querySelect} FROM GuardianAudioBoxes AS GuardianAudioBox ${queryJoins} `;
-      sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
-      sql = addGetQueryParams(sql, opts);
-      sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+  const opts = prepareOpts(req);
 
-      return models.sequelize
-        .query(sql,
-          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
-        )
-        .then((labels) => {
-          this.total = labels.length;
-          return filterWithTz(opts, labels);
-        })
-        .then((labels) => {
-          return {
-            total: this.total,
-            labels: limitAndOffset(opts, labels)
-          }
-        })
+  return queryData(req, opts)
+    .then((labels) => {
+      return {
+        total: labels.length,
+        labels: limitAndOffset(opts, labels)
+      }
+    });
+}
+
+function queryData(req, opts) {
+
+  opts = opts || prepareOpts(req);
+
+  let sql = `${querySelect} FROM GuardianAudioBoxes AS GuardianAudioBox ${queryJoins} `;
+  sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
+  sql = addGetQueryParams(sql, opts);
+  sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((labels) => {
+      return filterWithTz(opts, labels);
     });
 
 }
@@ -217,8 +221,38 @@ function combineAudioUrls(labels) {
   })
 }
 
+function formatDataForDownload(labels) {
+  let audioObj = {};
+  labels.forEach((label) => {
+    if (!audioObj[label.audio_guid]) {
+      audioObj[label.audio_guid] = [];
+    }
+    audioObj[label.audio_guid].push({
+      xmin: label.start/1000,
+      xmax: label.end/1000,
+      ymin: label.freq_min,
+      ymax: label.freq_max,
+      label: label.value,
+    });
+  });
+  let res = [];
+  for (let key in audioObj) {
+    let windows = audioObj[key];
+    res.push({
+      name: `${key}.json`,
+      content: JSON.stringify({
+        audioGuid: key,
+        windows
+      }, null, 4),
+    });
+  }
+  return res;
+}
+
 module.exports = {
+  getData,
   queryData,
   calculateTimeOffsetsInSeconds,
   combineAudioUrls,
+  formatDataForDownload,
 };

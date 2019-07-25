@@ -16,9 +16,20 @@ function getAllGuardianAudioEventValuesByValues(values) {
   return Promise.all(proms);
 }
 
-function getGuardianAudioEventValues() {
+function getGuardianAudioEventValues(opts) {
+  let include = [
+    {
+      model: models.GuardianAudioEventValueHighLevelKey,
+      as: 'HighLevelKey',
+    },
+  ];
+  if (opts['high_level_key']) {
+    include[0].where = {
+      value: opts['high_level_key'],
+    };
+  }
   return models.GuardianAudioEventValue
-    .findAll()
+    .findAll({ include })
     .then((data) => {
       return formatGuardianAudioEventValues(data);
     });
@@ -26,11 +37,50 @@ function getGuardianAudioEventValues() {
 
 function formatGuardianAudioEventValues(arr) {
   return arr.map((item) => {
-      return item.value;
-    });
+    return {
+      value: item.value,
+      high_level_key: item.HighLevelKey? item.HighLevelKey.value : null,
+      low_level_key: item.low_level_key,
+      label: combineGuardianAudioEventValueLabel(item),
+    }
+  });
+}
+
+function combineGuardianAudioEventValueLabel(item) {
+  let label;
+  if (item.HighLevelKey && item.low_level_key) {
+    label = `${item.HighLevelKey.value} ${item.low_level_key}`;
+  }
+  else if (item.HighLevelKey && !item.low_level_key) {
+    label = `${item.HighLevelKey.value}`;
+  }
+  else if (!item.HighLevelKey && item.low_level_key) {
+    label = `${item.low_level_key}`;
+  }
+  else {
+    label = null;
+  }
+  return label;
+}
+
+function searchForHighLevelKeys(search) {
+  return models.GuardianAudioEventValueHighLevelKey
+    .findAll({
+      where: {
+        value: {
+          $like: `%${search}%`
+        }
+      }
+    })
+    .then((data) => {
+      return data.map((item) => {
+        return item.value;
+      });
+    })
 }
 
 module.exports = {
   getAllGuardianAudioEventValuesByValues,
   getGuardianAudioEventValues,
+  searchForHighLevelKeys,
 }
