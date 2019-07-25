@@ -16,6 +16,7 @@ exports.models = {
         guid: dbRow.guid,
         shortname: dbRow.shortname,
         is_certified: dbRow.is_certified,
+        is_visible: dbRow.is_visible,
         carrier: {
           name: dbRow.carrier_name,
           number: dbRow.phone_number
