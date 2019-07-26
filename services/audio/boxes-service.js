@@ -12,7 +12,7 @@ const querySelect =
   'CONVERT_TZ(GuardianAudioBox.ends_at, "UTC", Site.timezone) as ends_at_local, ' +
   'GuardianAudio.guid as audio_guid, GuardianAudio.measured_at as audio_measured_at, ' +
   'CONVERT_TZ(GuardianAudio.measured_at, "UTC", Site.timezone) as audio_measured_at_local, ' +
-  'Value.value, ' +
+  'Value.value, Value.low_level_key, HighLevelKey.value as high_level_key, ' +
   'User.guid as user_guid, User.email as user_email, User.firstname as user_firstname, User.lastname as user_lastname, ' +
   'Site.timezone as site_timezone ';
 
@@ -20,6 +20,7 @@ const queryJoins =
   'LEFT JOIN GuardianAudio AS GuardianAudio ON GuardianAudioBox.audio_id = GuardianAudio.id ' +
   'LEFT JOIN GuardianSites AS Site ON GuardianAudio.site_id = Site.id ' +
   'LEFT JOIN GuardianAudioEventValues AS Value ON GuardianAudioBox.value = Value.id ' +
+  'LEFT JOIN GuardianAudioEventValueHighLevelKeys AS HighLevelKey ON Value.high_level_key = HighLevelKey.id ' +
   'LEFT JOIN Users AS User ON GuardianAudioBox.created_by = User.id ' +
   'LEFT JOIN Guardians AS Guardian ON GuardianAudio.guardian_id = Guardian.id';
 
