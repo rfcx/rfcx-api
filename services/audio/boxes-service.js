@@ -72,6 +72,7 @@ function prepareOpts(req) {
     // dayTimeLocalAfter: req.query.daytime_local_after,
     // dayTimeLocalBefore: req.query.daytime_local_before,
     // will sort by audio files END
+    values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
     audios: req.query.audios? (Array.isArray(req.query.audios)? req.query.audios : [req.query.audios]) : undefined,
     sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
     guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
@@ -110,6 +111,7 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND GuardianAudio.measured_at < DATE_ADD(:startingBeforeLocal, INTERVAL 14 HOUR)');
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
   // sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
+  sql = sqlUtils.condAdd(sql, opts.values, ' AND Value.value IN (:values)');
   sql = sqlUtils.condAdd(sql, opts.audios, ' AND GuardianAudio.guid IN (:audios)');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
   sql = sqlUtils.condAdd(sql, opts.userId, ' AND GuardianAudioBox.created_by = :userId');
