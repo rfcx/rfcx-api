@@ -8,10 +8,9 @@ var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/:guardian_id/screenshots")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
-
+  .get(passport.authenticate(["token", 'jwt', 'jwt-custom'], {session:false}), function(req,res) {
     models.Guardian
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
@@ -23,9 +22,9 @@ router.route("/:guardian_id/screenshots")
         var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
 
         return models.GuardianMetaScreenShot
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, dbQueryOrder] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
