@@ -211,7 +211,12 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
                 audioInfoPostDbSave: audioInfoPostDbSave,
               });
-              return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave)
+              if (!this.dbGuardian || !this.dbGuardian.Site || (this.dbGuardian.Site && this.dbGuardian.Site.is_analyzable)) {
+                return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave)
+              }
+              else {
+                return Promise.resolve(audioInfoPostDbSave);
+              }
             })
             .then(function(audioInfoPostQueue){
               logDebug('Guardian checkins endpoint: queueForTaggingByActiveModels finished', {
