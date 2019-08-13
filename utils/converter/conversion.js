@@ -240,4 +240,14 @@ module.exports = class Conversion {
     return this;
   }
 
+  isEqualToAny(arr) {
+    this.conversions.push(() => {
+      if (!arr.includes(this.value)) {
+        this.throwError(`should be one of these values: ${arr.join(', ')}`);
+      }
+    });
+
+    return this;
+  }
+
 };

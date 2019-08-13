@@ -160,6 +160,9 @@ var routes = {
     guardians: [
       require("./routes/v2/guardians/guardians"),
     ],
+    tags: [
+      require("./routes/v2/tags/tags"),
+    ],
   }
 };
 

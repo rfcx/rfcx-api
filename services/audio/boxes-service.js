@@ -252,10 +252,30 @@ function formatDataForDownload(labels) {
   return res;
 }
 
+function formatBoxAsTag(box) {
+  return {
+    start: box.audio_measured_at,
+    label: box.value,
+    type: 'annotation',
+    legacy: {
+      audioGuid: box.audio_guid,
+      xmin: box.start,
+      xmax: box.end,
+      ymin: box.freq_min,
+      ymax: box.freq_max,
+    }
+  };
+}
+
+function formatBoxesAsTags(boxes) {
+  return boxes.map(formatBoxAsTag);
+}
+
 module.exports = {
   getData,
   queryData,
   calculateTimeOffsetsInSeconds,
   combineAudioUrls,
   formatDataForDownload,
+  formatBoxesAsTags,
 };
