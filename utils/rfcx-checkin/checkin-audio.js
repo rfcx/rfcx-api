@@ -54,6 +54,7 @@ exports.audio = {
             checkin_guid: dbCheckIn.guid,
             site_id: dbGuardian.site_id,
 
+            originalFilename: audioFiles[i].originalname,
             uploadLocalPath: audioFiles[i].path,
             unzipLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
             wavAudioLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+".wav",
@@ -193,6 +194,7 @@ exports.audio = {
           check_in_id: audioInfo.checkin_id,
           sha1_checksum: audioInfo.sha1Hash,
           url: null,//"s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
+          original_filename: audioInfo.originalFilename,
           capture_bitrate: audioInfo.capture_bitrate,
           encode_duration: audioInfo.capture_encode_duration,
           measured_at: audioInfo.measured_at,

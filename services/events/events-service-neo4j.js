@@ -45,6 +45,8 @@ function prepareOpts(req) {
     guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
     models: req.query.models? (Array.isArray(req.query.models)? req.query.models : [req.query.models]) : undefined,
     weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
+    reviewed: req.query.reviewed !== undefined? (req.query.reviewed === 'true') : undefined,
+    confirmed: req.query.confirmed !== undefined? (req.query.confirmed === 'true') : undefined,
     order: order? order : 'ev.audioMeasuredAt',
     dir: dir? dir : 'ASC',
   };
@@ -132,10 +134,15 @@ function queryData(req) {
       let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re1:review) WHERE re1.confirmed = true WITH ev, evs, ai, val, COUNT(re1) as confirmed');
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re2:review) WHERE re2.confirmed = false WITH ev, evs, ai, val, confirmed, COUNT(re2) as rejected');
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user)WITH ev, evs, ai, val, confirmed, rejected, user');
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, confirmed, rejected, user');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) WITH ev, evs, ai, val, COLLECT({start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, windows, user, re');
+      query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
+      query = sqlUtils.condAdd(query, opts.reviewed === true, ' AND re IS NOT NULL');
+      query = sqlUtils.condAdd(query, opts.reviewed === false, ' AND re IS NULL');
+      query = sqlUtils.condAdd(query, opts.confirmed === true, ' AND re.confirmed = true');
+      query = sqlUtils.condAdd(query, opts.confirmed === false, ' AND re.confirmed = false');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, windows, user, re as review');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -156,10 +163,14 @@ function queryData(req) {
           },
           event.value = record.get(2);
           event.label = record.get(3);
-          event.confirmed = record.get(4) || 0;
-          event.rejected = record.get(5) || 0;
-          let reviewer = record.get(6);
+          let windows = record.get(4);
+          event.windows = windows;
+          event.confirmed = windows.filter((window) => (window.confirmed === true)).length;
+          event.rejected = windows.filter((window) => window.confirmed === false).length;
+          let reviewer = record.get(5);
           event.reviewer = reviewer? reviewer.properties : null;
+          let review = record.get(6);
+          event.review = review? review.properties : null;
           return event;
         });
       });
@@ -225,8 +236,7 @@ function queryReviews(req) {
 
 function queryWindowsForEvent(eventGuid) {
 
-  let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai) ` +
-              `MATCH (ai)-[:has_audioWindowSet]->(:audioWindowSet {audioGuid: ev.audioGuid})-[:contains]->(aw:audioWindow) ` +
+  let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)-[:relates_to]->(:audioWindowSet)-[:contains]->(aw:audioWindow) ` +
               `OPTIONAL MATCH (aw)-[:has_review]->(re:review) ` +
               `RETURN aw, re.confirmed as confirmed ORDER BY aw.start`;
 
@@ -457,6 +467,42 @@ function formatReviewsForFiles(reviews) {
   })
 }
 
+function formatEventAsTags(event, type) {
+  let tags;
+  let audioStart = moment.tz(event.audioMeasuredAt, event.siteTimezone).toISOString();
+  if (type === 'inference') {
+    tags = event.windows.map((window) => { return formatWindowFromEvent(window, audioStart, event, type); });
+  }
+  else {
+    tags = event.windows
+        .filter((window) => {
+          return window.confirmed === (type === 'inference:confirmed')
+        })
+        .map((window) => { return formatWindowFromEvent(window, audioStart, event, type); });
+  }
+
+  return tags;
+}
+
+function formatWindowFromEvent(window, audioStart, event, type) {
+  return {
+    start: audioStart,
+    label: event.label,
+    type: type,
+    legacy: {
+      audioGuid: event.audioGuid,
+      xmin: window.start,
+      xmax: window.end,
+      confidence: window.confidence,
+    }
+  }
+}
+
+function formatEventsAsTags(events, type) {
+  return events.map((event) => formatEventAsTags(event, type))
+               .reduce((prev, cur) => { return prev.concat(cur)}, []);
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
@@ -470,4 +516,5 @@ module.exports = {
   clearAudioWindowsReview,
   generateTextGridContent,
   formatReviewsForFiles,
+  formatEventsAsTags,
 };

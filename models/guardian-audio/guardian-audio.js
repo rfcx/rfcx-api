@@ -70,6 +70,11 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
+    },
+    original_filename: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: { }
     }
   }, {
     classMethods: {
