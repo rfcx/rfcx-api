@@ -135,6 +135,32 @@ function getData(req) {
     });
 }
 
+function getLabelValues(req) {
+
+  const opts = prepareOpts(req);
+
+  let sql = `SELECT DISTINCT v.value as value, h.value as high_level_key, v.low_level_key FROM GuardianAudioBoxes b ` +
+            `LEFT JOIN GuardianAudioEventValues v ON v.id = b.value ` +
+            `LEFT JOIN GuardianAudioEventValueHighLevelKeys h ON h.id = v.high_level_key ` +
+            `LEFT JOIN GuardianAudio as a ON a.id = b.audio_id ` +
+            `LEFT JOIN Guardians g ON g.id = a.guardian_id ` +
+            `WHERE 1=1 `;
+  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND g.guid IN (:guardians)');
+  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND a.measured_at > :startingAfter');
+  sql = sqlUtils.condAdd(sql, opts.startingBefore, ' AND a.measured_at < :startingBefore');
+
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((labels) => {
+      return {
+        total: labels.length,
+        labels: labels
+      }
+    });
+}
+
 function queryData(req, opts) {
 
   opts = opts || prepareOpts(req);
@@ -278,4 +304,5 @@ module.exports = {
   combineAudioUrls,
   formatDataForDownload,
   formatBoxesAsTags,
+  getLabelValues,
 };

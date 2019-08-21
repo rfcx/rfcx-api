@@ -296,6 +296,19 @@ router.route("/labels")
 
   });
 
+router.route("/label-values")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    return boxesService.getLabelValues(req)
+      .then((data) => {
+        res.status(200).send(data);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not find label values.`));
+
+  });
+
 router.route("/labels/download")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 
