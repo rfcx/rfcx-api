@@ -6,7 +6,7 @@ const sqlUtils = require("../../utils/misc/sql");
 
 
 const querySelect =
-  'SELECT GuardianAudio.guid, GuardianAudio.measured_at, GuardianAudio.size, ' +
+  'SELECT GuardianAudio.guid, GuardianAudio.measured_at, GuardianAudio.size, GuardianAudio.original_filename, ' +
     'GuardianAudio.created_at, GuardianAudio.capture_sample_count, GuardianAudio.encode_duration, ' +
     'CONVERT_TZ(GuardianAudio.measured_at, "UTC", Site.timezone) as measured_at_local, ' +
     'Site.guid AS site_guid, Site.name as site_name, Site.timezone as site_timezone, ' +
