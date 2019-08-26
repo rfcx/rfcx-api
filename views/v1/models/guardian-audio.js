@@ -269,7 +269,8 @@ exports.models = {
               size: thisRow.size,
               duration: null,
               sample_rate: thisRow.Format? thisRow.Format.sample_rate : null,
-              sha1_checksum: thisRow.sha1_checksum
+              sha1_checksum: thisRow.sha1_checksum,
+              original_filename: thisRow.original_filename
             };
             if (!!thisRow.Format) {
               json.duration = Math.round(1000 * thisRow.capture_sample_count / thisRow.Format.sample_rate)
