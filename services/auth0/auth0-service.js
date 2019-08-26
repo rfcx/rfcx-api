@@ -100,6 +100,9 @@ function createAuth0User(token, opts) {
         connection: process.env.AUTH0_DEFAULT_DB_CONNECTION,
         email: opts.email,
         password: opts.password,
+        given_name: opts.firstname,
+        family_name: opts.lastname,
+        name: `${opts.firstname} ${opts.lastname}`,
         user_metadata: {
           given_name: opts.firstname,
           family_name: opts.lastname,
