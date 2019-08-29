@@ -44,6 +44,17 @@ router.route("/reviews")
 
   });
 
+router.route("/reviews/ai-models")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    return eventsServiceNeo4j.getAiModelsForReviews(req)
+      .then((data) => {
+        res.status(200).send(data);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, "Could not find AI models."); console.log(e) });
+  });
+
 router.route("/reviews/download")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
 
