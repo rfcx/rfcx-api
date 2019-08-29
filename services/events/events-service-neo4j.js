@@ -234,6 +234,48 @@ function queryReviews(req) {
 
 }
 
+function getAiModelsForReviews(req) {
+
+  return prepareOpts(req)
+    .bind({})
+    .then((opts) => {
+      this.opts = opts;
+      let newOpts = Object.assign({}, opts);
+
+      if (newOpts.startingAfterLocal) {
+        newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
+      }
+      if (newOpts.startingBeforeLocal) {
+        newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      }
+
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review) `;
+      query = sqlUtils.condAdd(query, true, ' MATCH (evs)<-[:has_eventSet]-(ai:ai {public: true})');
+      query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
+      query = sqlUtils.condAdd(query, opts.guardians, ' AND ev.guardianGuid IN {guardians}');
+      query = sqlUtils.condAdd(query, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
+      query = sqlUtils.condAdd(query, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
+      query = sqlUtils.condAdd(query, true, ' RETURN DISTINCT ai');
+
+      const session = neo4j.session();
+      const resultPromise = session.run(query, newOpts);
+
+      return resultPromise.then(result => {
+        session.close();
+        if (!result.records || !result.records.length) {
+          throw new EmptyResultError('AI models not found.');
+        }
+        return result.records.map((record) => {
+          return record.get(0).properties;
+        });
+      })
+    })
+    .then((items) => {
+      return filterWithTz(this.opts, items);
+    });
+
+}
+
 function queryWindowsForEvent(eventGuid) {
 
   let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)-[:relates_to]->(:audioWindowSet)-[:contains]->(aw:audioWindow) ` +
@@ -517,4 +559,5 @@ module.exports = {
   generateTextGridContent,
   formatReviewsForFiles,
   formatEventsAsTags,
+  getAiModelsForReviews,
 };
