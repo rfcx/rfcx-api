@@ -47,6 +47,9 @@ function prepareOpts(req) {
     weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
     reviewed: req.query.reviewed !== undefined? (req.query.reviewed === 'true') : undefined,
     confirmed: req.query.confirmed !== undefined? (req.query.confirmed === 'true') : undefined,
+    hasNoReviewedWindows: req.query.has_no_reviewed_windows !== undefined? (req.query.has_no_reviewed_windows === 'true') : undefined,
+    hasConfirmedWindows: req.query.has_confirmed_windows !== undefined? (req.query.has_confirmed_windows === 'true') : undefined,
+    hasRejectedWindows: req.query.has_rejected_windows !== undefined? (req.query.has_rejected_windows === 'true') : undefined,
     order: order? order : 'ev.audioMeasuredAt',
     dir: dir? dir : 'ASC',
   };
@@ -137,11 +140,19 @@ function queryData(req) {
       query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw');
       query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) WITH ev, evs, ai, val, COLLECT({start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
       query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, windows, user, re');
+      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, user, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount');
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = sqlUtils.condAdd(query, opts.reviewed === true, ' AND re IS NOT NULL');
       query = sqlUtils.condAdd(query, opts.reviewed === false, ' AND re IS NULL');
       query = sqlUtils.condAdd(query, opts.confirmed === true, ' AND re.confirmed = true');
       query = sqlUtils.condAdd(query, opts.confirmed === false, ' AND re.confirmed = false');
+      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && opts.hasRejectedWindows === true, ' AND (confirmedCount > 0 OR rejectedCount > 0)');
+      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
+      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows === true && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND (confirmedCount = 0  AND rejectedCount = 0) OR rejectedCount > 0');
+      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows === true && !opts.hasConfirmedWindows         && !opts.hasRejectedWindows,         ' AND confirmedCount = 0  AND rejectedCount = 0');
+      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows === true && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND (confirmedCount = 0  AND rejectedCount = 0) OR confirmedCount > 0');
+      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
+      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND confirmedCount > 0');
       query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, windows, user, re as review');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
