@@ -32,14 +32,14 @@ function getUserByEmail(email, ignoreMissing) {
   return getUserByParams({ email: email }, ignoreMissing);
 }
 
-function getUserByGuidOrEmail(field1, field2, ignoreMissing) {
+function getUserByGuidOrEmail(field1, field2) {
   field2 = field2 || field1;
   return getUserByParams({
     $or: {
       guid: field1,
       email: field2
     }
-  }, ignoreMissing);
+  });
 }
 
 function getAllUsers() {
