@@ -501,7 +501,7 @@ router.route("/code")
       })
       .then(() => {
         return auth0Service.updateAuth0User(this.token, {
-          guid: this.userId,
+          user_id: this.userId,
           defaultSite: transformedParams.code,
           accessibleSites: [ transformedParams.code ]
         });
@@ -646,7 +646,7 @@ router.route("/auth0/update-user")
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
-    params.convert('guid').toString();
+    params.convert('user_id').toString();
     params.convert('defaultSite').optional().toString();
     params.convert('accessibleSites').optional().toArray();
 
@@ -659,6 +659,76 @@ router.route("/auth0/update-user")
       })
       .then((body) => {
         res.status(200).json(body);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+  });
+
+router.route("/auth0/update-user/public")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('user_id').toString();
+    params.convert('given_name').optional().toString();
+    params.convert('family_name').optional().toString();
+    params.convert('nickname').optional().toString();
+    params.convert('picture').optional().toString();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getToken();
+      })
+      .bind({})
+      .then((token) => {
+        this.token = token;
+        if (transformedParams.given_name && transformedParams.family_name) {
+          transformedParams.name = `${transformedParams.given_name} ${transformedParams.family_name}`;
+        }
+        return auth0Service.updateAuth0User(token, transformedParams);
+      })
+      .then((body) => {
+        if (body.user_metadata) {
+          let opts = {};
+          opts.user_metadata = {};
+          opts.user_id = transformedParams.user_id;
+          if (body.user_metadata.given_name) {
+            opts.user_metadata.given_name = transformedParams.given_name;
+          }
+          if (body.user_metadata.family_name) {
+            opts.user_metadata.family_name = transformedParams.family_name;
+          }
+          opts.user_metadata.name = `${transformedParams.given_name} ${transformedParams.family_name}`;
+          return auth0Service.updateAuth0User(this.token, opts);
+        }
+        return body;
+      })
+      .then((body) => {
+        this.body = body;
+        return usersService.getUserByEmail(body.email, true);
+      })
+      .then((user) => {
+        if (user) {
+          let opts = {};
+          if (transformedParams.given_name) {
+            opts.firstname = transformedParams.given_name;
+          }
+          if (transformedParams.family_name) {
+            opts.lastname = transformedParams.family_name;
+          }
+          if (opts.firstname || opts.lastname) {
+            return usersService.updateUserAtts(user, opts);
+          }
+          return true;
+        }
+        return true;
+      })
+      .then((data) => {
+        res.status(200).json(this.body);
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch((err) => {

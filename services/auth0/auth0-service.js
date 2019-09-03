@@ -155,21 +155,45 @@ function deleteAuth0User(token, guid) {
 
 function updateAuth0User(token, opts) {
 
+  let body = {};
+  if (opts) {
+    ['given_name', 'family_name', 'name', 'nickname', 'picture', 'username', 'accessibleSites', 'defaultSite', 'user_metadata'].forEach((param) => {
+      if (opts[param] !== undefined) {
+        if (param === 'accessibleSites' || param === 'defaultSite') {
+          if (!body.app_metadata) {
+            body.app_metadata = {};
+          }
+        }
+        if (param === 'accessibleSites') {
+          body.app_metadata.accessibleSites = opts.accessibleSites;
+          return;
+        }
+        if (param === 'defaultSite') {
+          body.app_metadata.defaultSite = opts.defaultSite;
+          return;
+        }
+        if (param === 'user_metadata') {
+          if (!body.user_metadata) {
+            body.user_metadata = {};
+          }
+          body.user_metadata = opts.user_metadata;
+          return;
+        }
+        body[param] = opts[param];
+      }
+    });
+  }
+
   return new Promise(function(resolve, reject) {
     request({
       method: 'PATCH',
-      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.guid}`,
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.user_id}`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
         'Content-type': 'application/json',
       },
-      body: {
-        app_metadata: {
-          accessibleSites: opts.accessibleSites,
-          defaultSite: opts.defaultSite
-        }
-      },
+      body: body,
     }, (err, response, body) => {
       if (err) {
         reject(err);
