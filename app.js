@@ -103,6 +103,7 @@ var routes = {
     ],
     "users": [
       require("./routes/v1/users/users"),
+      require("./routes/v1/users/users-internal"),
     ],
     "events": [
       require("./routes/v1/events/events"),

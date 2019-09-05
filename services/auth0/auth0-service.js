@@ -275,6 +275,83 @@ function getUsers(token, params) {
 
 }
 
+function getAllUsersForExports(token, params) {
+
+  let body = {};
+  body.format = 'csv';
+  if (params.connection_id) {
+    body.connection_id = params.connection_id;
+  }
+  else {
+    body.connection_id = 'con_PV871DvLknTaowmO';
+  }
+  if (params.limit) {
+    body.limit = params.limit;
+  }
+  body.fields = [];
+  if (params.fields) {
+    params.fields.forEach((field) => {
+      body.fields.push({name: params.fields[field]})
+    });
+  }
+  else {
+    body.fields.push({name: 'email'}, {name: 'user_id'}, {name: 'name'}, {name: 'given_name'}, {name: 'family_name'},
+      {name: 'identities[0].connection', export_as: 'provider'}, {name: 'user_metadata.given_name'}, {name: 'user_metadata.family_name'},
+      {name: 'user_metadata.name'});
+  }
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'POST',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/users-exports`,
+      json: true,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json',
+      },
+      body: body,
+    }, (err, response, body) => {
+      if (err) {
+        console.log('err', err);
+        reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
+function getAjob(token, opts) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'GET',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/${opts.id}`,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json',
+      },
+    }, (err, response, body) => {
+      if (err) {
+        console.log('err', err);
+        reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
 function getAllRoles(token) {
 
   return new Promise(function(resolve, reject) {
@@ -491,4 +568,6 @@ module.exports = {
   sendChangePasswordEmail,
   deleteAuth0User,
   updateAuth0UserPassword,
+  getAllUsersForExports,
+  getAjob,
 };
