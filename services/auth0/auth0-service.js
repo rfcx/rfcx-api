@@ -283,7 +283,11 @@ function getAllUsersForExports(token, params) {
     body.connection_id = params.connection_id;
   }
   else {
-    body.connection_id = 'con_PV871DvLknTaowmO';
+    body.connection_id = 'con_PV871DvLknTaowmO'; // Username-Password-Authentication
+    //body.connection_id = 'con_9XwwIr4rydpwOEzu'; // google-oauth2
+    //body.connection_id = 'con_zBEnq4j2I4mYsiGl'; // facebook
+    //body.connection_id = 'con_SGFRavnGTD5AUj8K'; // email
+    //body.connection_id = 'con_hwSaot9tNENSNtAz'; // sms
   }
   if (params.limit) {
     body.limit = params.limit;
