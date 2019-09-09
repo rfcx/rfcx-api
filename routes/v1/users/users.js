@@ -676,6 +676,7 @@ router.route("/auth0/update-user/public")
     params.convert('user_id').toString();
     params.convert('given_name').optional().toString();
     params.convert('family_name').optional().toString();
+    params.convert('name').optional().toString();
     params.convert('nickname').optional().toString();
     params.convert('picture').optional().toString();
 
@@ -686,7 +687,7 @@ router.route("/auth0/update-user/public")
       .bind({})
       .then((token) => {
         this.token = token;
-        if (transformedParams.given_name && transformedParams.family_name) {
+        if (!transformedParams.name && transformedParams.given_name && transformedParams.family_name) {
           transformedParams.name = `${transformedParams.given_name} ${transformedParams.family_name}`;
         }
         return auth0Service.updateAuth0User(token, transformedParams);
