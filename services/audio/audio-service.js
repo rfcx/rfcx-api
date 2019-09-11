@@ -75,6 +75,7 @@ function prepareOpts(req) {
     guardianGroups: req.query.guardian_groups? (Array.isArray(req.query.guardian_groups)? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
     excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
     weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
+    annotated: req.query.annotated !== undefined? (req.query.annotated === 'true') : undefined,
     order: order? order : 'GuardianAudio.measured_at',
     dir: dir? dir : 'ASC',
   };
@@ -120,6 +121,8 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudio.updated_at < :updatedBefore');
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudio.created_at > :createdAfter');
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudio.created_at < :createdBefore');
+  sql = sqlUtils.condAdd(sql, opts.annotated === true, ' AND GuardianAudioBox.audio_id IN (SELECT GuardianAudio.id FROM GuardianAudio WHERE GuardianAudioBox.audio_id = GuardianAudio.id)');
+  sql = sqlUtils.condAdd(sql, opts.annotated === false, ' AND GuardianAudio.id NOT IN (SELECT GuardianAudioBox.audio_id FROM GuardianAudioBoxes WHERE GuardianAudio.id = GuardianAudioBox.audio_id)');
   return sql;
 }
 

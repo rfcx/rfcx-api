@@ -29,7 +29,7 @@ function getUserByGuid(guid, ignoreMissing) {
 }
 
 function getUserByEmail(email, ignoreMissing) {
-  return getUserByParams({ email }, ignoreMissing);
+  return getUserByParams({ email: email }, ignoreMissing);
 }
 
 function getUserByGuidOrEmail(field1, field2) {
@@ -221,6 +221,18 @@ function updateDefaultSite(user, siteGuid) {
     .then(formatUser);
 }
 
+function updateUserAtts(user, attrs) {
+  ['firstname', 'lastname'].forEach((attr) => {
+    if (attrs[attr]) {
+      user[attr] = attrs[attr];
+    }
+  });
+  return user.save()
+    .then(() => {
+      return user.reload({ include: [{ all: true }] });
+    });
+}
+
 function updateUserInfo(user, params) {
   let proms = [];
   if (params.rfcx_system !== undefined) {
@@ -383,6 +395,7 @@ module.exports = {
   updateSiteRelations,
   updateDefaultSite,
   updateUserInfo,
+  updateUserAtts,
   getUserLastCheckin,
   formatCheckin,
   createUserLocation,

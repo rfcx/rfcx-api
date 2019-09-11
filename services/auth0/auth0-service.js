@@ -155,21 +155,45 @@ function deleteAuth0User(token, guid) {
 
 function updateAuth0User(token, opts) {
 
+  let body = {};
+  if (opts) {
+    ['given_name', 'family_name', 'name', 'nickname', 'picture', 'username', 'accessibleSites', 'defaultSite', 'user_metadata'].forEach((param) => {
+      if (opts[param] !== undefined) {
+        if (param === 'accessibleSites' || param === 'defaultSite') {
+          if (!body.app_metadata) {
+            body.app_metadata = {};
+          }
+        }
+        if (param === 'accessibleSites') {
+          body.app_metadata.accessibleSites = opts.accessibleSites;
+          return;
+        }
+        if (param === 'defaultSite') {
+          body.app_metadata.defaultSite = opts.defaultSite;
+          return;
+        }
+        if (param === 'user_metadata') {
+          if (!body.user_metadata) {
+            body.user_metadata = {};
+          }
+          body.user_metadata = opts.user_metadata;
+          return;
+        }
+        body[param] = opts[param];
+      }
+    });
+  }
+
   return new Promise(function(resolve, reject) {
     request({
       method: 'PATCH',
-      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.guid}`,
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.user_id}`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
         'Content-type': 'application/json',
       },
-      body: {
-        app_metadata: {
-          accessibleSites: opts.accessibleSites,
-          defaultSite: opts.defaultSite
-        }
-      },
+      body: body,
     }, (err, response, body) => {
       if (err) {
         reject(err);
@@ -238,6 +262,87 @@ function getUsers(token, params) {
       qs
     }, (err, response, body) => {
       if (err) {
+        reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
+function getAllUsersForExports(token, params) {
+
+  let body = {};
+  body.format = 'csv';
+  if (params.connection_id) {
+    body.connection_id = params.connection_id;
+  }
+  else {
+    body.connection_id = 'con_PV871DvLknTaowmO'; // Username-Password-Authentication
+    //body.connection_id = 'con_9XwwIr4rydpwOEzu'; // google-oauth2
+    //body.connection_id = 'con_zBEnq4j2I4mYsiGl'; // facebook
+    //body.connection_id = 'con_SGFRavnGTD5AUj8K'; // email
+    //body.connection_id = 'con_hwSaot9tNENSNtAz'; // sms
+  }
+  if (params.limit) {
+    body.limit = params.limit;
+  }
+  body.fields = [];
+  if (params.fields) {
+    params.fields.forEach((field) => {
+      body.fields.push({name: params.fields[field]})
+    });
+  }
+  else {
+    body.fields.push({name: 'email'}, {name: 'user_id'}, {name: 'name'}, {name: 'given_name'}, {name: 'family_name'},
+      {name: 'identities[0].connection', export_as: 'provider'}, {name: 'user_metadata.given_name'}, {name: 'user_metadata.family_name'},
+      {name: 'user_metadata.name'});
+  }
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'POST',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/users-exports`,
+      json: true,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json',
+      },
+      body: body,
+    }, (err, response, body) => {
+      if (err) {
+        console.log('err', err);
+        reject(err);
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+
+}
+
+function getAjob(token, opts) {
+
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'GET',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/${opts.id}`,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json',
+      },
+    }, (err, response, body) => {
+      if (err) {
+        console.log('err', err);
         reject(err);
       }
       else if (!!body && !!body.error) {
@@ -467,4 +572,6 @@ module.exports = {
   sendChangePasswordEmail,
   deleteAuth0User,
   updateAuth0UserPassword,
+  getAllUsersForExports,
+  getAjob,
 };
