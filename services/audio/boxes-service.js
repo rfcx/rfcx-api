@@ -250,19 +250,24 @@ function combineAudioUrls(labels) {
   })
 }
 
-function formatDataForDownload(labels) {
+function formatDataForDownload(labels, excludeYAxis) {
   let audioObj = {};
   labels.forEach((label) => {
     if (!audioObj[label.audio_guid]) {
       audioObj[label.audio_guid] = [];
     }
-    audioObj[label.audio_guid].push({
+    let obj = {
       xmin: label.start/1000,
       xmax: label.end/1000,
       ymin: label.freq_min,
       ymax: label.freq_max,
       label: label.value,
-    });
+    };
+    if (excludeYAxis === true) {
+      delete obj.ymin;
+      delete obj.ymax;
+    }
+    audioObj[label.audio_guid].push(obj);
   });
   let res = [];
   for (let key in audioObj) {
