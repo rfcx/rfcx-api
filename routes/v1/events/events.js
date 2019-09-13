@@ -428,8 +428,9 @@ router.route('/')
       .then(function (data) {
         var apiEvent = converter.mapSequelizeToApi(data);
         res.status(200).json(apiEvent);
+        return data;
       })
-      .then(function() {
+      .then(function(event) {
         // send notiication only if audio was created in last 2 hours
         if (this.type === 'alert_sap_windowcount' && moment.tz('UTC').diff(moment.tz(this.dbAudio.measured_at, 'UTC'), 'hours') < 2) {
           guardianGroupService.getAllGroupsForGuardianId(this.dbGuardian.id)
@@ -447,6 +448,7 @@ router.route('/')
                       data: {
                         type: this.type,
                         value: this.value,
+                        event_guid: event.guid,
                         audio_guid: this.audio_guid,
                         latitude: `${this.dbGuardian.latitude}`,
                         longitude: `${this.dbGuardian.longitude}`,
