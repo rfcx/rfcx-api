@@ -324,7 +324,7 @@ router.route("/labels/download")
           throw new EmptyResultError('No annotations found for requested parameters.');
         }
         boxesService.calculateTimeOffsetsInSeconds(labels);
-        return boxesService.formatDataForDownload(labels);
+        return boxesService.formatDataForDownload(labels, req.query.excludeYAxis === 'true');
       })
       .then((files) => {
         return archiveUtil.archiveStrings(annotationsPath, `annotations-${tempGuid}.zip`, files);
