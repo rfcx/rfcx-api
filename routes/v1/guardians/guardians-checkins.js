@@ -61,7 +61,7 @@ router.route("/:guardian_id/checkins")
         return dbGuardian.save();
       })
       .then((dbGuardian) => {
-        return dbGuardian.reload();
+        return dbGuardian.reload({include: [{ all: true } ]});
       })
       .then(function(dbGuardian) {
         logDebug('Guardian checkins endpoint: dbGuardian updated', {
