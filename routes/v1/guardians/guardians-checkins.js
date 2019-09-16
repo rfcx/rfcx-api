@@ -211,6 +211,10 @@ router.route("/:guardian_id/checkins")
                 audioInfoInd: audioInfoInd,
                 audioInfoPostDbSave: audioInfoPostDbSave,
               });
+              loggers.errorLogger.log('[TEMP] Checking site data', {
+                self: self,
+                dbGuardian: self.dbGuardian,
+              });
               if (!self.dbGuardian || !self.dbGuardian.Site || (self.dbGuardian.Site && self.dbGuardian.Site.is_analyzable)) {
                 return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave)
               }
