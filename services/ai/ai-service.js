@@ -9,7 +9,7 @@ const guid = require('../../utils/misc/guid');
 function getPublicAis(opts) {
 
   opts = opts || {};
-  let query = `MATCH (ai:ai {public: true})-[:classifies]->(en:entity) RETURN ai, en as entity`;
+  let query = `MATCH (ai:ai {public: true})-[:classifies]->(lb:label) RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
@@ -18,7 +18,7 @@ function getPublicAis(opts) {
     session.close();
     return result.records.map((record) => {
       let ai = Object.assign({}, record.get(0).properties);
-      ai.label = record.get(1).properties['w3#label[]'];
+      ai.labels = record.get(1);
       return ai;
     });
   });
@@ -28,9 +28,9 @@ function getPublicAis(opts) {
 function getPublicCollections(opts) {
 
   opts = opts || {};
-  let query = `MATCH (aic:aiCollection {public: true})-[:classifies]->(en:entity)
+  let query = `MATCH (aic:aiCollection {public: true})-[:classifies]->(lb:label)
                MATCH (aic)-[:current_ai]->(ai:ai)
-               RETURN aic, en as entity, ai.version as version`;
+               RETURN aic, COLLECT({value: lb.value, label: lb.label}) as labels, ai.version as version`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
@@ -40,7 +40,7 @@ function getPublicCollections(opts) {
 
     return result.records.map((record) => {
       let aic = Object.assign({}, record.get(0).properties);
-      aic.label = record.get(1).properties['w3#label[]'];
+      aic.labels = record.get(1);
       aic.version = record.get(2);
       return aic;
     });
@@ -51,9 +51,9 @@ function getPublicCollections(opts) {
 function getPublicCollectionAndAisByGuid(guid) {
 
   let query = `
-  MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(en:entity)
+  MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(lb:label)
   MATCH (aic)-[:has_ai]->(ai:ai {public: true})
-  RETURN aic, ai, en as entity`;
+  RETURN aic, ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { guid }));
@@ -74,14 +74,14 @@ function collectionFormatted(records) {
   return records.map((record) => {
     let aic = Object.assign({}, record.get(0).properties);
     aic.ais = new Array();
-    aic.label = record.get(2).properties['w3#label[]'];
+    aic.labels = record.get(2);
     return aic;
   })[0];
 }
 
 function getPublicAiByGuid(guid) {
 
-  let query = `MATCH (ai:ai {public: true, guid: {guid}})-[:classifies]->(en:entity) RETURN ai, en as entity`;
+  let query = `MATCH (ai:ai {public: true, guid: {guid}})-[:classifies]->(lb:label) RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { guid }));
@@ -93,7 +93,7 @@ function getPublicAiByGuid(guid) {
     }
     return result.records.map((record) => {
       let ai = Object.assign({}, record.get(0).properties);
-      ai.label = record.get(1).properties['w3#label[]'];
+      ai.labels = record.get(1);
       return ai;
     })[0];
   });
@@ -113,7 +113,7 @@ function updateAiByGuid(guid, opts) {
   query = sqlUtils.condAdd(query, opts.maxConfidence !== undefined, ' SET ai.maxConfidence = {maxConfidence}');
   query = sqlUtils.condAdd(query, opts.minBoxPercent !== undefined, ' SET ai.minBoxPercent = {minBoxPercent}');
   query = sqlUtils.condAdd(query, opts.guardians !== undefined, ' SET ai.guardiansWhitelist = {guardians}');
-  query = sqlUtils.condAdd(query, true, ' MATCH (ai)-[:classifies]->(lb:label)');
+  query = sqlUtils.condAdd(query, true, ' WITH ai MATCH (ai)-[:classifies]->(lb:label)');
   query = sqlUtils.condAdd(query, true, ' RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels');
 
   const session = neo4j.session();
@@ -126,7 +126,7 @@ function updateAiByGuid(guid, opts) {
     }
     return result.records.map((record) => {
       let ai = Object.assign({}, record.get(0).properties);
-      ai.labels = record.get(1).properties;
+      ai.labels = record.get(1);
       return ai;
     })[0];
   });
@@ -154,6 +154,7 @@ function createAi(opts) {
          public: ${opts.public}, version: (prevai.version + 1), guardiansWhitelist: {guardiansWhitelist}})
        CREATE (aic)-[:current_ai]->(ai)
        CREATE (aic)-[:has_ai]->(ai)
+       WITH aic, ai
        MATCH (aic)-[:classifies]->(lb:label)
        CREATE (ai)-[:classifies]->(lb)
        RETURN ai, aic`;
@@ -163,7 +164,6 @@ function createAi(opts) {
   }
   else {
     let createQuery =
-      // `MATCH (:\`lemon#LexicalEntry\` { id:"wn/${opts.lexicalEntryId.split(/[#]/)[0]}-n"})-[:\`lemon#sense\`]->({\`wdo#sense_number\`:${opts.lexicalEntryId.slice(-1)}})-[:\`lemon#reference\`]->(valueType) with valueType
       `CREATE (aic:aiCollection { name: "${opts.name}", guid: "${guid.generate()}", public: ${opts.public}, created: TIMESTAMP()})
        CREATE (ai:ai { name:"${opts.name} v1", guid: "${opts.aiGuid}",
          stepSeconds: ${opts.stepSeconds}, minWindowsCount: ${opts.minWindowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
@@ -171,12 +171,11 @@ function createAi(opts) {
          public: ${opts.public}, version: 1, guardiansWhitelist: {guardiansWhitelist}})
        CREATE (aic)-[:current_ai]->(ai)
        CREATE (aic)-[:has_ai]->(ai)
-       UNWIND {labels} as label
-       MERGE (aic)-[:classifies]->(:label {value: label})<-[:classifies]-(ai)
+       WITH aic, ai
+       UNWIND {labels} as labelValue
+       MATCH (lb:label {value: labelValue})
+       MERGE (aic)-[:classifies]->(lb)<-[:classifies]-(ai)
        RETURN ai, aic`;
-      //  CREATE (valueType)<-[:classifies]-(aic)
-      //  CREATE (valueType)<-[:classifies]-(ai)
-      //  RETURN ai, aic`;
     proms.push(Promise.resolve(true)) // stub promise to have same number of results in queue
     proms.push(Promise.resolve(session.run(createQuery, opts)));
   }
@@ -188,10 +187,6 @@ function createAi(opts) {
         throw new EmptyResultError("AI not created.");
       }
       return result[1].records.map((record) => {
-        // let ai = Object.assign({}, record.get(0).properties);
-        // ai.label = record.get(1).properties['w3#label[]'];
-        // ai.classes =
-        // return ai;
         return record.get(0).properties;
       })[0];
   });

@@ -108,7 +108,7 @@ router.route("/:guid/trigger")
         this.notificationData = {
           audio_guid: this.eventData.event.audioGuid,
           measured_at: this.eventData.event.audioMeasuredAt,
-          value: this.eventData.entity.rfcxLabel,
+          value: this.eventData.label.label,
           guardian_id: this.guardian.id,
           guardian_guid: this.guardian.guid,
           guardian_shortname: this.guardian.shortname,

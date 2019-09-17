@@ -62,7 +62,7 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
   sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND ev.confidence >= {minimumConfidence}');
-  sql = sqlUtils.condAdd(sql, opts.values, ' AND val["w3#label[]"] IN {values}');
+  sql = sqlUtils.condAdd(sql, opts.values, ' AND val.value IN {values}');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND ev.siteGuid IN {sites}');
   sql = sqlUtils.condAdd(sql, opts.guardians, ' AND ev.guardianGuid IN {guardians}');
   sql = sqlUtils.condAdd(sql, opts.models, ' AND ai.guid IN {models}');
@@ -134,7 +134,8 @@ function queryData(req) {
         newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
       }
 
-      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity) `;
+      let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai) `;
+      query = sqlUtils.condAdd(query, true, ' MATCH (evs)-[:classifies]->(val:label)');
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
       query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw');
@@ -153,7 +154,7 @@ function queryData(req) {
       query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows === true && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND (confirmedCount = 0  AND rejectedCount = 0) OR confirmedCount > 0');
       query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
       query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND confirmedCount > 0');
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, windows, user, re as review');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val.value as value, val.label as label, windows, user, re as review');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -214,15 +215,15 @@ function queryReviews(req) {
       }
 
       let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review) `;
-      query = sqlUtils.condAdd(query, true, ' MATCH (evs)<-[:has_eventSet]-(ai:ai)-[:classifies]->(val:entity)');
+      query = sqlUtils.condAdd(query, true, ' MATCH (val:label)<-[:classifies]-(evs)<-[:has_eventSet]-(ai:ai)');
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = sqlUtils.condAdd(query, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
       query = sqlUtils.condAdd(query, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
-      query = sqlUtils.condAdd(query, opts.values, ' AND val["w3#label[]"] IN {values}');
+      query = sqlUtils.condAdd(query, opts.values, ' AND val.value IN {values}');
       query = sqlUtils.condAdd(query, opts.sites, ' AND ev.siteGuid IN {sites}');
       query = sqlUtils.condAdd(query, opts.guardians, ' AND ev.guardianGuid IN {guardians}');
       query = sqlUtils.condAdd(query, opts.models, ' AND ai.guid IN {models}');
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, val["w3#label[]"] as label, val.rfcxLabel as publicLabel, COLLECT({start: aw.start, end: aw.end, confirmed: re.confirmed}) as reviewData');
+      query = sqlUtils.condAdd(query, true, ' RETURN ev, val.value as value, val.label as label, COLLECT({start: aw.start, end: aw.end, confirmed: re.confirmed}) as reviewData');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
@@ -309,9 +310,9 @@ function queryWindowsForEvent(eventGuid) {
 
 function getEventInfoByGuid(eventGuid) {
 
-  let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)<-[:has_eventSet]-(ai:ai) ` +
-              `MATCH (ai)-[:classifies]->(en:entity) ` +
-              `RETURN ev as event, ai as ai, en as entity`;
+  let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai) ` +
+              `MATCH (evs)-[:classifies]->(lb:label) ` +
+              `RETURN ev as event, ai as ai, lb as label`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { eventGuid }));
@@ -325,7 +326,7 @@ function getEventInfoByGuid(eventGuid) {
       return {
         event: record.get(0).properties,
         ai: record.get(1).properties,
-        entity: record.get(2).properties,
+        label: record.get(2).properties,
       };
     })[0];
   });
