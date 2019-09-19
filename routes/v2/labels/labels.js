@@ -13,8 +13,11 @@ const pathCompleteExtname = require('path-complete-extname');
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
-router.route("/")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin', 'systemUser']), function (req, res) {
+/**
+ * Syncronizes MySQL GuardianAudioEventValues and GuardianAudioEventValueHighLevelKeys with :label and :highLevelKey:
+ */
+router.route("/sync")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
 
     return aiService.getPublicAis()
       .then(function(json) {
