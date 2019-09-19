@@ -9,6 +9,9 @@ const Converter = require("../../../utils/converter/converter");
 const aiService = require('../../../services/ai/ai-service');
 var sequelize = require("sequelize");
 const pathCompleteExtname = require('path-complete-extname');
+const dirUtil = require('../../../utils/misc/dir');
+const fileUtil = require('../../../utils/misc/file');
+var path = require('path');
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -28,7 +31,7 @@ router.route("/")
 router.route("/collections")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
 
-    return aiService.getPublicCollections()
+    return aiService.getPublicCollections(req.query)
       .then(function(json) {
         res.status(200).send(json);
       })
@@ -148,6 +151,29 @@ router.route("/:guid")
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(e => { httpError(req, res, 500, e, "Error while updating the AI."); console.log(e) });
 
+  });
+
+router.route("/:guid/download")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    let extension = `.tar.gz`;
+    let fileName = `${req.params.guid}${extension}`;
+    let aisPath = path.join(process.env.CACHE_DIRECTORY, 'ais');
+    let opts = {
+      filePath: aisPath,
+      fileName: fileName,
+      bucket: process.env.ASSET_BUCKET_AI,
+    }
+    return dirUtil.ensureDirExists(aisPath)
+      .then(() => {
+        return aiService.downloadAIFile(opts);
+      })
+      .then((gzipPath) => {
+        console.log('gzipPath------------------', gzipPath);
+        return fileUtil.serveFile(res, gzipPath, fileName, 'application/x-gzip, application/gzip, application/octet-stream', false);
+      })
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => {httpError(req, res, 500, e, "Error while downloading for model."); console.log(e) })
   });
 
 module.exports = router;
