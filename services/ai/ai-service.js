@@ -31,7 +31,7 @@ function getPublicCollections(opts) {
   opts = opts || {};
   let query = `MATCH (aic:aiCollection {public: true})-[:classifies]->(lb:label)
                MATCH (aic)-[:current_ai]->(ai:ai)
-               RETURN aic, COLLECT({value: lb.value, label: lb.label}) as labels, ai.version as version ORDER BY aic.name ${opts.dir}`;
+               RETURN aic, COLLECT({value: lb.value, label: lb.label}) as labels, ai.version as version ORDER BY aic.name ${opts.dir? opts.dir : 'ASC'}`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
@@ -54,7 +54,8 @@ function getPublicCollectionAndAisByGuid(guid) {
   let query = `
   MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(lb:label)
   MATCH (aic)-[:has_ai]->(ai:ai {public: true})
-  RETURN aic, ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
+  RETURN aic, ai, COLLECT({value: lb.value, label: lb.label}) as labels
+  ORDER BY ai.version ASC`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { guid }));
@@ -198,15 +199,6 @@ function uploadAIFile(opts) {
   return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket);
 }
 
-function downloadAIFile(opts) {
-  return S3Service.getObject(opts.filePath, opts.fileName, opts.bucket);
-}
-
-// function serveModelFromS3(s3Path, filename, s3Bucket) {
-//   var modelStorageUrl = `s3://${s3Bucket}/${s3Path}/${filename}`;
-//   return S3Service.getObject(modelStorageUrl);
-// }
-
 module.exports = {
   getPublicAis,
   getPublicAiByGuid,
@@ -215,5 +207,4 @@ module.exports = {
   uploadAIFile,
   getPublicCollections,
   getPublicCollectionAndAisByGuid,
-  downloadAIFile,
 };
