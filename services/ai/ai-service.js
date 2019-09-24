@@ -199,6 +199,10 @@ function uploadAIFile(opts) {
   return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket);
 }
 
+function downloadAIFile(opts) {
+  return S3Service.getObject(opts.filePath, opts.fileName, opts.bucket);
+}
+
 module.exports = {
   getPublicAis,
   getPublicAiByGuid,
@@ -207,4 +211,5 @@ module.exports = {
   uploadAIFile,
   getPublicCollections,
   getPublicCollectionAndAisByGuid,
+  downloadAIFile,
 };
