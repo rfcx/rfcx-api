@@ -5,6 +5,7 @@ var sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
 const S3Service = require('../s3/s3-service');
 const guid = require('../../utils/misc/guid');
+const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 
 function getPublicAis(opts) {
 
@@ -30,7 +31,7 @@ function getPublicCollections(opts) {
   opts = opts || {};
   let query = `MATCH (aic:aiCollection {public: true})-[:classifies]->(lb:label)
                MATCH (aic)-[:current_ai]->(ai:ai)
-               RETURN aic, COLLECT({value: lb.value, label: lb.label}) as labels, ai.version as version`;
+               RETURN aic, COLLECT({value: lb.value, label: lb.label}) as labels, ai.version as version ORDER BY aic.name ${opts.dir? opts.dir : 'ASC'}`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
@@ -48,35 +49,59 @@ function getPublicCollections(opts) {
 
 }
 
-function getPublicCollectionAndAisByGuid(guid) {
+function getPublicCollectionAndAisByGuid(guid, lastActivity) {
 
   let query = `
   MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(lb:label)
   MATCH (aic)-[:has_ai]->(ai:ai {public: true})
-  RETURN aic, ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
+  RETURN aic, ai, COLLECT({value: lb.value, label: lb.label}) as labels
+  ORDER BY ai.version ASC`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { guid }));
 
   return resultPromise.then(result => {
-    session.close();
 
     let aic = collectionFormatted(result.records);
-    return result.records.map((record) => {
-      aic.ais.push(Object.assign({}, record.get(1).properties));
+    if (!lastActivity) {
+      session.close();
       return aic;
-    })[0];
+    }
+    else {
+      let proms = [];
+      aic.ais.forEach((ai) => {
+        let q = `MATCH (ai:ai {guid: "${ai.guid}"})-[:has_audioWindowSet]->(aws:audioWindowSet) WHERE EXISTS(aws.createdAt) RETURN aws ORDER BY aws.createdAt DESC LIMIT 1`;
+        let prom = Promise
+          .resolve(session.run(q))
+          .then((r) => {
+            if (r && r.records && r.records.length && r.records[0].get(0)) {
+              ai.lastActivity = r.records[0].get(0).properties.createdAt;
+            }
+            return r;
+          });
+          proms.push(prom);
+      });
+      return Promise.all(proms)
+        .then(() => {
+          session.close();
+          return aic;
+        });
+    }
   });
 
 }
 
 function collectionFormatted(records) {
-  return records.map((record) => {
+  let aic = records.map((record) => {
     let aic = Object.assign({}, record.get(0).properties);
-    aic.ais = new Array();
+    aic.ais = [];
     aic.labels = record.get(2);
     return aic;
   })[0];
+  records.forEach((record) => {
+    aic.ais.push(Object.assign({}, record.get(1).properties));
+  });
+  return aic;
 }
 
 function getPublicAiByGuid(guid) {
@@ -197,6 +222,10 @@ function uploadAIFile(opts) {
   return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket);
 }
 
+function downloadAIFile(opts) {
+  return S3Service.getObject(opts.filePath, opts.fileName, opts.bucket);
+}
+
 module.exports = {
   getPublicAis,
   getPublicAiByGuid,
@@ -205,4 +234,5 @@ module.exports = {
   uploadAIFile,
   getPublicCollections,
   getPublicCollectionAndAisByGuid,
+  downloadAIFile,
 };
