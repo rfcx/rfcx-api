@@ -5,11 +5,12 @@ var sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
 const S3Service = require('../s3/s3-service');
 const guid = require('../../utils/misc/guid');
+const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 
 function getPublicAis(opts) {
 
   opts = opts || {};
-  let query = `MATCH (ai:ai {public: true})-[:classifies]->(en:entity) RETURN ai, en as entity`;
+  let query = `MATCH (ai:ai {public: true})-[:classifies]->(lb:label) RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
@@ -18,7 +19,7 @@ function getPublicAis(opts) {
     session.close();
     return result.records.map((record) => {
       let ai = Object.assign({}, record.get(0).properties);
-      ai.label = record.get(1).properties['w3#label[]'];
+      ai.labels = record.get(1);
       return ai;
     });
   });
@@ -28,9 +29,9 @@ function getPublicAis(opts) {
 function getPublicCollections(opts) {
 
   opts = opts || {};
-  let query = `MATCH (aic:aiCollection {public: true})-[:classifies]->(en:entity)
+  let query = `MATCH (aic:aiCollection {public: true})-[:classifies]->(lb:label)
                MATCH (aic)-[:current_ai]->(ai:ai)
-               RETURN aic, en as entity, ai.version as version`;
+               RETURN aic, COLLECT({value: lb.value, label: lb.label}) as labels, ai.version as version ORDER BY aic.name ${opts.dir? opts.dir : 'ASC'}`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
@@ -40,7 +41,7 @@ function getPublicCollections(opts) {
 
     return result.records.map((record) => {
       let aic = Object.assign({}, record.get(0).properties);
-      aic.label = record.get(1).properties['w3#label[]'];
+      aic.labels = record.get(1);
       aic.version = record.get(2);
       return aic;
     });
@@ -48,40 +49,64 @@ function getPublicCollections(opts) {
 
 }
 
-function getPublicCollectionAndAisByGuid(guid) {
+function getPublicCollectionAndAisByGuid(guid, lastActivity) {
 
   let query = `
-  MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(en:entity)
+  MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(lb:label)
   MATCH (aic)-[:has_ai]->(ai:ai {public: true})
-  RETURN aic, ai, en as entity`;
+  RETURN aic, ai, COLLECT({value: lb.value, label: lb.label}) as labels
+  ORDER BY ai.version ASC`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { guid }));
 
   return resultPromise.then(result => {
-    session.close();
 
     let aic = collectionFormatted(result.records);
-    return result.records.map((record) => {
-      aic.ais.push(Object.assign({}, record.get(1).properties));
+    if (!lastActivity) {
+      session.close();
       return aic;
-    })[0];
+    }
+    else {
+      let proms = [];
+      aic.ais.forEach((ai) => {
+        let q = `MATCH (ai:ai {guid: "${ai.guid}"})-[:has_audioWindowSet]->(aws:audioWindowSet) WHERE aws.createdAt IS NOT NULL RETURN aws.createdAt ORDER BY aws.createdAt DESC LIMIT 1`;
+        let prom = Promise
+          .resolve(session.run(q))
+          .then((r) => {
+            if (r && r.records && r.records.length && r.records[0].get(0)) {
+              ai.lastActivity = r.records[0].get(0);
+            }
+            return r;
+          });
+          proms.push(prom);
+      });
+      return Promise.all(proms)
+        .then(() => {
+          session.close();
+          return aic;
+        });
+    }
   });
 
 }
 
 function collectionFormatted(records) {
-  return records.map((record) => {
+  let aic = records.map((record) => {
     let aic = Object.assign({}, record.get(0).properties);
-    aic.ais = new Array();
-    aic.label = record.get(2).properties['w3#label[]'];
+    aic.ais = [];
+    aic.labels = record.get(2);
     return aic;
   })[0];
+  records.forEach((record) => {
+    aic.ais.push(Object.assign({}, record.get(1).properties));
+  });
+  return aic;
 }
 
 function getPublicAiByGuid(guid) {
 
-  let query = `MATCH (ai:ai {public: true, guid: {guid}})-[:classifies]->(en:entity) RETURN ai, en as entity`;
+  let query = `MATCH (ai:ai {public: true, guid: {guid}})-[:classifies]->(lb:label) RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { guid }));
@@ -93,7 +118,7 @@ function getPublicAiByGuid(guid) {
     }
     return result.records.map((record) => {
       let ai = Object.assign({}, record.get(0).properties);
-      ai.label = record.get(1).properties['w3#label[]'];
+      ai.labels = record.get(1);
       return ai;
     })[0];
   });
@@ -105,7 +130,7 @@ function updateAiByGuid(guid, opts) {
 
   opts.guid = guid;
 
-  let query = `MATCH (ai:ai {public: true, guid: {guid}})-[:classifies]->(en:entity) `;
+  let query = `MATCH (ai:ai {public: true, guid: {guid}}) `;
   query = sqlUtils.condAdd(query, opts.stepSeconds !== undefined, ' SET ai.stepSeconds = {stepSeconds}');
   query = sqlUtils.condAdd(query, opts.minWindowsCount !== undefined, ' SET ai.minWindowsCount = {minWindowsCount}');
   query = sqlUtils.condAdd(query, opts.maxWindowsCount !== undefined, ' SET ai.maxWindowsCount = {maxWindowsCount}');
@@ -113,7 +138,8 @@ function updateAiByGuid(guid, opts) {
   query = sqlUtils.condAdd(query, opts.maxConfidence !== undefined, ' SET ai.maxConfidence = {maxConfidence}');
   query = sqlUtils.condAdd(query, opts.minBoxPercent !== undefined, ' SET ai.minBoxPercent = {minBoxPercent}');
   query = sqlUtils.condAdd(query, opts.guardians !== undefined, ' SET ai.guardiansWhitelist = {guardians}');
-  query = sqlUtils.condAdd(query, true, ' RETURN ai, en as entity');
+  query = sqlUtils.condAdd(query, true, ' WITH ai MATCH (ai)-[:classifies]->(lb:label)');
+  query = sqlUtils.condAdd(query, true, ' RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels');
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
@@ -125,7 +151,7 @@ function updateAiByGuid(guid, opts) {
     }
     return result.records.map((record) => {
       let ai = Object.assign({}, record.get(0).properties);
-      ai.label = record.get(1).properties['w3#label[]'];
+      ai.labels = record.get(1);
       return ai;
     })[0];
   });
@@ -145,7 +171,7 @@ function createAi(opts) {
        CREATE (aic)-[:previous_ai]->(ai)
        DELETE cur`;
     let createQuery =
-      `MATCH (aic:aiCollection { guid: "${opts.aiCollectionGuid}" })-[:classifies]->(en:entity)
+      `MATCH (aic:aiCollection { guid: "${opts.aiCollectionGuid}" })
        MATCH (aic)-[:previous_ai]->(prevai:ai)
        CREATE (ai:ai { created: TIMESTAMP(), name: aic.name + " v"+(prevai.version + 1), guid:"${opts.aiGuid}",
          stepSeconds: ${opts.stepSeconds}, minWindowsCount: ${opts.minWindowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
@@ -153,7 +179,9 @@ function createAi(opts) {
          public: ${opts.public}, version: (prevai.version + 1), guardiansWhitelist: {guardiansWhitelist}})
        CREATE (aic)-[:current_ai]->(ai)
        CREATE (aic)-[:has_ai]->(ai)
-       CREATE (ai)-[:classifies]->(en)
+       WITH aic, ai
+       MATCH (aic)-[:classifies]->(lb:label)
+       CREATE (ai)-[:classifies]->(lb)
        RETURN ai, aic`;
 
     proms.push(Promise.resolve(session.run(clearQuery)));
@@ -161,16 +189,17 @@ function createAi(opts) {
   }
   else {
     let createQuery =
-      `MATCH (:\`lemon#LexicalEntry\` { id:"wn/${opts.lexicalEntryId.split(/[#]/)[0]}-n"})-[:\`lemon#sense\`]->({\`wdo#sense_number\`:${opts.lexicalEntryId.slice(-1)}})-[:\`lemon#reference\`]->(valueType) with valueType
-       CREATE (aic:aiCollection { name: "${opts.name}", guid: "${guid.generate()}", public: ${opts.public}, created: TIMESTAMP()})
+      `CREATE (aic:aiCollection { name: "${opts.name}", guid: "${guid.generate()}", public: ${opts.public}, created: TIMESTAMP()})
        CREATE (ai:ai { name:"${opts.name} v1", guid: "${opts.aiGuid}",
          stepSeconds: ${opts.stepSeconds}, minWindowsCount: ${opts.minWindowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
          minConfidence: ${opts.minConfidence}, maxConfidence: ${opts.maxConfidence}, minBoxPercent: ${opts.minBoxPercent},
          public: ${opts.public}, version: 1, guardiansWhitelist: {guardiansWhitelist}})
        CREATE (aic)-[:current_ai]->(ai)
        CREATE (aic)-[:has_ai]->(ai)
-       CREATE (valueType)<-[:classifies]-(aic)
-       CREATE (valueType)<-[:classifies]-(ai)
+       WITH aic, ai
+       UNWIND {labels} as labelValue
+       MATCH (lb:label {value: labelValue})
+       MERGE (aic)-[:classifies]->(lb)<-[:classifies]-(ai)
        RETURN ai, aic`;
     proms.push(Promise.resolve(true)) // stub promise to have same number of results in queue
     proms.push(Promise.resolve(session.run(createQuery, opts)));
@@ -183,9 +212,7 @@ function createAi(opts) {
         throw new EmptyResultError("AI not created.");
       }
       return result[1].records.map((record) => {
-        let ai = Object.assign({}, record.get(0).properties);
-        ai.label = record.get(1).properties['w3#label[]'];
-        return ai;
+        return record.get(0).properties;
       })[0];
   });
 
@@ -193,6 +220,10 @@ function createAi(opts) {
 
 function uploadAIFile(opts) {
   return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket);
+}
+
+function downloadAIFile(opts) {
+  return S3Service.getObject(opts.filePath, opts.fileName, opts.bucket);
 }
 
 module.exports = {
@@ -203,4 +234,5 @@ module.exports = {
   uploadAIFile,
   getPublicCollections,
   getPublicCollectionAndAisByGuid,
+  downloadAIFile,
 };

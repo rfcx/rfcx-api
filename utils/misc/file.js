@@ -5,7 +5,6 @@ var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
 
 function serveFile(res, filePathToServe, fileName, mimeType, inline) {
-
   return new Promise((resolve, reject) => {
     try {
       fs.stat(filePathToServe, (err, stat) => {

@@ -95,6 +95,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: { }
     },
+    is_analyzable: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: true,
+      validate: {}
+    }
   }, {
     classMethods: {
       associate: function(models) {
