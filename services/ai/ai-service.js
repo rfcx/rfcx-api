@@ -49,7 +49,7 @@ function getPublicCollections(opts) {
 
 }
 
-function getPublicCollectionAndAisByGuid(guid) {
+function getPublicCollectionAndAisByGuid(guid, lastActivity) {
 
   let query = `
   MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(lb:label)
@@ -61,24 +61,47 @@ function getPublicCollectionAndAisByGuid(guid) {
   const resultPromise = Promise.resolve(session.run(query, { guid }));
 
   return resultPromise.then(result => {
-    session.close();
 
     let aic = collectionFormatted(result.records);
-    return result.records.map((record) => {
-      aic.ais.push(Object.assign({}, record.get(1).properties));
+    if (!lastActivity) {
+      session.close();
       return aic;
-    })[0];
+    }
+    else {
+      let proms = [];
+      aic.ais.forEach((ai) => {
+        let q = `MATCH (ai:ai {guid: "${ai.guid}"})-[:has_audioWindowSet]->(aws:audioWindowSet) WHERE aws.createdAt IS NOT NULL RETURN aws.createdAt ORDER BY aws.createdAt DESC LIMIT 1`;
+        let prom = Promise
+          .resolve(session.run(q))
+          .then((r) => {
+            if (r && r.records && r.records.length && r.records[0].get(0)) {
+              ai.lastActivity = r.records[0].get(0);
+            }
+            return r;
+          });
+          proms.push(prom);
+      });
+      return Promise.all(proms)
+        .then(() => {
+          session.close();
+          return aic;
+        });
+    }
   });
 
 }
 
 function collectionFormatted(records) {
-  return records.map((record) => {
+  let aic = records.map((record) => {
     let aic = Object.assign({}, record.get(0).properties);
-    aic.ais = new Array();
+    aic.ais = [];
     aic.labels = record.get(2);
     return aic;
   })[0];
+  records.forEach((record) => {
+    aic.ais.push(Object.assign({}, record.get(1).properties));
+  });
+  return aic;
 }
 
 function getPublicAiByGuid(guid) {
