@@ -56,6 +56,27 @@ function formatGuardians(guardians) {
   });
 }
 
+function formatGuardianPublic(guardian) {
+  return {
+    guid: guardian.guid,
+    shortname: guardian.shortname,
+    latitude: guardian.latitude,
+    longitude: guardian.longitude,
+    site: guardian.Site?
+      {
+        guid: guardian.Site.guid,
+        name: guardian.Site.name,
+        timezone: guardian.Site.timezone,
+      } : null,
+  };
+}
+
+function formatGuardiansPublic(guardians) {
+  return guardians.map((guardian) => {
+    return formatGuardianPublic(guardian);
+  });
+}
+
 function updateGuardian(guardian, attrs) {
   let allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible'];
   allowedAttrs.forEach((allowedAttr) => {
@@ -74,5 +95,7 @@ module.exports = {
   getGuardiansByGuids,
   formatGuardian,
   formatGuardians,
+  formatGuardianPublic,
+  formatGuardiansPublic,
   updateGuardian,
 }
