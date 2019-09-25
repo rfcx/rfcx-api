@@ -70,12 +70,12 @@ function getPublicCollectionAndAisByGuid(guid, lastActivity) {
     else {
       let proms = [];
       aic.ais.forEach((ai) => {
-        let q = `MATCH (ai:ai {guid: "${ai.guid}"})-[:has_audioWindowSet]->(aws:audioWindowSet) WHERE aws.createdAt IS NOT NULL RETURN aws.createdAt ORDER BY aws.createdAt DESC LIMIT 1`;
+        let q = `MATCH (ai:ai {guid: "${ai.guid}"})-[:has_audioWindowSet]->(aws:audioWindowSet) WHERE EXISTS(aws.createdAt) RETURN aws ORDER BY aws.createdAt DESC LIMIT 1`;
         let prom = Promise
           .resolve(session.run(q))
           .then((r) => {
             if (r && r.records && r.records.length && r.records[0].get(0)) {
-              ai.lastActivity = r.records[0].get(0);
+              ai.lastActivity = r.records[0].get(0).properties.createdAt;
             }
             return r;
           });
