@@ -176,7 +176,7 @@ function queryData(req) {
   sql = prepareQueryFilters(sql, opts);
 
   sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
-  sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
+  //sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
   return models.sequelize
     .query(sql,
@@ -187,8 +187,18 @@ function queryData(req) {
     })
     .then((reports) => {
       return filterWithTz(opts, reports);
-    });
+    })
+    .then((reports) => {
+      return {
+        total: reports.length,
+        reports: limitAndOffset(opts, reports)
+      };
+    })
 
+}
+
+function limitAndOffset(opts, items) {
+  return items.slice(opts.offset, opts.offset + opts.limit);
 }
 
 function combineReportsWithAttachments(reports) {

@@ -163,16 +163,11 @@ router.route("/:guid/attachments")
 router.route("/")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
 
-    reportsService.countData(req)
-      .bind({})
-      .then((total) => {
-        this.total = total;
-        return reportsService.queryData(req);
-      })
-      .then((reports) => {
+    return reportsService.queryData(req)
+      .then((data) => {
         res.status(200).send({
-          reports: reportsService.formatRawReports(reports),
-          total: this.total,
+          reports: reportsService.formatRawReports(data.reports),
+          total: data.total,
         });
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
