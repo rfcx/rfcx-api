@@ -7,6 +7,7 @@ var loggers = require('../../../utils/logger');
 var ValidationError = require("../../../utils/converter/validation-error");
 var guardianGroupService = require('../../../services/guardians/guardian-group-service');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const sequelize = require("sequelize");
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -62,6 +63,7 @@ router.route("/group/:shortname")
       })
       .then((data) => { res.status(200).json(data); })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message); })
       .catch(e => httpError(req, res, 500, e, e.message || "Could not get GuardianGroup with given shortname."));
 
   });
