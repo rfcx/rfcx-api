@@ -16,8 +16,8 @@ module.exports = function(sequelize, DataTypes) {
     },
   }, {
     classMethods: {
-      associate: function() {
-
+      associate: function(models) {
+        Organization.hasMany(models.GuardianSite, { as: "Site", foreignKey: "organization" });
       },
       indexes: [
         {
