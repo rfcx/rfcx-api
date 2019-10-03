@@ -334,7 +334,7 @@ function getEventInfoByGuid(eventGuid) {
 }
 
 function sendPushNotificationsForEvent(data) {
-  if (moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
+  if (data.ignore_time || moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
     return guardianGroupService.getAllGroupsForGuardianId(data.guardian_id)
       .then((dbGuardianGroups) => {
         dbGuardianGroups.forEach((dbGuardianGroup) => {

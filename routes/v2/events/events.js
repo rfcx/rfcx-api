@@ -108,7 +108,7 @@ router.route("/:guid/trigger")
         this.notificationData = {
           audio_guid: this.eventData.event.audioGuid,
           measured_at: this.eventData.event.audioMeasuredAt,
-          value: this.eventData.label.label,
+          value: this.eventData.label.value,
           guardian_id: this.guardian.id,
           guardian_guid: this.guardian.guid,
           guardian_shortname: this.guardian.shortname,
@@ -117,6 +117,7 @@ router.route("/:guid/trigger")
           site_guid: this.eventData.event.siteGuid,
           ai_guid: this.eventData.ai.guid,
           ai_name: this.eventData.ai.name,
+          ignore_time: req.body.ignore_time !== undefined? (req.body.ignore_time === true) : undefined,
         };
         return eventsServiceNeo4j.sendPushNotificationsForEvent(this.notificationData);
       })
