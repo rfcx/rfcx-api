@@ -18,9 +18,28 @@ function uploadAttachment(opts) {
   });
 }
 
+function removeAttachmentFromS3(opts) {
+  let s3Path = getS3PathForType(opts.type, opts.time);
+  let s3FullPath = `/${s3Path}/${opts.fileName}`;
+  return new Promise((resolve, reject) => {
+    S3Service.deleteObject(opts.bucket, s3FullPath)
+      .then(() => {
+        resolve();
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
 function getS3PathForType(type, time) {
   let momentTime = moment.tz(time, 'UTC');
   return `${type}/${momentTime.format('YYYY')}/${momentTime.format('MM')}/${momentTime.format('DD')}`;
+}
+
+function removeAttachment(opts) {
+  return models.Attachment
+    .destroy({ where: { guid: opts.guid } });
 }
 
 function getAttachmentByGuid(guid) {
@@ -82,6 +101,8 @@ function formatAttachments(attachments) {
 
 module.exports = {
   uploadAttachment,
+  removeAttachmentFromS3,
+  removeAttachment,
   getS3PathForType,
   getAttachmentByGuid,
   findOrCreateAttachmentType,

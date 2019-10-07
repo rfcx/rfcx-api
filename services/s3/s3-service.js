@@ -21,6 +21,16 @@ function putObject(localPath, filename, bucket) {
   });
 }
 
+function deleteObject(bucket, fullPath) {
+  return new Promise((resolve, reject) => {
+      aws.s3(bucket).deleteFile(fullPath, (err, res) => {
+        res.resume();
+        if (err) { return reject(err); }
+        return resolve();
+      });
+  });
+}
+
 function getObject(localPath, filename, bucket) {
   return new Promise((resolve, reject) => {
     try {
@@ -69,4 +79,5 @@ function getObject(localPath, filename, bucket) {
 module.exports = {
   putObject,
   getObject,
+  deleteObject,
 };

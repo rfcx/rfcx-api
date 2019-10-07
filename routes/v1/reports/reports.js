@@ -14,6 +14,7 @@ const guid = require('../../../utils/misc/guid');
 const Converter = require("../../../utils/converter/converter");
 const ValidationError = require("../../../utils/converter/validation-error");
 const httpError = require("../../../utils/http-errors.js");
+const pathCompleteExtname = require('path-complete-extname');
 
 router.route("/")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
@@ -157,6 +158,70 @@ router.route("/:guid/attachments")
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => { console.log(e); httpError(req, res, 500, e, e.message || `Could not save report attachments.`)});
+
+  });
+
+router.route("/delete")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['reportAdmin']), function(req, res) {
+    return reportsService.getReportByGuid(req.body.guid)
+      .then((dbReport) => {
+        this.dbReport = dbReport;
+      })
+      .bind({})
+      .then(() => {
+        let proms = [];
+        if (this.dbReport.Attachments) {
+          let attachments = dbReport.Attachments;
+          let s3Bucket = process.env.ASSET_BUCKET_ATTACHMENT;
+          attachments.forEach((file) => {
+            let extension = pathCompleteExtname(file.url);
+            let prom = attachmentService.removeAttachmentFromS3({
+              fileName: `${file.guid}${extension}`,
+              bucket: s3Bucket,
+              type: file.Type.type,
+              time: file.reported_at,
+            });
+            proms.push(prom);
+          });
+        }
+        return Promise.all(proms);
+      })
+      .then(() => {
+        let proms = [];
+        if (this.dbReport.Attachments) {
+          let attachments = dbReport.Attachments;
+          attachments.forEach((item) => {
+            let prom = attachmentService.removeAttachment({ guid: item.guid });
+            proms.push(prom);
+          });
+        }
+        return Promise.all(proms);
+      })
+      .then(() => {
+        if (this.dbReport && this.dbReport.audio) {
+          let extension = pathCompleteExtname(this.dbReport.audio);
+          let s3Bucket = process.env.ASSET_BUCKET_REPORT;
+          return attachmentService.removeAttachmentFromS3({
+            fileName: `${this.dbReport.guid}${extension}`,
+            bucket: s3Bucket,
+            type: 'audio',
+            time: this.dbReport.reported_at,
+          });
+        }
+        return true;
+      })
+      .then(() => {
+        if (this.dbReport) {
+          return reportsService.removeReportByGuid({guid: this.dbReport.guid});
+        }
+        return false;
+      })
+      .then(() => {
+        res.status(200).send({ success: true });
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not remove report.`));
 
   });
 

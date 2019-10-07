@@ -376,6 +376,11 @@ function attachAttachmentsToReport(attachments, report) {
   return Promise.all(proms);
 }
 
+function removeReportByGuid(opts) {
+  return models.Report
+    .destroy({ where: { guid: opts.guid } });
+}
+
 module.exports = {
   countData,
   queryData,
@@ -386,4 +391,5 @@ module.exports = {
   formatRawReports,
   attachAttachmentsToReport,
   formatReportAttachment,
+  removeReportByGuid,
 };
