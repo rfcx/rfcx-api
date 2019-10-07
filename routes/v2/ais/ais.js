@@ -62,7 +62,6 @@ router.route("/create")
     params.convert('aiCollectionGuid').optional().toString();
     params.convert('aiGuid').toString();
     params.convert('labels').optional().toArray();
-    // params.convert('lexicalEntryId').optional().toString();
     params.convert('stepSeconds').toNonNegativeInt().toFloat();
     params.convert('minWindowsCount').toInt();
     params.convert('maxWindowsCount').toInt();
@@ -71,6 +70,7 @@ router.route("/create")
     params.convert('minBoxPercent').toInt();
     params.convert('public').toBoolean();
     params.convert('guardiansWhitelist').toArray();
+    params.convert('isActive').optional().toBoolean().default(false);
 
     params.validate()
       .then(() => {
@@ -139,6 +139,7 @@ router.route("/:guid")
     params.convert('maxConfidence').toFloat();
     params.convert('minBoxPercent').toInt();
     params.convert('guardians').toArray();
+    params.convert('isActive').optional().toBoolean();
 
     params.validate()
       .then(() => {

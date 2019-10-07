@@ -138,6 +138,7 @@ function updateAiByGuid(guid, opts) {
   query = sqlUtils.condAdd(query, opts.maxConfidence !== undefined, ' SET ai.maxConfidence = {maxConfidence}');
   query = sqlUtils.condAdd(query, opts.minBoxPercent !== undefined, ' SET ai.minBoxPercent = {minBoxPercent}');
   query = sqlUtils.condAdd(query, opts.guardians !== undefined, ' SET ai.guardiansWhitelist = {guardians}');
+  query = sqlUtils.condAdd(query, opts.isActive !== undefined, ' SET ai.isActive = {isActive}');
   query = sqlUtils.condAdd(query, true, ' WITH ai MATCH (ai)-[:classifies]->(lb:label)');
   query = sqlUtils.condAdd(query, true, ' RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels');
 
@@ -176,7 +177,7 @@ function createAi(opts) {
        CREATE (ai:ai { created: TIMESTAMP(), name: aic.name + " v"+(prevai.version + 1), guid:"${opts.aiGuid}",
          stepSeconds: ${opts.stepSeconds}, minWindowsCount: ${opts.minWindowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
          minConfidence: ${opts.minConfidence}, maxConfidence: ${opts.maxConfidence}, minBoxPercent: ${opts.minBoxPercent},
-         public: ${opts.public}, version: (prevai.version + 1), guardiansWhitelist: {guardiansWhitelist}})
+         public: ${opts.public}, isActive: ${opts.isActive}, version: (prevai.version + 1), guardiansWhitelist: {guardiansWhitelist}})
        CREATE (aic)-[:current_ai]->(ai)
        CREATE (aic)-[:has_ai]->(ai)
        WITH aic, ai
@@ -193,7 +194,7 @@ function createAi(opts) {
        CREATE (ai:ai { name:"${opts.name} v1", guid: "${opts.aiGuid}",
          stepSeconds: ${opts.stepSeconds}, minWindowsCount: ${opts.minWindowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
          minConfidence: ${opts.minConfidence}, maxConfidence: ${opts.maxConfidence}, minBoxPercent: ${opts.minBoxPercent},
-         public: ${opts.public}, version: 1, guardiansWhitelist: {guardiansWhitelist}})
+         public: ${opts.public}, isActive: ${opts.isActive}, version: 1, guardiansWhitelist: {guardiansWhitelist}})
        CREATE (aic)-[:current_ai]->(ai)
        CREATE (aic)-[:has_ai]->(ai)
        WITH aic, ai
