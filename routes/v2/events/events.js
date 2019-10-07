@@ -138,6 +138,7 @@ router.route("/:guid/review")
 
     params.convert('confirmed').toBoolean();
     params.convert('windows').toArray();
+    params.convert('unreliable').optional().toBoolean().default(false);
 
     let user = usersService.getUserDataFromReq(req);
     let timestamp = (new Date()).valueOf();
@@ -150,13 +151,13 @@ router.route("/:guid/review")
         return eventsServiceNeo4j.clearEventReview(req.params.guid);
       })
       .then(() => {
-        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp);
+        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp, transformedParams.unreliable);
       })
       .then(() => {
         return eventsServiceNeo4j.clearAudioWindowsReview(transformedParams.windows);
       })
       .then(() => {
-        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp);
+        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp, transformedParams.unreliable);
       })
       .then(() => {
         res.status(200).send({ success: true });
