@@ -161,9 +161,9 @@ router.route("/:guid/attachments")
 
   });
 
-router.route("/delete")
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['reportAdmin']), function(req, res) {
-    return reportsService.getReportByGuid(req.body.guid)
+router.route("/:guid")
+  .delete(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['reportAdmin']), function(req, res) {
+    return reportsService.getReportByGuid(req.params.guid)
       .then((dbReport) => {
         this.dbReport = dbReport;
       })
