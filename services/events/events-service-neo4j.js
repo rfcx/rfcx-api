@@ -170,6 +170,7 @@ function queryData(req) {
           let ai = record.get(1).properties;
           event.aiName = ai.name;
           event.aiGuid = ai.guid;
+          event.aiMinConfidence = ai.minConfidence;
           let assetUrlBase = `${process.env.ASSET_URLBASE}/audio/${event.audioGuid}`;
           event.urls = {
             mp3: `${assetUrlBase}.mp3`,
