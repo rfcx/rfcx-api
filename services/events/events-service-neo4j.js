@@ -140,7 +140,7 @@ function queryData(req) {
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
       query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw');
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) WITH ev, evs, ai, val, COLLECT({start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) WITH ev, evs, ai, val, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
       query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, windows, user, re');
       query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, user, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount');
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
