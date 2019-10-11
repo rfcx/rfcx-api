@@ -51,11 +51,28 @@ function prepareOpts(req) {
     hasConfirmedWindows: req.query.has_confirmed_windows !== undefined? (req.query.has_confirmed_windows === 'true') : undefined,
     hasRejectedWindows: req.query.has_rejected_windows !== undefined? (req.query.has_rejected_windows === 'true') : undefined,
     isUnreliable: req.query.is_unreliable !== undefined? (req.query.is_unreliable === 'true') : undefined,
+    guardianGroups: req.query.guardian_groups? (Array.isArray(req.query.guardian_groups)? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
     order: order? order : 'ev.audioMeasuredAt',
     dir: dir? dir : 'ASC',
   };
 
-  return Promise.resolve(opts);
+  if (opts.guardianGroups) {
+    opts.guardians? opts.guardians : opts.guardians = [];
+    return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
+      .then((groups) => {
+        groups.forEach((group) => {
+          (group.Guardians || []).forEach((guardian) => {
+            if (!opts.guardians.includes(guardian.guid)) {
+              opts.guardians.push(guardian.guid);
+            }
+          });
+        });
+        return Promise.resolve(opts);
+      });
+  }
+  else {
+    return Promise.resolve(opts);
+  }
 
 }
 
