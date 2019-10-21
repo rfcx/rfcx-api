@@ -373,6 +373,7 @@ function sendPushNotificationsForEvent(data) {
                 latitude: `${data.latitude}`,
                 longitude: `${data.longitude}`,
                 guardian_guid: data.guardian_guid,
+                guardian_shortname: data.guardian_shortname,
                 site_guid: data.site_guid,
                 ai_guid: data.ai_guid,
               },
