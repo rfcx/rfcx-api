@@ -161,6 +161,9 @@ var routes = {
     guardians: [
       require("./routes/v2/guardians/guardians"),
     ],
+    streams: [
+      require("./routes/v2/streams/streams"),
+    ],
     tags: [
       require("./routes/v2/tags/tags"),
     ],
