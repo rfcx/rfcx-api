@@ -47,7 +47,11 @@ router.route("/:guardian_id/audio/analysis")
 
         var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : "DESC";
 
-        var dbQuery = { guardian_id: dbGuardian.id };
+        var dbQuery = {
+          site_id: dbGuardian.site_id,
+          guardian_id: dbGuardian.id,
+          format_id: { $not: null},
+        };
         var dateClmn = "measured_at";
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
@@ -74,7 +78,18 @@ router.route("/:guardian_id/audio/analysis")
         return models.GuardianAudio
           .findAll({
             where: dbQuery,
-            include: [ { all: true } ],
+            include: [
+              {
+                model: models.Guardian,
+                as: 'Guardian',
+                attributes: ['guid']
+              },
+              {
+                model: models.GuardianAudioFormat,
+                as: 'Format',
+                attributes: ['file_extension']
+              }
+            ],
             order: [ [dateClmn, dbQueryOrder] ],
             limit: 140000,//req.rfcx.limit,
             offset: req.rfcx.offset
