@@ -545,16 +545,16 @@ router.route("/delete")
         return usersService.getUserByGuid(transformedParams.guid, true);
       })
       .then(() => {
-        return auth0Service.getToken();
-      })
-      .then((token) => {
-        return auth0Service.deleteAuth0User(token, transformedParams.user_id);
-      })
-      .then(() => {
         if (transformedParams.guid === '') {
           return true;
         }
         return usersService.removeUserByGuidFromMySQL({ guid: transformedParams.guid });
+      })
+      .then(() => {
+        return auth0Service.getToken();
+      })
+      .then((token) => {
+        return auth0Service.deleteAuth0User(token, transformedParams.user_id);
       })
       .then(() => {
         res.status(200).json({ success: true });
