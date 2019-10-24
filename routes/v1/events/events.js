@@ -453,6 +453,7 @@ router.route('/')
                         latitude: `${this.dbGuardian.latitude}`,
                         longitude: `${this.dbGuardian.longitude}`,
                         guardian_guid: this.dbGuardian.guid,
+                        guardian_shortname: this.dbGuardian.shortname,
                         site_guid: this.dbSite.guid,
                         ai_guid: this.dbModel.guid,
                       },
