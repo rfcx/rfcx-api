@@ -49,7 +49,7 @@ function getPublicCollections(opts) {
 
 }
 
-function getPublicCollectionAndAisByGuid(guid, lastActivity) {
+function getPublicCollectionAndAisByGuid(guid) {
 
   let query = `
   MATCH (aic:aiCollection { guid: "${guid}" })-[:classifies]->(lb:label)
@@ -61,32 +61,9 @@ function getPublicCollectionAndAisByGuid(guid, lastActivity) {
   const resultPromise = Promise.resolve(session.run(query, { guid }));
 
   return resultPromise.then(result => {
-
     let aic = collectionFormatted(result.records);
-    if (!lastActivity) {
-      session.close();
-      return aic;
-    }
-    else {
-      let proms = [];
-      aic.ais.forEach((ai) => {
-        let q = `MATCH (ai:ai {guid: "${ai.guid}"})-[:has_audioWindowSet]->(aws:audioWindowSet) WHERE EXISTS(aws.createdAt) RETURN aws ORDER BY aws.createdAt DESC LIMIT 1`;
-        let prom = Promise
-          .resolve(session.run(q))
-          .then((r) => {
-            if (r && r.records && r.records.length && r.records[0].get(0)) {
-              ai.lastActivity = r.records[0].get(0).properties.createdAt;
-            }
-            return r;
-          });
-          proms.push(prom);
-      });
-      return Promise.all(proms)
-        .then(() => {
-          session.close();
-          return aic;
-        });
-    }
+    session.close();
+    return aic;
   });
 
 }

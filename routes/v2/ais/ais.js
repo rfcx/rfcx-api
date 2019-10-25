@@ -43,7 +43,7 @@ router.route("/collections")
 router.route("/collections/:guid")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
 
-    return aiService.getPublicCollectionAndAisByGuid(req.params.guid, true)
+    return aiService.getPublicCollectionAndAisByGuid(req.params.guid)
       .then(function(json) {
         res.status(200).send(json);
       })
