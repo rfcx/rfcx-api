@@ -217,7 +217,7 @@ router.route("/register")
               return this.dbGuardian.save();
             })
             .then((dbGuardian) => {
-              if (req.rfcx.auth_token_info.userType === 'auth0') {
+              if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
                 return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
                   .then((user) => {
                     dbGuardian.creator = user.id;
@@ -225,13 +225,35 @@ router.route("/register")
                     return dbGuardian.save();
                   });
               }
-              else { return this.dbGuardian; };
+              else {
+                return this.dbGuardian;
+              };
             })
             .then((dbGuardian) => {
-              res.status(200).json(
-                views.models.guardian(req,res, dbGuardian)
-              );
+              let visibility = dbGuardian.is_private? 'private' : 'public';
+              return models.StreamVisibility
+                .findOrCreate({
+                  where:    { value: visibility },
+                  defaults: { value: visibility }
+                })
+                .spread((dbVisibility) => {
+                  let opts = {
+                    guid: dbGuardian.guid,
+                    name: dbGuardian.shortname,
+                    site: dbGuardian.site_id,
+                    created_by: dbGuardian.creator,
+                    visibility: dbVisibility.id,
+                  }
+                  if (dbGuardian.creator) {
+                    opts.created_by = dbGuardian.creator;
+                  }
+                  return models.Stream
+                    .create(opts);
+                });
             })
+            .then(() => {
+              res.status(200).json(views.models.guardian(req,res, this.dbGuardian));
+            });
         }
       })
       .catch(function(err){
