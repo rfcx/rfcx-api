@@ -29,6 +29,7 @@ router.route("/")
     params.convert('site').toString();
     params.convert('distance').optional().toNonNegativeInt();
     params.convert('age_estimate').toNonNegativeInt();
+    params.convert('notes').optional().toString();
 
     return params.validate()
       .then(() => {

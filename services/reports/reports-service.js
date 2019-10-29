@@ -15,7 +15,7 @@ const attachmentService = require('../attachment/attachment-service');
 
 const reportsQueryBase =
   `SELECT Report.guid, Report.reported_at, Report.created_at, Report.updated_at, Report.lat, Report.long, Report.distance,
-  Report.age_estimate, Report.audio,
+  Report.age_estimate, Report.audio, Report.notes
   CONVERT_TZ(Report.reported_at, "UTC", Site.timezone) as reported_at_local,
   Site.guid AS site_guid, Site.name as site_name, Site.timezone as site_timezone,
   User.guid AS user_guid, User.firstname AS user_firstname, User.lastname AS user_lastname, User.email AS user_email,
@@ -96,6 +96,7 @@ function prepareFilterOpts(req) {
     ageEstimate: req.query.age_estimate,
     minAgeEstimate: req.query.min_age_estimate,
     maxAgeEstimate: req.query.max_age_estimate,
+    notes: req.query.notes,
     hasAudio: req.query.has_audio !== undefined? req.query.has_audio !== 'false' : undefined,
     values: req.query.values? (Array.isArray(req.query.values)? req.query.values : [req.query.values]) : undefined,
     sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
@@ -322,6 +323,7 @@ function formatReport(report) {
     age_estimate: report.age_estimate,
     audio: report.audio,
     value: report.Value.value,
+    notes: report.notes,
     reporter: {
       guid: report.User.guid,
       firstname: report.User.firstname,
@@ -348,6 +350,7 @@ function formatRaWReport(report) {
     age_estimate: report.age_estimate,
     audio: report.audio,
     value: report.value,
+    notes: report.notes,
     reporter: {
       guid: report.user_guid,
       firstname: report.user_firstname,

@@ -80,6 +80,12 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: false,
       validate: { }
+    },
+    notes: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true,
+      defaultValue: null,
+      validate: { }
     }
   }, {
     classMethods: {
