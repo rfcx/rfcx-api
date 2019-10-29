@@ -15,7 +15,7 @@ const attachmentService = require('../attachment/attachment-service');
 
 const reportsQueryBase =
   `SELECT Report.guid, Report.reported_at, Report.created_at, Report.updated_at, Report.lat, Report.long, Report.distance,
-  Report.age_estimate, Report.audio, Report.notes
+  Report.age_estimate, Report.audio, Report.notes,
   CONVERT_TZ(Report.reported_at, "UTC", Site.timezone) as reported_at_local,
   Site.guid AS site_guid, Site.name as site_name, Site.timezone as site_timezone,
   User.guid AS user_guid, User.firstname AS user_firstname, User.lastname AS user_lastname, User.email AS user_email,
