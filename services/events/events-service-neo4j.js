@@ -357,6 +357,9 @@ function getEventInfoByGuid(eventGuid) {
 }
 
 function sendPushNotificationsForEvent(data) {
+  if (data.site_guid !== 'derc') { // TODO: remove this line when we go live
+    return false;
+  }
   if (data.ignore_time || moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
     return guardianGroupService.getAllGroupsForGuardianId(data.guardian_id)
       .then((dbGuardianGroups) => {
