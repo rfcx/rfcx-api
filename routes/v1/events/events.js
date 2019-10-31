@@ -405,11 +405,31 @@ router.route('/')
         attrs.shadow_latitude = data[0].Guardian.latitude;
         attrs.shadow_longitude = data[0].Guardian.longitude;
 
+        attrs.reviewed_by = null;
+        attrs.reviewer_confirmed = null;
+
+        let where = {};
+        if (body.guid) {
+          where = {
+            guid: body.guid
+          };
+        }
+        else {
+          where = {
+            $and: {
+              audio_id: attrs.audio_id,
+              type: attrs.type,
+              value: attrs.value,
+              model: attrs.model,
+              guardian: attrs.guardian,
+              reason_for_creation: attrs.reason_for_creation,
+            }
+          }
+        }
+
         return models.GuardianAudioEvent
           .findOrCreate({
-            where: {
-              guid: body.guid
-            },
+            where,
             defaults: attrs
           })
       })
