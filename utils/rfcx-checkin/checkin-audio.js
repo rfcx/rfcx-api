@@ -323,7 +323,7 @@ exports.audio = {
         let promises = [];
         ais.forEach((ai) => {
           const name = aiService.combineTopicQueueNameForGuid(ai.guid);
-          let prom = aws.publish(name, {
+          const message = {
             guid: audioInfo.audio_guid,
             guardian_guid: dbGuardian.guid,
             guardian_shortname: dbGuardian.shortname,
@@ -335,11 +335,26 @@ exports.audio = {
             sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
             latitude: dbGuardian.latitude,
             longitude: dbGuardian.longitude,
-          })
-          promises.push(prom);
-        })
-        return Promise.all(promises);
-      })
+          };
+          logDebug('queueForTaggingByActiveV3Models message', { name, message });
+          // let prom = aws.publish(name, {
+          //   guid: audioInfo.audio_guid,
+          //   guardian_guid: dbGuardian.guid,
+          //   guardian_shortname: dbGuardian.shortname,
+          //   site_guid: dbGuardian.Site.guid,
+          //   site_timezone: dbGuardian.Site.timezone,
+          //   measured_at: audioInfo.dbAudioObj.measured_at,
+          //   file_extension: audioInfo.dbAudioObj.Format.file_extension,
+          //   capture_sample_count: audioInfo.dbAudioObj.capture_sample_count,
+          //   sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
+          //   latitude: dbGuardian.latitude,
+          //   longitude: dbGuardian.longitude,
+          // })
+          // promises.push(prom);
+        });
+        // return Promise.all(promises);
+        return true;
+      });
 
   },
 
