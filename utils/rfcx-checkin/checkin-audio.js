@@ -315,8 +315,8 @@ exports.audio = {
       .then((ais) => {
         // logDebug('queueForTaggingByActiveV3Models', { audioInfo, dbGuardian, ais });
         // stay only those AIs which have this guardian in guardianWhitelist
-        console.log('\n\n\ndbAudioObj', { dbAudioObj: audioInfo.dbAudioObj }, '\n\n\n');
-        console.log('\n\n\nais', ais, '\n\n\n');
+        // console.log('\n\n\ndbAudioObj', { dbAudioObj: audioInfo.dbAudioObj }, '\n\n\n');
+        // console.log('\n\n\nais', ais, '\n\n\n');
         return ais.filter((ai) => {
           return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid);
         });
@@ -339,23 +339,10 @@ exports.audio = {
             longitude: dbGuardian.longitude,
           };
           console.log('\n\n\nqueueForTaggingByActiveV3Models message', { name, message }, '\n\n\n');
-          // let prom = aws.publish(name, {
-          //   guid: audioInfo.audio_guid,
-          //   guardian_guid: dbGuardian.guid,
-          //   guardian_shortname: dbGuardian.shortname,
-          //   site_guid: dbGuardian.Site.guid,
-          //   site_timezone: dbGuardian.Site.timezone,
-          //   measured_at: audioInfo.dbAudioObj.measured_at,
-          //   file_extension: audioInfo.dbAudioObj.Format.file_extension,
-          //   capture_sample_count: audioInfo.dbAudioObj.capture_sample_count,
-          //   sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
-          //   latitude: dbGuardian.latitude,
-          //   longitude: dbGuardian.longitude,
-          // })
-          // promises.push(prom);
+          let prom = aws.publish(name, message)
+          promises.push(prom);
         });
-        // return Promise.all(promises);
-        return true;
+        return Promise.all(promises);
       });
 
   },
