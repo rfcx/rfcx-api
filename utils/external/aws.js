@@ -75,10 +75,10 @@ exports.aws = function() {
     // publish a topic asynchronously via promise API
     publish: function (topic, message) {
       return new Promise(function (resolve, reject) {
-        that.sns().publish({
-          TopicArn: that.snsTopicArn(topic),
-          Message: JSON.stringify(message)
-        }, function (snsErr, snsData) {
+        const TopicArn = that.snsTopicArn(topic);
+        const Message = JSON.stringify(message);
+        console.log('\n\n SNS PUBLISH', TopicArn, "\n\n", Message, "\n\n");
+        that.sns().publish({ TopicArn, Message }, function (snsErr, snsData) {
           if (!!snsErr && !that.snsIgnoreError()) {
             reject(new Error(snsErr));
           } else {
