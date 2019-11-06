@@ -303,7 +303,7 @@ exports.audio = {
           });
 
         audioInfo.isSaved? audioInfo.isSaved.sqs = true : audioInfo.isSaved = { sqs: true };
-        logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
+        // logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
         return audioInfo;
       });
 
