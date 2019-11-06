@@ -340,6 +340,10 @@ exports.audio = {
           };
           console.log('\n\n\nqueueForTaggingByActiveV3Models message', { name, message }, '\n\n\n');
           let prom = aws.publish(name, message)
+            .then((data) => {
+              console.log('\n\n\nqueueForTaggingByActiveV3Models message status', data, '\n\n\n');
+              return data;
+            })
           promises.push(prom);
         });
         return Promise.all(promises);
