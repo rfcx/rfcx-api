@@ -315,6 +315,7 @@ exports.audio = {
       .then((ais) => {
         // logDebug('queueForTaggingByActiveV3Models', { audioInfo, dbGuardian, ais });
         // stay only those AIs which have this guardian in guardianWhitelist
+        console.log('\n\n\ndbAudioObj', { dbAudioObj }, '\n\n\n');
         console.log('\n\n\nais', ais, '\n\n\n');
         return ais.filter((ai) => {
           return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid);
