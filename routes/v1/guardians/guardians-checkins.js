@@ -205,37 +205,6 @@ router.route("/:guardian_id/checkins")
               audioInfoPostS3Save.timezone = self.dbGuardian.Site? self.dbGuardian.Site.timezone : 'UTC';
               return checkInHelpers.audio.saveToDb(audioInfoPostS3Save)
             })
-            .then(function(audioInfoPostDbSave){
-              // logDebug('Guardian checkins endpoint: saveToDb finished', {
-              //   req: req,
-              //   audioInfoInd: audioInfoInd,
-              //   audioInfoPostDbSave: audioInfoPostDbSave,
-              // });
-              logDebug('[TEMP] Checking site data', {
-                self: self,
-                dbGuardian: self.dbGuardian,
-              });
-              if (!self.dbGuardian || !self.dbGuardian.Site || (self.dbGuardian.Site && self.dbGuardian.Site.is_analyzable)) {
-                // logDebug('[TEMP] queueForTaggingByActiveModels', {
-                //   audioInfoPostDbSave: audioInfoPostDbSave,
-                // });
-                return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave)
-                  .then(() => {
-                    if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
-                      return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfoPostDbSave, self.dbGuardian);
-                    }
-                    else {
-                      return true;
-                    }
-                  })
-                  .then(() => {
-                    return audioInfoPostDbSave;
-                  })
-              }
-              else {
-                return Promise.resolve(audioInfoPostDbSave);
-              }
-            })
             .then(function(audioInfoPostQueue){
               // logDebug('Guardian checkins endpoint: queueForTaggingByActiveModels finished', {
               //   req: req,
@@ -253,6 +222,37 @@ router.route("/:guardian_id/checkins")
               //   audioInfoInd: audioInfoInd,
               // });
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
+            })
+            .then(function(){
+              // logDebug('Guardian checkins endpoint: saveToDb finished', {
+              //   req: req,
+              //   audioInfoInd: audioInfoInd,
+              //   audioInfoPostQueue: audioInfoPostQueue,
+              // });
+              logDebug('[TEMP] Checking site data', {
+                self: self,
+                dbGuardian: self.dbGuardian,
+              });
+              if (!self.dbGuardian || !self.dbGuardian.Site || (self.dbGuardian.Site && self.dbGuardian.Site.is_analyzable)) {
+                // logDebug('[TEMP] queueForTaggingByActiveModels', {
+                //   audioInfoPostQueue: audioInfoPostQueue,
+                // });
+                return checkInHelpers.audio.queueForTaggingByActiveModels(this.audioInfoPostQueue)
+                  .then(() => {
+                    if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
+                      return checkInHelpers.audio.queueForTaggingByActiveV3Models(this.audioInfoPostQueue, self.dbGuardian);
+                    }
+                    else {
+                      return true;
+                    }
+                  })
+                  .then(() => {
+                    return this.audioInfoPostQueue;
+                  })
+              }
+              else {
+                return Promise.resolve(this.audioInfoPostQueue);
+              }
             })
           proms.push(prom);
         }

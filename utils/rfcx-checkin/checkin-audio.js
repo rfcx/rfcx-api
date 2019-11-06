@@ -147,7 +147,7 @@ exports.audio = {
                 audioInfo.wavAudioLocalPath = wavFilePath;
                 exec(process.env.SOX_PATH+"i -s "+audioInfo.wavAudioLocalPath, function(err, stdout, stderr) {
                   if (stderr.trim().length > 0) { console.log(stderr); }
-                  if (!!err) { console.log(err); }
+                  if (!!err) { console.log(err); reject(err) }
 
                   audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
 
@@ -169,7 +169,7 @@ exports.audio = {
             .catch(function(err){
               logError('ExtractAudioFileMeta: audioInfo error', { err: err });
               cleanupCheckInFiles(audioInfo);
-              reject();
+              reject(err);
             });
         });
       } catch(err) {
