@@ -334,10 +334,10 @@ exports.audio = {
             latitude: dbGuardian.latitude,
             longitude: dbGuardian.longitude,
           };
-          console.log('\n\n\nqueueForTaggingByActiveV3Models message', { name, message }, '\n\n\n');
+          console.log('Perception service SNS message', { name, message });
           let prom = aws.publish(name, message)
             .then((data) => {
-              console.log('\n\n\nqueueForTaggingByActiveV3Models message status', data, '\n\n\n');
+              console.log('Perception service SNS message status', data);
               return data;
             })
           promises.push(prom);

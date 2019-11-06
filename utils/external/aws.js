@@ -77,7 +77,6 @@ exports.aws = function() {
       return new Promise(function (resolve, reject) {
         const TopicArn = that.snsTopicArn(topic);
         const Message = JSON.stringify(message);
-        console.log('\n\n SNS PUBLISH', TopicArn, "\n\n", Message, "\n\n");
         that.sns().publish({ TopicArn, Message }, function (snsErr, snsData) {
           if (!!snsErr && !that.snsIgnoreError()) {
             reject(new Error(snsErr));
