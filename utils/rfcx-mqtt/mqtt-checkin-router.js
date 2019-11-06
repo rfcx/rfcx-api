@@ -21,6 +21,7 @@ exports.mqttCheckInRouter = {
     return mqttInputData.parseCheckInInput(data)
       .bind({})
       .then((checkInObj) => {
+        console.log('new checkin', checkInObj);
         checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
         this.checkInObj = checkInObj;
         logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', {
