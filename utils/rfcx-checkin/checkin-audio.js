@@ -313,7 +313,7 @@ exports.audio = {
 
     return aiService.getPublicAis({ isActive: true })
       .then((ais) => {
-        logDebug('queueForTaggingByActiveV3Models', { audioInfo, dbGuardian, ais });
+        // logDebug('queueForTaggingByActiveV3Models', { audioInfo, dbGuardian, ais });
         // stay only those AIs which have this guardian in guardianWhitelist
         return ais.filter((ai) => {
           return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid);
