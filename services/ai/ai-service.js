@@ -212,6 +212,8 @@ function combineTopicQueueNameForGuid(guid) {
 function createSNSSQSStuff(guid) {
   const name = combineTopicQueueNameForGuid(guid);
   let topicARN;
+  let queueARN;
+  let queueUrl;
   return aws.createTopic(name)
     .then((topicData) => {
       topicARN = topicData.TopicArn;
@@ -231,11 +233,36 @@ function createSNSSQSStuff(guid) {
       });
     })
     .then((queueData) => {
-      return aws.getQueueAttributes(queueData.QueueUrl, ['QueueArn']);
+      queueUrl = queueData.QueueUrl;
+      return aws.getQueueAttributes(queueUrl, ['QueueArn']);
     })
     .then((queueAttrs) => {
-      return aws.subscribeToTopic(topicARN, 'sqs', queueAttrs.Attributes.QueueArn);
-    });
+      queueARN = queueAttrs.Attributes.QueueArn
+      return aws.subscribeToTopic(topicARN, 'sqs', queueARN);
+    })
+    .then(() => {
+      const attributes = {
+        "Policy": JSON.stringify({
+          "Version": "2008-10-17",
+          "Id": queueARN + "/SQSDefaultPolicy",
+          "Statement": [{
+            "Sid": "Sid" + new Date().getTime(),
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "SQS:SendMessage",
+            "Resource": queueARN,
+            "Condition": {
+                "ArnEquals": {
+                    "aws:SourceArn": topicARN
+                }
+            }
+          }]
+        })
+      };
+      return aws.setQueueAttributes(queueUrl, attributes);
+    })
 }
 
 function getSNSSQSInfo(guid) {

@@ -167,6 +167,34 @@ exports.aws = function() {
       });
     },
 
+    setQueueAttributes: function(QueueUrl, Attributes) {
+      return new Promise(function (resolve, reject) {
+        that.sqs().setQueueAttributes({ QueueUrl, Attributes }, function(err, data) {
+          if (!!err) {
+            if (err.statusCode === 404) {
+              reject(new EmptyResultError(`Queue with url ${QueueUrl} was not found.`));
+            }
+            reject(new Error(err));
+          }
+          else { resolve(data); }
+        });
+      });
+    },
+
+    addSQSPermission: function(params) {
+      return new Promise(function (resolve, reject) {
+        that.sqs().addPermission(params, function(err, data) {
+          if (!!err) {
+            if (err.statusCode === 404) {
+              reject(new EmptyResultError(`Queue with url ${params.QueueUrl} was not found.`));
+            }
+            reject(new Error(err));
+          }
+          else { resolve(data); }
+        });
+      });
+    },
+
     getQueueUrl: function(name) {
       return new Promise(function (resolve, reject) {
         const QueueName = `${name}-${process.env.NODE_ENV}`
