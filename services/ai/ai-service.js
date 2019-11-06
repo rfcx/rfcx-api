@@ -6,6 +6,7 @@ const neo4j = require('../../utils/neo4j');
 const S3Service = require('../s3/s3-service');
 const guid = require('../../utils/misc/guid');
 const audioUtils = require("../../utils/rfcx-audio").audioUtils;
+const aws = require("../../utils/external/aws.js").aws();
 
 function getPublicAis(opts) {
 
@@ -204,6 +205,105 @@ function downloadAIFile(opts) {
   return S3Service.getObject(opts.filePath, opts.fileName, opts.bucket);
 }
 
+function combineTopicQueueNameForGuid(guid) {
+  return `prediction-svc-${guid}`;
+}
+
+function createSNSSQSStuff(guid) {
+  const name = combineTopicQueueNameForGuid(guid);
+  let topicARN;
+  return aws.createTopic(name)
+    .then((topicData) => {
+      topicARN = topicData.TopicArn;
+      let deadletterQueueName = `${name}-deadletter`;
+      return aws.createQueue(deadletterQueueName);
+    })
+    .then((deadletterQueueData) => {
+      return aws.getQueueAttributes(deadletterQueueData.QueueUrl, ['QueueArn']);
+    })
+    .then((deadletterQueueAttrs) => {
+      return aws.createQueue(name, {
+        VisibilityTimeout: "120",
+        RedrivePolicy: JSON.stringify({
+          deadLetterTargetArn: deadletterQueueAttrs.Attributes.QueueArn,
+          maxReceiveCount: "3"
+        })
+      });
+    })
+    .then((queueData) => {
+      return aws.getQueueAttributes(queueData.QueueUrl, ['QueueArn']);
+    })
+    .then((queueAttrs) => {
+      return aws.subscribeToTopic(topicARN, 'sqs', queueAttrs.Attributes.QueueArn);
+    });
+}
+
+function getSNSSQSInfo(guid) {
+  let result = {
+    'sns-topic': false,
+    'sqs-queue': false,
+    'sqs-deadletter-queue': false,
+    'sqs-deadletter-connection': false,
+    'sns-sqs-subscription': false,
+  };
+
+  const name = combineTopicQueueNameForGuid(guid);
+  const nameDeadletter = `${name}-deadletter`;
+  const topicArn = aws.snsTopicArn(name);
+
+  let queueDeadletterArn, queueArn;
+
+  return aws.getTopicInfo(topicArn)
+    .then((topicInfo) => {
+      result['sns-topic'] = true;
+      return true;
+    })
+    .then(() => {
+      return aws.getQueueUrl(nameDeadletter)
+        .then((data) => {
+          return aws.getQueueAttributes(data.QueueUrl, ['QueueArn'])
+        })
+        .then((deadletterQueueAttrs) => {
+          queueDeadletterArn = deadletterQueueAttrs.Attributes.QueueArn;
+          result['sqs-queue'] = true;
+          return queueDeadletterArn;
+        });
+    })
+    .then(() => {
+      return aws.getQueueUrl(name)
+        .then((data) => {
+          return aws.getQueueAttributes(data.QueueUrl, ['QueueArn', 'RedrivePolicy'])
+        })
+        .then((queueAttrs) => {
+          queueArn = queueAttrs.Attributes.QueueArn;
+          result['sqs-deadletter-queue'] = true;
+          try {
+            let policy = JSON.parse(queueAttrs.Attributes.RedrivePolicy);
+            if (policy.deadLetterTargetArn === queueDeadletterArn) {
+              result['sqs-deadletter-connection'] = true;
+            }
+          }
+          catch (e) { }
+          return queueArn;
+        });
+    })
+    .then(() => {
+      return aws.listSubscriptionsByTopic(topicArn)
+    })
+    .then((subData) => {
+      if (subData && subData.Subscriptions) {
+        let sub = subData.Subscriptions.find((subscr) => {
+          return subscr.Endpoint === queueArn;
+        });
+        if (sub) {
+          result['sns-sqs-subscription'] = true;
+        }
+      }
+      return result;
+    })
+
+}
+
 module.exports = {
   getPublicAis,
   getPublicAiByGuid,
@@ -213,4 +313,6 @@ module.exports = {
   getPublicCollections,
   getPublicCollectionAndAisByGuid,
   downloadAIFile,
+  createSNSSQSStuff,
+  getSNSSQSInfo,
 };

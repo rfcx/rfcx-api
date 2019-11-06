@@ -4,6 +4,7 @@ var S3 = useAWSMocks() ? require("faux-knox") : require("knox");
 var loggers = require('../logger');
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
+const EmptyResultError = require('..//converter/empty-result-error');
 
 exports.aws = function() {
 
@@ -52,6 +53,17 @@ exports.aws = function() {
 
     },
 
+    sqs: function() {
+
+      // Returns a 'AWS.SQS' object.
+      return new AWS.SQS({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_KEY,
+        region: process.env.AWS_REGION_ID
+      });
+
+    },
+
     snsIgnoreError: function() {
       return useAWSMocks();
     },
@@ -68,7 +80,6 @@ exports.aws = function() {
           Message: JSON.stringify(message)
         }, function (snsErr, snsData) {
           if (!!snsErr && !that.snsIgnoreError()) {
-            console.log(snsErr);
             reject(new Error(snsErr));
           } else {
             resolve(snsData);
@@ -79,17 +90,97 @@ exports.aws = function() {
 
     createTopic: function(topic) {
       return new Promise(function (resolve, reject) {
-        that.sns().createTopic({
-          Name: topic + "-" + process.env.NODE_ENV
-        }, function (snsErr, snsData) {
-          if (!!snsErr) {
-            reject(new Error(snsErr));
-          } else {
-            resolve(snsData);
-          }
+        const Name = `${topic}-${process.env.NODE_ENV}`;
+        that.sns().createTopic({ Name }, function (snsErr, snsData) {
+          if (!!snsErr) { reject(new Error(snsErr)); }
+          else { resolve(snsData); }
         });
       });
-    }
+    },
+
+    getTopicInfo: function(TopicArn) {
+      return new Promise(function (resolve, reject) {
+        that.sns().getTopicAttributes({ TopicArn }, function(err, data) {
+          if (!!err) {
+            if (err.statusCode === 404 || err.statusCode === 400) {
+              reject(new EmptyResultError(`Topic with ARN ${TopicArn} was not found.`));
+            }
+            reject(new Error(err));
+          }
+          else { resolve(data); }
+        });
+      });
+    },
+
+    listSubscriptionsByTopic: function(TopicArn) {
+      return new Promise(function (resolve, reject) {
+        that.sns().listSubscriptionsByTopic({ TopicArn }, function(err, data) {
+          if (!!err) { reject(new Error(err)); }
+          else { resolve(data); }
+        });
+      });
+    },
+
+    subscribeToTopic: function(TopicArn, Protocol, Endpoint) {
+      return new Promise(function (resolve, reject) {
+        if (!['http', 'https', 'email', 'email-json', 'sms', 'sqs', 'application', 'lambda'].includes(Protocol)) {
+          return reject(new Error('Invalid protocol for SNS topic subscription'));
+        }
+        that.sns().subscribe({ TopicArn, Protocol, Endpoint }, function (err, data) {
+          if (!!err) { reject(new Error(err)); }
+          else { resolve(data); }
+        });
+      });
+    },
+
+    createQueue: function(name, attrs) {
+      let Attributes = {};
+      let possibleAtts = ['DelaySeconds', 'MaximumMessageSize', 'MessageRetentionPeriod', 'Policy',
+        'ReceiveMessageWaitTimeSeconds', 'RedrivePolicy', 'deadLetterTargetArn', 'maxReceiveCount',
+        'VisibilityTimeout', 'KmsMasterKeyId', 'KmsDataKeyReusePeriodSeconds', 'FifoQueue', 'ContentBasedDeduplication'];
+      for (let key in attrs) {
+        if (possibleAtts.includes(key) && attrs[key] !== undefined) {
+          Attributes[key] = attrs[key];
+        }
+      }
+      const QueueName = `${name}-${process.env.NODE_ENV}`;
+      return new Promise(function (resolve, reject) {
+        that.sqs()
+          .createQueue({ QueueName, Attributes }, function(err, data) {
+            if (!!err) { reject(new Error(err)); }
+            else { resolve(data); }
+          });
+      });
+    },
+
+    getQueueAttributes: function(QueueUrl, AttributeNames) {
+      return new Promise(function (resolve, reject) {
+        that.sqs().getQueueAttributes({ QueueUrl, AttributeNames }, function(err, data) {
+          if (!!err) {
+            if (err.statusCode === 404 || err.statusCode === 400) {
+              reject(new EmptyResultError(`Queue with url ${QueueUrl} was not found.`));
+            }
+            reject(new Error(err));
+          }
+          else { resolve(data); }
+        });
+      });
+    },
+
+    getQueueUrl: function(name) {
+      return new Promise(function (resolve, reject) {
+        const QueueName = `${name}-${process.env.NODE_ENV}`
+        that.sqs().getQueueUrl({ QueueName }, function(err, data) {
+          if (!!err) {
+            if (err.statusCode === 404 || err.statusCode === 400) {
+              reject(new EmptyResultError(`Queue with name ${QueueName} was not found.`));
+            }
+            reject(new Error(err));
+          }
+          else { resolve(data); }
+        });
+      });
+    },
 
   };
   return that;

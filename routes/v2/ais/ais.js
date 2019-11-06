@@ -76,12 +76,49 @@ router.route("/create")
       .then(() => {
         return aiService.createAi(transformedParams);
       })
-      .then((data) => {
-        res.status(200).json(data);
+      .bind({})
+      .then((result) => {
+        this.result = result;
+        return aiService.createSNSSQSStuff(transformedParams.aiGuid);
+      })
+      .then(() => {
+        res.status(200).json(this.result);
       })
       .catch(ValidationError, e => { httpError(req, res, 400, null, e.message)})
       .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message)})
       .catch(e => { httpError(req, res, 500, e, "Error while creating the AI."); console.log(e)});
+
+  });
+
+router.route("/:guid/sns-sqs")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
+
+    return aiService.getPublicAiByGuid(req.params.guid)
+      .then(() => {
+        return aiService.getSNSSQSInfo(req.params.guid);
+      })
+      .then((json) => {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, `Error while getting SNS topic and SQS queue for AI with guid "${req.params.guid}".`); console.log(e) });
+
+  });
+
+router.route("/:guid/sns-sqs")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
+
+    return aiService.getPublicAiByGuid(req.params.guid)
+      .then(() => {
+        return aiService.createSNSSQSStuff(req.params.guid);
+      })
+      .then((json) => {
+        res.status(200).send({ success: true });
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, `Error while creating SNS topic and SQS queue for AI with guid "${req.params.guid}".`); console.log(e) });
 
   });
 
