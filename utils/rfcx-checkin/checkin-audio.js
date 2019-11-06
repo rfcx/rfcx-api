@@ -315,6 +315,7 @@ exports.audio = {
       .then((ais) => {
         // logDebug('queueForTaggingByActiveV3Models', { audioInfo, dbGuardian, ais });
         // stay only those AIs which have this guardian in guardianWhitelist
+        console.log('\n\n\nais', ais, '\n\n\n');
         return ais.filter((ai) => {
           return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid);
         });
@@ -336,7 +337,7 @@ exports.audio = {
             latitude: dbGuardian.latitude,
             longitude: dbGuardian.longitude,
           };
-          logDebug('queueForTaggingByActiveV3Models message', { name, message });
+          console.log('\n\n\nqueueForTaggingByActiveV3Models message', { name, message }, '\n\n\n');
           // let prom = aws.publish(name, {
           //   guid: audioInfo.audio_guid,
           //   guardian_guid: dbGuardian.guid,
