@@ -14,6 +14,7 @@ var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analy
 var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
 var SensationsService = require("../../services/sensations/sensations-service");
 const analysisService = require('../../services/analysis/analysis-service');
+const aiService = require('../../services/ai/ai-service');
 
 const moment = require("moment-timezone");
 var urls = require('../../utils/misc/urls');
@@ -220,7 +221,7 @@ exports.audio = {
         return dbAudioLocal.save();
       })
       .then(function(dbAudio) {
-        return dbAudio.reload();
+        return dbAudio.reload({include: [{ all: true } ]});
       })
       .then(function(dbAudio) {
         audioInfo.isSaved.db = true;
@@ -305,6 +306,40 @@ exports.audio = {
         logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
         return audioInfo;
       });
+
+  },
+
+  queueForTaggingByActiveV3Models: function(audioInfo, dbGuardian) {
+
+    return aiService.getPublicAis({ isActive: true })
+      .then((ais) => {
+        logDebug('queueForTaggingByActiveV3Models', { audioInfo, dbGuardian, ais });
+        // stay only those AIs which have this guardian in guardianWhitelist
+        return ais.filter((ai) => {
+          return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid);
+        });
+      })
+      .then((ais) => {
+        let promises = [];
+        ais.forEach((ai) => {
+          const name = aiService.combineTopicQueueNameForGuid(ai.guid);
+          let prom = aws.publish(name, {
+            guid: audioInfo.audio_guid,
+            guardian_guid: dbGuardian.guid,
+            guardian_shortname: dbGuardian.shortname,
+            site_guid: dbGuardian.Site.guid,
+            site_timezone: dbGuardian.Site.timezone,
+            measured_at: audioInfo.dbAudioObj.measured_at,
+            file_extension: audioInfo.dbAudioObj.Format.file_extension,
+            capture_sample_count: audioInfo.dbAudioObj.capture_sample_count,
+            sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
+            latitude: dbGuardian.latitude,
+            longitude: dbGuardian.longitude,
+          })
+          promises.push(prom);
+        })
+        return Promise.all(promises);
+      })
 
   },
 

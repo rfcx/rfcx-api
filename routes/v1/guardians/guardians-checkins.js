@@ -220,6 +220,17 @@ router.route("/:guardian_id/checkins")
                   audioInfoPostDbSave: audioInfoPostDbSave,
                 });
                 return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfoPostDbSave)
+                  .then(() => {
+                    if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
+                      return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfoPostDbSave, self.dbGuardian);
+                    }
+                    else {
+                      return true;
+                    }
+                  })
+                  .then(() => {
+                    return audioInfoPostDbSave;
+                  })
               }
               else {
                 return Promise.resolve(audioInfoPostDbSave);

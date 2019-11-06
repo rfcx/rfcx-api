@@ -11,7 +11,7 @@ const aws = require("../../utils/external/aws.js").aws();
 function getPublicAis(opts) {
 
   opts = opts || {};
-  let query = `MATCH (ai:ai {public: true})-[:classifies]->(lb:label) RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
+  let query = `MATCH (ai:ai {public: true${opts.isActive? ', isActive: true' : ''}})-[:classifies]->(lb:label) RETURN ai, COLLECT({value: lb.value, label: lb.label}) as labels`;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, opts));
