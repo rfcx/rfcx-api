@@ -1,41 +1,52 @@
 var AWS = require("aws-sdk");
 var S3 = useAWSMocks() ? require("faux-knox") : require("knox");
-
-var loggers = require('../logger');
-var logDebug = loggers.debugLogger.log;
-var logError = loggers.errorLogger.log;
 const EmptyResultError = require('..//converter/empty-result-error');
+
+const _snsClient = new AWS.SNS({
+  accessKeyId:     process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+  region:          process.env.AWS_REGION_ID
+});
+
+const _sqsClient = new AWS.SQS({
+  accessKeyId:     process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+  region:          process.env.AWS_REGION_ID
+});
+
+function useAWSMocks() {
+  return (process.env.NODE_ENV === "test");
+}
+
+function getBucket(bucketName) {
+  return useAWSMocks() ? process.cwd()+"/tmp/faux-knox/"+bucketName+"/" : bucketName;
+}
+
+let s3Clients = {};
+
+function findOrCreateS3Client(bucketName) {
+  if (!s3Clients[bucketName]) {
+    s3Clients[bucketName] = S3.createClient({
+      key: process.env.AWS_ACCESS_KEY_ID,
+      secret: process.env.AWS_SECRET_KEY,
+      region: process.env.AWS_REGION_ID,
+      bucket: getBucket(bucketName)
+    });
+  }
+  return s3Clients[bucketName];
+}
 
 exports.aws = function() {
 
   var that = {
 
     s3: function(bucketName) {
-
-      // Returns a 'knox' object.
-      // See documentation here:
-      // https://www.npmjs.com/package/knox
-      return S3.createClient({
-        key: process.env.AWS_ACCESS_KEY_ID,
-        secret: process.env.AWS_SECRET_KEY,
-        region: process.env.AWS_REGION_ID,
-        bucket: getBucket(bucketName)
-      });
-
+      return findOrCreateS3Client(bucketName);
     },
 
-    s3SignedUrl: function(bucketName,filePath,linkExpirationInMinutes) {
-
-      // Returns a signed url as a string.
-      // See documentation here:
-      // https://www.npmjs.com/package/knox
-      return (useAWSMocks()) ? "s3-mock-signed-url" : S3.createClient({
-        key: process.env.AWS_ACCESS_KEY_ID,
-        secret: process.env.AWS_SECRET_KEY,
-        region: process.env.AWS_REGION_ID,
-        bucket: getBucket(bucketName)
-      }).signedUrl(filePath,new Date((new Date()).valueOf()+(1000*60*linkExpirationInMinutes)));
-
+    s3SignedUrl: function(bucketName, filePath, linkExpirationInMinutes) {
+      return (useAWSMocks()) ? "s3-mock-signed-url" : findOrCreateS3Client(bucketName)
+        .signedUrl(filePath,new Date((new Date()).valueOf()+(1000*60*linkExpirationInMinutes)));
     },
 
     s3ConfirmSave: function(s3Res, savePath) {
@@ -43,25 +54,11 @@ exports.aws = function() {
     },
 
     sns: function() {
-
-      // Returns a 'AWS.SNS' object.
-      return new AWS.SNS({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_KEY,
-        region: process.env.AWS_REGION_ID
-      });
-
+      return _snsClient;
     },
 
     sqs: function() {
-
-      // Returns a 'AWS.SQS' object.
-      return new AWS.SQS({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_KEY,
-        region: process.env.AWS_REGION_ID
-      });
-
+      return _sqsClient;
     },
 
     snsIgnoreError: function() {
@@ -72,7 +69,6 @@ exports.aws = function() {
       return "arn:aws:sns:"+process.env.AWS_REGION_ID+":"+process.env.AWS_ACCOUNT_ID+":"+topicName+"-"+process.env.NODE_ENV;
     },
 
-    // publish a topic asynchronously via promise API
     publish: function (topic, message) {
       return new Promise(function (resolve, reject) {
         const TopicArn = that.snsTopicArn(topic);
@@ -212,13 +208,5 @@ exports.aws = function() {
   };
   return that;
 };
-
-function useAWSMocks() {
-  return (process.env.NODE_ENV === "test");
-}
-
-function getBucket(bucketName) {
-  return useAWSMocks() ? process.cwd()+"/tmp/faux-knox/"+bucketName+"/" : bucketName;
-}
 
 
