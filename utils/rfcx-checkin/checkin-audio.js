@@ -147,7 +147,7 @@ exports.audio = {
                 audioInfo.wavAudioLocalPath = wavFilePath;
                 exec(process.env.SOX_PATH+"i -s "+audioInfo.wavAudioLocalPath, function(err, stdout, stderr) {
                   if (stderr.trim().length > 0) { console.log(stderr); }
-                  if (!!err) { console.log(err); }
+                  if (!!err) { console.log(err); reject(err) }
 
                   audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
 
@@ -169,7 +169,7 @@ exports.audio = {
             .catch(function(err){
               logError('ExtractAudioFileMeta: audioInfo error', { err: err });
               cleanupCheckInFiles(audioInfo);
-              reject();
+              reject(err);
             });
         });
       } catch(err) {
@@ -303,7 +303,7 @@ exports.audio = {
           });
 
         audioInfo.isSaved? audioInfo.isSaved.sqs = true : audioInfo.isSaved = { sqs: true };
-        logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
+        // logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
         return audioInfo;
       });
 
@@ -313,8 +313,6 @@ exports.audio = {
 
     return aiService.getPublicAis({ isActive: true })
       .then((ais) => {
-        logDebug('queueForTaggingByActiveV3Models', { audioInfo, dbGuardian, ais });
-        // stay only those AIs which have this guardian in guardianWhitelist
         return ais.filter((ai) => {
           return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid);
         });
@@ -336,24 +334,15 @@ exports.audio = {
             latitude: dbGuardian.latitude,
             longitude: dbGuardian.longitude,
           };
-          logDebug('queueForTaggingByActiveV3Models message', { name, message });
-          // let prom = aws.publish(name, {
-          //   guid: audioInfo.audio_guid,
-          //   guardian_guid: dbGuardian.guid,
-          //   guardian_shortname: dbGuardian.shortname,
-          //   site_guid: dbGuardian.Site.guid,
-          //   site_timezone: dbGuardian.Site.timezone,
-          //   measured_at: audioInfo.dbAudioObj.measured_at,
-          //   file_extension: audioInfo.dbAudioObj.Format.file_extension,
-          //   capture_sample_count: audioInfo.dbAudioObj.capture_sample_count,
-          //   sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
-          //   latitude: dbGuardian.latitude,
-          //   longitude: dbGuardian.longitude,
-          // })
-          // promises.push(prom);
+          console.log('Perception service SNS message', { name, message });
+          let prom = aws.publish(name, message)
+            .then((data) => {
+              console.log('Perception service SNS message status', data);
+              return data;
+            })
+          promises.push(prom);
         });
-        // return Promise.all(promises);
-        return true;
+        return Promise.all(promises);
       });
 
   },

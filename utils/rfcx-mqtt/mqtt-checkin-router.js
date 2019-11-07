@@ -91,7 +91,7 @@ exports.mqttCheckInRouter = {
           audio_sha1_checksum: this.checkInObj.audio.meta.sha1CheckSum,
           dbAudioObj: this.checkInObj.db.dbAudio,
         };
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels:audioInfo', { audioInfo });
+        // logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels:audioInfo', { audioInfo });
         return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfo)
           .then(() => {
             if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {

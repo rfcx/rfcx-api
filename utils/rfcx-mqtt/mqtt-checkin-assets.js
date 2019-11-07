@@ -36,7 +36,7 @@ exports.checkInAssets = {
             s3Path: assetUtils.getGuardianAssetStoragePath( "audio", new Date(parseInt(checkInObj.audio.metaArr[1])), checkInObj.json.guardian_guid, checkInObj.audio.metaArr[2])
           };
 
-          audioUtils.transcodeToFile( "wav", {
+          return audioUtils.transcodeToFile( "wav", {
             sourceFilePath: checkInObj.audio.filePath,
             sampleRate: checkInObj.audio.meta.sampleRate
           })
@@ -46,7 +46,7 @@ exports.checkInAssets = {
 
               exec(process.env.SOX_PATH+"i -s "+wavFilePath, function(err, stdout, stderr) {
                 if (stderr.trim().length > 0) { console.log(stderr); }
-                if (!!err) { console.log(err); }
+                if (!!err) { console.log(err); reject(err); }
 
                 checkInObj.audio.meta.captureSampleCount = parseInt(stdout.trim());
                 assetUtils.deleteLocalFileFromFileSystem(wavFilePath);
@@ -60,7 +60,7 @@ exports.checkInAssets = {
         });
       } catch(err) {
         logError('ExtractAudioFileMeta: common error', { err: err });
-        reject();
+        reject(err);
       }
     }.bind(this));
   }

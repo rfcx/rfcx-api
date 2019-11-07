@@ -212,6 +212,8 @@ function combineTopicQueueNameForGuid(guid) {
 function createSNSSQSStuff(guid) {
   const name = combineTopicQueueNameForGuid(guid);
   let topicARN;
+  let queueARN;
+  let queueUrl;
   return aws.createTopic(name)
     .then((topicData) => {
       topicARN = topicData.TopicArn;
@@ -231,11 +233,36 @@ function createSNSSQSStuff(guid) {
       });
     })
     .then((queueData) => {
-      return aws.getQueueAttributes(queueData.QueueUrl, ['QueueArn']);
+      queueUrl = queueData.QueueUrl;
+      return aws.getQueueAttributes(queueUrl, ['QueueArn']);
     })
     .then((queueAttrs) => {
-      return aws.subscribeToTopic(topicARN, 'sqs', queueAttrs.Attributes.QueueArn);
-    });
+      queueARN = queueAttrs.Attributes.QueueArn
+      return aws.subscribeToTopic(topicARN, 'sqs', queueARN);
+    })
+    .then(() => {
+      const attributes = {
+        "Policy": JSON.stringify({
+          "Version": "2008-10-17",
+          "Id": queueARN + "/SQSDefaultPolicy",
+          "Statement": [{
+            "Sid": "Sid" + new Date().getTime(),
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "SQS:SendMessage",
+            "Resource": queueARN,
+            "Condition": {
+                "ArnEquals": {
+                    "aws:SourceArn": topicARN
+                }
+            }
+          }]
+        })
+      };
+      return aws.setQueueAttributes(queueUrl, attributes);
+    })
 }
 
 function getSNSSQSInfo(guid) {
@@ -245,6 +272,7 @@ function getSNSSQSInfo(guid) {
     'sqs-deadletter-queue': false,
     'sqs-deadletter-connection': false,
     'sns-sqs-subscription': false,
+    'sqs-sns-policy': false,
   };
 
   const name = combineTopicQueueNameForGuid(guid);
@@ -265,21 +293,32 @@ function getSNSSQSInfo(guid) {
         })
         .then((deadletterQueueAttrs) => {
           queueDeadletterArn = deadletterQueueAttrs.Attributes.QueueArn;
-          result['sqs-queue'] = true;
+          result['sqs-deadletter-queue'] = true;
           return queueDeadletterArn;
         });
     })
     .then(() => {
       return aws.getQueueUrl(name)
         .then((data) => {
-          return aws.getQueueAttributes(data.QueueUrl, ['QueueArn', 'RedrivePolicy'])
+          return aws.getQueueAttributes(data.QueueUrl, ['QueueArn', 'Policy', 'RedrivePolicy'])
         })
         .then((queueAttrs) => {
           queueArn = queueAttrs.Attributes.QueueArn;
-          result['sqs-deadletter-queue'] = true;
+          result['sqs-queue'] = true;
           try {
-            let policy = JSON.parse(queueAttrs.Attributes.RedrivePolicy);
-            if (policy.deadLetterTargetArn === queueDeadletterArn) {
+            let policy = JSON.parse(queueAttrs.Attributes.Policy);
+            let st = policy.Statement.find((statement) => {
+              return statement.Effect === 'Allow' && statement.Action === 'SQS:SendMessage'
+                && statement.Condition.ArnEquals['aws:SourceArn'] === topicArn;
+            });
+            if (st) {
+              result['sqs-sns-policy'] = true;
+            }
+          }
+          catch (e) { }
+          try {
+            let redrivePolicy = JSON.parse(queueAttrs.Attributes.RedrivePolicy);
+            if (redrivePolicy.deadLetterTargetArn === queueDeadletterArn) {
               result['sqs-deadletter-connection'] = true;
             }
           }
@@ -315,4 +354,5 @@ module.exports = {
   downloadAIFile,
   createSNSSQSStuff,
   getSNSSQSInfo,
+  combineTopicQueueNameForGuid,
 };
