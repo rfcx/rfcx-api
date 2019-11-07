@@ -112,7 +112,7 @@ router.route("/kmz")
       type: '',
       coordinates: []
     };
-    let allowedExtensions = ['.kmz', '.kml'];
+    let allowedExtensions = ['.kmz'];
     let file = req.files.file;
     if (!file) {
       return httpError(req, res, 400, null, 'No file provided.');
@@ -122,37 +122,49 @@ router.route("/kmz")
       return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`);
     }
     let filePath = req.files.file.path;
-    return new Promise((resolve, reject) => {
-      kmzService.toGeoJSON(filePath, (err, data) => {
-        if (err) {
-          return reject(err);
+    return kmzService.toGeoJSON(filePath)
+      .then((data) => {
+        if ((data.features.length === 1) && (data.features[0].geometry.type === 'Point')) {
+          let msg = 'Wrong format of bounds. It should be as Polygon or MultiPlygon types';
+          throw new Error(msg);
         }
-        else if (data) {
-          if (data.features.length === 1 && data.features[0].geometry && !data.features[0].geometry.coordinates[0][0]) {
-            let msg = 'Wrong format of bounds. It should be: [[[num1,num2,num3], [num1,num2,num3],[num1,num2,num3]]]';
-            return reject(new Error(msg));
-          }
-          if (data.features.length && data.features.length === 1) {
-            data.features.forEach((item) => {
-              let coord = item.geometry.coordinates[0].map((arr) => {
-                return arr.splice(0,arr.length-1);
-              })
-              bounds.coordinates = coord;
+        else if (data.features.length && data.features.length === 1 && (data.features[0].geometry.coordinates.length !== 3)) {
+          data.features.forEach((item) => {
+            let coord = item.geometry.coordinates[0].map((arr) => {
+              return arr.splice(0,arr.length-1);
             })
-            bounds.type = 'Polygon';
-          }
-          else {
-            data.features.forEach((item) => {
-              let coord = item.geometry.coordinates[0].map((arr) => {
-                return arr.splice(0,arr.length-1);
-              })
+            bounds.coordinates = coord;
+          })
+          bounds.type = 'Polygon';
+        }
+        else {
+          data.features.forEach((item) => {
+            if (item.geometry.type !== 'Point') {
+              //for Polygon in MultiPolygon
+              let coord;
+              if (item.geometry.type === 'Polygon') {
+                coord = item.geometry.coordinates[0].map((arr) => {
+                  return arr.splice(0,arr.length-1);
+                })
+              }
+              else {
+                //for LineString in MultiPolygon
+                if (item.geometry.type === 'Polygon') {
+
+                }
+                coord = item.geometry.coordinates.map((arr) => {
+                  return arr.splice(0,arr.length-1);
+                })
+              }
               bounds.coordinates.push(coord);
-            })
-            bounds.type = 'MultiPolygon';
-          }
+            }
+            else {
+              //for Point in MultiPolygon
+              return Promise.resolve();
+            }
+          })
+          bounds.type = 'MultiPolygon';
         }
-        resolve();
-      });
     })
     .then(() => { res.status(200).json(bounds) })
     .catch(e => { console.log(e); httpError(req, res, 500, e, e.message || `File couldn't be uploaded.`)});
