@@ -113,8 +113,8 @@ function getPasswordData(password) {
   };
 }
 
-function updateMySQLUserPassword(password, guid) {
-  return getUserByGuid(guid)
+function updateMySQLUserPassword(password, email, guid) {
+  return getUserByGuidOrEmail(guid, email)
     .then((user) => {
       let passwordData = getPasswordData(password);
       user.auth_password_salt = passwordData.auth_password_salt;

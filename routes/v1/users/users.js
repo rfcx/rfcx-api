@@ -846,12 +846,13 @@ router.route("/auth0/update-users")
         })
         .bind({})
         .then((token) => {
+          this.token = token
           this.password = hash.randomString(50);
           console.log('\n\nthis.password', this.password, "\n\n");
-          return auth0Service.updateAuth0UserPassword(token, transformedParams, this.password);
+          return usersService.updateMySQLUserPassword(this.password, transformedParams.email, transformedParams.guid);
         })
         .then(() => {
-          return usersService.updateMySQLUserPassword(this.password, transformedParams.guid);
+          return auth0Service.updateAuth0UserPassword(this.token, transformedParams, this.password);
         })
         .then((user) => {
           return mailService.sendTextMail({
@@ -871,6 +872,41 @@ router.route("/auth0/update-users")
         });
 
   });
+
+router.route("/change-user-password")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('guid').toString();
+    params.convert('user_id').toString();
+    params.convert('email').toString();
+    params.convert('password').toString();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getToken();
+      })
+      .bind({})
+      .then((token) => {
+        this.token = token
+        return usersService.updateMySQLUserPassword(transformedParams.password, transformedParams.email, transformedParams.guid);
+      })
+      .then(() => {
+        return auth0Service.updateAuth0UserPassword(this.token, transformedParams, transformedParams.password);
+      })
+      .then((data) => {
+        res.status(200).json({ success: true });
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch((err) => {
+        res.status(500).json({ err });
+      });
+
+});
+
 
 router.route("/auth0/users")
   .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
