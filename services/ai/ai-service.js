@@ -272,6 +272,7 @@ function getSNSSQSInfo(guid) {
     'sqs-deadletter-queue': false,
     'sqs-deadletter-connection': false,
     'sns-sqs-subscription': false,
+    'sqs-sns-policy': false,
   };
 
   const name = combineTopicQueueNameForGuid(guid);
@@ -292,21 +293,32 @@ function getSNSSQSInfo(guid) {
         })
         .then((deadletterQueueAttrs) => {
           queueDeadletterArn = deadletterQueueAttrs.Attributes.QueueArn;
-          result['sqs-queue'] = true;
+          result['sqs-deadletter-queue'] = true;
           return queueDeadletterArn;
         });
     })
     .then(() => {
       return aws.getQueueUrl(name)
         .then((data) => {
-          return aws.getQueueAttributes(data.QueueUrl, ['QueueArn', 'RedrivePolicy'])
+          return aws.getQueueAttributes(data.QueueUrl, ['QueueArn', 'Policy', 'RedrivePolicy'])
         })
         .then((queueAttrs) => {
           queueArn = queueAttrs.Attributes.QueueArn;
-          result['sqs-deadletter-queue'] = true;
+          result['sqs-queue'] = true;
           try {
-            let policy = JSON.parse(queueAttrs.Attributes.RedrivePolicy);
-            if (policy.deadLetterTargetArn === queueDeadletterArn) {
+            let policy = JSON.parse(queueAttrs.Attributes.Policy);
+            let st = policy.Statement.find((statement) => {
+              return statement.Effect === 'Allow' && statement.Action === 'SQS:SendMessage'
+                && statement.Condition.ArnEquals['aws:SourceArn'] === topicArn;
+            });
+            if (st) {
+              result['sqs-sns-policy'] = true;
+            }
+          }
+          catch (e) { }
+          try {
+            let redrivePolicy = JSON.parse(queueAttrs.Attributes.RedrivePolicy);
+            if (redrivePolicy.deadLetterTargetArn === queueDeadletterArn) {
               result['sqs-deadletter-connection'] = true;
             }
           }
