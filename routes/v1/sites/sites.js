@@ -11,6 +11,9 @@ var Converter = require("../../../utils/converter/converter");
 var ValidationError = require("../../../utils/converter/validation-error");
 const userService = require('../../../services/users/users-service');
 const sitesService = require('../../../services/sites/sites-service');
+const kmzService = require('../../../services/kmz/kmz-service');
+const Promise = require("bluebird");
+const pathCompleteExtname = require('path-complete-extname');
 
 router.route("/")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
@@ -102,6 +105,72 @@ router.route("/:site_id")
   })
 ;
 
+router.route("/kmz")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), function (req, res) {
+
+    let bounds = {
+      type: '',
+      coordinates: []
+    };
+    let allowedExtensions = ['.kmz'];
+    let file = req.files.file;
+    if (!file) {
+      return httpError(req, res, 400, null, 'No file provided.');
+    }
+    let extension = pathCompleteExtname(file.originalname);
+    if (!allowedExtensions.includes(extension)) {
+      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`);
+    }
+    let filePath = req.files.file.path;
+    return kmzService.toGeoJSON(filePath)
+      .then((data) => {
+        if ((data.features.length === 1) && (data.features[0].geometry.type === 'Point')) {
+          let msg = 'Wrong format of bounds. It should be as Polygon or MultiPolygon types';
+          throw new Error(msg);
+        }
+        else if (data.features.length && data.features.length === 1 && (data.features[0].geometry.coordinates.length !== 3)) {
+          data.features.forEach((item) => {
+            let coord = item.geometry.coordinates[0].map((arr) => {
+              return arr.splice(0,arr.length-1);
+            })
+            bounds.coordinates = coord;
+          })
+          bounds.type = 'Polygon';
+        }
+        else {
+          data.features.forEach((item) => {
+            if (item.geometry.type !== 'Point') {
+              //for Polygon in MultiPolygon
+              let coord;
+              if (item.geometry.type === 'Polygon') {
+                coord = item.geometry.coordinates[0].map((arr) => {
+                  return arr.splice(0,arr.length-1);
+                })
+              }
+              else {
+                //for LineString in MultiPolygon
+                if (item.geometry.type === 'Polygon') {
+
+                }
+                coord = item.geometry.coordinates.map((arr) => {
+                  return arr.splice(0,arr.length-1);
+                })
+              }
+              bounds.coordinates.push(coord);
+            }
+            else {
+              //for Point in MultiPolygon
+              return Promise.resolve();
+            }
+          })
+          bounds.type = 'MultiPolygon';
+        }
+    })
+    .then(() => { res.status(200).json(bounds) })
+    .catch(e => { console.log(e); httpError(req, res, 500, e, e.message || `File couldn't be uploaded.`)});
+  });
+
+
 router.route("/:guid")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['guardiansSitesAdmin']), function(req, res) {
 
@@ -111,7 +180,7 @@ router.route("/:guid")
     params.convert('name').optional().toString();
     params.convert('description').optional().toString();
     params.convert('timezone').optional().toString();
-    params.convert('bounds').optional().toArray();
+    params.convert('bounds').optional();
     params.convert('map_image_url').optional().toString();
     params.convert('globe_icon_url').optional().toString();
     params.convert('classy_campaign_id').optional().toString();
@@ -174,7 +243,7 @@ router.route("/")
     params.convert('name').toString();
     params.convert('description').optional().toString();
     params.convert('timezone').toString().isValidTimezone();
-    params.convert('bounds').optional().toArray();
+    params.convert('bounds').optional();
     params.convert('map_image_url').optional().toString();
     params.convert('globe_icon_url').optional().toString();
     params.convert('classy_campaign_id').optional().toString();
