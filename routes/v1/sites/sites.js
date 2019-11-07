@@ -125,7 +125,7 @@ router.route("/kmz")
     return kmzService.toGeoJSON(filePath)
       .then((data) => {
         if ((data.features.length === 1) && (data.features[0].geometry.type === 'Point')) {
-          let msg = 'Wrong format of bounds. It should be as Polygon or MultiPlygon types';
+          let msg = 'Wrong format of bounds. It should be as Polygon or MultiPolygon types';
           throw new Error(msg);
         }
         else if (data.features.length && data.features.length === 1 && (data.features[0].geometry.coordinates.length !== 3)) {
