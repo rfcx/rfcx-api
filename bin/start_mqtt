@@ -8,6 +8,7 @@ var appId = "rfcx-api-mqtt";
 var debug = require("debug")(appId);
 var app = require("../app-mqtt.js");
 var models = require("../models");
+const guidService = require('../utils/misc/guid.js');
 
 const loggers = require('../utils/logger');
 const logDebug = loggers.debugLogger.log;
@@ -50,23 +51,29 @@ app.mqtt.on("error", function(err){
 var mqttCheckInRouter = require("../utils/rfcx-mqtt/mqtt-checkin-router.js").mqttCheckInRouter;
 
 app.mqtt.on("message", (topic, data) => {
+  let messageId = guidService.generate();
   logDebug('new mqtt message', { topic });
   if (topic === "guardians/checkins") {
     logDebug('mqtt message', { topic });
 
-    mqttCheckInRouter.onMessageCheckin(data)
+    let messageData;
+    let rootCheckinObj;
+
+    mqttCheckInRouter.onMessageCheckin(rootCheckinObj, data, messageId)
       .then((checkInObj) => {
+        messageData = checkInObj;
         logDebug('mqtt message return object', {
           guardian_guid: checkInObj.json.guardian_guid,
           returnObj: checkInObj.rtrn
         });
         app.mqtt.publish(`guardians/${checkInObj.json.guardian_guid}/guardian/checkins`, checkInObj.rtrn.gzip);
+        messageData = null;
       })
       .catch((err) => {
         // TODO: We need to send a report back to guardian with error information here
         logDebug('mqtt message return object', err);
-        logError('mqtt message error', err);
-        console.log('mqtt message error', err, data);
+        logError('mqtt message error', { err, messageData: JSON.stringify(messageData)});
+        messageData = null;
       });
   }
 });

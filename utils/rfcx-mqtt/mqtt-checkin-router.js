@@ -12,18 +12,18 @@ var SensationsService = require('../../services/sensations/sensations-service')
 
 exports.mqttCheckInRouter = {
 
-   onMessageCheckin: (data) => {
+   onMessageCheckin: (rootCheckinObj, data, messageId) => {
 
     logDebug('mqttCheckInRouter => onMessageCheckin', data);
     // cached file garbage collection... only do garbage collection ~1% of the time
     if (Math.random() < 0.01 ? true : false) { cachedFiles.cacheDirectoryGarbageCollection(); }
 
     return mqttInputData.parseCheckInInput(data)
-      .bind({})
       .then((checkInObj) => {
         checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
-        this.checkInObj = checkInObj;
+        rootCheckinObj = checkInObj;
         logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', {
+          messageId,
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           checkInObjJson: JSON.parse(JSON.stringify(checkInObj.json)),
         });
@@ -31,6 +31,7 @@ exports.mqttCheckInRouter = {
       })
       .then((checkInObj) => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', {
+          messageId,
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           guardian: checkInObj.db.dbGuardian.guid,
           site_id: checkInObj.db.dbGuardian.site_id,
@@ -39,6 +40,7 @@ exports.mqttCheckInRouter = {
       })
       .then((checkInObj) => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbSite', {
+          messageId,
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           site: checkInObj.db.dbSite.guid,
         });
@@ -46,57 +48,59 @@ exports.mqttCheckInRouter = {
       })
       .then((checkInObj) => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> extractAudioFileMeta', {
+          messageId,
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           audioMeta: JSON.parse(JSON.stringify(checkInObj.audio.meta)),
         });
         return checkInDatabase.setGuardianCoordinates(checkInObj)
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> setGuardianCoordinates', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        return checkInDatabase.createDbCheckIn(this.checkInObj);
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> setGuardianCoordinates', { messageId, checkInObj: JSON.parse(JSON.stringify(rootCheckinObj.rtrn))});
+        return checkInDatabase.createDbCheckIn(rootCheckinObj);
       })
       .then((checkInObj) => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbCheckIn', {
+          messageId,
           checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
           checkInGuid: checkInObj.db.dbCheckIn.guid,
         });
         return checkInDatabase.saveDbMessages(checkInObj);
       })
       .then((savedMsgs) => {
-        this.checkInObj.rtrn.obj.messages = savedMsgs;
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> saveDbMessages', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        return checkInDatabase.createDbSaveMeta(this.checkInObj);
+        rootCheckinObj.rtrn.obj.messages = savedMsgs;
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> saveDbMessages', { messageId, checkInObj: JSON.parse(JSON.stringify(rootCheckinObj.rtrn))});
+        return checkInDatabase.createDbSaveMeta(rootCheckinObj);
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbSaveMeta', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        return checkInDatabase.createDbAudio(this.checkInObj);
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbSaveMeta', { messageId, checkInObj: JSON.parse(JSON.stringify(rootCheckinObj.rtrn))});
+        return checkInDatabase.createDbAudio(rootCheckinObj);
       })
       .then((checkInObj) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbAudio', { checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbAudio', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
         return checkInDatabase.createDbScreenShot(checkInObj)
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbScreenShot', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        return checkInDatabase.createDbLogFile(this.checkInObj)
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbScreenShot', { messageId, checkInObj: JSON.parse(JSON.stringify(rootCheckinObj.rtrn))});
+        return checkInDatabase.createDbLogFile(rootCheckinObj)
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        if (this.checkInObj && this.checkInObj.db && this.checkInObj.db.dbAudio && this.checkInObj.audio && this.checkInObj.audio.meta) {
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { messageId, checkInObj: JSON.parse(JSON.stringify(rootCheckinObj.rtrn))});
+        if (rootCheckinObj && rootCheckinObj.db && rootCheckinObj.db.dbAudio && rootCheckinObj.audio
+              && rootCheckinObj.audio.meta && rootCheckinObj.db.dbGuardian) {
           let audioInfo = {
-            audio_guid: this.checkInObj.db.dbAudio.guid,
-            audio_id: this.checkInObj.db.dbAudio.id,
+            audio_guid: rootCheckinObj.db.dbAudio.guid,
+            audio_id: rootCheckinObj.db.dbAudio.id,
             api_url_domain: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}`,
             audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-            audio_s3_path: this.checkInObj.audio.meta.s3Path,
-            s3Path: this.checkInObj.audio.meta.s3Path,
-            audio_sha1_checksum: this.checkInObj.audio.meta.sha1CheckSum,
-            dbAudioObj: this.checkInObj.db.dbAudio,
+            audio_s3_path: rootCheckinObj.audio.meta.s3Path,
+            s3Path: rootCheckinObj.audio.meta.s3Path,
+            audio_sha1_checksum: rootCheckinObj.audio.meta.sha1CheckSum,
+            dbAudioObj: rootCheckinObj.db.dbAudio,
           };
-          // logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels:audioInfo', { audioInfo });
           return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfo)
             .then(() => {
               if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
-                return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfo, this.checkInObj.db.dbGuardian)
+                return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfo, rootCheckinObj.db.dbGuardian)
               }
               else {
                 return true;
@@ -104,20 +108,20 @@ exports.mqttCheckInRouter = {
             });
         }
         else {
-          console.log('Cannot create analysis message. Invalid incoming data', this.checkInObj.rtrn);
+          logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile: Cannot send SNS message. Data is invalid', {});
         }
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        return checkInDatabase.finalizeCheckIn(this.checkInObj);
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels', { messageId, checkInObj: JSON.parse(JSON.stringify(rootCheckinObj.rtrn))});
+        return checkInDatabase.finalizeCheckIn(rootCheckinObj);
       })
       .then(() => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        return SensationsService.createSensationsFromGuardianAudio(this.checkInObj.db.dbAudio.guid);
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> finalizeCheckIn', { messageId,checkInObj: JSON.parse(JSON.stringify(rootCheckinObj.rtrn))});
+        return SensationsService.createSensationsFromGuardianAudio(rootCheckinObj.db.dbAudio.guid);
       })
       .then((sensations) => {
-        logDebug('mqttCheckInRouter -> onMessageCheckin -> createSensationsFromGuardianAudio', { sensations });
-        return mqttPublish.processAndCompressPublishJson(this.checkInObj)
+        logDebug('mqttCheckInRouter -> onMessageCheckin -> createSensationsFromGuardianAudio', { messageId, sensations });
+        return mqttPublish.processAndCompressPublishJson(rootCheckinObj)
       })
   }
 

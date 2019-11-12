@@ -288,7 +288,7 @@ exports.checkInDatabase = {
 
       return checkInObj.db.dbGuardian.save()
         .then(() => {
-          return checkInObj.db.dbGuardian.reload();
+          return checkInObj.db.dbGuardian.reload({include: [{ all: true } ]});
         });
     }
     else {
@@ -313,8 +313,8 @@ exports.checkInDatabase = {
     ])
       .then(() => {
         return Promise.all([
-          checkInObj.db.dbGuardian.reload(),
-          checkInObj.db.dbCheckIn.reload()
+          checkInObj.db.dbGuardian.reload({include: [{ all: true } ]}),
+          checkInObj.db.dbCheckIn.reload({include: [{ all: true } ]})
         ])
       });
 
