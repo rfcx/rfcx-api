@@ -66,6 +66,7 @@ app.mqtt.on("message", (topic, data) => {
         // TODO: We need to send a report back to guardian with error information here
         logDebug('mqtt message return object', err);
         logError('mqtt message error', err);
+        console.log('mqtt message error', err);
       });
   }
 });
