@@ -81,26 +81,31 @@ exports.mqttCheckInRouter = {
       })
       .then(() => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
-        let audioInfo = {
-          audio_guid: this.checkInObj.db.dbAudio.guid,
-          audio_id: this.checkInObj.db.dbAudio.id,
-          api_url_domain: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}`,
-          audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-          audio_s3_path: this.checkInObj.audio.meta.s3Path,
-          s3Path: this.checkInObj.audio.meta.s3Path,
-          audio_sha1_checksum: this.checkInObj.audio.meta.sha1CheckSum,
-          dbAudioObj: this.checkInObj.db.dbAudio,
-        };
-        // logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels:audioInfo', { audioInfo });
-        return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfo)
-          .then(() => {
-            if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
-              return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfo, this.checkInObj.db.dbGuardian)
-            }
-            else {
-              return true;
-            }
-          });
+        if (this.checkInObj && this.checkInObj.db && this.checkInObj.db.dbAudio && this.checkInObj.audio && this.checkInObj.audio.meta) {
+          let audioInfo = {
+            audio_guid: this.checkInObj.db.dbAudio.guid,
+            audio_id: this.checkInObj.db.dbAudio.id,
+            api_url_domain: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}`,
+            audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
+            audio_s3_path: this.checkInObj.audio.meta.s3Path,
+            s3Path: this.checkInObj.audio.meta.s3Path,
+            audio_sha1_checksum: this.checkInObj.audio.meta.sha1CheckSum,
+            dbAudioObj: this.checkInObj.db.dbAudio,
+          };
+          // logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels:audioInfo', { audioInfo });
+          return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfo)
+            .then(() => {
+              if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
+                return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfo, this.checkInObj.db.dbGuardian)
+              }
+              else {
+                return true;
+              }
+            });
+        }
+        else {
+          console.log('Cannot create analysis message. Invalid incoming data', this.checkInObj.rtrn);
+        }
       })
       .then(() => {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> queueForTaggingByActiveModels', { checkInObj: JSON.parse(JSON.stringify(this.checkInObj.rtrn))});
