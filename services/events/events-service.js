@@ -230,6 +230,36 @@ function queryData(req) {
 
 }
 
+function queryDataTable(req) {
+
+  return prepareOpts(req)
+    .then((opts) => {
+      let sql = `${eventQuerySelect} FROM GuardianAudioEvents AS GuardianAudioEvent ${eventQueryJoins} `;
+      sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
+      sql = addGetQueryParams(sql, opts);
+      sql = sqlUtils.condAdd(sql, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
+
+      return models.sequelize
+        .query(sql,
+          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+        )
+        .then((events) => {
+          return filterEventsWithTz(opts, events);
+        })
+        .then((events) => {
+          return {
+            total: events.length,
+            events: limitAndOffset(opts, events)
+          };
+        });
+    });
+
+}
+
+function limitAndOffset(opts, items) {
+  return items.slice(opts.offset, opts.offset + opts.limit);
+}
+
 function filterEventsWithTz(opts, events) {
   return events.filter((event) => {
     let beginsAtTz = moment.tz(event.begins_at, event.site_timezone),
@@ -426,6 +456,7 @@ module.exports = {
   addGetQueryParams,
   countData,
   queryData,
+  queryDataTable,
   processStatsByDates,
   getEventByGuid,
   updateEventReview,

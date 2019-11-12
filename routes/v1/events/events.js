@@ -68,17 +68,17 @@ router.route("/event")
 router.route("/event/datatable")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
-    return eventsService.countData(req)
-      .bind({})
-      .then(function(total) {
-        this.total = total;
-        return eventsService.queryData(req);
-      })
-      .then(function (dbEvents) {
-        return views.models.guardianAudioEventsJson(req, res, dbEvents);
+    return eventsService.queryDataTable(req)
+      .then(function (data) {
+        return views.models.guardianAudioEventsJson(req, res, data.events)
+          .then((d) => {
+            return {
+              total: data.total,
+              events: d.events
+            }
+          })
       })
       .then(function(json) {
-        json.total = this.total;
         res.status(200).send(json);
       })
       .catch(function (err) {
