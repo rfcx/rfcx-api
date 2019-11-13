@@ -112,7 +112,7 @@ router.route("/kmz")
       type: '',
       coordinates: []
     };
-    let allowedExtensions = ['.kmz'];
+    let allowedExtensions = ['.kmz', '.kml'];
     let file = req.files.file;
     if (!file) {
       return httpError(req, res, 400, null, 'No file provided.');
@@ -122,7 +122,8 @@ router.route("/kmz")
       return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`);
     }
     let filePath = req.files.file.path;
-    return kmzService.toGeoJSON(filePath)
+    let isKML = (extension === '.kml');
+    return kmzService.toGeoJSON(filePath, isKML)
       .then((data) => {
         if ((data.features.length === 1) && (data.features[0].geometry.type === 'Point')) {
           let msg = 'Wrong format of bounds. It should be as Polygon or MultiPolygon types';
@@ -149,12 +150,11 @@ router.route("/kmz")
               }
               else {
                 //for LineString in MultiPolygon
-                if (item.geometry.type === 'Polygon') {
-
+                if (item.geometry.type === 'LineString') {
+                  coord = item.geometry.coordinates.map((arr) => {
+                    return arr.splice(0,arr.length-1);
+                  })
                 }
-                coord = item.geometry.coordinates.map((arr) => {
-                  return arr.splice(0,arr.length-1);
-                })
               }
               bounds.coordinates.push(coord);
             }
