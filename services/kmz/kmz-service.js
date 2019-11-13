@@ -30,17 +30,29 @@ function toKML(path, callback) {
     .on('error', callback);
 };
 
-function toGeoJSON(path) {
+function toGeoJSON(path, isKML) {
   return new Promise((resolve, reject) => {
-    toKML(path, (error, kml) => {
-      if (error) {
+    if (!isKML) {
+      toKML(path, (error, kml) => {
+        if (error) {
+          reject(error);
+        }
+        else {
+          let geojson = togeojson.kml(xmldom.parseFromString(kml));
+          resolve(geojson);
+        }
+      });
+    }
+    else {
+      var kml = xmldom.parseFromString(fs.readFileSync(path, 'utf8'));
+      if (!kml) {
         reject(error);
       }
       else {
-        let geojson = togeojson.kml(xmldom.parseFromString(kml));
+        let geojson = togeojson.kml(kml);
         resolve(geojson);
       }
-    });
+    }
   })
 };
 
