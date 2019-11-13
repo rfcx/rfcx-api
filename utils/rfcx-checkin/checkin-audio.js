@@ -334,10 +334,8 @@ exports.audio = {
             latitude: dbGuardian.latitude,
             longitude: dbGuardian.longitude,
           };
-          console.log('Perception service SNS message', { name, message });
           let prom = aws.publish(name, message)
             .then((data) => {
-              console.log('Perception service SNS message status', data);
               return data;
             })
           promises.push(prom);

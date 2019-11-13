@@ -21,17 +21,33 @@ var httpServer = app.http.listen(app.http.get('port'), function(){
 });
 
 app.mqtt.on("connect", function(){
-    console.log("mqtt: "+appId+" ("+app.mqtt.options.protocol+"://"+app.mqtt.options.host+":"+app.mqtt.options.port+") ("+process.env.NODE_ENV+")");
-    app.mqtt.subscribe("guardians/checkins");
-    console.log("mqtt: subscribed to 'guardians/checkins'");
+  console.log("mqtt: "+appId+" ("+app.mqtt.options.protocol+"://"+app.mqtt.options.host+":"+app.mqtt.options.port+") ("+process.env.NODE_ENV+")");
+  app.mqtt.unsubscribe("guardians/checkins", (err) => {
+    if (err) {
+      console.log('mqtt: could not unsubscribe from topic "guardians/checkins"', err);
+      return;
+    }
+    console.log('mqtt: unsubscribed from topic "guardians/checkins"');
+    app.mqtt.subscribe("guardians/checkins", (err, granted) => {
+      if (err) {
+        console.log('mqtt: could not subscribe to topic "guardians/checkins"', err);
+        return;
+      }
+      console.log('mqtt: subscribed to topic "guardians/checkins"', granted);
+    });
+  });
 });
 
-app.mqtt.on("error", function(err){
-    console.log("Error");
-    console.log(err);
-   // app.mqtt.end()
+app.mqtt.on("error", (err) => {
+  console.log("mqtt: Error", err);
 });
 
+app.mqtt.on('reconnect', () => {
+  console.log('mqtt: Reconnected.');
+})
+app.mqtt.on('close', () => {
+  console.log('mqtt: Closed.');
+})
 
 
 // var mqttInstructions = require("../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
@@ -46,7 +62,9 @@ app.mqtt.on("error", function(err){
 //   }).catch(function(errProcessInstructionJson){ console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); });
 // }).catch(function(errSetupInstructionAction){ console.log(errSetupInstructionAction); });
 
-
+if (process && process.pid) {
+  console.log('pid', process.pid);
+}
 
 var mqttCheckInRouter = require("../utils/rfcx-mqtt/mqtt-checkin-router.js").mqttCheckInRouter;
 
@@ -56,24 +74,23 @@ app.mqtt.on("message", (topic, data) => {
   if (topic === "guardians/checkins") {
     logDebug('mqtt message', { topic });
 
-    let messageData;
-    let rootCheckinObj;
-
-    mqttCheckInRouter.onMessageCheckin(rootCheckinObj, data, messageId)
-      .then((checkInObj) => {
-        messageData = checkInObj;
+    return mqttCheckInRouter.onMessageCheckin(data, messageId)
+      .then((result) => {
         logDebug('mqtt message return object', {
-          guardian_guid: checkInObj.json.guardian_guid,
-          returnObj: checkInObj.rtrn
+          guardian_guid: result.guardian_guid,
+          gzip: result.gzip
         });
-        app.mqtt.publish(`guardians/${checkInObj.json.guardian_guid}/guardian/checkins`, checkInObj.rtrn.gzip);
-        messageData = null;
+        app.mqtt.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip);
+        messageId = null;
+        result = null;
+        return true;
       })
       .catch((err) => {
         // TODO: We need to send a report back to guardian with error information here
         logDebug('mqtt message return object', err);
-        logError('mqtt message error', { err, messageData: JSON.stringify(messageData)});
-        messageData = null;
+        logError('mqtt message error', { err });
       });
   }
 });
+
+

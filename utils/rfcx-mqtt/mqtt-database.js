@@ -101,7 +101,8 @@ exports.checkInDatabase = {
     }
     return Promise.all(proms)
       .then(() => {
-        return msgs;
+        checkInObj.rtrn.obj.messages = msgs
+        return checkInObj
       });
 
   },
@@ -132,13 +133,14 @@ exports.checkInDatabase = {
       saveMeta.Hardware({ hardware: checkInObj.json.hardware, phone: checkInObj.json.phone }, guardianId)
     ];
 
-    return Promise.all(proms);
+    return Promise.all(proms)
+      .then(() => {
+        return checkInObj;
+      });
 
   },
 
   createDbAudio: function(checkInObj) {
-
-    let dbAudioLocal;
 
     return models.GuardianAudio.findOrCreate({
       where: {
@@ -169,14 +171,14 @@ exports.checkInDatabase = {
           target_bit_rate: checkInObj.audio.meta.bitRate,
           is_vbr: checkInObj.audio.meta.isVbr
         }
-      });
-    })
-    .spread(function(dbAudioFormat, wasCreated){
-      dbAudioLocal.format_id = dbAudioFormat.id;
-      return dbAudioLocal.save();
-    })
-    .then(function(dbAudio) {
-      return dbAudio.reload({include: [{ all: true } ]});
+      })
+      .spread(function(dbAudioFormat, wasCreated){
+        dbAudio.format_id = dbAudioFormat.id;
+        return dbAudio.save();
+      })
+      .then(function(dbAudio) {
+        return dbAudio.reload({include: [{ all: true } ]});
+      })
     })
     .then(function(dbAudio) {
       checkInObj.db.dbAudio = dbAudio;
@@ -191,37 +193,40 @@ exports.checkInDatabase = {
       return Promise.resolve(checkInObj);
     }
 
-    fs.stat(checkInObj.screenshots.filePath, function(statErr, fileStat) {
-      if (!!statErr) {
-        return Promise.reject(statErr);
-      }
-
-      let defaults = {};
-      try {
-        defaults = {
-          guardian_id: checkInObj.db.dbGuardian.id,
-          sha1_checksum: checkInObj.screenshots.metaArr[3],
-          url: null,
-          captured_at: new Date(parseInt(checkInObj.screenshots.metaArr[1])),
-          size: fileStat.size
+    return new Promise((resolve, reject) => {
+      fs.stat(checkInObj.screenshots.filePath, function(statErr, fileStat) {
+        if (!!statErr) {
+          return reject(statErr);
         }
-      } catch(e) {
-        return Promise.reject(e);
-      }
 
-      return models.GuardianMetaScreenShot.findOrCreate({
-        where: {
-          sha1_checksum: checkInObj.screenshots.metaArr[3]
-        },
-        defaults
-      })
-      .then(function(dbScreenShot) {
-        checkInObj.db.dbScreenShot= dbScreenShot;
-        checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
-        return checkInObj;
+        let defaults = {};
+        try {
+          defaults = {
+            guardian_id: checkInObj.db.dbGuardian.id,
+            sha1_checksum: checkInObj.screenshots.metaArr[3],
+            url: null,
+            captured_at: new Date(parseInt(checkInObj.screenshots.metaArr[1])),
+            size: fileStat.size
+          }
+        } catch(e) {
+          return reject(e);
+        }
+
+        models.GuardianMetaScreenShot.findOrCreate({
+          where: {
+            sha1_checksum: checkInObj.screenshots.metaArr[3]
+          },
+          defaults
+        })
+        .then(function(dbScreenShot) {
+          checkInObj.db.dbScreenShot= dbScreenShot;
+          checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
+          resolve(checkInObj);
+        });
+
       });
+    })
 
-    });
   },
 
   createDbLogFile: function(checkInObj) {
@@ -230,48 +235,53 @@ exports.checkInDatabase = {
       return Promise.resolve(checkInObj);
     }
 
-    fs.stat(checkInObj.logs.filePath, (statErr, fileStat) => {
-      if (!!statErr) {
-        return Promise.reject(statErr);
-      }
+    return new Promise((resolve, reject) => {
+      fs.stat(checkInObj.logs.filePath, (statErr, fileStat) => {
+        if (!!statErr) {
+          return reject(statErr);
+        }
 
-      let defaults = {};
-      try {
-        defaults = {
-          guardian_id: checkInObj.db.dbGuardian.id,
-          sha1_checksum: checkInObj.logs.metaArr[3],
-          url: null,
-          captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
-          size: fileStat.size
-        };
-      } catch(e) {
-        return Promise.reject(e);
-      }
+        let defaults = {};
+        try {
+          defaults = {
+            guardian_id: checkInObj.db.dbGuardian.id,
+            sha1_checksum: checkInObj.logs.metaArr[3],
+            url: null,
+            captured_at: new Date(parseInt(checkInObj.logs.metaArr[1])),
+            size: fileStat.size
+          };
+        } catch(e) {
+          return reject(e);
+        }
 
-      return models.GuardianMetaLog.findOrCreate({
-        where: {
-          sha1_checksum: checkInObj.logs.metaArr[3]
-        },
-        defaults
-      })
-      .then(function(dbLogs) {
-        checkInObj.db.dbLogs= dbLogs;
-        checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
-        return checkInObj;
+        models.GuardianMetaLog.findOrCreate({
+          where: {
+            sha1_checksum: checkInObj.logs.metaArr[3]
+          },
+          defaults
+        })
+        .then(function(dbLogs) {
+          checkInObj.db.dbLogs = dbLogs;
+          checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
+          resolve(checkInObj);
+        })
+        .catch((err) => {
+          reject(err);
+        })
+
       });
-
-    });
+    })
   },
 
   setGuardianCoordinates: (checkInObj) => {
 
     if (!checkInObj.json.geoposition) {
-      return Promise.resolve();
+      return Promise.resolve(checkInObj);
     }
 
     let coordsArr = strArrToJSArr(checkInObj.json.geoposition, '|', '*');
     if (!coordsArr.length) {
-      return Promise.resolve();
+      return Promise.resolve(checkInObj);
     }
     // get only last coordinate in array
     let lastCoord = coordsArr[coordsArr.length - 1];
@@ -289,10 +299,14 @@ exports.checkInDatabase = {
       return checkInObj.db.dbGuardian.save()
         .then(() => {
           return checkInObj.db.dbGuardian.reload({include: [{ all: true } ]});
-        });
+        })
+        .then((dbGuardian) => {
+          checkInObj.db.dbGuardian = dbGuardian
+          return checkInObj;
+        })
     }
     else {
-      return Promise.resolve();
+      return Promise.resolve(checkInObj);
     }
 
   },
@@ -314,9 +328,12 @@ exports.checkInDatabase = {
       .then(() => {
         return Promise.all([
           checkInObj.db.dbGuardian.reload({include: [{ all: true } ]}),
-          checkInObj.db.dbCheckIn.reload({include: [{ all: true } ]})
+          checkInObj.db.dbCheckIn.reload()
         ])
-      });
+      })
+      .then(() => {
+        return checkInObj;
+      })
 
   }
 

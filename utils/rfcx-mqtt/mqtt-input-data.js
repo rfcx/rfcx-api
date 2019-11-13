@@ -31,6 +31,10 @@ exports.mqttInputData = {
 
         zlib.gunzip(mqttData.slice(metaLength, metaLength+jsonBlobLength), function(jsonError, jsonBuffer) {
 
+          if (jsonError) {
+            reject(jsonError);
+          }
+
           checkInObj.json = JSON.parse(jsonBuffer.toString("utf8"));
 
           checkInObj.audio.metaArr = (strArrToJSArr(checkInObj.json.audio,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.audio,"|","*")[0];

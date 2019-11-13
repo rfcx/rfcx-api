@@ -165,7 +165,7 @@ exports.analysisUtils = {
                         analysisModelUrl = dbAnalysisModel.model_download_url,
                         analysisModelSha1Checksum = dbAnalysisModel.model_sha1_checksum;
 
-                        token.createAnonymousToken({
+                        return token.createAnonymousToken({
                             token_type: "audio-analysis-queue",
                             minutes_until_expiration: 1440,
                             allow_garbage_collection: true,
@@ -179,7 +179,7 @@ exports.analysisUtils = {
                                 apiTokenExpiresAt = tokenInfo.token_expires_at,
                                 apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf()-(new Date()).valueOf())/60000);
 
-                            aws.sns().publish({
+                            return aws.sns().publish({
                                 TopicArn: aws.snsTopicArn(queueName),
                                 Message: JSON.stringify({
 

@@ -14,8 +14,8 @@ var app = { http: null, mqtt: null };
 
 var mqtt = require("mqtt");
 
-app.mqtt = mqtt.connect({ 
-    clientId: "rfcx-api-mqtt-"+process.env.NODE_ENV, 
+app.mqtt = mqtt.connect({
+    clientId: "rfcx-api-mqtt-development" + process.env.NODE_ENV + Math.random().toString(16).substr(2, 8),
     host: process.env.MQTT_BROKER_HOST,
     port: 1883,
     protocol: "tcp",
@@ -25,9 +25,10 @@ app.mqtt = mqtt.connect({
     // certPath: null, // .pem filepath
     // ca: [ ], // array of .pem filepaths
     // rejectUnauthorized: true,
-    protocolId: "MQIsdp", protocolVersion: 3,  
-    connectTimeout: 2000, 
-    debug: true 
+    protocolId: "MQIsdp",
+    protocolVersion: 3,
+    connectTimeout: 2000,
+    debug: true
   });
 
 
@@ -71,7 +72,7 @@ app.http.get("/health_check", function(req,res){ healthCheck.httpResponse(req,re
 
 
 // var mqttInstructions = require("./utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
-// app.http.get("/instructions", function(req,res){ 
+// app.http.get("/instructions", function(req,res){
 //   mqttInstructions.sendInstruction(app.mqtt, "3f55b79d5967", "guardian");
 //   healthCheck.httpResponse(req,res);
 // });
