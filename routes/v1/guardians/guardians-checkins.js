@@ -223,7 +223,7 @@ router.route("/:guardian_id/checkins")
               // });
               return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue);
             })
-            .then(function(){
+            .then(function() {
               // logDebug('Guardian checkins endpoint: saveToDb finished', {
               //   req: req,
               //   audioInfoInd: audioInfoInd,
@@ -234,24 +234,18 @@ router.route("/:guardian_id/checkins")
                 dbGuardian: self.dbGuardian,
               });
               if (!self.dbGuardian || !self.dbGuardian.Site || (self.dbGuardian.Site && self.dbGuardian.Site.is_analyzable)) {
-                // logDebug('[TEMP] queueForTaggingByActiveModels', {
-                //   audioInfoPostQueue: audioInfoPostQueue,
-                // });
                 return checkInHelpers.audio.queueForTaggingByActiveModels(this.audioInfoPostQueue)
-                  .then(() => {
-                    if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
-                      return checkInHelpers.audio.queueForTaggingByActiveV3Models(this.audioInfoPostQueue, self.dbGuardian);
-                    }
-                    else {
-                      return true;
-                    }
-                  })
-                  .then(() => {
-                    return this.audioInfoPostQueue;
-                  })
               }
               else {
-                return Promise.resolve(this.audioInfoPostQueue);
+                return this.audioInfoPostQueue;
+              }
+            })
+            .then(function () {
+              if (self.dbGuardian && process.env.PREDICTION_SERVICE_ENABLED === 'true') {
+                return checkInHelpers.audio.queueForTaggingByActiveV3Models(this.audioInfoPostQueue, self.dbGuardian);
+              }
+              else {
+                return this.audioInfoPostQueue;
               }
             })
           proms.push(prom);
