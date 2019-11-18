@@ -41,6 +41,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         Segment.belongsTo(models.Stream, { as: 'Stream', foreignKey: "stream" });
+        Segment.belongsTo(models.MasterSegment, { as: "MasterSegment", foreignKey: "master_segment" });
       },
       indexes: [
         {
