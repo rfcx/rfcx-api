@@ -23,20 +23,20 @@ module.exports = function(sequelize, DataTypes) {
         }
       }
     },
-    duration: {
+    ends: {
       type: DataTypes.INTEGER.UNSIGNED,
       validate: {
         isInt: true,
         min: {
           args: [ 0 ],
-          msg: 'duration should be equal to or greater than 0'
+          msg: 'ends should be equal to or greater than 0'
         },
         max: {
           args: [ 4294967295 ],
-          msg: 'duration should be equal to or less than 4294967295'
+          msg: 'ends should be equal to or less than 4294967295'
         }
       }
-    }
+    },
   }, {
     classMethods: {
       associate: function(models) {
