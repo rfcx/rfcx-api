@@ -72,7 +72,7 @@ function getObject(localPath, filename, bucket) {
     catch(err) {
       logError('Failed to get object from S3', err);
       reject(new Error(err));
-    }1
+    }
   });
 }
 
