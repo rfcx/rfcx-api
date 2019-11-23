@@ -220,6 +220,54 @@ function queryData(req) {
 
 }
 
+function getEventByGuid(guid) {
+
+  let query = `MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai) ` +
+              `MATCH (evs)-[:classifies]->(lb:label) ` +
+              `OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) ` +
+              `WITH ev, evs, ai, lb, aw ` +
+              `OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) ` +
+              `WITH ev, evs, ai, lb, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows ` +
+              `OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) ` +
+              `WITH ev, evs, ai, lb, windows, user, re ` +
+              `RETURN ev as event, ai as ai, lb.value as value, lb.label as label, windows, user, re as review `;
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, { guid }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      let event = record.get(0).properties;
+      let ai = record.get(1).properties;
+      event.aiName = ai.name;
+      event.aiGuid = ai.guid;
+      event.aiMinConfidence = ai.minConfidence;
+      let assetUrlBase = `${process.env.ASSET_URLBASE}/audio/${event.audioGuid}`;
+      event.urls = {
+        mp3: `${assetUrlBase}.mp3`,
+        png: `${assetUrlBase}.png`,
+        opus: `${assetUrlBase}.opus`
+      },
+      event.value = record.get(2);
+      event.label = record.get(3);
+      let windows = record.get(4);
+      event.windows = windows;
+      event.confirmed = windows.filter((win) => (win.confirmed === true)).length;
+      event.rejected = windows.filter((win) => (win.confirmed === false)).length;
+      let reviewer = record.get(5);
+      event.reviewer = reviewer? reviewer.properties : null;
+      let review = record.get(6);
+      event.review = review? review.properties : null;
+      return event;
+    })[0];
+  });
+
+}
+
 function queryReviews(req) {
 
   return prepareOpts(req)
@@ -601,4 +649,5 @@ module.exports = {
   formatReviewsForFiles,
   formatEventsAsTags,
   getAiModelsForReviews,
+  getEventByGuid,
 };
