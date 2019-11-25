@@ -7,6 +7,8 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error');
 const hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const Converter = require("../../../utils/converter/converter");
 const aiService = require('../../../services/ai/ai-service');
+const audioService = require('../../../services/audio/audio-service');
+const aws = require("../../../utils/external/aws.js").aws();
 var sequelize = require("sequelize");
 const pathCompleteExtname = require('path-complete-extname');
 const dirUtil = require('../../../utils/misc/dir');
@@ -188,6 +190,48 @@ router.route("/:guid")
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(e => { httpError(req, res, 500, e, "Error while updating the AI."); console.log(e) });
+
+  });
+
+router.route("/:guid/batch-analysis")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['aiAdmin']), function (req, res) {
+
+    let ai;
+
+    return aiService.getPublicAiByGuid(req.params.guid)
+      .then((data) => {
+        ai = data;
+        return audioService.queryData(req)
+      })
+      .then((data) => {
+        audios = data.audios.filter((audio) => {
+          return (ai.guardiansWhitelist || []).includes(audio.guardian_guid)
+            && !!audio.file_extension && !!audio.sample_rate && !!audio.capture_sample_count;
+        })
+        const topicName = aiService.combineTopicQueueNameForGuid(ai.guid);
+        let proms = [];
+        audios.forEach((audio) => {
+          let message = audioService.formatAudioForSNSMessage(audio);
+          let prom = aws.publish(topicName, message);
+          proms.push(prom);
+        });
+        return Promise.resolve(proms)
+          .then(() => {
+            return {
+              total: audios.length,
+              audioGuids: audios.map((audio) => {
+                return audio.guid;
+              })
+            }
+          })
+      })
+      .then((data) => {
+        res.status(200).send(data);
+        ai = null;
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, "Error while triggering batch analysis."); console.log(e) });
 
   });
 

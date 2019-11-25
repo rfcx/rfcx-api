@@ -11,6 +11,7 @@ const querySelect =
     'CONVERT_TZ(GuardianAudio.measured_at, "UTC", Site.timezone) as measured_at_local, ' +
     'Site.guid AS site_guid, Site.name as site_name, Site.timezone as site_timezone, ' +
     'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
+    'Guardian.latitude AS latitude, Guardian.longitude AS longitude, ' +
     'Format.codec as codec, Format.mime as mime, Format.file_extension as file_extension, Format.sample_rate as sample_rate, ' +
     'Format.is_vbr as vbr, Format.target_bit_rate as target_bit_rate, ' +
     'COUNT(DISTINCT GuardianAudioBox.id) as audio_box_count ';
@@ -219,6 +220,22 @@ function createBoxesForAudio(audio, boxes, user_id) {
   return Promise.all(proms);
 }
 
+function formatAudioForSNSMessage(audio) {
+  return {
+    guid: audio.guid,
+    guardian_guid: audio.guardian_guid,
+    guardian_shortname: audio.guardian_shortname,
+    site_guid: audio.site_guid,
+    site_timezone: audio.site_timezone,
+    measured_at: audio.measured_at,
+    file_extension: audio.file_extension,
+    capture_sample_count: audio.capture_sample_count,
+    sample_rate: audio.sample_rate,
+    latitude: audio.latitude,
+    longitude: audio.longitude,
+  };
+}
+
 module.exports = {
   queryData,
   getGuidsFromDbAudios,
@@ -227,4 +244,5 @@ module.exports = {
   getAudioByGuid,
   removeBoxesForAudioFromUser,
   createBoxesForAudio,
+  formatAudioForSNSMessage,
 };
