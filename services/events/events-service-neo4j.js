@@ -148,8 +148,17 @@ function queryData(req) {
       if (newOpts.startingAfterLocal) {
         newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
       }
+      else {
+        newOpts.startingAfterLocal = moment().tz('UTC').subtract(24, 'hours').valueOf();
+      }
       if (newOpts.startingBeforeLocal) {
         newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      }
+      else {
+        newOpts.startingBeforeLocal = moment().tz('UTC').valueOf();
+      }
+      if (!newOpts.values || !newOpts.values.length) {
+        newOpts.values = ['chainsaw'];
       }
 
       let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai) `;
