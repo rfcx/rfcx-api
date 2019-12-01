@@ -3,7 +3,7 @@ pipeline {
         label 'slave'
     }
     environment {
-        APP = "api"
+        APP = "media-api"
         PHASE = branchToConfig(BRANCH_NAME)
         ECR = "887044485231.dkr.ecr.eu-west-1.amazonaws.com"
     }
