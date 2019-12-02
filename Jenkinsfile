@@ -74,12 +74,16 @@ pipeline {
 
   def branchToConfig(branch) {
      script {
-         result = "NULL"
-         if (branch == 'staging') {
+        result = "NULL"
+        if (branch == 'staging') {
              result = "staging"
-         }
-         if (branch == 'master') {
+        }
+        if (branch == 'master') {
              result = "production"
+        withCredentials([file(credentialsId: 'api_production_env', variable: 'PRIVATE_ENV')]) {
+        sh "cp $PRIVATE_ENV rfcx.sh"
+        sh "chmod 777 rfcx.sh"
+        }
          }
          echo "BRANCH:${branch} -> CONFIGURATION:${result}"
        
