@@ -108,6 +108,36 @@ router.route("/")
       .catch(e => { httpError(req, res, 500, e, 'Error while creating a stream.'); console.log(e) });
   });
 
+router.route("/master-segment")
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('guid').toString();
+    params.convert('filename').toString();
+
+    params.validate()
+      .then(() => {
+        return streamsService.createMasterSegment({
+          guid: transformedParams.guid,
+          filename: transformedParams.filename,
+        });
+      })
+      .then((data) => {
+        return streamsService.formatMasterSegment(data);
+      })
+      .then((data) => {
+        res.status(200).json(data);
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while creating master stream.'); console.log(e) });
+
+  });
+
 // Stream update
 
 router.route("/:guid")

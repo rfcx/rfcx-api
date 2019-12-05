@@ -53,8 +53,28 @@ function formatStream(stream) {
   return streamFormatted;
 }
 
+function createMasterSegment(opts) {
+
+  return models.MasterSegment.create({
+    guid: opts.guid,
+    filename: opts.filename,
+  })
+
+}
+
+function formatMasterSegment(masterSegment) {
+
+  return {
+    guid: masterSegment.guid,
+    filename: masterSegment.filename
+  };
+
+}
+
 module.exports = {
   getStreamByGuid,
   updateStream,
   formatStream,
+  createMasterSegment,
+  formatMasterSegment,
 };

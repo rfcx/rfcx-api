@@ -12,7 +12,7 @@ module.exports = function(sequelize, DataTypes) {
     filename: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: false,
       validate: { }
     }
   }, {
