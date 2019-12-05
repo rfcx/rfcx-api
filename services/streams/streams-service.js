@@ -54,21 +54,41 @@ function formatStream(stream) {
 }
 
 function createMasterSegment(opts) {
-
   return models.MasterSegment.create({
     guid: opts.guid,
     filename: opts.filename,
   })
+}
 
+function getMasterSegmentByGuid(guid, ignoreMissing) {
+  return models.MasterSegment
+    .findOne({
+      where: { guid: guid }
+    })
+    .then((item) => {
+      if (!item && !ignoreMissing) { throw new EmptyResultError('MasterSegment with given guid not found.'); }
+      return item;
+    });
 }
 
 function formatMasterSegment(masterSegment) {
-
   return {
     guid: masterSegment.guid,
     filename: masterSegment.filename
   };
+}
 
+function formatSegment(segment) {
+  return {
+    guid: segment.guid,
+    starts: segment.starts,
+    ends: segment.ends,
+    masterSegment: segment.MasterSegment? this.formatMasterSegment(segment.MasterSegment) : null,
+    stream: segment.Stream? {
+      guid: segment.Stream.guid,
+      name: segment.Stream.name,
+    } : null,
+  };
 }
 
 module.exports = {
@@ -76,5 +96,7 @@ module.exports = {
   updateStream,
   formatStream,
   createMasterSegment,
+  getMasterSegmentByGuid,
   formatMasterSegment,
+  formatSegment,
 };
