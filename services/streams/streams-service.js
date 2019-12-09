@@ -54,16 +54,17 @@ function formatStream(stream) {
 }
 
 function createMasterSegment(opts) {
-  return models.MasterSegment.create({
-    guid: opts.guid,
-    filename: opts.filename,
-  })
+  return models.MasterSegment.create(opts)
+    .then((dbMasterSegment) => {
+      return dbMasterSegment.reload({ include: [{ all: true }] });
+    });
 }
 
 function getMasterSegmentByGuid(guid, ignoreMissing) {
   return models.MasterSegment
     .findOne({
-      where: { guid: guid }
+      where: { guid: guid },
+      include: [{ all: true }],
     })
     .then((item) => {
       if (!item && !ignoreMissing) { throw new EmptyResultError('MasterSegment with given guid not found.'); }
@@ -74,7 +75,15 @@ function getMasterSegmentByGuid(guid, ignoreMissing) {
 function formatMasterSegment(masterSegment) {
   return {
     guid: masterSegment.guid,
-    filename: masterSegment.filename
+    filename: masterSegment.filename,
+    format: masterSegment.Format? masterSegment.Format.value : null,
+    duration: masterSegment.duration,
+    sampleCount: masterSegment.sampleCount,
+    sampleRate: masterSegment.SampleRate? masterSegment.SampleRate.value : null,
+    channelCount: masterSegment.channelCount,
+    channelLayout: masterSegment.ChannelLayout? masterSegment.ChannelLayout.value : null,
+    bitRate: masterSegment.bitRate,
+    codec: masterSegment.Codec? masterSegment.Codec.value : null,
   };
 }
 

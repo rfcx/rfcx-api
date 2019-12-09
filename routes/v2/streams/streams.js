@@ -117,13 +117,62 @@ router.route("/master-segment")
 
     params.convert('guid').toString();
     params.convert('filename').toString();
+    params.convert('format').toString();
+    params.convert('duration').toInt().minimum(1);
+    params.convert('sample_count').toInt().minimum(1);
+    params.convert('sample_rate').toInt().default(1).minimum(1);
+    params.convert('channel_layout').optional().toString().default('mono');
+    params.convert('channels_count').optional().toInt().default(1).minimum(1);
+    params.convert('bit_rate').toInt().default(1).minimum(1);
+    params.convert('codec').toString();
 
     params.validate()
       .then(() => {
-        return streamsService.createMasterSegment({
-          guid: transformedParams.guid,
-          filename: transformedParams.filename,
+        const sampleRateOpts = { value: transformedParams.sample_rate };
+        return models.SampleRate.findOrCreate({
+          where: sampleRateOpts,
+          defaults: sampleRateOpts
+        })
+        .spread((dbSampleRate, created) => {
+          transformedParams.sample_rate = dbSampleRate.id;
+          return true;
         });
+      })
+      .then(() => {
+        const formatOpts = { value: transformedParams.format };
+        return models.Format.findOrCreate({
+          where: formatOpts,
+          defaults: formatOpts
+        })
+        .spread((dbFormat, created) => {
+          transformedParams.format = dbFormat.id;
+          return true;
+        });
+      })
+      .then(() => {
+        const channelLayoutOpts = { value: transformedParams.channel_layout };
+        return models.ChannelLayout.findOrCreate({
+          where: channelLayoutOpts,
+          defaults: channelLayoutOpts
+        })
+        .spread((dbChannelLayout, created) => {
+          transformedParams.channel_layout = dbChannelLayout.id;
+          return true;
+        });
+      })
+      .then(() => {
+        const codecOpts = { value: transformedParams.codec };
+        return models.Codec.findOrCreate({
+          where: codecOpts,
+          defaults: codecOpts
+        })
+        .spread((dbCodec, created) => {
+          transformedParams.codec = dbCodec.id;
+          return true;
+        });
+      })
+      .then(() => {
+        return streamsService.createMasterSegment(transformedParams);
       })
       .then((data) => {
         return streamsService.formatMasterSegment(data);

@@ -58,6 +58,7 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
+        MasterSegment.belongsTo(models.Codec, { as: 'Codec', foreignKey: "codec" });
         MasterSegment.belongsTo(models.Format, { as: 'Format', foreignKey: "format" });
         MasterSegment.belongsTo(models.SampleRate, { as: 'SampleRate', foreignKey: "sample_rate" });
         MasterSegment.belongsTo(models.ChannelLayout, { as: 'ChannelLayout', foreignKey: "channel_layout" });
