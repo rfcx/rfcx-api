@@ -57,10 +57,16 @@ function prepareOpts(req) {
   };
 
   if (opts.guardianGroups) {
-    opts.guardians? opts.guardians : opts.guardians = [];
+    opts.guardians = opts.guardians || [];
+    opts.values = opts.values || [];
     return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
       .then((groups) => {
         groups.forEach((group) => {
+          (group.GuardianAudioEventValues || []).forEach((value) => {
+            if (!opts.values.includes(value.value)) {
+              opts.values.push(value.value);
+            }
+          });
           (group.Guardians || []).forEach((guardian) => {
             if (!opts.guardians.includes(guardian.guid)) {
               opts.guardians.push(guardian.guid);
