@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes) {
       unique: true
     },
     starts: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.BIGINT.UNSIGNED,
       validate: {
         isInt: true,
         min: {
@@ -18,13 +18,13 @@ module.exports = function(sequelize, DataTypes) {
           msg: 'starts should be equal to or greater than 0'
         },
         max: {
-          args: [ 4294967295 ],
-          msg: 'starts should be equal to or less than 4294967295'
+          args: [ 32503669200000 ],
+          msg: 'starts should be equal to or less than 32503669200000'
         }
       }
     },
     ends: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.BIGINT.UNSIGNED,
       validate: {
         isInt: true,
         min: {
@@ -32,8 +32,8 @@ module.exports = function(sequelize, DataTypes) {
           msg: 'ends should be equal to or greater than 0'
         },
         max: {
-          args: [ 4294967295 ],
-          msg: 'ends should be equal to or less than 4294967295'
+          args: [ 32503669200000 ],
+          msg: 'ends should be equal to or less than 32503669200000'
         }
       }
     },

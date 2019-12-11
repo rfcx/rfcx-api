@@ -26,8 +26,8 @@ router.route("/")
 
     params.convert('name').toString();
     params.convert('description').optional().toString();
-    params.convert('starts').optional().toInt().minimum(0).maximum(4294967295);
-    params.convert('ends').optional().toInt().minimum(0).maximum(4294967295);
+    params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
+    params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
     params.convert('location').optional().toString();
     params.convert('site').optional().toString();
     params.convert('visibility').optional().toString().default('private');
@@ -198,8 +198,8 @@ router.route("/:guid")
 
     params.convert('name').optional().toString();
     params.convert('description').optional().toString();
-    params.convert('starts').optional().toInt().minimum(0).maximum(4294967295);
-    params.convert('ends').optional().toInt().minimum(0).maximum(4294967295);
+    params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
+    params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
     params.convert('location').optional().toString();
     params.convert('site').optional().toString();
     params.convert('visibility').optional().toString();
@@ -277,8 +277,8 @@ router.route("/:guid/segment")
     let params = new Converter(req.body, transformedParams);
 
     params.convert('master_segment').toString();
-    params.convert('starts').toInt().minimum(0).maximum(4294967295);
-    params.convert('ends').toInt().minimum(0).maximum(4294967295);
+    params.convert('starts').toInt().minimum(0).maximum(32503669200000);
+    params.convert('ends').toInt().minimum(0).maximum(32503669200000);
 
     let stream;
 
