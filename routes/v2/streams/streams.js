@@ -276,6 +276,7 @@ router.route("/:guid/segment")
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
+    params.convert('guid').optional().toString();
     params.convert('master_segment').toString();
     params.convert('starts').toInt().minimum(0).maximum(32503669200000);
     params.convert('ends').toInt().minimum(0).maximum(32503669200000);
@@ -291,12 +292,16 @@ router.route("/:guid/segment")
         return streamsService.getMasterSegmentByGuid(transformedParams.master_segment);
       })
       .then((masterSegment) => {
-        return models.Segment.create({
+        const opts = {
           starts: transformedParams.starts,
           ends: transformedParams.ends,
           stream: stream.id,
           master_segment: masterSegment.id
-        })
+        };
+        if (transformedParams.guid) {
+          opts.guid = transformedParams.guid;
+        }
+        return models.Segment.create(opts)
         .then((dbSegment) => {
           return dbSegment.reload({ include: [{ all: true }] });
         })
