@@ -13,6 +13,8 @@ const sitesService = require('../../../services/sites/sites-service');
 const guid = require('../../../utils/misc/guid');
 const Converter = require("../../../utils/converter/converter");
 const ValidationError = require("../../../utils/converter/validation-error");
+const ForbiddenError = require("../../../utils/converter/forbidden-error");
+const EmptyResultError = require("../../../utils/converter/empty-result-error");
 const httpError = require("../../../utils/http-errors.js");
 const pathCompleteExtname = require('path-complete-extname');
 
@@ -86,6 +88,46 @@ router.route("/:guid")
       })
       .then(result => res.status(200).json(result))
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, e.message || `Could not find report.`));
+
+  });
+
+router.route("/:guid")
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function(req, res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+
+    params.convert('lat').optional().toFloat();
+    params.convert('long').optional().toFloat();
+    params.convert('distance').optional().toNonNegativeInt();
+    params.convert('age_estimate').optional().toNonNegativeInt();
+    params.convert('notes').optional().toString();
+
+    let dbReport;
+
+    return params.validate()
+      .then(() => {
+        return reportsService.getReportByGuid(req.params.guid)
+      })
+      .then((report) => {
+        dbReport = report;
+        return usersService.getUserByGuid(req.rfcx.auth_token_info.guid);
+      })
+      .then((dbUser) => {
+        if (dbReport.reporter !== dbUser.id) {
+          throw new ForbiddenError('You can\'t change report of another user.');
+        }
+        return reportsService.updateReport(dbReport, transformedParams);
+      })
+      .then(() => {
+        return reportsService.formatReport(dbReport);
+      })
+      .then(result => res.status(200).json(result))
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ForbiddenError, e => httpError(req, res, 403, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => httpError(req, res, 500, e, e.message || `Could not find report.`));
 

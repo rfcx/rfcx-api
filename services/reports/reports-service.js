@@ -312,6 +312,19 @@ function createReport(data) {
     });
 }
 
+function updateReport(report, opts) {
+  let allowedOpts = ['lat', 'long', 'distance', 'age_estimate', 'notes'];
+  allowedOpts.forEach((opt) => {
+    if (opts[opt] !== undefined) {
+      report[opt] = opts[opt];
+    }
+  });
+  return report.save()
+    .then(rep => {
+      return rep.reload({ include: [{ all: true }] });
+    });
+}
+
 function formatReport(report) {
   return {
     guid: report.guid,
@@ -389,6 +402,7 @@ module.exports = {
   queryData,
   getReportByGuid,
   createReport,
+  updateReport,
   formatReport,
   formatRaWReport,
   formatRawReports,
