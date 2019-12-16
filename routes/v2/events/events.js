@@ -16,6 +16,7 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error');
 const guardiansService = require('../../../services/guardians/guardians-service');
 const hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const Converter = require("../../../utils/converter/converter");
+const sequelize = require("sequelize");
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -27,6 +28,8 @@ router.route("/")
       .then(function(json) {
         res.status(200).send(json);
       })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => { httpError(req, res, 500, e, "Error while searching events."); console.log(e) });
 

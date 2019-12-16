@@ -52,6 +52,7 @@ function prepareOpts(req) {
     hasRejectedWindows: req.query.has_rejected_windows !== undefined? (req.query.has_rejected_windows === 'true') : undefined,
     isUnreliable: req.query.is_unreliable !== undefined? (req.query.is_unreliable === 'true') : undefined,
     guardianGroups: req.query.guardian_groups? (Array.isArray(req.query.guardian_groups)? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
+    includeWindows: req.query.include_windows !== undefined? (req.query.include_windows === 'true') : undefined,
     order: order? order : 'ev.audioMeasuredAt',
     dir: dir? dir : 'ASC',
   };
@@ -145,55 +146,55 @@ function limitAndOffset(opts, items) {
 
 function queryData(req) {
 
-  return prepareOpts(req)
-    .bind({})
-    .then((opts) => {
-      this.opts = opts;
+  let opts;
 
-      let newOpts = Object.assign({}, opts)
-      if (newOpts.startingAfterLocal) {
-        newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
+  return prepareOpts(req)
+    .then((data) => {
+
+      opts = Object.assign({}, data)
+      if (!opts.startingAfterLocal && !opts.startingBeforeLocal) {
+        opts.notimezone = true;
       }
-      else {
-        newOpts.startingAfterLocal = moment().tz('UTC').subtract(24, 'hours').valueOf();
+      if (opts.startingAfterLocal) {
+        opts.startingAfterLocal = moment.tz(data.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
       }
-      if (newOpts.startingBeforeLocal) {
-        newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      if (opts.startingBeforeLocal) {
+        opts.startingBeforeLocal = moment.tz(data.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
       }
-      else {
-        newOpts.startingBeforeLocal = moment().tz('UTC').valueOf();
-      }
-      if (!newOpts.values || !newOpts.values.length) {
-        newOpts.values = ['chainsaw'];
+      if ((!opts.values || !opts.values.length) && (!opts.models || !opts.models.length)) {
+        // load only chainsaw-rfcx and vehicle-rfcx if nothing is specified
+        opts.models = ['cd9e47d0-ea47-ed6a-be06-3963ecea03bc', '8a9710c2-1056-e169-df6e-68aba3889719'];
       }
 
       let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai) `;
       query = sqlUtils.condAdd(query, true, ' MATCH (evs)-[:classifies]->(val:label)');
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw');
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) WITH ev, evs, ai, val, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
-      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, windows, user, re');
-      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, user, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount');
-      query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
-      query = sqlUtils.condAdd(query, opts.reviewed === true, ' AND re IS NOT NULL');
-      query = sqlUtils.condAdd(query, opts.reviewed === false, ' AND re IS NULL');
-      query = sqlUtils.condAdd(query, opts.confirmed === true, ' AND re.confirmed = true');
-      query = sqlUtils.condAdd(query, opts.confirmed === false, ' AND re.confirmed = false');
-      query = sqlUtils.condAdd(query, opts.isUnreliable === true, ' AND re.unreliable = true');
-      query = sqlUtils.condAdd(query, opts.isUnreliable === false, ' AND (NOT EXISTS(re.unreliable) OR re.unreliable = false)');
-      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && opts.hasRejectedWindows === true, ' AND (confirmedCount > 0 OR rejectedCount > 0)');
-      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
-      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows === true && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND (confirmedCount = 0  AND rejectedCount = 0) OR rejectedCount > 0');
-      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows === true && !opts.hasConfirmedWindows         && !opts.hasRejectedWindows,         ' AND confirmedCount = 0  AND rejectedCount = 0');
-      query = sqlUtils.condAdd(query, opts.hasNoReviewedWindows === true && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND (confirmedCount = 0  AND rejectedCount = 0) OR confirmedCount > 0');
-      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
-      query = sqlUtils.condAdd(query, !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND confirmedCount > 0');
-      query = sqlUtils.condAdd(query, true, ' RETURN ev, ai, val.value as value, val.label as label, windows, user, re as review');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) WITH ev, evs, ai, val, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, windows, user, re');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, user, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' WHERE 1=1');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.reviewed === true, ' AND re IS NOT NULL');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.reviewed === false, ' AND re IS NULL');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.confirmed === true, ' AND re.confirmed = true');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.confirmed === false, ' AND re.confirmed = false');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.isUnreliable === true, ' AND re.unreliable = true');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.isUnreliable === false, ' AND (NOT EXISTS(re.unreliable) OR re.unreliable = false)');
+      query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && opts.hasRejectedWindows === true, ' AND (confirmedCount > 0 OR rejectedCount > 0)');
+      query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows === true && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND (confirmedCount = 0  AND rejectedCount = 0) OR rejectedCount > 0');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows === true && !opts.hasConfirmedWindows         && !opts.hasRejectedWindows,         ' AND confirmedCount = 0  AND rejectedCount = 0');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows === true && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND (confirmedCount = 0  AND rejectedCount = 0) OR confirmedCount > 0');
+      query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
+      query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND confirmedCount > 0');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' RETURN ev, ai, val.value as value, val.label as label, windows, user, re as review');
+      query = sqlUtils.condAdd(query, !opts.includeWindows, ' RETURN ev, ai, val.value as value, val.label as label');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
+      query = sqlUtils.condAdd(query, opts.notimezone, ` SKIP ${opts.offset} LIMIT ${opts.limit}`);
 
       const session = neo4j.session();
-      const resultPromise = session.run(query, newOpts);
+      const resultPromise = session.run(query, opts);
 
       return resultPromise.then(result => {
         session.close();
@@ -211,27 +212,36 @@ function queryData(req) {
           },
           event.value = record.get(2);
           event.label = record.get(3);
-          let windows = record.get(4);
-          event.windows = windows;
-          event.confirmed = windows.filter((window) => (window.confirmed === true)).length;
-          event.rejected = windows.filter((window) => window.confirmed === false).length;
-          let reviewer = record.get(5);
-          event.reviewer = reviewer? reviewer.properties : null;
-          let review = record.get(6);
-          event.review = review? review.properties : null;
+          if (opts.includeWindows) {
+            let windows = record.get(4);
+            event.windows = windows;
+            event.confirmed = windows.filter((window) => (window.confirmed === true)).length;
+            event.rejected = windows.filter((window) => window.confirmed === false).length;
+            let reviewer = record.get(5);
+            event.reviewer = reviewer? reviewer.properties : null;
+            let review = record.get(6);
+            event.review = review? review.properties : null;
+          }
           return event;
         });
       });
     })
     .then((items) => {
-      return filterWithTz(this.opts, items);
+      return opts.notimezone? items : filterWithTz(opts, items);
     })
     .then((items) => {
-      return {
-        total: items.length,
-        events: limitAndOffset(this.opts, items)
-      };
+      let result = {
+        events: opts.notimezone? items : limitAndOffset(opts, items)
+      }
+      if (!opts.notimezone) {
+        result.total = items.length
+      }
+      return result;
     })
+    .then((data) => {
+      opts = null;
+      return data;
+    });
 
 }
 
@@ -285,17 +295,17 @@ function getEventByGuid(guid) {
 
 function queryReviews(req) {
 
-  return prepareOpts(req)
-    .bind({})
-    .then((opts) => {
-      this.opts = opts;
+  let opts;
 
-      let newOpts = Object.assign({}, opts)
-      if (newOpts.startingAfterLocal) {
-        newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
+  return prepareOpts(req)
+    .then((data) => {
+
+      opts = Object.assign({}, data)
+      if (opts.startingAfterLocal) {
+        opts.startingAfterLocal = moment.tz(data.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
       }
-      if (newOpts.startingBeforeLocal) {
-        newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      if (opts.startingBeforeLocal) {
+        opts.startingBeforeLocal = moment.tz(data.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
       }
 
       let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review) `;
@@ -312,7 +322,7 @@ function queryReviews(req) {
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
 
       const session = neo4j.session();
-      const resultPromise = session.run(query, newOpts);
+      const resultPromise = session.run(query, opts);
 
       return resultPromise.then(result => {
         session.close();
@@ -326,24 +336,28 @@ function queryReviews(req) {
       });
     })
     .then((items) => {
-      return filterWithTz(this.opts, items);
+      return filterWithTz(opts, items);
+    })
+    .then((items) => {
+      opts = null;
+      return items;
     });
 
 }
 
 function getAiModelsForReviews(req) {
 
-  return prepareOpts(req)
-    .bind({})
-    .then((opts) => {
-      this.opts = opts;
-      let newOpts = Object.assign({}, opts);
+  let opts;
 
-      if (newOpts.startingAfterLocal) {
-        newOpts.startingAfterLocal = moment.tz(opts.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
+  return prepareOpts(req)
+    .then((data) => {
+      opts = Object.assign({}, data);
+
+      if (opts.startingAfterLocal) {
+        opts.startingAfterLocal = moment.tz(data.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
       }
-      if (newOpts.startingBeforeLocal) {
-        newOpts.startingBeforeLocal = moment.tz(opts.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
+      if (opts.startingBeforeLocal) {
+        opts.startingBeforeLocal = moment.tz(data.startingBeforeLocal, 'UTC').add(14, 'hours').valueOf();
       }
 
       let query = `MATCH (ev:event)<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review) `;
@@ -356,7 +370,7 @@ function getAiModelsForReviews(req) {
       query = sqlUtils.condAdd(query, true, ' RETURN DISTINCT ai');
 
       const session = neo4j.session();
-      const resultPromise = session.run(query, newOpts);
+      const resultPromise = session.run(query, opts);
 
       return resultPromise.then(result => {
         session.close();
@@ -369,7 +383,11 @@ function getAiModelsForReviews(req) {
       })
     })
     .then((items) => {
-      return filterWithTz(this.opts, items);
+      return filterWithTz(opts, items);
+    })
+    .then((items) => {
+      opts = null;
+      return items;
     });
 
 }
