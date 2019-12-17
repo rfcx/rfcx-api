@@ -446,7 +446,7 @@ function sendPushNotificationsForEvent(data) {
           if (dbGuardianGroup.GuardianAudioEventValues && dbGuardianGroup.GuardianAudioEventValues.find((dbEventValue) => { return dbEventValue.value === data.value; })) {
             let opts = {
               app: 'rangerApp',
-              topic: dbGuardianGroup.shortname,
+              topic: `guardiangroup-${dbGuardianGroup.shortname}`,
               data: {
                 type: data.type || 'alert',
                 value: data.value,
