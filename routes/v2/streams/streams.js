@@ -109,7 +109,7 @@ router.route("/")
       .catch(e => { httpError(req, res, 500, e, 'Error while creating a stream.'); console.log(e) });
   });
 
-router.route("/master-segment")
+router.route("/master-segments")
   .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 
     let transformedParams = {};
@@ -270,7 +270,7 @@ router.route("/:guid")
 
   });
 
-router.route("/:guid/segment")
+router.route("/:guid/segments")
   .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 
     let transformedParams = {};
@@ -280,6 +280,7 @@ router.route("/:guid/segment")
     params.convert('master_segment').toString();
     params.convert('starts').toInt().minimum(0).maximum(32503669200000);
     params.convert('ends').toInt().minimum(0).maximum(32503669200000);
+    params.convert('sample_count').toInt().minimum(1);
 
     let stream;
 
@@ -296,15 +297,16 @@ router.route("/:guid/segment")
           starts: transformedParams.starts,
           ends: transformedParams.ends,
           stream: stream.id,
-          master_segment: masterSegment.id
+          master_segment: masterSegment.id,
+          sample_count: transformedParams.sample_count,
         };
         if (transformedParams.guid) {
           opts.guid = transformedParams.guid;
         }
         return models.Segment.create(opts)
-        .then((dbSegment) => {
-          return dbSegment.reload({ include: [{ all: true }] });
-        })
+          .then((dbSegment) => {
+            return dbSegment.reload({ include: [{ all: true }] });
+          })
       })
       .then((data) => {
         return streamsService.formatSegment(data);

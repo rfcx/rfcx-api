@@ -37,6 +37,16 @@ module.exports = function(sequelize, DataTypes) {
         }
       }
     },
+    sample_count: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      validate: {
+        isInt: true,
+        min: {
+          args: [ 1 ],
+          msg: 'sample_count should be equal to or greater than 1'
+        },
+      }
+    },
   }, {
     classMethods: {
       associate: function(models) {
