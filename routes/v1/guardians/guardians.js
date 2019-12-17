@@ -179,6 +179,7 @@ router.route("/register")
     params.convert('guid').toString().toLowerCase();
     params.convert('token').toString().toLowerCase();
     params.convert('site_guid').optional().toString().toLowerCase();
+    params.convert('shortname').optional().toString();
 
     params.validate()
       .then(() => {
@@ -186,7 +187,7 @@ router.route("/register")
           .findOrCreate({
             where: {
               guid: transformedParams.guid,
-              shortname: `_${transformedParams.guid.substr(0,4)}`,
+              shortname: transformedParams.shortname? transformedParams.shortname : `_${transformedParams.guid.substr(0,4)}`,
               latitude: 0,
               longitude: 0
             }
