@@ -123,6 +123,7 @@ router.route("/:guid/trigger")
       .then((guardian) => {
         this.guardian = guardian;
         this.notificationData = {
+          issuer: "prediction_service",
           audio_guid: this.eventData.event.audioGuid,
           measured_at: this.eventData.event.audioMeasuredAt,
           value: this.eventData.label.value,

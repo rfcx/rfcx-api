@@ -466,6 +466,7 @@ router.route('/')
                       app: 'rangerApp',
                       topic: dbGuardianGroup.shortname,
                       data: {
+                        issuer: "perception_cognition",
                         type: this.type,
                         value: this.value,
                         event_guid: event.guid,
