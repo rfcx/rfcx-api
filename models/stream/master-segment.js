@@ -55,6 +55,10 @@ module.exports = function(sequelize, DataTypes) {
         },
       }
     },
+    meta: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true,
+    }
   }, {
     classMethods: {
       associate: function(models) {

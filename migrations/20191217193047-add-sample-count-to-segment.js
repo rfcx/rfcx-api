@@ -22,7 +22,7 @@ module.exports = {
 
   down: function (queryInterface, Sequelize) {
 
-    return queryInterface.removeColumn('MasterSegments', 'sample_count');
+    return queryInterface.removeColumn('Segments', 'sample_count');
 
   }
 };

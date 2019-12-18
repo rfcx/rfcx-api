@@ -125,6 +125,7 @@ router.route("/master-segments")
     params.convert('channels_count').optional().toInt().default(1).minimum(1);
     params.convert('bit_rate').toInt().default(1).minimum(1);
     params.convert('codec').toString();
+    params.convert('meta').optional();
 
     params.validate()
       .then(() => {
@@ -172,6 +173,12 @@ router.route("/master-segments")
         });
       })
       .then(() => {
+        if (transformedParams.meta && Object.keys(transformedParams.meta).length !== 0 && transformedParams.meta.constructor === Object) {
+          transformedParams.meta = JSON.stringify(transformedParams.meta);
+        }
+        else {
+          delete transformedParams.meta;
+        }
         return streamsService.createMasterSegment(transformedParams);
       })
       .then((data) => {
