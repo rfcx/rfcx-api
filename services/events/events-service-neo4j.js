@@ -63,16 +63,20 @@ function prepareOpts(req) {
     return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
       .then((groups) => {
         groups.forEach((group) => {
-          (group.GuardianAudioEventValues || []).forEach((value) => {
-            if (!opts.values.includes(value.value)) {
-              opts.values.push(value.value);
-            }
-          });
-          (group.Guardians || []).forEach((guardian) => {
-            if (!opts.guardians.includes(guardian.guid)) {
-              opts.guardians.push(guardian.guid);
-            }
-          });
+          if (!opts.values.length) {
+            (group.GuardianAudioEventValues || []).forEach((value) => {
+              if (!opts.values.includes(value.value)) {
+                opts.values.push(value.value);
+              }
+            });
+          }
+          if (!opts.guardians.length) {
+            (group.Guardians || []).forEach((guardian) => {
+              if (!opts.guardians.includes(guardian.guid)) {
+                opts.guardians.push(guardian.guid);
+              }
+            });
+          }
         });
         return Promise.resolve(opts);
       });
