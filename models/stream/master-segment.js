@@ -50,8 +50,8 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
-          msg: 'bit_rate should be equal to or greater than 1'
+          args: [ 0 ],
+          msg: 'bit_rate should be equal to or greater than 0'
         },
       }
     },
