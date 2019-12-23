@@ -19,6 +19,50 @@ const Converter = require("../../../utils/converter/converter");
 const allowedVisibilities = ['private', 'public', 'site'];
 
 router.route("/")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    return streamsService.queryData(req)
+      .then(streamsService.formatStreamsRaw)
+      .then(function(json) {
+        res.status(200).send(json);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, "Error while searching streams."); console.log(e) });
+
+  })
+
+router.route("/:guid")
+  .get(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    streamsService.getStreamByGuid(req.params.guid)
+      .then((dbStream) => {
+        let accessibleSites;
+        try {
+          accessibleSites = req.rfcx.auth_token_info['https://rfcx.org/app_metadata'].accessibleSites;
+        }
+        catch(e) {
+          accessibleSites = [];
+        }
+        if (dbStream.Visibility.value === 'private' && dbStream.User.guid !== req.rfcx.auth_token_info.guid ||
+            dbStream.Visibility.value === 'site' && !accessibleSites.includes(dbStream.Site.guid)) {
+          throw new ForbiddenError(`You don't have access to this stream.`);
+        }
+        return streamsService.formatStream(dbStream);
+      })
+      .then(function(json) {
+        res.status(200).send(json);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, "Error while searching for the stream."); console.log(e) });
+
+  })
+
+router.route("/")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     let transformedParams = {};
