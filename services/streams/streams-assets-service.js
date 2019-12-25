@@ -26,8 +26,8 @@ function parseFileNameAttrs(req) {
       return;
     }
     function findStartsWith(symb) {
-      let item = nameArr.find((item) => {
-        return item.startsWith(symb);
+      let item = nameArr.find((item, index) => {
+        return index !== 0 && item.startsWith(symb);
       });
       return item? item.slice(symb.length) : undefined;
     }
