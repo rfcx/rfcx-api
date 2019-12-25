@@ -163,6 +163,7 @@ var routes = {
     ],
     streams: [
       require("./routes/v2/streams/streams"),
+      require("./routes/v2/streams/streams-assets"),
     ],
     tags: [
       require("./routes/v2/tags/tags"),
