@@ -359,8 +359,14 @@ router.route("/:guid/segments")
             return dbSegment.reload({ include: [{ all: true }] });
           })
       })
-      .then((data) => {
-        return streamsService.formatSegment(data);
+      .then((segmentFormatted) => {
+        return streamsService.refreshStreamStartEnd(stream)
+          .then(() => {
+            return segmentFormatted;
+          });
+      })
+      .then((segmentFormatted) => {
+        return streamsService.formatSegment(segmentFormatted);
       })
       .then(function(json) {
         res.status(200).send(json);
