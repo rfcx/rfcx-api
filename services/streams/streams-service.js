@@ -3,7 +3,6 @@ const EmptyResultError = require('../../utils/converter/empty-result-error');
 const sqlUtils = require("../../utils/misc/sql");
 const Promise = require("bluebird");
 const moment = require('moment-timezone');
-const sequelize = require('sequelize');
 
 const streamQuerySelect =
   `SELECT stream.guid as guid, stream.name as name, stream.description as description, stream.starts as starts, stream.ends as ends,
@@ -273,7 +272,12 @@ function refreshStreamStartEnd(stream) {
     })
     .then((segmentMax) => {
       ends = segmentMax;
-      return updateStream(stream, { starts, ends });
+      if (starts && ends) {
+        return updateStream(stream, { starts, ends });
+      }
+      else {
+        return Promise.resolve();
+      }
     });
 }
 
