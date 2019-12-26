@@ -83,4 +83,5 @@ module.exports = {
   getAllGuardianAudioEventValuesByValues,
   getGuardianAudioEventValues,
   searchForHighLevelKeys,
+  combineGuardianAudioEventValueLabel,
 }

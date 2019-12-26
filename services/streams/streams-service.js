@@ -3,6 +3,7 @@ const EmptyResultError = require('../../utils/converter/empty-result-error');
 const sqlUtils = require("../../utils/misc/sql");
 const Promise = require("bluebird");
 const moment = require('moment-timezone');
+const ForbiddenError = require("../../utils/converter/forbidden-error");
 
 const streamQuerySelect =
   `SELECT stream.guid as guid, stream.name as name, stream.description as description, stream.starts as starts, stream.ends as ends,
@@ -281,6 +282,21 @@ function refreshStreamStartEnd(stream) {
     });
 }
 
+function checkUserAccessToStream(req, dbStream) {
+  let accessibleSites;
+  try {
+    accessibleSites = req.rfcx.auth_token_info['https://rfcx.org/app_metadata'].accessibleSites;
+  }
+  catch(e) {
+    accessibleSites = [];
+  }
+  if (dbStream.Visibility.value === 'private' && dbStream.User.guid !== req.rfcx.auth_token_info.guid ||
+      dbStream.Visibility.value === 'site' && !accessibleSites.includes(dbStream.Site.guid)) {
+    throw new ForbiddenError(`You don't have access to this stream.`);
+  }
+  return true;
+}
+
 module.exports = {
   getStreamByGuid,
   updateStream,
@@ -295,4 +311,5 @@ module.exports = {
   formatStreams,
   formatStream,
   refreshStreamStartEnd,
+  checkUserAccessToStream,
 };
