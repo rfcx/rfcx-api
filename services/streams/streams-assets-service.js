@@ -7,6 +7,7 @@ const path = require('path');
 const moment = require('moment-timezone');
 const ValidationError = require("../../utils/converter/validation-error");
 const audioUtils = require("../../utils/rfcx-audio").audioUtils;
+const assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 
 const possibleWindowFuncs = ["dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser"];
 const possibleExtensions = ['png', 'wav', 'opus', 'flac', 'mp3'];
@@ -217,6 +218,7 @@ function generateFile(req, res, attrs, segments) {
       }
     })
     .then(() => {
+      // Rspond with a file
       if (attrs.fileType === 'spec') {
         return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, "image/png", !!req.query.inline)
       }
@@ -224,6 +226,18 @@ function generateFile(req, res, attrs, segments) {
         return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline)
       }
     })
+    .then(() => {
+      // Clean up everything
+      segments.forEach((segment) => {
+        assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath);
+      });
+      if (attrs.fileType === 'spec') {
+        assetUtils.deleteLocalFileFromFileSystem(audioFilePath);
+      }
+      segments = null;
+      attrs = null;
+      return true;
+    });
 }
 
 module.exports = {
