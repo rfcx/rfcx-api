@@ -136,8 +136,9 @@ function generateFile(req, res, attrs, segments) {
   // Step 1: Download all segment files
   segments.forEach((segment) => {
     const ts = moment.tz(segment.starts, 'UTC');
-    const extension = path.extname(segment.MasterSegment.filename)
-    const remotePath = `s3://${process.env.INGEST_BUCKET}/${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.Stream.guid}/${segment.guid}${extension}`;
+    const segmentExtension = segment.FileExtension && segment.FileExtension.value?
+      segment.FileExtension.value : path.extname(segment.MasterSegment.filename);
+    const remotePath = `s3://${process.env.INGEST_BUCKET}/${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.Stream.guid}/${segment.guid}${segmentExtension}`;
 
     let prom = audioUtils.cacheSourceAudio(remotePath)
       .then(function (data) {

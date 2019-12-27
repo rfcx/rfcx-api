@@ -322,8 +322,9 @@ router.route("/:guid/segments")
     params.convert('starts').toInt().minimum(0).maximum(32503669200000);
     params.convert('ends').toInt().minimum(0).maximum(32503669200000);
     params.convert('sample_count').toInt().minimum(1);
+    params.convert('file_extension').toString();
 
-    let stream;
+    let stream, masterSegment;
 
     params.validate()
       .then(() => {
@@ -333,13 +334,21 @@ router.route("/:guid/segments")
         stream = dbStream;
         return streamsService.getMasterSegmentByGuid(transformedParams.master_segment);
       })
-      .then((masterSegment) => {
+      .then((dbMasterSegment) => {
+        masterSegment = dbMasterSegment;
+        return models.FileExtension.findOrCreate({
+          where: { $or: { value: transformedParams.file_extension }},
+          defaults: { value: transformedParams.file_extension }
+        })
+      })
+      .spread((dbFileExtension, created) => {
         const opts = {
           starts: transformedParams.starts,
           ends: transformedParams.ends,
           stream: stream.id,
           master_segment: masterSegment.id,
           sample_count: transformedParams.sample_count,
+          file_extension: dbFileExtension.id,
         };
         if (transformedParams.guid) {
           opts.guid = transformedParams.guid;
@@ -359,6 +368,8 @@ router.route("/:guid/segments")
         return streamsService.formatSegment(segmentFormatted);
       })
       .then(function(json) {
+        stream = null;
+        masterSegment = null;
         res.status(200).send(json);
       })
       .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
