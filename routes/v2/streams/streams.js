@@ -144,7 +144,7 @@ router.route("/")
   });
 
 router.route("/master-segments")
-  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
@@ -312,7 +312,7 @@ router.route("/:guid")
   });
 
 router.route("/:guid/segments")
-  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
