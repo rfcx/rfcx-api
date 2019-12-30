@@ -20,7 +20,7 @@ pipeline {
             sh "docker build -t ${APP}_${PHASE}:${BUILD_NUMBER} ."
             sh "docker tag ${APP}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APP}_${PHASE}:${BUILD_NUMBER}"
             sh "docker push ${ECR}/${APP}_${PHASE}:${BUILD_NUMBER}"
-            sh "docker rmi ${ECR}/${APP}_${PHASE}:${BUILD_NUMBER}"
+            sh "docker system prune -af"
             }
 
            post {
