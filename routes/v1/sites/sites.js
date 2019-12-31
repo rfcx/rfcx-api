@@ -37,7 +37,7 @@ router.route("/")
             })
             .then((user) => {
               return dbSite.filter((site) => {
-                return user.accessibleSites.includes(site.guid);
+                return user.defaultSite === site.guid || user.accessibleSites.includes(site.guid);
               });
             });
         }
