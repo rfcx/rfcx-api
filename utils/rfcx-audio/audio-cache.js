@@ -2,6 +2,7 @@ var Promise = require("bluebird");
 var fs = require("fs");
 var hash = require("../../utils/misc/hash.js").hash;
 var aws = require("../../utils/external/aws.js").aws();
+var EmptyResultError = require('../../utils/converter/empty-result-error');
 
 exports.audioUtils = {
 
@@ -18,7 +19,10 @@ exports.audioUtils = {
                     sourceFilePath = process.env.CACHE_DIRECTORY+"ffmpeg/"+hashName+"."+audioFileExtension;
 
                 aws.s3(s3Bucket).get(s3Path)
-                  .on("response", function(s3Res){
+                  .on("response", function(s3Res) {
+                    if (s3Res && s3Res.statusCode === 404) {
+                      return reject(new EmptyResultError(s3Res.statusMessage || 'File not found.'))
+                    }
                     var tempWriteStream = fs.createWriteStream(sourceFilePath);
                     tempWriteStream.on("error", function(err){ console.log(err); });
                     s3Res.on("data", function(data){ tempWriteStream.write(data); });

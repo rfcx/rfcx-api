@@ -151,30 +151,41 @@ function generateFile(req, res, attrs, segments) {
     .then(() => {
       segments.forEach((segment, ind) => {
         sox += ` "|${process.env.SOX_PATH} ${segment.sourceFilePath} -p `
-        // when requested time range starts earlier than first segment
-        // add empty sound at the start
+
+        let pad  = { start: 0, end: 0 };
+        let trim = { start: 0, end: 0 };
         if (ind === 0 && starts < segment.starts) {
-          let padStart = (segment.starts - starts) / 1000
-          sox += ` pad ${padStart} 0`
+          // when requested time range starts earlier than first segment
+          // add empty sound at the start
+          pad.start = (segment.starts - starts) / 1000
         }
-        // when there is a gap between current and next segment
-        // add empty sound at the end of current segment
-        let padEnd = segments[ind + 1]? (segments[ind + 1].starts - segment.ends) / 1000 : 0;
-        sox += ` pad 0 ${padEnd}`
-        // when requested time range starts later than first segment
-        // cut first segment at the start
-        if (ind === 0 && starts > segment.starts) {
-          sox += ` trim ${(starts - segment.starts) / 1000} -0`
+        let nextSegment = segments[ind + 1];
+        if (ind < (segments.length - 1) && nextSegment && (nextSegment.starts - segment.ends) > 0) {
+          // when there is a gap between current and next segment
+          // add empty sound at the end of current segment
+          pad.end = (nextSegment.starts - segment.ends) / 1000;
         }
-        // when requested time range ends earlier than last segment
-        // cut last segment at the end
-        if (ind === (segments.length - 1) && ends < segment.ends) {
-          sox += ` trim 0 ${(segment.ends - ends) / 1000}`
-        }
-        // when requested time range ends later than last segment
-        // add empty sound at the end
         if (ind === (segments.length - 1) && ends > segment.ends) {
-          sox += ` pad 0 ${(ends - segment.ends) / 1000}`
+          // when requested time range ends later than last segment
+          // add empty sound at the end
+          pad.end = (ends - segment.ends) / 1000
+        }
+
+        if (ind === 0 && starts > segment.starts) {
+          // when requested time range starts later than first segment
+          // cut first segment at the start
+          trim.start = (starts - segment.starts) / 1000;
+        }
+        if (ind === (segments.length - 1) && ends < segment.ends) {
+          // when requested time range ends earlier than last segment
+          // cut last segment at the end
+          trim.end = (segment.ends - ends) / 1000;
+        }
+        if (pad.start !== 0 || pad.end !== 0) {
+          sox += ` pad ${pad.start} ${pad.end}`;
+        }
+        if (trim.start !== 0 || trim.end !== 0) {
+          sox += ` trim ${trim.start} -${trim.end}`;
         }
         sox += '"'
       })
