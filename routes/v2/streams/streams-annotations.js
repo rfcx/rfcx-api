@@ -21,7 +21,7 @@ router.route("/:guid/annotations")
   .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 
     let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
+    let params = new Converter(req.query, transformedParams);
 
     params.convert('starts').toInt().minimum(0).maximum(32503669200000);
     params.convert('ends').toInt().minimum(0).maximum(32503669200000);
