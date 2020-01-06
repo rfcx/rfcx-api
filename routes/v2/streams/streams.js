@@ -143,7 +143,7 @@ router.route("/")
       .catch(e => { httpError(req, res, 500, e, 'Error while creating a stream.'); console.log(e) });
   });
 
-router.route("/master-segments")
+router.route("/:guid/master-segments")
   .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
 
     let transformedParams = {};
@@ -159,9 +159,29 @@ router.route("/master-segments")
     params.convert('channels_count').optional().toInt().default(1).minimum(1);
     params.convert('bit_rate').toInt().default(1).minimum(1);
     params.convert('codec').toString();
+    params.convert('sha1_checksum').toString();
     params.convert('meta').optional();
 
     params.validate()
+      .then(() => {
+        return streamsService.getStreamByGuid(req.params.guid)
+      })
+      .then((dbStream) => {
+        transformedParams.stream = dbStream.id;
+        // check for duplicate master segment files in this stream
+        return models.MasterSegment.findAll({
+          where: {
+            stream: dbStream.id,
+            sha1_checksum: transformedParams.sha1_checksum
+          }
+        })
+        .then((existingMasterSegment) => {
+          if (existingMasterSegment && existingMasterSegment.length) {
+            throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.');
+          }
+          return true;
+        });
+      })
       .then(() => {
         const sampleRateOpts = { value: transformedParams.sample_rate };
         return models.SampleRate.findOrCreate({

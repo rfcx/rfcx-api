@@ -58,10 +58,18 @@ module.exports = function(sequelize, DataTypes) {
     meta: {
       type: DataTypes.TEXT('long'),
       allowNull: true,
-    }
+    },
+    sha1_checksum: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false, // it will be unique only at stream level
+      validate: {
+      }
+    },
   }, {
     classMethods: {
       associate: function(models) {
+        MasterSegment.belongsTo(models.Stream, { as: 'Stream', foreignKey: "stream" });
         MasterSegment.belongsTo(models.Codec, { as: 'Codec', foreignKey: "codec" });
         MasterSegment.belongsTo(models.Format, { as: 'Format', foreignKey: "format" });
         MasterSegment.belongsTo(models.SampleRate, { as: 'SampleRate', foreignKey: "sample_rate" });
