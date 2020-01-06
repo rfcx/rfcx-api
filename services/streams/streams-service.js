@@ -83,7 +83,7 @@ function queryData(req) {
       let sql = `${streamQuerySelect} FROM Streams as stream ${streamQueryJoins} `;
       sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
       sql = addGetQueryParams(sql, opts);
-      sql = sqlUtils.condAdd(sql, true, ' GROUP BY stream.id, segment.created_at');
+      sql = sqlUtils.condAdd(sql, true, ' GROUP BY stream.id');
       sql = sqlUtils.condAdd(sql, true, ' ORDER BY ' + opts.order + ' ' + opts.dir);
       sql = sqlUtils.condAdd(sql, true, ' LIMIT :limit OFFSET :offset');
 
