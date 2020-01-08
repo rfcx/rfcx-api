@@ -32,20 +32,28 @@ function parseFileNameAttrs(req) {
       });
       return item? item.slice(symb.length) : undefined;
     }
-    const dimension = findStartsWith('d');
+    const dimensionsStr = findStartsWith('d');
+    const timeStr = findStartsWith('t');
+    const clipStr = findStartsWith('r');
     resolve({
       streamGuid: nameArr[0],
-      starts: findStartsWith('s'),
-      ends: findStartsWith('e'),
-      gain: findStartsWith('g'),
-      fileType: findStartsWith('f'),
-      dimensions: dimension? {
-        x: dimension.split('x')[0],
-        y: dimension.split('x')[1]
+      time: timeStr? {
+        starts: timeStr.split('.')[0],
+        ends: timeStr.split('.')[1]
       } : undefined,
-      window: findStartsWith('w'),
-      contrast: findStartsWith('z'),
-      sampleRate: findStartsWith('sr'),
+      clip: clipStr && clipStr !== 'full'? {
+        bottom: clipStr.split('.')[0],
+        top: clipStr.split('.')[1]
+      } : 'full',
+      gain: findStartsWith('g') || '0',
+      fileType: findStartsWith('f'),
+      dimensions: dimensionsStr? {
+        x: dimensionsStr.split('.')[0],
+        y: dimensionsStr.split('.')[1]
+      } : undefined,
+      windowFunc: findStartsWith('w') || 'dolph',
+      zAxis: findStartsWith('z') || '120',
+      // sampleRate: findStartsWith('sr'),
     });
   });
 }
@@ -58,8 +66,8 @@ function areFileNameAttrsValid(req, attrs) {
     if (!attrs.fileType) {
       return reject(new ValidationError('"f" (file type) attribute is required.'))
     }
-    if (!attrs.starts || !attrs.ends) {
-      return reject(new ValidationError('"s" (starts) and "e" (ends) attributes are required.'));
+    if (!attrs.time || !attrs.time.starts || !attrs.time.ends) {
+      return reject(new ValidationError('"t" (time) attribute is required and should have the following format: "t20190907T004303000Z.20190907T005205000Z".'));
     }
     if (!possibleExtensions.includes(req.rfcx.content_type)) {
       return reject(new ValidationError(`Unsupported file extension. Possible values: ${possibleExtensions.join(', ')}`));
@@ -77,13 +85,16 @@ function areFileNameAttrsValid(req, attrs) {
       return reject(new ValidationError(`Invalid file extension. File type and file extension should match.`));
     }
     if (attrs.fileType === 'spec' && (!attrs.dimensions || !attrs.dimensions.x || !attrs.dimensions.y)) {
-      return reject(new ValidationError('"d" (dimensions) attribute is required and should have the following format: 100x200.'));
+      return reject(new ValidationError('"d" (dimensions) attribute is required and should have the following format: d100.200.'));
     }
-    if (attrs.fileType === 'spec' && attrs.window && !possibleWindowFuncs.includes(attrs.window)) {
+    if (attrs.fileType === 'spec' && attrs.windowFunc && !possibleWindowFuncs.includes(attrs.windowFunc)) {
       return reject(new ValidationError(`"w" unsupported window function. Possible values: ${possibleWindowFuncs.join(', ')}.`));
     }
     if (!possibleFileTypes.includes(attrs.fileType)) {
       return reject(new ValidationError(`"f" unsupported file type. Possible values: ${possibleFileTypes.join(', ')}.`));
+    }
+    if (parseInt(attrs.zAxis) < 20 || parseInt(attrs.zAxis) > 180) {
+      return reject(new ValidationError(`"z" may range from 20 to 180.`));
     }
     return resolve(true);
   });
@@ -123,14 +134,14 @@ function getSegments(opts) {
 }
 
 function generateFile(req, res, attrs, segments) {
-  const filename = req.params.attrs;
+  const filename = combineStandardFilename(attrs);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
   const filenameAudio = `${filename}.${extension}`;
   const audioFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudio}`;
   const filenameSpec = `${filename}.png`;
   const specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`
-  const starts = moment.tz(attrs.starts, 'UTC').valueOf();
-  const ends = moment.tz(attrs.ends, 'UTC').valueOf();
+  const starts = moment.tz(attrs.time.starts, 'UTC').valueOf();
+  const ends = moment.tz(attrs.time.ends, 'UTC').valueOf();
   let proms = [];
   let sox = `${process.env.SOX_PATH} --combine concatenate `;
   // Step 1: Download all segment files
@@ -150,7 +161,11 @@ function generateFile(req, res, attrs, segments) {
   return Promise.all(proms)
     .then(() => {
       segments.forEach((segment, ind) => {
-        sox += ` "|${process.env.SOX_PATH} ${segment.sourceFilePath} -p `
+        sox += ` "|${process.env.SOX_PATH}`
+        if (attrs.gain && attrs.gain !== '0') {
+          sox += ` -v ${gainToVol(attrs.gain)}`;
+        }
+        sox += ` ${segment.sourceFilePath} -p `
 
         let pad  = { start: 0, end: 0 };
         let trim = { start: 0, end: 0 };
@@ -190,13 +205,10 @@ function generateFile(req, res, attrs, segments) {
         sox += '"'
       })
       // Set sample rate, channels count and file name
-      if (attrs.sampleRate) {
-        sox += ` -r ${attrs.sampleRate}`;
-      }
+      // if (attrs.sampleRate) {
+      //   sox += ` -r ${attrs.sampleRate}`;
+      // }
       sox += ` -c 1 ${audioFilePath}`;
-      if (attrs.gain) {
-        sox += ` gain ${attrs.gain}`;
-      }
       return new Promise(function(resolve, reject) {
         console.log('\n\n', sox, '\n\n');
         exec(sox, (err, stdout, stderr) => {
@@ -214,9 +226,7 @@ function generateFile(req, res, attrs, segments) {
         return true
       }
       else {
-        let windowFunc = attrs.window? attrs.window : 'dolph';
-        let zAxis = attrs.contrast !== undefined? attrs.contrast : 95;
-        let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${attrs.dimensions.y} -w ${windowFunc} -z ${zAxis} -s`;
+        let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${attrs.dimensions.y} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`;
         return new Promise(function(resolve, reject) {
           console.log('\n', soxPng, '\n');
           exec(soxPng, (err, stdout, stderr) => {
@@ -250,6 +260,37 @@ function generateFile(req, res, attrs, segments) {
       attrs = null;
       return true;
     });
+}
+
+function gainToVol(gain) {
+  let gainParsed = parseInt(gain);
+  if (gainParsed === 0) {
+    return 1
+  }
+  else if (gainParsed < 0) {
+    let vol = 1 - Math.abs(gainParsed/100);
+    return vol > 0? vol : 0;
+  }
+  else {
+    return 1 + Math.abs(gainParsed/100);
+  }
+}
+
+function clipToStr(clip) {
+  if (clip === 'full') {
+    return 'full'
+  }
+  else {
+    return `${clip.bottom}.${clip.top}`;
+  }
+}
+
+function combineStandardFilename(attrs) {
+  let filename = `${attrs.streamGuid}_t${attrs.time.starts}.${attrs.time.ends}_r${clipToStr(attrs.clip)}_g${attrs.gain}_f${attrs.fileType}`;
+  if (attrs.fileType === 'spec') {
+    filename += `_d${attrs.dimensions.x}.${attrs.dimensions.y}_w${attrs.windowFunc}_z${attrs.zAxis}`;
+  }
+  return filename;
 }
 
 module.exports = {

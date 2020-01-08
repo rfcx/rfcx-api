@@ -43,7 +43,7 @@ router.route("/assets/:attrs")
       })
       .then((dbStream) => {
         streamsService.checkUserAccessToStream(req, dbStream);
-        return streamsAssetsService.getSegments({ streamId: dbStream.id, starts: attrs.starts, ends: attrs.ends });
+        return streamsAssetsService.getSegments({ streamId: dbStream.id, starts: attrs.time.starts, ends: attrs.time.ends });
       })
       .then((segments) => {
         if (!segments.length) {
