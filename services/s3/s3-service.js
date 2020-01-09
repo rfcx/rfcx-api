@@ -31,6 +31,20 @@ function deleteObject(bucket, fullPath) {
   });
 }
 
+function headObject(s3Path, bucket) {
+  return new Promise((resolve, reject) => {
+      aws.s3(bucket).headFile(s3Path, (err, data) => {
+        if (err) { return reject(err); }
+        else if (data && data.statusCode === 200) {
+          return resolve(data);
+        }
+        else {
+          reject(new Error(`Failed to get object from S3. Status code: ${data.statusCode}`));
+        }
+      });
+  });
+}
+
 function getObject(localPath, filename, bucket) {
   return new Promise((resolve, reject) => {
     try {
@@ -78,6 +92,7 @@ function getObject(localPath, filename, bucket) {
 
 module.exports = {
   putObject,
+  headObject,
   getObject,
   deleteObject,
 };
