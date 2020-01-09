@@ -12,20 +12,21 @@ const streamsAssetsService = require('../../../services/streams/streams-assets-s
 
 /**
   Spectrogram format (fspec):
-    65c07254-3801-4de8-b107-bb18167a0f22_s20190907T004300Z_e20190907T005202Z_g0_sr12000_fspec_d200x512_wdolph_z95.png
+    ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_rfull_g1_fspec_d600.512_wdolph_z120.png
+    ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_r100.2000_g1.5_fspec_d600.512_wdolph_z120.png
   Audio format (fwav , fopus, fflac, fmp3):
-    65c07254-3801-4de8-b107-bb18167a0f22_s20190907T004300Z_e20190907T005202Z_g0_sr12000_fwav.wav
+    ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_rfull_g1_fwav.wav
+    ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_r100.2000_g1.5_fwav.wav
 
   First part of the filename is the stream id 65c07254-3801-4de8-b107-bb18167a0f22
   All following parameters are separated by _ and start with a single character that identifies the parameter type
-    s  = start timestamp (ISO format without dashes or colons)
-    e  = end timestamp
+    t  = start-end time range jointed with dot (custom format). includes milliseconds
+    r  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (NOT IMPLEMENTED YET)
+    g  = gain (volume) (int/float) 1 by default, which means 100% volume. 0 means no sound. 0.5 - 50% of volume 2 - double volume
     f  = file type (spec, wav, opus, flac, mp3)
-    sr = sample rate
-    g  = gain (int)
     d  = dimension e.g. 200x512 (for file type spec only)
-    w  = window function e.g. dolph (for file type spec only)
-    z  = contrast of spectrogram (int) (for file type spec only)
+    w  = window function dolph by default (for file type spec only)
+    z  = contrast of spectrogram (int) possible range is between 20 and 180 (for file type spec only)
 */
 
 router.route("/assets/:attrs")
