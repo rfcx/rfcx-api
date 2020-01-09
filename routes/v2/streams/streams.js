@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 var models  = require("../../../models");
-var guid = require('../../../utils/misc/guid');
 var hash = require("../../../utils/misc/hash.js").hash;
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
@@ -74,7 +73,7 @@ router.route("/")
       })
       .bind({})
       .then((dbUser) => {
-        transformedParams.guid = guid.generate();
+        transformedParams.guid = hash.randomString(12);
         if (dbUser) {
           transformedParams.created_by = dbUser.id;
           user = usersService.formatUser(dbUser);
