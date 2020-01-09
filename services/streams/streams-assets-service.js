@@ -45,7 +45,7 @@ function parseFileNameAttrs(req) {
         bottom: clipStr.split('.')[0],
         top: clipStr.split('.')[1]
       } : 'full',
-      gain: findStartsWith('g') || '0',
+      gain: findStartsWith('g') || '1',
       fileType: findStartsWith('f'),
       dimensions: dimensionsStr? {
         x: dimensionsStr.split('.')[0],
@@ -72,8 +72,8 @@ function areFileNameAttrsValid(req, attrs) {
     if (!possibleExtensions.includes(req.rfcx.content_type)) {
       return reject(new ValidationError(`Unsupported file extension. Possible values: ${possibleExtensions.join(', ')}`));
     }
-    if (moment.tz(attrs.ends, 'UTC').diff(moment.tz(attrs.starts, 'UTC'), 'minutes') > 15) {
-      return reject(new ValidationError('Maximum gap between start and end should be less than 15 minutes.'));
+    if ((moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')).diff((moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')), 'minutes') > 15) {
+      return reject(new ValidationError('Maximum range between start and end should be less than 15 minutes.'));
     }
     if (attrs.fileType === 'spec' && req.rfcx.content_type !== 'png') {
       return reject(new ValidationError(`Unsupported file extension. Only png is available for type spec`));
@@ -96,13 +96,16 @@ function areFileNameAttrsValid(req, attrs) {
     if (parseInt(attrs.zAxis) < 20 || parseInt(attrs.zAxis) > 180) {
       return reject(new ValidationError(`"z" may range from 20 to 180.`));
     }
+    if (isNaN(parseFloat(attrs.gain))) {
+      return reject(new ValidationError(`"g" should be float value and be greater or equal to 0`));
+    }
     return resolve(true);
   });
 }
 
 function getSegments(opts) {
-  const starts = moment.tz(opts.starts, 'UTC').valueOf();
-  const ends = moment.tz(opts.ends, 'UTC').valueOf();
+  const starts = moment(opts.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
+  const ends = moment(opts.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   return models.Segment
     .findAll({
       where: {
@@ -140,8 +143,8 @@ function generateFile(req, res, attrs, segments) {
   const audioFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudio}`;
   const filenameSpec = `${filename}.png`;
   const specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`
-  const starts = moment.tz(attrs.time.starts, 'UTC').valueOf();
-  const ends = moment.tz(attrs.time.ends, 'UTC').valueOf();
+  const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
+  const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   let proms = [];
   let sox = `${process.env.SOX_PATH} --combine concatenate `;
   // Step 1: Download all segment files
@@ -162,8 +165,8 @@ function generateFile(req, res, attrs, segments) {
     .then(() => {
       segments.forEach((segment, ind) => {
         sox += ` "|${process.env.SOX_PATH}`
-        if (attrs.gain && attrs.gain !== '0') {
-          sox += ` -v ${gainToVol(attrs.gain)}`;
+        if (attrs.gain && parseFloat(attrs.gain) !== 1) {
+          sox += ` -v ${attrs.gain}`;
         }
         sox += ` ${segment.sourceFilePath} -p `
 
@@ -262,20 +265,6 @@ function generateFile(req, res, attrs, segments) {
     });
 }
 
-function gainToVol(gain) {
-  let gainParsed = parseInt(gain);
-  if (gainParsed === 0) {
-    return 1
-  }
-  else if (gainParsed < 0) {
-    let vol = 1 - Math.abs(gainParsed/100);
-    return vol > 0? vol : 0;
-  }
-  else {
-    return 1 + Math.abs(gainParsed/100);
-  }
-}
-
 function clipToStr(clip) {
   if (clip === 'full') {
     return 'full'
@@ -286,7 +275,7 @@ function clipToStr(clip) {
 }
 
 function combineStandardFilename(attrs) {
-  let filename = `${attrs.streamGuid}_t${attrs.time.starts}.${attrs.time.ends}_r${clipToStr(attrs.clip)}_g${attrs.gain}_f${attrs.fileType}`;
+  let filename = `${attrs.streamGuid}_t${attrs.time.starts}.${attrs.time.ends}_r${clipToStr(attrs.clip)}_g${parseFloat(attrs.gain)}_f${attrs.fileType}`;
   if (attrs.fileType === 'spec') {
     filename += `_d${attrs.dimensions.x}.${attrs.dimensions.y}_w${attrs.windowFunc}_z${attrs.zAxis}`;
   }
