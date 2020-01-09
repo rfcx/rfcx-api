@@ -114,7 +114,7 @@ function getSegments(opts) {
           {
             $and: {
               starts: { $lte: starts },
-              ends:   { $gte: starts }
+              ends:   { $gt: starts }
             },
           },
           {
@@ -188,7 +188,6 @@ function generateFile(req, res, attrs, segments) {
           // add empty sound at the end
           pad.end = (ends - segment.ends) / 1000
         }
-
         if (ind === 0 && starts > segment.starts) {
           // when requested time range starts later than first segment
           // cut first segment at the start
