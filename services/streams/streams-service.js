@@ -109,9 +109,11 @@ function getStreamByGuid(guid, ignoreMissing) {
 }
 
 function updateStream(stream, attrs) {
-  let allowedAttrs = ['name', 'description', 'starts', 'ends', 'location', 'site', 'visibility'];
+  console.log('updateStream', attrs);
+  let allowedAttrs = ['name', 'description', 'starts', 'ends', 'location', 'site', 'visibility', 'max_sample_rate'];
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
+      console.log('update stream', allowedAttr, attrs[allowedAttr]);
       stream[allowedAttr] = attrs[allowedAttr];
     }
   });
@@ -282,6 +284,23 @@ function refreshStreamStartEnd(stream) {
     });
 }
 
+function refreshStreamMaxSampleRate(stream) {
+  let sql = `SELECT MAX(sampleRate.value) as sample_rate, sampleRate.id as sample_rate_id FROM MasterSegments AS masterSegment
+               LEFT JOIN SampleRates AS sampleRate ON sampleRate.id = masterSegment.sample_rate
+               WHERE masterSegment.stream = ${stream.id};`
+  return models.sequelize
+    .query(sql,
+      { replacements: {}, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((data) => {
+      console.log('ddd', data);
+      if (data && data[0] && data[0].sample_rate_id) {
+        return updateStream(stream, { max_sample_rate: data[0].sample_rate_id });
+      }
+      return Promise.resolve();
+    });
+}
+
 function checkUserAccessToStream(req, dbStream) {
   let accessibleSites;
   try {
@@ -311,5 +330,6 @@ module.exports = {
   formatStreams,
   formatStream,
   refreshStreamStartEnd,
+  refreshStreamMaxSampleRate,
   checkUserAccessToStream,
 };

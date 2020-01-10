@@ -330,6 +330,24 @@ router.route("/:guid/master-segments")
 
   });
 
+router.route("/:guid/sr")
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
+
+    return streamsService.getStreamByGuid(req.params.guid)
+      .then((dbStream) => {
+        return streamsService.refreshStreamMaxSampleRate(dbStream);
+      })
+      .then(function(json) {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while refreshing stream max sample rate.'); console.log(e) });
+
+  });
+
 router.route("/:guid/segments")
   .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
 
