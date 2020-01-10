@@ -143,12 +143,6 @@ function generateFile(req, res, attrs, segments) {
   const audioFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudio}`;
   const filenameSpec = `${filename}.png`;
   const specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`
-
-  const filenameAudioCopy = `${filename}_copy.${extension}`;
-  const filenameSpecCopy = `${filename}_copy.png`;
-  const audioFilePathCopy = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudioCopy}`;
-  const specFilePathCopy = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpecCopy}`
-
   const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   let proms = [];
@@ -232,15 +226,6 @@ function generateFile(req, res, attrs, segments) {
       }
     })
     .then(() => {
-      let proms = [
-        runExec(`cp ${audioFilePath} ${audioFilePathCopy}`)
-      ]
-      if (attrs.fileType === 'spec') {
-        proms.push(runExec(`cp ${specFilePath} ${specFilePathCopy}`));
-      }
-      return Promise.all(proms);
-    })
-    .then(() => {
       // Rspond with a file
       if (attrs.fileType === 'spec') {
         return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, "image/png", !!req.query.inline)
@@ -251,9 +236,9 @@ function generateFile(req, res, attrs, segments) {
     })
     .then(() => {
       // Clean up everything
-      // segments.forEach((segment) => {
-      //   assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath);
-      // });
+      segments.forEach((segment) => {
+        assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath);
+      });
       if (attrs.fileType === 'spec') {
         assetUtils.deleteLocalFileFromFileSystem(audioFilePath);
       }
