@@ -251,9 +251,9 @@ function generateFile(req, res, attrs, segments) {
     })
     .then(() => {
       // Clean up everything
-      segments.forEach((segment) => {
-        assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath);
-      });
+      // segments.forEach((segment) => {
+      //   assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath);
+      // });
       if (attrs.fileType === 'spec') {
         assetUtils.deleteLocalFileFromFileSystem(audioFilePath);
       }
