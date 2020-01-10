@@ -143,6 +143,12 @@ function generateFile(req, res, attrs, segments) {
   const audioFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudio}`;
   const filenameSpec = `${filename}.png`;
   const specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`
+
+  const filenameAudioCopy = `${filename}_copy.${extension}`;
+  const filenameSpecCopy = `${filename}_copy.png`;
+  const audioFilePathCopy = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudioCopy}`;
+  const specFilePathCopy = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpecCopy}`
+
   const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   let proms = [];
@@ -211,16 +217,8 @@ function generateFile(req, res, attrs, segments) {
       //   sox += ` -r ${attrs.sampleRate}`;
       // }
       sox += ` -c 1 ${audioFilePath}`;
-      return new Promise(function(resolve, reject) {
-        console.log('\n\n', sox, '\n\n');
-        exec(sox, (err, stdout, stderr) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(stdout.trim());
-        });
-      });
+      console.log('\n\n', sox, '\n\n');
+      return runExec(sox);
     })
     .then(() => {
       // Step 3: generate spectrogram if file type is "spec"
@@ -229,17 +227,18 @@ function generateFile(req, res, attrs, segments) {
       }
       else {
         let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${attrs.dimensions.y} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`;
-        return new Promise(function(resolve, reject) {
-          console.log('\n', soxPng, '\n');
-          exec(soxPng, (err, stdout, stderr) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(stdout.trim());
-          });
-        });
+        console.log('\n', soxPng, '\n');
+        return runExec(soxPng);
       }
+    })
+    .then(() => {
+      let proms = [
+        runExec(`cp ${audioFilePath} ${audioFilePathCopy}`)
+      ]
+      if (attrs.fileType === 'spec') {
+        proms.push(runExec(`cp ${specFilePath} ${specFilePathCopy}`));
+      }
+      return Promise.all(proms);
     })
     .then(() => {
       // Rspond with a file
@@ -262,6 +261,18 @@ function generateFile(req, res, attrs, segments) {
       attrs = null;
       return true;
     });
+}
+
+function runExec(command) {
+  return new Promise(function(resolve, reject) {
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
 }
 
 function clipToStr(clip) {
