@@ -229,6 +229,7 @@ router.route("/:guid/master-segments")
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
+    let stream;
 
     params.convert('guid').toString();
     params.convert('filename').toString();
@@ -249,6 +250,7 @@ router.route("/:guid/master-segments")
       })
       .then((dbStream) => {
         transformedParams.stream = dbStream.id;
+        stream = dbStream;
         // check for duplicate master segment files in this stream
         return models.MasterSegment.findAll({
           where: {
@@ -317,9 +319,13 @@ router.route("/:guid/master-segments")
         return streamsService.createMasterSegment(transformedParams);
       })
       .then((data) => {
-        return streamsService.formatMasterSegment(data);
+        return streamsService.refreshStreamMaxSampleRate(stream)
+          .then(() => {
+            return streamsService.formatMasterSegment(data);
+          });
       })
       .then((data) => {
+        stream = null;
         res.status(200).json(data);
       })
       .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
@@ -330,12 +336,15 @@ router.route("/:guid/master-segments")
 
   });
 
-router.route("/:guid/sr")
+router.route("/:guid/refresh-max-sample-rate")
   .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
 
     return streamsService.getStreamByGuid(req.params.guid)
       .then((dbStream) => {
         return streamsService.refreshStreamMaxSampleRate(dbStream);
+      })
+      .then((dbStream) => {
+        return streamsService.formatStream(dbStream);
       })
       .then(function(json) {
         res.status(200).send(json);
@@ -344,7 +353,7 @@ router.route("/:guid/sr")
       .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while refreshing stream max sample rate.'); console.log(e) });
+      .catch(e => { httpError(req, res, 500, e, 'Error while refreshing max sample rate of the stream.'); console.log(e) });
 
   });
 

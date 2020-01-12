@@ -263,6 +263,7 @@ function formatStream(stream) {
       name: stream.Site.name,
       timezone: stream.Site.timezone
     } : null,
+    sample_rate: stream.SampleRate? stream.SampleRate.value : null,
   };
 }
 
@@ -285,19 +286,20 @@ function refreshStreamStartEnd(stream) {
 }
 
 function refreshStreamMaxSampleRate(stream) {
-  let sql = `SELECT MAX(sampleRate.value) as sample_rate, sampleRate.id as sample_rate_id FROM MasterSegments AS masterSegment
-               LEFT JOIN SampleRates AS sampleRate ON sampleRate.id = masterSegment.sample_rate
-               WHERE masterSegment.stream = ${stream.id};`
+  let sql = `SELECT b.id, b.value
+             FROM MasterSegments a
+             INNER JOIN SampleRates b ON a.sample_rate = b.id
+             INNER JOIN ( SELECT id, MAX(value) max_sample_rate FROM SampleRates GROUP BY id) c ON b.id = c.id AND b.value = c.max_sample_rate
+             WHERE a.stream = ${stream.id} ORDER BY b.value DESC LIMIT 1;`
   return models.sequelize
     .query(sql,
       { replacements: {}, type: models.sequelize.QueryTypes.SELECT }
     )
     .then((data) => {
-      console.log('ddd', data);
-      if (data && data[0] && data[0].sample_rate_id) {
-        return updateStream(stream, { max_sample_rate: data[0].sample_rate_id });
+      if (data && data[0] && data[0].id) {
+        return updateStream(stream, { max_sample_rate: data[0].id });
       }
-      return Promise.resolve();
+      return Promise.resolve(stream);
     });
 }
 
