@@ -454,6 +454,7 @@ function sendPushNotificationsForEvent(data) {
               data: {
                 type: data.type || 'alert',
                 value: data.value,
+                event_guid: data.event_guid,
                 audio_guid: data.audio_guid,
                 latitude: `${data.latitude}`,
                 longitude: `${data.longitude}`,
