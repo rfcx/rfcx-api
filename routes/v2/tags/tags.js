@@ -41,6 +41,8 @@ router.route("/")
           if (['inference:confirmed', 'inference:rejected'].includes(req.query.type)) {
             req.query.reviewed = 'true';
           }
+          // Set include_windows true by default for this endpoint
+          req.query.include_windows = req.query.include_windows !== undefined? req.query.include_windows : 'true';
           return eventsServiceNeo4j.queryData(req)
             .bind({})
             .then((eventsData) => {
