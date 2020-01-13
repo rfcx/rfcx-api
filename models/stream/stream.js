@@ -52,6 +52,7 @@ module.exports = function(sequelize, DataTypes) {
         Stream.belongsTo(models.StreamVisibility, { as: 'Visibility', foreignKey: "visibility" });
         Stream.belongsTo(models.User, { as: "User", foreignKey: "created_by" });
         Stream.belongsTo(models.Location, { as: 'Location', foreignKey: "location" });
+        Stream.belongsTo(models.SampleRate, { as: 'SampleRate', foreignKey: "max_sample_rate" });
         Stream.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: "site" });
       },
       indexes: [

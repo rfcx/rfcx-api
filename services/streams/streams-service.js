@@ -109,9 +109,11 @@ function getStreamByGuid(guid, ignoreMissing) {
 }
 
 function updateStream(stream, attrs) {
-  let allowedAttrs = ['name', 'description', 'starts', 'ends', 'location', 'site', 'visibility'];
+  console.log('updateStream', attrs);
+  let allowedAttrs = ['name', 'description', 'starts', 'ends', 'location', 'site', 'visibility', 'max_sample_rate'];
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
+      console.log('update stream', allowedAttr, attrs[allowedAttr]);
       stream[allowedAttr] = attrs[allowedAttr];
     }
   });
@@ -261,6 +263,7 @@ function formatStream(stream) {
       name: stream.Site.name,
       timezone: stream.Site.timezone
     } : null,
+    sample_rate: stream.SampleRate? stream.SampleRate.value : null,
   };
 }
 
@@ -279,6 +282,24 @@ function refreshStreamStartEnd(stream) {
       else {
         return Promise.resolve();
       }
+    });
+}
+
+function refreshStreamMaxSampleRate(stream) {
+  let sql = `SELECT b.id, b.value
+             FROM MasterSegments a
+             INNER JOIN SampleRates b ON a.sample_rate = b.id
+             INNER JOIN ( SELECT id, MAX(value) max_sample_rate FROM SampleRates GROUP BY id) c ON b.id = c.id AND b.value = c.max_sample_rate
+             WHERE a.stream = ${stream.id} ORDER BY b.value DESC LIMIT 1;`
+  return models.sequelize
+    .query(sql,
+      { replacements: {}, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((data) => {
+      if (data && data[0] && data[0].id) {
+        return updateStream(stream, { max_sample_rate: data[0].id });
+      }
+      return Promise.resolve(stream);
     });
 }
 
@@ -311,5 +332,6 @@ module.exports = {
   formatStreams,
   formatStream,
   refreshStreamStartEnd,
+  refreshStreamMaxSampleRate,
   checkUserAccessToStream,
 };
