@@ -116,7 +116,7 @@ function getSegments(opts) {
           {
             $and: {
               starts: { $lte: starts },
-              ends:   { $gte: starts }
+              ends:   { $gt: starts }
             },
           },
           {
@@ -211,131 +211,144 @@ function generateFile(req, res, attrs, segments) {
   //     mainn();
   //   })
 
-  function mainn() {
-    let proms = [];
-    let sox = `${process.env.SOX_PATH} --combine concatenate `;
-    // Step 1: Download all segment files
-    segments.forEach((segment) => {
-      const ts = moment.tz(segment.starts, 'UTC');
-      const segmentExtension = segment.FileExtension && segment.FileExtension.value?
-        segment.FileExtension.value : path.extname(segment.MasterSegment.filename);
-      const remotePath = `s3://${process.env.INGEST_BUCKET}/${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.Stream.guid}/${segment.guid}${segmentExtension}`;
+function mainn() {
+  let proms = [];
+  let sox = `${process.env.SOX_PATH} --combine concatenate `;
+  // Step 1: Download all segment files
+  segments.forEach((segment) => {
+    const ts = moment.tz(segment.starts, 'UTC');
+    const segmentExtension = segment.FileExtension && segment.FileExtension.value?
+      segment.FileExtension.value : path.extname(segment.MasterSegment.filename);
+    const remotePath = `s3://${process.env.INGEST_BUCKET}/${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.Stream.guid}/${segment.guid}${segmentExtension}`;
 
-      let prom = audioUtils.cacheSourceAudio(remotePath)
-        .then(function (data) {
-          segment.sourceFilePath = data.sourceFilePath;
-        })
-      proms.push(prom);
+    let prom = audioUtils.cacheSourceAudio(remotePath)
+      .then(function (data) {
+        segment.sourceFilePath = data.sourceFilePath;
+      })
+    proms.push(prom);
+  })
+  // Step 2: combine all segment files into one file
+  return Promise.all(proms)
+    .then(() => {
+      segments.forEach((segment, ind) => {
+        sox += ` "|${process.env.SOX_PATH}`
+        if (attrs.gain && parseFloat(attrs.gain) !== 1) {
+          sox += ` -v ${attrs.gain}`;
+        }
+        sox += ` ${segment.sourceFilePath} -p `
+
+        let pad  = { start: 0, end: 0 };
+        let trim = { start: 0, end: 0 };
+        if (ind === 0 && starts < segment.starts) {
+          // when requested time range starts earlier than first segment
+          // add empty sound at the start
+          pad.start = (segment.starts - starts) / 1000
+        }
+        let nextSegment = segments[ind + 1];
+        if (ind < (segments.length - 1) && nextSegment && (nextSegment.starts - segment.ends) > 0) {
+          // when there is a gap between current and next segment
+          // add empty sound at the end of current segment
+          pad.end = (nextSegment.starts - segment.ends) / 1000;
+        }
+        if (ind === (segments.length - 1) && ends > segment.ends) {
+          // when requested time range ends later than last segment
+          // add empty sound at the end
+          pad.end = (ends - segment.ends) / 1000
+        }
+
+        if (ind === 0 && starts > segment.starts) {
+          // when requested time range starts later than first segment
+          // cut first segment at the start
+          trim.start = (starts - segment.starts) / 1000;
+        }
+        if (ind === (segments.length - 1) && ends < segment.ends) {
+          // when requested time range ends earlier than last segment
+          // cut last segment at the end
+          trim.end = (segment.ends - ends) / 1000;
+        }
+        if (pad.start !== 0 || pad.end !== 0) {
+          sox += ` pad ${pad.start} ${pad.end}`;
+        }
+        if (trim.start !== 0 || trim.end !== 0) {
+          sox += ` trim ${trim.start} -${trim.end}`;
+        }
+        sox += '"'
+      })
+      // Set sample rate, channels count and file name
+      // if (attrs.sampleRate) {
+      //   sox += ` -r ${attrs.sampleRate}`;
+      // }
+      sox += ` -c 1 ${audioFilePath}`;
+      console.log('\n\n', sox, '\n\n');
+      return runExec(sox);
     })
-    // Step 2: combine all segment files into one file
-    return Promise.all(proms)
-      .then(() => {
-        segments.forEach((segment, ind) => {
-          sox += ` "|${process.env.SOX_PATH}`
-          if (attrs.gain && parseFloat(attrs.gain) !== 1) {
-            sox += ` -v ${attrs.gain}`;
-          }
-          sox += ` ${segment.sourceFilePath} -p `
+    .then(() => {
+      // Step 3: generate spectrogram if file type is "spec"
+      if (attrs.fileType !== 'spec') {
+        return true
+      }
+      else {
+        let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${attrs.dimensions.y} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`;
+        console.log('\n', soxPng, '\n');
+        return runExec(soxPng);
+      }
 
-          let pad  = { start: 0, end: 0 };
-          let trim = { start: 0, end: 0 };
-          if (ind === 0 && starts < segment.starts) {
-            // when requested time range starts earlier than first segment
-            // add empty sound at the start
-            pad.start = (segment.starts - starts) / 1000
-          }
-          let nextSegment = segments[ind + 1];
-          if (ind < (segments.length - 1) && nextSegment && (nextSegment.starts - segment.ends) > 0) {
-            // when there is a gap between current and next segment
-            // add empty sound at the end of current segment
-            pad.end = (nextSegment.starts - segment.ends) / 1000;
-          }
-          if (ind === (segments.length - 1) && ends > segment.ends) {
-            // when requested time range ends later than last segment
-            // add empty sound at the end
-            pad.end = (ends - segment.ends) / 1000
-          }
-
-          if (ind === 0 && starts > segment.starts) {
-            // when requested time range starts later than first segment
-            // cut first segment at the start
-            trim.start = (starts - segment.starts) / 1000;
-          }
-          if (ind === (segments.length - 1) && ends < segment.ends) {
-            // when requested time range ends earlier than last segment
-            // cut last segment at the end
-            trim.end = (segment.ends - ends) / 1000;
-          }
-          if (pad.start !== 0 || pad.end !== 0) {
-            sox += ` pad ${pad.start} ${pad.end}`;
-          }
-          if (trim.start !== 0 || trim.end !== 0) {
-            sox += ` trim ${trim.start} -${trim.end}`;
-          }
-          sox += '"'
-        })
-        // Set sample rate, channels count and file name
-        // if (attrs.sampleRate) {
-        //   sox += ` -r ${attrs.sampleRate}`;
-        // }
-        sox += ` -c 1 ${audioFilePath}`;
-        console.log('\n\n', sox, '\n\n');
-        return runExec(sox);
-      })
-      .then(() => {
-        // Step 3: generate spectrogram if file type is "spec"
-        if (attrs.fileType !== 'spec') {
-          return true
-        }
-        else {
-          let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${attrs.dimensions.y} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`;
-          console.log('\n', soxPng, '\n');
-          return runExec(soxPng);
-        }
-      })
-      .then(() => {
-        // Make copies of files for futher caching
-        // We need to make copies because original file is being deleted once client finish it download
-        let proms = [ runExec(`cp ${audioFilePath} ${audioFilePathCached}`) ]
-        if (attrs.fileType === 'spec') {
-          proms.push(runExec(`cp ${specFilePath} ${specFilePathCached}`))
-        }
-        return Promise.all(proms);
-      })
-      .then(() => {
-        // Rspond with a file
-        if (attrs.fileType === 'spec') {
-          return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, "image/png", !!req.query.inline)
-        }
-        else {
-          return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline)
-        }
-      })
-      .then(() => {
-        // Upload files to cache S3 bucket
-        let proms = [
-          S3Service.putObject(audioFilePathCached, s3AudioFilePath, process.env.STREAMS_CACHE_BUCKET)
-        ];
-        if (attrs.fileType === 'spec') {
-          proms.push(S3Service.putObject(specFilePathCached, s3specFilePath, process.env.STREAMS_CACHE_BUCKET));
-        }
-        return Promise.all(proms);
-      })
-      .then(() => {
-        // Clean up everything
-        segments.forEach((segment) => {
-          assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath);
-        });
-        assetUtils.deleteLocalFileFromFileSystem(audioFilePathCached);
-        if (attrs.fileType === 'spec') {
-          assetUtils.deleteLocalFileFromFileSystem(audioFilePath);
-          assetUtils.deleteLocalFileFromFileSystem(specFilePathCached);
-        }
-        segments = null;
-        attrs = null;
-        return true;
+    })
+    .then(() => {
+      // Make copies of files for futher caching
+      // We need to make copies because original file is being deleted once client finish it download
+      let proms = [ runExec(`cp ${audioFilePath} ${audioFilePathCached}`) ]
+      if (attrs.fileType === 'spec') {
+        proms.push(runExec(`cp ${specFilePath} ${specFilePathCached}`))
+      }
+      return Promise.all(proms);
+    })
+    .then(() => {
+      // Rspond with a file
+      if (attrs.fileType === 'spec') {
+        return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, "image/png", !!req.query.inline)
+      }
+      else {
+        return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline)
+      }
+    })
+    .then(() => {
+      // Upload files to cache S3 bucket
+      let proms = [
+        S3Service.putObject(audioFilePathCached, s3AudioFilePath, process.env.STREAMS_CACHE_BUCKET)
+      ];
+      if (attrs.fileType === 'spec') {
+        proms.push(S3Service.putObject(specFilePathCached, s3specFilePath, process.env.STREAMS_CACHE_BUCKET));
+      }
+      return Promise.all(proms);
+    })
+    .then(() => {
+      // Clean up everything
+      segments.forEach((segment) => {
+        assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath);
       });
+      assetUtils.deleteLocalFileFromFileSystem(audioFilePathCached);
+      if (attrs.fileType === 'spec') {
+        assetUtils.deleteLocalFileFromFileSystem(audioFilePath);
+        assetUtils.deleteLocalFileFromFileSystem(specFilePathCached);
+      }
+      segments = null;
+      attrs = null;
+      return true;
+    });
   }
+}
+
+function runExec(command) {
+  return new Promise(function(resolve, reject) {
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
 }
 
 function clipToStr(clip) {
@@ -345,18 +358,6 @@ function clipToStr(clip) {
   else {
     return `${clip.bottom}.${clip.top}`;
   }
-}
-
-function runExec(command) {
-  return new Promise((resolve, reject) => {
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(stdout.trim());
-    });
-  })
 }
 
 function combineStandardFilename(attrs) {
