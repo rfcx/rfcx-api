@@ -323,6 +323,8 @@ router.route("/reset-password")
       });
   });
 
+// Legacy endpoint to change password in MySQL
+
 router.route("/change-password")
   .post(passport.authenticate("token", {session: false}), requireUser, function(req,res) {
 
@@ -873,6 +875,8 @@ router.route("/auth0/update-users")
 
   });
 
+// Endpoint for admins to change other user password
+
 router.route("/change-user-password")
   .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['usersAdmin']), function (req, res) {
 
@@ -904,6 +908,47 @@ router.route("/change-user-password")
       .catch((err) => {
         res.status(500).json({ err });
       });
+
+});
+
+// Endpoint for standard user to change his/her password
+
+router.route("/password-change")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    let user_id, email, guid;
+    try {
+      user_id = req.rfcx.auth_token_info.auth0_user_id;
+      email = req.rfcx.auth_token_info.email;
+      guid = req.rfcx.auth_token_info.guid;
+    }
+    catch (e) {
+      return httpError(req, res, 403, null, 'Unable to change password for your account.');
+    }
+    let token;
+
+    let transformedParams = {};
+    let params = new Converter(req.body, transformedParams);
+    params.convert('password').toString();
+
+    params.validate()
+      .then(() => {
+        return auth0Service.getToken();
+      })
+      .then((data) => {
+        token = data;
+        return usersService.updateMySQLUserPassword(transformedParams.password, email, guid);
+      })
+      .then(() => {
+        return auth0Service.updateAuth0UserPassword(token, { user_id }, transformedParams.password);
+      })
+      .then((data) => {
+        token = null;
+        res.status(200).json({ success: true });
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch((err) => { res.status(500).json({ err }) });
 
 });
 
