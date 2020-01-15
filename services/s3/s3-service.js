@@ -5,6 +5,12 @@ var aws = require('../../utils/external/aws').aws();
 const loggers  = require('../../utils/logger');
 const logError = loggers.errorLogger.log;
 
+const client = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+  region: process.env.AWS_REGION_ID
+});
+
 /**
  * Uploads file to S3 storage
  * @param {string} localPath - path to local file
@@ -31,7 +37,7 @@ function deleteObject(bucket, fullPath) {
   });
 }
 
-function headObject(s3Path, bucket) {
+function headObject(s3Path, bucket, dontRejectIfEmpty) {
   return new Promise((resolve, reject) => {
       aws.s3(bucket).headFile(s3Path, (err, data) => {
         if (err) { return reject(err); }
@@ -39,7 +45,12 @@ function headObject(s3Path, bucket) {
           return resolve(data);
         }
         else {
-          reject(new Error(`Failed to get object from S3. Status code: ${data.statusCode}`));
+          if (dontRejectIfEmpty) {
+            return resolve(null)
+          }
+          else {
+            reject(new Error(`Failed to get object from S3. Status code: ${data.statusCode}`));
+          }
         }
       });
   });
@@ -95,4 +106,5 @@ module.exports = {
   headObject,
   getObject,
   deleteObject,
+  client,
 };

@@ -9,7 +9,6 @@ const ValidationError = require("../../utils/converter/validation-error");
 const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 const assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 const S3Service = require("../s3/s3-service");
-const aws = require('../../utils/external/aws').aws();
 
 const possibleWindowFuncs = ["dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser"];
 const possibleExtensions = ['png', 'wav', 'opus', 'flac', 'mp3'];
@@ -138,6 +137,36 @@ function getSegments(opts) {
     })
 }
 
+function getFile(req, res, attrs, segments) {
+  const filename = combineStandardFilename(attrs);
+  const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
+
+  const filenameAudio = `${filename}.${extension}`;
+  const filenameSpec = `${filename}.png`;
+
+  const s3AudioFilePath = `${attrs.streamGuid}/audio/${filenameAudio}`;
+  const s3specFilePath = `${attrs.streamGuid}/image/${filenameSpec}`;
+
+  const s3FilePath = attrs.fileType === 'spec'? s3specFilePath : s3AudioFilePath;
+
+  return S3Service.headObject(s3FilePath, process.env.STREAMS_CACHE_BUCKET, true)
+    .then((file) => {
+      if (file) {
+        res.attachment(attrs.fileType === 'spec'? filenameSpec : filenameAudio);
+        return S3Service.client
+          .getObject({
+            Bucket: process.env.STREAMS_CACHE_BUCKET,
+            Key: s3FilePath
+          })
+          .createReadStream()
+          .pipe(res);
+      }
+      else {
+        return generateFile(req, res, attrs, segments);
+      }
+    })
+}
+
 function generateFile(req, res, attrs, segments) {
   const filename = combineStandardFilename(attrs);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
@@ -160,58 +189,6 @@ function generateFile(req, res, attrs, segments) {
   const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
 
-  function generateSpectrogram() {
-    let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${attrs.dimensions.y} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`;
-    console.log('\n', soxPng, '\n');
-    return runExec(soxPng);
-  }
-
-  const s3FilePath = attrs.fileType === 'spec'? s3specFilePath : s3AudioFilePath
-  S3Service.headObject(s3FilePath, process.env.STREAMS_CACHE_BUCKET)
-    .then(() => {
-      console.log('\n\n FOUND FILE!!!!!', s3FilePath, '\n\n');
-      let fname = attrs.fileType === 'spec'? filenameSpec : filenameAudio;
-      // res.attachment(fname);
-      // aws.s3(process.env.STREAMS_CACHE_BUCKET).get(s3FilePath).createReadStream().pipe(res);
-      aws.s3(process.env.STREAMS_CACHE_BUCKET).get(s3FilePath)
-        .on((err, r) => {
-          console.log('r', r);
-          r.pipe(res);
-        })
-    })
-    .catch((err) => {
-      console.log('\n\n NO SUCH FILE ON S3', err, '\n\n');
-      // mainn();
-      res.status(404).send('No such cached file');
-    })
-  // Check if we have these files cached first
-  // S3Service.headObject(s3AudioFilePath, process.env.STREAMS_CACHE_BUCKET)
-  //   .then(() => {
-  //     console.log('\n\n FILE EXISTS', '\n\n');
-  //     if (attrs.fileType !== 'spec') {
-  //       return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline)
-  //     }
-  //     else {
-  //       return S3Service.getObject(audioFilePath, s3AudioFilePath, process.env.STREAMS_CACHE_BUCKET)
-  //         .then(() => {
-  //           console.log('\n\n DOWNLOADED SPEC CACHE', '\n\n');
-  //           return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, "image/png", !!req.query.inline)
-  //         })
-  //         .catch((err) => {
-  //           console.log('\n\n NO SPEC FILE YET!!!!!', err, '\n\n');
-  //           return generateSpectrogram()
-  //             .then(() => {
-  //               return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, "image/png", !!req.query.inline)
-  //             })
-  //         })
-  //     }
-  //   })
-  //   .catch((err) => {
-  //     console.log('\n\n NO AUDIO FILE YET!!!!!', err, '\n\n');
-  //     mainn();
-  //   })
-
-function mainn() {
   let proms = [];
   let sox = `${process.env.SOX_PATH} --combine concatenate `;
   // Step 1: Download all segment files
@@ -337,7 +314,6 @@ function mainn() {
       return true;
     });
   }
-}
 
 function runExec(command) {
   return new Promise(function(resolve, reject) {
@@ -372,5 +348,5 @@ module.exports = {
   parseFileNameAttrs,
   areFileNameAttrsValid,
   getSegments,
-  generateFile,
+  getFile,
 }

@@ -50,7 +50,7 @@ router.route("/assets/:attrs")
         if (!segments.length) {
           throw new EmptyResultError('No audio files found for selected time range.');
         }
-        return streamsAssetsService.generateFile(req, res, attrs, segments);
+        return streamsAssetsService.getFile(req, res, attrs, segments);
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
