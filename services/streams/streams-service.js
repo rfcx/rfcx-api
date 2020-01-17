@@ -169,6 +169,24 @@ function getMasterSegmentByGuid(guid, ignoreMissing) {
     });
 }
 
+function getStreamSegmentByTime(streamId, time, ignoreMissing) {
+  return models.Segment
+    .findOne({
+      where: {
+        stream: streamId,
+        $and: {
+          starts: { $lte: time },
+          ends: { $gte: time }
+        }
+      },
+      include: [{ all: true }]
+    })
+    .then((dbSegment) => {
+      if (!dbSegment && !ignoreMissing) { throw new EmptyResultError('Segment with given params not found.'); }
+      return dbSegment;
+    });
+}
+
 function formatMasterSegment(masterSegment) {
   return {
     guid: masterSegment.guid,
@@ -324,6 +342,7 @@ module.exports = {
   formatStream,
   createMasterSegment,
   getMasterSegmentByGuid,
+  getStreamSegmentByTime,
   formatMasterSegment,
   formatSegment,
   queryData,

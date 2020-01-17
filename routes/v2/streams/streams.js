@@ -426,4 +426,33 @@ router.route("/:guid/segments")
 
   });
 
+router.route("/:guid/segment")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('time').toInt().minimum(0).maximum(32503669200000);
+
+    params.validate()
+      .then(() => {
+        return streamsService.getStreamByGuid(req.params.guid)
+      })
+      .then((dbStream) => {
+        streamsService.checkUserAccessToStream(req, dbStream);
+        return streamsService.getStreamSegmentByTime(dbStream.id, transformedParams.time);
+      })
+      .then((dbSegment) => {
+        return streamsService.formatSegment(dbSegment);
+      })
+      .then((data) => {
+        res.status(200).send(data);
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while searching for the segment.'); console.log(e) });
+  });
+
 module.exports = router;
