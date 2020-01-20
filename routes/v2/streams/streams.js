@@ -224,6 +224,55 @@ router.route("/:guid")
 
   });
 
+router.route("/:guid/move-to-trash")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+  return streamsService.getStreamByGuid(req.params.guid)
+    .then((dbStream) => {
+      streamsService.checkUserAccessToStream(req, dbStream);
+      return streamsService.markStreamAsDeleted(dbStream);
+    })
+    .then(function(json) {
+      res.status(200).send(json);
+    })
+    .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+    .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+    .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(e => { httpError(req, res, 500, e, 'Error while moving stream to trash.'); console.log(e) });
+
+})
+
+router.route("/:guid")
+  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin']), function(req,res) {
+
+  // let transformedParams = {};
+  // let params = new Converter(req.query, transformedParams);
+
+  // params.convert('delete_files').optional().toBoolean().default(false);
+
+  // params.validate()
+    // .then(() => {
+  return streamsService.getStreamByGuid(req.params.guid)
+    .then((dbStream) => {
+      stream = dbSite;
+      streamsService.checkUserAccessToStream(req, dbStream);
+      // 1 remove Annotations
+      // 2 move files to trash bucket
+      // 3 remove Segments
+      // 4 remove MasterSegments
+    })
+    .then(function(json) {
+      res.status(200).send(json);
+    })
+    .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+    .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+    .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(e => { httpError(req, res, 500, e, 'Error while deleting stream.'); console.log(e) });
+
+})
+
 router.route("/:guid/master-segments")
   .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
 

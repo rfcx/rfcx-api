@@ -315,6 +315,21 @@ function generateFile(req, res, attrs, segments) {
     });
   }
 
+function moveStreamFilesToTrashBucket(dbStream) {
+  // STREAMS_TRASH_BUCKET
+  return models.Segment
+    .findAll({
+      where: {
+        stream: dbStream.id
+      }
+    })
+    .then((dbSegments) => {
+
+    })
+
+}
+
+
 function runExec(command) {
   return new Promise(function(resolve, reject) {
     exec(command, (err, stdout, stderr) => {
@@ -349,4 +364,5 @@ module.exports = {
   areFileNameAttrsValid,
   getSegments,
   getFile,
+  moveStreamFilesToTrashBucket,
 }

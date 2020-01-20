@@ -93,7 +93,6 @@ function queryData(req) {
         )
     })
 
-
 }
 
 function getStreamByGuid(guid, ignoreMissing) {
@@ -167,6 +166,36 @@ function getMasterSegmentByGuid(guid, ignoreMissing) {
       if (!item && !ignoreMissing) { throw new EmptyResultError('MasterSegment with given guid not found.'); }
       return item;
     });
+}
+
+function markStreamAsDeleted(dbStream) {
+  return models.StreamVisibility.findOrCreate({
+    where:    { value: 'deleted' },
+    defaults: { value: 'deleted' }
+  })
+  .spread((dbStreamVisibility) => {
+    if (!dbStreamVisibility) {
+      throw new Error();
+    }
+    else {
+      return updateStream(dbStream, { visibility: dbStreamVisibility.id });
+    }
+  })
+}
+
+function deleteSegmentsFromStream(dbStream) {
+  return models.Segment
+    .destroy({ where: { stream: dbStream.id } });
+}
+
+function deleteMasterSegmentsFromStream(dbStream) {
+  return models.MasterSegment
+    .destroy({ where: { stream: dbStream.id } });
+}
+
+function deleteStreamByGuid(guid) {
+  return models.Stream
+    .destroy({ where: { guid: guid } });
 }
 
 function formatMasterSegment(masterSegment) {
@@ -334,4 +363,7 @@ module.exports = {
   refreshStreamStartEnd,
   refreshStreamMaxSampleRate,
   checkUserAccessToStream,
+  deleteSegmentsFromStream,
+  deleteMasterSegmentsFromStream,
+  deleteStreamByGuid,
 };
