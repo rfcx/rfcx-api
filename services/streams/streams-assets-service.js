@@ -315,18 +315,42 @@ function generateFile(req, res, attrs, segments) {
     });
   }
 
-function moveStreamFilesToTrashBucket(dbStream) {
-  // STREAMS_TRASH_BUCKET
-  return models.Segment
-    .findAll({
-      where: {
-        stream: dbStream.id
-      }
-    })
-    .then((dbSegments) => {
-
-    })
-
+function deleteFilesForStream(dbStream) {
+  return new Promise((resolve, reject) => {
+    models.Segment
+      .findAll({
+        where: {
+          stream: dbStream.id
+        },
+        include: [{ all: true }],
+      })
+      .then((dbSegments) => {
+        if (dbSegments || dbSegments.length) {
+          resolve('No segment files');
+          return;
+        }
+        let params = {
+          Bucket: process.env.INGEST_BUCKET,
+          Delete: {
+            Objects: [ ],
+            Quiet: false
+          }
+        };
+        dbSegments.forEach((segment) => {
+          const ts = moment.tz(segment.starts, 'UTC');
+          const segmentExtension = segment.FileExtension && segment.FileExtension.value? segment.FileExtension.value : path.extname(segment.MasterSegment.filename);
+          const Key = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.Stream.guid}/${segment.guid}${segmentExtension}`;
+          params.Delete.Objects.push({ Key });
+        });
+        console.log(`Deleting following files in ${process.env.INGEST_BUCKET} bucket:`, params.Delete.Objects);
+        return S3Service.client.deleteObjects(params, (err, data) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(data);
+        });
+      })
+  })
 }
 
 
@@ -364,5 +388,5 @@ module.exports = {
   areFileNameAttrsValid,
   getSegments,
   getFile,
-  moveStreamFilesToTrashBucket,
+  deleteFilesForStream,
 }

@@ -10,6 +10,8 @@ var ForbiddenError = require("../../../utils/converter/forbidden-error");
 var EmptyResultError = require('../../../utils/converter/empty-result-error');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const streamsService = require('../../../services/streams/streams-service');
+const streamsAnnotationsService = require('../../../services/streams/streams-annotations-service');
+const streamsAssetsService = require('../../../services/streams/streams-assets-service');
 const sitesService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');
 const Promise = require("bluebird");
@@ -243,27 +245,57 @@ router.route("/:guid/move-to-trash")
 
 })
 
-router.route("/:guid")
-  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin']), function(req,res) {
+router.route("/:guid/restore")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 
-  // let transformedParams = {};
-  // let params = new Converter(req.query, transformedParams);
-
-  // params.convert('delete_files').optional().toBoolean().default(false);
-
-  // params.validate()
-    // .then(() => {
   return streamsService.getStreamByGuid(req.params.guid)
     .then((dbStream) => {
-      stream = dbSite;
       streamsService.checkUserAccessToStream(req, dbStream);
-      // 1 remove Annotations
-      // 2 move files to trash bucket
-      // 3 remove Segments
-      // 4 remove MasterSegments
+      return streamsService.restoreStream(dbStream);
     })
     .then(function(json) {
       res.status(200).send(json);
+    })
+    .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+    .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+    .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(e => { httpError(req, res, 500, e, 'Error while restoring stream.'); console.log(e) });
+
+})
+
+router.route("/:guid")
+  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin', 'systemUser']), function(req,res) {
+
+  return streamsService.getStreamByGuid(req.params.guid)
+    .then((dbStream) => {
+      stream = dbStream;
+      return streamsService.removeAIDetetionsForStream(stream);
+    })
+    .then(() => {
+      console.log(`AI detections deleted from stream ${stream.guid}`);
+      return streamsAnnotationsService.deleteAnnotationsForStream(stream);
+    })
+    .then(() => {
+      console.log(`Annotations deleted from stream ${stream.guid}`);
+      return streamsAssetsService.deleteFilesForStream(stream);
+    })
+    .then((data) => {
+      console.log(`S3 files deleted from stream ${stream.guid}`, data);
+      return streamsService.deleteSegmentsFromStream(stream);
+    })
+    .then(() => {
+      console.log(`MasterSegments deleted from stream ${stream.guid}`);
+      return streamsService.deleteMasterSegmentsFromStream(stream);
+    })
+    .then(() => {
+      console.log(`Segments deleted from stream ${stream.guid}`);
+      return streamsService.deleteStreamByGuid(stream.guid);
+    })
+    .then(function(json) {
+      console.log(`Stream deleted ${stream.guid}`);
+      stream = null;
+      res.status(200).send({ success: true });
     })
     .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
     .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })

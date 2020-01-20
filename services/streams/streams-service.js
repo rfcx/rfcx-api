@@ -72,6 +72,7 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.access === 'personal', ' AND visibility.value = "private" AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.access === 'site', ' AND ((visibility.value = "private" AND user.guid = :userGuid) OR (visibility.value = "site" AND site.guid IN (:accessibleSites))');
   sql = sqlUtils.condAdd(sql, opts.access === 'all', ' AND ((visibility.value = "private" AND user.guid = :userGuid) OR (visibility.value = "site" AND site.guid IN (:accessibleSites)) OR visibility.value = "public")');
+  sql = sqlUtils.condAdd(sql, opts.access === 'deleted', ' AND visibility.value = "deleted" AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND site.guid IN (:sites)');
   return sql;
 }
@@ -183,6 +184,21 @@ function markStreamAsDeleted(dbStream) {
   })
 }
 
+function restoreStream(dbStream) {
+  return models.StreamVisibility.findOrCreate({
+    where:    { value: 'private' },
+    defaults: { value: 'private' }
+  })
+  .spread((dbStreamVisibility) => {
+    if (!dbStreamVisibility) {
+      throw new Error();
+    }
+    else {
+      return updateStream(dbStream, { visibility: dbStreamVisibility.id });
+    }
+  })
+}
+
 function deleteSegmentsFromStream(dbStream) {
   return models.Segment
     .destroy({ where: { stream: dbStream.id } });
@@ -196,6 +212,10 @@ function deleteMasterSegmentsFromStream(dbStream) {
 function deleteStreamByGuid(guid) {
   return models.Stream
     .destroy({ where: { guid: guid } });
+}
+
+function removeAIDetetionsForStream(dbStream) {
+  return Promise.resolve(true);
 }
 
 function formatMasterSegment(masterSegment) {
@@ -366,4 +386,7 @@ module.exports = {
   deleteSegmentsFromStream,
   deleteMasterSegmentsFromStream,
   deleteStreamByGuid,
+  markStreamAsDeleted,
+  restoreStream,
+  removeAIDetetionsForStream,
 };
