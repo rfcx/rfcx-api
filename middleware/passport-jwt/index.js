@@ -36,9 +36,10 @@ function combineUserData(jwtPayload, user) {
 
 function checkDBUser(req, jwtPayload, done) {
   let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
+  let tokenUserGuid = jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : undefined);
 
   // if request was sent from userless account (like GAIA), then use static user
-  if (!jwtPayload.email && !jwtPayload.guid) {
+  if (!jwtPayload.email && !tokenUserGuid) {
     jwtPayload.email = 'userless@rfcx.org';
     jwtPayload.given_name = 'userless';
     jwtPayload.family_name = 'rfcx';
@@ -46,7 +47,7 @@ function checkDBUser(req, jwtPayload, done) {
   }
 
   // if request was sent from account which doesn't have email (like Facebook, created with a phone number)
-  if (!jwtPayload.email && jwtPayload.guid) {
+  if (!jwtPayload.email && tokenUserGuid) {
     jwtPayload.email = `${jwtPayload.guid}@rfcx.org`;
   }
 
