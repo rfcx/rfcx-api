@@ -88,6 +88,10 @@ function deleteAnnotationByGuid(guid) {
   return models.Annotation.destroy({ where: { guid } });
 }
 
+function deleteAnnotationsForStream(dbStream) {
+  return models.Annotation.destroy({ where: { stream: dbStream.id } });
+}
+
 function getAnnotationsByParams(params) {
   return models.Annotation
     .findAll({
@@ -166,6 +170,7 @@ module.exports = {
   checkAnnotationsValid,
   saveAnnotations,
   deleteAnnotationByGuid,
+  deleteAnnotationsForStream,
   getAnnotationsByParams,
   formatAnnotation,
   formatAnnotations,

@@ -10,6 +10,8 @@ var ForbiddenError = require("../../../utils/converter/forbidden-error");
 var EmptyResultError = require('../../../utils/converter/empty-result-error');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const streamsService = require('../../../services/streams/streams-service');
+const streamsAnnotationsService = require('../../../services/streams/streams-annotations-service');
+const streamsAssetsService = require('../../../services/streams/streams-assets-service');
 const sitesService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');
 const Promise = require("bluebird");
@@ -142,6 +144,31 @@ router.route("/")
       .catch(e => { httpError(req, res, 500, e, 'Error while creating a stream.'); console.log(e) });
   });
 
+// The daomon is going to call this endpoint every day and remove Streams which were marked as deleted 30 days ago.
+
+router.route("/remove-expired-deleted-streams")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin', 'systemUser']), function(req, res) {
+
+    return streamsService.findExpiredDeletedStreams()
+      .then((dbStreams) => {
+        console.log('Found ', dbStreams.length, ' expired deleted streams. Removing now.');
+        let proms = [];
+        dbStreams.forEach((stream) => {
+          proms.push(streamsService.deleteAllStreamData(stream));
+        });
+        return Promise.all(proms);
+      })
+      .then(function() {
+        res.status(200).send({ success: true });
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while deleting streams.'); console.log(e) });
+
+  })
+
 // Stream update
 
 router.route("/:guid")
@@ -223,6 +250,62 @@ router.route("/:guid")
       .catch(e => { httpError(req, res, 500, e, 'Error while updating the stream.'); console.log(e) });
 
   });
+
+router.route("/:guid/move-to-trash")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+  return streamsService.getStreamByGuid(req.params.guid)
+    .then((dbStream) => {
+      streamsService.checkUserAccessToStream(req, dbStream);
+      return streamsService.markStreamAsDeleted(dbStream);
+    })
+    .then(function(json) {
+      res.status(200).send(json);
+    })
+    .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+    .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+    .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(e => { httpError(req, res, 500, e, 'Error while moving stream to trash.'); console.log(e) });
+
+})
+
+router.route("/:guid/restore")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+  return streamsService.getStreamByGuid(req.params.guid)
+    .then((dbStream) => {
+      streamsService.checkUserAccessToStream(req, dbStream);
+      return streamsService.restoreStream(dbStream);
+    })
+    .then(function(json) {
+      res.status(200).send(json);
+    })
+    .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+    .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+    .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(e => { httpError(req, res, 500, e, 'Error while restoring stream.'); console.log(e) });
+
+})
+
+router.route("/:guid")
+  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin', 'systemUser']), function(req,res) {
+
+  return streamsService.getStreamByGuid(req.params.guid)
+    .then((dbStream) => {
+      return streamsService.deleteAllStreamData(dbStream);
+    })
+    .then(function() {
+      res.status(200).send({ success: true });
+    })
+    .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+    .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+    .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+    .catch(e => { httpError(req, res, 500, e, 'Error while deleting stream.'); console.log(e) });
+
+})
 
 router.route("/:guid/master-segments")
   .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
