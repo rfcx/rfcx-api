@@ -151,7 +151,7 @@ router.route("/remove-expired-deleted-streams")
 
     return streamsService.findExpiredDeletedStreams()
       .then((dbStreams) => {
-        console.log('Found ', dbStreams.length, ' expired deleted streams. Removing now.');
+        console.log('Found', dbStreams.length, 'expired deleted streams. Removing now.');
         let proms = [];
         dbStreams.forEach((stream) => {
           proms.push(streamsService.deleteAllStreamData(stream));

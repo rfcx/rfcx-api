@@ -228,15 +228,22 @@ function restoreStream(dbStream) {
 }
 
 function findExpiredDeletedStreams() {
-  return models.Stream
-    .findAll({
-      where: {
-        marked_as_deleted_at: {
-          $lte: moment.tz(new Date(), 'UTC').subtract(30, 'days').toISOString()
-        }
-      },
-      include: [{ all: true }],
-    });
+  return models.StreamVisibility
+    .findOne({
+      where: { value: 'deleted' },
+    })
+    .then((dbStreamVisibility) => {
+      return models.Stream
+        .findAll({
+          where: {
+            marked_as_deleted_at: {
+              $lte: moment.tz(new Date(), 'UTC').subtract(30, 'days').toISOString()
+            },
+            visibility: dbStreamVisibility.id,
+          },
+          include: [{ all: true }],
+        });
+  })
 }
 
 function deleteAllStreamData(stream) {
