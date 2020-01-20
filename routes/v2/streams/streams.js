@@ -144,6 +144,31 @@ router.route("/")
       .catch(e => { httpError(req, res, 500, e, 'Error while creating a stream.'); console.log(e) });
   });
 
+// The daomon is going to call this endpoint every day and remove Streams which were marked as deleted 30 days ago.
+
+router.route("/remove-expired-deleted-streams")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin', 'systemUser']), function(req, res) {
+
+    return streamsService.findExpiredDeletedStreams()
+      .then((dbStreams) => {
+        console.log('Found ', dbStreams.length, ' expired deleted streams. Removing now.');
+        let proms = [];
+        dbStreams.forEach((stream) => {
+          proms.push(streamsService.deleteAllStreamData(stream));
+        });
+        return Promise.all(proms);
+      })
+      .then(function() {
+        res.status(200).send({ success: true });
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while deleting streams.'); console.log(e) });
+
+  })
+
 // Stream update
 
 router.route("/:guid")
@@ -269,32 +294,9 @@ router.route("/:guid")
 
   return streamsService.getStreamByGuid(req.params.guid)
     .then((dbStream) => {
-      stream = dbStream;
-      return streamsService.removeAIDetetionsForStream(stream);
+      return streamsService.deleteAllStreamData(dbStream);
     })
-    .then(() => {
-      console.log(`AI detections deleted from stream ${stream.guid}`);
-      return streamsAnnotationsService.deleteAnnotationsForStream(stream);
-    })
-    .then(() => {
-      console.log(`Annotations deleted from stream ${stream.guid}`);
-      return streamsAssetsService.deleteFilesForStream(stream);
-    })
-    .then((data) => {
-      console.log(`S3 files deleted from stream ${stream.guid}`, data);
-      return streamsService.deleteSegmentsFromStream(stream);
-    })
-    .then(() => {
-      console.log(`MasterSegments deleted from stream ${stream.guid}`);
-      return streamsService.deleteMasterSegmentsFromStream(stream);
-    })
-    .then(() => {
-      console.log(`Segments deleted from stream ${stream.guid}`);
-      return streamsService.deleteStreamByGuid(stream.guid);
-    })
-    .then(function(json) {
-      console.log(`Stream deleted ${stream.guid}`);
-      stream = null;
+    .then(function() {
       res.status(200).send({ success: true });
     })
     .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })

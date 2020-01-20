@@ -46,6 +46,14 @@ module.exports = function(sequelize, DataTypes) {
         }
       }
     },
+    marked_as_deleted_at: {
+      type: DataTypes.DATE(3),
+      allowNull: true,
+      defaultValue: null,
+      validate: {
+        isDate: true
+      }
+    },
   }, {
     classMethods: {
       associate: function(models) {

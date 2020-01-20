@@ -4,10 +4,13 @@ const sqlUtils = require("../../utils/misc/sql");
 const Promise = require("bluebird");
 const moment = require('moment-timezone');
 const ForbiddenError = require("../../utils/converter/forbidden-error");
+const streamsAnnotationsService = require('./streams-annotations-service');
+const streamsAssetsService = require('./streams-assets-service');
 
 const streamQuerySelect =
   `SELECT stream.guid as guid, stream.name as name, stream.description as description, stream.starts as starts, stream.ends as ends,
-  stream.created_at as created_at, visibility.value as visibility, user.guid as user_guid, user.email as user_email, user.firstname as user_firstname,
+  stream.created_at as created_at, stream.marked_as_deleted_at as marked_as_deleted_at, visibility.value as visibility,
+  user.guid as user_guid, user.email as user_email, user.firstname as user_firstname,
   user.lastname as user_lastname, location.guid as location_guid, location.name as location_name, location.latitude as location_latitude, location.longitude as location_longitude,
   location.description as location_description, site.guid as site_guid, site.name as site_name, site.timezone as site_timezone,
   MAX(segment.created_at) as last_ingest`;
@@ -110,7 +113,8 @@ function getStreamByGuid(guid, ignoreMissing) {
 
 function updateStream(stream, attrs) {
   console.log('updateStream', attrs);
-  let allowedAttrs = ['name', 'description', 'starts', 'ends', 'location', 'site', 'visibility', 'max_sample_rate'];
+  let allowedAttrs =
+    ['name', 'description', 'starts', 'ends', 'location', 'site', 'visibility', 'max_sample_rate', 'marked_as_deleted_at'];
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
       console.log('update stream', allowedAttr, attrs[allowedAttr]);
@@ -179,7 +183,10 @@ function markStreamAsDeleted(dbStream) {
       throw new Error();
     }
     else {
-      return updateStream(dbStream, { visibility: dbStreamVisibility.id });
+      return updateStream(dbStream, {
+        visibility: dbStreamVisibility.id,
+        marked_as_deleted_at: new Date(),
+      });
     }
   })
 }
@@ -194,9 +201,48 @@ function restoreStream(dbStream) {
       throw new Error();
     }
     else {
-      return updateStream(dbStream, { visibility: dbStreamVisibility.id });
+      return updateStream(dbStream, {
+        visibility: dbStreamVisibility.id,
+        marked_as_deleted_at: null,
+      });
     }
   })
+}
+
+function findExpiredDeletedStreams() {
+  return models.Stream
+    .findAll({
+      where: {
+        marked_as_deleted_at: {
+          $lte: moment.tz(new Date(), 'UTC').subtract(30, 'days').toISOString()
+        }
+      },
+      include: [{ all: true }],
+    });
+}
+
+function deleteAllStreamData(stream) {
+  return removeAIDetetionsForStream(stream)
+    .then(() => {
+      console.log(`AI detections deleted from stream ${stream.guid}`);
+      return streamsAnnotationsService.deleteAnnotationsForStream(stream);
+    })
+    .then(() => {
+      console.log(`Annotations deleted from stream ${stream.guid}`);
+      return streamsAssetsService.deleteFilesForStream(stream);
+    })
+    .then((data) => {
+      console.log(`S3 files deleted from stream ${stream.guid}`, data);
+      return deleteSegmentsFromStream(stream);
+    })
+    .then(() => {
+      console.log(`MasterSegments deleted from stream ${stream.guid}`);
+      return deleteMasterSegmentsFromStream(stream);
+    })
+    .then(() => {
+      console.log(`Segments deleted from stream ${stream.guid}`);
+      return deleteStreamByGuid(stream.guid);
+    })
 }
 
 function deleteSegmentsFromStream(dbStream) {
@@ -258,6 +304,7 @@ function formatStreamRaw(stream) {
     starts: stream.starts,
     ends: stream.ends,
     created_at: stream.created_at,
+    marked_as_deleted_at: stream.marked_as_deleted_at,
     visibility: stream.visibility,
     last_ingest: stream.last_ingest,
     user: {
@@ -293,6 +340,7 @@ function formatStream(stream) {
     starts: stream.starts,
     ends: stream.ends,
     created_at: stream.created_at,
+    marked_as_deleted_at: stream.marked_as_deleted_at,
     visibility: stream.Visibility? stream.Visibility.value : null,
     user: stream.User? {
       guid: stream.User.guid,
@@ -383,6 +431,8 @@ module.exports = {
   refreshStreamStartEnd,
   refreshStreamMaxSampleRate,
   checkUserAccessToStream,
+  findExpiredDeletedStreams,
+  deleteAllStreamData,
   deleteSegmentsFromStream,
   deleteMasterSegmentsFromStream,
   deleteStreamByGuid,
