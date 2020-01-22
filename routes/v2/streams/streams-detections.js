@@ -21,7 +21,7 @@ router.route("/:guid/detections")
 
     params.convert('starts').toInt().minimum(0).maximum(32503669200000);
     params.convert('ends').toInt().minimum(0).maximum(32503669200000);
-    params.convert('guardians').toArray();
+    params.convert('guardians').toArray().nonEmptyArrayItem();
     params.convert('values').optional().toArray();
     params.convert('models').optional().toArray();
 

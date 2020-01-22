@@ -223,6 +223,15 @@ module.exports = class Conversion {
     return this;
   }
 
+  nonEmptyArrayItem() {
+    this.conversions.push(() => {
+      if(this.value.length === 1 && this.value[0].trim() === '') {
+        this.throwError(`is empty`);
+      }
+    });
+    return this;
+  }
+
   isObject() {
     this.conversions.push(() => {
       if (!util.isObject(this.value)) {
