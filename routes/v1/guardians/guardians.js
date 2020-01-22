@@ -171,7 +171,7 @@ router.route("/:guardian_id/public-info")
 ;
 
 router.route("/register")
-  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['guardianCreator']), function(req,res) {
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'guardianCreator']), function(req,res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);

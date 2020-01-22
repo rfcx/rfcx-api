@@ -98,17 +98,17 @@ function addGetQueryParams(sql, opts) {
   return sql;
 }
 
-function filterWithTz(opts, items) {
+function filterWithTz(opts, rawOpts, items) {
   return items.filter((item) => {
     let siteTimezone = item.siteTimezone || 'UTC';
     let measuredAtTz = moment.tz(item.audioMeasuredAt, siteTimezone);
     if (opts.startingAfterLocal) {
-      if (measuredAtTz < moment.tz(opts.startingAfterLocal, siteTimezone)) {
+      if (measuredAtTz < moment.tz(rawOpts.startingAfterLocal, siteTimezone)) {
         return false;
       }
     }
     if (opts.startingBeforeLocal) {
-      if (measuredAtTz > moment.tz(opts.startingBeforeLocal, siteTimezone)) {
+      if (measuredAtTz > moment.tz(rawOpts.startingBeforeLocal, siteTimezone)) {
         return false;
       }
     }
@@ -150,12 +150,13 @@ function limitAndOffset(opts, items) {
 
 function queryData(req) {
 
-  let opts;
+  let opts, rawOpts;
 
   return prepareOpts(req)
     .then((data) => {
 
-      opts = Object.assign({}, data)
+      rawOpts = Object.assign({}, data);
+      opts = Object.assign({}, data);
       if (!opts.startingAfterLocal && !opts.startingBeforeLocal) {
         opts.notimezone = true;
       }
@@ -231,7 +232,7 @@ function queryData(req) {
       });
     })
     .then((items) => {
-      return opts.notimezone? items : filterWithTz(opts, items);
+      return opts.notimezone? items : filterWithTz(opts, rawOpts, items);
     })
     .then((items) => {
       let result = {
@@ -243,6 +244,7 @@ function queryData(req) {
       return result;
     })
     .then((data) => {
+      rawOpts = null;
       opts = null;
       return data;
     });
@@ -299,11 +301,12 @@ function getEventByGuid(guid) {
 
 function queryReviews(req) {
 
-  let opts;
+  let opts, rawOpts;
 
   return prepareOpts(req)
     .then((data) => {
 
+      rawOpts = Object.assign({}, data)
       opts = Object.assign({}, data)
       if (opts.startingAfterLocal) {
         opts.startingAfterLocal = moment.tz(data.startingAfterLocal, 'UTC').subtract(12, 'hours').valueOf();
@@ -340,9 +343,10 @@ function queryReviews(req) {
       });
     })
     .then((items) => {
-      return filterWithTz(opts, items);
+      return filterWithTz(opts, rawOpts, items);
     })
     .then((items) => {
+      rawOpts = null;
       opts = null;
       return items;
     });
@@ -351,10 +355,11 @@ function queryReviews(req) {
 
 function getAiModelsForReviews(req) {
 
-  let opts;
+  let opts, rawOpts;
 
   return prepareOpts(req)
     .then((data) => {
+      rawOpts = Object.assign({}, data);
       opts = Object.assign({}, data);
 
       if (opts.startingAfterLocal) {
@@ -387,9 +392,10 @@ function getAiModelsForReviews(req) {
       })
     })
     .then((items) => {
-      return filterWithTz(opts, items);
+      return filterWithTz(opts, rawOpts, items);
     })
     .then((items) => {
+      rawOpts = null;
       opts = null;
       return items;
     });
