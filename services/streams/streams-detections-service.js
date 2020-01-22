@@ -65,9 +65,33 @@ function getDetectionsByParams(opts) {
           detections.push(detection);
         })
       });
+      uniteDetections(detections);
       return detections;
     });
 
+}
+
+function uniteDetections(detections) {
+  let i = 0;
+  while (i < detections.length) {
+    if (i+1 < detections.length) {
+      let cur = detections[i];
+      let next = detections[i+1]
+      // if current item has the same end time with next, unite them into one (current)
+      if (cur.ends === next.starts) {
+        cur.ends = next.ends;
+        cur.confidence = (cur.confidence + next.confidence)/2;
+        detections.splice(i+1, 1);
+      }
+      else {
+        // go to next one only if next item has different start time
+        i++;
+      }
+    }
+    else {
+      i++
+    }
+  }
 }
 
 module.exports = {
