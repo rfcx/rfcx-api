@@ -73,7 +73,7 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND stream.starts >= :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND stream.ends <= :endingBefore');
   sql = sqlUtils.condAdd(sql, opts.access === 'personal', ' AND visibility.value = "private" AND user.guid = :userGuid');
-  sql = sqlUtils.condAdd(sql, opts.access === 'personal-all', ' (AND visibility.value = "private" OR visibility.value = "site" OR visibility.value = "public") AND user.guid = :userGuid');
+  sql = sqlUtils.condAdd(sql, opts.access === 'personal-all', ' AND (visibility.value = "private" OR visibility.value = "site" OR visibility.value = "public") AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.access === 'site', ' AND ((visibility.value = "private" AND user.guid = :userGuid) OR (visibility.value = "site" AND site.guid IN (:accessibleSites))');
   sql = sqlUtils.condAdd(sql, opts.access === 'all', ' AND ((visibility.value = "private" AND user.guid = :userGuid) OR (visibility.value = "site" AND site.guid IN (:accessibleSites)) OR visibility.value = "public")');
   sql = sqlUtils.condAdd(sql, opts.access === 'deleted', ' AND visibility.value = "deleted" AND user.guid = :userGuid');
