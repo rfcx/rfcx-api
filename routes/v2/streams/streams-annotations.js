@@ -93,6 +93,7 @@ router.route("/annotations/:guid")
       })
       .then((dbStream) => {
         streamsService.checkUserAccessToStream(req, dbStream);
+        // TODO check that annotation was created by user
         return streamsAnnotationsService.deleteAnnotationByGuid(req.params.guid);
       })
       .then(function(json) {
