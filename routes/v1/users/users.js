@@ -918,7 +918,7 @@ router.route("/password-change")
 
     let user_id, email, guid;
     try {
-      user_id = req.rfcx.auth_token_info.auth0_user_id;
+      user_id = req.rfcx.auth_token_info.sub;
       email = req.rfcx.auth_token_info.email;
       guid = req.rfcx.auth_token_info.guid;
     }
