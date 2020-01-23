@@ -79,9 +79,29 @@ function searchForHighLevelKeys(search) {
     })
 }
 
+function searchForHighLevelKeysImageAndDescription(search) {
+  return models.GuardianAudioEventValueHighLevelKey
+    .findOne({
+      where: {
+        value: {
+          $like: `%${search}%`
+        }
+      }
+    })
+    .then((data) => {
+      if (!data) { throw new sequelize.EmptyResultError(`Image and description with given search value not found.`); }
+      return {
+        value: data.value,
+        image: data.image,
+        description: data.description
+      }
+    })
+}
+
 module.exports = {
   getAllGuardianAudioEventValuesByValues,
   getGuardianAudioEventValues,
   searchForHighLevelKeys,
   combineGuardianAudioEventValueLabel,
+  searchForHighLevelKeysImageAndDescription,
 }
