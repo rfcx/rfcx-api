@@ -60,6 +60,7 @@ router.route("/")
     let params = new Converter(req.body, transformedParams);
 
     params.convert('name').toString();
+    params.convert('guid').optional().toString();
     params.convert('description').optional().toString();
     params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
     params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
@@ -75,7 +76,7 @@ router.route("/")
       })
       .bind({})
       .then((dbUser) => {
-        transformedParams.guid = hash.randomString(12);
+        transformedParams.guid = transformedParams.guid || hash.randomString(12);
         if (dbUser) {
           transformedParams.created_by = dbUser.id;
           user = usersService.formatUser(dbUser);
