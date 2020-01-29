@@ -441,6 +441,13 @@ function checkUserAccessToStream(req, dbStream) {
   return true;
 }
 
+function checkUserWriteAccessToStream(req, dbStream) {
+  if (dbStream.User.guid !== req.rfcx.auth_token_info.guid) {
+    throw new ForbiddenError(`You don't have enough permissions for this action.`);
+  }
+  return true;
+}
+
 module.exports = {
   getStreamByGuid,
   updateStream,
@@ -458,6 +465,7 @@ module.exports = {
   refreshStreamStartEnd,
   refreshStreamMaxSampleRate,
   checkUserAccessToStream,
+  checkUserWriteAccessToStream,
   findExpiredDeletedStreams,
   deleteAllStreamData,
   deleteSegmentsFromStream,

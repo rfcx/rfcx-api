@@ -257,7 +257,7 @@ router.route("/:guid/move-to-trash")
 
   return streamsService.getStreamByGuid(req.params.guid)
     .then((dbStream) => {
-      streamsService.checkUserAccessToStream(req, dbStream);
+      streamsService.checkUserWriteAccessToStream(req, dbStream);
       return streamsService.markStreamAsDeleted(dbStream);
     })
     .then(function(json) {
@@ -276,7 +276,7 @@ router.route("/:guid/restore")
 
   return streamsService.getStreamByGuid(req.params.guid)
     .then((dbStream) => {
-      streamsService.checkUserAccessToStream(req, dbStream);
+      streamsService.checkUserWriteAccessToStream(req, dbStream);
       return streamsService.restoreStream(dbStream);
     })
     .then(function(json) {
