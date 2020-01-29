@@ -17,13 +17,22 @@ const client = new AWS.S3({
  * @param {string} filename - file name which will be used in S3
  * @param {string} bucket - S3 Bucket name
  */
-function putObject(localPath, filename, bucket) {
+function putObject(localPath, filename, bucket, ACL) {
   return new Promise((resolve, reject) => {
-      aws.s3(bucket).putFile(localPath, filename, (err, res) => {
-        res.resume();
-        if (err) { return reject(err); }
-        return resolve();
-      });
+      if (ACL) {
+        aws.s3(bucket).putFile(localPath, filename, ACL, (err, res) => {
+          res.resume();
+          if (err) { return reject(err); }
+          return resolve();
+        });
+      }
+      else {
+        aws.s3(bucket).putFile(localPath, filename, (err, res) => {
+          res.resume();
+          if (err) { return reject(err); }
+          return resolve();
+        });
+      }
   });
 }
 

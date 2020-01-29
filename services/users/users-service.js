@@ -11,6 +11,7 @@ const sensationsService = require('..//sensations/sensations-service');
 const moment = require("moment-timezone");
 const ValidationError = require('../../utils/converter/validation-error');
 const sqlUtils = require("../../utils/misc/sql");
+var S3Service = require("../../services/s3/s3-service");
 
 function getUserByParams(params, ignoreMissing) {
   return models.User
@@ -222,7 +223,7 @@ function updateDefaultSite(user, siteGuid) {
 }
 
 function updateUserAtts(user, attrs) {
-  ['firstname', 'lastname'].forEach((attr) => {
+  ['firstname', 'lastname', 'avatar'].forEach((attr) => {
     if (attrs[attr]) {
       user[attr] = attrs[attr];
     }
@@ -381,6 +382,14 @@ function getUserDataFromReq(req) {
   }
 }
 
+function uploadImageFile(opts) {
+  return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket, opts.ACL);
+}
+
+function deleteImageFile(params) {
+  return S3Service.deleteObject(params.bucket, params.fullPath);
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
@@ -404,4 +413,6 @@ module.exports = {
   removeUserByGuidFromMySQL,
   updateMySQLUserPassword,
   getUserDataFromReq,
+  uploadImageFile,
+  deleteImageFile,
 };
