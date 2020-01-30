@@ -180,8 +180,8 @@ function queryData(req) {
       query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review {latest: true}) WITH ev, evs, ai, val, re, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
       query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount');
       query = sqlUtils.condAdd(query, opts.includeWindows, ' WHERE 1=1');
-      query = sqlUtils.condAdd(query, opts.reviewed === true, ' AND COUNT(re) > 0');
-      query = sqlUtils.condAdd(query, opts.reviewed === false, ' AND COUNT(re) = 0');
+      query = sqlUtils.condAdd(query, opts.reviewed === true, ' AND SIZE(re) > 0');
+      query = sqlUtils.condAdd(query, opts.reviewed === false, ' AND SIZE(re) = 0');
       query = sqlUtils.condAdd(query, opts.confirmed === true, ' AND SIZE(FILTER(r IN re WHERE r.confirmed = true)) > 0');
       query = sqlUtils.condAdd(query, opts.confirmed === false, ' AND SIZE(FILTER(r IN re WHERE r.confirmed = false)) > 0');
       query = sqlUtils.condAdd(query, opts.isUnreliable === true, ' AND SIZE(FILTER(r IN re WHERE r.unreliable = true AND r.latest = true)) > 0');
