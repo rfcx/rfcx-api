@@ -14,7 +14,7 @@ const querySelect =
   'CONVERT_TZ(GuardianAudio.measured_at, "UTC", Site.timezone) as audio_measured_at_local, ' +
   'Value.value, Value.low_level_key, HighLevelKey.value as high_level_key, ' +
   'User.guid as user_guid, User.email as user_email, User.firstname as user_firstname, User.lastname as user_lastname, ' +
-  'Site.timezone as site_timezone ';
+  'Site.timezone as site_timezone, Guardian.guid as guardian_guid ';
 
 const queryJoins =
   'LEFT JOIN GuardianAudio AS GuardianAudio ON GuardianAudioBox.audio_id = GuardianAudio.id ' +
@@ -290,6 +290,7 @@ function formatBoxAsTag(box) {
     type: 'annotation',
     legacy: {
       audioGuid: box.audio_guid,
+      guardianGuid: box.guardian_guid,
       xmin: box.start,
       xmax: box.end,
       ymin: box.freq_min,
