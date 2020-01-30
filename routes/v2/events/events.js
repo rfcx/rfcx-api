@@ -167,13 +167,19 @@ router.route("/:guid/review")
         return usersServiceNeo4j.ensureUserExistsNeo4j(user);
       })
       .then(() => {
-        return eventsServiceNeo4j.clearEventReview(req.params.guid);
+        return eventsServiceNeo4j.clearPreviousReviewOfUser(req.params.guid, user);
+      })
+      .then(() => {
+        return eventsServiceNeo4j.clearPreviousAudioWindowsReviewOfUser(req.params.guid, user);
+      })
+      .then(() => {
+        return eventsServiceNeo4j.clearLatestReview(req.params.guid);
+      })
+      .then(() => {
+        return eventsServiceNeo4j.clearLatestAudioWindowsReview(req.params.guid);
       })
       .then(() => {
         return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp, transformedParams.unreliable);
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearAudioWindowsReview(transformedParams.windows);
       })
       .then(() => {
         return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp, transformedParams.unreliable);

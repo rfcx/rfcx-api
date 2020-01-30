@@ -175,17 +175,17 @@ function queryData(req) {
       query = sqlUtils.condAdd(query, true, ' MATCH (evs)-[:classifies]->(val:label)');
       query = sqlUtils.condAdd(query, true, ' WHERE 1=1');
       query = addGetQueryParams(query, opts);
-      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw');
-      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) WITH ev, evs, ai, val, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
-      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, windows, user, re');
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, user, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount');
+      query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, CASE WHEN COUNT(re) > 0 THEN COLLECT({firstname: user.firstname, lastname: user.lastname, guid: user.guid, email: user.email, pictureUrl: user.pictureUrl, created: re.created, unreliable: re.unreliable, confirmed: re.confirmed, latest: re.latest}) ELSE [] END as re');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw, re');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review {latest: true}) WITH ev, evs, ai, val, re, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows');
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount');
       query = sqlUtils.condAdd(query, opts.includeWindows, ' WHERE 1=1');
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.reviewed === true, ' AND re IS NOT NULL');
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.reviewed === false, ' AND re IS NULL');
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.confirmed === true, ' AND re.confirmed = true');
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.confirmed === false, ' AND re.confirmed = false');
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.isUnreliable === true, ' AND re.unreliable = true');
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.isUnreliable === false, ' AND (NOT EXISTS(re.unreliable) OR re.unreliable = false)');
+      query = sqlUtils.condAdd(query, opts.reviewed === true, ' AND COUNT(re) > 0');
+      query = sqlUtils.condAdd(query, opts.reviewed === false, ' AND COUNT(re) = 0');
+      query = sqlUtils.condAdd(query, opts.confirmed === true, ' AND SIZE(FILTER(r IN re WHERE r.confirmed = true)) > 0');
+      query = sqlUtils.condAdd(query, opts.confirmed === false, ' AND SIZE(FILTER(r IN re WHERE r.confirmed = false)) > 0');
+      query = sqlUtils.condAdd(query, opts.isUnreliable === true, ' AND SIZE(FILTER(r IN re WHERE r.unreliable = true AND r.latest = true)) > 0');
+      query = sqlUtils.condAdd(query, opts.isUnreliable === false, ' AND SIZE(FILTER(r IN re WHERE (NOT EXISTS(r.unreliable) OR r.unreliable = false) AND r.latest = true)) = 0 ');
       query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && opts.hasRejectedWindows === true, ' AND (confirmedCount > 0 OR rejectedCount > 0)');
       query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
       query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows === true && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND (confirmedCount = 0  AND rejectedCount = 0) OR rejectedCount > 0');
@@ -193,8 +193,8 @@ function queryData(req) {
       query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows === true && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND (confirmedCount = 0  AND rejectedCount = 0) OR confirmedCount > 0');
       query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && !opts.hasConfirmedWindows         && opts.hasRejectedWindows === true, ' AND rejectedCount > 0');
       query = sqlUtils.condAdd(query, opts.includeWindows && !opts.hasNoReviewedWindows         && opts.hasConfirmedWindows === true && !opts.hasRejectedWindows,         ' AND confirmedCount > 0');
-      query = sqlUtils.condAdd(query, opts.includeWindows, ' RETURN ev, ai, val.value as value, val.label as label, windows, user, re as review');
-      query = sqlUtils.condAdd(query, !opts.includeWindows, ' RETURN ev, ai, val.value as value, val.label as label');
+      query = sqlUtils.condAdd(query, opts.includeWindows, ' RETURN ev, ai, val.value as value, val.label as label, re as review, windows');
+      query = sqlUtils.condAdd(query, !opts.includeWindows, ' RETURN ev, ai, val.value as value, val.label as label, re as review');
       query = sqlUtils.condAdd(query, true, ` ORDER BY ${opts.order} ${opts.dir}`);
       query = sqlUtils.condAdd(query, opts.notimezone, ` SKIP ${opts.offset} LIMIT ${opts.limit}`);
 
@@ -217,15 +217,21 @@ function queryData(req) {
           },
           event.value = record.get(2);
           event.label = record.get(3);
+
+          let reviews = record.get(4);
+          event.confirmed = reviews.filter((review) => review.confirmed === true).length;
+          event.rejected = reviews.filter((review) => review.confirmed === false).length;
+          if (!reviews.length) {
+            event.last_review = null;
+          }
+          else {
+            let lastReview = reviews.find((review) => review.latest === true);
+            event.last_review = lastReview || reviews[reviews.length - 1];
+          }
+
           if (opts.includeWindows) {
-            let windows = record.get(4);
+            let windows = record.get(5);
             event.windows = windows;
-            event.confirmed = windows.filter((window) => (window.confirmed === true)).length;
-            event.rejected = windows.filter((window) => window.confirmed === false).length;
-            let reviewer = record.get(5);
-            event.reviewer = reviewer? reviewer.properties : null;
-            let review = record.get(6);
-            event.review = review? review.properties : null;
           }
           return event;
         });
@@ -257,11 +263,11 @@ function getEventByGuid(guid) {
               `MATCH (evs)-[:classifies]->(lb:label) ` +
               `OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) ` +
               `WITH ev, evs, ai, lb, aw ` +
-              `OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review) ` +
+              `OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review {latest: true}) ` +
               `WITH ev, evs, ai, lb, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows ` +
               `OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) ` +
-              `WITH ev, evs, ai, lb, windows, user, re ` +
-              `RETURN ev as event, ai as ai, lb.value as value, lb.label as label, windows, user, re as review `;
+              `WITH ev, evs, ai, lb, windows, CASE WHEN COUNT(re) > 0 THEN COLLECT({firstname: user.firstname, lastname: user.lastname, guid: user.guid, email: user.email, pictureUrl: user.pictureUrl, created: re.created, unreliable: re.unreliable, confirmed: re.confirmed, latest: re.latest}) ELSE [] END as re ` +
+              `RETURN ev as event, ai as ai, lb.value as value, lb.label as label, windows, re as review `;
 
   const session = neo4j.session();
   const resultPromise = Promise.resolve(session.run(query, { guid }));
@@ -287,12 +293,17 @@ function getEventByGuid(guid) {
       event.label = record.get(3);
       let windows = record.get(4);
       event.windows = windows;
-      event.confirmed = windows.filter((win) => (win.confirmed === true)).length;
-      event.rejected = windows.filter((win) => (win.confirmed === false)).length;
-      let reviewer = record.get(5);
-      event.reviewer = reviewer? reviewer.properties : null;
-      let review = record.get(6);
-      event.review = review? review.properties : null;
+
+      let reviews = record.get(5);
+      event.confirmed = reviews.filter((review) => review.confirmed === true).length;
+      event.rejected = reviews.filter((review) => review.confirmed === false).length;
+      if (!reviews.length) {
+        event.last_review = null;
+      }
+      else {
+        let lastReview = reviews.find((review) => review.latest === true);
+        event.last_review = lastReview || reviews[reviews.length - 1];
+      }
       return event;
     })[0];
   });
@@ -405,7 +416,7 @@ function getAiModelsForReviews(req) {
 function queryWindowsForEvent(eventGuid) {
 
   let query = `MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)-[:relates_to]->(:audioWindowSet)-[:contains]->(aw:audioWindow) ` +
-              `OPTIONAL MATCH (aw)-[:has_review]->(re:review) ` +
+              `OPTIONAL MATCH (aw)-[:has_review]->(re:review) WHERE re.latest = true ` +
               `RETURN aw, re.confirmed as confirmed ORDER BY aw.start`;
 
   const session = neo4j.session();
@@ -504,11 +515,37 @@ function sendSNSForEvent(data) {
   }
 }
 
-function clearEventReview(guid) {
+function clearPreviousReviewOfUser(guid, user) {
 
   let query = 'MATCH (ev:event {guid: {guid}}) ' +
-              'OPTIONAL MATCH (ev)-[:has_review]->(re:review) ' +
+              'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
+              'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]-(user) ' +
               'DETACH DELETE re ' +
+              'RETURN ev as event';
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, {
+    guid,
+    userGuid: user.guid,
+    userEmail: user.email,
+  }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
+
+}
+
+function clearLatestReview(guid) {
+  let query = 'MATCH (ev:event {guid: {guid}}) ' +
+              'OPTIONAL MATCH (ev)-[has_review]->(re:review { latest: true }) ' +
+              'SET re.latest = null ' +
               'RETURN ev as event';
 
   const session = neo4j.session();
@@ -523,13 +560,12 @@ function clearEventReview(guid) {
       return record.get(0).properties;
     });
   });
-
 }
 
 function reviewEvent(guid, confirmed, user, timestamp, unreliable) {
 
   let query = `MATCH (ev:event {guid: {guid}}), (user:user {guid: {userGuid}, email: {userEmail}})` +
-              `MERGE (ev)-[:has_review]->(:review { confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ` +
+              `MERGE (ev)-[:has_review]->(:review { latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ` +
               `RETURN ev as event`;
 
   const session = neo4j.session();
@@ -554,22 +590,49 @@ function reviewEvent(guid, confirmed, user, timestamp, unreliable) {
 
 }
 
-function clearAudioWindowsReview(windowsData) {
+function clearPreviousAudioWindowsReviewOfUser(guid, user) {
+  let query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet) ' +
+              'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
+              'OPTIONAL MATCH (aws)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review)<-[:created]-(user) ' +
+              'DETACH DELETE re ' +
+              'RETURN ev as event';
+
   const session = neo4j.session();
-  let proms = [];
-  windowsData.forEach((item) => {
-    let query = 'MATCH (aw:audioWindow {guid: {guid}}) ' +
-                'OPTIONAL MATCH (aw)-[:has_review]->(re:review) ' +
-                'DETACH DELETE re ' +
-                'RETURN aw as audioWindow';
-    let resultPromise = Promise.resolve(session.run(query, { guid: item.guid }));
-    proms.push(resultPromise);
-  });
-  return Promise.all(proms)
-    .then(() => {
-      session.close();
-      return true;
+  const resultPromise = Promise.resolve(session.run(query, {
+    guid,
+    userGuid: user.guid,
+    userEmail: user.email,
+  }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
     });
+  });
+}
+
+function clearLatestAudioWindowsReview(guid) {
+  let query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)' +
+              'OPTIONAL MATCH (aw)-[:has_review]->(re:review) ' +
+              'SET re.latest = null ' +
+              'RETURN ev as event';
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, { guid }));
+
+  return resultPromise.then(result => {
+    session.close();
+    if (!result.records || !result.records.length) {
+      throw new EmptyResultError('Event with given guid not found.');
+    }
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    });
+  });
 }
 
 function reviewAudioWindows(windowsData, user, timestamp, unreliable) {
@@ -578,7 +641,7 @@ function reviewAudioWindows(windowsData, user, timestamp, unreliable) {
   windowsData.forEach((item) => {
     let query = `MATCH (aw:audioWindow {guid: {guid}}) ` +
                 `MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ` +
-                `MERGE (aw)-[:has_review]->(:review {confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ` +
+                `MERGE (aw)-[:has_review]->(:review {latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ` +
                 `RETURN aw as audioWindow`;
 
     let resultPromise = Promise.resolve(session.run(query, {
@@ -663,6 +726,7 @@ function formatWindowFromEvent(window, audioStart, event, type) {
     type: type,
     legacy: {
       audioGuid: event.audioGuid,
+      guardianGuid: event.guardianGuid,
       xmin: window.start,
       xmax: window.end,
       confidence: window.confidence,
@@ -682,10 +746,12 @@ module.exports = {
   getEventInfoByGuid,
   sendPushNotificationsForEvent,
   sendSNSForEvent,
-  clearEventReview,
+  clearPreviousReviewOfUser,
+  clearPreviousAudioWindowsReviewOfUser,
+  clearLatestReview,
+  clearLatestAudioWindowsReview,
   reviewEvent,
   reviewAudioWindows,
-  clearAudioWindowsReview,
   generateTextGridContent,
   formatReviewsForFiles,
   formatEventsAsTags,
