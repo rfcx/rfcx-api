@@ -13,6 +13,7 @@ const executeService = require('../../../services/execute-service');
 const mailService = require('../../../services/mail/mail-service');
 var sensationsService = require("../../../services/sensations/sensations-service");
 var ValidationError = require("../../../utils/converter/validation-error");
+var ForbiddenError = require("../../../utils/converter/forbidden-error");
 var usersService = require('../../../services/users/users-service');
 var sitesService = require('../../../services/sites/sites-service');
 var auth0Service = require('../../../services/auth0/auth0-service');
@@ -21,8 +22,8 @@ var sequelize = require("sequelize");
 var ApiConverter = require("../../../utils/api-converter");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 var Converter = require("../../../utils/converter/converter");
-var aws = require("../../../utils/external/aws.js").aws();
 const pathCompleteExtname = require('path-complete-extname');
+const fileUtil = require('../../../utils/misc/file');
 
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
@@ -957,7 +958,7 @@ router.route("/password-change")
 router.route("/avatar-change")
   .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
-    let user_id, email, guid;
+    let user, user_id, email, guid, files = req.files;
     try {
       user_id = req.rfcx.auth_token_info.sub;
       email = req.rfcx.auth_token_info.email;
@@ -966,78 +967,63 @@ router.route("/avatar-change")
     catch (e) {
       return httpError(req, res, 403, null, 'Unable to change avatar for your account.');
     }
-    let token, url, user;
-    console.log('user_id----', user_id, email, guid);
-    let allowedExtensions = ['png', 'PNG', 'jpg', 'JPG'];
-    let file = req.files.file;
-    console.log('file----', file);
-    if (!file) {
-      return httpError(req, res, 400, null, 'No file provided.');
-    }
-    let extension = pathCompleteExtname(file.originalname);
-    if (!allowedExtensions.includes(file.extension)) {
-      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`);
-    }
-    let opts = {
-      filePath: req.files.file.path,
-      fileName: `/userpics/${guid}${extension}`,
-      bucket: process.env.USERS_BUCKET,
-      ACL: 'public-read'
-    }
-    console.log('opts----', opts);
-    return usersService.getUserByGuidOrEmail(guid, email)
-      .then((data) => {
-        user = data;
-        console.log('user----', user);
-        if (user && user.avatar) {
-          let ext = pathCompleteExtname(user.avatar);
-          let params = {
-            bucket: process.env.USERS_BUCKET,
-            fullPath: `/userpics/${guid}${ext}`
-          }
-          return usersService.deleteImageFile(params)
+    return usersService.checkUserConnection(user_id, 'auth0')
+      .then(() => {
+        return usersService.checkUserPicture(req.files);
+      })
+      .then(() => {
+        return usersService.getUserByGuidOrEmail(guid, email);
+      })
+      .then((dbUser) => {
+        user = dbUser;
+        if (user && user.picture) {
+          return usersService.deleteImageFile(user.picture, guid);
         }
         return true;
       })
       .then(() => {
-        return usersService.uploadImageFile(opts)
-      })
-      .then(() => {
-        return aws.s3SignedUrl(process.env.USERS_BUCKET, opts.fileName, 15);
-      })
-      .then((data) => {
-        url = data;
-        console.log('S3 URL_______', data);
-        return auth0Service.getToken();
-      })
-      .then((data) => {
-        token = data;
-        console.log('token_______', data);
-        if (user) {
-          let opts = {};
-          opts.url = url;
-          return usersService.updateUserAtts(user, opts);
+        let opts = {
+          filePath: req.files.file.path,
+          fileName: `/userpics/${guid}${pathCompleteExtname(req.files.file.originalname)}`,
+          bucket: process.env.USERS_BUCKET,
+          acl: 'public-read'
         }
-        return true;
+        return usersService.uploadImageFile(opts);
       })
       .then(() => {
-        return auth0Service.updateAuth0User(token, {
-          user_id: user_id,
-          picture: url
-        });
+        let url = `https://${process.env.USERS_BUCKET}.s3-${process.env.AWS_REGION_ID}.amazonaws.com/userpics/${guid}${pathCompleteExtname(req.files.file.originalname)}`;
+        return usersService.prepareUserUrlPicture(user, url)
+          .then(() => {
+            return url;
+          });
       })
-      .then((data) => {
-        token = null;
-        url = null;
+      .then((url) => {
+        return auth0Service.getToken()
+          .then((token) => {
+            return auth0Service.updateAuth0User(token, {
+              user_id: user_id,
+              picture: url
+            })
+            .then(() => {
+              return url;
+            })
+          })
+      })
+      .then((url) => {
         user = null;
         user_id= null;
         email = null;
         guid = null;
-        res.status(200).json({ success: true });
+        res.status(200).json({ url });
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch((err) => { res.status(500).json({ err }) });
+      .catch((err) => { res.status(500).json({ err }) })
+      .finally(() => {
+        fileUtil.removeReqFiles(files);
+        files = null;
+      })
 
 });
 
