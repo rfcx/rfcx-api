@@ -50,6 +50,7 @@
     "passport-local": "1.0.0",
     "path-complete-extname": "1.0.0",
     "pdfmake": "0.1.53",
+    "probe-image-size": "5.0.0",
     "redis": "2.8.0",
     "request": "2.81.0",
     "request-promise": "4.2.1",

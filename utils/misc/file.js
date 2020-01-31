@@ -1,5 +1,7 @@
 const Promise = require('bluebird');
 const fs = require('fs');
+const assetUtil = require('../internal-rfcx/asset-utils').assetUtils;
+const util = require('util');
 var loggers = require('../logger');
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -47,6 +49,23 @@ function serveFile(res, filePathToServe, fileName, mimeType, inline) {
   })
 }
 
+/**
+ * Removes local files which were downloaded from request
+ * @param {Object | Array} files - pass req.files here
+ */
+function removeReqFiles(files) {
+  let filesArr = [];
+  try {
+    filesArr = util.isArray(files.file)? files.file : [ files.file ];
+  }
+  catch (e) { }
+  filesArr.forEach((file) => {
+    assetUtil.deleteLocalFileFromFileSystem(file.path);
+  });
+  filesArr = null;
+}
+
 module.exports = {
   serveFile,
+  removeReqFiles,
 }

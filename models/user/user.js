@@ -82,7 +82,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       validate: {
       }
-    }
+    },
+    picture: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
   }, {
     classMethods: {
       associate: function(models) {

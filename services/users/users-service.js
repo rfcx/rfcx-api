@@ -10,7 +10,12 @@ const guid = require('../../utils/misc/guid');
 const sensationsService = require('..//sensations/sensations-service');
 const moment = require("moment-timezone");
 const ValidationError = require('../../utils/converter/validation-error');
+const ForbiddenError = require('../../utils/converter/forbidden-error');
 const sqlUtils = require("../../utils/misc/sql");
+var S3Service = require("../../services/s3/s3-service");
+const pathCompleteExtname = require('path-complete-extname');
+var probe = require('probe-image-size');
+var fs = require('fs');
 
 function getUserByParams(params, ignoreMissing) {
   return models.User
@@ -222,7 +227,7 @@ function updateDefaultSite(user, siteGuid) {
 }
 
 function updateUserAtts(user, attrs) {
-  ['firstname', 'lastname'].forEach((attr) => {
+  ['firstname', 'lastname', 'picture'].forEach((attr) => {
     if (attrs[attr]) {
       user[attr] = attrs[attr];
     }
@@ -381,6 +386,64 @@ function getUserDataFromReq(req) {
   }
 }
 
+function checkUserPicture(files) {
+  return new Promise((resolve, reject) => {
+    console.log('\n\n', files.file)
+    if (util.isArray(files.file)) {
+      return reject(new ValidationError('It is only one file allowed to be uploaded.'));
+    }
+    let file = files.file;
+    if (!file) {
+      return reject(new ValidationError('No file provided.'));
+    }
+    if (file.size > 2048000) {
+      return reject(new ValidationError('File size exceeds maximum value of 2mb.'));
+    }
+    let allowedExtensions = ['png', 'jpg'];
+    if (!allowedExtensions.includes(file.extension.toLowerCase())) {
+      return reject(new ValidationError(`Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`));
+    }
+    var input = fs.createReadStream(file.path);
+    probe(input)
+      .then(result => {
+        if (result.width > 2000 || result.height > 2000) {
+          input.destroy();
+          return reject(new ValidationError('Image should be not more than 2000px x 2000px.'));
+        }
+        input.destroy();
+        return resolve();
+      })
+      .catch((err) => {
+        reject(err);
+      })
+  })
+}
+
+function checkUserConnection(userId, connection, errorMessage) {
+  return new Promise((resolve, reject) => {
+    let connectionType = userId.split('|')[0];
+    if (connectionType !== connection) {
+      return reject(new ForbiddenError(errorMessage || 'Operation not supported for your account type.'));
+    }
+    return resolve();
+  })
+}
+
+function uploadImageFile(opts) {
+  return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket, opts.acl);
+}
+
+function deleteImageFile(picture, guid) {
+  let ext = pathCompleteExtname(picture);
+  let fullPath = `/userpics/${guid}${ext}`;
+  return S3Service.deleteObject(process.env.USERS_BUCKET, fullPath);
+}
+
+function prepareUserUrlPicture(user, url) {
+  let opts = { picture: url };
+  return updateUserAtts(user, opts);
+}
+
 module.exports = {
   getUserByParams,
   getUserByGuid,
@@ -404,4 +467,9 @@ module.exports = {
   removeUserByGuidFromMySQL,
   updateMySQLUserPassword,
   getUserDataFromReq,
+  checkUserPicture,
+  checkUserConnection,
+  uploadImageFile,
+  deleteImageFile,
+  prepareUserUrlPicture,
 };
