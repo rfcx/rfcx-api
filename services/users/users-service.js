@@ -57,9 +57,6 @@ function getAllUsers() {
 function refreshLastLogin(user) {
   user.last_login_at = new Date();
   return user.save()
-             .then(() => {
-               return user.reload({ include: [{ all: true }] });
-             });
 }
 
 function removeUserByGuidFromMySQL(opts) {
@@ -83,13 +80,8 @@ function findOrCreateUser(where, defaults) {
       where: where,
       defaults: data,
     })
-    .bind({})
     .spread((user, created) => {
-      this.created = created;
-      return user.reload({ include: [{ all: true }] });
-    })
-    .then(user => {
-      return [user, this.created];
+      return [user, created];
     })
 }
 
