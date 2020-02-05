@@ -92,8 +92,8 @@ function onMessageCheckin(data, messageId) {
           audio_sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
           dbAudioObj: checkInObj.db.dbAudio,
         };
-        return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfo)
-          .then(() => {
+        // return checkInHelpers.audio.queueForTaggingByActiveModels(audioInfo)
+        //   .then(() => {
             if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
               return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfo, checkInObj.db.dbGuardian)
                 .then(() => {
@@ -103,7 +103,7 @@ function onMessageCheckin(data, messageId) {
             else {
               return Promise.resolve(checkInObj);
             }
-          });
+          // });
       }
       else {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile: Cannot send SNS message. Data is invalid', {});
