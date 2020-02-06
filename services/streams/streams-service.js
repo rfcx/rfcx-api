@@ -442,7 +442,7 @@ function checkUserAccessToStream(req, dbStream) {
 }
 
 function checkUserWriteAccessToStream(req, dbStream) {
-  if (dbStream.User.guid !== req.rfcx.auth_token_info.guid) {
+  if (!dbStream.User || (dbStream.User.guid !== req.rfcx.auth_token_info.guid)) {
     throw new ForbiddenError(`You don't have enough permissions for this action.`);
   }
   return true;
