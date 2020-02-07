@@ -114,33 +114,38 @@ router.route("/:guid/windows")
 router.route("/:guid/trigger")
   .post(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['systemUser']), function (req, res) {
 
+    let eventData, guardian;
+
     return eventsServiceNeo4j.getEventInfoByGuid(req.params.guid)
       .bind({})
       .then((data) => {
-        this.eventData = data;
+        eventData = data;
         return guardiansService.getGuardianByGuid(data.event.guardianGuid);
       })
-      .then((guardian) => {
-        this.guardian = guardian;
-        this.notificationData = {
+      .then((dbGuardian) => {
+        guardian = dbGuardian;
+        let notificationData = {
           issuer: "prediction_service",
-          event_guid: this.eventData.event.guid,
-          audio_guid: this.eventData.event.audioGuid,
-          measured_at: this.eventData.event.audioMeasuredAt,
-          value: this.eventData.label.value,
-          guardian_id: this.guardian.id,
-          guardian_guid: this.guardian.guid,
-          guardian_shortname: this.guardian.shortname,
-          latitude: this.guardian.latitude,
-          longitude: this.guardian.longitude,
-          site_guid: this.eventData.event.siteGuid,
-          ai_guid: this.eventData.ai.guid,
-          ai_name: this.eventData.ai.name,
+          event_guid: eventData.event.guid,
+          audio_guid: eventData.event.audioGuid,
+          measured_at: eventData.event.audioMeasuredAt,
+          value: eventData.label.value,
+          guardian_id: guardian.id,
+          guardian_guid: guardian.guid,
+          guardian_shortname: guardian.shortname,
+          latitude: guardian.latitude,
+          longitude: guardian.longitude,
+          site_guid: eventData.event.siteGuid,
+          site_timezone: eventData.event.siteTimezone,
+          ai_guid: eventData.ai.guid,
+          ai_name: eventData.ai.name,
           ignore_time: req.body.ignore_time !== undefined? (req.body.ignore_time === true) : undefined,
         };
-        return eventsServiceNeo4j.sendPushNotificationsForEvent(this.notificationData);
+        return eventsServiceNeo4j.sendNotificationsForEvent(notificationData);
       })
       .then(() => {
+        eventData = null;
+        guardian = null;
         res.status(200).send({ success: true });
       })
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))

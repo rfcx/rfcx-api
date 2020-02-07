@@ -581,6 +581,7 @@ router.route("/create")
     let params = new Converter(req.body, transformedParams);
 
     params.convert('email').toString();
+    params.convert('subscription_email').optional().toString();
     params.convert('guid').toString();
     params.convert('password').optional().toString();
     params.convert('firstname').toString();
@@ -599,6 +600,7 @@ router.route("/create")
           {
             guid: transformedParams.guid,
             email: transformedParams.email,
+            subscription_email: transformedParams.subscription_email || null,
             firstname: transformedParams.firstname,
             lastname: transformedParams.lastname,
             rfcx_system: transformedParams.rfcx_system === true,
@@ -681,6 +683,7 @@ router.route("/auth0/update-user/public")
     params.convert('user_id').toString();
     params.convert('given_name').optional().toString();
     params.convert('family_name').optional().toString();
+    params.convert('subscription_email').optional().toString();
     params.convert('name').optional().toString();
     params.convert('nickname').optional().toString();
     params.convert('picture').optional().toString();
@@ -734,7 +737,10 @@ router.route("/auth0/update-user/public")
           if (transformedParams.family_name) {
             opts.lastname = transformedParams.family_name;
           }
-          if (opts.firstname || opts.lastname) {
+          if (transformedParams.subscription_email) {
+            opts.subscription_email = transformedParams.subscription_email;
+          }
+          if (opts.firstname || opts.lastname || opts.subscription_email) {
             return usersService.updateUserAtts(user, opts);
           }
           return true;

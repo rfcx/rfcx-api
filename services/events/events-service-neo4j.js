@@ -9,6 +9,7 @@ const neo4j = require('../../utils/neo4j');
 const firebaseService = require('../firebase/firebase-service');
 const guardianGroupService = require('../guardians/guardian-group-service');
 const textGridService = require('../textgrid/textgrid-service');
+const mailService = require('../mail/mail-service');
 const loggers  = require('../../utils/logger');
 const logError = loggers.errorLogger.log;
 const aws = require("../../utils/external/aws.js").aws();
@@ -458,7 +459,7 @@ function getEventInfoByGuid(eventGuid) {
 
 }
 
-function sendPushNotificationsForEvent(data) {
+function sendNotificationsForEvent(data) {
   if (data.ignore_time || moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
     return guardianGroupService.getAllGroupsForGuardianId(data.guardian_id)
       .then((dbGuardianGroups) => {
@@ -483,9 +484,30 @@ function sendPushNotificationsForEvent(data) {
               title: `Rainforest Connection`,
               body: `A ${data.value} detected from ${data.guardian_shortname}`
             };
+            // Send push notification to mobile devices
             firebaseService.sendToTopic(opts)
               .catch((err) => {
                 logError(`Error sending Firebase message for audio ${data.audio_guid} to ${dbGuardianGroup.shortname} topic`, { req, err });
+              });
+            // Send email to subscribers
+            dbGuardianGroup.getUsers()
+              .then((dbUsers) => {
+                if (!dbUsers || !dbUsers.length) {
+                  return true;
+                }
+                return mailService.sendEmail({
+                  from_name: 'Rainforest Connection',
+                  to: dbUsers.map((dbUser) => {
+                    return {
+                      email: dbUser.subscription_email || dbUser.email,
+                      name: dbUser.firstname || null,
+                      type: 'to'
+                    }
+                  }),
+                  subject: `A ${data.value} detected on ${data.guardian_shortname}`,
+                  html:
+                    `Time: ${moment.tz(data.measured_at, data.site_timezone).format('YYYY-MM-DD HH:mm:ss')} (${data.site_timezone})<br>Coordinates: ${data.latitude}, ${data.longitude}`
+                });
               });
           }
         });
@@ -744,7 +766,7 @@ module.exports = {
   queryWindowsForEvent,
   queryReviews,
   getEventInfoByGuid,
-  sendPushNotificationsForEvent,
+  sendNotificationsForEvent,
   sendSNSForEvent,
   clearPreviousReviewOfUser,
   clearPreviousAudioWindowsReviewOfUser,

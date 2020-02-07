@@ -157,31 +157,37 @@ function updateAuth0User(token, opts) {
 
   let body = {};
   if (opts) {
-    ['given_name', 'family_name', 'name', 'nickname', 'picture', 'username', 'accessibleSites', 'defaultSite', 'user_metadata'].forEach((param) => {
-      if (opts[param] !== undefined) {
-        if (param === 'accessibleSites' || param === 'defaultSite') {
-          if (!body.app_metadata) {
-            body.app_metadata = {};
+    ['given_name', 'family_name', 'name', 'nickname', 'picture', 'subscription_email',
+      'username', 'accessibleSites', 'defaultSite', 'user_metadata']
+      .forEach((param) => {
+        if (opts[param] !== undefined) {
+          if (param === 'accessibleSites' || param === 'defaultSite' || param === 'subscription_email') {
+            if (!body.app_metadata) {
+              body.app_metadata = {};
+            }
           }
-        }
-        if (param === 'accessibleSites') {
-          body.app_metadata.accessibleSites = opts.accessibleSites;
-          return;
-        }
-        if (param === 'defaultSite') {
-          body.app_metadata.defaultSite = opts.defaultSite;
-          return;
-        }
-        if (param === 'user_metadata') {
-          if (!body.user_metadata) {
-            body.user_metadata = {};
+          if (param === 'accessibleSites') {
+            body.app_metadata.accessibleSites = opts.accessibleSites;
+            return;
           }
-          body.user_metadata = opts.user_metadata;
-          return;
+          if (param === 'defaultSite') {
+            body.app_metadata.defaultSite = opts.defaultSite;
+            return;
+          }
+          if (param === 'subscription_email') {
+            body.app_metadata.subscription_email = opts.subscription_email;
+            return;
+          }
+          if (param === 'user_metadata') {
+            if (!body.user_metadata) {
+              body.user_metadata = {};
+            }
+            body.user_metadata = opts.user_metadata;
+            return;
+          }
+          body[param] = opts[param];
         }
-        body[param] = opts[param];
-      }
-    });
+      });
   }
 
   return new Promise(function(resolve, reject) {
