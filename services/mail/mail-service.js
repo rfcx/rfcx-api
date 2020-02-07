@@ -39,6 +39,24 @@ function sendMessage(serviceRequest) {
     });
 }
 
+function sendEmail(serviceRequest) {
+  var params = {};
+  serviceRequest = new Converter(serviceRequest, params);
+  serviceRequest.convert('text').optional().default('').toString();
+  serviceRequest.convert('html').optional().default('').toString();
+  serviceRequest.convert('subject').optional().toString();
+  serviceRequest.convert('from_email').optional().toString();
+  serviceRequest.convert('from_name').optional().toString();
+  serviceRequest.convert('to').toArray();
+  serviceRequest.convert('important').optional().toBoolean();
+  serviceRequest.convert('bcc_address').optional().toString();
+
+  return serviceRequest.validate()
+    .then(()=> {
+      return mailing.sendEmail(params);
+    });
+}
+
 function renderContactFormEmail(opts) {
   return new Promise((resolve, reject) => {
     try {
@@ -71,5 +89,6 @@ module.exports = {
   registerToAppWaitingList,
   sendTextMail,
   sendMessage,
+  sendEmail,
   renderContactFormEmail,
 };

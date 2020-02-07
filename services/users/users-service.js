@@ -93,6 +93,7 @@ function combineNewUserData(opts) {
     firstname: opts.firstname || '',
     lastname: opts.lastname || '',
     email: opts.email,
+    subscription_email: opts.subscription_email,
     auth_password_salt: passwordData.auth_password_salt,
     auth_password_hash: passwordData.auth_password_hash,
     auth_password_updated_at: passwordData.auth_password_updated_at,
@@ -129,6 +130,7 @@ function formatUser(user, short) {
   let userFormatted = {
     guid: user.guid,
     email: user.email,
+    subscription_email: user.subscription_email,
     firstname: user.firstname,
     lastname: user.lastname,
     username: user.username,
@@ -218,8 +220,46 @@ function updateDefaultSite(user, siteGuid) {
     .then(formatUser);
 }
 
+function getGuardianGroupsByGuids(guids) {
+  let proms = [];
+  guids.forEach((guid) => {
+    const prom = models.GuardianGroup
+      .findOne({ where: { shortname: guid } })
+      .then((item) => {
+        if (!item) { throw new sequelize.EmptyResultError(`GuardianGroup with guid "${guid}" not found.`); }
+        return item;
+      });
+    proms.push(prom);
+  });
+  return Promise.all(proms);
+}
+
+function subscribeUserToGroups(user, groups) {
+  return getGuardianGroupsByGuids(groups)
+    .then((dbGuardianGroups) => {
+      let proms = [];
+      dbGuardianGroups.forEach(group => {
+        let prom = user.addGuardianGroup(group);
+        proms.push(prom);
+      });
+      return Promise.all(proms);
+    });
+}
+
+function unsubscribeUserFromGroups(user, groups) {
+  return getGuardianGroupsByGuids(groups)
+    .then((dbGuardianGroups) => {
+      let proms = [];
+      dbGuardianGroups.forEach(group => {
+        let prom = user.removeGuardianGroup(group);
+        proms.push(prom);
+      });
+      return Promise.all(proms);
+    });
+}
+
 function updateUserAtts(user, attrs) {
-  ['firstname', 'lastname', 'picture'].forEach((attr) => {
+  ['firstname', 'lastname', 'picture', 'subscription_email'].forEach((attr) => {
     if (attrs[attr]) {
       user[attr] = attrs[attr];
     }
@@ -448,6 +488,8 @@ module.exports = {
   formatUser,
   formatUsers,
   updateSiteRelations,
+  subscribeUserToGroups,
+  unsubscribeUserFromGroups,
   updateDefaultSite,
   updateUserInfo,
   updateUserAtts,
