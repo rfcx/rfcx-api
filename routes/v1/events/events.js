@@ -240,7 +240,7 @@ router.route("/values")
 
   });
 
-router.route("/values/:value")
+router.route("/values/hlk/:value")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     return eventValueService.searchForHighLevelKeysImageAndDescription(req.params.value)
@@ -249,6 +249,19 @@ router.route("/values/:value")
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => { httpError(req, res, 500, e, "Could not return image and description for Guardian Audio Event Value."); console.log(e)});
+
+  });
+
+router.route("/values/:value")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    return eventValueService.getGuardianAudioEventValue(req.params.value, true)
+      .then(eventValueService.formatGuardianAudioEventValue)
+      .then((data) => { res.status(200).json(data); })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => { httpError(req, res, 500, e, "Could not return data for Guardian Audio Event Value."); console.log(e)});
 
   });
 

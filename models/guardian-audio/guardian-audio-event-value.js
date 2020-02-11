@@ -12,6 +12,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: false,
     },
+    reference_audio: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    reference_spectrogram: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    }
   }, {
     classMethods: {
       associate: function(models) {

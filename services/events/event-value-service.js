@@ -35,15 +35,21 @@ function getGuardianAudioEventValues(opts) {
     });
 }
 
+function formatGuardianAudioEventValue(item) {
+  return {
+    value: item.value,
+    high_level_key: item.HighLevelKey? item.HighLevelKey.value : null,
+    low_level_key: item.low_level_key,
+    label: combineGuardianAudioEventValueLabel(item),
+    reference_audio: item.reference_audio,
+    reference_spectrogram: item.reference_spectrogram,
+    image: item.HighLevelKey? item.HighLevelKey.image : null,
+    description: item.HighLevelKey? item.HighLevelKey.description : null,
+  }
+}
+
 function formatGuardianAudioEventValues(arr) {
-  return arr.map((item) => {
-    return {
-      value: item.value,
-      high_level_key: item.HighLevelKey? item.HighLevelKey.value : null,
-      low_level_key: item.low_level_key,
-      label: combineGuardianAudioEventValueLabel(item),
-    }
-  });
+  return arr.map(formatGuardianAudioEventValue);
 }
 
 function combineGuardianAudioEventValueLabel(item) {
@@ -98,10 +104,25 @@ function searchForHighLevelKeysImageAndDescription(search) {
     })
 }
 
+function getGuardianAudioEventValue(value, ignoreMissing) {
+  return models.GuardianAudioEventValue
+    .findOne({
+      where: { value },
+      include: [{ all: true }]
+    })
+    .then((data) => {
+      if (!data && !ignoreMissing) { throw new sequelize.EmptyResultError('Label with given value not found.'); }
+      return data;
+    })
+}
+
 module.exports = {
   getAllGuardianAudioEventValuesByValues,
   getGuardianAudioEventValues,
   searchForHighLevelKeys,
   combineGuardianAudioEventValueLabel,
   searchForHighLevelKeysImageAndDescription,
+  getGuardianAudioEventValue,
+  formatGuardianAudioEventValue,
+  formatGuardianAudioEventValues,
 }
