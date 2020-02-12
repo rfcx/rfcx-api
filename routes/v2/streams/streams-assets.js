@@ -45,7 +45,9 @@ router.route("/assets/:attrs")
       })
       .then((dbStream) => {
         // streamsService.checkUserAccessToStream(req, dbStream);
-        return streamsAssetsService.getSegments({ streamId: dbStream.id, starts: attrs.time.starts, ends: attrs.time.ends });
+        let starts = streamsService.gluedDateToTimestamp(attrs.time.starts);
+        let ends = streamsService.gluedDateToTimestamp(attrs.time.ends);
+        return streamsService.getSegments({ streamId: dbStream.id, starts, ends });
       })
       .then((segments) => {
         if (!segments.length) {

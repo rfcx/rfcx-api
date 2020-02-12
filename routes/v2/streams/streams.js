@@ -9,6 +9,7 @@ var ValidationError = require("../../../utils/converter/validation-error");
 var ForbiddenError = require("../../../utils/converter/forbidden-error");
 var EmptyResultError = require('../../../utils/converter/empty-result-error');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const moment = require('moment-timezone');
 const streamsService = require('../../../services/streams/streams-service');
 const streamsAnnotationsService = require('../../../services/streams/streams-annotations-service');
 const streamsAssetsService = require('../../../services/streams/streams-assets-service');
@@ -50,6 +51,58 @@ router.route("/:guid")
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch(e => { httpError(req, res, 500, e, "Error while searching for the stream."); console.log(e) });
+
+  })
+
+router.route("/:guid/coverage")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('starts').toInt().minimum(0).maximum(32503669200000);
+    params.convert('ends').toInt().minimum(0).maximum(32503669200000);
+
+    let stream;
+
+    params.validate()
+      .then(() => {
+        return streamsService.getStreamByGuid(req.params.guid)
+      })
+      .then((dbStream) => {
+        streamsService.checkUserAccessToStream(req, dbStream);
+        stream = dbStream;
+        let starts = transformedParams.starts;
+        let ends = transformedParams.ends;
+        return streamsService.getCachedCoverageForTime(dbStream.guid, starts, ends);
+      })
+      .then((coverage) => {
+        if (coverage) {
+          return coverage;
+        }
+        return streamsService.getSegments({ streamId: stream.id, starts: transformedParams.starts, ends: transformedParams.ends })
+          .then((dbSegments) => {
+            if (!dbSegments || !dbSegments.length) {
+              return {  coverage: 0, gaps: [{
+                starts: transformedParams.starts,
+                ends: transformedParams.ends
+              }] };
+            }
+            return streamsService.getCoverageForTime(dbSegments, transformedParams.starts, transformedParams.ends);
+          })
+          .then((data) => {
+            return streamsService.cacheCoverageForTime(stream.guid, transformedParams.starts, transformedParams.ends, data);
+          });
+      })
+      .then((json) => {
+        stream = null;
+        res.status(200).send(json);
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, "Error while getting stream coverage."); console.log(e) });
 
   })
 
@@ -490,6 +543,11 @@ router.route("/:guid/segments")
       })
       .then((segmentFormatted) => {
         return streamsService.refreshStreamStartEnd(stream)
+          .then(() => {
+            let starts = moment.tz(transformedParams.starts, 'UTC').startOf('day').valueOf();
+            let ends = moment.tz(transformedParams.ends, 'UTC').endOf('day').valueOf();
+            return streamsService.clearCacheForTime(stream.guid, starts, ends);
+          })
           .then(() => {
             return segmentFormatted;
           });
