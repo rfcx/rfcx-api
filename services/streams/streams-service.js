@@ -6,6 +6,7 @@ const moment = require('moment-timezone');
 const ForbiddenError = require("../../utils/converter/forbidden-error");
 const streamsAnnotationsService = require('./streams-annotations-service');
 const streamsAssetsService = require('./streams-assets-service');
+const redis = require('../../utils/redis');
 
 const streamQuerySelect =
   `SELECT stream.guid as guid, stream.name as name, stream.description as description, stream.starts as starts, stream.ends as ends,
@@ -172,6 +173,44 @@ function getMasterSegmentByGuid(guid, ignoreMissing) {
       if (!item && !ignoreMissing) { throw new EmptyResultError('MasterSegment with given guid not found.'); }
       return item;
     });
+}
+
+function gluedDateToTimestamp(dateStr) {
+  return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
+}
+
+function getSegments(opts) {
+  let starts = opts.starts;
+  let ends = opts.ends;
+  console.log('\n\ngetSegments', starts, ends, '\n\n')
+  return models.Segment
+    .findAll({
+      where: {
+        stream: opts.streamId,
+        $or: [
+          {
+            $and: {
+              starts: { $lte: starts },
+              ends:   { $gt: starts }
+            },
+          },
+          {
+            $and: {
+              starts: { $gte: starts },
+              ends:   { $lte: ends }
+            },
+          },
+          {
+            $and: {
+              starts: { $lt: ends },
+              ends:   { $gte: ends }
+            }
+          }
+        ]
+      },
+      include: [{ all: true }],
+      order: 'starts ASC'
+    })
 }
 
 function getStreamSegmentByTime(streamId, time, ignoreMissing) {
@@ -448,12 +487,78 @@ function checkUserWriteAccessToStream(req, dbStream) {
   return true;
 }
 
+function getCoverageForTime(dbSegments, starts, ends) {
+  let gaps = [];
+  let totalDuration = 0;
+  dbSegments.forEach((current, index) => {
+    let prev = index === 0 ? null : dbSegments[index - 1];
+    let prevEnds = prev? prev.ends : starts;
+    totalDuration += (current.ends - current.starts);
+    if (current.starts - prevEnds) {
+      gaps.push({
+        starts: prevEnds,
+        ends: current.starts
+      });
+    }
+  })
+  let lastSegment = dbSegments[dbSegments.length - 1]
+  if (ends - lastSegment.ends > 1) {
+    gaps.push({
+      starts: lastSegment.ends,
+      ends: ends
+    });
+  }
+  return {
+    coverage: totalDuration / (ends - starts),
+    gaps
+  };
+}
+
+function cacheCoverageForTime(streamGuid, starts, ends, coverage) {
+  let key = combineRedisKeyForCoverage(streamGuid, starts, ends);
+  let value = JSON.stringify(coverage);
+  return redis.setAsync(key, value)
+    .then(() => {
+      return coverage;
+    });
+}
+
+function getCachedCoverageForTime(streamGuid, starts, ends) {
+  let key = combineRedisKeyForCoverage(streamGuid, starts, ends);
+  return redis.getAsync(key)
+    .then((data) => {
+      if (!data) {
+        return null;
+      }
+      else {
+        try {
+          return JSON.parse(data);
+        }
+        catch (e) {
+          return null;
+        }
+      }
+    })
+}
+
+function clearCacheForTime(streamGuid, starts, ends) {
+  let key = combineRedisKeyForCoverage(streamGuid, starts, ends);
+  console.log('\n\nclearCacheForTime', key, '\n\n');
+  return redis.delAsync(key);
+}
+
+function combineRedisKeyForCoverage(streamGuid, starts, ends) {
+  return `st_cov_${streamGuid}_${starts}_${ends}`;
+}
+
 module.exports = {
   getStreamByGuid,
   updateStream,
   formatStream,
   createMasterSegment,
   getMasterSegmentByGuid,
+  gluedDateToTimestamp,
+  getSegments,
   getStreamSegmentByTime,
   formatMasterSegment,
   formatSegment,
@@ -474,4 +579,8 @@ module.exports = {
   markStreamAsDeleted,
   restoreStream,
   removeAIDetetionsForStream,
+  getCoverageForTime,
+  cacheCoverageForTime,
+  getCachedCoverageForTime,
+  clearCacheForTime,
 };

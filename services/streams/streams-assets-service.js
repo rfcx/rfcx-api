@@ -104,39 +104,6 @@ function areFileNameAttrsValid(req, attrs) {
   });
 }
 
-function getSegments(opts) {
-  const starts = moment(opts.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
-  const ends = moment(opts.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
-  return models.Segment
-    .findAll({
-      where: {
-        stream: opts.streamId,
-        $or: [
-          {
-            $and: {
-              starts: { $lte: starts },
-              ends:   { $gt: starts }
-            },
-          },
-          {
-            $and: {
-              starts: { $gte: starts },
-              ends:   { $lte: ends }
-            },
-          },
-          {
-            $and: {
-              starts: { $lt: ends },
-              ends:   { $gte: ends }
-            }
-          }
-        ]
-      },
-      include: [{ all: true }],
-      order: 'starts ASC'
-    })
-}
-
 function getFile(req, res, attrs, segments) {
   const filename = combineStandardFilename(attrs);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
@@ -386,7 +353,6 @@ function combineStandardFilename(attrs) {
 module.exports = {
   parseFileNameAttrs,
   areFileNameAttrsValid,
-  getSegments,
   getFile,
   deleteFilesForStream,
 }
