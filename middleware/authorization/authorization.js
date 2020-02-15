@@ -1,4 +1,5 @@
 var httpError = require('../../utils/http-errors');
+var auth0Service = require('../../services/auth0/auth0-service');
 var passport = require("passport");
 passport.use(require("../passport-token").TokenStrategy);
 passport.use('jwt', require('../passport-jwt').JwtStrategy);
@@ -29,34 +30,13 @@ function hasRole(expectedRoles) {
   return function(req, res, next) {
     if (expectedRoles.length === 0 || req.user.userType !== 'auth0'){ return next(); }
     if (!req.user) { return res.sendStatus(403); }
-    let roles = obtainRoles(req.user);
+    let roles = auth0Service.getUserRolesFromToken(req.user);
     var allowed = expectedRoles.some((role) => {
       return roles.indexOf(role) !== -1;
     });
     return allowed ? next() : res.sendStatus(403);
   }
 };
-
-function obtainRoles(user) {
-  if (user.roles) { return user.roles; }
-  let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
-  if (user[rfcxAppMetaUrl] && user[rfcxAppMetaUrl].authorization && user[rfcxAppMetaUrl].authorization.roles) {
-    return user[rfcxAppMetaUrl].authorization.roles
-  }
-  if (user.scope) {
-    if (typeof user.scope === 'string') {
-      try {
-        let parsedScrope = JSON.parse(user.scope);
-        if (parsedScrope.roles) { return parsedScrope.roles; }
-      }
-      catch (e) { }
-    }
-    else {
-      if (user.scope.roles) { return user.scope.roles; }
-    }
-  }
-  return [];
-}
 
 /**
  * All DB users have attribute rfcx_system. Dev team and old RFCx users have rfcx_system === true

@@ -561,6 +561,34 @@ function sendChangePasswordEmail(token, email) {
   });
 }
 
+function getUserRolesFromToken(token) {
+  if (token.roles) { return token.roles; }
+  let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
+  if (token[rfcxAppMetaUrl] && token[rfcxAppMetaUrl].authorization && token[rfcxAppMetaUrl].authorization.roles) {
+    return token[rfcxAppMetaUrl].authorization.roles
+  }
+  if (token.scope) {
+    if (typeof token.scope === 'string') {
+      try {
+        let parsedScrope = JSON.parse(token.scope);
+        if (parsedScrope.roles) { return parsedScrope.roles; }
+      }
+      catch (e) { }
+    }
+    else {
+      if (token.scope.roles) { return token.scope.roles; }
+    }
+  }
+  return [];
+}
+
+function hasAnyRoleFromArray(expectedRoles, roles) {
+  if (roles && roles.length > 0 && expectedRoles.some(r => roles.includes(r))) {
+    return true;
+  }
+  return false;
+}
+
 module.exports = {
   getToken,
   getAuthToken,
@@ -580,4 +608,6 @@ module.exports = {
   updateAuth0UserPassword,
   getAllUsersForExports,
   getAjob,
+  getUserRolesFromToken,
+  hasAnyRoleFromArray,
 };

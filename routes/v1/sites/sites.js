@@ -9,8 +9,11 @@ var sequelize = require('sequelize');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 var Converter = require("../../../utils/converter/converter");
 var ValidationError = require("../../../utils/converter/validation-error");
+var ForbiddenError = require("../../../utils/converter/forbidden-error");
+var EmptyResultError = require('../../../utils/converter/empty-result-error');
 const userService = require('../../../services/users/users-service');
 const sitesService = require('../../../services/sites/sites-service');
+const auth0Service = require('../../../services/auth0/auth0-service');
 const kmzService = require('../../../services/kmz/kmz-service');
 const Promise = require("bluebird");
 const pathCompleteExtname = require('path-complete-extname');
@@ -25,11 +28,11 @@ router.route("/")
 
     return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
       .then((user) => {
-        return userService.formatUser(user);
+        return userService.getAllUserSiteGuids(user);
       })
-      .then((user) => {
+      .then((guids) => {
         where.guid = {
-          $in: user.accessibleSites
+          $in: guids
         };
         return models.GuardianSite.findAll({
           where,
@@ -106,25 +109,37 @@ router.route("/statistics/audio")
 router.route("/:site_id")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
 
-    models.GuardianSite
-      .findAll({
-        where: { guid: req.params.site_id },
-        limit: 1
-      }).then(function(dbSite){
-
+    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      .then((user) => {
+        return userService.getAllUserSiteGuids(user);
+      })
+      .then((guids) => {
+        let guid = req.params.site_id
+        if (req.user && req.user.userType === 'auth0') {
+          let userRoles = auth0Service.getUserRolesFromToken(req.user);
+          if (!guids.includes(guid) && !auth0Service.hasAnyRoleFromArray(['guardiansSitesAdmin', 'mobileAppAdmin'], userRoles)) {
+            throw new ForbiddenError(`You are not allowed to get info of site with guid ${guid}`);
+          }
+        }
+        return models.GuardianSite.findAll({
+          where: { guid: req.params.site_id },
+          limit: 1
+        });
+      })
+      .then((dbSite) => {
         if (dbSite.length < 1) {
           httpError(req, res, 404, "database");
         } else {
           res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'));
         }
-
-      }).catch(function(err){
+      })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch((err) => {
         console.log("failed to return site | "+err);
         if (!!err) { res.status(500).json({msg:"failed to return site"}); }
       });
 
-  })
-;
+  });
 
 router.route("/kmz")
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['guardiansSitesAdmin']), function (req, res) {

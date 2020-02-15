@@ -179,6 +179,21 @@ function clearSitesRelationsForUser(user) {
   return models.UserSiteRelation.destroy({ where: { user_id: user.id } });
 }
 
+function getAllUserSiteGuids(dbUser) {
+  let guids = [];
+  if (dbUser.DefaultSite) {
+    guids.push(dbUser.DefaultSite.guid);
+  }
+  if (dbUser.GuardianSites) {
+    dbUser.GuardianSites.forEach((site) => {
+      if (!guids.includes(site.guid)) {
+        guids.push(site.guid);
+      }
+    });
+  }
+  return guids;
+}
+
 function attachSitesToUser(sites, user) {
   let proms = [];
   sites.forEach(site => {
@@ -491,6 +506,7 @@ module.exports = {
   subscribeUserToGroups,
   unsubscribeUserFromGroups,
   updateDefaultSite,
+  getAllUserSiteGuids,
   updateUserInfo,
   updateUserAtts,
   getUserLastCheckin,
