@@ -12,13 +12,27 @@ var Promise = require("bluebird");
 var sequelize = require("sequelize");
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
+var ValidationError = require("../../../utils/converter/validation-error");
+var ForbiddenError = require("../../../utils/converter/forbidden-error");
+var EmptyResultError = require('../../../utils/converter/empty-result-error');
+const userService = require('../../../services/users/users-service');
 
 router.route("/:site_id/guardians")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), (req, res) => {
 
-    models.GuardianSite
-      .findOne({
-        where: { guid: req.params.site_id }
+    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      .then((user) => {
+        return userService.getAllUserSiteGuids(user);
+      })
+      .then((guids) => {
+        let guid = req.params.site_id;
+        if (!guids.includes(guid)) {
+          throw new ForbiddenError(`You are not allowed to get guardians for site with guid ${guid}`);
+        }
+        return models.GuardianSite
+          .findOne({
+            where: { guid }
+          })
       })
       .bind({})
       .then((dbSite) => {
@@ -65,6 +79,7 @@ router.route("/:site_id/guardians")
         res.status(200).json(views.models.guardian(req, res, this.dbGuardians));
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch((err) => {
         logError('Failed to get guardians', { err });
         res.status(500).json({ msg: 'Failed to get guardians'});
