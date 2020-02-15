@@ -16,7 +16,45 @@ const Promise = require("bluebird");
 const pathCompleteExtname = require('path-complete-extname');
 
 router.route("/")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+
+    let where = {};
+    if (req.query.include_inactive !== 'true') {
+      where.is_active = true;
+    }
+
+    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      .then((user) => {
+        return userService.formatUser(user);
+      })
+      .then((user) => {
+        where.guid = {
+          $in: user.accessibleSites
+        };
+        return models.GuardianSite.findAll({
+          where,
+          limit: req.rfcx.limit,
+          offset: req.rfcx.offset
+        })
+      })
+      .then((dbSite) => {
+        if (dbSite.length < 1) {
+          httpError(req, res, 404, "database");
+        } else {
+          res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'));
+        }
+      })
+      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(function(err){
+        console.log("failed to return site | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return site"}); }
+      });
+
+  })
+;
+
+router.route("/admin")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['guardiansSitesAdmin', 'mobileAppAdmin']), (req, res) => {
 
     let where = {};
     if (req.query.include_inactive !== 'true') {
@@ -30,28 +68,11 @@ router.route("/")
         offset: req.rfcx.offset
       })
       .then((dbSite) => {
-        if (req.query.filter_by_user !== undefined && req.query.filter_by_user.toString() !== 'false') {
-          return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-            .then((user) => {
-              return userService.formatUser(user);
-            })
-            .then((user) => {
-              return dbSite.filter((site) => {
-                return user.defaultSite === site.guid || user.accessibleSites.includes(site.guid);
-              });
-            });
-        }
-        else {
-          return dbSite;
-        }
-      }).then((dbSite) => {
-
         if (dbSite.length < 1) {
           httpError(req, res, 404, "database");
         } else {
           res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'));
         }
-
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(function(err){
