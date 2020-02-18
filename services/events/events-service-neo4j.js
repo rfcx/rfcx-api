@@ -8,6 +8,7 @@ var sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
 const firebaseService = require('../firebase/firebase-service');
 const guardianGroupService = require('../guardians/guardian-group-service');
+const userService = require('../users/users-service');
 const textGridService = require('../textgrid/textgrid-service');
 const mailService = require('../mail/mail-service');
 const loggers  = require('../../utils/logger');
@@ -58,33 +59,53 @@ function prepareOpts(req) {
     dir: dir? dir : 'ASC',
   };
 
-  if (opts.guardianGroups) {
-    opts.guardians = opts.guardians || [];
-    opts.values = opts.values || [];
-    return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
-      .then((groups) => {
-        groups.forEach((group) => {
-          if (!opts.values.length) {
-            (group.GuardianAudioEventValues || []).forEach((value) => {
-              if (!opts.values.includes(value.value)) {
-                opts.values.push(value.value);
-              }
-            });
-          }
-          if (!opts.guardians.length) {
-            (group.Guardians || []).forEach((guardian) => {
-              if (!opts.guardians.includes(guardian.guid)) {
-                opts.guardians.push(guardian.guid);
-              }
-            });
-          }
+  let availableSiteGuids = [];
+  return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
+    .then((user) => {
+      return userService.getAllUserSiteGuids(user);
+    })
+    .then((guids) => {
+      availableSiteGuids = guids;
+      if (opts.sites) {
+        opts.sites = opts.sites.filter((site) => {
+          return guids.includes(site);
         });
+      }
+      else {
+        opts.sites = guids;
+      }
+
+      if (opts.guardianGroups) {
+        opts.guardians = opts.guardians || [];
+        opts.values = opts.values || [];
+        return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
+          .then((groups) => {
+            groups = groups.filter((group) => {
+              return group.Site && availableSiteGuids.includes(group.Site.guid);
+            });
+            groups.forEach((group) => {
+              if (!opts.values.length) {
+                (group.GuardianAudioEventValues || []).forEach((value) => {
+                  if (!opts.values.includes(value.value)) {
+                    opts.values.push(value.value);
+                  }
+                });
+              }
+              if (!opts.guardians.length) {
+                (group.Guardians || []).forEach((guardian) => {
+                  if (!opts.guardians.includes(guardian.guid)) {
+                    opts.guardians.push(guardian.guid);
+                  }
+                });
+              }
+            });
+            return Promise.resolve(opts);
+          });
+      }
+      else {
         return Promise.resolve(opts);
-      });
-  }
-  else {
-    return Promise.resolve(opts);
-  }
+      }
+    })
 
 }
 
@@ -92,10 +113,10 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND ev.audioMeasuredAt > {startingAfterLocal}');
   sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND ev.audioMeasuredAt < {startingBeforeLocal}');
   sql = sqlUtils.condAdd(sql, opts.minimumConfidence, ' AND ev.confidence >= {minimumConfidence}');
-  sql = sqlUtils.condAdd(sql, opts.values, ' AND val.value IN {values}');
-  sql = sqlUtils.condAdd(sql, opts.sites, ' AND ev.siteGuid IN {sites}');
-  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND ev.guardianGuid IN {guardians}');
-  sql = sqlUtils.condAdd(sql, opts.models, ' AND ai.guid IN {models}');
+  sql = sqlUtils.condAdd(sql, opts.values !== undefined, ' AND val.value IN {values}');
+  sql = sqlUtils.condAdd(sql, opts.sites !== undefined, ' AND ev.siteGuid IN {sites}');
+  sql = sqlUtils.condAdd(sql, opts.guardians !== undefined, ' AND ev.guardianGuid IN {guardians}');
+  sql = sqlUtils.condAdd(sql, opts.models !== undefined, ' AND ai.guid IN {models}');
   return sql;
 }
 
@@ -155,7 +176,6 @@ function queryData(req) {
 
   return prepareOpts(req)
     .then((data) => {
-
       rawOpts = Object.assign({}, data);
       opts = Object.assign({}, data);
       if (!opts.startingAfterLocal && !opts.startingBeforeLocal) {
