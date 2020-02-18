@@ -12,10 +12,112 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 const siteService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');
 const guardiansService = require('../../../services/guardians/guardians-service');
+const userService = require('../../../services/users/users-service');
 var Converter = require("../../../utils/converter/converter");
 
 router.route("/")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
+
+    var sitesQuery = {};
+
+    return Promise.resolve()
+      .then(() => {
+        return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
+      })
+      .then((user) => {
+        return userService.getAllUserSiteGuids(user);
+      })
+      .then((guids) => {
+        let sites = []
+        if (req.query.sites) {
+          sites = req.query.sites.filter((site) => {
+            return guids.includes(site);
+          });
+        }
+        else {
+          sites = guids;
+        }
+        sitesQuery.guid = { $in: sites };
+        return models.Guardian.findAll({
+          include: [{
+            model: models.GuardianSite,
+            as: 'Site',
+            where: sitesQuery,
+            attributes: ['guid', 'name']
+          }],
+          order: [ ["last_check_in", "DESC"] ],
+          limit: req.query.limit? parseInt(req.query.limit) : req.rfcx.limit,
+          offset: req.query.offset? parseInt(req.query.offset) : req.rfcx.offset
+        })
+      })
+      .bind({})
+      .then(function(dbGuardian){
+        if (dbGuardian.length < 1) {
+          httpError(req, res, 404, "database");
+          return null;
+        } else {
+          return dbGuardian;
+        }
+      })
+      .then(function(dbGuardian) {
+        if (dbGuardian) {
+          this.dbGuardian = dbGuardian;
+          if (req.query.last_audio !== undefined && req.query.last_audio.toString() === 'true') {
+            var proms = [];
+            dbGuardian.forEach(function(guardian) {
+              var prom = models.GuardianAudio
+                .findOne({
+                  order: 'measured_at DESC',
+                  include: [{
+                    model: models.Guardian,
+                    as: 'Guardian',
+                    where: {
+                      id: guardian.id
+                    }
+                  }]
+                });
+              proms.push(prom);
+            });
+            return Promise.all(proms);
+          }
+          else {
+            return [];
+          }
+        }
+        else {
+          return null;
+        }
+      })
+      .then(function(dbAudios) {
+        if (dbAudios && dbAudios.length) {
+          dbAudios.forEach(function(dbAudio) {
+            if (dbAudio) {
+              var guardian = this.dbGuardian.find(function(guardian) {
+                return guardian.id === dbAudio.guardian_id;
+              })
+              if (guardian) {
+                guardian.last_audio = {
+                  guid: dbAudio.guid,
+                  measured_at: dbAudio.measured_at
+                };
+              }
+            }
+          }.bind(this));
+        }
+        if (this.dbGuardian) {
+          res.status(200).json(views.models.guardian(req,res,this.dbGuardian));
+        }
+      })
+      .catch(function(err){
+        console.log("failed to return guardians | "+err);
+        if (!!err) { res.status(500).json({msg:"failed to return guardians"}); }
+      });
+
+  })
+;
+
+router.route("/admin")
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'guardiansSitesAdmin']), (req,res) => {
 
     var sitesQuery = {};
 
