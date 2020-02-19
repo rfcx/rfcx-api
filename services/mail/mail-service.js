@@ -70,6 +70,19 @@ function renderContactFormEmail(opts) {
   });
 }
 
+function renderDetectionAlertEmail(opts) {
+  return new Promise((resolve, reject) => {
+    try {
+      let source = fs.readFileSync(path.join(__dirname, '../../views/email/detection-alert.handlebars'), 'utf8');
+      let template = handlebars.compile(source);
+      resolve(template(opts));
+    }
+    catch (e) {
+      reject(e);
+    }
+  });
+}
+
 function registerToAppWaitingList(serviceRequest) {
   var params = {};
   serviceRequest = new Converter(serviceRequest, params);
@@ -91,4 +104,5 @@ module.exports = {
   sendMessage,
   sendEmail,
   renderContactFormEmail,
+  renderDetectionAlertEmail,
 };

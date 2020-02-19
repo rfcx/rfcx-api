@@ -515,18 +515,28 @@ function sendNotificationsForEvent(data) {
                 if (!dbUsers || !dbUsers.length) {
                   return true;
                 }
-                return mailService.sendEmail({
-                  from_name: 'Rainforest Connection',
-                  to: dbUsers.map((dbUser) => {
-                    return {
-                      email: dbUser.subscription_email || dbUser.email,
-                      name: dbUser.firstname || null,
-                      type: 'to'
-                    }
-                  }),
-                  subject: `A ${data.value} detected on ${data.guardian_shortname}`,
-                  html:
-                    `Time: ${moment.tz(data.measured_at, data.site_timezone).format('YYYY-MM-DD HH:mm:ss')} (${data.site_timezone})<br>Coordinates: ${data.latitude}, ${data.longitude}`
+                let time = moment.tz(data.measured_at, data.site_timezone);
+                return mailService.renderDetectionAlertEmail({
+                  time: time.format('YYYY-MM-DD HH:mm:ss'),
+                  site_timezone: data.site_timezone,
+                  latitude: data.latitude,
+                  longitude: data.longitude,
+                  event_guid: data.event_guid,
+                })
+                .then((html) => {
+                  return mailService.sendEmail({
+                    from_email: 'noreply@rfcx.org',
+                    from_name: 'Rainforest Connection',
+                    to: dbUsers.map((dbUser) => {
+                      return {
+                        email: dbUser.subscription_email || dbUser.email,
+                        name: dbUser.firstname || null,
+                        type: 'to'
+                      }
+                    }),
+                    subject: `A ${data.value} detected on ${data.guardian_shortname} at ${time.format('HH:mm:ss YYYY-MM-DD')}`,
+                    html
+                  });
                 });
               });
           }
