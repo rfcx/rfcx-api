@@ -86,7 +86,6 @@ function updateAnnotation(dbAnnotation, data) {
     .then(() => {
       ['confidence', 'freq_min', 'freq_max', 'starts', 'ends', 'value'].forEach((attr) => {
         if (data[attr]) {
-          console.log('\n\nupdate', attr, data[attr], '\n');
           dbAnnotation[attr] = data[attr];
         }
       });
