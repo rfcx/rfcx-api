@@ -6,6 +6,7 @@ const Promise = require("bluebird");
 const path = require('path');
 const moment = require('moment-timezone');
 const ValidationError = require("../../utils/converter/validation-error");
+const ForbiddenError = require("../../utils/converter/forbidden-error");
 const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 const assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 const eventValueService = require('../events/event-value-service');
@@ -34,6 +35,13 @@ function checkAnnotationsValid(annotations) {
   });
 }
 
+function checkAnnotationBelongsToUser(dbAnnotation, userGuid) {
+  if (dbAnnotation.created_by !== userGuid) {
+    throw new ForbiddenError(`You don't have permissions to change this annotation.`);
+  }
+  return true;
+}
+
 function saveAnnotations(annotations, stream, userId) {
   let proms = [];
   annotations.forEach((annotation) => {
@@ -52,36 +60,66 @@ function saveAnnotations(annotations, stream, userId) {
         created_by: userId,
         value: eventValue.id,
       })
-      .then((dbAnnotation) => {
-        return dbAnnotation.reload({
-          include: [
-            {
-              model: models.User,
-              as: 'User',
-              attributes: [ 'guid', 'firstname', 'lastname', 'email' ]
-            },
-            {
-              model: models.GuardianAudioEventValue,
-              as: 'Value',
-              include: [
-                {
-                  model: models.GuardianAudioEventValueHighLevelKey,
-                  as: 'HighLevelKey'
-                }
-              ]
-            },
-            {
-              model: models.Stream,
-              as: 'Stream',
-              attributes: [ 'guid', 'name' ]
-            }
-          ]
-        });
-      });
+      .then(reloadAnnotation);
     });
     proms.push(prom);
   })
   return Promise.all(proms);
+}
+
+function updateAnnotation(dbAnnotation, data) {
+  return Promise.resolve()
+    .then(() => {
+      if (data.value) {
+        return models.GuardianAudioEventValue.findOrCreate({
+          where: { $or: { value: data.value }},
+          defaults: { value: data.value }
+        })
+        .spread((eventValue) => {
+          data.value = eventValue.id;
+        });
+      }
+      else {
+        return Promise.resolve();
+      }
+    })
+    .then(() => {
+      ['confidence', 'freq_min', 'freq_max', 'starts', 'ends', 'value'].forEach((attr) => {
+        if (data[attr]) {
+          console.log('\n\nupdate', attr, data[attr], '\n');
+          dbAnnotation[attr] = data[attr];
+        }
+      });
+      return dbAnnotation.save();
+    })
+    .then(reloadAnnotation);
+}
+
+function reloadAnnotation(dbAnnotation) {
+  return dbAnnotation.reload({
+    include: [
+      {
+        model: models.User,
+        as: 'User',
+        attributes: [ 'guid', 'firstname', 'lastname', 'email' ]
+      },
+      {
+        model: models.GuardianAudioEventValue,
+        as: 'Value',
+        include: [
+          {
+            model: models.GuardianAudioEventValueHighLevelKey,
+            as: 'HighLevelKey'
+          }
+        ]
+      },
+      {
+        model: models.Stream,
+        as: 'Stream',
+        attributes: [ 'guid', 'name' ]
+      }
+    ]
+  });
 }
 
 function deleteAnnotationByGuid(guid) {
@@ -168,7 +206,9 @@ function formatAnnotations(annotations) {
 module.exports = {
   getAnnotationByGuid,
   checkAnnotationsValid,
+  checkAnnotationBelongsToUser,
   saveAnnotations,
+  updateAnnotation,
   deleteAnnotationByGuid,
   deleteAnnotationsForStream,
   getAnnotationsByParams,

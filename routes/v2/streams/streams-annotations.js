@@ -93,7 +93,10 @@ router.route("/annotations/:guid")
       })
       .then((dbStream) => {
         streamsService.checkUserAccessToStream(req, dbStream);
-        // TODO check that annotation was created by user
+        return streamsAnnotationsService.getAnnotationByGuid(req.params.guid);
+      })
+      .then((dbAnnotation) => {
+        streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
         return streamsAnnotationsService.deleteAnnotationByGuid(req.params.guid);
       })
       .then(function(json) {
@@ -104,6 +107,46 @@ router.route("/annotations/:guid")
       .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(e => { httpError(req, res, 500, e, 'Error while deleting the annotation.'); console.log(e) });
+
+  });
+
+router.route("/annotations/:guid")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), (req, res) => {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
+    params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
+    params.convert('freq_min').optional().toInt().minimum(0);
+    params.convert('freq_max').optional().toInt().minimum(0);
+    params.convert('confidence').optional().toFloat().default(1);
+    params.convert('value').optional().toString();
+
+    return params.validate()
+      .then(() => {
+        return streamsAnnotationsService.getAnnotationByGuid(req.params.guid)
+      })
+      .then((dbAnnotation) => {
+        return streamsService.getStreamByGuid(dbAnnotation.Stream.guid)
+      })
+      .then((dbStream) => {
+        streamsService.checkUserAccessToStream(req, dbStream);
+        return streamsAnnotationsService.getAnnotationByGuid(req.params.guid);
+      })
+      .then((dbAnnotation) => {
+        streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
+        return streamsAnnotationsService.updateAnnotation(dbAnnotation, transformedParams);
+      })
+      .then(streamsAnnotationsService.formatAnnotation)
+      .then((json) => {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while updating the annotation.'); console.log(e) });
 
   });
 
