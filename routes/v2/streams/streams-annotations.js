@@ -50,6 +50,36 @@ router.route("/:guid/annotations")
 
   });
 
+router.route("/:guid/labels")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
+    params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
+
+    params.validate()
+      .then(() => {
+        return streamsService.getStreamByGuid(req.params.guid)
+      })
+      .then((dbStream) => {
+        streamsService.checkUserAccessToStream(req, dbStream);
+        transformedParams.streamGuid = dbStream.guid;
+        return streamsAnnotationsService.getLabelsByParams(transformedParams);
+      })
+      .then(streamsAnnotationsService.formatDbLabels)
+      .then((json) => {
+        res.status(200).send(json);
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while searching for stream labels.'); console.log(e) });
+
+  });
+
 router.route("/:guid/annotations")
   .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
 

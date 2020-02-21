@@ -202,6 +202,47 @@ function formatAnnotations(annotations) {
   return annotations.map(formatAnnotation);
 }
 
+function getLabelsByParams(opts) {
+  let sql = `SELECT DISTINCT Value.*, hlk.value as high_level_key FROM Annotations AS Annotation
+               LEFT JOIN GuardianAudioEventValues as Value ON Annotation.value = Value.id
+               LEFT JOIN GuardianAudioEventValueHighLevelKeys as hlk ON Value.high_level_key = hlk.id
+               LEFT JOIN Streams as Stream ON Annotation.stream = Stream.id
+               WHERE Stream.guid = :streamGuid `;
+  sql = sqlUtils.condAdd(sql, opts.starts !== undefined && opts.ends !== undefined,
+    ` AND ((Annotation.starts <= :starts AND Annotation.ends > :starts) OR
+           (Annotation.starts >= :starts AND Annotation.ends <= :ends) OR
+           (Annotation.starts < :ends AND Annotation.ends >= :ends))`);
+  sql = sqlUtils.condAdd(sql, opts.starts !== undefined && opts.ends === undefined,
+    ` AND ((Annotation.starts <= :starts AND Annotation.ends > :starts) OR
+           (Annotation.starts >= :starts))`);
+  sql = sqlUtils.condAdd(sql, opts.starts === undefined && opts.ends !== undefined,
+    ` AND ((Annotation.ends <= :ends) OR
+           (Annotation.starts < :ends AND Annotation.ends >= :ends))`);
+
+  return models.sequelize
+    .query(sql,
+      { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+    );
+}
+
+function formatDbLabel(label) {
+  return {
+    value: label.value,
+    label: eventValueService.combineGuardianAudioEventValueLabel({
+      HighLevelKey: {
+        value: label.high_level_key
+      },
+      low_level_key: label.low_level_key
+    }),
+    high_level_key: label.high_level_key,
+    low_level_key: label.low_level_key,
+  }
+}
+
+function formatDbLabels(labels) {
+  return labels.map(formatDbLabel);
+}
+
 module.exports = {
   getAnnotationByGuid,
   checkAnnotationsValid,
@@ -213,4 +254,7 @@ module.exports = {
   getAnnotationsByParams,
   formatAnnotation,
   formatAnnotations,
+  getLabelsByParams,
+  formatDbLabel,
+  formatDbLabels
 }
