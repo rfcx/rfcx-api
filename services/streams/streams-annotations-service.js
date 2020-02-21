@@ -181,7 +181,9 @@ function formatAnnotation(annotation) {
     ends: annotation.ends,
     value: {
       value: annotation.Value.value,
-      label: eventValueService.combineGuardianAudioEventValueLabel(annotation.Value)
+      label: eventValueService.combineGuardianAudioEventValueLabel(annotation.Value),
+      high_level_key: annotation.Value.HighLevelKey? annotation.Value.HighLevelKey.value : null,
+      low_level_key: annotation.Value.low_level_key
     },
     created_by: annotation.User?
       {
