@@ -315,9 +315,19 @@ function deleteSegmentsFromStream(dbStream) {
     .destroy({ where: { stream: dbStream.id } });
 }
 
+function deleteSegmentByGuid(guid) {
+  return models.Segment
+    .destroy({ where: { guid } });
+}
+
 function deleteMasterSegmentsFromStream(dbStream) {
   return models.MasterSegment
     .destroy({ where: { stream: dbStream.id } });
+}
+
+function deleteMasterSegmentByGuid(guid) {
+  return models.MasterSegment
+    .destroy({ where: { guid } });
 }
 
 function deleteStreamByGuid(guid) {
@@ -574,7 +584,9 @@ module.exports = {
   findExpiredDeletedStreams,
   deleteAllStreamData,
   deleteSegmentsFromStream,
+  deleteSegmentByGuid,
   deleteMasterSegmentsFromStream,
+  deleteMasterSegmentByGuid,
   deleteStreamByGuid,
   markStreamAsDeleted,
   restoreStream,

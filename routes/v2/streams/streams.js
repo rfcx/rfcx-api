@@ -469,7 +469,22 @@ router.route("/:guid/master-segments")
       .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while creating master stream.'); console.log(e) });
+      .catch(e => { httpError(req, res, 500, e, 'Error while creating master segment.'); console.log(e) });
+
+  });
+
+router.route("/master-segments/:guid")
+  .delete(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['systemUser']), (req, res) => {
+
+    return streamsService.deleteMasterSegmentByGuid(req.params.guid)
+      .then(() => {
+        res.status(200).json({ success: true });
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while deleting master segment.'); console.log(e) });
 
   });
 
@@ -565,6 +580,21 @@ router.route("/:guid/segments")
       .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(e => { httpError(req, res, 500, e, 'Error while creating the segment.'); console.log(e) });
+
+  });
+
+  router.route("/segments/:guid")
+  .delete(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['systemUser']), (req, res) => {
+
+    return streamsService.deleteSegmentByGuid(req.params.guid)
+      .then(() => {
+        res.status(200).json({ success: true });
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while deleting segment.'); console.log(e) });
 
   });
 
