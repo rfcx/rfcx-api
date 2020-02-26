@@ -476,6 +476,7 @@ router.route("/code")
     const roles = ['rfcxUser'];
 
     params.convert('code').toString().toLowerCase();
+    params.convert('accept_terms').optional().toBoolean();
 
     params.validate()
       .then(() => {
@@ -505,11 +506,18 @@ router.route("/code")
         return auth0Service.assignRolesToUser(this.authToken, this.userId, rolesGuids);
       })
       .then(() => {
-        return auth0Service.updateAuth0User(this.token, {
+        let attrs = {
           user_id: this.userId,
           defaultSite: transformedParams.code,
           accessibleSites: [ transformedParams.code ]
-        });
+        };
+        if (transformedParams.accept_terms) {
+          attrs.user_metadata = {
+            consentGiven: true,
+            consentTimestamp: new Date().valueOf()
+          }
+        }
+        return auth0Service.updateAuth0User(this.token, attrs);
       })
       .then(() => {
         return usersService.updateSiteRelations(this.user, { sites: [ transformedParams.code ] });
@@ -529,6 +537,27 @@ router.route("/code")
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => httpError(req, res, 500, e, `Invalid code.`));
+
+  });
+
+router.route("/accept-terms")
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function(req, res) {
+
+    return auth0Service.getToken()
+      .then((token) => {
+        return auth0Service.updateAuth0User(token, {
+          user_id: req.rfcx.auth_token_info.sub,
+          user_metadata: {
+            consentGiven: true,
+            consentTimestamp: new Date().valueOf()
+          }
+        });
+      })
+      .then(() => {
+        res.status(200).json({ success: true });
+      })
+      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(e => httpError(req, res, 500, e, `Unable to save user acceptance.`));
 
   });
 
