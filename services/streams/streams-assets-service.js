@@ -9,6 +9,7 @@ const ValidationError = require("../../utils/converter/validation-error");
 const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 const assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 const S3Service = require("../s3/s3-service");
+const mathUtil = require('../../utils/misc/math');
 
 const possibleWindowFuncs = ["dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser"];
 const possibleExtensions = ['png', 'wav', 'opus', 'flac', 'mp3'];
@@ -232,9 +233,24 @@ function generateFile(req, res, attrs, segments) {
         return true
       }
       else {
-        let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${attrs.dimensions.y} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`;
+        // From Sox docs:
+        // "−y" can be slow to produce the spectrogram if this number is not one more than a power of two (e.g. 129).
+        // So we will raise spectrogram height to nearest power of two and then resize image back to requested height
+        let yDimension = mathUtil.isPowerOfTwo(attrs.dimensions.y - 1) ? attrs.dimensions.y : (mathUtil.ceilPowerOfTwo(attrs.dimensions.y) + 1);
+        let soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -h -r -o ${specFilePath} -x ${attrs.dimensions.x} -y ${yDimension} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`;
         console.log('\n', soxPng, '\n');
-        return runExec(soxPng);
+        return runExec(soxPng)
+          .then(() => {
+            // if requested image height is not 1+2^n, then resize it back to requested height
+            if (yDimension !== attrs.dimensions.y) {
+              let imgMagickPng = `${process.env.IMAGEMAGICK_PATH} ${specFilePath} -sample '${attrs.dimensions.x}x${attrs.dimensions.y}!' ${specFilePath}`;
+              console.log('\n', imgMagickPng, '\n');
+              return runExec(imgMagickPng)
+            }
+            else {
+              return Promise.resolve();
+            }
+          })
       }
 
     })
