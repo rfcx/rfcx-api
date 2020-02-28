@@ -30,8 +30,7 @@ const streamsAssetsService = require('../../../services/streams/streams-assets-s
 */
 
 router.route("/assets/:attrs")
-  // .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
-  .get(function (req, res) {
+  .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
     let attrs;
 
@@ -44,7 +43,7 @@ router.route("/assets/:attrs")
         return streamsService.getStreamByGuid(attrs.streamGuid);
       })
       .then((dbStream) => {
-        // streamsService.checkUserAccessToStream(req, dbStream);
+        streamsService.checkUserAccessToStream(req, dbStream);
         let starts = streamsService.gluedDateToTimestamp(attrs.time.starts);
         let ends = streamsService.gluedDateToTimestamp(attrs.time.ends);
         return streamsService.getSegments({ streamId: dbStream.id, starts, ends });
