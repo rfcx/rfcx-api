@@ -76,6 +76,35 @@ router.route("/:site_id/guardians")
         return Promise.resolve();
       })
       .then(() => {
+        if (req.query.last_audio) {
+          let proms = [];
+          this.dbGuardians.forEach(function(guardian) {
+            var prom = models.GuardianAudio
+              .findOne({
+                order: 'measured_at DESC',
+                include: [{
+                  model: models.Guardian,
+                  as: 'Guardian',
+                  where: {
+                    id: guardian.id
+                  }
+                }]
+              })
+              .then((dbAudio) => {
+                if (dbAudio) {
+                  guardian.last_audio = {
+                    guid: dbAudio.guid,
+                    measured_at: dbAudio.measured_at
+                  };
+                }
+              })
+            proms.push(prom);
+          });
+          return Promise.all(proms);
+        }
+        return Promise.resolve();
+      })
+      .then(() => {
         res.status(200).json(views.models.guardian(req, res, this.dbGuardians));
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
