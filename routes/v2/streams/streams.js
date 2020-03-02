@@ -355,10 +355,13 @@ router.route("/:guid")
       return streamsService.isStreamEmpty(dbStream);
     })
     .then((isEmpty) => {
-      if (!isEmpty) {
-        let userRoles = auth0Service.getUserRolesFromToken(req.user);
-        if (!auth0Service.hasAnyRoleFromArray(['streamsAdmin', 'systemUser'], userRoles)) {
+      let userRoles = auth0Service.getUserRolesFromToken(req.user);
+      if (!auth0Service.hasAnyRoleFromArray(['streamsAdmin', 'systemUser'], userRoles)) {
+        if (!isEmpty) {
           throw new ForbiddenError(`You don't have permissions to delete non-empty stream.`);
+        }
+        else {
+          streamsService.checkUserWriteAccessToStream(req, stream);
         }
       }
       return streamsService.deleteAllStreamData(stream);
