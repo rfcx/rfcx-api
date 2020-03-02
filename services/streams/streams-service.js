@@ -286,6 +286,19 @@ function findExpiredDeletedStreams() {
   })
 }
 
+function isStreamEmpty(stream) {
+  return Promise.all([
+    models.Segment.findAll({ where: { stream: stream.id }}),
+    models.MasterSegment.findAll({ where: { stream: stream.id }})
+  ])
+    .then((data) => {
+      if ((data[0] && data[0].length) || (data[1] && data[1].length)) {
+        return false;
+      }
+      return true;
+    });
+}
+
 function deleteAllStreamData(stream) {
   return removeAIDetetionsForStream(stream)
     .then(() => {
@@ -582,6 +595,7 @@ module.exports = {
   checkUserAccessToStream,
   checkUserWriteAccessToStream,
   findExpiredDeletedStreams,
+  isStreamEmpty,
   deleteAllStreamData,
   deleteSegmentsFromStream,
   deleteSegmentByGuid,

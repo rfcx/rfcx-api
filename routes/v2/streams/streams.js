@@ -15,6 +15,7 @@ const streamsAnnotationsService = require('../../../services/streams/streams-ann
 const streamsAssetsService = require('../../../services/streams/streams-assets-service');
 const sitesService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');
+const auth0Service = require('../../../services/auth0/auth0-service');
 const Promise = require("bluebird");
 const Converter = require("../../../utils/converter/converter");
 
@@ -344,20 +345,35 @@ router.route("/:guid/restore")
 })
 
 router.route("/:guid")
-  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin', 'systemUser']), function(req,res) {
+  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['streamsAdmin', 'systemUser', 'rfcxUser']), function(req,res) {
+
+  let stream;
 
   return streamsService.getStreamByGuid(req.params.guid)
     .then((dbStream) => {
-      return streamsService.deleteAllStreamData(dbStream);
+      stream = dbStream;
+      return streamsService.isStreamEmpty(dbStream);
     })
-    .then(function() {
+    .then((isEmpty) => {
+      if (!isEmpty) {
+        let userRoles = auth0Service.getUserRolesFromToken(req.user);
+        if (!auth0Service.hasAnyRoleFromArray(['streamsAdmin', 'systemUser'], userRoles)) {
+          throw new ForbiddenError(`You don't have permissions to delete non-empty stream.`);
+        }
+      }
+      return streamsService.deleteAllStreamData(stream);
+    })
+    .then(() => {
       res.status(200).send({ success: true });
     })
     .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
     .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
     .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
     .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-    .catch(e => { httpError(req, res, 500, e, 'Error while deleting stream.'); console.log(e) });
+    .catch(e => { httpError(req, res, 500, e, 'Error while deleting the stream.'); console.log(e) })
+    .finally(() => {
+      stream = null;
+    });
 
 })
 
