@@ -12,7 +12,7 @@ const S3Service = require("../s3/s3-service");
 const mathUtil = require('../../utils/misc/math');
 
 const possibleWindowFuncs = ["dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser"];
-const possibleExtensions = ['png', 'wav', 'opus', 'flac', 'mp3'];
+const possibleExtensions = ['png', 'jpeg', 'wav', 'opus', 'flac', 'mp3'];
 const possibleFileTypes = ['spec', 'wav', 'opus', 'flac', 'mp3'];
 const possibleAudioFileTypes = ['wav', 'opus', 'flac', 'mp3'];
 
@@ -55,6 +55,7 @@ function parseFileNameAttrs(req) {
       } : undefined,
       windowFunc: findStartsWith('w') || 'dolph',
       zAxis: findStartsWith('z') || '120',
+      jpegCompression: findStartsWith('c') || 0,
       // sampleRate: findStartsWith('sr'),
     });
   });
@@ -77,11 +78,8 @@ function areFileNameAttrsValid(req, attrs) {
     if ((moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')).diff((moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')), 'minutes') > 15) {
       return reject(new ValidationError('Maximum range between start and end should be less than 15 minutes.'));
     }
-    if (attrs.fileType === 'spec' && req.rfcx.content_type !== 'png') {
-      return reject(new ValidationError(`Unsupported file extension. Only png is available for type spec`));
-    }
-    if (attrs.fileType === 'spec' && req.rfcx.content_type !== 'png') {
-      return reject(new ValidationError(`Unsupported file extension. Only png is available for type spec`));
+    if (attrs.fileType === 'spec' && (req.rfcx.content_type !== 'png' && req.rfcx.content_type !== 'jpeg')) {
+      return reject(new ValidationError(`Unsupported file extension. Only png or jpeg are available for type spec`));
     }
     if (possibleAudioFileTypes.includes(attrs.fileType) && req.rfcx.content_type !== attrs.fileType) {
       return reject(new ValidationError(`Invalid file extension. File type and file extension should match.`));
@@ -106,7 +104,7 @@ function areFileNameAttrsValid(req, attrs) {
 }
 
 function getFile(req, res, attrs, segments) {
-  const filename = combineStandardFilename(attrs);
+  const filename = combineStandardFilename(attrs, req);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
 
   const filenameAudio = `${filename}.${extension}`;
@@ -136,7 +134,7 @@ function getFile(req, res, attrs, segments) {
 }
 
 function generateFile(req, res, attrs, segments) {
-  const filename = combineStandardFilename(attrs);
+  const filename = combineStandardFilename(attrs, req);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
 
   const filenameAudio = `${filename}.${extension}`;
@@ -145,11 +143,11 @@ function generateFile(req, res, attrs, segments) {
   const audioFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudio}`;
   const audioFilePathCached = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudioCache}`;
 
-  const filenameSpec = `${filename}.png`;
-  const filenameSpecCached = `${filename}_cached.png`;
+  let filenameSpec = `${filename}.png`;
+  let filenameSpecCached = `${filename}_cached.png`;
 
-  const specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`;
-  const specFilePathCached = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpecCached}`;
+  let specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`;
+  let specFilePathCached = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpecCached}`;
 
   const s3AudioFilePath = `${attrs.streamGuid}/audio/${filenameAudio}`;
   const s3specFilePath = `${attrs.streamGuid}/image/${filenameSpec}`;
@@ -251,6 +249,21 @@ function generateFile(req, res, attrs, segments) {
               return Promise.resolve();
             }
           })
+          .then(() => {
+            if (req.rfcx.content_type !== 'png') {
+              let pngspecFilePath = `${specFilePath}`;
+              specFilePath = specFilePath.replace('.png', `.${req.rfcx.content_type}`);
+              specFilePathCached = specFilePathCached.replace('.png', `.${req.rfcx.content_type}`);
+              filenameSpec = filenameSpec.replace('.png', `.${req.rfcx.content_type}`);
+              filenameSpecCached = filenameSpecCached.replace('.png', `.${req.rfcx.content_type}`);
+              let imgMagickPng = `${process.env.IMAGEMAGICK_PATH} -strip -interlace Plane -quality ${100 - attrs.jpegCompression}% ${pngspecFilePath} ${specFilePath}`;
+              console.log('\n', imgMagickPng, '\n');
+              return runExec(imgMagickPng)
+            }
+            else {
+              return Promise.resolve();
+            }
+          })
       }
 
     })
@@ -266,7 +279,7 @@ function generateFile(req, res, attrs, segments) {
     .then(() => {
       // Rspond with a file
       if (attrs.fileType === 'spec') {
-        return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, "image/png", !!req.query.inline)
+        return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, `image/${req.rfcx.content_type}`, !!req.query.inline)
       }
       else {
         return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline)
@@ -358,10 +371,13 @@ function clipToStr(clip) {
   }
 }
 
-function combineStandardFilename(attrs) {
+function combineStandardFilename(attrs, req) {
   let filename = `${attrs.streamGuid}_t${attrs.time.starts}.${attrs.time.ends}_r${clipToStr(attrs.clip)}_g${parseFloat(attrs.gain)}_f${attrs.fileType}`;
   if (attrs.fileType === 'spec') {
     filename += `_d${attrs.dimensions.x}.${attrs.dimensions.y}_w${attrs.windowFunc}_z${attrs.zAxis}`;
+    if (req.rfcx.content_type === 'jpeg') {
+      filename += `_c${attrs.jpegCompression}`;
+    }
   }
   return filename;
 }
