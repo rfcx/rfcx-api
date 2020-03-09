@@ -293,9 +293,10 @@ exports.saveMeta = {
 
   SoftwareRoleVersion: function(roleArr, guardianId) {
     var roleVersions = {};
+    let proms = [];
     for (vInd in roleArr) {
       roleVersions[roleArr[vInd][0]] = roleArr[vInd][1];
-      models.GuardianSoftware
+      let prom = models.GuardianSoftware
         .findOne({
           where: { role: roleArr[vInd][0] }
         })
@@ -311,15 +312,16 @@ exports.saveMeta = {
           })
           .then((dbSoftwareRoleVersion) => {
             if (dbSoftwareRoleVersion.length < 1) {
+              let opts = { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] };
               return models.GuardianSoftwareVersion
-                .findOrCreate({
-                  where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] }
-                })
-                .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
-                  dbSoftwareRoleVersionInsertion.updated_at = new Date();
-                  return dbSoftwareRoleVersionInsertion.save();
-                });
-//              return Promise.reject(`Software role "${dbSoftwareRole.role}, version "${roleVersions[dbSoftwareRole.role]}" is not [yet] in the database.`)
+              .findOrCreate({
+                where: opts,
+                defaults: opts
+              })
+              .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
+                dbSoftwareRoleVersionInsertion.updated_at = new Date();
+                return dbSoftwareRoleVersionInsertion.save();
+              });
             } else {
               return models.GuardianMetaSoftwareVersion
                 .findOrCreate({
@@ -332,7 +334,9 @@ exports.saveMeta = {
             }
           })
         })
+        proms.push(prom);
     }
+    return Promise.all(proms);
   }
 
 };
