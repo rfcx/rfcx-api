@@ -68,6 +68,10 @@ function onMessageCheckin(data, messageId) {
     })
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbSaveMeta', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+      return checkInDatabase.updateDbMetaAssetsExchangeLog(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> updateDbMetaAssetsExchangeLog', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
       return checkInDatabase.createDbAudio(checkInObj);
     })
     .then((checkInObj) => {

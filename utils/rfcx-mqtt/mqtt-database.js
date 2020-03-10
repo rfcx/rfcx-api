@@ -140,6 +140,57 @@ exports.checkInDatabase = {
 
   },
 
+  updateDbMetaAssetsExchangeLog: function(checkInObj) {
+
+    var guardianId = checkInObj.db.dbGuardian.id;
+    // arrays of return values for checkin response json
+    var metaReturnArray = [], purgedReturnArray = [];
+
+    let proms = [];
+    // create meta asset entries in database
+    if (checkInObj.json.meta_ids != null) {
+      for (var i = 0; i < checkInObj.json.meta_ids.length; i++) {
+        let prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
+          where: {
+            guardian_id: guardianId,
+            asset_type: "meta",
+            asset_id: checkInObj.json.meta_ids[i]
+          }
+        });
+        metaReturnArray.push({ id: checkInObj.json.meta_ids[i] });
+        proms.push(prom);
+      }
+    }
+    return Promise.all(proms)
+      .then(() => {
+        // parse list of purged assets from guardian, delete them from database and return list
+        var dbMetaPurgedAssets = [], metaPurgedAssets = strArrToJSArr(checkInObj.json.assets_purged,"|","*");
+        for (asstInd in metaPurgedAssets) {
+          if (metaPurgedAssets[asstInd][1] != null) {
+            dbMetaPurgedAssets.push({
+              guardian_id: guardianId,
+              asset_type: metaPurgedAssets[asstInd][0],
+              asset_id: metaPurgedAssets[asstInd][1]
+            });
+            purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1] });
+          }
+        }
+        if (dbMetaPurgedAssets.length > 0) {
+          return models.GuardianMetaAssetExchangeLog.bulkDelete("GuardianMetaAssetExchangeLog", { [models.Sequelize.Op.or]: dbMetaPurgedAssets });
+        }
+        else {
+          return Promise.resolve();
+        }
+      })
+      .then(() => {
+        // add checkin response json to overall checkInObj
+        checkInObj.rtrn.obj.meta = metaReturnArray;
+        checkInObj.rtrn.obj.purged = purgedReturnArray;
+
+        return checkInObj;
+      })
+  },
+
   createDbAudio: function(checkInObj) {
 
     return models.GuardianAudio.findOrCreate({
@@ -181,6 +232,15 @@ exports.checkInDatabase = {
       })
     })
     .then(function(dbAudio) {
+
+      // models.GuardianMetaAssetExchangeLog.findOrCreate({
+      //   where: {
+      //     guardian_id: checkInObj.db.dbGuardian.id,
+      //     asset_type: "audio",
+      //     asset_id: checkInObj.audio.metaArr[1]
+      //   }
+      // });
+
       checkInObj.db.dbAudio = dbAudio;
       checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] });
       return checkInObj;
@@ -219,6 +279,15 @@ exports.checkInDatabase = {
           defaults
         })
         .then(function(dbScreenShot) {
+
+          // models.GuardianMetaAssetExchangeLog.findOrCreate({
+          //   where: {
+          //     guardian_id: checkInObj.db.dbGuardian.id,
+          //     asset_type: "screenshot",
+          //     asset_id: checkInObj.screenshots.metaArr[1]
+          //   }
+          // });
+
           checkInObj.db.dbScreenShot= dbScreenShot;
           checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
           resolve(checkInObj);
