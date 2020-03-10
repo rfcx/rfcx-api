@@ -7,9 +7,7 @@ pipeline {
         PHASE = branchToConfig(BRANCH_NAME)
         ECR = "887044485231.dkr.ecr.eu-west-1.amazonaws.com"
     }
-
     stages {
-
         stage("Build") {
             when {
                  expression { BRANCH_NAME ==~ /(staging|master)/ }
@@ -22,7 +20,6 @@ pipeline {
             sh "docker push ${ECR}/${APP}_${PHASE}:${BUILD_NUMBER}"
             sh "docker system prune -af"
             }
-
            post {
                success {
                    slackSend (color: '#3380C7', message: "Build Successful: Job ${APP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
@@ -32,7 +29,6 @@ pipeline {
                    slackSend (color: '#F44336', message: "Build Failure: Job ${APP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
                    echo 'Compile Stage Failed'
                }
-
            }
         }
         stage('Deploy') {
@@ -42,7 +38,6 @@ pipeline {
             steps {
                 sh "kubectl set image deployment ${APP} ${APP}=${ECR}/${APP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
             }
-
         }
         stage('Verifying') {
             when {
@@ -54,7 +49,6 @@ pipeline {
             slackSend (color: '#4CAF50', message: "Deployment Successful: Job ${APP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT}' (${env.BUILD_URL})")
             }
             }
-
         }
     }
     post {
@@ -63,20 +57,21 @@ pipeline {
                 }
         unstable {
             echo 'pipeline failed, at least one step unstable'
-                    
             }
         failure {
             echo 'I failed :('
         }
     }
 }
-
-
   def branchToConfig(branch) {
      script {
         result = "NULL"
         if (branch == 'staging') {
              result = "staging"
+        withCredentials([file(credentialsId: 'api_staging_env', variable: 'PRIVATE_ENV')]) {
+        sh "cp $PRIVATE_ENV rfcx.sh"
+        sh "chmod 777 rfcx.sh"
+        }
         }
         if (branch == 'master') {
              result = "production"
@@ -86,7 +81,6 @@ pipeline {
         }
          }
          echo "BRANCH:${branch} -> CONFIGURATION:${result}"
-       
          }
          return result
      }
