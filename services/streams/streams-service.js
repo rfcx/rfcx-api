@@ -496,15 +496,16 @@ function checkUserAccessToStream(req, dbStream) {
   catch(e) {
     accessibleSites = [];
   }
-  if (dbStream.Visibility.value === 'private' && dbStream.User.guid !== req.rfcx.auth_token_info.guid ||
-      dbStream.Visibility.value === 'site' && !accessibleSites.includes(dbStream.Site.guid)) {
+  if ((dbStream.Visibility.value === 'private' &&
+        dbStream.User.guid !== req.rfcx.auth_token_info.guid && dbStream.User.email !== req.rfcx.auth_token_info.email) ||
+      (dbStream.Visibility.value === 'site' && !accessibleSites.includes(dbStream.Site.guid))) {
     throw new ForbiddenError(`You don't have access to this stream.`);
   }
   return true;
 }
 
 function checkUserWriteAccessToStream(req, dbStream) {
-  if (!dbStream.User || (dbStream.User.guid !== req.rfcx.auth_token_info.guid)) {
+  if (!dbStream.User || (dbStream.User.guid !== req.rfcx.auth_token_info.guid && dbStream.User.email !== req.rfcx.auth_token_info.email)) {
     throw new ForbiddenError(`You don't have enough permissions for this action.`);
   }
   return true;
