@@ -477,6 +477,7 @@ router.route("/code")
 
     params.convert('code').toString().toLowerCase();
     params.convert('accept_terms').optional().toBoolean();
+    params.convert('app').optional().toString().default('');
 
     params.validate()
       .then(() => {
@@ -512,10 +513,10 @@ router.route("/code")
           accessibleSites: [ transformedParams.code ]
         };
         if (transformedParams.accept_terms) {
-          attrs.user_metadata = {
-            consentGiven: true,
-            consentTimestamp: new Date().valueOf()
-          }
+          let user_metadata = {}
+          user_metadata[`consentGiven${transformedParams.app}`] = `true`;
+          user_metadata[`consentTimestamp${transformedParams.app}`] = `${(new Date()).valueOf()}`;
+          attrs.user_metadata = user_metadata;
         }
         return auth0Service.updateAuth0User(this.token, attrs);
       })
@@ -543,14 +544,16 @@ router.route("/code")
 router.route("/accept-terms")
   .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function(req, res) {
 
+    let app = req.body.app || '';
+
     return auth0Service.getToken()
       .then((token) => {
+        let user_metadata = {}
+        user_metadata[`consentGiven${app}`] = 'true';
+        user_metadata[`consentTimestamp${app}`] = `${(new Date()).valueOf()}`;
         return auth0Service.updateAuth0User(token, {
           user_id: req.rfcx.auth_token_info.sub,
-          user_metadata: {
-            consentGiven: true,
-            consentTimestamp: new Date().valueOf()
-          }
+          user_metadata
         });
       })
       .then(() => {
