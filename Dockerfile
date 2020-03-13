@@ -9,4 +9,4 @@ COPY --from=builder /usr/src/app /usr/src/app
 WORKDIR /usr/src/app
 RUN mv rfcx.sh /etc/profile.d/
 EXPOSE 3000
-CMD [ "/bin/bash", "-c", "source /etc/profile.d/rfcx.sh && ./bin/start_mqtt" ]
+CMD [ "/bin/bash", "-c", "source /etc/profile.d/rfcx.sh && npm start" ]
