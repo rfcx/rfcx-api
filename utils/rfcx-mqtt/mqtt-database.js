@@ -176,7 +176,10 @@ exports.checkInDatabase = {
           }
         }
         if (dbMetaPurgedAssets.length > 0) {
-          return models.GuardianMetaAssetExchangeLog.bulkDelete("GuardianMetaAssetExchangeLog", { [models.Sequelize.Op.or]: dbMetaPurgedAssets });
+          let proms = dbMetaPurgedAssets.map((item) => {
+            return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
+          });
+          return Promise.all(proms);
         }
         else {
           return Promise.resolve();
