@@ -31,10 +31,12 @@ pipeline {
            post {
                success {
                    slackSend (color: '#3380C7', message: "Build Successful: Job ${APIHTTP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
+                   slackSend (color: '#3380C7', message: "Build Successful: Job ${APIMQTT} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
                    echo 'Compile Stage Successful'
                }
                failure {
                    slackSend (color: '#F44336', message: "Build Failure: Job ${APIHTTP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
+                   slackSend (color: '#F44336', message: "Build Failure: Job ${APIMQTT} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
                    echo 'Compile Stage Failed'
                }
            }
