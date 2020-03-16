@@ -55,8 +55,9 @@ pipeline {
             steps {
             catchError {
             sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
-            sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
             slackSend (color: '#4CAF50', message: "Deployment Successful: Job ${APIHTTP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT}' (${env.BUILD_URL})")
+            sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
+            slackSend (color: '#4CAF50', message: "Deployment Successful: Job ${APIMQTT} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT}' (${env.BUILD_URL})")
             }
             }
         }
