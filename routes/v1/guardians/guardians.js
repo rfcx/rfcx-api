@@ -359,11 +359,17 @@ router.route("/register")
             });
         }
       })
-      .catch(function(err){
+      .catch(sequelize.ValidationError, e => {
+        let message = 'Validation error';
+        try {
+          message = e.errors && e.errors.length? e.errors.map((er) => er.message).join('; ') : e.message;
+        } catch (err) { }
+        httpError(req, res, 400, null, message);
+      })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message); })
+      .catch(function(err) {
         console.log(err);
-        res.status(500).json({
-          message: err.message, error: { status: 500 }
-        });
+        res.status(500).json({ message: err.message, error: { status: 500 } });
       });
 
   });
