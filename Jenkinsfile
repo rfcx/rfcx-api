@@ -16,14 +16,14 @@ pipeline {
             steps {
             slackSend (color: '#FF9800', message: "STARTED: ${env.BUILD_NUMBER} Application ${APIHTTP} Branch ${PHASE} \nCommit ${GIT_COMMIT} by ${env.GIT_COMMITTER_NAME} (${env.BUILD_URL})")
             sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
-            sh "docker build -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
+            sh "docker build -f build/http/Dockerfile -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
             sh "docker tag ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
             sh "docker push ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
             sh "docker system prune -af"
 
             slackSend (color: '#FF9800', message: "STARTED: ${env.BUILD_NUMBER} Application ${APIMQTT} Branch ${PHASE} \nCommit ${GIT_COMMIT} by ${env.GIT_COMMITTER_NAME} (${env.BUILD_URL})")
             sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
-            sh "docker build -t ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ."
+            sh "docker build -f build/mqtt/Dockerfile -t ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ."
             sh "docker tag ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER}"
             sh "docker push ${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER}"
             sh "docker system prune -af"
