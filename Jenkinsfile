@@ -3,9 +3,10 @@ pipeline {
         label 'slave'
     }
     environment {
-        APP = "api"
-        PHASE = branchToConfig(BRANCH_NAME)
-        ECR = "887044485231.dkr.ecr.eu-west-1.amazonaws.com"
+        APIHTTP="api"
+        APIMQTT="api-mqtt"
+        PHASE=branchToConfig(BRANCH_NAME)
+        ECR="887044485231.dkr.ecr.eu-west-1.amazonaws.com"
     }
     stages {
         stage("Build") {
