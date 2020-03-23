@@ -129,33 +129,6 @@ function updateStream(stream, attrs) {
     });
 }
 
-function formatStream(stream) {
-  let streamFormatted = {
-    guid: stream.guid,
-    name: stream.name,
-    description: stream.description? stream.description : null,
-    starts: stream.starts? stream.starts : null,
-    ends: stream.ends? stream.starts : null,
-    created_at: stream.created_at,
-    location: stream.location? stream.location : null,
-    visibility: stream.Visibility? stream.Visibility.value : null,
-    created_by: stream.User?
-      {
-        firstname: stream.User.firstname,
-        lastname: stream.User.lastname,
-        guid: stream.User.guid,
-        email: stream.User.email
-      } : null,
-    site: stream.Site?
-      {
-        guid: stream.Site.guid,
-        name: stream.Site.name,
-        timezone: stream.Site.timezone
-      } : null,
-  };
-  return streamFormatted;
-}
-
 function createMasterSegment(opts) {
   return models.MasterSegment.create(opts)
     .then((dbMasterSegment) => {
@@ -420,7 +393,7 @@ function formatStreams(streams) {
   return streams.map(formatStream);
 }
 
-function formatStream(stream) {
+function formatStream(stream, opts) {
   return {
     guid: stream.guid,
     name: stream.name,
@@ -446,7 +419,8 @@ function formatStream(stream) {
     site: stream.Site? {
       guid: stream.Site.guid,
       name: stream.Site.name,
-      timezone: stream.Site.timezone
+      timezone: stream.Site.timezone,
+      bounds: opts && opts.includeBounds ? (stream.Site.bounds || null) : null
     } : null,
     sample_rate: stream.SampleRate? stream.SampleRate.value : null,
   };

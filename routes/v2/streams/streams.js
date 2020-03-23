@@ -42,7 +42,7 @@ router.route("/:guid")
     streamsService.getStreamByGuid(req.params.guid)
       .then((dbStream) => {
         streamsService.checkUserAccessToStream(req, dbStream);
-        return streamsService.formatStream(dbStream);
+        return streamsService.formatStream(dbStream, { includeBounds: true });
       })
       .then(function(json) {
         res.status(200).send(json);
@@ -602,7 +602,7 @@ router.route("/:guid/segments")
 
   });
 
-  router.route("/segments/:guid")
+router.route("/segments/:guid")
   .delete(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['systemUser']), (req, res) => {
 
     return streamsService.deleteSegmentByGuid(req.params.guid)
