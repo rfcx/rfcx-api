@@ -87,9 +87,11 @@ app.mqtt.on("message", (topic, data) => {
       })
       .catch((err) => {
         // TODO: We need to send a report back to guardian with error information here
-        logDebug('mqtt message return object', err);
+        if (typeof(err) === 'string') {
+          err = { message: err };
+        }
+        logDebug('mqtt message return object [cloudwatch]', { err });
         logError('mqtt message error [cloudwatch]', { err });
-        console.log('mqtt message error', err);
       });
   }
 });
