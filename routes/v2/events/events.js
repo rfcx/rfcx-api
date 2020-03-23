@@ -172,6 +172,14 @@ router.route("/:guid/review")
         return usersServiceNeo4j.ensureUserExistsNeo4j(user);
       })
       .then(() => {
+        if (!user.avatar || !user.avatar === '') {
+          return Promise.resolve();
+        }
+        else {
+          return usersServiceNeo4j.updateUserPicture(user);
+        }
+      })
+      .then(() => {
         return eventsServiceNeo4j.clearPreviousReviewOfUser(req.params.guid, user);
       })
       .then(() => {
