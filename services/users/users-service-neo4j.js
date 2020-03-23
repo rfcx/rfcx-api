@@ -56,6 +56,26 @@ function createUserWithParams(user) {
 
 }
 
+function updateUserPicture(user) {
+
+  let query = 'MATCH (user:user { guid: {guid}, email: {email} }) SET user.pictureUrl = {pictureUrl} RETURN user';
+
+  const session = neo4j.session();
+  const resultPromise = Promise.resolve(session.run(query, {
+    guid: user.guid,
+    email: user.email,
+    pictureUrl: user.avatar || '',
+  }));
+
+  return resultPromise.then(result => {
+    session.close();
+    return result.records.map((record) => {
+      return record.get(0).properties;
+    })[0];
+  });
+
+}
+
 function ensureUserExistsNeo4j(data) {
 
   return getUserByParams({ guid: data.guid, email: data.email}, true)
@@ -72,4 +92,5 @@ module.exports = {
   getUserByParams,
   createUserWithParams,
   ensureUserExistsNeo4j,
+  updateUserPicture,
 };

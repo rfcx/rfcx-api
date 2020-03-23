@@ -429,6 +429,7 @@ function getUserDataFromReq(req) {
     guid: req.rfcx.auth_token_info.guid,
     firstname: req.rfcx.auth_token_info.given_name || (req.rfcx.auth_token_info.user_metadata? req.rfcx.auth_token_info.user_metadata.given_name : ''),
     lastname: req.rfcx.auth_token_info.family_name || (req.rfcx.auth_token_info.user_metadata? req.rfcx.auth_token_info.user_metadata.family_name : ''),
+    avatar: req.rfcx.auth_token_info.picture || null,
     email: req.rfcx.auth_token_info.email,
   }
 }
