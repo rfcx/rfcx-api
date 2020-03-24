@@ -7,6 +7,29 @@ const eventValueService = require('../events/event-value-service');
 const eventTypeService = require('../events/event-type-service');
 const siteService = require('../sites/sites-service');
 
+let guardianGroupInclude = [
+  {
+    model: models.Guardian,
+    as: 'Guardians',
+    attributes: ['guid', 'shortname']
+  },
+  {
+    model: models.GuardianAudioEventType,
+    as: 'GuardianAudioEventTypes',
+    attributes: ['value']
+  },
+  {
+    model: models.GuardianAudioEventValue,
+    as: 'GuardianAudioEventValues',
+    attributes: ['value']
+  },
+  {
+    model: models.GuardianSite,
+    as: 'Site',
+    attributes: ['guid'],
+  }
+];
+
 function getGroupByShortname(shortname) {
   return models.GuardianGroup
     .findOne({
@@ -29,35 +52,22 @@ function getGroupsByShortnames(shortnames) {
 
 function getGroups(params) {
   let opts = {
-    where: {}
+    include: guardianGroupInclude
   };
-  if (params.extended) {
-    opts.include = [{ all: true }];
+  if (params.sites) {
+    opts.include[3].where = {
+      guid: {
+        $in: params.sites
+      }
+    }
   }
-  return Promise.resolve(undefined)
-    .then(() => {
-      if (params.sites) {
-        return siteService.getSitesByGuids(params.sites, true)
-          .then((sites) => {
-            return sites
-              .filter((site) => { return !!site; })
-              .map((site) => { return site.id; });
-          });
-      }
-      return Promise.resolve();
-    })
-    .then((siteIds) => {
-      if (siteIds) {
-        opts.where.site = { $in: siteIds }
-      }
-      return models.GuardianGroup.findAll(opts);
-    })
+  return models.GuardianGroup.findAll(opts);
 }
 
 function getAllGroups(extended) {
   let opts = {};
   if (extended) {
-    opts.include = [{ all: true }];
+    opts.include = guardianGroupInclude;
   }
   return models.GuardianGroup
     .findAll(opts);
