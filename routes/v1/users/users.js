@@ -515,7 +515,6 @@ router.route("/code")
         if (transformedParams.accept_terms) {
           let user_metadata = {}
           user_metadata[`consentGiven${transformedParams.app}`] = `true`;
-          user_metadata[`consentTimestamp${transformedParams.app}`] = `${(new Date()).valueOf()}`;
           attrs.user_metadata = user_metadata;
         }
         return auth0Service.updateAuth0User(this.token, attrs);
@@ -550,7 +549,6 @@ router.route("/accept-terms")
       .then((token) => {
         let user_metadata = {}
         user_metadata[`consentGiven${app}`] = 'true';
-        user_metadata[`consentTimestamp${app}`] = `${(new Date()).valueOf()}`;
         return auth0Service.updateAuth0User(token, {
           user_id: req.rfcx.auth_token_info.sub,
           user_metadata
