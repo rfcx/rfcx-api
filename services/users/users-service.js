@@ -17,6 +17,8 @@ const pathCompleteExtname = require('path-complete-extname');
 var probe = require('probe-image-size');
 var fs = require('fs');
 
+const unsubscriptionSalt = 'you_will_never_guess_this_salt';
+
 function getUserByParams(params, ignoreMissing) {
   return models.User
     .findOne({
@@ -45,6 +47,23 @@ function getUserByGuidOrEmail(field1, field2) {
       email: field2
     }
   });
+}
+
+function getUserBySubscriptionEmail(email, ignoreMissing) {
+  return models.User
+    .findOne({
+      where: {
+        $or: {
+          subscription_email: email,
+          email
+        }
+      },
+      include: [{ all: true }]
+    })
+    .then((user) => {
+      if (!user && !ignoreMissing) { throw new sequelize.EmptyResultError('User with given guid not found.'); }
+      return user;
+    });
 }
 
 function getAllUsers() {
@@ -235,13 +254,13 @@ function updateDefaultSite(user, siteGuid) {
     .then(formatUser);
 }
 
-function getGuardianGroupsByGuids(guids) {
+function getGuardianGroupsByGuids(guids, ignoreMissing) {
   let proms = [];
   guids.forEach((guid) => {
     const prom = models.GuardianGroup
       .findOne({ where: { shortname: guid } })
       .then((item) => {
-        if (!item) { throw new sequelize.EmptyResultError(`GuardianGroup with guid "${guid}" not found.`); }
+        if (!item && !ignoreMissing) { throw new sequelize.EmptyResultError(`GuardianGroup with guid "${guid}" not found.`); }
         return item;
       });
     proms.push(prom);
@@ -261,13 +280,15 @@ function subscribeUserToGroups(user, groups) {
     });
 }
 
-function unsubscribeUserFromGroups(user, groups) {
-  return getGuardianGroupsByGuids(groups)
+function unsubscribeUserFromGroups(user, groups, ignoreMissing) {
+  return getGuardianGroupsByGuids(groups, ignoreMissing)
     .then((dbGuardianGroups) => {
       let proms = [];
       dbGuardianGroups.forEach(group => {
-        let prom = user.removeGuardianGroup(group);
-        proms.push(prom);
+        if (group) {
+          let prom = user.removeGuardianGroup(group);
+          proms.push(prom);
+        }
       });
       return Promise.all(proms);
     });
@@ -497,6 +518,7 @@ module.exports = {
   getUserByGuid,
   getUserByEmail,
   getUserByGuidOrEmail,
+  getUserBySubscriptionEmail,
   getAllUsers,
   createUser,
   findOrCreateUser,
@@ -506,6 +528,7 @@ module.exports = {
   updateSiteRelations,
   subscribeUserToGroups,
   unsubscribeUserFromGroups,
+  unsubscriptionSalt,
   updateDefaultSite,
   getAllUserSiteGuids,
   updateUserInfo,
