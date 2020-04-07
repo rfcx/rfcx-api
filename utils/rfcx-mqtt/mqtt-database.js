@@ -144,7 +144,7 @@ exports.checkInDatabase = {
 
     var guardianId = checkInObj.db.dbGuardian.id;
     // arrays of return values for checkin response json
-    var metaReturnArray = [], purgedReturnArray = [];
+    var metaReturnArray = [], purgedReturnArray = [], reQueueReturnArray = [];
 
     let proms = [];
     // create meta asset entries in database
@@ -175,6 +175,24 @@ exports.checkInDatabase = {
             purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1] });
           }
         }
+        // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
+        if (checkInObj.json.checkins_to_verify != null) {
+          for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+            models.GuardianMetaAssetExchangeLog.findOne({ 
+                  where: {
+                      guardian_id: guardianId,
+                      asset_type: "audio",
+                      asset_id: checkInObj.json.checkins_to_verify[i]
+                  } }).then((dbAssetEntry) => {
+                    if (!dbAssetEntry) {
+                      reQueueReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
+                    } else {
+                      checkInObj.rtrn.obj.audio.push({ id: checkInObj.json.checkins_to_verify[i] });
+                    }
+              });
+          }
+        }
+
         if (dbMetaPurgedAssets.length > 0) {
           let proms = dbMetaPurgedAssets.map((item) => {
             return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
@@ -189,6 +207,7 @@ exports.checkInDatabase = {
         // add checkin response json to overall checkInObj
         checkInObj.rtrn.obj.meta = metaReturnArray;
         checkInObj.rtrn.obj.purged = purgedReturnArray;
+        checkInObj.rtrn.obj.requeue = reQueueReturnArray;
 
         return checkInObj;
       })
@@ -236,13 +255,13 @@ exports.checkInDatabase = {
     })
     .then(function(dbAudio) {
 
-      // models.GuardianMetaAssetExchangeLog.findOrCreate({
-      //   where: {
-      //     guardian_id: checkInObj.db.dbGuardian.id,
-      //     asset_type: "audio",
-      //     asset_id: checkInObj.audio.metaArr[1]
-      //   }
-      // });
+      models.GuardianMetaAssetExchangeLog.findOrCreate({
+        where: {
+          guardian_id: checkInObj.db.dbGuardian.id,
+          asset_type: "audio",
+          asset_id: checkInObj.audio.metaArr[1]
+        }
+      });
 
       checkInObj.db.dbAudio = dbAudio;
       checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] });
@@ -283,13 +302,13 @@ exports.checkInDatabase = {
         })
         .then(function(dbScreenShot) {
 
-          // models.GuardianMetaAssetExchangeLog.findOrCreate({
-          //   where: {
-          //     guardian_id: checkInObj.db.dbGuardian.id,
-          //     asset_type: "screenshot",
-          //     asset_id: checkInObj.screenshots.metaArr[1]
-          //   }
-          // });
+          models.GuardianMetaAssetExchangeLog.findOrCreate({
+            where: {
+              guardian_id: checkInObj.db.dbGuardian.id,
+              asset_type: "screenshot",
+              asset_id: checkInObj.screenshots.metaArr[1]
+            }
+          });
 
           checkInObj.db.dbScreenShot= dbScreenShot;
           checkInObj.rtrn.obj.screenshots.push({ id: checkInObj.screenshots.metaArr[1] });
