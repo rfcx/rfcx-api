@@ -216,7 +216,7 @@ exports.checkInDatabase = {
               for (var j = 0; j < receivedReturnArray.length; j++) {
                 if (checkInObj.json.checkins_to_verify[i] == receivedReturnArray[j]) {
                   mustReQueue = false;
-                  break;
+                  break; 
                 }
               }
               if (mustReQueue) { requeueReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] }); }
