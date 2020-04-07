@@ -214,18 +214,18 @@ exports.checkInDatabase = {
         checkInObj.rtrn.obj.purged = purgedReturnArray;
         checkInObj.rtrn.obj.received = receivedReturnArray;
         
-        if (checkInObj.json.checkins_to_verify != null) {
-          for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
-            mustReQueue = true;
-            for (var j=0; j < receivedReturnArray.length; j++) {
-              if (checkInObj.json.checkins_to_verify[i] == receivedReturnArray[j]) {
-                mustReQueue = false;
-                break;
-              }
-            }
-            if (mustReQueue) { checkInObj.rtrn.obj.requeue.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] }); }
-          }
-        }
+        // if (checkInObj.json.checkins_to_verify != null) {
+        //   for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+        //     mustReQueue = true;
+        //     for (var j = 0; j < receivedReturnArray.length; j++) {
+        //       if (checkInObj.json.checkins_to_verify[i] == receivedReturnArray[j]) {
+        //         mustReQueue = false;
+        //         break;
+        //       }
+        //     }
+        //     if (mustReQueue) { checkInObj.rtrn.obj.requeue.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] }); }
+        //   }
+        // }
 
         return checkInObj;
       })
