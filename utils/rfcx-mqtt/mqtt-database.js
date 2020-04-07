@@ -187,7 +187,7 @@ exports.checkInDatabase = {
                 }
               })
               .then((dbAssetEntry) => {
-                if ((dbAssetEntry != null) && (dbAssetEntry.asset_id != null)) {
+                if (dbAssetEntry != null) {
                   receivedReturnArray.push({ type: "audio", id: dbAssetEntry.asset_id });
                 }
               });
@@ -228,7 +228,6 @@ exports.checkInDatabase = {
         checkInObj.rtrn.obj.purged = purgedReturnArray;
         checkInObj.rtrn.obj.received = receivedReturnArray;
         checkInObj.rtrn.obj.requeue = requeueReturnArray;
-
 
         return checkInObj;
       })
