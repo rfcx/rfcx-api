@@ -144,7 +144,7 @@ exports.checkInDatabase = {
 
     var guardianId = checkInObj.db.dbGuardian.id;
     // arrays of return values for checkin response json
-    var metaReturnArray = [], purgedReturnArray = [], reQueueReturnArray = [];
+    var metaReturnArray = [], purgedReturnArray = [], receivedReturnArray = [], reQueueReturnArray = [];
 
     let proms = [];
     // create meta asset entries in database
@@ -189,9 +189,9 @@ exports.checkInDatabase = {
               .then((dbAssetEntry) => {
                 if (dbAssetEntry == null) {
                   // reQueueReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
-                  checkInObj.rtrn.obj.audio.push({ id: dbAssetEntry.asset_id });
+                  receivedReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
                 } else {
-                  checkInObj.rtrn.obj.audio.push({ id: dbAssetEntry.asset_id });
+                  receivedReturnArray.push({ type: "audio", id: dbAssetEntry.asset_id });
                 }
               });
             promsExchLogs.push(prom);
@@ -215,6 +215,7 @@ exports.checkInDatabase = {
         // add checkin response json to overall checkInObj
         checkInObj.rtrn.obj.meta = metaReturnArray;
         checkInObj.rtrn.obj.purged = purgedReturnArray;
+        checkInObj.rtrn.obj.received = receivedReturnArray;
         checkInObj.rtrn.obj.requeue = reQueueReturnArray;
 
         return checkInObj;
