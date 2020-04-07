@@ -188,9 +188,9 @@ exports.checkInDatabase = {
               })
               .then((dbAssetEntry) => {
                 if (!dbAssetEntry) {
-                  reQueueReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
+                  // reQueueReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
                 } else {
-                  checkInObj.rtrn.obj.audio.push({ id: checkInObj.json.checkins_to_verify[i] });
+                  checkInObj.rtrn.obj.audio.push({ id: dbAssetEntry.asset_id });
                 }
               });
             promsExchLogs.push(prom);
