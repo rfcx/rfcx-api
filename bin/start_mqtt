@@ -71,6 +71,7 @@ var mqttCheckInRouter = require("../utils/rfcx-mqtt/mqtt-checkin-router.js").mqt
 app.mqtt.on("message", (topic, data) => {
   let messageId = guidService.generate();
   logDebug('new mqtt message', { topic });
+  console.log('New mqtt message', topic, messageId);
   if (topic === "guardians/checkins") {
     logDebug('mqtt message', { topic });
 
@@ -81,6 +82,7 @@ app.mqtt.on("message", (topic, data) => {
           gzip: result.gzip
         });
         app.mqtt.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip);
+        console.log('mqtt message processed', topic, messageId);
         messageId = null;
         result = null;
         return true;
