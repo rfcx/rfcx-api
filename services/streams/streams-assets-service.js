@@ -117,8 +117,10 @@ function getFile(req, res, attrs, segments, nextTimestamp) {
 
   let additionalHeaders = {
     'Access-Control-Expose-Headers': 'RFCx-Stream-Next-Timestamp, RFCx-Stream-Gaps',
-    'RFCx-Stream-Gaps': getGapsForFile(attrs, segments),
-    'RFCx-Stream-Next-Timestamp': nextTimestamp
+    'RFCx-Stream-Gaps': getGapsForFile(attrs, segments)
+  }
+  if (nextTimestamp) {
+    additionalHeaders['RFCx-Stream-Next-Timestamp'] = nextTimestamp;
   }
 
   return S3Service.headObject(s3FilePath, process.env.STREAMS_CACHE_BUCKET, true)
