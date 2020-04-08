@@ -103,7 +103,7 @@ function areFileNameAttrsValid(req, attrs) {
   });
 }
 
-function getFile(req, res, attrs, segments) {
+function getFile(req, res, attrs, segments, nextTimestamp) {
   const filename = combineStandardFilename(attrs, req);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
 
@@ -115,10 +115,19 @@ function getFile(req, res, attrs, segments) {
 
   const s3FilePath = attrs.fileType === 'spec'? s3specFilePath : s3AudioFilePath;
 
+  let additionalHeaders = {
+    'Access-Control-Expose-Headers': 'RFCx-Stream-Next-Timestamp, RFCx-Stream-Gaps',
+    'RFCx-Stream-Gaps': getGapsForFile(attrs, segments),
+    'RFCx-Stream-Next-Timestamp': nextTimestamp
+  }
+
   return S3Service.headObject(s3FilePath, process.env.STREAMS_CACHE_BUCKET, true)
     .then((file) => {
       if (file) {
         res.attachment(attrs.fileType === 'spec'? filenameSpec : filenameAudio);
+        for (let key in additionalHeaders) {
+          res.setHeader(key, additionalHeaders[key]);
+        }
         return S3Service.client
           .getObject({
             Bucket: process.env.STREAMS_CACHE_BUCKET,
@@ -128,12 +137,33 @@ function getFile(req, res, attrs, segments) {
           .pipe(res);
       }
       else {
-        return generateFile(req, res, attrs, segments);
+        return generateFile(req, res, attrs, segments, additionalHeaders);
       }
     })
 }
 
-function generateFile(req, res, attrs, segments) {
+function getGapsForFile(attrs, segments) {
+  let gaps = [];
+  const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
+  const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
+  segments.forEach((segment, ind) => {
+    if (ind === 0 && starts < segment.starts) {
+      gaps.push([starts, segment.starts]);
+    }
+    if ((ind + 1) <= (segments.length - 1)) {
+      let nextSegment = segments[ind + 1];
+      if (nextSegment.starts > segment.ends) {
+        gaps.push([segment.ends, nextSegment.starts]);
+      }
+    }
+    if ((ind === segments.length - 1) && segment.ends < ends) {
+      gaps.push([segment.ends, ends]);
+    }
+  });
+  return gaps;
+}
+
+function generateFile(req, res, attrs, segments, additionalHeaders) {
   const filename = combineStandardFilename(attrs, req);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
 
@@ -279,10 +309,10 @@ function generateFile(req, res, attrs, segments) {
     .then(() => {
       // Rspond with a file
       if (attrs.fileType === 'spec') {
-        return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, `image/${req.rfcx.content_type}`, !!req.query.inline)
+        return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, `image/${req.rfcx.content_type}`, !!req.query.inline, additionalHeaders)
       }
       else {
-        return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline)
+        return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline, additionalHeaders)
       }
     })
     .then(() => {
