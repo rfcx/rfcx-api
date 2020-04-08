@@ -14,6 +14,8 @@ const mailService = require('../mail/mail-service');
 const loggers  = require('../../utils/logger');
 const logError = loggers.errorLogger.log;
 const aws = require("../../utils/external/aws.js").aws();
+const hash = require("../../utils/misc/hash.js").hash;
+const usersService = require('../users/users-service');
 
 function prepareOpts(req) {
 
@@ -515,23 +517,39 @@ function sendNotificationsForEvent(data) {
                 if (!dbUsers || !dbUsers.length) {
                   return true;
                 }
-                let time = moment.tz(data.measured_at, data.site_timezone);
-                return mailService.renderDetectionAlertEmail({
-                  time: time.format('YYYY-MM-DD HH:mm:ss'),
-                  site_timezone: data.site_timezone,
-                  latitude: data.latitude,
-                  longitude: data.longitude,
-                  event_guid: data.event_guid,
-                })
+                return mailService.getDetectionAlertHtml()
                 .then((html) => {
+                  let time = moment.tz(data.measured_at, data.site_timezone);
                   return mailService.sendEmail({
                     from_email: 'noreply@rfcx.org',
                     from_name: 'Rainforest Connection',
+                    merge_language: "handlebars",
                     to: dbUsers.map((dbUser) => {
                       return {
                         email: dbUser.subscription_email || dbUser.email,
                         name: dbUser.firstname || null,
                         type: 'to'
+                      }
+                    }),
+                    global_merge_vars: [
+                      { name: 'time', content: time.format('YYYY-MM-DD HH:mm:ss') },
+                      { name: 'site_timezone', content: data.site_timezone },
+                      { name: 'latitude', content: data.latitude },
+                      { name: 'longitude', content: data.longitude },
+                      { name: 'event_guid', content: data.event_guid },
+                    ],
+                    // recipient-oriented template vars
+                    // we will use it to generate safe unsubscribe url for each user
+                    merge_vars: dbUsers.map((dbUser) => {
+                      let email = dbUser.subscription_email || dbUser.email;
+                      return {
+                        rcpt: email,
+                        vars: [
+                          {
+                            name: 'unsubscribe_url',
+                            content: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}/v1/guardians/groups/unsubscribe/public?groups[]=${dbGuardianGroup.shortname}&email=${email}&token=${hash.hashedCredentials(usersService.unsubscriptionSalt, email)}`
+                          }
+                        ]
                       }
                     }),
                     subject: `A ${data.value} detected on ${data.guardian_shortname} at ${time.format('HH:mm:ss YYYY-MM-DD')}`,

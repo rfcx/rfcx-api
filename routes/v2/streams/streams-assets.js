@@ -32,7 +32,7 @@ const streamsAssetsService = require('../../../services/streams/streams-assets-s
 router.route("/assets/:attrs")
   .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
-    let attrs;
+    let attrs, stream, segments;
 
     return streamsAssetsService.parseFileNameAttrs(req)
       .then((data) => {
@@ -43,22 +43,35 @@ router.route("/assets/:attrs")
         return streamsService.getStreamByGuid(attrs.streamGuid);
       })
       .then((dbStream) => {
+        stream = dbStream;
         streamsService.checkUserAccessToStream(req, dbStream);
         let starts = streamsService.gluedDateToTimestamp(attrs.time.starts);
         let ends = streamsService.gluedDateToTimestamp(attrs.time.ends);
         return streamsService.getSegments({ streamId: dbStream.id, starts, ends });
       })
-      .then((segments) => {
-        if (!segments.length) {
+      .then((dbSegments) => {
+        segments = dbSegments;
+        if (!dbSegments.length) {
           throw new EmptyResultError('No audio files found for selected time range.');
         }
-        return streamsAssetsService.getFile(req, res, attrs, segments);
+        // calculate when stream has next audio part after requested time frame
+        let ends = streamsService.gluedDateToTimestamp(attrs.time.ends);
+        let lastSegment = dbSegments[dbSegments.length - 1];
+        return streamsService.getNextTimestampAfterSegment(lastSegment, ends);
+      })
+      .then((nextTimestamp) => {
+        return streamsAssetsService.getFile(req, res, attrs, segments, nextTimestamp);
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, "Error while querying the stream."); console.log(e) });
+      .catch(e => { httpError(req, res, 500, e, "Error while querying the stream."); console.log(e) })
+      .finally(() => {
+        attrs = null;
+        stream = null;
+        segments = null;
+      })
 
   })
 

@@ -47,7 +47,10 @@ function sendEmail(serviceRequest) {
   serviceRequest.convert('subject').optional().toString();
   serviceRequest.convert('from_email').optional().toString();
   serviceRequest.convert('from_name').optional().toString();
+  serviceRequest.convert('merge_language').optional().toString();
   serviceRequest.convert('to').toArray();
+  serviceRequest.convert('global_merge_vars').optional().toArray();
+  serviceRequest.convert('merge_vars').optional().toArray();
   serviceRequest.convert('important').optional().toBoolean();
   serviceRequest.convert('bcc_address').optional().toString();
 
@@ -70,12 +73,11 @@ function renderContactFormEmail(opts) {
   });
 }
 
-function renderDetectionAlertEmail(opts) {
+function getDetectionAlertHtml() {
   return new Promise((resolve, reject) => {
     try {
       let source = fs.readFileSync(path.join(__dirname, '../../views/email/detection-alert.handlebars'), 'utf8');
-      let template = handlebars.compile(source);
-      resolve(template(opts));
+      resolve(source);
     }
     catch (e) {
       reject(e);
@@ -104,5 +106,5 @@ module.exports = {
   sendMessage,
   sendEmail,
   renderContactFormEmail,
-  renderDetectionAlertEmail,
+  getDetectionAlertHtml,
 };

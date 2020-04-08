@@ -186,6 +186,26 @@ function getSegments(opts) {
     })
 }
 
+function getNextTimestampAfterSegment(segment, time) {
+  if (segment.ends > time) {
+    return Promise.resolve(time);
+  }
+  else {
+    return models.Segment
+      .findOne({
+        where: {
+          stream: segment.stream,
+          starts: { $gte: time },
+        },
+        order: [ ['starts', 'ASC'] ],
+        include: [{ all: true }]
+      })
+      .then((dbSegment) => {
+        return dbSegment? dbSegment.starts : null
+      });
+  }
+}
+
 function getStreamSegmentByTime(streamId, time, ignoreMissing) {
   return models.Segment
     .findOne({
@@ -557,6 +577,7 @@ module.exports = {
   getMasterSegmentByGuid,
   gluedDateToTimestamp,
   getSegments,
+  getNextTimestampAfterSegment,
   getStreamSegmentByTime,
   formatMasterSegment,
   formatSegment,

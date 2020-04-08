@@ -12,6 +12,7 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 const sequelize = require("sequelize");
 var Converter = require("../../../utils/converter/converter");
 const Promise = require('bluebird');
+const hash = require("../../../utils/misc/hash.js").hash;
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
@@ -153,6 +154,41 @@ router.route("/groups/unsubscribe")
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message); })
       .catch(e => httpError(req, res, 500, e, e.message || "Could not unsubscribe user from groups."));
+
+  });
+
+router.route("/groups/unsubscribe/public")
+  .get((req, res) => {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('groups').toArray();
+    params.convert('email').toString();
+    params.convert('token').toString();
+
+    params.validate()
+      .then(() => {
+        if (transformedParams.token !== hash.hashedCredentials(usersService.unsubscriptionSalt, transformedParams.email)) {
+          throw new Error('Wrong token provided.');
+        }
+        return usersService.getUserBySubscriptionEmail(transformedParams.email);
+      })
+      .then((dbUser) => {
+        return usersService.unsubscribeUserFromGroups(dbUser, transformedParams.groups, true);
+      })
+      .then(() => {
+        res
+          .type('text/html')
+          .status(200)
+          .send(`<p>You were successfully unsubscribed.</p>`);
+      })
+      .catch((e) => {
+        res
+          .type('text/html')
+          .status(400)
+          .send(`<p>Error occured during request. Please contact <a href="mailto:contact@rfcx.org">contact@rfcx.org</a></p>`);
+      });
 
   });
 

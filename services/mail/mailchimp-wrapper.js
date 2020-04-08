@@ -103,6 +103,9 @@ module.exports = {
         to: opts.to,
         important: opts.important !== undefined? opts.important : null,
         bcc_address: opts.bcc_address? opts.bcc_address : null,
+        merge_language: opts.merge_language? opts.merge_language : "mailchimp",
+        global_merge_vars: opts.global_merge_vars? opts.global_merge_vars : [],
+        merge_vars: opts.merge_vars? opts.merge_vars : [],
         auth_text: true,
         auto_html: true,
       };
