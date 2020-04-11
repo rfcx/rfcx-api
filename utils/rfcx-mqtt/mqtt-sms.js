@@ -16,7 +16,9 @@ exports.messages = {
           version: null,
           address: jsonMessages[msgInd].address,
           body: jsonMessages[msgInd].body,
-          timeStamp: new Date(parseInt(jsonMessages[msgInd].received_at)),
+          timeStamp: (jsonMessages[msgInd].received_at != null) ? new Date(parseInt(jsonMessages[msgInd].received_at)) : null,
+          received_at: (jsonMessages[msgInd].received_at != null) ? new Date(parseInt(jsonMessages[msgInd].received_at)) : null,
+          sent_at: (jsonMessages[msgInd].sent_at != null) ? new Date(parseInt(jsonMessages[msgInd].sent_at)) : null,
           isSaved: false
         };
       }
@@ -28,7 +30,8 @@ exports.messages = {
     return models.GuardianMetaMessage.create({
       guardian_id: messageInfo.guardian_id,
       check_in_id: messageInfo.checkin_id,
-      received_at: messageInfo.timeStamp,
+      received_at: messageInfo.received_at,
+      sent_at: messageInfo.sent_at,
       address: messageInfo.address,
       body: messageInfo.body,
       android_id: messageInfo.android_id
