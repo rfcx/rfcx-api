@@ -9,23 +9,42 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
   updateAndDispatchGuardianInstructions: function(checkInObj) {
 
     // arrays of return values for checkin response json
-    var instrRtrnArray = [];
+    var instrRtrnArrayQueued = [];
 
-    let promsCompletedInstrs = [];
+    let promsReceived = [];
     // Update executed Instruction info in database
-    if (checkInObj.json.instructions != null) {
-      for (var i = 0; i < checkInObj.json.instructions.length; i++) {
-        // let prom = models.GuardianMetaInstructionsLog.findOrCreate({
-        //   where: {
-        //     guid: checkInObj.json.instructions[i].guid,
-        //     guardian_id: checkInObj.db.dbGuardian.id
-        //   }
-        // });
-        // promsCompletedInstrs.push(prom);
+    if ((checkInObj.json.instructions != null) && (checkInObj.json.instructions.received != null)) {
+      for (var i = 0; i < checkInObj.json.instructions.received.length; i++) {
+        let prom = models.GuardianMetaInstructionsQueue.findOne({
+          where: {
+            guid: checkInObj.json.instructions.received[i].guid,
+            guardian_id: checkInObj.db.dbGuardian.id,
+            received_at: null
+          }
+        })
+        .then((dbQueueEntry) => {
+          if (dbQueueEntry != null) {
+            dbQueueEntry.received_at = new Date(parseInt(checkInObj.json.instructions.received[i].received_at));
+            dbQueueEntry.save();
+          }
+        });
+        promsReceived.push(prom);
       }
     }
-    return Promise.all(promsCompletedInstrs)
+
+
+
+    return Promise.all(promsReceived)
       .then(() => {
+
+
+
+
+
+
+
+
+
         // // parse list of purged assets from guardian, delete them from database and return list
         // var dbMetaPurgedAssets = [], metaPurgedAssets = strArrToJSArr(checkInObj.json.assets_purged,"|","*");
         // for (asstInd in metaPurgedAssets) {
@@ -73,8 +92,8 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
       })
       .then(() => {
 
-        // instrRtrnArray.push({ 
-        //       id: "13818352-8061-440e-849b-52d700e33dc0", 
+        // instrRtrnArrayQueued.push({ 
+        //       guid: "13818352-8061-440e-849b-52d700e33dc0", 
         //       type: "control", 
         //       command: "sms_queue", 
         //       execute_at: "0", 
@@ -85,7 +104,7 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
         //   });
 
         // add instruction array to overall checkInObj
-        checkInObj.rtrn.obj.instructions = instrRtrnArray;
+        checkInObj.rtrn.obj.instructions = instrRtrnArrayQueued;
 
         return checkInObj;
       })
