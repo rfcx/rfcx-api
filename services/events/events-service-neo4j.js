@@ -792,7 +792,7 @@ function formatEventAsTags(event, type) {
 function formatWindowFromEvent(window, audioStart, event, type) {
   return {
     start: audioStart,
-    label: event.label,
+    label: event.value,
     type: type,
     legacy: {
       audioGuid: event.audioGuid,
