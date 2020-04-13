@@ -27,7 +27,7 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
     //     promsCompletedInstrs.push(prom);
     //   }
     // }
-    return Promise.all(promsCompletedInstr)
+    return Promise.all(promsCompletedInstrs)
       .then(() => {
         // // parse list of purged assets from guardian, delete them from database and return list
         // var dbMetaPurgedAssets = [], metaPurgedAssets = strArrToJSArr(checkInObj.json.assets_purged,"|","*");
@@ -42,37 +42,37 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
         //   }
         // }
         // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
-          let promsExchLogs = [];
-        // if (checkInObj.json.checkins_to_verify != null) {
-        //   for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
-        //     let prom = models.GuardianMetaAssetExchangeLog.findOne({
-        //         where: {
-        //           guardian_id: guardianId,
-        //           asset_type: "audio",
-        //           asset_id: checkInObj.json.checkins_to_verify[i]
-        //         }
-        //       })
-        //       .then((dbAssetEntry) => {
-        //         if (dbAssetEntry != null) {
-        //           receivedReturnArray.push({ type: "audio", id: dbAssetEntry.asset_id });
-        //         }
-        //       });
-        //     promsExchLogs.push(prom);
-        //   }
-        // }
+        //   let promsExchLogs = [];
+        // // if (checkInObj.json.checkins_to_verify != null) {
+        // //   for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+        // //     let prom = models.GuardianMetaAssetExchangeLog.findOne({
+        // //         where: {
+        // //           guardian_id: guardianId,
+        // //           asset_type: "audio",
+        // //           asset_id: checkInObj.json.checkins_to_verify[i]
+        // //         }
+        // //       })
+        // //       .then((dbAssetEntry) => {
+        // //         if (dbAssetEntry != null) {
+        // //           receivedReturnArray.push({ type: "audio", id: dbAssetEntry.asset_id });
+        // //         }
+        // //       });
+        // //     promsExchLogs.push(prom);
+        // //   }
+        // // }
 
-        return Promise.all(promsExchLogs)
-          .then(() => {
-            // if (dbMetaPurgedAssets.length > 0) {
-            //   let proms = dbMetaPurgedAssets.map((item) => {
-            //     return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
-            //   });
-            //   return Promise.all(proms);
-            // }
-            // else {
-              return Promise.all(promsExchLogs);
-          //  }
-          })
+        // return Promise.all(promsExchLogs)
+        //   .then(() => {
+        //     // if (dbMetaPurgedAssets.length > 0) {
+        //     //   let proms = dbMetaPurgedAssets.map((item) => {
+        //     //     return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
+        //     //   });
+        //     //   return Promise.all(proms);
+        //     // }
+        //     // else {
+        //       return Promise.all(promsExchLogs);
+        //   //  }
+        //   })
       })
       .then(() => {
 
