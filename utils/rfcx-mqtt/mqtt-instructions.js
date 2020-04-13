@@ -8,25 +8,22 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 
   updateAndDispatchGuardianInstructions: function(checkInObj) {
 
-    var guardianId = checkInObj.db.dbGuardian.id;
     // arrays of return values for checkin response json
     var instrRtrnArray = [];
 
     let promsCompletedInstrs = [];
-    // TO DO: Update executed Instruction info in database
-    // if (checkInObj.json.meta_ids != null) {
-    //   for (var i = 0; i < checkInObj.json.meta_ids.length; i++) {
-    //     let prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
-    //       where: {
-    //         guardian_id: guardianId,
-    //         asset_type: "meta",
-    //         asset_id: checkInObj.json.meta_ids[i]
-    //       }
-    //     });
-    //     metaReturnArray.push({ id: checkInObj.json.meta_ids[i] });
-    //     promsCompletedInstrs.push(prom);
-    //   }
-    // }
+    // Update executed Instruction info in database
+    if (checkInObj.json.instructions != null) {
+      for (var i = 0; i < checkInObj.json.instructions.length; i++) {
+        // let prom = models.GuardianMetaInstructionsLog.findOrCreate({
+        //   where: {
+        //     guid: checkInObj.json.instructions[i].guid,
+        //     guardian_id: checkInObj.db.dbGuardian.id
+        //   }
+        // });
+        // promsCompletedInstrs.push(prom);
+      }
+    }
     return Promise.all(promsCompletedInstrs)
       .then(() => {
         // // parse list of purged assets from guardian, delete them from database and return list
@@ -76,16 +73,16 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
       })
       .then(() => {
 
-        instrRtrnArray.push({ 
-              id: "13818352-8061-440e-849b-52d700e33dc0", 
-              type: "control", 
-              command: "sms_queue", 
-              execute_at: "0", 
-              meta: { 
-                address: "asdf", 
-                body: "asdf" 
-              } 
-          });
+        // instrRtrnArray.push({ 
+        //       id: "13818352-8061-440e-849b-52d700e33dc0", 
+        //       type: "control", 
+        //       command: "sms_queue", 
+        //       execute_at: "0", 
+        //       meta: { 
+        //         address: "asdf", 
+        //         body: "asdf" 
+        //       } 
+        //   });
 
         // add instruction array to overall checkInObj
         checkInObj.rtrn.obj.instructions = instrRtrnArray;
