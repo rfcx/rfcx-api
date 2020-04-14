@@ -105,6 +105,7 @@ exports.mqttInstructions = {
                       dbQueued.destroy();
                       // should we report some purge request to the guardian on the rtrn obj?
                     }).then(function(dbQueued) {
+                      checkInObj.rtrn.obj.received.push({ type: "instructions", id: dbQueued.guid });
                       resolve(checkInObj);
                     });
                   } else {
