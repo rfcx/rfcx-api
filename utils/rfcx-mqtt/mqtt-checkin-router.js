@@ -132,6 +132,11 @@ function onMessageCheckin(data, messageId) {
     })
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> updateReceivedGuardianInstructions', { messageId });
+      return mqttInstructions.updateExecutedGuardianInstructions(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> updateExecutedGuardianInstructions', { messageId });
+      console.log(checkInObj.instructions);
       return mqttInstructions.updateAndDispatchGuardianInstructions(checkInObj);
     })
     .then((checkInObj) => {

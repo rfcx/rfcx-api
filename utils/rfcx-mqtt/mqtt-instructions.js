@@ -20,36 +20,106 @@ exports.mqttInstructions = {
   updateReceivedGuardianInstructions: function(checkInObj) {
     return new Promise(function(resolve,reject){
       try {
+        if (checkInObj.instructions == null) { checkInObj.instructions = {}; };
         if ((checkInObj.json.instructions != null) && (checkInObj.json.instructions.received != null)) {
-          for (var i = 0; i < checkInObj.json.instructions.received.length; i++) {
-            if (checkInObj.json.instructions.received[i].guid != null) {
-              models.GuardianMetaInstructionsQueue.findOne({
-                where: {
-                  guid: checkInObj.json.instructions.received[i].guid,
-                  guardian_id: checkInObj.db.dbGuardian.id,
-                  received_at: null
-                }
-              }).then(function(dbReceived){
-                if (dbReceived != null) {
-                  var receivedAt = null;
-                  for (var j = 0; j < checkInObj.json.instructions.received.length; j++) {
-                    if (checkInObj.json.instructions.received[j].guid == dbReceived.guid) {
-                      dbReceived.received_at = new Date(parseInt(checkInObj.json.instructions.received[j].received_at));
-                      dbReceived.save();
-                      break;
-                    }
+          if (checkInObj.json.instructions.received.length == 0) {
+            resolve(checkInObj);
+          } else {
+            for (var i = 0; i < checkInObj.json.instructions.received.length; i++) {
+              if (checkInObj.json.instructions.received[i].guid != null) {
+
+                // cache instruction info
+                var recGuid = checkInObj.json.instructions.received[i].guid;
+                if (checkInObj.instructions[recGuid] == null) { checkInObj.instructions[recGuid] = {}; };
+                checkInObj.instructions[recGuid].received_at = new Date(parseInt(checkInObj.json.instructions.received[i].received_at));
+
+                models.GuardianMetaInstructionsQueue.findOne({
+                  where: {
+                    guid: recGuid,
+                    guardian_id: checkInObj.db.dbGuardian.id,
+                    received_at: null
                   }
-                }
-              }).catch(function(err){
-                console.log("failed to update received instructions | "+err);
-              });
+                }).then(function(dbQueued){
+                  if (dbQueued != null) {
+                    dbQueued.received_at = checkInObj.instructions[dbQueued.guid].received_at;
+                    dbQueued.save();
+                    resolve(checkInObj);
+                  } else {
+                    resolve(checkInObj);
+                  }
+                }).catch(function(err){
+                  console.log("failed to update received instructions | "+err);
+                });
+              }
             }
           }
-          resolve(checkInObj);
         } else {
           resolve(checkInObj);
         }
      } catch (errReceivedInstruction) { console.log(errReceivedInstruction); reject(new Error(errReceivedInstruction)); }
+    }.bind(this));
+  },
+
+  updateExecutedGuardianInstructions: function(checkInObj) {
+    return new Promise(function(resolve,reject){
+      try {
+        if (checkInObj.instructions == null) { checkInObj.instructions = {}; };
+        if ((checkInObj.json.instructions != null) && (checkInObj.json.instructions.executed != null)) {
+          if (checkInObj.json.instructions.executed.length == 0) {
+            resolve(checkInObj);
+          } else {
+            for (var i = 0; i < checkInObj.json.instructions.executed.length; i++) {
+              if (checkInObj.json.instructions.executed[i].guid != null) {
+
+                // cache instruction info
+                var execGuid = checkInObj.json.instructions.executed[i].guid;
+                if (checkInObj.instructions[execGuid] == null) { checkInObj.instructions[execGuid] = {}; };
+                checkInObj.instructions[execGuid].executed_at = new Date(parseInt(checkInObj.json.instructions.executed[i].executed_at));
+                checkInObj.instructions[execGuid].received_at = new Date(parseInt(checkInObj.json.instructions.executed[i].received_at));
+                checkInObj.instructions[execGuid].response = checkInObj.json.instructions.executed[i].response;
+                checkInObj.instructions[execGuid].execution_attempts = parseInt(checkInObj.json.instructions.executed[i].attempts);
+                
+                models.GuardianMetaInstructionsQueue.findOne({
+                  where: {
+                    guid: execGuid,
+                    guardian_id: checkInObj.db.dbGuardian.id
+                  }
+                }).then(function(dbQueued){
+                  if (dbQueued != null) {
+
+                    models.GuardianMetaInstructionsLog.findOrCreate({
+                      where: {
+                        guid: dbQueued.guid,
+                        queued_at: dbQueued.queued_at,
+                        executed_at: checkInObj.instructions[dbQueued.guid].executed_at,
+                        received_at: checkInObj.instructions[dbQueued.guid].received_at,
+                        response_json: checkInObj.instructions[dbQueued.guid].response,
+                        type: dbQueued.type,
+                        command: dbQueued.command,
+                        meta_json: dbQueued.meta_json,
+                        dispatch_attempts: dbQueued.dispatch_attempts,
+                        execution_attempts: checkInObj.instructions[dbQueued.guid].execution_attempts,
+                        guardian_id: checkInObj.db.dbGuardian.id
+                      }
+                    }).spread(function(dbExecuted, wasCreated){
+                      dbQueued.destroy();
+                      // should we report some purge request to the guardian on the rtrn obj?
+                    }).then(function(dbQueued) {
+                      resolve(checkInObj);
+                    });
+                  } else {
+                    resolve(checkInObj);
+                  }
+                }).catch(function(err){
+                  console.log("failed to update executed instructions | "+err);
+                });
+              }
+            }
+          }
+        } else {
+          resolve(checkInObj);
+        }
+     } catch (errExecutedInstruction) { console.log(errExecutedInstruction); reject(new Error(errExecutedInstruction)); }
     }.bind(this));
   },
 
