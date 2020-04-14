@@ -90,7 +90,7 @@ exports.mqttInstructions = {
                   }
                 }).spread(function(dbExecuted, wasCreated){
 
-                  checkInObj.rtrn.obj.received.push({ type: "instructions", id: dbExecuted.guid });
+                  checkInObj.rtrn.obj.received.push({ type: "instruction", id: dbExecuted.guid });
 
                   models.GuardianMetaInstructionsQueue.findOne({
                     where: {
