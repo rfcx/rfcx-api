@@ -78,42 +78,51 @@ exports.mqttInstructions = {
                 checkInObj.instructions[execGuid].received_at = new Date(parseInt(checkInObj.json.instructions.executed[i].received_at));
                 checkInObj.instructions[execGuid].response = checkInObj.json.instructions.executed[i].response;
                 checkInObj.instructions[execGuid].execution_attempts = parseInt(checkInObj.json.instructions.executed[i].attempts);
-                
-                models.GuardianMetaInstructionsQueue.findOne({
+            
+                models.GuardianMetaInstructionsLog.findOrCreate({
                   where: {
                     guid: execGuid,
+                    executed_at: checkInObj.instructions[execGuid].executed_at,
+                    received_at: checkInObj.instructions[execGuid].received_at,
+                    response_json: checkInObj.instructions[execGuid].response,
+                    execution_attempts: checkInObj.instructions[execGuid].execution_attempts,
                     guardian_id: checkInObj.db.dbGuardian.id
                   }
-                }).then(function(dbQueued){
-                  if (dbQueued != null) {
+                }).spread(function(dbExecuted, wasCreated){
 
-                    models.GuardianMetaInstructionsLog.findOrCreate({
-                      where: {
-                        guid: dbQueued.guid,
-                        queued_at: dbQueued.queued_at,
-                        executed_at: checkInObj.instructions[dbQueued.guid].executed_at,
-                        received_at: checkInObj.instructions[dbQueued.guid].received_at,
-                        response_json: checkInObj.instructions[dbQueued.guid].response,
-                        type: dbQueued.type,
-                        command: dbQueued.command,
-                        meta_json: dbQueued.meta_json,
-                        dispatch_attempts: dbQueued.dispatch_attempts,
-                        execution_attempts: checkInObj.instructions[dbQueued.guid].execution_attempts,
-                        guardian_id: checkInObj.db.dbGuardian.id
-                      }
-                    }).spread(function(dbExecuted, wasCreated){
+                  checkInObj.rtrn.obj.received.push({ type: "instructions", id: dbExecuted.guid });
+
+                  models.GuardianMetaInstructionsQueue.findOne({
+                    where: {
+                      guid: dbExecuted.guid,
+                      guardian_id: checkInObj.db.dbGuardian.id
+                    }
+                  }).then(function(dbQueued){
+
+                    if (dbQueued != null) {
+                      dbExecuted.queued_at = dbQueued.queued_at;
+                      dbExecuted.type = dbQueued.type;
+                      dbExecuted.command = dbQueued.command;
+                      dbExecuted.meta_json = dbQueued.meta_json;
+                      dbExecuted.dispatch_attempts = dbQueued.dispatch_attempts;
+                      dbExecuted.save();
+                      
                       dbQueued.destroy();
-                      // should we report some purge request to the guardian on the rtrn obj?
-                    }).then(function(dbQueued) {
-                      checkInObj.rtrn.obj.received.push({ type: "instructions", id: dbQueued.guid });
+
                       resolve(checkInObj);
-                    });
-                  } else {
-                    resolve(checkInObj);
-                  }
-                }).catch(function(err){
-                  console.log("failed to update executed instructions | "+err);
+                    } else {
+                      resolve(checkInObj);
+                    }
+
+                  }).catch(function(err){
+                    console.log("failed to update executed instructions | "+err);
+                  });
+                  
+                  // should we report some purge request to the guardian on the rtrn obj?
+                }).then(function(dbExecuted) {
+                  resolve(checkInObj);
                 });
+
               }
             }
           }
