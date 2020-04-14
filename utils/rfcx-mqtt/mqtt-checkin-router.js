@@ -128,6 +128,10 @@ function onMessageCheckin(data, messageId) {
     })
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> createSensationsFromGuardianAudio', { messageId });
+      return mqttInstructions.updateReceivedGuardianInstructions(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> updateReceivedGuardianInstructions', { messageId });
       return mqttInstructions.updateAndDispatchGuardianInstructions(checkInObj);
     })
     .then((checkInObj) => {
