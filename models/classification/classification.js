@@ -38,7 +38,7 @@ module.exports = function(sequelize, DataTypes) {
         Classification.belongsTo(models.ClassificationType, { as: 'Type', foreignKey: "type" });
         Classification.belongsTo(models.ClassificationSource, { as: 'Source', foreignKey: "source" });
         Classification.belongsTo(models.Classification, { as: 'Parent', foreignKey: "parent" });
-        Classification.belongsToMany(models.SpeciesName, { through: models.ClassificationSpeciesNameRelation });
+        Classification.hasMany(models.SpeciesName, { as: "Name", foreignKey: "species" });
       },
       indexes: [
       ]
