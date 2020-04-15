@@ -3,6 +3,7 @@ var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFil
 var mqttInputData = require("../../utils/rfcx-mqtt/mqtt-input-data.js").mqttInputData;
 var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInDatabase;
 var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").checkInAssets;
+var mqttInstructions = require("../../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
 var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 var checkInHelpers = require("../../utils/rfcx-checkin");
 var loggers = require('../../utils/logger');
@@ -127,6 +128,18 @@ function onMessageCheckin(data, messageId) {
     })
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> createSensationsFromGuardianAudio', { messageId });
+      return mqttInstructions.updateReceivedGuardianInstructions(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> updateReceivedGuardianInstructions', { messageId });
+      return mqttInstructions.updateExecutedGuardianInstructions(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> updateExecutedGuardianInstructions', { messageId });
+      return mqttInstructions.updateAndDispatchGuardianInstructions(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> updateAndDispatchGuardianInstructions', { messageId });
       return mqttPublish.processAndCompressPublishJson(checkInObj);
     })
     .then((checkInObj) => {
