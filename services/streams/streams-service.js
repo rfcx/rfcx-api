@@ -155,7 +155,6 @@ function gluedDateToTimestamp(dateStr) {
 function getSegments(opts) {
   let starts = opts.starts;
   let ends = opts.ends;
-  console.log('\n\ngetSegments', starts, ends, '\n\n')
   return models.Segment
     .findAll({
       where: {
