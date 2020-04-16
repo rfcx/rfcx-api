@@ -37,6 +37,12 @@ exports.env = {
   NEO4J_USER: "",
   NEO4J_PASSWORD: "",
 
+  MONGO_USERNAME: "",
+  MONGO_PASSWORD: "",
+  MONGO_HOSTNAME: "localhost",
+  MONGO_PORT: "27017",
+  MONGO_DB: "admin",
+
   SQS_PERCEPTION_BATCH: "rfcx-perception-batch",
 
   NEW_RELIC_KEY: "",
