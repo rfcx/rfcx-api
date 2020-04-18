@@ -146,7 +146,7 @@ exports.mqttInstructions = {
           }).then(function(dbQueued){
 
             for (dbQuInd in dbQueued) {
-              if ((dbQueued[dbQuInd].guid != null) && (blockedInstructions.indexOf(dbQueued[dbQuInd].guid) >= 0)) {
+              if ((dbQueued[dbQuInd].guid != null) && (blockedInstructions.indexOf(dbQueued[dbQuInd].guid) < 0)) {
 
                 rtrnInstructions.push({
                   guid: dbQueued[dbQuInd].guid,
@@ -214,5 +214,6 @@ exports.mqttInstructions = {
 
 
 };
+
 
 
