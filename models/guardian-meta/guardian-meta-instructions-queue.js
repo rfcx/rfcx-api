@@ -10,14 +10,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "queued_at for GuardianMetaInstructionsQueue should have type Date"
+        }
       }
     },
     execute_at: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "execute_at for GuardianMetaInstructionsQueue should have type Date"
+        }
       }
     },
     type: {
@@ -50,7 +54,9 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "received_at for GuardianMetaInstructionsQueue should have type Date"
+        }
       }
     }
   }, {

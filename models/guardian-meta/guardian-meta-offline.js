@@ -4,7 +4,9 @@ module.exports = function(sequelize, DataTypes) {
     ended_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: {
+          msg: "ended_at for GuardianMetaOffline should have type Date"
+        }
       }
     },
     offline_duration: {

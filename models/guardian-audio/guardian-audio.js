@@ -11,26 +11,26 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "measured_at for GuardianAudio should have type Date" }
       }
     },
     measured_at_local: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "measured_at_local for GuardianAudio should have type Date" }
       }
     },
     analyzed_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: { msg: "analyzed_at for GuardianAudio should have type Date" }
       }
     },
     analysis_queued_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: { msg: "analysis_queued_at for GuardianAudio should have type Date" }
       }
     },
     size: {

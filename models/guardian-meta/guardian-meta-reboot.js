@@ -4,7 +4,9 @@ module.exports = function(sequelize, DataTypes) {
     completed_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: {
+          msg: "completed_at for GuardianMetaReboot should have type Date"
+        }
       }
     },
   }, {

@@ -36,7 +36,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: false,
       validate: {
-        isDate: true
+        isDate: { msg: "time for UserLocations should have type Date" }
       },
     },
   }, {

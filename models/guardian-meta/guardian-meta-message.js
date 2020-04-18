@@ -10,14 +10,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "received_at for GuardianMetaMessage should have type Date"
+        }
       }
     },
     sent_at: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "sent_at for GuardianMetaMessage should have type Date"
+        }
       }
     },
     address: {

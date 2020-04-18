@@ -4,7 +4,7 @@ module.exports = function(sequelize, DataTypes) {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: { msg: "measured_at for GuardianMetaCPU should have type Date" }
       }
     },
     cpu_percent: {

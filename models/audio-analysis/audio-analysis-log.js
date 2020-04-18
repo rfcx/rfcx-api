@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "queued_at for AudioAnalysisLog should have type Date" }
       }
     },
 
@@ -21,7 +21,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "launched_at for AudioAnalysisLog should have type Date" }
       }
     },
 

@@ -12,7 +12,9 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "measured_at for GuardianCheckIn should have type Date"
+        }
       }
     },
     queued_at: {
@@ -20,7 +22,9 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "queued_at for GuardianCheckIn should have type Date"
+        }
       }
     },
     is_certified: {

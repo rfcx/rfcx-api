@@ -28,14 +28,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "begins_at for GuardianAudioEvent should have type Date" }
       }
     },
     ends_at: {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "ends_at for GuardianAudioEvent should have type Date" }
       }
     },
     shadow_latitude: {

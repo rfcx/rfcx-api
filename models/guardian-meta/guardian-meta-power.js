@@ -4,7 +4,9 @@ module.exports = function(sequelize, DataTypes) {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: {
+          msg: "measured_at for GuardianMetaPower should have type Date"
+        }
       }
     },
     is_powered: {

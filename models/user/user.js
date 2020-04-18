@@ -60,7 +60,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "last_login_at for Users should have type Date" }
       }
     },
     auth_password_salt: {
@@ -81,7 +81,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "auth_password_updated_at for Users should have type Date" }
       }
     },
     rfcx_system: {
