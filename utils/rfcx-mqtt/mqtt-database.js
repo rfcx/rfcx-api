@@ -144,7 +144,7 @@ exports.checkInDatabase = {
 
     var guardianId = checkInObj.db.dbGuardian.id;
     // arrays of return values for checkin response json
-    var metaReturnArray = [], purgedReturnArray = [], requeueReturnArray = [], receivedReturnArray = [];
+    var metaReturnArray = [], purgedReturnArray = [], unconfirmedReturnArray = [], receivedReturnArray = [], receivedIdArray = [];
 
     let proms = [];
     // create meta asset entries in database
@@ -189,6 +189,7 @@ exports.checkInDatabase = {
               .then((dbAssetEntry) => {
                 if (dbAssetEntry != null) {
                   receivedReturnArray.push({ type: "audio", id: dbAssetEntry.asset_id });
+                  receivedIdArray.push(dbAssetEntry.asset_id);
                 }
               });
             promsExchLogs.push(prom);
@@ -210,24 +211,19 @@ exports.checkInDatabase = {
       })
       .then(() => {
 
-        if (checkInObj.json.checkins_to_verify != null) {
-           for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
-              mustReQueue = true;
-              for (var j = 0; j < receivedReturnArray.length; j++) {
-                if (checkInObj.json.checkins_to_verify[i] == receivedReturnArray[j]) {
-                  mustReQueue = false;
-                  break; 
-                }
-              }
-              if (mustReQueue) { requeueReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] }); }
-           }
+        if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
+          for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+            if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
+              unconfirmedReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
+            }
+          }
         }
 
         // add checkin response json to overall checkInObj
         checkInObj.rtrn.obj.meta = metaReturnArray;
         checkInObj.rtrn.obj.purged = purgedReturnArray;
         checkInObj.rtrn.obj.received = receivedReturnArray;
-        checkInObj.rtrn.obj.requeue = requeueReturnArray;
+        checkInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray;
 
         return checkInObj;
       })
