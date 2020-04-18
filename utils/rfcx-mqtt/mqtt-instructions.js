@@ -5,18 +5,6 @@ var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 
 exports.mqttInstructions = {
 
-  // processAndDispatchGuardianInstructions: function(checkInObj) {
-  //   return new Promise(function(resolve,reject){
-  //     try {
-  //       this.updateReceivedGuardianInstructions(checkInObj).then(function(checkInObj){
-  //         this.updateAndDispatchGuardianInstructions(checkInObj).then(function(checkInObj){
-  //           resolve(checkInObj);
-  //         }).catch(function(errDispatchInstructionAction){ console.log(errDispatchInstructionAction); });
-  //       }).catch(function(errReceivedInstructionAction){ console.log(errReceivedInstructionAction); });
-  //     } catch (errProcessInstruction) { console.log(errProcessInstruction); reject(new Error(errProcessInstruction)); }
-  //   }.bind(this));
-  // },
-
   updateReceivedGuardianInstructions: function(checkInObj) {
     return new Promise(function(resolve,reject){
       try {
@@ -137,8 +125,20 @@ exports.mqttInstructions = {
     return new Promise(function(resolve,reject){
       try {
 
-        var rtrnInstructions = [];
-
+        var rtrnInstructions = [], blockedInstructions = [];
+        if (checkInObj.json.instructions != null) {
+          if ((checkInObj.json.instructions.received != null) && (checkInObj.json.instructions.received.length > 0)) {
+            for (var i = 0; i < checkInObj.json.instructions.received.length; i++) {
+              if (checkInObj.json.instructions.received[i].guid != null) {
+                blockedInstructions.push(checkInObj.json.instructions.received[i].guid);
+          } } }
+          if ((checkInObj.json.instructions.executed != null) && (checkInObj.json.instructions.executed.length > 0)) {
+            for (var i = 0; i < checkInObj.json.instructions.executed.length; i++) {
+              if (checkInObj.json.instructions.executed[i].guid != null) {
+                blockedInstructions.push(checkInObj.json.instructions.executed[i].guid);
+          } } }
+        }
+        
         models.GuardianMetaInstructionsQueue
             .findAll({
               where: { guardian_id: checkInObj.db.dbGuardian.id, received_at: null },
@@ -146,7 +146,8 @@ exports.mqttInstructions = {
           }).then(function(dbQueued){
 
             for (dbQuInd in dbQueued) {
-              if (dbQueued[dbQuInd].guid != null) {
+              if ((dbQueued[dbQuInd].guid != null) && (blockedInstructions.indexOf(dbQueued[dbQuInd].guid) >= 0)) {
+
                 rtrnInstructions.push({
                   guid: dbQueued[dbQuInd].guid,
                   type: dbQueued[dbQuInd].type,
@@ -157,6 +158,7 @@ exports.mqttInstructions = {
 
                 dbQueued[dbQuInd].dispatch_attempts = dbQueued[dbQuInd].dispatch_attempts+1;
                 dbQueued[dbQuInd].save();
+
               }
             }
             checkInObj.rtrn.obj.instructions = rtrnInstructions;
