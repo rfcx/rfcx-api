@@ -37,11 +37,14 @@ router.route("/")
   })
 
 router.route("/:guid")
-  .get(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+  .get(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
 
     streamsService.getStreamByGuid(req.params.guid)
       .then((dbStream) => {
-        streamsService.checkUserAccessToStream(req, dbStream);
+        let userRoles = auth0Service.getUserRolesFromToken(req.user);
+        if (!userRoles.includes('systemUser')) {
+          streamsService.checkUserAccessToStream(req, dbStream);
+        }
         return streamsService.formatStream(dbStream, { includeBounds: true });
       })
       .then(function(json) {
@@ -615,6 +618,46 @@ router.route("/segments/:guid")
       .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(e => { httpError(req, res, 500, e, 'Error while deleting segment.'); console.log(e) });
 
+  });
+
+router.route("/:guid/segments")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function(req,res) {
+
+    let transformedParams = {};
+    let params = new Converter(req.query, transformedParams);
+
+    params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
+    params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
+    params.convert('limit').optional().toInt().minimum(0);
+    params.convert('offset').optional().toInt().minimum(0);
+
+    params.validate()
+      .then(() => {
+        return streamsService.getStreamByGuid(req.params.guid)
+      })
+      .then((dbStream) => {
+        let userRoles = auth0Service.getUserRolesFromToken(req.user);
+        if (!userRoles.includes('systemUser')) {
+          streamsService.checkUserAccessToStream(req, dbStream);
+        }
+        let streamId = dbStream.id;
+        let starts = transformedParams.starts? transformedParams.starts : dbStream.starts;
+        let ends = transformedParams.ends? transformedParams.ends : dbStream.ends;
+        let limit = transformedParams.limit;
+        let offset = transformedParams.offset;
+        return streamsService.getSegments({ streamId, starts, ends, limit, offset });
+      })
+      .then((dbSegments) => {
+        return streamsService.formatSegments(dbSegments);
+      })
+      .then((data) => {
+        res.status(200).send(data);
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while searching for the segments.'); console.log(e) });
   });
 
 router.route("/:guid/segment")

@@ -155,34 +155,55 @@ function gluedDateToTimestamp(dateStr) {
 function getSegments(opts) {
   let starts = opts.starts;
   let ends = opts.ends;
-  return models.Segment
-    .findAll({
-      where: {
-        stream: opts.streamId,
-        $or: [
-          {
-            $and: {
-              starts: { $lte: starts },
-              ends:   { $gt: starts }
-            },
+  let queryOpts = {
+    where: {
+      stream: opts.streamId,
+      $or: [
+        {
+          $and: {
+            starts: { $lte: starts },
+            ends:   { $gt: starts }
           },
-          {
-            $and: {
-              starts: { $gte: starts },
-              ends:   { $lte: ends }
-            },
+        },
+        {
+          $and: {
+            starts: { $gte: starts },
+            ends:   { $lte: ends }
           },
-          {
-            $and: {
-              starts: { $lt: ends },
-              ends:   { $gte: ends }
-            }
+        },
+        {
+          $and: {
+            starts: { $lt: ends },
+            ends:   { $gte: ends }
           }
-        ]
+        }
+      ]
+    },
+    include: [
+      {
+        model: models.Stream,
+        as: 'Stream',
+        attributes: ['guid', 'name']
       },
-      include: [{ all: true }],
-      order: 'starts ASC'
-    })
+      {
+        model: models.MasterSegment,
+        as: 'MasterSegment',
+        include: [{ all: true }]
+      },
+      {
+        model: models.FileExtension,
+        as: 'FileExtension',
+      },
+    ],
+    order: 'starts ASC'
+  };
+  if (opts.limit !== undefined) {
+    queryOpts.limit = opts.limit;
+  }
+  if (opts.offset !== undefined) {
+    queryOpts.offset = opts.offset;
+  }
+  return models.Segment.findAll(queryOpts);
 }
 
 function getNextTimestampAfterSegment(segment, time) {
@@ -364,12 +385,17 @@ function formatSegment(segment) {
     guid: segment.guid,
     starts: segment.starts,
     ends: segment.ends,
-    masterSegment: segment.MasterSegment? this.formatMasterSegment(segment.MasterSegment) : null,
+    masterSegment: segment.MasterSegment? formatMasterSegment(segment.MasterSegment) : null,
+    fileExtension: segment.FileExtension? segment.FileExtension.value : null,
     stream: segment.Stream? {
       guid: segment.Stream.guid,
       name: segment.Stream.name,
     } : null,
   };
+}
+
+function formatSegments(segments) {
+  return segments.map((segment) => formatSegment(segment));
 }
 
 function formatStreamsRaw(streams) {
@@ -579,6 +605,7 @@ module.exports = {
   getNextTimestampAfterSegment,
   getStreamSegmentByTime,
   formatMasterSegment,
+  formatSegments,
   formatSegment,
   queryData,
   formatStreamsRaw,
