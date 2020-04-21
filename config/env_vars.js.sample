@@ -82,4 +82,6 @@ exports.env = {
   CLASSY_CLIENT_ID: "",
   CLASSY_CLIENT_SECRET: "",
 
+  RECAPTCHA_V3_SECRET_KEY: "",
+
 }

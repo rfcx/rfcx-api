@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 const httpError = require("../../../utils/http-errors");
 const ValidationError = require("../../../utils/converter/validation-error");
+const ForbiddenError = require("../../../utils/converter/forbidden-error");
 const sequelize = require("sequelize");
 const Promise = require("bluebird");
 const Converter = require("../../../utils/converter/converter");
@@ -17,8 +18,12 @@ router.route("/contact")
     params.convert('_replyto').toString().trim().nonEmpty();
     params.convert('_subject').toString().trim().nonEmpty();
     params.convert('message').toString().trim().nonEmpty();
+    params.convert('token').toString().trim().nonEmpty();
 
     params.validate()
+      .then(() => {
+        return contactMessagesService.verifyRecaptchaToken(transformedParams.token);
+      })
       .then(() => {
         return contactMessagesService.createMessage({
           email: transformedParams['_replyto'],
@@ -43,6 +48,7 @@ router.route("/contact")
       .then(result => res.status(200).json(result))
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ForbiddenError, e => httpError(req, res, 403, null, e.message))
       .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Email couldn't be sent.")});
   });
 
