@@ -332,7 +332,10 @@ exports.checkInDatabase = {
             resolve(checkInObj);
           })
 
-        });
+        })
+        .catch((err) => {
+          reject(err);
+        })
 
       });
     })
@@ -371,9 +374,20 @@ exports.checkInDatabase = {
           defaults
         })
         .then(function(dbLogs) {
-          checkInObj.db.dbLogs = dbLogs;
-          checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
-          resolve(checkInObj);
+
+          models.GuardianMetaAssetExchangeLog.findOrCreate({
+            where: {
+              guardian_id: checkInObj.db.dbGuardian.id,
+              asset_type: "log",
+              asset_id: checkInObj.logs.metaArr[1]
+            }
+          })
+          .then(() => {
+            checkInObj.db.dbLogs = dbLogs;
+            checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
+            resolve(checkInObj);
+          })
+
         })
         .catch((err) => {
           reject(err);
@@ -381,6 +395,116 @@ exports.checkInDatabase = {
 
       });
     })
+  },
+
+  createDbPhotoFile: function(checkInObj) {
+
+    if (checkInObj.photos.filePath === null) {
+      return Promise.resolve(checkInObj);
+    }
+
+    // return new Promise((resolve, reject) => {
+    //   fs.stat(checkInObj.photos.filePath, (statErr, fileStat) => {
+    //     if (!!statErr) {
+    //       return reject(statErr);
+    //     }
+
+    //     let defaults = {};
+    //     try {
+    //       defaults = {
+    //         guardian_id: checkInObj.db.dbGuardian.id,
+    //         sha1_checksum: checkInObj.photos.metaArr[3],
+    //         url: null,
+    //         captured_at: new Date(parseInt(checkInObj.photos.metaArr[1])),
+    //         size: fileStat.size
+    //       };
+    //     } catch(e) {
+    //       return reject(e);
+    //     }
+
+    //     models.GuardianMetaPhoto.findOrCreate({
+    //       where: {
+    //         sha1_checksum: checkInObj.photos.metaArr[3]
+    //       },
+    //       defaults
+    //     })
+    //     .then(function(dbPhotos) {
+
+    //       models.GuardianMetaAssetExchangeLog.findOrCreate({
+    //         where: {
+    //           guardian_id: checkInObj.db.dbGuardian.id,
+    //           asset_type: "photo",
+    //           asset_id: checkInObj.photos.metaArr[1]
+    //         }
+    //       })
+    //       .then(() => {
+    //         checkInObj.db.dbPhotos = dbPhotos;
+    //         checkInObj.rtrn.obj.photos.push({ id: checkInObj.photos.metaArr[1] });
+    //         resolve(checkInObj);
+    //       })
+
+    //     })
+    //     .catch((err) => {
+    //       reject(err);
+    //     })
+
+    //   });
+    // })
+  },
+
+  createDbVideoFile: function(checkInObj) {
+
+    if (checkInObj.videos.filePath === null) {
+      return Promise.resolve(checkInObj);
+    }
+
+    // return new Promise((resolve, reject) => {
+    //   fs.stat(checkInObj.videos.filePath, (statErr, fileStat) => {
+    //     if (!!statErr) {
+    //       return reject(statErr);
+    //     }
+
+    //     let defaults = {};
+    //     try {
+    //       defaults = {
+    //         guardian_id: checkInObj.db.dbGuardian.id,
+    //         sha1_checksum: checkInObj.videos.metaArr[3],
+    //         url: null,
+    //         captured_at: new Date(parseInt(checkInObj.videos.metaArr[1])),
+    //         size: fileStat.size
+    //       };
+    //     } catch(e) {
+    //       return reject(e);
+    //     }
+
+    //     models.GuardianMetaVideo.findOrCreate({
+    //       where: {
+    //         sha1_checksum: checkInObj.videos.metaArr[3]
+    //       },
+    //       defaults
+    //     })
+    //     .then(function(dbVideos) {
+
+    //       models.GuardianMetaAssetExchangeLog.findOrCreate({
+    //         where: {
+    //           guardian_id: checkInObj.db.dbGuardian.id,
+    //           asset_type: "video",
+    //           asset_id: checkInObj.videos.metaArr[1]
+    //         }
+    //       })
+    //       .then(() => {
+    //         checkInObj.db.dbVideos = dbVideos;
+    //         checkInObj.rtrn.obj.videos.push({ id: checkInObj.videos.metaArr[1] });
+    //         resolve(checkInObj);
+    //       })
+
+    //     })
+    //     .catch((err) => {
+    //       reject(err);
+    //     })
+
+    //   });
+    // })
   },
 
   setGuardianCoordinates: (checkInObj) => {

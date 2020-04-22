@@ -20,12 +20,16 @@ exports.mqttInputData = {
         var audioFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength, metaLength+jsonBlobLength+metaLength));
         var screenShotFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength));
         var logFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength));
+        var photoFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength+metaLength));
+        var videoFileLength = parseInt(mqttData.toString("utf8", metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength+metaLength+photoFileLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength+metaLength+photoFileLength+metaLength));
 
         var audioFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength);
         var screenShotFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength);
         var logFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength);
+        var photoFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileBuffer+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength+metaLength+photoFileLength);
+        var videoFileBuffer = mqttData.slice(metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileBuffer+metaLength+photoFileBuffer+metaLength, metaLength+jsonBlobLength+metaLength+audioFileLength+metaLength+screenShotFileLength+metaLength+logFileLength+metaLength+photoFileLength+metaLength+videoFileLength);
 
-        var checkInObj = { json: {}, meta: {}, db: {}, audio: {}, screenshots: {}, logs: {} };
+        var checkInObj = { json: {}, meta: {}, db: {}, audio: {}, screenshots: {}, logs: {}, photos: {}, videos: {} };
 
         checkInObj.meta.checkStartTime = new Date();
 
@@ -58,6 +62,22 @@ exports.mqttInputData = {
             .then(function(logFileCacheFilePath) {
               checkInObj.logs.filePath = logFileCacheFilePath;
               return saveAssetFileToS3("logs", checkInObj);
+            })
+            .then(function(checkInObj) {
+              checkInObj.photos.metaArr = (strArrToJSArr(checkInObj.json.photos,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.photos,"|","*")[0];
+              return cacheFileBufferToFile(photoFileBuffer, true, checkInObj.photos.metaArr[3], checkInObj.audio.metaArr[2])
+            })
+            .then(function(photoCacheFilePath) {
+              checkInObj.photos.filePath = photoCacheFilePath;
+              return saveAssetFileToS3("photos", checkInObj);
+            })
+            .then(function(checkInObj) {
+              checkInObj.videos.metaArr = (strArrToJSArr(checkInObj.json.videos,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.videos,"|","*")[0];
+              return cacheFileBufferToFile(videoFileBuffer, true, checkInObj.videos.metaArr[3], checkInObj.audio.metaArr[2])
+            })
+            .then(function(videoCacheFilePath) {
+              checkInObj.videos.filePath = videoCacheFilePath;
+              return saveAssetFileToS3("videos", checkInObj);
             })
             .then(function(checkInObj) {
               resolve(checkInObj);
@@ -153,24 +173,6 @@ var cacheFileBufferToFile = function(fileBuffer, isGZipped, fileSha1Hash, fileEx
 
 
 
-
-
-
-// function timeStampToDate(timeStamp, LEGACY_timeZoneOffset) {
-
-//   var asDate = null;
-
-//   // PLEASE MODIFY LATER WHEN WE NO LONGER NEED TO SUPPORT LEGACY TIMESTAMPS !!!!!
-//   if ((""+timeStamp).indexOf(":") > -1) {
-//     // LEGACY TIMESTAMP FORMAT
-//     asDate = new Date(timeStamp.replace(/ /g,"T")+LEGACY_timeZoneOffset);
-//   } else if (timeStamp != null) {
-
-//     asDate = new Date(parseInt(timeStamp));
-
-//   }
-//   return asDate;
-// }
 
 // // Special Functions
 
