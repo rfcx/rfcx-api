@@ -397,7 +397,7 @@ exports.checkInDatabase = {
     })
   },
 
-  createDbPhotoFile: function(checkInObj) {
+  createDbMetaPhoto: function(checkInObj) {
 
     if (checkInObj.photos.filePath === null) {
       return Promise.resolve(checkInObj);
@@ -452,7 +452,7 @@ exports.checkInDatabase = {
     // })
   },
 
-  createDbVideoFile: function(checkInObj) {
+  createDbMetaVideo: function(checkInObj) {
 
     if (checkInObj.videos.filePath === null) {
       return Promise.resolve(checkInObj);
