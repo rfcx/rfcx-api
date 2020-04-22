@@ -22,6 +22,20 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true,
         min: 0
       }
+    },
+    is_charging: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+      validate: {
+      }
+    },
+    is_fully_charged: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+      validate: {
+      }
     }
   }, {
     classMethods: {
