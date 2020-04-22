@@ -7,7 +7,9 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "last_checkin_at for GuardianMetaSoftwareVersion should have type Date"
+        }
       }
     }
 

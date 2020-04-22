@@ -1,48 +1,28 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaInstructionsQueue = sequelize.define("GuardianMetaInstructionsQueue", {
+  var GuardianMetaVideo = sequelize.define("GuardianMetaVideo", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4
     },
-    queued_at: {
+    captured_at: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
         isDate: {
-          msg: "queued_at for GuardianMetaInstructionsQueue should have type Date"
+          msg: "captured_at for GuardianMetaVideo should have type Date"
         }
       }
     },
-    execute_at: {
-      type: DataTypes.DATE(3),
-      allowNull: true,
-      validate: {
-        isDate: {
-          msg: "execute_at for GuardianMetaInstructionsQueue should have type Date"
-        }
-      }
-    },
-    type: {
+    url: {
       type: DataTypes.STRING,
       allowNull: true,
+      unique: true,
       validate: {
       }
     },
-    command: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
-    meta_json: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
-    },
-    dispatch_attempts: {
+    size: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
@@ -50,20 +30,52 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
-    received_at: {
-      type: DataTypes.DATE(3),
+    width: {
+      type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
-        isDate: {
-          msg: "received_at for GuardianMetaInstructionsQueue should have type Date"
-        }
+        isInt: true,
+        min: 0
       }
+    },
+    height: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    length: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    format: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+    sha1_checksum: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
+    metadata: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true
     }
   }, {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-        GuardianMetaInstructionsQueue.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianMetaVideo.belongsTo(models.Guardian, {as: 'Guardian'});
       },
       indexes: [
         {
@@ -71,8 +83,8 @@ module.exports = function(sequelize, DataTypes) {
           fields: ["guid"]
         }
       ]
-    },
-    tableName: "GuardianMetaInstructionsQueue"
+    }
   });
-  return GuardianMetaInstructionsQueue;
+
+  return GuardianMetaVideo;
 };

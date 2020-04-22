@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaLog = sequelize.define("GuardianMetaLog", {
+  var GuardianMetaPhoto = sequelize.define("GuardianMetaPhoto", {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4
@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "captured_at for GuardianMetaLog should have type Date"
+          msg: "captured_at for GuardianMetaPhoto should have type Date"
         }
       }
     },
@@ -30,18 +30,44 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
+    width: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    height: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    format: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
     sha1_checksum: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: false,
       validate: {
       }
+    },
+    metadata: {
+      type: DataTypes.TEXT('long'),
+      allowNull: true
     }
   }, {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
-        GuardianMetaLog.belongsTo(models.Guardian, {as: 'Guardian'});
+        GuardianMetaPhoto.belongsTo(models.Guardian, {as: 'Guardian'});
       },
       indexes: [
         {
@@ -52,5 +78,5 @@ module.exports = function(sequelize, DataTypes) {
     }
   });
 
-  return GuardianMetaLog;
+  return GuardianMetaPhoto;
 };

@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "time for Message should have type Date" }
       }
     },
     latitude: {

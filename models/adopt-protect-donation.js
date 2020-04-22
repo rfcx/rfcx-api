@@ -27,7 +27,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "donated_at for AdoptProtectDonation should have type Date" }
       }
     },
     donation_amount: {

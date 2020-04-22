@@ -11,14 +11,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "begins_at for GuardianAudioTag should have type Date" }
       }
     },
     ends_at: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "ends_at for GuardianAudioTag should have type Date" }
       }
     },
     begins_at_offset: {

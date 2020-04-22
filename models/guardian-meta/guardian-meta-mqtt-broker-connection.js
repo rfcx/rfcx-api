@@ -4,7 +4,9 @@ module.exports = function(sequelize, DataTypes) {
     connected_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: {
+          msg: "connected_at for GuardianMetaMqttBrokerConnection should have type Date"
+        }
       }
     },
     broker_uri: {

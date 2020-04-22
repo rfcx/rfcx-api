@@ -18,7 +18,10 @@ function onMessageCheckin(data, messageId) {
 
   return mqttInputData.parseCheckInInput(data)
     .then((checkInObj) => {
-      checkInObj.rtrn = { obj: { checkin_id: null, audio: [], screenshots: [], logs: [], messages: [] } };
+      checkInObj.rtrn = { obj: {  checkin_id: null, audio: [],
+                                  screenshots: [], logs: [], messages: [], meta: [], photos: [], videos: [],
+                                  purged: [], received: [], unconfirmed: [], instructions: [] 
+                              } };
       logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', {
         messageId,
         checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
@@ -85,6 +88,14 @@ function onMessageCheckin(data, messageId) {
     })
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+      return checkInDatabase.createDbMetaPhoto(checkInObj)
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbMetaPhoto', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+      return checkInDatabase.createDbMetaVideo(checkInObj)
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbMetaVideo', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
       if (checkInObj && checkInObj.db && checkInObj.db.dbAudio && checkInObj.audio
             && checkInObj.audio.meta && checkInObj.db.dbGuardian) {
         let audioInfo = {

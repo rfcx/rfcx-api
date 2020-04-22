@@ -1,5 +1,8 @@
 var Converter = require("../../utils/converter/converter");
 var models  = require("../../models");
+const Promise = require('bluebird');
+const request = require('request');
+const ForbiddenError = require("../../utils/converter/forbidden-error");
 
 function validateCreateParams(params) {
   params = new Converter(params);
@@ -23,6 +26,30 @@ function escapeReturns(message) {
   return message.replace(/[\n\r]/g, ' ');
 }
 
+function verifyRecaptchaToken(token) {
+  return new Promise(function(resolve, reject) {
+    request({
+      method: 'POST',
+      uri: `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_V3_SECRET_KEY}&response=${token}`,
+      json: true
+    }, (err, response, body) => {
+      if (err) {
+        reject(new ForbiddenError(`You don't have permissions.`));
+      }
+      else if (!!body && body.score <= 0.5) {
+        reject(new ForbiddenError(`You don't have permissions.`));
+      }
+      else if (!!body && !!body.error) {
+        reject(body);
+      }
+      else {
+        resolve(body);
+      }
+    });
+  });
+}
+
 module.exports = {
-  createMessage
+  createMessage,
+  verifyRecaptchaToken
 }

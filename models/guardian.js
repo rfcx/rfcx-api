@@ -94,7 +94,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "last_check_in for Guardian should have type Date" }
       }
     },
     check_in_count: {
@@ -109,7 +109,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "last_update_check_in for Guardian should have type Date" }
       }
     },
     update_check_in_count: {
@@ -138,14 +138,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "auth_token_updated_at for Guardian should have type Date" }
       }
     },
     auth_token_expires_at: {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "auth_token_expires_at for Guardian should have type Date" }
       }
     },
     prefs_audio_capture_interval: {

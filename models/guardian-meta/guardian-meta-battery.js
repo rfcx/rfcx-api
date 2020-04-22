@@ -4,7 +4,7 @@ module.exports = function(sequelize, DataTypes) {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: true
+        isDate: { msg: "measured_at for GuardianMetaBattery should have type Date" }
       }
     },
     battery_percent: {
@@ -21,6 +21,20 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: 0
+      }
+    },
+    is_charging: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+      validate: {
+      }
+    },
+    is_fully_charged: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+      validate: {
       }
     }
   }, {

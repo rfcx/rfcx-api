@@ -51,7 +51,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: null,
       validate: {
-        isDate: true
+        isDate: { msg: "marked_as_deleted_at for Stream should have type Date" }
       }
     },
   }, {

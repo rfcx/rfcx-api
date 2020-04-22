@@ -12,7 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       validate: {
-        isDate: true
+        isDate: { msg: "reported_at for Attachment should have type Date" }
       }
     },
     url: {

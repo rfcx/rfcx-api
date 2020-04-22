@@ -26,7 +26,7 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "begins_at_analysis for GuardianEvent should have type Date" }
       }
     },
     begins_at_reviewer: {
@@ -34,7 +34,7 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "begins_at_reviewer for GuardianEvent should have type Date" }
       }
     },
     duration_analysis: {
@@ -69,7 +69,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: { msg: "reviewed_at for GuardianEvent should have type Date" }
       }
     },
     fingerprint: {

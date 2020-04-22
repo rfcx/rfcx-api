@@ -32,7 +32,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: true
+        isDate: { msg: "auth_token_expires_at for UserToken should have type Date" }
       }
     },
   }, {

@@ -10,7 +10,9 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: true
+        isDate: {
+          msg: "captured_at for GuardianMetaScreenShot should have type Date"
+        }
       }
     },
     url: {

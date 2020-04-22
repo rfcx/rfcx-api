@@ -144,7 +144,7 @@ exports.checkInDatabase = {
 
     var guardianId = checkInObj.db.dbGuardian.id;
     // arrays of return values for checkin response json
-    var metaReturnArray = [], purgedReturnArray = [], requeueReturnArray = [], receivedReturnArray = [];
+    var metaReturnArray = [], purgedReturnArray = [], unconfirmedReturnArray = [], receivedReturnArray = [], receivedIdArray = [];
 
     let proms = [];
     // create meta asset entries in database
@@ -189,6 +189,7 @@ exports.checkInDatabase = {
               .then((dbAssetEntry) => {
                 if (dbAssetEntry != null) {
                   receivedReturnArray.push({ type: "audio", id: dbAssetEntry.asset_id });
+                  receivedIdArray.push(dbAssetEntry.asset_id);
                 }
               });
             promsExchLogs.push(prom);
@@ -210,24 +211,19 @@ exports.checkInDatabase = {
       })
       .then(() => {
 
-        if (checkInObj.json.checkins_to_verify != null) {
-           for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
-              mustReQueue = true;
-              for (var j = 0; j < receivedReturnArray.length; j++) {
-                if (checkInObj.json.checkins_to_verify[i] == receivedReturnArray[j]) {
-                  mustReQueue = false;
-                  break; 
-                }
-              }
-              if (mustReQueue) { requeueReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] }); }
-           }
+        if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
+          for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+            if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
+              unconfirmedReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
+            }
+          }
         }
 
         // add checkin response json to overall checkInObj
         checkInObj.rtrn.obj.meta = metaReturnArray;
         checkInObj.rtrn.obj.purged = purgedReturnArray;
         checkInObj.rtrn.obj.received = receivedReturnArray;
-        checkInObj.rtrn.obj.requeue = requeueReturnArray;
+        checkInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray;
 
         return checkInObj;
       })
@@ -336,7 +332,10 @@ exports.checkInDatabase = {
             resolve(checkInObj);
           })
 
-        });
+        })
+        .catch((err) => {
+          reject(err);
+        })
 
       });
     })
@@ -375,9 +374,136 @@ exports.checkInDatabase = {
           defaults
         })
         .then(function(dbLogs) {
-          checkInObj.db.dbLogs = dbLogs;
-          checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
-          resolve(checkInObj);
+
+          models.GuardianMetaAssetExchangeLog.findOrCreate({
+            where: {
+              guardian_id: checkInObj.db.dbGuardian.id,
+              asset_type: "log",
+              asset_id: checkInObj.logs.metaArr[1]
+            }
+          })
+          .then(() => {
+            checkInObj.db.dbLogs = dbLogs;
+            checkInObj.rtrn.obj.logs.push({ id: checkInObj.logs.metaArr[1] });
+            resolve(checkInObj);
+          })
+
+        })
+        .catch((err) => {
+          reject(err);
+        })
+
+      });
+    })
+  },
+
+  createDbMetaPhoto: function(checkInObj) {
+
+    if (checkInObj.photos.filePath === null) {
+      return Promise.resolve(checkInObj);
+    }
+
+    return new Promise((resolve, reject) => {
+      fs.stat(checkInObj.photos.filePath, (statErr, fileStat) => {
+        if (!!statErr) {
+          return reject(statErr);
+        }
+
+        let defaults = {};
+        try {
+          defaults = {
+            guardian_id: checkInObj.db.dbGuardian.id,
+            sha1_checksum: checkInObj.photos.metaArr[3],
+            url: null,
+            captured_at: new Date(parseInt(checkInObj.photos.metaArr[1])),
+            width: parseInt(checkInObj.photos.metaArr[4]),
+            height: parseInt(checkInObj.photos.metaArr[5]),
+            format: checkInObj.photos.metaArr[2],
+            size: fileStat.size
+          };
+        } catch(e) {
+          return reject(e);
+        }
+
+        models.GuardianMetaPhoto.findOrCreate({
+          where: {
+            sha1_checksum: checkInObj.photos.metaArr[3]
+          },
+          defaults
+        })
+        .then(function(dbPhotos) {
+
+          models.GuardianMetaAssetExchangeLog.findOrCreate({
+            where: {
+              guardian_id: checkInObj.db.dbGuardian.id,
+              asset_type: "photo",
+              asset_id: checkInObj.photos.metaArr[1]
+            }
+          })
+          .then(() => {
+            checkInObj.db.dbPhotos = dbPhotos;
+            checkInObj.rtrn.obj.photos.push({ id: checkInObj.photos.metaArr[1] });
+            resolve(checkInObj);
+          })
+
+        })
+        .catch((err) => {
+          reject(err);
+        })
+
+      });
+    })
+  },
+
+  createDbMetaVideo: function(checkInObj) {
+
+    if (checkInObj.videos.filePath === null) {
+      return Promise.resolve(checkInObj);
+    }
+
+    return new Promise((resolve, reject) => {
+      fs.stat(checkInObj.videos.filePath, (statErr, fileStat) => {
+        if (!!statErr) {
+          return reject(statErr);
+        }
+
+        let defaults = {};
+        try {
+          defaults = {
+            guardian_id: checkInObj.db.dbGuardian.id,
+            sha1_checksum: checkInObj.videos.metaArr[3],
+            url: null,
+            captured_at: new Date(parseInt(checkInObj.videos.metaArr[1])),
+            width: parseInt(checkInObj.videos.metaArr[4]),
+            height: parseInt(checkInObj.videos.metaArr[5]),
+            format: checkInObj.videos.metaArr[2],
+            size: fileStat.size
+          };
+        } catch(e) {
+          return reject(e);
+        }
+
+        models.GuardianMetaVideo.findOrCreate({
+          where: {
+            sha1_checksum: checkInObj.videos.metaArr[3]
+          },
+          defaults
+        })
+        .then(function(dbVideos) {
+
+          models.GuardianMetaAssetExchangeLog.findOrCreate({
+            where: {
+              guardian_id: checkInObj.db.dbGuardian.id,
+              asset_type: "video",
+              asset_id: checkInObj.videos.metaArr[1]
+            }
+          })
+          .then(() => {
+            checkInObj.db.dbVideos = dbVideos;
+            checkInObj.rtrn.obj.videos.push({ id: checkInObj.videos.metaArr[1] });
+            resolve(checkInObj);
+          })
+
         })
         .catch((err) => {
           reject(err);
