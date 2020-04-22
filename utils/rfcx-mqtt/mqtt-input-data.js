@@ -49,7 +49,7 @@ exports.mqttInputData = {
             })
             .then(function(checkInObj) {
               checkInObj.screenshots.metaArr = (strArrToJSArr(checkInObj.json.screenshots,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.screenshots,"|","*")[0];
-              return cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.audio.metaArr[2])
+              return cacheFileBufferToFile(screenShotFileBuffer, false, checkInObj.screenshots.metaArr[3], checkInObj.screenshots.metaArr[2])
             })
             .then(function(screenShotCacheFilePath) {
               checkInObj.screenshots.filePath = screenShotCacheFilePath;
@@ -57,7 +57,7 @@ exports.mqttInputData = {
             })
             .then(function(checkInObj) {
               checkInObj.logs.metaArr = (strArrToJSArr(checkInObj.json.logs,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.logs,"|","*")[0];
-              return cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.audio.metaArr[2]);
+              return cacheFileBufferToFile(logFileBuffer, true, checkInObj.logs.metaArr[3], checkInObj.logs.metaArr[2]);
             })
             .then(function(logFileCacheFilePath) {
               checkInObj.logs.filePath = logFileCacheFilePath;
@@ -65,7 +65,7 @@ exports.mqttInputData = {
             })
             .then(function(checkInObj) {
               checkInObj.photos.metaArr = (strArrToJSArr(checkInObj.json.photos,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.photos,"|","*")[0];
-              return cacheFileBufferToFile(photoFileBuffer, true, checkInObj.photos.metaArr[3], checkInObj.audio.metaArr[2])
+              return cacheFileBufferToFile(photoFileBuffer, true, checkInObj.photos.metaArr[3], checkInObj.photos.metaArr[2])
             })
             .then(function(photoCacheFilePath) {
               checkInObj.photos.filePath = photoCacheFilePath;
@@ -73,7 +73,7 @@ exports.mqttInputData = {
             })
             .then(function(checkInObj) {
               checkInObj.videos.metaArr = (strArrToJSArr(checkInObj.json.videos,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.videos,"|","*")[0];
-              return cacheFileBufferToFile(videoFileBuffer, true, checkInObj.videos.metaArr[3], checkInObj.audio.metaArr[2])
+              return cacheFileBufferToFile(videoFileBuffer, true, checkInObj.videos.metaArr[3], checkInObj.videos.metaArr[2])
             })
             .then(function(videoCacheFilePath) {
               checkInObj.videos.filePath = videoCacheFilePath;
