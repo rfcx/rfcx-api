@@ -29,29 +29,31 @@ exports.saveMeta = {
         check_in_id: checkInId,
         measured_at: new Date(parseInt(metaBattery[battInd][0])),
         battery_percent: parseInt(metaBattery[battInd][1]),
-        battery_temperature: parseInt(metaBattery[battInd][2])
+        battery_temperature: parseInt(metaBattery[battInd][2]),
+        is_charging: (metaBattery[battInd][3] === "1") ? true : ( (metaBattery[battInd][3] === "0") ? false : null ),
+        is_fully_charged: (metaBattery[battInd][4] === "1") ? true : ( (metaBattery[battInd][4] === "0") ? false : null )
       });
     }
 
     return models.GuardianMetaBattery.bulkCreate(dbMetaBattery);
   },
 
-  Power: function(metaPower, guardianId, checkInId) {
+  // Power: function(metaPower, guardianId, checkInId) {
 
-    var dbMetaPower = [];
+  //   var dbMetaPower = [];
 
-    for (pwrInd in metaPower) {
-      dbMetaPower.push({
-        guardian_id: guardianId,
-        check_in_id: checkInId,
-        measured_at: new Date(parseInt(metaPower[pwrInd][0])),
-        is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
-        is_charged: (metaPower[pwrInd][2] === "1") ? true : false
-      });
-    }
+  //   for (pwrInd in metaPower) {
+  //     dbMetaPower.push({
+  //       guardian_id: guardianId,
+  //       check_in_id: checkInId,
+  //       measured_at: new Date(parseInt(metaPower[pwrInd][0])),
+  //       is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
+  //       is_charged: (metaPower[pwrInd][2] === "1") ? true : false
+  //     });
+  //   }
 
-    return models.GuardianMetaPower.bulkCreate(dbMetaPower);
-  },
+  //   return models.GuardianMetaPower.bulkCreate(dbMetaPower);
+  // },
 
   Network: function(metaNetwork, guardianId, checkInId) {
 

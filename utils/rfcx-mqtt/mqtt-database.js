@@ -116,7 +116,6 @@ exports.checkInDatabase = {
       saveMeta.DataTransfer(strArrToJSArr(checkInObj.json.data_transfer,"|","*"), guardianId, checkInId),
       saveMeta.CPU(strArrToJSArr(checkInObj.json.cpu,"|","*"), guardianId, checkInId),
       saveMeta.Battery(strArrToJSArr(checkInObj.json.battery,"|","*"), guardianId, checkInId),
-      saveMeta.Power(strArrToJSArr(checkInObj.json.power,"|","*"), guardianId, checkInId),
       saveMeta.Network(strArrToJSArr(checkInObj.json.network,"|","*"), guardianId, checkInId),
       saveMeta.Offline(strArrToJSArr(checkInObj.json.offline,"|","*"), guardianId, checkInId),
       saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter,"|","*"), guardianId, checkInId),
