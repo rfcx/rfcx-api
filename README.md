@@ -28,6 +28,22 @@ Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fil
 ### VPN
 You need to be connected to rfcx-ldap VPN to have access to databases.
 
+### MONGO DB
+You can run Mongo Docker container locally.
+Clone and copy `./bin/mongo/.env.example` into `./bin/mongo/.env` and fill it with required vars.
+<sub>Note: `DB_FILES_PATH` variable should point to a directory on your local machine where you'd like to store database data.</sub>
+
+To start MongoDB instance run the following command in the project root:
+```
+./bin/mongo/start.sh
+```
+Database with name `admin` and username/password which you have selected in `.env` file will be accessible at `localhost` on port `27017`.
+
+To stop MongoDB instance run the following command:
+```
+docker stop rfcx-api-mongo
+```
+
 
 ## HTTP API
 To start http API run the following command in the project root:
