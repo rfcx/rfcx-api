@@ -15,6 +15,7 @@
     "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
   "dependencies": {
+    "@mongoosejs/double": "0.2.0",
     "archiver": "3.0.0",
     "aws-sdk": "2.55.0",
     "bluebird": "2.11.0",
@@ -38,6 +39,8 @@
     "mandrill-api": "1.0.45",
     "moment": "2.18.1",
     "moment-timezone": "0.5.13",
+    "mongoose": "5.9.9",
+    "mongoose-long": "0.2.1",
     "mqtt": "2.18.8",
     "multer": "0.1.8",
     "mysql": "2.13.0",
