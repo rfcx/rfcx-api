@@ -1,5 +1,12 @@
 const sqlUtils = require("../../utils/misc/sql");
 const neo4j = require('../../utils/neo4j');
+const classificationService = require('../classification/classification-service');
+const streamsService = require('./streams-service');
+const ValidationError = require("../../utils/converter/validation-error");
+const ForbiddenError = require("../../utils/converter/forbidden-error");
+const DetectionModel = require('../../modelsMongoose/detection').Detection;
+
+const requiredDetectionAttrs = ['starts', 'ends', 'confidence', 'label'];
 
 function getDetectionsByParams(opts) {
 
@@ -94,6 +101,88 @@ function uniteDetections(detections) {
   }
 }
 
+function checkDetectionsValid(detections) {
+  detections.forEach((detection) => {
+    requiredDetectionAttrs.forEach((attr) => {
+      if (detection[attr] === undefined) {
+        throw new ValidationError(`${attr} is required for detection.`);
+      }
+    })
+  });
+}
+
+function saveDetections(detections, stream, modelGuid) {
+  let proms = [];
+  let result = {};
+  detections.forEach((detection) => {
+    let detectionId = `${detection.label}_${detection.starts}_${detection.ends}`;
+    // find classification in Classifications table
+    let prom = classificationService.getClassificationByValue(detection.label, true)
+      .then((classification) => {
+        // if classification was not found, don't save this detection
+        if (!classification) {
+          result[detectionId] = 'label_not_found';
+          return;
+        }
+        // check if audio exists for selected time range
+        return streamsService.getSegments({ streamId: stream.id, starts: detection.starts, ends: detection.ends })
+          .then((dbSegments) => {
+            if (!dbSegments.length) {
+              result[detectionId] = 'no_audio_for_this_time';
+              return;
+            }
+            // all checks passed, we save detection
+            let params = {
+              label: detection.label,
+              model: modelGuid,
+              stream: stream.guid,
+              starts: detection.starts,
+              ends: detection.ends
+            }
+            // delete all previous detection from the same model for same stream, label and time range
+            return clearDetectionWithSameParams(params)
+              .then(() => {
+                let data = Object.assign({}, params, { confidence: detection.confidence })
+                return createDetection(data);
+              })
+              .then(() => {
+                result[detectionId] = 'success';
+              })
+          });
+      });
+      proms.push(prom);
+  });
+  return Promise.all(proms)
+    .then(() => {
+      return result;
+    });
+}
+
+function clearDetectionWithSameParams(data) {
+  return DetectionModel.deleteMany({
+    label: data.label,
+    model: data.model,
+    stream: data.stream,
+    starts: data.starts,
+    ends: data.ends,
+  });
+}
+
+function createDetection(data) {
+  let detection = new DetectionModel({
+    label: data.label,
+    model: data.model,
+    stream: data.stream,
+    confidence: data.confidence,
+    starts: data.starts,
+    ends: data.ends,
+  });
+  return detection.save();
+}
+
 module.exports = {
   getDetectionsByParams,
+  checkDetectionsValid,
+  saveDetections,
+  createDetection
 }

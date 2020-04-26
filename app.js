@@ -22,7 +22,8 @@ var express = require("express"),
     addRequestId = require('express-request-id'),
     addInstanceId = require('./middleware/misc/aws').addInstanceId,
     toobusy = require('toobusy-js'),
-    app = express();
+    app = express(),
+    mongo = require('./utils/mongo');
 
 app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
