@@ -36,6 +36,20 @@ app.mqtt.on("connect", function(){
       console.log('mqtt: subscribed to topic "guardians/checkins"', granted);
     });
   });
+  app.mqtt.unsubscribe("guardians/pings", (err) => {
+    if (err) {
+      console.log('mqtt: could not unsubscribe from topic "guardians/pings"', err);
+      return;
+    }
+    console.log('mqtt: unsubscribed from topic "guardians/pings"');
+    app.mqtt.subscribe("guardians/pings", (err, granted) => {
+      if (err) {
+        console.log('mqtt: could not subscribe to topic "guardians/pings"', err);
+        return;
+      }
+      console.log('mqtt: subscribed to topic "guardians/pings"', granted);
+    });
+  });
 });
 
 app.mqtt.on("error", (err) => {
@@ -67,13 +81,14 @@ if (process && process.pid) {
 }
 
 var mqttCheckInRouter = require("../utils/rfcx-mqtt/mqtt-checkin-router.js").mqttCheckInRouter;
+var mqttPingRouter = require("../utils/rfcx-mqtt/mqtt-ping-router.js").mqttPingRouter;
 
 app.mqtt.on("message", (topic, data) => {
   let messageId = guidService.generate();
   logDebug('new mqtt message', { topic });
-  console.log('New mqtt message', topic, messageId);
+  console.log('new mqtt message', topic, messageId);
+
   if (topic === "guardians/checkins") {
-    logDebug('mqtt message', { topic });
 
     return mqttCheckInRouter.onMessageCheckin(data, messageId)
       .then((result) => {
@@ -95,7 +110,30 @@ app.mqtt.on("message", (topic, data) => {
         logDebug('mqtt message return object [cloudwatch]', { err });
         logError('mqtt message error [cloudwatch]', { err });
       });
+
+  } else if (topic === "guardians/pings") {
+    
+    return mqttPingRouter.onMessagePing(data, messageId)
+      .then((result) => {
+        // logDebug('mqtt message return object', {
+        //   guardian_guid: result.guardian_guid,
+        //   gzip: result.gzip
+        // });
+        console.log('mqtt message processed', topic, messageId);
+        messageId = null;
+        result = null;
+        return true;
+      })
+      .catch((err) => {
+        if (typeof(err) === 'string') {
+          err = { message: err };
+        }
+        logDebug('mqtt message return object [cloudwatch]', { err });
+        logError('mqtt message error [cloudwatch]', { err });
+      });
+
   }
+
 });
 
 
