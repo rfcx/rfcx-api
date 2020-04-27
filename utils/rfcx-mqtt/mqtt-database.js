@@ -154,6 +154,8 @@ exports.checkInDatabase = {
       saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software,"|","*"), guardianId),
       saveMeta.PreviousCheckIns(strArrToJSArr(checkInObj.json.previous_checkins,"|","*")),
 
+      saveMeta.CheckInStatus(strArrToJSArr(checkInObj.json.checkins,"|","*"), guardianId, checkInObj.json.measured_at),
+
       saveMeta.Hardware({ hardware: checkInObj.json.hardware, phone: checkInObj.json.phone }, guardianId)
     ];
 

@@ -22,7 +22,7 @@ function onMessagePing(data, messageId) {
     })
     .then((pingObj) => {
       logDebug('mqttPingRouter -> onMessagePing -> createDbSaveMeta', { messageId, guardian: pingObj.db.dbGuardian.guid, pingObjJson: JSON.parse(JSON.stringify(pingObj.json)) });
-      console.log({ guardian: pingObj.db.dbGuardian.guid, json: JSON.parse(JSON.stringify(pingObj.json))});
+  ///    console.log({ guardian: pingObj.db.dbGuardian.guid, json: JSON.parse(JSON.stringify(pingObj.json))});
       return JSON.parse(JSON.stringify(pingObj.json));
     })
 }

@@ -262,6 +262,19 @@ exports.saveMeta = {
     return models.GuardianMetaDiskUsage.create(opts);
   },
 
+  CheckInStatus: function(metaCheckInStatus, guardianId, measuredAt) {
+
+    var dbMetaCheckInStatus = [],
+        dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) };
+
+    for (vInd in metaCheckInStatus) {
+      dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0]+"_count"] = parseInt(metaCheckInStatus[vInd][1]);
+    }
+    dbMetaCheckInStatus.push(dbMetaCheckInStatusObj);
+
+    return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus);
+  },
+
   PreviousCheckIns: function(previousCheckIns) {
     for (prvChkInInd in previousCheckIns) {
       models.GuardianCheckIn
