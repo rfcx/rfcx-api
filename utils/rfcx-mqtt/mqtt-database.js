@@ -4,6 +4,7 @@ var fs = require("fs");
 var sequelize = require("sequelize");
 var saveMeta = require("../../utils/rfcx-mqtt/mqtt-save-meta.js").saveMeta;
 var smsMessages = require("../../utils/rfcx-mqtt/mqtt-sms.js").messages;
+var hash = require("../../utils/misc/hash.js").hash;
 var Promise = require('bluebird');
 var loggers = require('../../utils/logger');
 const moment = require('moment-timezone');
@@ -28,18 +29,42 @@ exports.checkInDatabase = {
 
   getDbGuardian: function(checkInObj) {
 
+    // for dev purposes only... this rejects checkins from all but a specified guardian guid
+//    if (checkInObj.json.guardian.guid != "088567034852"/*"xxxxxxxxxxxx"*/) { return Promise.reject(`Skipped ${checkInObj.json.guardian.guid}`); }
+
     return models.Guardian
       .findOne({
-        where: { guid: checkInObj.json.guardian_guid },
+        where: { guid: checkInObj.json.guardian.guid },
         include: [ { all: true } ]
       })
       .then((dbGuardian) => {
         if (!dbGuardian) {
-          return Promise.reject(`Couldn't find guardian with guid ${checkInObj.json.guardian_guid}`);
+          return Promise.reject(`Couldn't find guardian with guid ${checkInObj.json.guardian.guid}`);
         }
         checkInObj.db.dbGuardian = dbGuardian;
         return checkInObj;
       });
+
+  },
+
+  validateDbGuardianToken: function(checkInObj) {
+
+    if (checkInObj.json.guardian_guid != null) {
+      // Adding support for differently structured guardian JSON blobs, which don't support auth.
+      // This supports guardian software deployed before May 2020.
+      // THIS SHOULD BE REMOVED when those guardians are taken offline.
+      console.log("token validation skipped for guardian "+checkInObj.json.guardian.guid);
+      return checkInObj;
+    } else if ((checkInObj.json.guardian != null) && (checkInObj.json.guardian.token != null)) {
+      if (checkInObj.db.dbGuardian == null) {
+        return Promise.reject(`Couldn't find guardian with guid ${checkInObj.json.guardian.guid}`);
+      } else if (checkInObj.db.dbGuardian.auth_token_hash == hash.hashedCredentials(checkInObj.db.dbGuardian.auth_token_salt,checkInObj.json.guardian.token)) {
+        console.log("auth token validated for "+checkInObj.json.guardian.guid);
+        return checkInObj;
+      }
+    }
+    console.log(`Failed to verify guardian auth token for guardian with guid ${checkInObj.json.guardian.guid}`);
+    return Promise.reject(`Failed to verify guardian auth token for guardian with guid ${checkInObj.json.guardian.guid}`);
 
   },
 
@@ -109,8 +134,8 @@ exports.checkInDatabase = {
 
   createDbSaveMeta: function(checkInObj) {
 
-    let guardianId = checkInObj.db.dbGuardian.id,
-        checkInId  = checkInObj.db.dbCheckIn.id;
+    let guardianId = checkInObj.db.dbGuardian.id;
+    let checkInId  = (checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null;
 
     let proms = [
       saveMeta.DataTransfer(strArrToJSArr(checkInObj.json.data_transfer,"|","*"), guardianId, checkInId),

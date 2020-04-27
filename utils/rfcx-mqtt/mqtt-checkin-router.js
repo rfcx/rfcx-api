@@ -30,7 +30,15 @@ function onMessageCheckin(data, messageId) {
       return checkInDatabase.getDbGuardian(checkInObj);
     })
     .then((checkInObj) => {
-      logDebug('mqttCheckInRouter -> onMessageCheckin -> getDbGuardian', {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', {
+        messageId,
+        checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
+        checkInObjJson: JSON.parse(JSON.stringify(checkInObj.json)),
+      });
+      return checkInDatabase.validateDbGuardianToken(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> validateDbGuardianToken', {
         messageId,
         checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn)),
         guardian: checkInObj.db.dbGuardian.guid,
@@ -154,7 +162,7 @@ function onMessageCheckin(data, messageId) {
       return mqttPublish.processAndCompressPublishJson(checkInObj);
     })
     .then((checkInObj) => {
-      return { guardian_guid: checkInObj.json.guardian_guid, gzip: checkInObj.rtrn.gzip };
+      return { guardian_guid: checkInObj.json.guardian.guid, gzip: checkInObj.rtrn.gzip };
     });
 }
 

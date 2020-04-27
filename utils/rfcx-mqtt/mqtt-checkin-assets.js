@@ -33,7 +33,7 @@ exports.checkInAssets = {
             isVbr: (checkInObj.audio.metaArr[7].toLowerCase() === "vbr"),
             encodeDuration: parseInt(checkInObj.audio.metaArr[8]),
             mimeType: assetUtils.mimeTypeFromAudioCodec(checkInObj.audio.metaArr[6]),
-            s3Path: assetUtils.getGuardianAssetStoragePath( "audio", new Date(parseInt(checkInObj.audio.metaArr[1])), checkInObj.json.guardian_guid, checkInObj.audio.metaArr[2])
+            s3Path: assetUtils.getGuardianAssetStoragePath( "audio", new Date(parseInt(checkInObj.audio.metaArr[1])), checkInObj.json.guardian.guid, checkInObj.audio.metaArr[2])
           };
 
           audioUtils.transcodeToFile( "wav", {

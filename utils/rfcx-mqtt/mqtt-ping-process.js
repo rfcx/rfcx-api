@@ -1,6 +1,8 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
 var zlib = require("zlib");
 var Promise = require('bluebird');
+var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInDatabase;
+//var saveMeta = require("../../utils/rfcx-mqtt/mqtt-save-meta.js").saveMeta;
 var loggers = require('../../utils/logger');
 
 exports.mqttPingProcess = {
@@ -14,7 +16,7 @@ exports.mqttPingProcess = {
         var metaLength = 12;
         var jsonBlobLength = parseInt(mqttData.toString("utf8", 0, metaLength));
 
-        var pingObj = { json: {}, meta: {}, db: {} };
+        var pingObj = { json: {}, meta: { guardian: {} }, db: {} };
 
         pingObj.meta.pingStartTime = new Date();
 
@@ -24,19 +26,19 @@ exports.mqttPingProcess = {
             reject(jsonError);
           }
 
-          pingObj.json = JSON.parse(jsonBuffer.toString("utf8"));
+          try {
+            
+            pingObj.json = JSON.parse(jsonBuffer.toString("utf8")).ping;
+            resolve(pingObj);
 
-          var guardianGuid = pingObj.json.guardian_guid, 
-              guardianToken = pingObj.json.guardian_token;
-
-          pingObj.meta.guardian_guid = guardianGuid;
-
-          resolve(pingObj);
-
+          } catch (errParsePingObj) {
+            console.log(errParsePingObj);
+            reject(errParsePingObj);
+          }
         });
-      } catch (errParsePingObj) {
-        console.log(errParsePingObj);
-        reject(errParsePingObj);
+      } catch (errUnZipPingObj) {
+        console.log(errUnZipPingObj);
+        reject(errUnZipPingObj);
       }
     }.bind(this));
   }
