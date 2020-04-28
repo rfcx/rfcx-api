@@ -41,6 +41,15 @@ exports.mqttInputData = {
 
           checkInObj.json = JSON.parse(jsonBuffer.toString("utf8"));
 
+          // Adding support for differently structured guardian JSON blobs, which don't support auth.
+          // This supports guardian software deployed before May 2020.
+          // THIS SHOULD BE REMOVED when those guardians are taken offline.
+          if (checkInObj.json.guardian == null) { checkInObj.json.guardian = { }; }
+          if (checkInObj.json.guardian_guid != null) {
+            checkInObj.json.guardian.guid = checkInObj.json.guardian_guid;
+          }
+          // THE ABOVE CODE SHOULD BE REMOVED when those guardians are taken offline.
+
           checkInObj.audio.metaArr = (strArrToJSArr(checkInObj.json.audio,"|","*").length == 0) ? [] : strArrToJSArr(checkInObj.json.audio,"|","*")[0];
           cacheFileBufferToFile(audioFileBuffer, true, checkInObj.audio.metaArr[3], checkInObj.audio.metaArr[2])
             .then(function(audioFileCacheFilePath) {
@@ -107,7 +116,7 @@ var saveAssetFileToS3 = function(assetType, checkInObj) {
 
         } else {
 
-          var s3Path = assetUtils.getGuardianAssetStoragePath( assetType, new Date(parseInt(checkInObj[assetType].metaArr[1])), checkInObj.json.guardian_guid, checkInObj[assetType].metaArr[2]);
+          var s3Path = assetUtils.getGuardianAssetStoragePath( assetType, new Date(parseInt(checkInObj[assetType].metaArr[1])), checkInObj.json.guardian.guid, checkInObj[assetType].metaArr[2]);
           var s3Bucket = (assetType == "audio") ? process.env.ASSET_BUCKET_AUDIO : process.env.ASSET_BUCKET_META;
 
           aws.s3(s3Bucket).putFile(checkInObj[assetType].filePath, s3Path, function(s3SaveErr, s3Res){
