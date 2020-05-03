@@ -73,8 +73,9 @@ router.route("/register")
 
     params.convert('guid').toString().toLowerCase();
     params.convert('shortname').optional().toString();
+    params.convert('platform').optional().toString();
     params.convert('site').optional().toString();
-    let token = hash.randomString(64);
+    let token = hash.randomString(40);
 
     params.validate()
       .then(() => {
