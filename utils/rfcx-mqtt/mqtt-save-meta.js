@@ -38,23 +38,6 @@ exports.saveMeta = {
     return models.GuardianMetaBattery.bulkCreate(dbMetaBattery);
   },
 
-  // Power: function(metaPower, guardianId, checkInId) {
-
-  //   var dbMetaPower = [];
-
-  //   for (pwrInd in metaPower) {
-  //     dbMetaPower.push({
-  //       guardian_id: guardianId,
-  //       check_in_id: checkInId,
-  //       measured_at: new Date(parseInt(metaPower[pwrInd][0])),
-  //       is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
-  //       is_charged: (metaPower[pwrInd][2] === "1") ? true : false
-  //     });
-  //   }
-
-  //   return models.GuardianMetaPower.bulkCreate(dbMetaPower);
-  // },
-
   Network: function(metaNetwork, guardianId, checkInId) {
 
     var dbMetaNetwork = [];
@@ -225,14 +208,14 @@ exports.saveMeta = {
 
     for (brkrInd in metaBrokerConnection) {
       if (metaBrokerConnection[brkrInd][3] != null) {
-        // dbMetaBrokerConnection.push({
-        //     guardian_id: guardianId,
-        //     check_in_id: checkInId,
-        //     connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
-        //     connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
-        //     subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
-        //     broker_uri: metaBrokerConnection[brkrInd][3]
-        // });
+        dbMetaBrokerConnection.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
+            connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
+            subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
+            broker_uri: metaBrokerConnection[brkrInd][3]
+        });
       }
     }
 
