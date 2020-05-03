@@ -224,14 +224,15 @@ exports.saveMeta = {
     var dbMetaBrokerConnection = [];
 
     for (brkrInd in metaBrokerConnection) {
-      if (metaBrokerConnection[brkrInd][2] != null) {
-        dbMetaBrokerConnection.push({
-            guardian_id: guardianId,
-            check_in_id: checkInId,
-            connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
-            connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
-            broker_uri: metaBrokerConnection[brkrInd][2]
-        });
+      if (metaBrokerConnection[brkrInd][3] != null) {
+        // dbMetaBrokerConnection.push({
+        //     guardian_id: guardianId,
+        //     check_in_id: checkInId,
+        //     connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
+        //     connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
+        //     subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
+        //     broker_uri: metaBrokerConnection[brkrInd][3]
+        // });
       }
     }
 
