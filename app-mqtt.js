@@ -62,11 +62,6 @@ app.http.use(passport.initialize());
 app.http.use("/v1/", require("./middleware/v1.js").middleware.setApiParams);
 app.http.use("/v1/", require("./middleware/v1.js").middleware.insecureRequestRedirect);
 
-// Guardian Update Endpoints
-app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-register"));
-//app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-software"));
-
-// Health Check HTTP Endpoint
 var healthCheck = require("./utils/rfcx-mqtt/health-check-mqtt.js").healthCheck;
 app.http.get("/health_check", function(req,res){ healthCheck.httpResponse(req,res); });
 
