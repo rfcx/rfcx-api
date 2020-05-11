@@ -204,6 +204,12 @@ app.get('/',function(req,res){
   });
 });
 
+app.get('/node-version', (req, res) => {
+  res.status(200).json({
+    version: process.version,
+  });
+})
+
 // Catch & Report Various HTTP Errors (needs some work)
 
 app.use(function(req, res, next) {
