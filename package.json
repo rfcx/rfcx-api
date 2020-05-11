@@ -17,7 +17,7 @@
   "dependencies": {
     "@mongoosejs/double": "0.2.0",
     "archiver": "4.0.1",
-    "aws-sdk": "2.55.0",
+    "aws-sdk": "2.673.0",
     "bluebird": "2.11.0",
     "body-parser": "1.17.2",
     "cors": "2.8.3",
