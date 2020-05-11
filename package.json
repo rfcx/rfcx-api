@@ -23,7 +23,7 @@
     "cors": "2.8.5",
     "csprng": "0.1.2",
     "debug": "2.6.8",
-    "express": "4.15.3",
+    "express": "4.17.1",
     "express-request-id": "1.4.0",
     "express-winston": "2.4.0",
     "firebase-admin": "6.1.0",
