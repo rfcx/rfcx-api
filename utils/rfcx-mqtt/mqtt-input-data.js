@@ -144,7 +144,6 @@ var cacheFileBufferToFile = function(fileBuffer, isGZipped, fileSha1Hash, fileEx
         if (fileBuffer.length == 0) {
           resolve(null);
         } else {
-
           var tmpFilePath = process.env.CACHE_DIRECTORY+"uploads/"+hash.randomString(36)+"."+fileExtension+(isGZipped ? ".gz" : "");
 
           fs.writeFile(tmpFilePath, fileBuffer, "binary", function(errWriteFile) {
@@ -160,15 +159,15 @@ var cacheFileBufferToFile = function(fileBuffer, isGZipped, fileSha1Hash, fileEx
                   try {
                     var tmpFilePathUnZipped = process.env.CACHE_DIRECTORY+"uploads/"+hash.randomString(36)+"."+fileExtension;
                     var unZipStream = fs.createWriteStream(tmpFilePathUnZipped);
-                    fs.createReadStream(tmpFilePath).pipe(zlib.createGunzip()).pipe(unZipStream);
                     unZipStream.on("close", function(){
-                      fs.unlink(tmpFilePath);
+                      fs.unlink(tmpFilePath, () => {});
                       if ((fileSha1Hash == null) || (fileSha1Hash == hash.fileSha1(tmpFilePathUnZipped))) {
                         resolve(tmpFilePathUnZipped);
                       } else {
                         console.log("checksum mismatch: "+tmpFilePathUnZipped); reject(new Error("checksum mismatch: "+tmpFilePathUnZipped));
                       }
                     });
+                    fs.createReadStream(tmpFilePath).pipe(zlib.createGunzip()).pipe(unZipStream);
                   } catch(errFileUnZip) { console.log(errFileUnZip); reject(new Error(errFileUnZip)); }
                 }
               } catch(errWriteFileInner) { console.log(errWriteFileInner); reject(new Error(errWriteFileInner)); }

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const unzip = require('unzip2');
+const unzip = require('node-unzip-2');
 const xmldom = new (require('xmldom').DOMParser)();
 const togeojson = require('togeojson');
 const Promise = require('bluebird');
