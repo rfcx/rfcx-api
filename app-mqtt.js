@@ -86,6 +86,12 @@ app.http.get('/',function(req,res){
   });
 });
 
+app.get('/node-version', (req, res) => {
+  res.status(200).json({
+    version: process.version,
+  });
+})
+
 // Catch & Report Various HTTP Errors (needs some work)
 app.http.use(function(req, res, next) { var err = new Error('Not Found'); err.status = 404; next(err); });
 app.http.use(function(err, req, res, next) {
