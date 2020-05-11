@@ -56,7 +56,7 @@
     "pdfmake": "0.1.53",
     "probe-image-size": "5.0.0",
     "redis": "2.8.0",
-    "request": "2.81.0",
+    "request": "2.88.2",
     "request-promise": "4.2.1",
     "rimraf": "2.6.3",
     "roboto-font": "0.1.0",
