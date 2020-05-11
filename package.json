@@ -58,7 +58,7 @@
     "redis": "2.8.0",
     "request": "2.88.2",
     "request-promise": "4.2.1",
-    "rimraf": "2.6.3",
+    "rimraf": "3.0.2",
     "roboto-font": "0.1.0",
     "sequelize": "3.30.4",
     "sequelize-cli": "1.9.2",
