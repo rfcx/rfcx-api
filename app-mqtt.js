@@ -86,7 +86,7 @@ app.http.get('/',function(req,res){
   });
 });
 
-app.get('/node-version', (req, res) => {
+app.http.get('/node-version', (req, res) => {
   res.status(200).json({
     version: process.version,
   });
