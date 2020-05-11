@@ -43,7 +43,7 @@
     "mongoose-long": "0.2.1",
     "mqtt": "2.18.8",
     "multer": "0.1.8",
-    "mysql": "2.13.0",
+    "mysql2": "2.1.0",
     "neo4j-driver": "1.7.3",
     "newrelic": "6.6.0",
     "node-unzip-2": "0.2.8",
