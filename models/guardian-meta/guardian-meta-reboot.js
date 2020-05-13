@@ -10,13 +10,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaReboot.belongsTo(models.Guardian, {as: "Guardian"});
-        GuardianMetaReboot.belongsTo(models.GuardianSite, {as: "Site"});
-      }
-    },
     tableName: "GuardianMetaReboots"
   });
+
   return GuardianMetaReboot;
 };

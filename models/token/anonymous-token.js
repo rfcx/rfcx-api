@@ -47,16 +47,10 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    }
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
+    tableName: 'AnonymousTokens'
   });
 
   return AnonymousToken;

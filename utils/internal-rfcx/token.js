@@ -172,7 +172,7 @@ exports.token = {
     if (what_kind_of_token === "anonymous") {
       return models.AnonymousToken
         .destroy({
-          where: {auth_token_expires_at: {$lt: new Date()}}
+          where: {auth_token_expires_at: {[models.Sequelize.Op.lt]: new Date()}}
         }).then(function (dbAffectedRows) {
           console.log("deleted expired 'anonymous' tokens");
           return null;
@@ -183,7 +183,7 @@ exports.token = {
     } else if (what_kind_of_token === "user") {
       return models.UserToken
         .destroy({
-          where: {auth_token_expires_at: {$lt: new Date()}}
+          where: {auth_token_expires_at: {[models.Sequelize.Op.lt]: new Date()}}
         }).then(function (dbAffectedRows) {
           console.log("deleted expired 'user' tokens");
           return null;
@@ -194,7 +194,7 @@ exports.token = {
     } else if (what_kind_of_token === "registration") {
       return models.RegistrationToken
         .destroy({
-          where: {auth_token_expires_at: {$lt: new Date()}}
+          where: {auth_token_expires_at: {[models.Sequelize.Op.lt]: new Date()}}
         }).then(function (dbAffectedRows) {
           console.log("deleted expired 'registration' tokens");
           return null;

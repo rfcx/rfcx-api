@@ -240,7 +240,7 @@ router.route('/models/:id')
     models.AudioAnalysisModel
       .findOne({
         where: {
-          $or: {
+          [models.Sequelize.Op.or]: {
             guid: req.params.id,
             shortname: req.params.id
           }

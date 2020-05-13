@@ -81,34 +81,10 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        // associations can be defined here
-        GuardianCheckIn.belongsTo(models.Guardian, {as: "Guardian"});
-        GuardianCheckIn.hasMany(models.GuardianAudio, {as: "Audio", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaCPU, {as: "MetaCPU", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaBattery, {as: "MetaBattery", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaDataTransfer, {as: "MetaDataTransfer", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaLightMeter, {as: "MetaLightMeter", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaGeoLocation, {as: "MetaGeoLocation", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaGeoPosition, {as: "MetaGeoPosition", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaDateTimeOffset, {as: "MetaDateTimeOffset", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaMqttBrokerConnection, {as: "MetaMqttBrokerConnection", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaNetwork, {as: "MetaNetwork", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaOffline, {as: "MetaOffline", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaPower, {as: "MetaPower", foreignKey: "check_in_id"});
-        GuardianCheckIn.hasMany(models.GuardianMetaMessage, {as: "MetaMessages", foreignKey: "check_in_id"});
-
-        GuardianCheckIn.hasMany(models.GuardianEvent, {as: "Event", foreignKey: "check_in_id"});
-
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    }
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
+    tableName: 'GuardianCheckIns'
   });
 
   return GuardianCheckIn;

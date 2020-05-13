@@ -20,6 +20,7 @@ var fs = require('fs');
 const unsubscriptionSalt = 'you_will_never_guess_this_salt';
 
 function getUserByParams(params, ignoreMissing) {
+  console.log('\n\nparams', params, '\n\n');
   return models.User
     .findOne({
       where: params,
@@ -42,7 +43,7 @@ function getUserByEmail(email, ignoreMissing) {
 function getUserByGuidOrEmail(field1, field2) {
   field2 = field2 || field1;
   return getUserByParams({
-    $or: {
+    [models.Sequelize.Op.or]: {
       guid: field1,
       email: field2
     }
@@ -53,7 +54,7 @@ function getUserBySubscriptionEmail(email, ignoreMissing) {
   return models.User
     .findOne({
       where: {
-        $or: {
+        [models.Sequelize.Op.or]: {
           subscription_email: email,
           email
         }

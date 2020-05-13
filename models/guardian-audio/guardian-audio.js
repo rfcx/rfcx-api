@@ -77,22 +77,9 @@ module.exports = function(sequelize, DataTypes) {
       validate: { }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianAudio.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianAudio.belongsTo(models.GuardianSite, {as: 'Site'});
-        GuardianAudio.hasMany(models.GuardianEvent, {as: "Event", foreignKey: "audio_id"});
-        GuardianAudio.belongsTo(models.GuardianCheckIn, {as: "CheckIn", foreignKey: "check_in_id"});
-        GuardianAudio.belongsTo(models.GuardianAudioFormat, {as: "Format", foreignKey: "format_id"});
-        GuardianAudio.belongsToMany(models.GuardianAudioCollection, { through: 'GuardianAudioCollectionsRelation' });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "GuardianAudio"
   });
 

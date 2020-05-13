@@ -16,17 +16,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianAudioEventValueHighLevelKey.hasMany(models.GuardianAudioEventValue, { as: "Value", foreignKey: "high_level_key"});
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["key"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["value"] }
+    ],
     tableName: "GuardianAudioEventValueHighLevelKeys"
   });
 

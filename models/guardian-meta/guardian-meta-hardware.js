@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
       }
     },
-    
+
     phone_imsi: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -21,7 +21,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
       }
-    },  
+    },
 
     manufacturer: {
       type: DataTypes.STRING,
@@ -56,21 +56,21 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
       }
-    },  
+    },
 
     phone_sim_serial: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
       }
-    },  
+    },
 
     phone_sim_number: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
       }
-    },  
+    },
 
     description: {
       type: DataTypes.STRING,
@@ -80,12 +80,8 @@ module.exports = function(sequelize, DataTypes) {
     }
 
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaHardware.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaHardware"
   });
+
   return GuardianMetaHardware;
 };

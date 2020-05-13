@@ -28,7 +28,7 @@ const fileUtil = require('../../../utils/misc/file');
 function removeExpiredResetPasswordTokens() {
   models.ResetPasswordToken
     .destroy({
-      where: {expires_at: {$lt: new Date()}}
+      where: {expires_at: {[models.Sequelize.Op.lt]: new Date()}}
     })
     .then(function (count) {
       if (!!count) {
@@ -622,7 +622,7 @@ router.route("/create")
       .then(() => {
         return usersService.findOrCreateUser(
           {
-            $or: {
+            [models.Sequelize.Op.or]: {
               guid: transformedParams.guid,
               email: transformedParams.email,
             }
@@ -1233,6 +1233,8 @@ router.route("/:id/info")
 
 router.route("/info")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
+
+    console.log('\n\nHEREEEEEE\n\n');
 
     usersService.getUserByGuidOrEmail(req.query.guid, req.query.email)
       .then((user) => {

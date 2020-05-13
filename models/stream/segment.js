@@ -48,19 +48,9 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        Segment.belongsTo(models.Stream, { as: 'Stream', foreignKey: "stream" });
-        Segment.belongsTo(models.MasterSegment, { as: "MasterSegment", foreignKey: "master_segment" });
-        Segment.belongsTo(models.FileExtension, { as: 'FileExtension', foreignKey: "file_extension" });
-      },
       indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+      { unique: true, fields: ['guid'] }
+    ],
     tableName: "Segments"
   });
 

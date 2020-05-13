@@ -13,12 +13,9 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      indexes: [{
-        unique: true,
-        fields: ["value"]
-      }]
-    },
+    indexes: [
+      { unique: true, fields: ["value"] }
+    ],
     tableName: "SampleRates"
   });
 

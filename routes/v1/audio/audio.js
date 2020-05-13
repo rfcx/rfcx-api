@@ -42,7 +42,7 @@ function filter(req) {
       order = [sequelize.fn('RAND')];
     }
     else {
-      order = 'measured_at ' + req.query.order.toUpperCase();
+      order = [['measured_at', req.query.order.toUpperCase()]];
     }
   }
 
@@ -60,13 +60,13 @@ function filter(req) {
     if (!mainClasuse.measured_at) {
       mainClasuse.measured_at = {};
     }
-    mainClasuse.measured_at.$gte = req.query.start;
+    mainClasuse.measured_at[models.Sequelize.Op.gte] = req.query.start;
   }
   if (req.query.end) {
     if (!mainClasuse.measured_at) {
       mainClasuse.measured_at = {};
     }
-    mainClasuse.measured_at.$lte = req.query.end;
+    mainClasuse.measured_at[models.Sequelize.Op.lte] = req.query.end;
   }
 
   return models.GuardianAudio
@@ -467,7 +467,7 @@ router.route("/nextafter/:audio_id")
             .findOne({
               where: {
                 measured_at: {
-                  $gt: dbAudio.measured_at
+                  [models.Sequelize.Op.gt]: dbAudio.measured_at
                 },
                 guardian_id: dbAudio.guardian_id,
                 site_id: dbAudio.site_id
@@ -517,7 +517,7 @@ router.route("/prevbefore/:audio_id")
             .findOne({
               where: {
                 measured_at: {
-                  $lt: dbAudio.measured_at
+                  [models.Sequelize.Op.lt]: dbAudio.measured_at
                 },
                 guardian_id: dbAudio.guardian_id,
                 site_id: dbAudio.site_id

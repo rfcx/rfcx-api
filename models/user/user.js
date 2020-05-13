@@ -96,20 +96,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        User.hasMany(models.UserToken, {as: "Token", foreignKey: "user_id"});
-        User.belongsToMany(models.GuardianSite, { through: 'UserSiteRelation' });
-        User.belongsTo(models.GuardianSite, { as: 'DefaultSite', foreignKey: "default_site" });
-        User.belongsToMany(models.GuardianGroup, { through: 'UserGuardianGroupSubscription' });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "Users"
   });
 

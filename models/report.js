@@ -88,14 +88,8 @@ module.exports = function(sequelize, DataTypes) {
       validate: { }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        Report.belongsTo(models.GuardianSite, { as: "Site", foreignKey: "site" });
-        Report.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
-        Report.belongsTo(models.User, { foreignKey: 'reporter' });
-        Report.belongsToMany(models.Attachment, { through: models.ReportAttachmentRelation });
-      }
-    }
+    tableName: 'Reports'
   });
+
   return Report;
 };

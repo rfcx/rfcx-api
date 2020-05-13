@@ -36,12 +36,7 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-      },
-      indexes: [
-      ]
-    }
+    tableName: 'UserTokens'
   });
 
   return UserToken;

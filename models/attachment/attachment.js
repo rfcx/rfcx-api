@@ -21,19 +21,9 @@ module.exports = function(sequelize, DataTypes) {
       unique: true,
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        Attachment.belongsTo(models.AttachmentType, { as: "Type", foreignKey: "type_id" });
-        Attachment.belongsTo(models.User, { as: "User", foreignKey: "user_id"} );
-        Attachment.belongsToMany(models.Report, { through: models.ReportAttachmentRelation });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "Attachments"
   });
 

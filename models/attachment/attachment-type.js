@@ -8,12 +8,6 @@ module.exports = function(sequelize, DataTypes) {
       unique: true,
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-      },
-      indexes: [
-      ]
-    },
     tableName: "AttachmentTypes"
   });
 

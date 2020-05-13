@@ -8,12 +8,9 @@ module.exports = function(sequelize, DataTypes) {
       unique: true
     }
   }, {
-    classMethods: {
-      indexes: [{
-        unique: true,
-        fields: ["value"]
-      }]
-    },
+    indexes: [
+      { unique: true, fields: ['value'] }
+    ],
     tableName: "FileExtensions"
   });
 

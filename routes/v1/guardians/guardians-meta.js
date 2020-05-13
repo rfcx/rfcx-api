@@ -160,10 +160,10 @@ router.route("/:guardian_id/meta/:meta_type")
           dbQuery.where[modelLookUp[meta_type].timeStampColumn] = {};
         }
         if (req.rfcx.ending_before != null) {
-          dbQuery.where[modelLookUp[meta_type].timeStampColumn]["$lt"] = req.rfcx.ending_before;
+          dbQuery.where[modelLookUp[meta_type].timeStampColumn][models.Sequelize.Op.lt] = req.rfcx.ending_before;
         }
         if (req.rfcx.starting_after != null) {
-          dbQuery.where[modelLookUp[meta_type].timeStampColumn]["$gt"] = req.rfcx.starting_after;
+          dbQuery.where[modelLookUp[meta_type].timeStampColumn][models.Sequelize.Op.gt] = req.rfcx.starting_after;
         }
 
         // if we have no datetime constraints, make sure we impose the limit within the database query (rather than in the view function)
@@ -324,10 +324,10 @@ router.route("/:guardian_id/meta2/:meta_type")
           dbQuery.where[modelLookUp[meta_type].timeStampColumn] = {};
         }
         if (req.rfcx.ending_before != null) {
-          dbQuery.where[modelLookUp[meta_type].timeStampColumn]["$lt"] = req.rfcx.ending_before;
+          dbQuery.where[modelLookUp[meta_type].timeStampColumn][models.Sequelize.Op.lt] = req.rfcx.ending_before;
         }
         if (req.rfcx.starting_after != null) {
-          dbQuery.where[modelLookUp[meta_type].timeStampColumn]["$gt"] = req.rfcx.starting_after;
+          dbQuery.where[modelLookUp[meta_type].timeStampColumn][models.Sequelize.Op.gt] = req.rfcx.starting_after;
         }
 
         // if we have no datetime constraints, make sure we impose the limit within the database query (rather than in the view function)
