@@ -96,59 +96,59 @@ function defineRelationships() {
   sequelize.models.GuardianAudioEvent.belongsTo(sequelize.models.User, { as: "User", foreignKey: "reviewed_by" });
   sequelize.models.GuardianAudioEvent.belongsTo(sequelize.models.GuardianAudioEventReasonForCreation, { as: "Reason", foreignKey: "reason_for_creation" });
 
-  sequelize.models.GuardianAudioHighlight.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianAudioHighlight.belongsTo(sequelize.models.GuardianSite, {as: 'Site'});
+  sequelize.models.GuardianAudioHighlight.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianAudioHighlight.belongsTo(sequelize.models.GuardianSite, {as: 'Site', foreignKey: 'site_id'});
 
   sequelize.models.GuardianAudioTag.belongsTo(sequelize.models.User, { as: "User", foreignKey: "tagged_by_user" });
   sequelize.models.GuardianAudioTag.belongsTo(sequelize.models.AudioAnalysisModel, { as: "Model", foreignKey: "tagged_by_model" });
   sequelize.models.GuardianAudioTag.belongsTo(sequelize.models.GuardianAudio, { as: "Audio", foreignKey: "audio_id" });
 
-  sequelize.models.GuardianAudio.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianAudio.belongsTo(sequelize.models.GuardianSite, {as: 'Site'});
+  sequelize.models.GuardianAudio.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianAudio.belongsTo(sequelize.models.GuardianSite, {as: 'Site', foreignKey: 'site_id'});
   sequelize.models.GuardianAudio.hasMany(sequelize.models.GuardianEvent, {as: "Event", foreignKey: "audio_id"});
   sequelize.models.GuardianAudio.belongsTo(sequelize.models.GuardianCheckIn, {as: "CheckIn", foreignKey: "check_in_id"});
   sequelize.models.GuardianAudio.belongsTo(sequelize.models.GuardianAudioFormat, {as: "Format", foreignKey: "format_id"});
   sequelize.models.GuardianAudio.belongsToMany(sequelize.models.GuardianAudioCollection, { through: 'GuardianAudioCollectionsRelation' });
 
   sequelize.models.GuardianEvent.belongsTo(sequelize.models.GuardianSite, {as: "Site", foreignKey: "site_id"});
-  sequelize.models.GuardianEvent.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
+  sequelize.models.GuardianEvent.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
   sequelize.models.GuardianEvent.belongsTo(sequelize.models.GuardianCheckIn, {as: "CheckIn", foreignKey: "check_in_id"});
   sequelize.models.GuardianEvent.belongsTo(sequelize.models.GuardianAudio, {as: "Audio", foreignKey: "audio_id"});
   sequelize.models.GuardianEvent.belongsTo(sequelize.models.User, {as: "Reviewer", foreignKey: "reviewer_id"});
 
-  sequelize.models.GuardianMetaAccelerometer.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaAssetExchangeLog.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaBattery.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaCheckInStatus.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaCPU.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaDataTransfer.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaDateTimeOffset.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaDiskUsage.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaGeoLocation.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaGeoPosition.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaHardware.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaInstructionsLog.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaInstructionsQueue.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaLightMeter.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaLog.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaMessage.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaMqttBrokerConnection.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaNetwork.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaOffline.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaPhoto.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaPower.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaReboot.belongsTo(sequelize.models.Guardian, {as: "Guardian"});
-  sequelize.models.GuardianMetaReboot.belongsTo(sequelize.models.GuardianSite, {as: "Site"});
-  sequelize.models.GuardianMetaScreenShot.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
+  sequelize.models.GuardianMetaAccelerometer.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaAssetExchangeLog.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaBattery.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaCheckInStatus.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaCPU.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaDataTransfer.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaDateTimeOffset.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaDiskUsage.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaGeoLocation.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaGeoPosition.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaHardware.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaInstructionsLog.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaInstructionsQueue.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaLightMeter.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaLog.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaMessage.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaMqttBrokerConnection.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaNetwork.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaOffline.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaPhoto.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaPower.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaReboot.belongsTo(sequelize.models.Guardian, {as: "Guardian", foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaReboot.belongsTo(sequelize.models.GuardianSite, {as: "Site", foreignKey: 'site_id'});
+  sequelize.models.GuardianMetaScreenShot.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
   sequelize.models.GuardianMetaSoftwareVersion.belongsTo(sequelize.models.GuardianSoftware, {as: "Role", foreignKey: "software_id"});
   sequelize.models.GuardianMetaSoftwareVersion.belongsTo(sequelize.models.GuardianSoftwareVersion, {as: "Version", foreignKey: "version_id"});
   sequelize.models.GuardianMetaSoftwareVersion.belongsTo(sequelize.models.Guardian, {as: "Guardian", foreignKey: "guardian_id"});
-  sequelize.models.GuardianMetaUpdateCheckIn.belongsTo(sequelize.models.Guardian, {as: "Guardian"});
-  sequelize.models.GuardianMetaUpdateCheckIn.belongsTo(sequelize.models.GuardianSoftwareVersion, {as: "Version"});
-  sequelize.models.GuardianMetaUpdateCheckIn.belongsTo(sequelize.models.GuardianSoftware, {as: "Role"});
-  sequelize.models.GuardianMetaVideo.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
+  sequelize.models.GuardianMetaUpdateCheckIn.belongsTo(sequelize.models.Guardian, {as: "Guardian", foreignKey: 'guardian_id'});
+  sequelize.models.GuardianMetaUpdateCheckIn.belongsTo(sequelize.models.GuardianSoftwareVersion, {as: "Version", foreignKey: 'version_id'});
+  sequelize.models.GuardianMetaUpdateCheckIn.belongsTo(sequelize.models.GuardianSoftware, {as: "Role", foreignKey: 'role_id'});
+  sequelize.models.GuardianMetaVideo.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
 
-  sequelize.models.GuardianSoftwarePrefs.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
+  sequelize.models.GuardianSoftwarePrefs.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
   sequelize.models.GuardianSoftwareVersion.belongsTo(sequelize.models.GuardianSoftware, { as: 'SoftwareRole', foreignKey: "software_role_id" });
   sequelize.models.GuardianSoftware.belongsTo(sequelize.models.GuardianSoftwareVersion, {as: "CurrentVersion", foreignKey: "current_version_id", constraints: false});
 
@@ -191,9 +191,9 @@ function defineRelationships() {
 
   sequelize.models.Device.belongsTo(sequelize.models.User, { as: 'User', foreignKey: "user_id" });
 
-  sequelize.models.GuardianAudioUpload.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
+  sequelize.models.GuardianAudioUpload.belongsTo(sequelize.models.Guardian, {as: 'Guardian', foreignKey: 'guardian_id'});
 
-  sequelize.models.GuardianCheckIn.belongsTo(sequelize.models.Guardian, {as: "Guardian"});
+  sequelize.models.GuardianCheckIn.belongsTo(sequelize.models.Guardian, {as: "Guardian", foreignKey: 'guardian_id'});
   sequelize.models.GuardianCheckIn.hasMany(sequelize.models.GuardianAudio, {as: "Audio", foreignKey: "check_in_id"});
   sequelize.models.GuardianCheckIn.hasMany(sequelize.models.GuardianMetaCPU, {as: "MetaCPU", foreignKey: "check_in_id"});
   sequelize.models.GuardianCheckIn.hasMany(sequelize.models.GuardianMetaBattery, {as: "MetaBattery", foreignKey: "check_in_id"});
@@ -223,7 +223,7 @@ function defineRelationships() {
   sequelize.models.GuardianSite.belongsToMany(sequelize.models.User, { through: 'UserSiteRelation' });
   sequelize.models.GuardianSite.belongsTo(sequelize.models.User, { as: 'User', foreignKey: "user_id", constraints: false });
 
-  sequelize.models.Guardian.belongsTo(sequelize.models.GuardianSite, {as: 'Site'});
+  sequelize.models.Guardian.belongsTo(sequelize.models.GuardianSite, {as: 'Site', foreignKey: 'site_id'});
   sequelize.models.Guardian.belongsToMany(sequelize.models.GuardianGroup, { through: sequelize.models.GuardianGroupRelation });
   sequelize.models.Guardian.belongsTo(sequelize.models.User, { as: 'User', foreignKey: "creator" });
 
