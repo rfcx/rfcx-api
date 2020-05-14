@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/backend-protocol: "tcp"
+    nginx.ingress.kubernetes.io/use-proxy-protocol: "false"
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "false"
+  name: mosquitto-ingress
+  namespace: staging
+  labels:
+      app: "mosquitto"
+spec:
+  rules:
+  - host: test-checkin.rfcx.org
+    http:
+      paths:
+      - backend:
+          serviceName: mosquitto-external
+          servicePort: 1883
