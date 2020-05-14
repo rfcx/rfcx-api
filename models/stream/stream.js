@@ -55,21 +55,9 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        Stream.belongsTo(models.StreamVisibility, { as: 'Visibility', foreignKey: "visibility" });
-        Stream.belongsTo(models.User, { as: "User", foreignKey: "created_by" });
-        Stream.belongsTo(models.Location, { as: 'Location', foreignKey: "location" });
-        Stream.belongsTo(models.SampleRate, { as: 'SampleRate', foreignKey: "max_sample_rate" });
-        Stream.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: "site" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "Streams"
   });
 

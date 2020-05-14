@@ -84,19 +84,9 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-
-        GuardianAudioHighlight.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianAudioHighlight.belongsTo(models.GuardianSite, {as: 'Site'});
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "GuardianAudioHighlights"
   });
 

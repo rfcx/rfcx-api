@@ -78,7 +78,7 @@ function getFilterPresets(params) {
   let opts = {};
   if (params.types) {
     opts.type = {
-      $in: params.types
+      [models.Sequelize.Op.in]: params.types
     };
   }
   return models.FilterPreset

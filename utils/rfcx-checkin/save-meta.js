@@ -250,14 +250,14 @@ exports.saveMeta = {
 
   SoftwareRoleVersion: function(roleArr, guardianId) {
     var roleVersions = {};
-    for (vInd in roleArr) { 
+    for (vInd in roleArr) {
       roleVersions[roleArr[vInd][0]] = roleArr[vInd][1];
       models.GuardianSoftware
-        .findOne({ 
+        .findOne({
           where: { role: roleArr[vInd][0] }
       }).then(function(dbSoftwareRole){
         models.GuardianSoftwareVersion
-          .findAll({ 
+          .findAll({
             where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] },
             order: [ ["created_at", "DESC"] ],
             limit: 1

@@ -557,7 +557,7 @@ router.route("/:guid/segments")
       .then((dbMasterSegment) => {
         masterSegment = dbMasterSegment;
         return models.FileExtension.findOrCreate({
-          where: { $or: { value: transformedParams.file_extension }},
+          where: { [models.Sequelize.Op.or]: { value: transformedParams.file_extension }},
           defaults: { value: transformedParams.file_extension }
         })
       })

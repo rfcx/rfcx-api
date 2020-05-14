@@ -36,12 +36,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaDiskUsage.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaDiskUsage"
   });
+
   return GuardianMetaDiskUsage;
 };

@@ -7,7 +7,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       unique: true,
       validate: {
-   //     len: [4,6]
       }
     },
     type: {
@@ -74,16 +73,10 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    }
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
+    tableName: 'RegistrationToken'
   });
 
   return RegistrationToken;

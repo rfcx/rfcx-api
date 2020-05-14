@@ -21,14 +21,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianAudioEventValue.belongsToMany(models.GuardianGroup, { through: models.GuardianGroupGuardianAudioEventValueRelation });
-        GuardianAudioEventValue.belongsTo(models.GuardianAudioEventValueHighLevelKey, { as: 'HighLevelKey', foreignKey: "high_level_key" });
-      },
-      indexes: [
-      ]
-    },
     tableName: "GuardianAudioEventValues"
   });
 

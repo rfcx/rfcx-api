@@ -177,19 +177,10 @@ module.exports = function(sequelize, DataTypes) {
       validate: { }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        Guardian.belongsTo(models.GuardianSite, {as: 'Site'});
-        Guardian.belongsToMany(models.GuardianGroup, { through: models.GuardianGroupRelation });
-        Guardian.belongsTo(models.User, { as: 'User', foreignKey: "creator" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    }
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
+    tableName: 'Guardians'
   });
 
   return Guardian;

@@ -40,8 +40,8 @@ exports.guardianStatusAudio = {
 
         try {
             var dbWhere = { guardian_id: guardianId, measured_at: {} };
-            dbWhere.measured_at["$lt"] = new Date((new Date()).valueOf()-(parseInt(realTimeOffsetInMinutes)*60000));
-            dbWhere.measured_at["$gt"] = new Date((new Date()).valueOf()-(parseInt(intervalInHours)*3600000)-(parseInt(realTimeOffsetInMinutes)*60000));
+            dbWhere.measured_at[models.Sequelize.Op.lt] = new Date((new Date()).valueOf()-(parseInt(realTimeOffsetInMinutes)*60000));
+            dbWhere.measured_at[models.Sequelize.Op.gt] = new Date((new Date()).valueOf()-(parseInt(intervalInHours)*3600000)-(parseInt(realTimeOffsetInMinutes)*60000));
 
             models.GuardianAudio
               .findOne({
@@ -50,11 +50,16 @@ exports.guardianStatusAudio = {
                     [ models.sequelize.fn("SUM", models.sequelize.col("capture_sample_count")), "sample_count_sum" ]
                 ]
               }).then(function(dbStatus){
-
                   return models.GuardianAudio
                     .findOne({
                       where: dbWhere,
-                      include: [{ all: true }]
+                      include: [
+                        {
+                          model: models.GuardianAudioFormat,
+                          as: 'Format',
+                          attributes: ['sample_rate']
+                        }
+                      ]
                     }).then(function(dbAudio){
                       if (!dbAudio) {
                         resolve(0);

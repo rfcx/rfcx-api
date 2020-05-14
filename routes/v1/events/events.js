@@ -367,13 +367,13 @@ router.route('/')
       where: {guid: attrs.audio_id},
       include: [{all: true}]
     }));
-    promises.push(models.AudioAnalysisModel.findOne({where: {$or: {shortname: attrs.model, guid: attrs.model}}}));
+    promises.push(models.AudioAnalysisModel.findOne({where: {[models.Sequelize.Op.or]: {shortname: attrs.model, guid: attrs.model}}}));
     promises.push(models.GuardianAudioEventType.findOrCreate({
-      where: {$or: {value: attrs.type, id: attrs.type}},
+      where: {[models.Sequelize.Op.or]: {value: attrs.type, id: attrs.type}},
       defaults: {value: attrs.type}
     }));
     promises.push(models.GuardianAudioEventValue.findOrCreate({
-      where: {$or: {value: attrs.value, id: attrs.value}},
+      where: {[models.Sequelize.Op.or]: {value: attrs.value, id: attrs.value}},
       defaults: {value: attrs.value}
     }));
     promises.push(models.GuardianAudioEventReasonForCreation.findOne({
@@ -442,7 +442,7 @@ router.route('/')
         }
         else {
           where = {
-            $and: {
+            [models.Sequelize.Op.and]: {
               audio_id: attrs.audio_id,
               type: attrs.type,
               value: attrs.value,

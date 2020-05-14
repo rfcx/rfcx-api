@@ -98,21 +98,9 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianEvent.belongsTo(models.GuardianSite, {as: "Site", foreignKey: "site_id"});
-        GuardianEvent.belongsTo(models.Guardian, {as: 'Guardian'});
-        GuardianEvent.belongsTo(models.GuardianCheckIn, {as: "CheckIn", foreignKey: "check_in_id"});
-        GuardianEvent.belongsTo(models.GuardianAudio, {as: "Audio", foreignKey: "audio_id"});
-        GuardianEvent.belongsTo(models.User, {as: "Reviewer", foreignKey: "reviewer_id"});
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "GuardianEvents"
   });
 

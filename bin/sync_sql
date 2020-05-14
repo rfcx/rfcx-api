@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+console.log('----------------------------------\nRFCX | ./bin/sync_sql started')
+var exec = require('child_process').exec;
+var fs = require("fs");
+
+if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
+  var env = require(__dirname+"/../config/env_vars.js").env;
+  for (i in env) { process.env[i] = env[i]; }
+}
+
+console.log('RFCX | Initializing sequelize');
+initializeSequelize();
+
+function initializeSequelize() {
+
+  console.log('RFCX | Creating config params: started')
+  var configJsonFile = __dirname+"/../config/config.json";
+
+  var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false;
+
+  var configCustom = '"username": "'+process.env.DB_USERNAME+'", "password": "'+process.env.DB_PASSWORD+'", "database": "'+process.env.DB_NAME+'", "host": "'+process.env.DB_HOSTNAME+'"';
+  var configGeneric = '"dialect": "mysql", "logging": '+sequelizeVerbose+', "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }';
+
+  var configJsonContent = '{ '
+    +'\n"development": { '+configCustom+', '+configGeneric+' }, '
+    +'\n"test": { '+configCustom+', '+configGeneric+' }, '
+    +'\n"staging": { '+configCustom+', '+configGeneric+' }, '
+    +'\n"production": { '+configCustom+', '+configGeneric+' } '
+  +'\n}';
+
+  console.log('RFCX | Creating config params: ended');
+
+  fs.unlink(configJsonFile,function(e){
+    fs.writeFile(configJsonFile, configJsonContent, function(e){
+      if (!e) {
+
+        console.log('RFCX | sequelize config.json has been [re]generated')
+        console.log('RFCX | Getting models')
+        var models = require("../models");
+
+        /* sequelize sync */
+        console.log('RFCX | Syncing models\n');
+        models.sequelize.sync({
+          logging: console.log
+        })
+          .then(function() {
+            console.log('\nRFCX | Models have been synced')
+            /* run sequelize-cli migrations from command line */
+            var seqCliPath = 'npx sequelize';
+            console.log('RFCX | Migrating db: started')
+            exec('npx sequelize db:migrate', function(err,sOut,sErr){
+              console.log('RFCX | Migrating db: in progress')
+              console.log(sErr);
+            });
+          })
+          .catch(function(err) {
+            console.log('RFCX | Error in syncing models:', err);
+          });
+      }
+    });
+  });
+}

@@ -33,21 +33,9 @@ module.exports = function(sequelize, DataTypes) {
     },
 
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianGroup.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: "site" });
-        GuardianGroup.belongsToMany(models.Guardian, { through: models.GuardianGroupRelation });
-        GuardianGroup.belongsToMany(models.GuardianAudioEventValue, { through: models.GuardianGroupGuardianAudioEventValueRelation });
-        GuardianGroup.belongsToMany(models.GuardianAudioEventType, { through: models.GuardianGroupGuardianAudioEventTypeRelation });
-        GuardianGroup.belongsToMany(models.User, { through: 'UserGuardianGroupSubscription' });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["shortname"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["shortname"] }
+    ],
     tableName: "GuardianGroups"
   });
 

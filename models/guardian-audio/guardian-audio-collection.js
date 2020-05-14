@@ -8,17 +8,9 @@ module.exports = function(sequelize, DataTypes) {
       unique: true
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianAudioCollection.belongsToMany(models.GuardianAudio, { through: 'GuardianAudioCollectionsRelation' });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "GuardianAudioCollections"
   });
 

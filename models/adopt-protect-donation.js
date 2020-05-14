@@ -69,17 +69,9 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        AdoptProtectDonation.belongsTo(models.GuardianSite, {as: "AreaSite", foreignKey: "area_site_id"});
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "AdoptProtectDonations"
   });
 

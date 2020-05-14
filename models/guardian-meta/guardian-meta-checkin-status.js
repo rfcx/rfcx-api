@@ -48,12 +48,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaCheckInStatus.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaCheckInStatus"
   });
+
   return GuardianMetaCheckInStatus;
 };

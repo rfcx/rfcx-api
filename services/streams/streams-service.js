@@ -158,23 +158,23 @@ function getSegments(opts) {
   let queryOpts = {
     where: {
       stream: opts.streamId,
-      $or: [
+      [models.Sequelize.Op.or]: [
         {
-          $and: {
-            starts: { $lte: starts },
-            ends:   { $gt: starts }
+          [models.Sequelize.Op.and]: {
+            starts: { [models.Sequelize.Op.lte]: starts },
+            ends:   { [models.Sequelize.Op.gt]: starts }
           },
         },
         {
-          $and: {
-            starts: { $gte: starts },
-            ends:   { $lte: ends }
+          [models.Sequelize.Op.and]: {
+            starts: { [models.Sequelize.Op.gte]: starts },
+            ends:   { [models.Sequelize.Op.lte]: ends }
           },
         },
         {
-          $and: {
-            starts: { $lt: ends },
-            ends:   { $gte: ends }
+          [models.Sequelize.Op.and]: {
+            starts: { [models.Sequelize.Op.lt]: ends },
+            ends:   { [models.Sequelize.Op.gte]: ends }
           }
         }
       ]
@@ -195,7 +195,7 @@ function getSegments(opts) {
         as: 'FileExtension',
       },
     ],
-    order: 'starts ASC'
+    order: [ ['starts', 'ASC'] ]
   };
   if (opts.limit !== undefined) {
     queryOpts.limit = opts.limit;
@@ -215,7 +215,7 @@ function getNextTimestampAfterSegment(segment, time) {
       .findOne({
         where: {
           stream: segment.stream,
-          starts: { $gte: time },
+          starts: { [models.Sequelize.Op.gte]: time },
         },
         order: [ ['starts', 'ASC'] ],
         include: [{ all: true }]
@@ -231,9 +231,9 @@ function getStreamSegmentByTime(streamId, time, ignoreMissing) {
     .findOne({
       where: {
         stream: streamId,
-        $and: {
-          starts: { $lte: time },
-          ends: { $gte: time }
+        [models.Sequelize.Op.and]: {
+          starts: { [models.Sequelize.Op.lte]: time },
+          ends: { [models.Sequelize.Op.gte]: time }
         }
       },
       include: [{ all: true }]
@@ -290,7 +290,7 @@ function findExpiredDeletedStreams() {
         .findAll({
           where: {
             marked_as_deleted_at: {
-              $lte: moment.tz(new Date(), 'UTC').subtract(30, 'days').toISOString()
+              [models.Sequelize.Op.lte]: moment.tz(new Date(), 'UTC').subtract(30, 'days').toISOString()
             },
             visibility: dbStreamVisibility.id,
           },
