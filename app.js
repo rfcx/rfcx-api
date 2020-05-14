@@ -23,7 +23,8 @@ var express = require("express"),
     addInstanceId = require('./middleware/misc/aws').addInstanceId,
     toobusy = require('toobusy-js'),
     app = express(),
-    mongo = require('./utils/mongo');
+    mongo = require('./utils/mongo'),
+    packageData = require('./package.json');
 
 app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
@@ -204,9 +205,10 @@ app.get('/',function(req,res){
   });
 });
 
-app.get('/node-version', (req, res) => {
+app.get('/app-info', (req, res) => {
   res.status(200).json({
-    version: process.version,
+    node: process.version,
+    app: packageData.version
   });
 })
 
