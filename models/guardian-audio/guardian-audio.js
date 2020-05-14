@@ -78,7 +78,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ["guid"], name: 'guid' }
     ],
     tableName: "GuardianAudio"
   });
