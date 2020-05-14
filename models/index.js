@@ -140,7 +140,7 @@ function defineRelationships() {
   sequelize.models.GuardianMetaReboot.belongsTo(sequelize.models.Guardian, {as: "Guardian"});
   sequelize.models.GuardianMetaReboot.belongsTo(sequelize.models.GuardianSite, {as: "Site"});
   sequelize.models.GuardianMetaScreenShot.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
-  sequelize.models.GuardianMetaSoftwareVersion.belongsTo(sequelize.models.GuardianSoftware, {as: "Role", foreignKey: "software_id"}); // !!!
+  sequelize.models.GuardianMetaSoftwareVersion.belongsTo(sequelize.models.GuardianSoftware, {as: "Role", foreignKey: "software_id"});
   sequelize.models.GuardianMetaSoftwareVersion.belongsTo(sequelize.models.GuardianSoftwareVersion, {as: "Version", foreignKey: "version_id"});
   sequelize.models.GuardianMetaSoftwareVersion.belongsTo(sequelize.models.Guardian, {as: "Guardian", foreignKey: "guardian_id"});
   sequelize.models.GuardianMetaUpdateCheckIn.belongsTo(sequelize.models.Guardian, {as: "Guardian"});
@@ -150,7 +150,7 @@ function defineRelationships() {
 
   sequelize.models.GuardianSoftwarePrefs.belongsTo(sequelize.models.Guardian, {as: 'Guardian'});
   sequelize.models.GuardianSoftwareVersion.belongsTo(sequelize.models.GuardianSoftware, { as: 'SoftwareRole', foreignKey: "software_role_id" });
-  // sequelize.models.GuardianSoftware.belongsTo(sequelize.models.GuardianSoftwareVersion, {as: "CurrentVersion", foreignKey: "current_version_id"}); // !!!
+  sequelize.models.GuardianSoftware.belongsTo(sequelize.models.GuardianSoftwareVersion, {as: "CurrentVersion", foreignKey: "current_version_id", constraints: false});
 
   sequelize.models.Message.belongsTo(sequelize.models.MessageType, { as: 'Type', foreignKey: "type" });
   sequelize.models.Message.belongsTo(sequelize.models.User, { as: "UserFrom", foreignKey: "from_user" });
