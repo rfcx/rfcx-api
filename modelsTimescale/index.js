@@ -39,12 +39,24 @@ Object.keys(db).forEach(function(modelName) {
   }
 });
 
+defineRelationships();
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 module.exports = db;
 
 function importSequelizeModelFile(file) {
-  var model = sequelize["import"](path.join(__dirname, file));
+  var model = sequelize.import(path.join(__dirname, file));
   db[model.name] = model;
+}
+
+function defineRelationships() {
+  sequelize.models.Classification.belongsTo(sequelize.models.ClassificationType, { as: 'Type', foreignKey: "type" });
+  sequelize.models.Classification.belongsTo(sequelize.models.ClassificationSource, { as: 'Source', foreignKey: "source" });
+  sequelize.models.Classification.belongsTo(sequelize.models.Classification, { as: 'Parent', foreignKey: "parent" });
+  sequelize.models.Classification.hasMany(sequelize.models.SpeciesName, { as: "Name", foreignKey: "species" });
+
+  sequelize.models.SpeciesName.belongsTo(sequelize.models.Language, { as: 'Language', foreignKey: "language" });
+  sequelize.models.SpeciesName.belongsTo(sequelize.models.Classification, { as: 'Species', foreignKey: 'species' });
 }

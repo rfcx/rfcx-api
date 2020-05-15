@@ -33,16 +33,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        Classification.belongsTo(models.ClassificationType, { as: 'Type', foreignKey: "type" });
-        Classification.belongsTo(models.ClassificationSource, { as: 'Source', foreignKey: "source" });
-        Classification.belongsTo(models.Classification, { as: 'Parent', foreignKey: "parent" });
-        Classification.hasMany(models.SpeciesName, { as: "Name", foreignKey: "species" });
-      },
-      indexes: [
-      ]
-    },
     tableName: "Classifications"
   });
 
