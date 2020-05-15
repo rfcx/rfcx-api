@@ -14,8 +14,7 @@ pipeline {
             when {
                  expression { BRANCH_NAME ==~ /(staging|master)/ }
             }
-            steps
-            def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
+            steps {
             slackSend (channel: slackChannel, color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
             sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
             sh "docker build -f build/http/Dockerfile -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
@@ -66,7 +65,7 @@ pipeline {
             }
         }
     }
-
+}
   def branchToConfig(branch) {
      script {
         result = "NULL"
