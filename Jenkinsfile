@@ -9,12 +9,14 @@ pipeline {
         ECR="887044485231.dkr.ecr.eu-west-1.amazonaws.com"
     }
     stages {
+        script {
+            def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
+        }
         stage("Build") {
             when {
                  expression { BRANCH_NAME ==~ /(staging|master)/ }
             }
             steps {
-            def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
             slackSend (channel: slackChannel, color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
             sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
             sh "docker build -f build/http/Dockerfile -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
@@ -47,7 +49,6 @@ pipeline {
                  expression { BRANCH_NAME ==~ /(staging|master)/ }
             }
             steps {
-                def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
                 sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
                 sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
             }
@@ -57,7 +58,6 @@ pipeline {
                  expression { BRANCH_NAME ==~ /(staging|master)/ }
             }
             steps {
-            def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
             catchError {
             sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
             slackSend (channel: slackChannel, color: '#4CAF50', message: "*HTTP API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
@@ -68,7 +68,8 @@ pipeline {
         }
     }
 }
-  def branchToConfig(branch) {
+  
+def branchToConfig(branch) {
      script {
         result = "NULL"
         if (branch == 'staging') {
