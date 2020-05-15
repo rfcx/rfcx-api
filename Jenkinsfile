@@ -66,18 +66,7 @@ pipeline {
             }
         }
     }
-    post {
-        success {
-            echo 'whole pipeline successful'
-                }
-        unstable {
-            echo 'pipeline failed, at least one step unstable'
-            }
-        failure {
-            echo 'I failed :('
-        }
-    }
-}
+
   def branchToConfig(branch) {
      script {
         result = "NULL"
