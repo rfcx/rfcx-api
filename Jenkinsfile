@@ -9,9 +9,6 @@ pipeline {
         ECR="887044485231.dkr.ecr.eu-west-1.amazonaws.com"
     }
     stages {
-        script {
-            def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
-        }
         stage("Build") {
             when {
                  expression { BRANCH_NAME ==~ /(staging|master)/ }
@@ -69,6 +66,8 @@ pipeline {
     }
 }
   
+def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
+
 def branchToConfig(branch) {
      script {
         result = "NULL"
@@ -89,4 +88,4 @@ def branchToConfig(branch) {
          echo "BRANCH:${branch} -> CONFIGURATION:${result}"
          }
          return result
-     }
+}
