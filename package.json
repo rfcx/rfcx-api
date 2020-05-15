@@ -74,6 +74,7 @@
   "devDependencies": {
     "chai": "3.5.0",
     "faux-knox": "0.1.16",
+    "minimist": "1.2.5",
     "mocha": "2.4.5",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",
