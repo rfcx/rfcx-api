@@ -8,6 +8,9 @@ pipeline {
         PHASE=branchToConfig(BRANCH_NAME)
         ECR="887044485231.dkr.ecr.eu-west-1.amazonaws.com"
     }
+
+    def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
+    
     stages {
         stage("Build") {
             when {
@@ -65,8 +68,6 @@ pipeline {
         }
     }
 }
-  
-def slackChannel = (env.BRANCH_NAME == 'master') ? "#alerts-deployment-prod" : "#alerts-deployment"
 
 def branchToConfig(branch) {
      script {
