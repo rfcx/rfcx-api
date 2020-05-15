@@ -50,19 +50,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianAudioBox.belongsTo(models.GuardianAudio, { as: 'Audio', foreignKey: "audio_id" });
-        GuardianAudioBox.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
-        GuardianAudioBox.belongsTo(models.User, { as: "User", foreignKey: "created_by" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "GuardianAudioBoxes"
   });
 

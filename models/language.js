@@ -15,14 +15,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     timestamps: false,
-    classMethods: {
-      associate: function(models) {
-      },
-      indexes: [
-        { unique: true, fields: ["id"] },
-        { unique: true, fields: ["value"] }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["id"] },
+      { unique: true, fields: ["value"] }
+    ],
     tableName: "Languages"
   });
 

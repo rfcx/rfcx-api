@@ -11,26 +11,26 @@ router.route("/:guardian_id/events")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
         var dbQuery = { guardian_id: dbGuardian.id };
         var dateClmn = "begins_at_analysis";
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
-        if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
-        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
+        if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before; }
+        if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gt] = req.rfcx.starting_after; }
         if (req.query.reviewed != null) {
           if (req.query.reviewed === "true") {
-            dbQuery.reviewed_at = { $ne: null };
+            dbQuery.reviewed_at = { [models.Sequelize.Op.ne]: null };
             dateClmn = "reviewed_at";
           }
         }
 
         return models.GuardianEvent
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
@@ -58,18 +58,18 @@ router.route("/:guardian_id/events/lite")
   .get(passport.authenticate("token",{session:false}), function(req,res) {
 
     models.Guardian
-      .findOne({ 
+      .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function(dbGuardian){
 
         var dbQuery = { guardian_id: dbGuardian.id };
         var dateClmn = "begins_at_analysis";
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
-        if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
-        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gt"] = req.rfcx.starting_after; }
+        if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before; }
+        if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gt] = req.rfcx.starting_after; }
         if (req.query.reviewed != null) {
           if (req.query.reviewed === "true") {
-            dbQuery.reviewed_at = { $ne: null };
+            dbQuery.reviewed_at = { [models.Sequelize.Op.ne]: null };
             dateClmn = "reviewed_at";
           }
         }
@@ -78,9 +78,9 @@ router.route("/:guardian_id/events/lite")
         if (req.rfcx.limit > 5000) { req.rfcx.limit = 5000; } else if (req.rfcx.limit < 1) { req.rfcx.limit = 1; }
 
         return models.GuardianEvent
-          .findAll({ 
-            where: dbQuery, 
-            include: [ { all: true } ], 
+          .findAll({
+            where: dbQuery,
+            include: [ { all: true } ],
             order: [ [dateClmn, "DESC"] ],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset

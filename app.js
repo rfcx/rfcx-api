@@ -23,7 +23,8 @@ var express = require("express"),
     addInstanceId = require('./middleware/misc/aws').addInstanceId,
     toobusy = require('toobusy-js'),
     app = express(),
-    mongo = require('./utils/mongo');
+    mongo = require('./utils/mongo'),
+    packageData = require('./package.json');
 
 app.set("title", "rfcx-api");
 app.set("port", process.env.PORT || 8080);
@@ -203,6 +204,13 @@ app.get('/',function(req,res){
     info: 'https://rfcx.org/'
   });
 });
+
+app.get('/app-info', (req, res) => {
+  res.status(200).json({
+    node: process.version,
+    app: packageData.version
+  });
+})
 
 // Catch & Report Various HTTP Errors (needs some work)
 

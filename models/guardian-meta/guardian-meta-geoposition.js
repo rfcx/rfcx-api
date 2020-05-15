@@ -54,12 +54,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaGeoPosition.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaGeoPositions"
   });
+
   return GuardianMetaGeoPosition;
 };

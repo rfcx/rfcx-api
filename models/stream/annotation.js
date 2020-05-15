@@ -60,19 +60,9 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        Annotation.belongsTo(models.Stream, { as: 'Stream', foreignKey: "stream" });
-        Annotation.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
-        Annotation.belongsTo(models.User, { as: "User", foreignKey: "created_by" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "Annotations"
   });
 

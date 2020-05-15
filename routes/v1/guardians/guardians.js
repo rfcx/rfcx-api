@@ -37,7 +37,7 @@ router.route("/")
         else {
           sites = guids;
         }
-        sitesQuery.guid = { $in: sites };
+        sitesQuery.guid = { [models.Sequelize.Op.in]: sites };
         return models.Guardian.findAll({
           include: [{
             model: models.GuardianSite,
@@ -67,7 +67,7 @@ router.route("/")
             dbGuardian.forEach(function(guardian) {
               var prom = models.GuardianAudio
                 .findOne({
-                  order: 'measured_at DESC',
+                  order: [['measured_at', 'DESC']],
                   include: [{
                     model: models.Guardian,
                     as: 'Guardian',
@@ -122,7 +122,7 @@ router.route("/admin")
     var sitesQuery = {};
 
     if (req.query.sites) {
-      sitesQuery.guid = { $in: req.query.sites };
+      sitesQuery.guid = { [models.Sequelize.Op.in]: req.query.sites };
     }
 
     models.Guardian
@@ -154,7 +154,7 @@ router.route("/admin")
             dbGuardian.forEach(function(guardian) {
               var prom = models.GuardianAudio
                 .findOne({
-                  order: 'measured_at DESC',
+                  order: [['measured_at', 'DESC']],
                   include: [{
                     model: models.Guardian,
                     as: 'Guardian',

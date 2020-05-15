@@ -27,12 +27,6 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        // associations can be defined here
-        GuardianSoftware.belongsTo(models.GuardianSoftwareVersion, {as: "CurrentVersion", foreignKey: "current_version_id"});
-      }
-    },
     tableName: "GuardianSoftware"
   });
 

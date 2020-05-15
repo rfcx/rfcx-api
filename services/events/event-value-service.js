@@ -74,7 +74,7 @@ function searchForHighLevelKeys(search) {
     .findAll({
       where: {
         value: {
-          $like: `%${search}%`
+          [models.Sequelize.Op.like]: `%${search}%`
         }
       }
     })
@@ -90,7 +90,7 @@ function searchForHighLevelKeysImageAndDescription(search) {
     .findOne({
       where: {
         value: {
-          $like: `%${search}%`
+          [models.Sequelize.Op.like]: `%${search}%`
         }
       }
     })

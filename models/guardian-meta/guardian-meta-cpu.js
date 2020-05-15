@@ -24,12 +24,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaCPU.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaCPU"
   });
+
   return GuardianMetaCPU;
 };

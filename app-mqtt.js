@@ -44,6 +44,7 @@ var multer = require("multer");
 var addRequestId = require('express-request-id');
 //var addInstanceId = require('./middleware/misc/aws').addInstanceId;
 var toobusy = require("toobusy-js");
+const packageData = require('./package.json');
 
 app.http = express();
 app.http.set("title", "rfcx-api-mqtt");
@@ -85,6 +86,13 @@ app.http.get('/',function(req,res){
     info: 'https://rfcx.org/'
   });
 });
+
+app.http.get('/app-info', (req, res) => {
+  res.status(200).json({
+    node: process.version,
+    app: packageData.version
+  });
+})
 
 // Catch & Report Various HTTP Errors (needs some work)
 app.http.use(function(req, res, next) { var err = new Error('Not Found'); err.status = 404; next(err); });

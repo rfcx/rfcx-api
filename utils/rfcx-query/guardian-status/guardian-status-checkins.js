@@ -46,7 +46,7 @@ exports.guardianStatusCheckIns = {
                             [ models.sequelize.fn("MAX", models.sequelize.col("updated_at")), "checkin_latest" ]
                         ]
                       }).then(function(dbInstallerCheckInStatus){
-                      
+
                         resolve({
                           checkins: {
                             guardian: {

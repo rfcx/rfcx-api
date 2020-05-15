@@ -17,18 +17,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        // associations can be defined here
-        GuardianMetaAssetExchangeLog.belongsTo(models.Guardian, {as: 'Guardian'});
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    }
+    indexes: [],
+    tableName: 'GuardianMetaAssetExchangeLogs'
   });
 
   return GuardianMetaAssetExchangeLog;

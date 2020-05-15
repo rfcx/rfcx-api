@@ -40,12 +40,6 @@ module.exports = function(sequelize, DataTypes) {
       },
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        UserLocation.belongsTo(models.User, { as: 'Location', foreignKey: 'user_id' });
-      },
-      indexes: []
-    },
     tableName: "UserLocations"
   });
 

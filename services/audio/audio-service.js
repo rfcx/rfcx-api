@@ -199,7 +199,7 @@ function createBoxesForAudio(audio, boxes, user_id) {
   let proms = [];
   boxes.forEach((box) => {
     let prom = models.GuardianAudioEventValue.findOrCreate({
-      where: { $or: { value: box.label, id: box.label }},
+      where: { [models.Sequelize.Op.or]: { value: box.label, id: box.label }},
       defaults: { value: box.label }
     })
     .spread((eventValue, created) => {

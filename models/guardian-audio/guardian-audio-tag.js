@@ -72,21 +72,9 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-
-        GuardianAudioTag.belongsTo(models.User, { as: "User", foreignKey: "tagged_by_user" });
-        GuardianAudioTag.belongsTo(models.AudioAnalysisModel, { as: "Model", foreignKey: "tagged_by_model" });
-        GuardianAudioTag.belongsTo(models.GuardianAudio, { as: "Audio", foreignKey: "audio_id" });
-
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "GuardianAudioTags"
   });
 

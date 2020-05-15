@@ -57,7 +57,7 @@ function getGroups(params) {
   if (params.sites) {
     opts.include[3].where = {
       guid: {
-        $in: params.sites
+        [models.Sequelize.Op.in]: params.sites
       }
     }
   }
@@ -91,7 +91,7 @@ function doesGroupExist(shortname, name) {
   return models.GuardianGroup
     .findOne({
       where: {
-        $or: {
+        [models.Sequelize.Op.or]: {
           shortname,
           name
         }

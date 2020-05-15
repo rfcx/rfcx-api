@@ -32,7 +32,7 @@ router.route("/")
       })
       .then((guids) => {
         where.guid = {
-          $in: guids
+          [models.Sequelize.Op.in]: guids
         };
         return models.GuardianSite.findAll({
           where,
@@ -49,7 +49,7 @@ router.route("/")
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(function(err){
-        console.log("failed to return site | "+err);
+        console.log("failed to return site | ", err);
         if (!!err) { res.status(500).json({msg:"failed to return site"}); }
       });
 

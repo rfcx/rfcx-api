@@ -49,7 +49,7 @@ module.exports = {
     params.convert("shortname").toString();
 
     return params.validate().then(() => {
-     return models.AudioAnalysisModel.count({where: {$or: [{guid: transformedParams.guid}, {shortname: transformedParams.shortname}]}})
+     return models.AudioAnalysisModel.count({where: {[models.Sequelize.Op.or]: [{guid: transformedParams.guid}, {shortname: transformedParams.shortname}]}})
         .then(count => {
           return count != 0;
         });
@@ -160,7 +160,7 @@ module.exports = {
 
     return models.AudioAnalysisModel.findOne({
       where: {
-        $or: [
+        [models.Sequelize.Op.or]: [
           { guid: id },
           { shortname: id }
         ]},

@@ -15,16 +15,9 @@ module.exports = function(sequelize, DataTypes) {
       validate: { }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["name"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["name"] }
+    ],
     tableName: "AudioAnalysisStates"
   });
 

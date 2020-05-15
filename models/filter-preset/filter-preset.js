@@ -26,18 +26,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        FilterPreset.belongsTo(models.User, { foreignKey: 'created_by', as: 'UserCreated' });
-        FilterPreset.belongsTo(models.User, { foreignKey: 'updated_by', as: 'UserUpdated' });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "FilterPresets"
   });
 

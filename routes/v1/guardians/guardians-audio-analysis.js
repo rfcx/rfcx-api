@@ -50,22 +50,22 @@ router.route("/:guardian_id/audio/analysis")
         var dbQuery = {
           site_id: dbGuardian.site_id,
           guardian_id: dbGuardian.id,
-          format_id: { $not: null},
+          format_id: { [models.Sequelize.Op.not]: null},
         };
         var dateClmn = "measured_at";
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
-        if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
-        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gte"] = req.rfcx.starting_after; }
+        if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before; }
+        if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gte] = req.rfcx.starting_after; }
 
         var createdClmn = "created_at";
         if ((req.query.created_before != null) || (req.query.created_after != null)) {
           dbQuery[createdClmn] = {};
         }
         if (req.query.created_before != null) {
-            dbQuery[createdClmn]["$lt"] = req.query.created_before ;
+            dbQuery[createdClmn][models.Sequelize.Op.lt] = req.query.created_before ;
         }
         if (req.query.created_after != null) {
-          dbQuery[createdClmn]["$gte"] = req.query.created_after;
+          dbQuery[createdClmn][models.Sequelize.Op.gte] = req.query.created_after;
         }
 
         if (req.query.manual_upload){
@@ -130,18 +130,18 @@ router.route("/sites/:site_id/audio/analysis")
         var dbQuery = { site_id: dbSite.id };
         var dateClmn = "measured_at";
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {}; }
-        if (req.rfcx.ending_before != null) { dbQuery[dateClmn]["$lt"] = req.rfcx.ending_before; }
-        if (req.rfcx.starting_after != null) { dbQuery[dateClmn]["$gte"] = req.rfcx.starting_after; }
+        if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before; }
+        if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gte] = req.rfcx.starting_after; }
 
         var createdClmn = "created_at";
         if ((req.query.created_before != null) || (req.query.created_after != null)) {
           dbQuery[createdClmn] = {};
         }
         if (req.query.created_before != null) {
-            dbQuery[createdClmn]["$lt"] = req.query.created_before ;
+            dbQuery[createdClmn][models.Sequelize.Op.lt] = req.query.created_before ;
         }
         if (req.query.created_after != null) {
-          dbQuery[createdClmn]["$gte"] = req.query.created_after;
+          dbQuery[createdClmn][models.Sequelize.Op.gte] = req.query.created_after;
         }
 
         if (req.query.manual_upload){
@@ -187,7 +187,7 @@ router.route("/audio/analysis")
     var audioGuids = [];
     return models.GuardianAudio
       .findAll({
-        where: { guid: { $in: req.body.guids } },
+        where: { guid: { [models.Sequelize.Op.in]: req.body.guids } },
         include: [ { all: true } ],
         limit: 140000,
       })

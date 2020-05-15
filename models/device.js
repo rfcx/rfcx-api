@@ -13,17 +13,9 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        Device.belongsTo(models.User, { as: 'User', foreignKey: "user_id" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ['firebaseToken']
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ['firebaseToken'] }
+    ],
     tableName: "Devices"
   });
 

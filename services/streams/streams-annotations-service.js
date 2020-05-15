@@ -46,7 +46,7 @@ function saveAnnotations(annotations, stream, userId) {
   let proms = [];
   annotations.forEach((annotation) => {
     let prom = models.GuardianAudioEventValue.findOrCreate({
-      where: { $or: { value: annotation.value }},
+      where: { [models.Sequelize.Op.or]: { value: annotation.value }},
       defaults: { value: annotation.value }
     })
     .spread((eventValue, created) => {
@@ -72,7 +72,7 @@ function updateAnnotation(dbAnnotation, data) {
     .then(() => {
       if (data.value) {
         return models.GuardianAudioEventValue.findOrCreate({
-          where: { $or: { value: data.value }},
+          where: { [models.Sequelize.Op.or]: { value: data.value }},
           defaults: { value: data.value }
         })
         .spread((eventValue) => {
@@ -134,10 +134,10 @@ function getAnnotationsByParams(params) {
     .findAll({
       where: {
         starts: {
-          $gte: moment.tz(params.starts, 'UTC').valueOf(),
+          [models.Sequelize.Op.gte]: moment.tz(params.starts, 'UTC').valueOf(),
         },
         ends: {
-          $lte: moment.tz(params.ends, 'UTC').valueOf(),
+          [models.Sequelize.Op.lte]: moment.tz(params.ends, 'UTC').valueOf(),
         },
       },
       include: [

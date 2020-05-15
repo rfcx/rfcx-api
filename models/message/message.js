@@ -37,19 +37,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        Message.belongsTo(models.MessageType, { as: 'Type', foreignKey: "type" });
-        Message.belongsTo(models.User, { as: "UserFrom", foreignKey: "from_user" });
-        Message.belongsTo(models.User, { as: "UserTo", foreignKey: "to_user" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "Messages"
   });
 

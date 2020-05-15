@@ -74,11 +74,6 @@ module.exports = function(sequelize, DataTypes) {
     }
 
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianSoftwarePrefs.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianSoftwarePrefs"
   });
 
