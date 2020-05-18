@@ -25,7 +25,6 @@ function search(opts) {
       }
     };
   }
-
   return models.Classification
     .findAll({
       where: {
@@ -49,6 +48,26 @@ function search(opts) {
             }
           ]
         }
+      ],
+    });
+}
+
+function getCharacteristicsForClassification(value) {
+  return models.Classification
+    .findAll({
+      include: [
+        {
+          model: models.Classification,
+          as: 'Parent',
+          where: { value },
+        },
+        {
+          model: models.ClassificationType,
+          as: 'Type',
+          where: {
+            value: 'characteristic'
+          },
+        },
       ],
     });
 }
@@ -85,6 +104,7 @@ function formatClassifications(classifications) {
 module.exports = {
   getClassificationByValue,
   search,
+  getCharacteristicsForClassification,
   formatClassifications,
   formatClassification,
 };

@@ -41,4 +41,22 @@ router.route("/search")
 
   });
 
+router.route("/:value/characteristics")
+  .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
+
+    return classificationService.getCharacteristicsForClassification(req.params.value)
+    .then((dbClassifications) => {
+      return classificationService.formatClassifications(dbClassifications);
+    })
+    .then((data) => {
+      return res.status(200).json(data);
+    })
+    .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+    .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+    .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+    .catch(e => { httpError(req, res, 500, e, "Error while searching for Characteristics."); console.log(e) });
+
+  });
+
 module.exports = router;
