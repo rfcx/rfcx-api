@@ -10,14 +10,23 @@ let options = {
   host: process.env.POSTGRES_HOSTNAME,
   port: process.env.POSTGRES_PORT,
 }
-// if (env === 'development') {
+if (env === 'development') {
   options.logging = function(str) {
     console.log('\nPostgres QUERY----------------------------------\n', str, '\n----------------------------------');
   }
-// }
+}
 
 var sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options);
 var db        = {};
+
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connected to TimescaleDB.');
+  })
+  .catch(err => {
+    console.error('Unable to connect to TimescaleDB:', err);
+  });
 
 // get file listing in 'models' directory, filtered by those we know to ignore...
 fs.readdirSync(__dirname).filter(function(file) {
