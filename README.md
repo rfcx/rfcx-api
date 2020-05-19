@@ -92,6 +92,8 @@ For TimescaleDb:
 ./bin/sync_sql --type timescale
 ```
 
+Note: you may need to create an empty `migrations` folder (or `migrationsTimescale` folder).
+
 # Running the API locally
 ## HTTP API
 To start http API run the following command in the project root:
