@@ -75,7 +75,6 @@ router.route("/register")
     params.convert('shortname').optional().toString();
     params.convert('platform').optional().toString();
     params.convert('site').optional().toString();
-    let token = hash.randomString(40);
 
     params.validate()
       .then(() => {
@@ -83,30 +82,21 @@ router.route("/register")
           .findOrCreate({
             where: {
               guid: transformedParams.guid,
-              shortname: transformedParams.shortname? transformedParams.shortname : `RFCx Guardian (${transformedParams.guid.substr(0,6)})`,
-              latitude: 0,
-              longitude: 0
+              shortname: transformedParams.shortname? transformedParams.shortname : `RFCx Guardian (${transformedParams.guid.substr(0,6)})`
             }
           })
       })
       .spread((dbGuardian, created) => {
 
+        let token = hash.randomString(40);
         var token_salt = hash.randomHash(320);
         dbGuardian.auth_token_salt = token_salt;
         dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt, token);
         dbGuardian.auth_token_updated_at = new Date();
+        dbGuardian.site_id = 1;
 
         return dbGuardian.save()
           .bind({})
-          .then((dbGuardian) => {
-            this.dbGuardian = dbGuardian;
-            let siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'none'; // By default, attached to an empty site
-            return siteService.getSiteByGuid(siteGuid);
-          })
-          .then((site) => {
-            this.dbGuardian.site_id = site.id;
-            return this.dbGuardian.save();
-          })
           .then((dbGuardian) => {
             if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
               return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
