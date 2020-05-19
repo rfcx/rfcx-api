@@ -78,14 +78,14 @@ router.route("/register")
     params.convert('site').optional().toString();
 
     let token = hash.randomString(40);
-    
+
     params.validate()
       .then(() => {
         return models.Guardian
           .findOrCreate({
             where: {
               guid: transformedParams.guid,
-              shortname: transformedParams.shortname? transformedParams.shortname : `RFCx Guardian (${transformedParams.guid.substr(0,6)})`,
+              shortname: transformedParams.shortname? transformedParams.shortname : `RFCx Guardian (${transformedParams.guid.substr(0,6).toUpperCase()})`,
               latitude: 0,
               longitude: 0
             }
