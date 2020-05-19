@@ -29,12 +29,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaNetwork.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaNetwork"
   });
+
   return GuardianMetaNetwork;
 };

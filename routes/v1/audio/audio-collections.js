@@ -71,7 +71,7 @@ router.route("/audio-collections/by-guids")
     return models.GuardianAudio
       // first of all check if audio files with given guids exist
       .findAll({
-        where: { guid: { $in: audioGuids } }
+        where: { guid: { [models.Sequelize.Op.in]: audioGuids } }
       })
       // bind to empty object, so we can save our callback results into it
       .bind({})
@@ -219,7 +219,7 @@ router.route("/audio-collections/:id/data")
         });
         return models.AudioAnalysisTrainingSet.findOne({
           where: {
-            $or: {
+            [models.Sequelize.Op.or]: {
               training_set: dbGuardianAudioCollection.id,
               test_set: dbGuardianAudioCollection.id
             }

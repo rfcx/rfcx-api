@@ -15,17 +15,9 @@ module.exports = function(sequelize, DataTypes) {
       validate: { }
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        Organization.hasMany(models.GuardianSite, { as: "Site", foreignKey: "organization" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "Organizations"
   });
 

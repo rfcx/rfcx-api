@@ -37,12 +37,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaAccelerometer.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaAccelerometer"
   });
+
   return GuardianMetaAccelerometer;
 };

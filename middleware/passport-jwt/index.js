@@ -53,7 +53,7 @@ function checkDBUser(req, jwtPayload, done) {
 
   userService.findOrCreateUser(
     {
-      $or: {
+      [sequelize.Op.or]: {
         guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : ''),
         email: jwtPayload.email,
       }

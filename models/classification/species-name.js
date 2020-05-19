@@ -13,15 +13,9 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: 0,
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        SpeciesName.belongsTo(models.Language, { as: 'Language', foreignKey: "language" });
-        SpeciesName.belongsTo(models.Classification, { as: 'Species', foreignKey: 'species' });
-      },
-      indexes: [
-        { unique: true, fields: ["name"] }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["name"] }
+    ],
     tableName: "SpeciesNames"
   });
 

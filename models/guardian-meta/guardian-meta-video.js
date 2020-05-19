@@ -72,18 +72,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        // associations can be defined here
-        GuardianMetaVideo.belongsTo(models.Guardian, {as: 'Guardian'});
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    }
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
+    tableName: 'GuardianMetaVideos'
   });
 
   return GuardianMetaVideo;

@@ -16,12 +16,8 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN
     },
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaPower.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaPower"
   });
+
   return GuardianMetaPower;
 };

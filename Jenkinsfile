@@ -8,20 +8,21 @@ pipeline {
         PHASE=branchToConfig(BRANCH_NAME)
         ECR="887044485231.dkr.ecr.eu-west-1.amazonaws.com"
     }
+
     stages {
         stage("Build") {
             when {
                  expression { BRANCH_NAME ==~ /(staging|master)/ }
             }
             steps {
-            slackSend (color: '#FF9800', message: "STARTED: ${env.BUILD_NUMBER} Application ${APIHTTP} Branch ${PHASE} \nCommit ${GIT_COMMIT} by ${env.GIT_COMMITTER_NAME} (${env.BUILD_URL})")
+            slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
             sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
             sh "docker build -f build/http/Dockerfile -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
             sh "docker tag ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
             sh "docker push ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
             sh "docker system prune -af"
 
-            slackSend (color: '#FF9800', message: "STARTED: ${env.BUILD_NUMBER} Application ${APIMQTT} Branch ${PHASE} \nCommit ${GIT_COMMIT} by ${env.GIT_COMMITTER_NAME} (${env.BUILD_URL})")
+            slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*API MQTT*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
             sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
             sh "docker build -f build/mqtt/Dockerfile -t ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ."
             sh "docker tag ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER}"
@@ -30,13 +31,13 @@ pipeline {
             }
            post {
                success {
-                   slackSend (color: '#3380C7', message: "Build Successful: Job ${APIHTTP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
-                   slackSend (color: '#3380C7', message: "Build Successful: Job ${APIMQTT} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
+                   slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*HTTP API*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                   slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*API MQTT*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
                    echo 'Compile Stage Successful'
                }
                failure {
-                   slackSend (color: '#F44336', message: "Build Failure: Job ${APIHTTP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
-                   slackSend (color: '#F44336', message: "Build Failure: Job ${APIMQTT} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT} (${env.BUILD_URL})")
+                   slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*HTTP API*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                   slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*API MQTT*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
                    echo 'Compile Stage Failed'
                }
            }
@@ -57,30 +58,21 @@ pipeline {
             steps {
             catchError {
             sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
-            slackSend (color: '#4CAF50', message: "Deployment Successful: Job ${APIHTTP} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT}' (${env.BUILD_URL})")
+            slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
-            slackSend (color: '#4CAF50', message: "Deployment Successful: Job ${APIMQTT} ${PHASE} [${env.BUILD_NUMBER}] ${GIT_COMMIT}' (${env.BUILD_URL})")
+            slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*API MQTT*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             }
             }
-        }
-    }
-    post {
-        success {
-            echo 'whole pipeline successful'
-                }
-        unstable {
-            echo 'pipeline failed, at least one step unstable'
-            }
-        failure {
-            echo 'I failed :('
         }
     }
 }
-  def branchToConfig(branch) {
+
+def branchToConfig(branch) {
      script {
         result = "NULL"
         if (branch == 'staging') {
              result = "staging"
+             slackChannel = "alerts-deployment"
         withCredentials([file(credentialsId: 'api_staging_env', variable: 'PRIVATE_ENV')]) {
         sh "cp $PRIVATE_ENV rfcx.sh"
         sh "chmod 777 rfcx.sh"
@@ -88,6 +80,7 @@ pipeline {
         }
         if (branch == 'master') {
              result = "production"
+             slackChannel = "alerts-deployment-prod"
         withCredentials([file(credentialsId: 'api_production_env', variable: 'PRIVATE_ENV')]) {
         sh "cp $PRIVATE_ENV rfcx.sh"
         sh "chmod 777 rfcx.sh"
@@ -96,4 +89,4 @@ pipeline {
          echo "BRANCH:${branch} -> CONFIGURATION:${result}"
          }
          return result
-     }
+}

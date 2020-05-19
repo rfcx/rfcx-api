@@ -22,12 +22,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        GuardianMetaDateTimeOffset.belongsTo(models.Guardian, {as: 'Guardian'});
-      }
-    },
     tableName: "GuardianMetaDateTimeOffsets"
   });
+
   return GuardianMetaDateTimeOffset;
 };

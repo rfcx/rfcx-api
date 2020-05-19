@@ -81,7 +81,7 @@ router.route("/:site_id/guardians")
           this.dbGuardians.forEach(function(guardian) {
             var prom = models.GuardianAudio
               .findOne({
-                order: 'measured_at DESC',
+                order: [['measured_at', 'DESC']],
                 include: [{
                   model: models.Guardian,
                   as: 'Guardian',

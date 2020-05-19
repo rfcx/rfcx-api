@@ -38,8 +38,8 @@ exports.guardianStatusMeta = {
 
         try {
             var dbWhere = { guardian_id: guardianId, ended_at: {} };
-            dbWhere.ended_at["$lt"] = new Date((new Date()).valueOf()-(parseInt(realTimeOffsetInMinutes)*60000));
-            dbWhere.ended_at["$gt"] = new Date((new Date()).valueOf()-(parseInt(intervalInHours)*3600000)-(parseInt(realTimeOffsetInMinutes)*60000));
+            dbWhere.ended_at[models.Sequelize.Op.lt] = new Date((new Date()).valueOf()-(parseInt(realTimeOffsetInMinutes)*60000));
+            dbWhere.ended_at[models.Sequelize.Op.gt] = new Date((new Date()).valueOf()-(parseInt(intervalInHours)*3600000)-(parseInt(realTimeOffsetInMinutes)*60000));
 
             models.GuardianMetaDataTransfer
               .findOne({

@@ -103,19 +103,9 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: true
     }
   }, {
-    classMethods: {
-      associate: function(models) {
-        // associations can be defined here
-        AudioAnalysisModel.belongsTo(models.GuardianAudioEventType, { foreignKey: "event_type" });
-        AudioAnalysisModel.belongsTo(models.GuardianAudioEventValue, { foreignKey: "event_value" });
-      },
-      indexes: [
-        {
-          unique: true,
-          fields: ["guid"]
-        }
-      ]
-    },
+    indexes: [
+      { unique: true, fields: ["guid"] }
+    ],
     tableName: "AudioAnalysisModels"
   });
 
