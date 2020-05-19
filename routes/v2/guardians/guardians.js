@@ -131,8 +131,7 @@ router.route("/register")
                 if (dbGuardian.creator) {
                   opts.created_by = dbGuardian.creator;
                 }
-                return models.Stream
-                  .create(opts);
+                return models.Stream.findOrCreate({ where: opts });
               });
           })
           .then(() => {
