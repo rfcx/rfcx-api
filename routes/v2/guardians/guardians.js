@@ -9,6 +9,7 @@ var Promise = require("bluebird");
 var sequelize = require("sequelize");
 var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const usersService = require('../../../services/users/users-service');
 const guardiansService = require('../../../services/guardians/guardians-service');
 var Converter = require("../../../utils/converter/converter");
 
@@ -107,8 +108,7 @@ router.route("/register")
                   dbGuardian.is_private = true;
                   return dbGuardian.save();
                 });
-            }
-            else {
+            } else {
               return this.dbGuardian;
             };
           })
