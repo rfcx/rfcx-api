@@ -153,6 +153,7 @@ router.route("/register")
                 name: dbGuardian.shortname,
                 guid: dbGuardian.guid,
                 token: token,
+                keystore_passphrase: "tr33PROtect10n",
                 stream: "stream_guid"
               });
             });
