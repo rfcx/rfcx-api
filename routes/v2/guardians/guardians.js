@@ -90,74 +90,67 @@ router.route("/register")
           })
       })
       .spread((dbGuardian, created) => {
-        if (!created) {
-          res.status(200).json(
-            views.models.guardian(req,res,dbGuardian)
-          );
-          return true;
-        } else {
 
-          var token_salt = hash.randomHash(320);
-          dbGuardian.auth_token_salt = token_salt;
-          dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt, token);
-          dbGuardian.auth_token_updated_at = new Date();
+        var token_salt = hash.randomHash(320);
+        dbGuardian.auth_token_salt = token_salt;
+        dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt, token);
+        dbGuardian.auth_token_updated_at = new Date();
 
-          return dbGuardian.save()
-            .bind({})
-            .then((dbGuardian) => {
-              this.dbGuardian = dbGuardian;
-              let siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'none'; // By default, attached to an empty site
-              return siteService.getSiteByGuid(siteGuid);
-            })
-            .then((site) => {
-              this.dbGuardian.site_id = site.id;
-              return this.dbGuardian.save();
-            })
-            .then((dbGuardian) => {
-              if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
-                return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
-                  .then((user) => {
-                    dbGuardian.creator = user.id;
-                    dbGuardian.is_private = true;
-                    return dbGuardian.save();
-                  });
-              }
-              else {
-                return this.dbGuardian;
-              };
-            })
-            .then((dbGuardian) => {
-              let visibility = dbGuardian.is_private? 'private' : 'public';
-              return models.StreamVisibility
-                .findOrCreate({
-                  where:    { value: visibility },
-                  defaults: { value: visibility }
-                })
-                .spread((dbVisibility) => {
-                  let opts = {
-                    guid: dbGuardian.guid,
-                    name: dbGuardian.shortname,
-                    site: dbGuardian.site_id,
-                    created_by: dbGuardian.creator,
-                    visibility: dbVisibility.id,
-                  }
-                  if (dbGuardian.creator) {
-                    opts.created_by = dbGuardian.creator;
-                  }
-                  return models.Stream
-                    .create(opts);
+        return dbGuardian.save()
+          .bind({})
+          .then((dbGuardian) => {
+            this.dbGuardian = dbGuardian;
+            let siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'none'; // By default, attached to an empty site
+            return siteService.getSiteByGuid(siteGuid);
+          })
+          .then((site) => {
+            this.dbGuardian.site_id = site.id;
+            return this.dbGuardian.save();
+          })
+          .then((dbGuardian) => {
+            if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
+              return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+                .then((user) => {
+                  dbGuardian.creator = user.id;
+                  dbGuardian.is_private = true;
+                  return dbGuardian.save();
                 });
-            })
-            .then(() => {
-              res.status(200).json({
-                name: dbGuardian.shortname,
-                guid: dbGuardian.guid,
-                token: token,
-                keystore_passphrase: "tr33PROtect10n",
-                stream: "stream_guid"
+            }
+            else {
+              return this.dbGuardian;
+            };
+          })
+          .then((dbGuardian) => {
+            let visibility = dbGuardian.is_private? 'private' : 'public';
+            return models.StreamVisibility
+              .findOrCreate({
+                where:    { value: visibility },
+                defaults: { value: visibility }
+              })
+              .spread((dbVisibility) => {
+                let opts = {
+                  guid: dbGuardian.guid,
+                  name: dbGuardian.shortname,
+                  site: dbGuardian.site_id,
+                  created_by: dbGuardian.creator,
+                  visibility: dbVisibility.id,
+                }
+                if (dbGuardian.creator) {
+                  opts.created_by = dbGuardian.creator;
+                }
+                return models.Stream
+                  .create(opts);
               });
+          })
+          .then(() => {
+            res.status(200).json({
+              name: dbGuardian.shortname,
+              guid: dbGuardian.guid,
+              token: token,
+              keystore_passphrase: "tr33PROtect10n",
+              stream: "stream_guid"
             });
-        }
+          });
       })
       .catch(sequelize.ValidationError, e => {
         let message = 'Validation error';
