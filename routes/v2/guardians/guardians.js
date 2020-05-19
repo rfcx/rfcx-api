@@ -132,7 +132,7 @@ router.route("/register")
                   opts.created_by = dbGuardian.creator;
                 }
                 return models.Stream
-                  .findOrCreate(opts);
+                  .create(opts);
               });
           })
           .then(() => {
