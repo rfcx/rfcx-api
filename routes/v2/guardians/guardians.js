@@ -78,7 +78,7 @@ router.route("/register")
     params.convert('site').optional().toString();
 
     let token = hash.randomString(40);
-
+    
     params.validate()
       .then(() => {
         return models.Guardian
