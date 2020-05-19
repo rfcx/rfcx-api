@@ -134,6 +134,8 @@ router.route("/register")
                 return models.Stream
                   .findOrCreate({
                     where: opts 
+                  }).spread((dbStream) => {
+                    console.log("stream: "+dbStream.guid);
                   });
               });
           })
