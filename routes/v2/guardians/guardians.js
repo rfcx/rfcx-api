@@ -77,6 +77,8 @@ router.route("/register")
     params.convert('platform').optional().toString();
     params.convert('site').optional().toString();
 
+    let token = hash.randomString(40);
+
     params.validate()
       .then(() => {
         return models.Guardian
@@ -91,7 +93,6 @@ router.route("/register")
       })
       .spread((dbGuardian, created) => {
 
-        let token = hash.randomString(40);
         var token_salt = hash.randomHash(320);
         dbGuardian.auth_token_salt = token_salt;
         dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt, token);
@@ -131,7 +132,7 @@ router.route("/register")
                   opts.created_by = dbGuardian.creator;
                 }
                 return models.Stream
-                  .create(opts);
+                  .findOrCreate(opts);
               });
           })
           .then(() => {
