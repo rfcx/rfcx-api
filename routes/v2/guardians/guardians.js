@@ -82,7 +82,9 @@ router.route("/register")
           .findOrCreate({
             where: {
               guid: transformedParams.guid,
-              shortname: transformedParams.shortname? transformedParams.shortname : `RFCx Guardian (${transformedParams.guid.substr(0,6)})`
+              shortname: transformedParams.shortname? transformedParams.shortname : `RFCx Guardian (${transformedParams.guid.substr(0,6)})`,
+              latitude: 0,
+              longitude: 0
             }
           })
       })
