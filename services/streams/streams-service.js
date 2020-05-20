@@ -50,6 +50,7 @@ function prepareOpts(req) {
       userGuid: req.rfcx.auth_token_info.guid,
       startingAfter: req.query.starting_after? moment.tz(req.query.starting_after, 'UTC').valueOf() : undefined,
       endingBefore: req.query.ending_before? moment.tz(req.query.ending_before, 'UTC').valueOf() : undefined,
+      q: req.query.q? `%${req.query.q}%` : null,
       sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
       access: req.query.access || 'personal', // personal | site | all.  Every next type includes all previous (e.g. "site" also includes "personal")
       limit: req.query.limit? parseInt(req.query.limit) : 10000,
@@ -73,6 +74,7 @@ function prepareOpts(req) {
 function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND stream.starts >= :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND stream.ends <= :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.q, ' AND stream.name LIKE :q');
   sql = sqlUtils.condAdd(sql, opts.access === 'personal', ' AND visibility.value = "private" AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.access === 'personal-all', ' AND (visibility.value = "private" OR visibility.value = "site" OR visibility.value = "public") AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.access === 'site', ' AND ((visibility.value = "private" AND user.guid = :userGuid) OR (visibility.value = "site" AND site.guid IN (:accessibleSites))');
