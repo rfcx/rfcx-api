@@ -126,7 +126,7 @@ router.route("/annotations/:guid")
         return streamsAnnotationsService.getAnnotationByGuid(req.params.guid);
       })
       .then((dbAnnotation) => {
-        streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
+        // streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
         return streamsAnnotationsService.deleteAnnotationByGuid(req.params.guid);
       })
       .then(function(json) {
@@ -165,7 +165,7 @@ router.route("/annotations/:guid")
         return streamsAnnotationsService.getAnnotationByGuid(req.params.guid);
       })
       .then((dbAnnotation) => {
-        streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
+        // streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
         return streamsAnnotationsService.updateAnnotation(dbAnnotation, transformedParams);
       })
       .then(streamsAnnotationsService.formatAnnotation)
