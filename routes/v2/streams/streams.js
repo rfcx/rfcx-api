@@ -24,10 +24,17 @@ const allowedVisibilities = ['private', 'public', 'site'];
 router.route("/")
   .get(passport.authenticate(['jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser']), function (req, res) {
 
-    return streamsService.queryData(req)
+    let data = {};
+
+    return streamsService.countData(req)
+      .then((total) => {
+        data.total = total;
+        return streamsService.queryData(req)
+      })
       .then(streamsService.formatStreamsRaw)
-      .then(function(json) {
-        res.status(200).send(json);
+      .then(function(streams) {
+        data.streams = streams
+        res.status(200).send(data);
       })
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))

@@ -8,6 +8,9 @@ const streamsAnnotationsService = require('./streams-annotations-service');
 const streamsAssetsService = require('./streams-assets-service');
 const redis = require('../../utils/redis');
 
+const streamQueryCountSelect =
+  `SELECT stream.guid as guid`;
+
 const streamQuerySelect =
   `SELECT stream.guid as guid, stream.name as name, stream.description as description, stream.starts as starts, stream.ends as ends,
   stream.created_at as created_at, stream.marked_as_deleted_at as marked_as_deleted_at, visibility.value as visibility,
@@ -15,6 +18,11 @@ const streamQuerySelect =
   user.lastname as user_lastname, location.guid as location_guid, location.name as location_name, location.latitude as location_latitude, location.longitude as location_longitude,
   location.description as location_description, site.guid as site_guid, site.name as site_name, site.timezone as site_timezone,
   MAX(segment.created_at) as last_ingest`;
+
+const streamQueryCountJoins =
+ `LEFT JOIN StreamVisibilities as visibility ON stream.visibility = visibility.id
+  LEFT JOIN Users as user ON stream.created_by = user.id
+  LEFT JOIN GuardianSites as site ON stream.site = site.id`;
 
 const streamQueryJoins =
  `LEFT JOIN StreamVisibilities as visibility ON stream.visibility = visibility.id
@@ -50,6 +58,7 @@ function prepareOpts(req) {
       userGuid: req.rfcx.auth_token_info.guid,
       startingAfter: req.query.starting_after? moment.tz(req.query.starting_after, 'UTC').valueOf() : undefined,
       endingBefore: req.query.ending_before? moment.tz(req.query.ending_before, 'UTC').valueOf() : undefined,
+      q: req.query.q? `%${req.query.q}%` : null,
       sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
       access: req.query.access || 'personal', // personal | site | all.  Every next type includes all previous (e.g. "site" also includes "personal")
       limit: req.query.limit? parseInt(req.query.limit) : 10000,
@@ -73,6 +82,7 @@ function prepareOpts(req) {
 function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND stream.starts >= :startingAfter');
   sql = sqlUtils.condAdd(sql, opts.endingBefore, ' AND stream.ends <= :endingBefore');
+  sql = sqlUtils.condAdd(sql, opts.q, ' AND stream.name LIKE :q');
   sql = sqlUtils.condAdd(sql, opts.access === 'personal', ' AND visibility.value = "private" AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.access === 'personal-all', ' AND (visibility.value = "private" OR visibility.value = "site" OR visibility.value = "public") AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.access === 'site', ' AND ((visibility.value = "private" AND user.guid = :userGuid) OR (visibility.value = "site" AND site.guid IN (:accessibleSites))');
@@ -80,6 +90,25 @@ function addGetQueryParams(sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.access === 'deleted', ' AND visibility.value = "deleted" AND user.guid = :userGuid');
   sql = sqlUtils.condAdd(sql, opts.sites, ' AND site.guid IN (:sites)');
   return sql;
+}
+
+function countData(req) {
+
+  return prepareOpts(req)
+    .then((opts) => {
+      let sql = `${streamQueryCountSelect} FROM Streams as stream ${streamQueryCountJoins} `;
+      sql = sqlUtils.condAdd(sql, true, ' WHERE 1=1');
+      sql = addGetQueryParams(sql, opts);
+
+      return models.sequelize
+        .query(sql,
+          { replacements: opts, type: models.sequelize.QueryTypes.SELECT }
+        )
+    })
+    .then((dbStreams) => {
+      return dbStreams.length;
+    })
+
 }
 
 function queryData(req) {
@@ -607,6 +636,7 @@ module.exports = {
   formatMasterSegment,
   formatSegments,
   formatSegment,
+  countData,
   queryData,
   formatStreamsRaw,
   formatStreamRaw,
