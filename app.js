@@ -1,3 +1,6 @@
+// various process-related stuff
+require('./utils/process');
+
 // check for environmental variable file and load if present
 var fs = require("fs");
 if (fs.existsSync("./config/env_vars.js")) {
@@ -23,7 +26,6 @@ var express = require("express"),
     addInstanceId = require('./middleware/misc/aws').addInstanceId,
     toobusy = require('toobusy-js'),
     app = express(),
-    mongo = require('./utils/mongo'),
     packageData = require('./package.json');
 
 app.set("title", "rfcx-api");
