@@ -23,7 +23,6 @@ var express = require("express"),
     addInstanceId = require('./middleware/misc/aws').addInstanceId,
     toobusy = require('toobusy-js'),
     app = express(),
-    mongo = require('./utils/mongo'),
     packageData = require('./package.json');
 
 app.set("title", "rfcx-api");

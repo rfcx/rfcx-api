@@ -4,7 +4,6 @@ const classificationService = require('../classification/classification-service'
 const streamsService = require('./streams-service');
 const ValidationError = require("../../utils/converter/validation-error");
 const ForbiddenError = require("../../utils/converter/forbidden-error");
-const DetectionModel = require('../../modelsMongoose/detection').Detection;
 
 const modelsTimescaleDb  = require("../../modelsTimescale");
 
@@ -161,27 +160,11 @@ function saveDetections(detections, stream, modelGuid) {
 }
 
 function clearDetectionWithSameParams(data) {
-  return Promise.resolve(true);
-  // return DetectionModel.deleteMany({
-  //   label: data.label,
-  //   model: data.model,
-  //   stream: data.stream,
-  //   starts: data.starts,
-  //   ends: data.ends,
-  // });
+  return Promise.resolve();
 }
 
 function createDetection(data) {
-  return modelsTimescaleDb.Detection.create(data)
-  // let detection = new DetectionModel({
-  //   label: data.label,
-  //   model: data.model,
-  //   stream: data.stream,
-  //   confidence: data.confidence,
-  //   starts: data.starts,
-  //   ends: data.ends,
-  // });
-  // return detection.save();
+  return Promise.resolve();
 }
 
 module.exports = {
