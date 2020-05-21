@@ -35,6 +35,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     tableName: "Classifications"
   });
-
+  Classification.attributes = {
+    full: ['id', 'value', 'title', 'description', 'image', 'reference_audio', 'reference_spectrogram', 'source_id'],
+    lite: ['id', 'value', 'title']
+  }
   return Classification;
 };

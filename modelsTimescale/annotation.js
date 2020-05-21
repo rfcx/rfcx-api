@@ -19,6 +19,14 @@ module.exports = (sequelize, DataTypes) => {
         isDate: { msg: "'end' for Detection should have type Date" }
       }
     },
+    frequencyMin: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    frequencyMax: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     createdBy: {
       type: DataTypes.STRING,
       allowNull: false

@@ -27,6 +27,14 @@ module.exports = {
         type: Sequelize.DATE(3),
         allowNull: false
       },
+      frequencyMin: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      frequencyMax: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false
