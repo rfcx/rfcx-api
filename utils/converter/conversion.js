@@ -232,6 +232,23 @@ module.exports = class Conversion {
     return this;
   }
 
+  toIntArray() {
+    this.conversions.push(() => {
+      if (!util.isArray(this.value)) {
+        this.value = [this.value];
+      }
+      let result = [];
+      this.value.forEach(item => {
+        let number = parseInt(item);
+        if (isNaN(number)) {
+          this.throwError(`should be an array of integers`);
+        }
+        result.push(number);
+      });
+      this.value = result;
+    });
+  }
+
   nonEmptyArrayItem() {
     this.conversions.push(() => {
       if(this.value.length === 1 && this.value[0].trim() === '') {

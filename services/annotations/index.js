@@ -1,7 +1,7 @@
 const moment = require('moment')
 const models = require("../../modelsTimescale")
 
-function get (start, end, streamId, classificationId, limit, offset) {
+function get (start, end, streamId, classificationIds, limit, offset) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -13,11 +13,11 @@ function get (start, end, streamId, classificationId, limit, offset) {
   if (streamId !== undefined) {
     condition['streamId'] = streamId
   }
-  if (classificationId !== undefined) {
-    condition['classificationId'] = classificationId
+  if (classificationIds !== undefined) {
+    condition['classificationId'] = { [models.Sequelize.Op.or]: classificationIds }
   }
-  limit = limit | 100
-  offset = offset | 0
+  limit = limit || 100
+  offset = offset || 0
   return models.Annotation
     .findAll({
       where: condition,
