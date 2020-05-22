@@ -172,6 +172,7 @@ var routes = {
       require("./routes/v2/streams/streams"),
       require("./routes/v2/streams/streams-assets"),
       require("./routes/v2/streams/streams-annotations"),
+      require("./routes/v2/streams/streams-classifications"),
       require("./routes/v2/streams/streams-detections"),
     ],
     tags: [
