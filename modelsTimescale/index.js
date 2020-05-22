@@ -9,6 +9,14 @@ let options = {
   dialect: 'postgres',
   host: process.env.POSTGRES_HOSTNAME,
   port: process.env.POSTGRES_PORT,
+  define: {
+    underscored: true,
+    charset: 'utf8',
+    dialectOptions: {
+      collate: 'utf8_general_ci'
+    },
+    timestamps: true
+  }
 }
 if (env === 'development') {
   options.logging = function(str) {
