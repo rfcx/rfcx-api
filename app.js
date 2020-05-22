@@ -159,6 +159,9 @@ var routes = {
     ais: [
       require("./routes/v2/ais/ais"),
     ],
+    annotations: [
+      require("./routes/v2/annotations"),
+    ],
     classifications: [
       require("./routes/v2/classifications/classifications"),
     ],
