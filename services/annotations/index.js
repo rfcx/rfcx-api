@@ -46,8 +46,24 @@ function get (annotationId) {
   return models.Annotation.findByPk(annotationId)
 }
 
+function update (annotationId, start, end, classificationId, frequencyMin, frequencyMax, userId) {
+  return get(annotationId).then(annotation => {
+    // Timescale time columns cannot be updated (outside of their "chunk interval")
+    // so need to delete + create, while maintaining existing createdBy/At + streamId
+    return models.sequelize.transaction(transaction => {
+      return annotation.destroy({ transaction }).then(() => {
+        return models.Annotation.create({
+          id: annotationId, streamId: annotation.streamId,
+          start, end, classificationId, frequencyMin, frequencyMax,
+          createdAt: annotation.createdAt, createdBy: annotation.createdBy, updatedAt: new Date, updatedBy: userId
+        }, { transaction, silent: true })
+      })
+    })
+  })
+}
+
 function remove (annotationId) {
   return get(annotationId).then(annotation => annotation.destroy())
 }
 
-module.exports = { query, get, create, remove }
+module.exports = { query, get, create, update, remove }

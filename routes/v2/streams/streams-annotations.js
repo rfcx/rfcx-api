@@ -103,10 +103,10 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/AnnotationNew'
+ *             $ref: '#/components/requestBodies/Annotation'
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/AnnotationNew'
+ *             $ref: '#/components/requestBodies/Annotation'
  *     responses:
  *       201:
  *         description: Created
