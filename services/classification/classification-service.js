@@ -117,6 +117,7 @@ module.exports = {
   getClassificationByValue,
   search,
   getCharacteristicsForClassification,
+  getByStream,
   formatClassifications,
   formatClassification,
 };

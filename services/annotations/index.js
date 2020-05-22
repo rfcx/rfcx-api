@@ -1,7 +1,7 @@
 const moment = require('moment')
 const models = require("../../modelsTimescale")
 
-function get (start, end, streamId, classificationIds, limit, offset) {
+function query (start, end, streamId, classificationIds, limit, offset) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -35,4 +35,19 @@ function get (start, end, streamId, classificationIds, limit, offset) {
     })
 }
 
-module.exports = { get }
+function create (streamId, start, end, classificationId, frequencyMin, frequencyMax, userId) {
+  return models.Annotation.create({
+    streamId, start, end, classificationId, frequencyMin, frequencyMax,
+    createdBy: userId, updatedBy: userId
+  })
+}
+
+function get (annotationId) {
+  return models.Annotation.findByPk(annotationId)
+}
+
+function remove (annotationId) {
+  return get(annotationId).then(annotation => annotation.destroy())
+}
+
+module.exports = { query, get, create, remove }

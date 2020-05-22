@@ -6,6 +6,11 @@ const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
 const Converter = require("../../../utils/converter/converter")
 
+function checkAccess (streamId, req) {
+  return streamsService.getStreamByGuid(streamId)
+    .then(stream => streamsService.checkUserAccessToStream(req, stream))
+}
+
 /**
  * @swagger
  *
@@ -69,15 +74,70 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
   params.convert('offset').optional().toInt()
 
   return params.validate()
+    .then(() => checkAccess(streamId, req))
     .then(() => {
-      return streamsService.getStreamByGuid(streamId)
-    })
-    .then((stream) => {
-      streamsService.checkUserAccessToStream(req, stream)
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.get(start, end, streamId, classifications, limit, offset)
+      return annotationsService.query(start, end, streamId, classifications, limit, offset)
     })
     .then((annotations) => res.json(annotations))
+    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
+})
+
+/**
+ * @swagger
+ *
+ * /v2/streams/{id}/annotations:
+ *   post:
+ *     summary: Create an annotation belonging to a stream
+ *     tags:
+ *       - annotations
+ *     parameters:
+ *       - name: id
+ *         description: Stream identifier
+ *         in: path
+ *         required: true
+ *         type: string
+ *     requestBody:
+ *       description: Annotation object
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/requestBodies/AnnotationNew'
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: '#/components/requestBodies/AnnotationNew'
+ *     responses:
+ *       201:
+ *         description: Created
+ *         headers:
+ *           X-Created-Id:
+ *             schema:
+ *               type: integer
+ *             description: Identifier of the created annotation
+ *       400:
+ *         description: Invalid query parameters
+ *       404:
+ *         description: Stream not found
+ */
+router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), function (req, res) {
+  const streamId = req.params.streamId
+  const userId = req.rfcx.auth_token_info.guid
+  const convertedParams = {}
+  const params = new Converter(req.body, convertedParams)
+  params.convert('start').toMoment()
+  params.convert('end').toMoment()
+  params.convert('classification').toInt()
+  params.convert('frequencyMin').toInt()
+  params.convert('frequencyMax').toInt()
+
+  return params.validate()
+    .then(() => checkAccess(streamId, req))
+    .then(() => {
+      const { start, end, classification, frequencyMin, frequencyMax } = convertedParams
+      return annotationsService.create(streamId, start, end, classification, frequencyMin, frequencyMax, userId)
+    })
+    .then((annotation) => res.set('X-Created-Id', annotation.id).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
 })
 
