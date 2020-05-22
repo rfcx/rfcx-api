@@ -11,9 +11,9 @@ const Converter = require("../../../utils/converter/converter")
  *
  * /v2/streams/{id}/annotations:
  *   get:
- *     description: Get list of annotations belonging to a stream
- *     produces:
- *       - application/json
+ *     summary: Get list of annotations belonging to a stream
+ *     tags:
+ *       - annotations
  *     parameters:
  *       - name: id
  *         description: Stream identifier
@@ -47,6 +47,12 @@ const Converter = require("../../../utils/converter/converter")
  *     responses:
  *       200:
  *         description: List of annotation (lite) objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/AnnotationLite'
  *       400:
  *         description: Invalid query parameters
  *       404:

@@ -9,11 +9,11 @@ const Converter = require("../../../utils/converter/converter")
 /**
  * @swagger
  *
- * /v2/streams/{id}/classification:
+ * /v2/streams/{id}/classifications:
  *   get:
- *     description: Get list of classifications that have been annotated on a stream
- *     produces:
- *       - application/json
+ *     summary: Get list of classifications that have been annotated on a stream
+ *     tags:
+ *       - classfications
  *     parameters:
  *       - name: id
  *         description: Stream identifier

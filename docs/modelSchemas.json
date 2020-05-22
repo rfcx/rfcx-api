@@ -1,0 +1,70 @@
+{
+  "AnnotationLite": {
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/AnnotationNew"
+      },
+      {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 103
+          },
+          "streamId": {
+            "type": "string",
+            "example": "01a2ucztj8ax"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/ClassificationLite"
+          }
+        },
+        "required": [
+          "id",
+          "streamId"
+        ]
+      }
+    ]
+  },
+  "Annotation": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/AnnotationLite"
+      },
+      {
+        "properties": {
+          "createdAt": {
+            "type": "date"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "date"
+          },
+          "updatedBy": {
+            "type": "string"
+          }
+        }
+      }
+    ]
+  },
+  "ClassificationLite": {
+    "type": "object",
+    "properties": {
+      "value": {
+        "type": "string",
+        "description": "Unique short name?",
+        "example": "falciformis"
+      },
+      "title": {
+        "type": "string",
+        "description": "Description or latin name (if species)",
+        "example": "Carcharhinus falciformis"
+      }
+    },
+    "required": [
+      "value",
+      "title"
+    ]
+  }
+}

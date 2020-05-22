@@ -1,0 +1,34 @@
+{
+  "AnnotationNew": {
+    "type": "object",
+    "properties": {
+      "classificationId": {
+        "type": "integer",
+        "example": 72
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:23.250Z"
+      },
+      "frequencyMin": {
+        "type": "integer",
+        "example": 1530
+      },
+      "frequencyMax": {
+        "type": "integer",
+        "example": 4010
+      }
+    },
+    "required": [
+      "classificationId",
+      "start",
+      "end",
+      "frequencyMin",
+      "frequencyMax"
+    ]
+  }
+}

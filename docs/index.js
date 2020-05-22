@@ -10,6 +10,8 @@ function configure (app) {
         version: '0.0.1',
       },
       components: {
+        schemas: require('./modelSchemas.json'),
+        requestBodies: require('./requestBodies.json'),
         securitySchemes: {
           auth0: {
             type: 'oauth2',
@@ -40,6 +42,11 @@ function configure (app) {
   const swaggerUiOptions = {
     oauth2RedirectUrl: 'http://localhost:8080/docs-auth-callback'
   }
+  const swaggerUiExpressOptions = {
+    customSiteTitle: 'RFCx API Documentation',
+    customCss: '.topbar { display: none }',
+    swaggerOptions: swaggerUiOptions
+  }
 
   const middleware = function (req, res, next) {
     swaggerSpec.host = req.get('host')
@@ -48,7 +55,7 @@ function configure (app) {
   }
 
   app.get('/docs-auth-callback', (req, res) => res.sendFile('/docs/oauth-redirect.html', { root: '.' }))
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { swaggerOptions: swaggerUiOptions }))
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiExpressOptions))
 }
 
 module.exports = { configure }
