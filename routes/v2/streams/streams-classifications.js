@@ -32,7 +32,13 @@ const Converter = require("../../../utils/converter/converter")
  *         default: 0
  *     responses:
  *       200:
- *         description: List of classification (full) objects
+ *         description: List of classification objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Classification'
  *       400:
  *         description: Invalid query parameters
  *       404:

@@ -66,5 +66,28 @@
       "value",
       "title"
     ]
+  },
+  "Classification": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassificationLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "referenceAudio": {
+            "type": "string"
+          },
+          "referenceSpectrogram": {
+            "type": "string"
+          }
+        }
+      }
+    ]
   }
 }
