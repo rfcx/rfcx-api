@@ -1,23 +1,26 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Annotation = sequelize.define('Annotation', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+      unique: true,
+      primaryKey: true
+    },
     streamId: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(32),
       allowNull: false
     },
     start: {
+      // Hypertable key
       type: DataTypes.DATE(3),
       allowNull: false,
-      validate: {
-        isDate: { msg: "'start' for Detection should have type Date" }
-      }
+      primaryKey: true
     },
     end: {
       type: DataTypes.DATE(3),
-      allowNull: false,
-      validate: {
-        isDate: { msg: "'end' for Detection should have type Date" }
-      }
+      allowNull: false
     },
     frequencyMin: {
       type: DataTypes.INTEGER,
@@ -28,22 +31,18 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     createdBy: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(32),
       allowNull: false
     },
     updatedBy: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(32),
       allowNull: false
     }
   }, {
     indexes: [
-      { fields: ["streamId"] }
-    ],
-    tableName: "Annotations"
+      { fields: ["stream_id"] }
+    ]
   });
-  Annotation.associate = function (models) {
-    Annotation.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classificationId' });
-  };
   Annotation.attributes = {
     full: ['id', 'streamId', 'classificationId', 'start', 'end', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy'],
     lite: ['id', 'streamId', 'classificationId', 'start', 'end']
