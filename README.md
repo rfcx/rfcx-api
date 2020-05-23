@@ -1,10 +1,11 @@
-rfcx-api
-========
-
-Rainforest Connection API (v2)
+# RFCx Core API
 
 master
 ![](https://api.travis-ci.org/rfcx/rfcx-api.png?branch=master)
+
+## Introduction
+
+The API can be run in "regular" or "mqtt" modes. It requires connections to Redis, MySQL, Timescale (Postgres) and Neo4j databases. It also has dependencies on AWS (S3 and SNS/SQS), Auth0, Firebase, Mailchimp/Mandrill, Stripe and Classy.
 
 ## Project configuration for local development
 
@@ -19,14 +20,14 @@ If required node version is installed on your machine:
 nvm use
 ```
 
-### Depencencies
+### Dependencies
 Sometimes node modules may dissappear from remote storage. That's why we keep them in `node_modules` in our repo. You **shouldn't** run `npm install` on your machine. All required deps are already here.
 
 ### Env variables
 Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fill it with required vars
 
 ### VPN
-You need to be connected to rfcx-ldap VPN to have access to databases.
+You need to be connected to rfcx-ldap VPN to have access to the test/staging databases.
 
 ### TimescaleDb
 You can run TimescaleDb Docker container locally.
@@ -47,7 +48,19 @@ To stop TimescaleDb container run the following command:
 docker stop rfcx-api-timescaledb
 ```
 
-You can use [pgAdmin](https://www.pgadmin.org/download/)  GUI Client to view your database.
+You can use [pgAdmin](https://www.pgadmin.org/download/) GUI Client to view your database.
+
+### Local redis+timescale+mysql
+
+Start containers:
+```
+docker-compose up
+```
+
+Stop containers:
+```
+docker-compose down
+```
 
 ### Models sync and running migrations for MySQL or TimescaleDb
 
