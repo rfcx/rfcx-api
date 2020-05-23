@@ -7,10 +7,10 @@
       {
         "properties": {
           "id": {
-            "type": "integer",
-            "example": 103
+            "type": "uuid",
+            "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
           },
-          "streamId": {
+          "stream_id": {
             "type": "string",
             "example": "01a2ucztj8ax"
           },
@@ -32,17 +32,19 @@
       },
       {
         "properties": {
-          "createdAt": {
+          "created_at": {
             "type": "date"
           },
-          "createdBy": {
-            "type": "string"
+          "created_by": {
+            "type": "integer",
+            "description": "The user who created the annotation"
           },
-          "updatedAt": {
+          "updated_at": {
             "type": "date"
           },
-          "updatedBy": {
-            "type": "string"
+          "updated_by": {
+            "type": "integer",
+            "description": "The user who last updated the annotation"
           }
         }
       }
@@ -58,7 +60,7 @@
       },
       "title": {
         "type": "string",
-        "description": "Description or latin name (if species)",
+        "description": "Description or latin name of species",
         "example": "Carcharhinus falciformis"
       }
     },
@@ -80,10 +82,10 @@
           "image": {
             "type": "string"
           },
-          "referenceAudio": {
+          "reference_audio": {
             "type": "string"
           },
-          "referenceSpectrogram": {
+          "reference_spectrogram": {
             "type": "string"
           }
         }

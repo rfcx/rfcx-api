@@ -7,6 +7,10 @@ const annotationsService = require('../../../services/annotations')
 const Converter = require("../../../utils/converter/converter")
 const EmptyResultError = require('../../../utils/converter/empty-result-error');
 
+function isUuid (str) {
+  return str.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/g) !== null
+}
+
 /**
  * @swagger
  *
@@ -113,14 +117,18 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
  */
 router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
-  const userId = req.rfcx.auth_token_info.guid
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMoment()
   params.convert('end').toMoment()
   params.convert('classification').toInt()
-  params.convert('frequencyMin').toInt()
-  params.convert('frequencyMax').toInt()
+  params.convert('frequency_min').toInt()
+  params.convert('frequency_max').toInt()
+
+  if (!isUuid(annotationId)) {
+    return res.sendStatus(404)
+  }
 
   return params.validate()
     .then(() => annotationsService.get(annotationId))
@@ -132,8 +140,8 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
     })
     .then(stream => streamsService.checkUserAccessToStream(req, stream))
     .then(() => {
-      const { start, end, classification, frequencyMin, frequencyMax } = convertedParams
-      return annotationsService.update(annotationId, start, end, classification, frequencyMin, frequencyMax, userId)
+      const { start, end, classification, frequency_min, frequency_max } = convertedParams
+      return annotationsService.update(annotationId, start, end, classification, frequency_min, frequency_max, userId)
     })
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
@@ -163,6 +171,11 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
  */
 router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
+
+  if (!isUuid(annotationId)) {
+    return res.sendStatus(404)
+  }
+
   return annotationsService.get(annotationId)
     .then(annotation => {
       if (!annotation) {

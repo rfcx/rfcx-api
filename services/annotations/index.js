@@ -1,5 +1,6 @@
 const moment = require('moment')
-const models = require("../../modelsTimescale")
+const models = require('../../modelsTimescale')
+const { toSnakeObject } = require('../../utils/snake-case')
 
 function query (start, end, streamId, classificationIds, limit, offset) {
   let condition = {
@@ -11,10 +12,10 @@ function query (start, end, streamId, classificationIds, limit, offset) {
     },
   }
   if (streamId !== undefined) {
-    condition['streamId'] = streamId
+    condition.streamId = streamId
   }
   if (classificationIds !== undefined) {
-    condition['classificationId'] = { [models.Sequelize.Op.or]: classificationIds }
+    condition.classificationId = { [models.Sequelize.Op.or]: classificationIds }
   }
   limit = limit || 100
   offset = offset || 0
@@ -24,7 +25,6 @@ function query (start, end, streamId, classificationIds, limit, offset) {
       include: [
         {
           model: models.Classification,
-          as: 'classification',
           attributes: models.Classification.attributes.lite.filter(field => field !== 'id')
         }
       ],
@@ -32,7 +32,7 @@ function query (start, end, streamId, classificationIds, limit, offset) {
       offset: offset,
       limit: limit,
       order: ['start']
-    })
+    }).then(annotations => annotations.map(toSnakeObject))
 }
 
 function create (streamId, start, end, classificationId, frequencyMin, frequencyMax, userId) {

@@ -2,7 +2,7 @@
   "Annotation": {
     "type": "object",
     "properties": {
-      "classificationId": {
+      "classification_id": {
         "type": "integer",
         "example": 72
       },
@@ -14,11 +14,11 @@
         "type": "date",
         "example": "2020-05-12T07:30:23.250Z"
       },
-      "frequencyMin": {
+      "frequency_min": {
         "type": "integer",
         "example": 1530
       },
-      "frequencyMax": {
+      "frequency_max": {
         "type": "integer",
         "example": 4010
       }

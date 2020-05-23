@@ -122,20 +122,20 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
  */
 router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
-  const userId = req.rfcx.auth_token_info.guid
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMoment()
   params.convert('end').toMoment()
   params.convert('classification').toInt()
-  params.convert('frequencyMin').toInt()
-  params.convert('frequencyMax').toInt()
+  params.convert('frequency_min').toInt()
+  params.convert('frequency_max').toInt()
 
   return params.validate()
     .then(() => checkAccess(streamId, req))
     .then(() => {
-      const { start, end, classification, frequencyMin, frequencyMax } = convertedParams
-      return annotationsService.create(streamId, start, end, classification, frequencyMin, frequencyMax, userId)
+      const { start, end, classification, frequency_min, frequency_max } = convertedParams
+      return annotationsService.create(streamId, start, end, classification, frequency_min, frequency_max, userId)
     })
     .then((annotation) => res.set('X-Created-Id', annotation.id).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

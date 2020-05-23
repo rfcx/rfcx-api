@@ -113,7 +113,16 @@ module.exports = class Conversion {
     return this;
   }
 
-  toLatitude() {
+  toUuid () {
+    this.conversions.push(() => {
+      if (this.value.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/g) === null) {
+        this.throwError('should be an UUID');
+      }
+    });
+    return this;
+  }
+
+  toLatitude () {
     this.toFloat();
     this.minimum(-90.0);
     this.maximum(90.0);

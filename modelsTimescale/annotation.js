@@ -5,11 +5,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      unique: true,
       primaryKey: true
     },
     streamId: {
-      type: DataTypes.STRING(32),
+      type: DataTypes.STRING(36),
+      allowNull: false
+    },
+    classificationId: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     start: {
@@ -31,11 +34,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     createdBy: {
-      type: DataTypes.STRING(32),
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     updatedBy: {
-      type: DataTypes.STRING(32),
+      type: DataTypes.INTEGER,
       allowNull: false
     }
   }, {

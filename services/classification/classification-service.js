@@ -54,8 +54,8 @@ function getByStream (streamId, limit, offset) {
   offset = offset || 0
   const columns = models.Classification.attributes.full.map(col => `c."${col}"`).join(', ')
   const sql = `SELECT DISTINCT ${columns} FROM "Classifications" c 
-               JOIN "Annotations" a ON c.id = a."classificationId" 
-               WHERE a."streamId" = $streamId LIMIT $limit OFFSET $offset`
+               JOIN annotations a ON c.id = a.classification_id 
+               WHERE a.stream_id = $streamId LIMIT $limit OFFSET $offset`
   const options = {
     model: models.Classification,
     mapToModel: true,
