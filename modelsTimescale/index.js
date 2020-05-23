@@ -8,12 +8,18 @@ var env = process.env.NODE_ENV || "development";
 
 let options = {
   dialect: 'postgres',
+  dialectOptions: {
+    ssl: process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production',
+  },
   host: process.env.POSTGRES_HOSTNAME,
   port: process.env.POSTGRES_PORT,
   define: {
     underscored: true,
-    timestamps: true,
-    charset: 'utf8'
+    charset: 'utf8',
+    dialectOptions: {
+      collate: 'utf8_general_ci'
+    },
+    timestamps: true
   }
 }
 if (env === 'development') {
@@ -21,7 +27,6 @@ if (env === 'development') {
     console.log('\nPostgres QUERY----------------------------------\n', str, '\n----------------------------------');
   }
 }
-
 var sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options);
 var db = {};
 
