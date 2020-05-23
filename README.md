@@ -85,6 +85,11 @@ To start http API run the following command in the project root:
 npm start
 ```
 
+To run the API with auto-reload (requires nodemon  `npm i nodemon -g`):
+```
+nodemon bin/start
+```
+
 ## MQTT API
 
 To run a development MQTT broker locally, first generate the required certs:
