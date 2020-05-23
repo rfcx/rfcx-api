@@ -9,6 +9,20 @@ function configure (app) {
         title: 'RFCx API Documentation',
         version: '0.0.1',
       },
+      servers: [
+        {
+          url: `http://localhost:${app.get('port')}`,
+          description: "Local development"
+        },
+        {
+          url: 'https://staging-api.rfcx.org',
+          description: "Staging server (test data)"
+        },
+        {
+          url: 'https://api.rfcx.org',
+          description: "Production server (uses live data)"
+        }
+      ],
       components: {
         schemas: require('./modelSchemas.json'),
         requestBodies: require('./requestBodies.json'),
@@ -31,9 +45,11 @@ function configure (app) {
           }
         }
       },
-      security: {
-        auth0: ['openid', 'email', 'profile', 'offline']
-      }
+      security: [
+        {
+          auth0: ['openid', 'email', 'profile', 'offline']
+        }
+      ]
     },
     apis: ['./routes/v2/**/*.js'],
   }

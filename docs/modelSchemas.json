@@ -2,7 +2,7 @@
   "AnnotationLite": {
     "allOf": [
       {
-        "$ref": "#/components/requestBodies/AnnotationNew"
+        "$ref": "#/components/requestBodies/Annotation"
       },
       {
         "properties": {
