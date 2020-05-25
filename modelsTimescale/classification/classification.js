@@ -33,6 +33,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
     },
   }, {
+    indexes: [
+      { unique: true, fields: ["value"] },
+      { fields: ["title"] }
+    ],
     tableName: "Classifications"
   });
 
