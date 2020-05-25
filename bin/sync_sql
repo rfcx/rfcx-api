@@ -28,9 +28,10 @@ function initializeSequelize() {
   let dbHost = databaseType === 'timescale'? process.env.POSTGRES_HOSTNAME : process.env.DB_HOSTNAME;
   let dbPort = databaseType === 'timescale'? process.env.POSTGRES_PORT : process.env.DB_PORT;
   let dialect = databaseType === 'timescale'? 'postgres' : 'mysql';
+  let dialectOptions = databaseType === 'timescale'? `{ "ssl": ${process.env.POSTGRES_HOSTNAME !== 'localhost' && process.env.POSTGRES_HOSTNAME !== '127.0.0.1'} }` : '{}'
 
   var configCustom = `"username": "${dbUsername}", "password": "${dbPassword}", "database": "${dbName}", "host": "${dbHost}", "port": "${dbPort}"`;
-  var configGeneric = `"dialect": "${dialect}", "logging": ${sequelizeVerbose}, "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }`;
+  var configGeneric = `"dialect": "${dialect}", "dialectOptions": ${dialectOptions}, "logging": ${sequelizeVerbose}, "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }`;
 
   var configJsonContent = '{ '
     +'\n"development": { '+configCustom+', '+configGeneric+' }, '
