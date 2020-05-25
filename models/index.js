@@ -14,6 +14,15 @@ config.dialect = 'mysql';
 var sequelize = new Sequelize(config.database, config.username, config.password, config);
 var db        = {};
 
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connected to MySQL.');
+  })
+  .catch(err => {
+    console.error('Unable to connect to MySQL:', err);
+  });
+
 // get file listing in 'models' directory, filtered by those we know to ignore...
 fs.readdirSync(__dirname).filter(function(file) {
     return (file.indexOf(".") !== 0) && (file !== "index.js") && !fs.statSync(path.join(__dirname,file)).isDirectory();

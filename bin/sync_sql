@@ -2,11 +2,15 @@
 console.log('----------------------------------\nRFCX | ./bin/sync_sql started')
 var exec = require('child_process').exec;
 var fs = require("fs");
+var argv = require('minimist')(process.argv.slice(2));
 
 if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
   var env = require(__dirname+"/../config/env_vars.js").env;
   for (i in env) { process.env[i] = env[i]; }
 }
+
+// MySQL by default
+var databaseType = argv && argv.type === 'timescale'? 'timescale' : 'mysql';
 
 console.log('RFCX | Initializing sequelize');
 initializeSequelize();
@@ -18,8 +22,16 @@ function initializeSequelize() {
 
   var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false;
 
-  var configCustom = '"username": "'+process.env.DB_USERNAME+'", "password": "'+process.env.DB_PASSWORD+'", "database": "'+process.env.DB_NAME+'", "host": "'+process.env.DB_HOSTNAME+'"';
-  var configGeneric = '"dialect": "mysql", "logging": '+sequelizeVerbose+', "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }';
+  let dbUsername = databaseType === 'timescale'? process.env.POSTGRES_USER : process.env.DB_USERNAME;
+  let dbPassword = databaseType === 'timescale'? process.env.POSTGRES_PASSWORD : process.env.DB_PASSWORD;
+  let dbName = databaseType === 'timescale'? process.env.POSTGRES_DB : process.env.DB_NAME;
+  let dbHost = databaseType === 'timescale'? process.env.POSTGRES_HOSTNAME : process.env.DB_HOSTNAME;
+  let dbPort = databaseType === 'timescale'? process.env.POSTGRES_PORT : process.env.DB_PORT;
+  let dialect = databaseType === 'timescale'? 'postgres' : 'mysql';
+  let dialectOptions = databaseType === 'timescale'? `{ "ssl": ${process.env.NODE_ENV === 'development' && process.env.POSTGRES_HOSTNAME !== 'localhost' && process.env.POSTGRES_HOSTNAME !== '127.0.0.1'} }` : '{}'
+
+  var configCustom = `"username": "${dbUsername}", "password": "${dbPassword}", "database": "${dbName}", "host": "${dbHost}", "port": "${dbPort}"`;
+  var configGeneric = `"dialect": "${dialect}", "dialectOptions": ${dialectOptions}, "logging": ${sequelizeVerbose}, "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }`;
 
   var configJsonContent = '{ '
     +'\n"development": { '+configCustom+', '+configGeneric+' }, '
@@ -36,25 +48,30 @@ function initializeSequelize() {
 
         console.log('RFCX | sequelize config.json has been [re]generated')
         console.log('RFCX | Getting models')
-        var models = require("../models");
+        var models, migrationCommand;
+        if (argv && argv.type === 'timescale') {
+          models = require("../modelsTimescale");
+          migrationCommand = 'npx sequelize db:migrate --models-path ./modelsTimescale --migrations-path ./migrationsTimescale';
+          console.log('Running sync for TimescaleDb');
+        }
+        else {
+          models = require('../models');
+          migrationCommand = 'npx sequelize db:migrate --models-path ./models --migrations-path ./migrations';
+          console.log('Running sync for MySQL');
+        }
 
-        /* sequelize sync */
         console.log('RFCX | Syncing models\n');
-        models.sequelize.sync({
-          logging: console.log
-        })
-          .then(function() {
-            console.log('\nRFCX | Models have been synced')
-            /* run sequelize-cli migrations from command line */
-            var seqCliPath = 'npx sequelize';
-            console.log('RFCX | Migrating db: started')
-            exec('npx sequelize db:migrate', function(err,sOut,sErr){
-              console.log('RFCX | Migrating db: in progress')
-              console.log(sErr);
+        models.sequelize.sync({ logging: console.log })
+          .then(() => {
+            console.log('RFCX | Models have been synced\n')
+            console.log('RFCX | Migrating\n')
+            return new Promise((resolve, reject) => {
+              exec(migrationCommand, function(err, sOut, sErr){
+                if (err) { return reject(err); }
+                if (sErr) { return reject(sErr); }
+                return resolve();
+              });
             });
-          })
-          .catch(function(err) {
-            console.log('RFCX | Error in syncing models:', err);
           });
       }
     });

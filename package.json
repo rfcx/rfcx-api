@@ -15,7 +15,6 @@
     "migrate": "./node_modules/sequelize-cli/bin/sequelize"
   },
   "dependencies": {
-    "@mongoosejs/double": "0.2.0",
     "archiver": "4.0.1",
     "aws-sdk": "2.673.0",
     "bluebird": "2.11.0",
@@ -39,8 +38,6 @@
     "mandrill-api": "1.0.45",
     "moment": "2.25.3",
     "moment-timezone": "0.5.28",
-    "mongoose": "5.9.9",
-    "mongoose-long": "0.2.1",
     "mqtt": "2.18.8",
     "multer": "0.1.8",
     "mysql2": "2.1.0",
@@ -54,6 +51,8 @@
     "passport-local": "1.0.0",
     "path-complete-extname": "1.0.0",
     "pdfmake": "0.1.53",
+    "pg": "6.4.2",
+    "pg-hstore": "2.3.3",
     "probe-image-size": "5.0.0",
     "redis": "2.8.0",
     "request": "2.88.2",
@@ -72,6 +71,7 @@
   "devDependencies": {
     "chai": "3.5.0",
     "faux-knox": "0.1.16",
+    "minimist": "1.2.5",
     "mocha": "2.4.5",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",

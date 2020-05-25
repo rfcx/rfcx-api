@@ -1,3 +1,6 @@
+// various process-related stuff
+require('./utils/process');
+
 // check for environmental variable file and load if present
 var fs = require("fs");
 if (fs.existsSync("./config/env_vars.js")) {
