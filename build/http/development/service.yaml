@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-service
+  namespace: testing
+spec:
+  selector:
+    app: api
+  type: ClusterIP
+  ports:
+    - name: api
+      port: 80

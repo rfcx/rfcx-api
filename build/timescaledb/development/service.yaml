@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: timescaledb-service
+  namespace: testing
+spec:
+  selector:
+    app: timescaledb
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: 5432
