@@ -74,6 +74,7 @@ function getCharacteristicsForClassification(value) {
 
 function formatClassification(classification) {
   return {
+    id: classification.id,
     value: classification.value,
     title: classification.title,
     description: classification.description,
