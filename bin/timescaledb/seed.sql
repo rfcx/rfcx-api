@@ -1,4 +1,4 @@
-INSERT INTO public."Languages" (id, value) VALUES ('en_US', 'en_US')
+INSERT INTO public."Languages" (id, value) VALUES ('en_US', 'en_US');
 
 INSERT INTO public."ClassificationTypes" (id, value, created_at, updated_at) VALUES (1, 'section', '2020-05-23 11:22:36.977589', '2020-05-23 11:22:36.977589');
 INSERT INTO public."ClassificationTypes" (id, value, created_at, updated_at) VALUES (2, 'kingdom', '2020-05-23 11:22:36.998456', '2020-05-23 11:22:36.998456');
