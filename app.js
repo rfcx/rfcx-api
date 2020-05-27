@@ -222,7 +222,7 @@ app.get('/app-info', (req, res) => {
 })
 
 // TODO: enable documentation (requires `npm i swagger-ui-express swagger-jsdoc --save`)
-// require('./docs').configure(app);
+require('./docs').configure(app);
 
 // Catch & Report Various HTTP Errors (needs some work)
 
