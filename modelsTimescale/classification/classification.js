@@ -28,7 +28,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    source_id: {
+    source_external_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
