@@ -27,10 +27,10 @@ exports.env = {
 
   PLAYER_PASSCODES: "0000,1111",
 
-  DB_HOSTNAME: "localhost",
+  DB_HOSTNAME: "127.0.0.1",
   DB_NAME: "rfcx_api",
-  DB_USERNAME: "",
-  DB_PASSWORD: "",
+  DB_USERNAME: "root",
+  DB_PASSWORD: "test",
   DB_PORT: 3306,
 
   NEO4J_URL: "",
@@ -41,7 +41,7 @@ exports.env = {
   POSTGRES_HOSTNAME: "127.0.0.1",
   POSTGRES_DB: "postgres",
   POSTGRES_USER: "postgres",
-  POSTGRES_PASSWORD: "",
+  POSTGRES_PASSWORD: "test",
 
   SQS_PERCEPTION_BATCH: "rfcx-perception-batch",
 

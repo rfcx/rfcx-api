@@ -159,6 +159,9 @@ var routes = {
     ais: [
       require("./routes/v2/ais/ais"),
     ],
+    annotations: [
+      require("./routes/v2/annotations"),
+    ],
     classifications: [
       require("./routes/v2/classifications/classifications"),
     ],
@@ -172,6 +175,7 @@ var routes = {
       require("./routes/v2/streams/streams"),
       require("./routes/v2/streams/streams-assets"),
       require("./routes/v2/streams/streams-annotations"),
+      require("./routes/v2/streams/streams-classifications"),
       require("./routes/v2/streams/streams-detections"),
     ],
     tags: [
@@ -216,6 +220,9 @@ app.get('/app-info', (req, res) => {
     app: packageData.version
   });
 })
+
+// TODO: enable documentation (requires `npm i swagger-ui-express swagger-jsdoc --save`)
+// require('./docs').configure(app);
 
 // Catch & Report Various HTTP Errors (needs some work)
 

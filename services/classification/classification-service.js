@@ -1,7 +1,4 @@
-const Promise = require("bluebird");
 const models = require('../../modelsTimescale');
-const ForbiddenError = require("../../utils/converter/forbidden-error");
-const ValidationError = require('../../utils/converter/validation-error');
 const EmptyResultError = require('../../utils/converter/empty-result-error');
 
 function getClassificationByValue(value, ignoreMissing) {
@@ -50,6 +47,21 @@ function search(opts) {
         }
       ],
     });
+}
+
+function getByStream (streamId, limit, offset) {
+  limit = limit || 100
+  offset = offset || 0
+  const columns = models.Classification.attributes.full.map(col => `c."${col}"`).join(', ')
+  const sql = `SELECT DISTINCT ${columns} FROM "Classifications" c 
+               JOIN annotations a ON c.id = a.classification_id 
+               WHERE a.stream_id = $streamId LIMIT $limit OFFSET $offset`
+  const options = {
+    model: models.Classification,
+    mapToModel: true,
+    bind: { streamId, limit, offset }
+  }
+  return models.sequelize.query(sql, options)
 }
 
 function getCharacteristicsForClassification(value) {
@@ -106,6 +118,7 @@ module.exports = {
   getClassificationByValue,
   search,
   getCharacteristicsForClassification,
+  getByStream,
   formatClassifications,
   formatClassification,
 };

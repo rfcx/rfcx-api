@@ -9,7 +9,7 @@ passport.use('jwt-custom', require('../passport-jwt').JwtStrategyCustom);
 function requireTokenType(type) {
   // curry
   return function (req, res, next) {
-    if(req.rfcx.auth_token_info.type != type) {
+    if (req.rfcx.auth_token_info.type != type) {
       httpError(req, res, 403, "token");
       req.end();
     } else {
@@ -39,6 +39,15 @@ function hasRole(expectedRoles) {
 };
 
 /**
+ * Ensure user is authenticated (with JWT) and has the roles
+ * 
+ * @param  {...String} roles 
+ */
+function authenticatedWithRoles (...roles) {
+  return [passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(roles)]
+}
+
+/**
  * All DB users have attribute rfcx_system. Dev team and old RFCx users have rfcx_system === true
  * All other users which were authorized through auth0 or other services have rfcx_system === false
  * This middleware checks if user has rfcx_system set to true and denies access if it's false
@@ -47,12 +56,13 @@ function isRFCxUser() {
   return function(req, res, next) {
     // if (expectedRoles.length === 0 || req.user.userType !== 'auth0'){ return next(); }
     if (!req.user || req.user.rfcx_system === false) { return res.sendStatus(403); }
-    return  next();
+    return next();
   }
 }
 
 module.exports = {
   requireTokenType,
   hasRole,
+  authenticatedWithRoles,
   isRFCxUser,
 };

@@ -1,0 +1,95 @@
+{
+  "AnnotationLite": {
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/Annotation"
+      },
+      {
+        "properties": {
+          "id": {
+            "type": "uuid",
+            "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+          },
+          "stream_id": {
+            "type": "string",
+            "example": "01a2ucztj8ax"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/ClassificationLite"
+          }
+        },
+        "required": [
+          "id",
+          "streamId"
+        ]
+      }
+    ]
+  },
+  "Annotation": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/AnnotationLite"
+      },
+      {
+        "properties": {
+          "created_at": {
+            "type": "date"
+          },
+          "created_by": {
+            "type": "integer",
+            "description": "The user who created the annotation"
+          },
+          "updated_at": {
+            "type": "date"
+          },
+          "updated_by": {
+            "type": "integer",
+            "description": "The user who last updated the annotation"
+          }
+        }
+      }
+    ]
+  },
+  "ClassificationLite": {
+    "type": "object",
+    "properties": {
+      "value": {
+        "type": "string",
+        "description": "Unique short name?",
+        "example": "falciformis"
+      },
+      "title": {
+        "type": "string",
+        "description": "Description or latin name of species",
+        "example": "Carcharhinus falciformis"
+      }
+    },
+    "required": [
+      "value",
+      "title"
+    ]
+  },
+  "Classification": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassificationLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "reference_audio": {
+            "type": "string"
+          },
+          "reference_spectrogram": {
+            "type": "string"
+          }
+        }
+      }
+    ]
+  }
+}

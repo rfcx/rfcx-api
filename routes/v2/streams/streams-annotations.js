@@ -1,183 +1,144 @@
-var express = require("express");
-var router = express.Router();
-var models  = require("../../../models");
-var guid = require('../../../utils/misc/guid');
-var hash = require("../../../utils/misc/hash.js").hash;
-var httpError = require("../../../utils/http-errors.js");
-var passport = require("passport");
-var sequelize = require("sequelize");
-var ValidationError = require("../../../utils/converter/validation-error");
-var ForbiddenError = require("../../../utils/converter/forbidden-error");
-var EmptyResultError = require('../../../utils/converter/empty-result-error');
-var hasRole = require('../../../middleware/authorization/authorization').hasRole;
-const streamsService = require('../../../services/streams/streams-service');
-const streamsAnnotationsService = require('../../../services/streams/streams-annotations-service');
-const Promise = require("bluebird");
-const Converter = require("../../../utils/converter/converter");
+const router = require("express").Router()
+const models = require("../../../models")
+const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
+const streamsService = require('../../../services/streams/streams-service')
+const annotationsService = require('../../../services/annotations')
+const Converter = require("../../../utils/converter/converter")
 
-const allowedVisibilities = ['private', 'public', 'site'];
+function checkAccess (streamId, req) {
+  return streamsService.getStreamByGuid(streamId)
+    .then(stream => streamsService.checkUserAccessToStream(req, stream))
+}
 
-router.route("/:guid/annotations")
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
+/**
+ * @swagger
+ *
+ * /v2/streams/{id}/annotations:
+ *   get:
+ *     summary: Get list of annotations belonging to a stream
+ *     tags:
+ *       - annotations
+ *     parameters:
+ *       - name: id
+ *         description: Stream identifier
+ *         in: path
+ *         required: true
+ *         type: string
+ *       - name: start
+ *         description: Start timestamp (iso8601 or epoch)
+ *         in: query
+ *         required: true
+ *         type: string
+ *       - name: end
+ *         description: End timestamp (iso8601 or epoch)
+ *         in: query
+ *         required: true
+ *         type: string
+ *       - name: classifications
+ *         description: List of clasification identifiers
+ *         in: query
+ *         type: array|int
+ *       - name: limit
+ *         description: Maximum number of results to return
+ *         in: query
+ *         type: int
+ *         default: 100
+ *       - name: offset
+ *         description: Number of results to skip
+ *         in: query
+ *         type: int
+ *         default: 0
+ *     responses:
+ *       200:
+ *         description: List of annotation (lite) objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/AnnotationLite'
+ *       400:
+ *         description: Invalid query parameters
+ *       404:
+ *         description: Stream not found
+ */
+router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), function (req, res) {
+  const streamId = req.params.streamId
+  const convertedParams = {}
+  const params = new Converter(req.query, convertedParams)
+  params.convert('start').toMoment()
+  params.convert('end').toMoment()
+  params.convert('classifications').optional().toIntArray()
+  params.convert('limit').optional().toInt()
+  params.convert('offset').optional().toInt()
 
-    let transformedParams = {};
-    let params = new Converter(req.query, transformedParams);
+  return params.validate()
+    .then(() => checkAccess(streamId, req))
+    .then(() => {
+      const { start, end, classifications, limit, offset } = convertedParams
+      return annotationsService.query(start, end, streamId, classifications, limit, offset)
+    })
+    .then((annotations) => res.json(annotations))
+    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
+})
 
-    params.convert('starts').toInt().minimum(0).maximum(32503669200000);
-    params.convert('ends').toInt().minimum(0).maximum(32503669200000);
-    params.convert('value').optional().toString();
+/**
+ * @swagger
+ *
+ * /v2/streams/{id}/annotations:
+ *   post:
+ *     summary: Create an annotation belonging to a stream
+ *     tags:
+ *       - annotations
+ *     parameters:
+ *       - name: id
+ *         description: Stream identifier
+ *         in: path
+ *         required: true
+ *         type: string
+ *     requestBody:
+ *       description: Annotation object
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/requestBodies/Annotation'
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: '#/components/requestBodies/Annotation'
+ *     responses:
+ *       201:
+ *         description: Created
+ *         headers:
+ *           X-Created-Id:
+ *             schema:
+ *               type: integer
+ *             description: Identifier of the created annotation
+ *       400:
+ *         description: Invalid query parameters
+ *       404:
+ *         description: Stream not found
+ */
+router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), function (req, res) {
+  const streamId = req.params.streamId
+  const userId = req.rfcx.auth_token_info.owner_id
+  const convertedParams = {}
+  const params = new Converter(req.body, convertedParams)
+  params.convert('start').toMoment()
+  params.convert('end').toMoment()
+  params.convert('classification').toInt()
+  params.convert('frequency_min').toInt()
+  params.convert('frequency_max').toInt()
 
-    params.validate()
-      .then(() => {
-        return streamsService.getStreamByGuid(req.params.guid)
-      })
-      .then((dbStream) => {
-        streamsService.checkUserAccessToStream(req, dbStream);
-        transformedParams.streamGuid = dbStream.guid;
-        return streamsAnnotationsService.getAnnotationsByParams(transformedParams);
-      })
-      .then(function(dbAnnotations) {
-        return streamsAnnotationsService.formatAnnotations(dbAnnotations);
-      })
-      .then(function(json) {
-        res.status(200).send(json);
-      })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while searching for annotations.'); console.log(e) });
+  return params.validate()
+    .then(() => checkAccess(streamId, req))
+    .then(() => {
+      const { start, end, classification, frequency_min, frequency_max } = convertedParams
+      return annotationsService.create(streamId, start, end, classification, frequency_min, frequency_max, userId)
+    })
+    .then((annotation) => res.set('X-Created-Id', annotation.id).sendStatus(201))
+    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
+})
 
-  });
-
-router.route("/:guid/labels")
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
-
-    let transformedParams = {};
-    let params = new Converter(req.query, transformedParams);
-
-    params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
-    params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
-
-    params.validate()
-      .then(() => {
-        return streamsService.getStreamByGuid(req.params.guid)
-      })
-      .then((dbStream) => {
-        streamsService.checkUserAccessToStream(req, dbStream);
-        transformedParams.streamGuid = dbStream.guid;
-        return streamsAnnotationsService.getLabelsByParams(transformedParams);
-      })
-      .then(streamsAnnotationsService.formatDbLabels)
-      .then((json) => {
-        res.status(200).send(json);
-      })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while searching for stream labels.'); console.log(e) });
-
-  });
-
-router.route("/:guid/annotations")
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
-
-    let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
-
-    params.convert('annotations').toArray();
-
-    let stream;
-
-    params.validate()
-      .then(() => {
-        return streamsService.getStreamByGuid(req.params.guid)
-      })
-      .then((dbStream) => {
-        stream = dbStream;
-        streamsService.checkUserAccessToStream(req, dbStream);
-        streamsAnnotationsService.checkAnnotationsValid(transformedParams.annotations);
-        return streamsAnnotationsService.saveAnnotations(transformedParams.annotations, stream, req.rfcx.auth_token_info.owner_id);
-      })
-      .then(function(dbAnnotations) {
-        return streamsAnnotationsService.formatAnnotations(dbAnnotations);
-      })
-      .then(function(json) {
-        res.status(200).send(json);
-      })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while creating annotations.'); console.log(e) });
-
-  });
-
-router.route("/annotations/:guid")
-  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req,res) {
-
-    return streamsAnnotationsService.getAnnotationByGuid(req.params.guid)
-      .then((dbAnnotation) => {
-        return streamsService.getStreamByGuid(dbAnnotation.Stream.guid)
-      })
-      .then((dbStream) => {
-        streamsService.checkUserAccessToStream(req, dbStream);
-        return streamsAnnotationsService.getAnnotationByGuid(req.params.guid);
-      })
-      .then((dbAnnotation) => {
-        // streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
-        return streamsAnnotationsService.deleteAnnotationByGuid(req.params.guid);
-      })
-      .then(function(json) {
-        res.status(200).send({ success: true });
-      })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while deleting the annotation.'); console.log(e) });
-
-  });
-
-router.route("/annotations/:guid")
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), (req, res) => {
-
-    let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
-
-    params.convert('starts').optional().toInt().minimum(0).maximum(32503669200000);
-    params.convert('ends').optional().toInt().minimum(0).maximum(32503669200000);
-    params.convert('freq_min').optional().toInt().minimum(0);
-    params.convert('freq_max').optional().toInt().minimum(0);
-    params.convert('confidence').optional().toFloat().default(1);
-    params.convert('value').optional().toString();
-
-    return params.validate()
-      .then(() => {
-        return streamsAnnotationsService.getAnnotationByGuid(req.params.guid)
-      })
-      .then((dbAnnotation) => {
-        return streamsService.getStreamByGuid(dbAnnotation.Stream.guid)
-      })
-      .then((dbStream) => {
-        streamsService.checkUserAccessToStream(req, dbStream);
-        return streamsAnnotationsService.getAnnotationByGuid(req.params.guid);
-      })
-      .then((dbAnnotation) => {
-        // streamsAnnotationsService.checkAnnotationBelongsToUser(dbAnnotation, req.rfcx.auth_token_info.owner_id);
-        return streamsAnnotationsService.updateAnnotation(dbAnnotation, transformedParams);
-      })
-      .then(streamsAnnotationsService.formatAnnotation)
-      .then((json) => {
-        res.status(200).send(json);
-      })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while updating the annotation.'); console.log(e) });
-
-  });
-
-module.exports = router;
+module.exports = router

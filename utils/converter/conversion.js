@@ -113,7 +113,16 @@ module.exports = class Conversion {
     return this;
   }
 
-  toLatitude() {
+  toUuid () {
+    this.conversions.push(() => {
+      if (this.value.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/g) === null) {
+        this.throwError('should be an UUID');
+      }
+    });
+    return this;
+  }
+
+  toLatitude () {
     this.toFloat();
     this.minimum(-90.0);
     this.maximum(90.0);
@@ -230,6 +239,23 @@ module.exports = class Conversion {
       }
     });
     return this;
+  }
+
+  toIntArray() {
+    this.conversions.push(() => {
+      if (!util.isArray(this.value)) {
+        this.value = [this.value];
+      }
+      let result = [];
+      this.value.forEach(item => {
+        let number = parseInt(item);
+        if (isNaN(number)) {
+          this.throwError(`should be an array of integers`);
+        }
+        result.push(number);
+      });
+      this.value = result;
+    });
   }
 
   nonEmptyArrayItem() {
