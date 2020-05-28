@@ -20,16 +20,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    reference_audio: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    reference_spectrogram: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
     source_external_id: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    reference_annotation: {
+      type: DataTypes.UUID,
       allowNull: true,
     },
   }, {
@@ -40,7 +36,7 @@ module.exports = function(sequelize, DataTypes) {
     tableName: "Classifications"
   });
   Classification.attributes = {
-    full: ['id', 'value', 'title', 'description', 'image', 'reference_audio', 'reference_spectrogram', 'source_id'],
+    full: ['id', 'value', 'title', 'description', 'image', 'source_id'],
     lite: ['id', 'value', 'title']
   }
   return Classification;
