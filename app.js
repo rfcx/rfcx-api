@@ -13,6 +13,9 @@ if (process.env.NODE_ENV === "production") {
   process.env.NEW_RELIC_HOME = __dirname+"/config"; require("newrelic");
 }
 
+// check that all required env vars are set
+require('./config/inspector');
+
 var express = require("express"),
     path = require("path"),
     favicon = require("serve-favicon"),
