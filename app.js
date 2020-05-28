@@ -189,18 +189,19 @@ const coreRoutes = {
   ]
 }
 
+const baseMiddleware = require('./middleware/base')
+
 // Initialize Routes
-const { setApiParams, insecureRequestRedirect } = require('./middleware/v1').middleware
 for (apiVersion in routes) {
   for (routeName in routes[apiVersion]) {
     for (route in routes[apiVersion][routeName]) {
-      app.use("/" + apiVersion + "/" + routeName, [setApiParams, insecureRequestRedirect], routes[apiVersion][routeName][route]);
+      app.use("/" + apiVersion + "/" + routeName, baseMiddleware, routes[apiVersion][routeName][route]);
     }
   }
 }
 for (routeName in coreRoutes) {
   for (route in coreRoutes[routeName]) {
-    app.use('/' + routeName, [setApiParams, insecureRequestRedirect], coreRoutes[routeName][route])
+    app.use('/' + routeName, baseMiddleware, coreRoutes[routeName][route])
   }
 }
 
