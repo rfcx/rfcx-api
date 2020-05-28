@@ -1,5 +1,6 @@
 const models = require('../../modelsTimescale');
 const EmptyResultError = require('../../utils/converter/empty-result-error');
+const streamsAssetsService = require('../streams/streams-assets-service');
 
 function getClassificationByValue(value, ignoreMissing) {
   return models.Classification
@@ -44,7 +45,11 @@ function search(opts) {
               as: 'Language'
             }
           ]
-        }
+        },
+        {
+          model: models.Annotation,
+          as: 'ReferenceAnnotation'
+        },
       ],
     });
 }
@@ -53,8 +58,8 @@ function getByStream (streamId, limit, offset) {
   limit = limit || 100
   offset = offset || 0
   const columns = models.Classification.attributes.full.map(col => `c."${col}"`).join(', ')
-  const sql = `SELECT DISTINCT ${columns} FROM "Classifications" c 
-               JOIN annotations a ON c.id = a.classification_id 
+  const sql = `SELECT DISTINCT ${columns} FROM "Classifications" c
+               JOIN annotations a ON c.id = a.classification_id
                WHERE a.stream_id = $streamId LIMIT $limit OFFSET $offset`
   const options = {
     model: models.Classification,
@@ -91,8 +96,8 @@ function formatClassification(classification) {
     title: classification.title,
     description: classification.description,
     image: classification.image,
-    reference_audio: classification.reference_audio,
-    reference_spectrogram: classification.reference_spectrogram,
+    reference_audio: getReferenceMediaUrls(classification)['reference_audio'],
+    reference_spectrogram: getReferenceMediaUrls(classification)['reference_spectrogram'],
     type: classification.Type? classification.Type.value : null,
     common_names: extractCommonNames(classification),
   };
@@ -108,6 +113,18 @@ function extractCommonNames(classification) {
       language: name.Language? name.Language.value : name.language,
     }
   });
+}
+
+function getReferenceMediaUrls(classification) {
+  let urls = {
+    reference_audio: null,
+    reference_spectrogram: null
+  };
+  if (classification.ReferenceAnnotation) {
+    urls.reference_audio = streamsAssetsService.combineUrlForAnnotation(classification.ReferenceAnnotation, 'mp3', 'mp3')
+    urls.reference_spectrogram = streamsAssetsService.combineUrlForAnnotation(classification.ReferenceAnnotation, 'spec', 'png', 200, 200);
+  }
+  return urls;
 }
 
 function formatClassifications(classifications) {
