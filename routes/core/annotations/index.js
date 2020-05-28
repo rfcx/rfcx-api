@@ -14,7 +14,7 @@ function isUuid (str) {
 /**
  * @swagger
  *
- * /v2/annotations:
+ * /annotations:
  *   get:
  *     summary: Get list of annotations (not implemented)
  *     description: Perform annotation search across streams and classifications
@@ -86,7 +86,7 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
 /**
  * @swagger
  *
- * /v2/annotations/{id}:
+ * /annotations/{id}:
  *   put:
  *     summary: Update an annotation
  *     tags:
@@ -150,7 +150,7 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
 /**
  * @swagger
  *
- * /v2/annotations/{id}:
+ * /annotations/{id}:
  *   delete:
  *     summary: Delete an annotation
  *     tags:

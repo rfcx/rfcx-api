@@ -14,7 +14,7 @@ function checkAccess (streamId, req) {
 /**
  * @swagger
  *
- * /v2/streams/{id}/annotations:
+ * /streams/{id}/annotations:
  *   get:
  *     summary: Get list of annotations belonging to a stream
  *     tags:
@@ -86,7 +86,7 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
 /**
  * @swagger
  *
- * /v2/streams/{id}/annotations:
+ * /streams/{id}/annotations:
  *   post:
  *     summary: Create an annotation belonging to a stream
  *     tags:

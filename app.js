@@ -159,12 +159,6 @@ var routes = {
     ais: [
       require("./routes/v2/ais/ais"),
     ],
-    annotations: [
-      require("./routes/v2/annotations"),
-    ],
-    classifications: [
-      require("./routes/v2/classifications/classifications"),
-    ],
     events: [
       require("./routes/v2/events/events"),
     ],
@@ -174,8 +168,6 @@ var routes = {
     streams: [
       require("./routes/v2/streams/streams"),
       require("./routes/v2/streams/streams-assets"),
-      require("./routes/v2/streams/streams-annotations"),
-      require("./routes/v2/streams/streams-classifications"),
       require("./routes/v2/streams/streams-detections"),
     ],
     tags: [
@@ -184,29 +176,40 @@ var routes = {
   }
 };
 
-// Initialize Version-Specific Middleware
-var middleware = {};
-for (apiVersion in routes) {
-  middleware[apiVersion] = require("./middleware/"+apiVersion+".js").middleware;
-  for (middlewareFunc in middleware[apiVersion]) {
-   app.use("/"+apiVersion+"/", middleware[apiVersion][middlewareFunc]);
-  }
+const coreRoutes = {
+  'annotations': [
+    require("./routes/core/annotations")
+  ],
+  'classifications': [
+    require("./routes/core/classifications")
+  ],
+  'streams': [
+    require("./routes/core/annotations/stream"),
+    require("./routes/core/classifications/stream")
+  ]
 }
+
 // Initialize Routes
+const { setApiParams, insecureRequestRedirect } = require('./middleware/v1').middleware
 for (apiVersion in routes) {
   for (routeName in routes[apiVersion]) {
-  for (route in routes[apiVersion][routeName]) {
-    app.use("/"+apiVersion+"/"+routeName, routes[apiVersion][routeName][route]);
+    for (route in routes[apiVersion][routeName]) {
+      app.use("/" + apiVersion + "/" + routeName, [setApiParams, insecureRequestRedirect], routes[apiVersion][routeName][route]);
+    }
   }
+}
+for (routeName in coreRoutes) {
+  for (route in coreRoutes[routeName]) {
+    app.use('/' + routeName, [setApiParams, insecureRequestRedirect], coreRoutes[routeName][route])
   }
 }
 
 // Health Check Endpoint
 var healthCheck = require("./utils/internal-rfcx/health-check.js").healthCheck;
-app.get("/health_check", function(req,res){ healthCheck.httpResponse(req,res); });
+app.get("/health_check", function (req, res) { healthCheck.httpResponse(req, res); });
 
 // Default Endpoint
-app.get('/',function(req,res){
+app.get('/', function (req, res) {
   res.status(200).json({
     name: 'Rainforest Connection (RFCx)',
     message: 'Access to this API requires authentication. Please send requests for access by email to contact@rfcx.org',
