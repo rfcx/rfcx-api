@@ -51,7 +51,7 @@ function configure (app) {
         }
       ]
     },
-    apis: ['./routes/v2/**/*.js'],
+    apis: ['./routes/core/**/*.js'],
   }
 
   const swaggerSpec = swaggerJSDoc(options)

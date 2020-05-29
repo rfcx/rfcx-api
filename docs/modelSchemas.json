@@ -55,12 +55,12 @@
     "properties": {
       "value": {
         "type": "string",
-        "description": "Unique short name?",
+        "description": "Unique short name",
         "example": "falciformis"
       },
       "title": {
         "type": "string",
-        "description": "Description or latin name of species",
+        "description": "Description or latin name",
         "example": "Carcharhinus falciformis"
       }
     },
@@ -77,7 +77,18 @@
       {
         "properties": {
           "description": {
-            "type": "string"
+            "type": "string",
+            "example": "Found in temperate and tropical seas all around the world, they begin their lives spotless and steadily gain spots as they get older."
+          },
+          "common_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Bridled Dolphin",
+              "Pantropical Spotted Dolphin"
+            ]
           },
           "image": {
             "type": "string"
