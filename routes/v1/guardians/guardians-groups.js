@@ -1,4 +1,4 @@
-var models  = require("../../../models");
+var models = require("../../../models");
 var express = require("express");
 var router = express.Router();
 var views = require("../../../views/v1");
@@ -13,6 +13,8 @@ const sequelize = require("sequelize");
 var Converter = require("../../../utils/converter/converter");
 const Promise = require('bluebird');
 const hash = require("../../../utils/misc/hash.js").hash;
+const passport = require("passport");
+passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;

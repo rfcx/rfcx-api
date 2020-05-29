@@ -1,6 +1,26 @@
 #!/usr/bin/env node
 console.log('----------------------------------\nRFCX | ./bin/start started')
 var debug = require('debug')('rfcx-api');
+
+// various process-related stuff
+require('../utils/process');
+
+// check for environmental variable file and load if present
+var fs = require("fs");
+if (fs.existsSync("./config/env_vars.js")) {
+  console.log('Using env_vars.js')
+  var env = require("../config/env_vars.js").env;
+  for (i in env) { process.env[i] = env[i]; }
+}
+
+// New Relic Initialization
+if (process.env.NODE_ENV === "production") {
+  process.env.NEW_RELIC_HOME = __dirname + "/config"; require("newrelic");
+}
+
+// check that all required env vars are set
+require('../config/inspector');
+
 var app = require('../app');
 
 console.log('RFCX | Starting server')

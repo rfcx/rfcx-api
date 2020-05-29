@@ -1,5 +1,5 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require("../../../models");
+var models = require("../../../models");
 var express = require("express");
 var router = express.Router();
 var httpError = require("../../../utils/http-errors.js");
@@ -9,6 +9,8 @@ const generator = require('generate-password');
 const redis = require('../../../utils/redis');
 const ValidationError = require("../../../utils/converter/validation-error");
 const EmptyResultError = require('../../../utils/converter/empty-result-error');
+const passport = require("passport");
+passport.use(require("../../../middleware/passport-token").TokenStrategy);
 
 router.route("/:shortlink_id")
   .get(function(req,res) {

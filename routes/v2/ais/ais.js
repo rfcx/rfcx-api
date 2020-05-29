@@ -14,6 +14,7 @@ const pathCompleteExtname = require('path-complete-extname');
 const dirUtil = require('../../../utils/misc/dir');
 const fileUtil = require('../../../utils/misc/file');
 var path = require('path');
+const loggers = require('../../../utils/logger')
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;

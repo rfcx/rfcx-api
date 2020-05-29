@@ -17,6 +17,7 @@ const guardiansService = require('../../../services/guardians/guardians-service'
 const hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const Converter = require("../../../utils/converter/converter");
 const sequelize = require("sequelize");
+const loggers = require('../../../utils/logger')
 
 var logDebug = loggers.debugLogger.log;
 var logError = loggers.errorLogger.log;
