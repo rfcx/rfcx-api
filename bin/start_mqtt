@@ -98,6 +98,8 @@ app.mqtt.on("message", (topic, data) => {
         });
         
         app.mqtt.publish(`${result.guardian_guid}/cmd`, result.gzip);
+        // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
+        // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THIS LINE SHOULD BE REMOVED
         app.mqtt.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip);
 
         console.log('mqtt message processed', topic, messageId);
