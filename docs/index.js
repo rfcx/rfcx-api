@@ -11,10 +11,6 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:8080`,
-        description: "Local development"
-      },
-      {
         url: 'https://dev-api.rfcx.org',
         description: "Development server"
       },
@@ -25,7 +21,11 @@ const options = {
       {
         url: 'https://api.rfcx.org',
         description: "Production server (live data - use with care)"
-      }
+      },
+      {
+        url: `http://localhost:8080`,
+        description: "Local development"
+      },
     ],
     components: {
       schemas: require('./modelSchemas.json'),
@@ -45,7 +45,8 @@ const options = {
                 'offline': 'required'
               }
             }
-          }
+          },
+          'x-tokenName': 'id_token'
         }
       }
     },
@@ -55,12 +56,13 @@ const options = {
       }
     ]
   },
-  apis: ['./routes/core/**/*.js'],
+  apis: ['./routes/core/**/*.js', './routes/*.js'],
 }
 
 const swaggerSpec = swaggerJSDoc(options)
 const swaggerUiOptions = {
-  oauth2RedirectUrl: 'http://localhost:8080/docs/auth-callback'
+  oauth2RedirectUrl: 'http://localhost:8080/docs/auth-callback',
+  operationsSorter: 'alpha'
 }
 const swaggerUiExpressOptions = {
   customSiteTitle: 'RFCx API Documentation',
