@@ -42,7 +42,7 @@ function onMessagePing(data, messageId) {
       return mqttPublish.processAndCompressPublishJson(pingObj);
     })
     .then((pingObj) => {
-      console.log(pingObj.rtrn.obj);
+      // console.log(pingObj.rtrn.obj);
       return { guardian_guid: pingObj.json.guardian.guid, obj: pingObj.rtrn.obj, gzip: pingObj.rtrn.gzip };
     });
 }
