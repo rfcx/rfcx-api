@@ -4,7 +4,8 @@ const classificationService = require('../classification/classification-service'
 const streamsService = require('./streams-service');
 const ValidationError = require("../../utils/converter/validation-error");
 const ForbiddenError = require("../../utils/converter/forbidden-error");
-const DetectionModel = require('../../modelsMongoose/detection').Detection;
+
+const modelsTimescaleDb  = require("../../modelsTimescale");
 
 const requiredDetectionAttrs = ['starts', 'ends', 'confidence', 'label'];
 
@@ -136,8 +137,8 @@ function saveDetections(detections, stream, modelGuid) {
               label: detection.label,
               model: modelGuid,
               stream: stream.guid,
-              starts: detection.starts,
-              ends: detection.ends
+              start: detection.starts,
+              end: detection.ends
             }
             // delete all previous detection from the same model for same stream, label and time range
             return clearDetectionWithSameParams(params)
@@ -159,25 +160,11 @@ function saveDetections(detections, stream, modelGuid) {
 }
 
 function clearDetectionWithSameParams(data) {
-  return DetectionModel.deleteMany({
-    label: data.label,
-    model: data.model,
-    stream: data.stream,
-    starts: data.starts,
-    ends: data.ends,
-  });
+  return Promise.resolve();
 }
 
 function createDetection(data) {
-  let detection = new DetectionModel({
-    label: data.label,
-    model: data.model,
-    stream: data.stream,
-    confidence: data.confidence,
-    starts: data.starts,
-    ends: data.ends,
-  });
-  return detection.save();
+  return Promise.resolve();
 }
 
 module.exports = {

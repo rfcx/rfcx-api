@@ -76,7 +76,7 @@ module.exports = function(sequelize, DataTypes) {
     indexes: [
       { unique: true, fields: ["guid"] }
     ],
-    tableName: 'RegistrationToken'
+    tableName: 'RegistrationTokens'
   });
 
   return RegistrationToken;
