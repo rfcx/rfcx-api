@@ -154,7 +154,7 @@ exports.mqttInstructions = {
                     type: dbQueued[dbQuInd].type,
                     command: dbQueued[dbQuInd].command,
                     meta: JSON.parse(dbQueued[dbQuInd].meta_json),
-                    execute_at: (dbQueued[dbQuInd].execute_at == null) ? 0 : dbQueued[dbQuInd].execute_at
+                    execute_at: (dbQueued[dbQuInd].execute_at == null) ? 0 : dbQueued[dbQuInd].execute_at.valueOf()
                   });
 
                   dbQueued[dbQuInd].dispatch_attempts = dbQueued[dbQuInd].dispatch_attempts+1;
