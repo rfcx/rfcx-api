@@ -152,9 +152,9 @@ exports.mqttInstructions = {
                   rtrnInstructions.push({
                     guid: dbQueued[dbQuInd].guid,
                     type: dbQueued[dbQuInd].type,
-                    command: dbQueued[dbQuInd].command,
+                    cmd: dbQueued[dbQuInd].command,
                     meta: dbQueued[dbQuInd].meta_json,
-                    execute_at: ""+((dbQueued[dbQuInd].execute_at == null) ? "" : dbQueued[dbQuInd].execute_at.valueOf())
+                    at: ""+((dbQueued[dbQuInd].execute_at == null) ? "" : dbQueued[dbQuInd].execute_at.valueOf())
                   });
 
                   dbQueued[dbQuInd].dispatch_attempts = dbQueued[dbQuInd].dispatch_attempts+1;
