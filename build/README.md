@@ -4,6 +4,11 @@
 
 ### First time setup
 
+0. Ensure you have Docker authenticated to AWS
+   ```
+   aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 887044485231.dkr.ecr.eu-west-1.amazonaws.com
+   ```
+   
 1. Build the image (replace `2` with the next version) (or skip this step to use an existing image)
    ```
    docker build -t api_development -f build/http/Dockerfile .

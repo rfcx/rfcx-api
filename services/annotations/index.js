@@ -1,15 +1,14 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
-const { toSnakeObject } = require('../../utils/snake-case')
+const { toSnakeObject } = require('../../utils/formatters/snake-case')
+const { propertyToFloat } = require('../../utils/formatters/object-properties')
 
 function query (start, end, streamId, classificationIds, limit, offset) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
-    },
-    end: {
-      [models.Sequelize.Op.lte]: moment.utc(end).valueOf(),
-    },
+      [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
+    }
   }
   if (streamId !== undefined) {
     condition.streamId = streamId
@@ -17,8 +16,6 @@ function query (start, end, streamId, classificationIds, limit, offset) {
   if (classificationIds !== undefined) {
     condition.classificationId = { [models.Sequelize.Op.or]: classificationIds }
   }
-  limit = limit || 100
-  offset = offset || 0
   return models.Annotation
     .findAll({
       where: condition,
@@ -33,6 +30,46 @@ function query (start, end, streamId, classificationIds, limit, offset) {
       limit: limit,
       order: ['start']
     }).then(annotations => annotations.map(toSnakeObject))
+}
+
+const timeBucketAttribute = 'time_bucket'
+const aggregatedValueAttribute = 'aggregated_value'
+const timeAggregatedQueryAttributes = function (timeInterval, func, field, modelName, modelTimeField) {
+  return [
+    [models.Sequelize.fn('time_bucket', timeInterval, models.Sequelize.col(modelTimeField)), timeBucketAttribute],
+    [models.Sequelize.fn(func, models.Sequelize.col(modelName + '.' + field)), aggregatedValueAttribute],
+    [models.Sequelize.fn('min', models.Sequelize.col(modelTimeField)), 'first_' + modelTimeField]
+  ]
+}
+
+function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
+  let condition = {
+    start: {
+      [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
+      [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
+    }
+  }
+  if (streamId !== undefined) {
+    condition.streamId = streamId
+  }
+  return models.Annotation
+    .findAll({
+      where: condition,
+      include: [
+        {
+          model: models.Classification,
+          attributes: models.Classification.attributes.lite,
+          required: true
+        }
+      ],
+      attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Annotation', 'start'),
+      offset: offset,
+      limit: limit,
+      order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
+      group: [timeBucketAttribute].concat(models.Sequelize.col('Classification.id')),
+      raw: true,
+      nest: true
+    }).then(annotations => annotations.map(propertyToFloat(aggregatedValueAttribute)))
 }
 
 function create (streamId, start, end, classificationId, frequencyMin, frequencyMax, userId) {
@@ -66,4 +103,4 @@ function remove (annotationId) {
   return get(annotationId).then(annotation => annotation.destroy())
 }
 
-module.exports = { query, get, create, update, remove }
+module.exports = { query, timeAggregatedQuery, get, create, update, remove }

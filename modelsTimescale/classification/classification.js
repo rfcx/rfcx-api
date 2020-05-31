@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   var Classification = sequelize.define("Classification", {
     value: {
       type: DataTypes.STRING,
@@ -36,8 +36,8 @@ module.exports = function(sequelize, DataTypes) {
     tableName: "Classifications"
   });
   Classification.attributes = {
-    full: ['id', 'value', 'title', 'description', 'image', 'source_id'],
-    lite: ['id', 'value', 'title']
+    full: ['value', 'title', 'description', 'image', 'source_id'],
+    lite: ['value', 'title']
   }
   return Classification;
 };

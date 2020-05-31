@@ -102,5 +102,28 @@
         }
       }
     ]
+  },
+  "AnnotationCluster": {
+    "type": "object",
+    "properties": {
+      "time_bucket": {
+        "type": "date",
+        "description": "Timestamp of the start of the time bucket",
+        "example": "2020-06-02T00:00:00.000Z"
+      },
+      "aggregated_value": {
+        "type": "float",
+        "description": "The result of the aggregation over the cluster (sum, count, avg, etc)",
+        "example": 72
+      },
+      "first_start": {
+        "type": "date",
+        "description": "Timestamp of the first annotation in the cluster",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
+      }
+    }
   }
 }

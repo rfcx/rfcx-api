@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
     ]
   });
   Annotation.attributes = {
-    full: ['id', 'streamId', 'classificationId', 'start', 'end', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy'],
+    full: ['id', 'streamId', 'classificationId', 'start', 'end', 'frequency_min', 'frequency_max', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy'],
     lite: ['id', 'streamId', 'classificationId', 'start', 'end']
   }
   return Annotation;

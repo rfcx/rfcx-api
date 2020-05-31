@@ -3,10 +3,10 @@ const moment = require("moment-timezone");
 var util = require("util");
 
 module.exports = class Conversion {
-  constructor(src, property, target = null){
+  constructor(src, property, target = null) {
     this.src = src;
 
-    if(target == null){
+    if (target == null) {
       target = src;
     }
     this.target = target;
@@ -18,44 +18,45 @@ module.exports = class Conversion {
     this.defaultValue = null;
   }
 
-  execute(){
-    if(this.required && this.src[this.property] == null) {
+  execute () {
+    if (this.required && this.src[this.property] == null) {
       this.throwError(`the parameter is required but was not provided`);
     }
 
-    this.value = this.src[this.property] !== undefined? this.src[this.property] : this.defaultValue;
+    this.value = this.src[this.property] !== undefined ? this.src[this.property] : this.defaultValue;
 
     if (!this.required && this.value === null) {
       return this.value;
     }
 
-    for (var executeValidation of this.conversions){
+    for (var executeValidation of this.conversions) {
       executeValidation();
     }
 
     this.target[this.property] = this.value;
   }
 
-  default(def) {
+  default (def) {
+    this.optional()
     if (def !== undefined) {
       this.defaultValue = def;
     }
     return this;
   }
 
-  optional(){
+  optional () {
     this.required = false;
     return this;
   }
 
-  throwError(message){
+  throwError (message) {
     throw new Error(`Parameter '${this.property}' ${message}`);
   }
 
-  toFloat() {
+  toFloat () {
     this.conversions.push(() => {
       let newValue = parseFloat(this.value);
-      if (isNaN(newValue)){
+      if (isNaN(newValue)) {
         this.throwError(`should be a float`);
       }
       this.value = newValue;
@@ -64,9 +65,9 @@ module.exports = class Conversion {
     return this;
   }
 
-  minimum(a) {
+  minimum (a) {
     this.conversions.push(() => {
-      if(this.value < a) {
+      if (this.value < a) {
         this.throwError(`is smaller than the minimum ${a}`);
       }
     });
@@ -74,9 +75,9 @@ module.exports = class Conversion {
     return this;
   }
 
-  maximum(b) {
+  maximum (b) {
     this.conversions.push(() => {
-      if(this.value > b) {
+      if (this.value > b) {
         this.throwError(`is larger than the max ${b}`);
       }
     });
@@ -84,9 +85,9 @@ module.exports = class Conversion {
     return this;
   }
 
-  minLength(a) {
+  minLength (a) {
     this.conversions.push(() => {
-      if(this.value.length < a) {
+      if (this.value.length < a) {
         this.throwError(`is shorter than min length of ${a} symbols`);
       }
     });
@@ -94,9 +95,9 @@ module.exports = class Conversion {
     return this;
   }
 
-  maxLength(b) {
+  maxLength (b) {
     this.conversions.push(() => {
-      if(this.value.length > b) {
+      if (this.value.length > b) {
         this.throwError(`is longer than the max length of ${b} symbols`);
       }
     });
@@ -104,9 +105,9 @@ module.exports = class Conversion {
     return this;
   }
 
-  nonEmpty() {
+  nonEmpty () {
     this.conversions.push(() => {
-      if(!this.value.length) {
+      if (!this.value.length) {
         this.throwError(`is empty`);
       }
     });
@@ -130,7 +131,7 @@ module.exports = class Conversion {
     return this;
   }
 
-  toLongitude() {
+  toLongitude () {
     this.toFloat();
     this.minimum(-180.0);
     this.maximum(180.0);
@@ -138,12 +139,12 @@ module.exports = class Conversion {
     return this;
   }
 
-  toMoment(tz="UTC") {
+  toMoment (tz = "UTC") {
     this.conversions.push(() => {
       let newValue = moment.tz(this.value, tz);
 
       if (isNaN(newValue)) {
-        this.throwError(`should be a ISO8601 DateTime string`);
+        this.throwError('should be a ISO8601 DateTime string');
       }
 
       this.value = newValue;
@@ -151,7 +152,7 @@ module.exports = class Conversion {
     return this;
   }
 
-  toQuantumTime(){
+  toQuantumTime () {
     this.toMoment();
     this.conversions.push(() => {
       timeUtils.quantify(this.value);
@@ -159,7 +160,7 @@ module.exports = class Conversion {
     return this;
   }
 
-  toDateString() {
+  toDateString () {
     this.toMoment();
     this.conversions.push(() => {
       // timeUtils.quantify(this.value);
@@ -168,7 +169,25 @@ module.exports = class Conversion {
     return this;
   }
 
-  toInt(){
+  toTimeInterval () {
+    this.conversions.push(() => {
+      if (!this.value.match(/^[0-9]+\w*[d|D|h|H|m|M|s|S]$/g)) {
+        this.throwError('should be a time interval (e.g. "1d" for 1 day, "20m" for 20 minutes)');
+      }
+    })
+    return this
+  }
+
+  toAggregateFunction () {
+    this.conversions.push(() => {
+      if (['count', 'sum', 'avg', 'min', 'max'].indexOf(this.value) === -1) {
+        this.throwError('should be count, sum, avg, min, max');
+      }
+    })
+    return this
+  }
+
+  toInt () {
     this.conversions.push(() => {
       let newValue = parseInt(this.value);
 
@@ -181,67 +200,67 @@ module.exports = class Conversion {
     return this;
   }
 
-  toNonNegativeInt(){
+  toNonNegativeInt () {
     this.toInt();
     this.minimum(0);
 
     return this;
   }
 
-  toString(){
-    this.conversions.push(()=>{
+  toString () {
+    this.conversions.push(() => {
       this.value = this.value.toString();
     });
     return this;
   }
 
-  toLowerCase(){
-    this.conversions.push(()=>{
+  toLowerCase () {
+    this.conversions.push(() => {
       this.value = this.value.toLowerCase();
     });
     return this;
   }
 
-  toUpperCase(){
-    this.conversions.push(()=>{
+  toUpperCase () {
+    this.conversions.push(() => {
       this.value = this.value.toUpperCase();
     });
     return this;
   }
 
-  trim() {
-    this.conversions.push(()=>{
+  trim () {
+    this.conversions.push(() => {
       this.value = this.value.trim();
     });
     return this;
   }
 
-  objToString() {
-    this.conversions.push(()=>{
-      if (typeof(this.value) === 'object') {
+  objToString () {
+    this.conversions.push(() => {
+      if (typeof (this.value) === 'object') {
         this.value = JSON.stringify(this.value);
       }
     });
     return this;
   }
 
-  toBoolean(){
-    this.conversions.push(()=>{
+  toBoolean () {
+    this.conversions.push(() => {
       this.value = (this.value.toString() === 'true' || this.value.toString() === '1');
     });
     return this;
   }
 
-  toArray() {
-    this.conversions.push(()=>{
+  toArray () {
+    this.conversions.push(() => {
       if (!util.isArray(this.value)) {
-        this.value = [ this.value ];
+        this.value = [this.value];
       }
     });
     return this;
   }
 
-  toIntArray() {
+  toIntArray () {
     this.conversions.push(() => {
       if (!util.isArray(this.value)) {
         this.value = [this.value];
@@ -258,16 +277,16 @@ module.exports = class Conversion {
     });
   }
 
-  nonEmptyArrayItem() {
+  nonEmptyArrayItem () {
     this.conversions.push(() => {
-      if(this.value.length === 1 && this.value[0].trim() === '') {
+      if (this.value.length === 1 && this.value[0].trim() === '') {
         this.throwError(`is empty`);
       }
     });
     return this;
   }
 
-  isObject() {
+  isObject () {
     this.conversions.push(() => {
       if (!util.isObject(this.value)) {
         this.throwError(`is not an object`);
@@ -277,14 +296,14 @@ module.exports = class Conversion {
     return this;
   }
 
-  isValidTimezone() {
+  isValidTimezone () {
     if (moment.tz.zone(this.src[this.property]) === null) {
       return this.throwError(`${this.src[this.property]} is not valid timezone`);
     };
     return this;
   }
 
-  isEqualToAny(arr) {
+  isEqualToAny (arr) {
     this.conversions.push(() => {
       if (!arr.includes(this.value)) {
         this.throwError(`should be one of these values: ${arr.join(', ')}`);
