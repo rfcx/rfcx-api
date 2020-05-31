@@ -153,7 +153,7 @@ exports.mqttInstructions = {
                     guid: dbQueued[dbQuInd].guid,
                     type: dbQueued[dbQuInd].type,
                     cmd: dbQueued[dbQuInd].command,
-                    meta: dbQueued[dbQuInd].meta_json,
+                    meta: ""+((dbQueued[dbQuInd].meta_json == null) ? "" : dbQueued[dbQuInd].meta_json),
                     at: ""+((dbQueued[dbQuInd].execute_at == null) ? "" : dbQueued[dbQuInd].execute_at.valueOf())
                   });
 
