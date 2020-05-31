@@ -28,7 +28,7 @@ exports.mqttPingProcess = {
 
           try {
             
-            pingObj.json = JSON.parse(jsonBuffer.toString("utf8")).ping;
+            pingObj.json = JSON.parse(jsonBuffer.toString("utf8"));
             resolve(pingObj);
 
           } catch (errParsePingObj) {

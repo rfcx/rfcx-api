@@ -145,23 +145,27 @@ exports.mqttInstructions = {
               order: [ ["created_at", "ASC"] ]
           }).then(function(dbQueued){
 
-            for (dbQuInd in dbQueued) {
-              if ((dbQueued[dbQuInd].guid != null) && (blockedInstructions.indexOf(dbQueued[dbQuInd].guid) < 0)) {
+            if (dbQueued != null) {
+              for (dbQuInd in dbQueued) {
+                if ((dbQueued[dbQuInd].guid != null) && (blockedInstructions.indexOf(dbQueued[dbQuInd].guid) < 0)) {
 
-                rtrnInstructions.push({
-                  guid: dbQueued[dbQuInd].guid,
-                  type: dbQueued[dbQuInd].type,
-                  command: dbQueued[dbQuInd].command,
-                  meta: JSON.parse(dbQueued[dbQuInd].meta_json),
-                  execute_at: (dbQueued[dbQuInd].execute_at == null) ? 0 : dbQueued[dbQuInd].execute_at
-                });
+                  rtrnInstructions.push({
+                    guid: dbQueued[dbQuInd].guid,
+                    type: dbQueued[dbQuInd].type,
+                    command: dbQueued[dbQuInd].command,
+                    meta: JSON.parse(dbQueued[dbQuInd].meta_json),
+                    execute_at: (dbQueued[dbQuInd].execute_at == null) ? 0 : dbQueued[dbQuInd].execute_at
+                  });
 
-                dbQueued[dbQuInd].dispatch_attempts = dbQueued[dbQuInd].dispatch_attempts+1;
-                dbQueued[dbQuInd].save();
+                  dbQueued[dbQuInd].dispatch_attempts = dbQueued[dbQuInd].dispatch_attempts+1;
+                  dbQueued[dbQuInd].save();
 
+                }
               }
+              
+              checkInObj.rtrn.obj.instructions = rtrnInstructions;
+              
             }
-            checkInObj.rtrn.obj.instructions = rtrnInstructions;
             resolve(checkInObj);
 
           }).catch(function(err){
@@ -169,48 +173,7 @@ exports.mqttInstructions = {
           });
      } catch (errUpdateInstruction) { console.log(errUpdateInstruction); reject(new Error(errUpdateInstruction)); }
     }.bind(this));
-  },
-
-
-  sendInstruction: function(appMqtt, guardianGuid, guardianRole) {
-    return new Promise(function(resolve,reject){
-      try {
-
-        this.setupInstructionAction( guardianGuid, guardianRole ).then(function(instructionObj){
-          mqttPublish.processAndCompressPublishJson(instructionObj).then(function(instructionObj){
-
-            appMqtt.publish(instructionObj.mqtt.topic, instructionObj.rtrn.gzip);
-            console.log(JSON.stringify(instructionObj.rtrn.obj));
-
-          }).catch(function(errProcessInstructionJson){ console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); });
-        }).catch(function(errSetupInstructionAction){ console.log(errSetupInstructionAction); });
-
-     } catch (errSendInstruction) { console.log(errSendInstruction); reject(new Error(errSendInstruction)); }
-    }.bind(this));
-  },
-
-
-  setupInstructionAction: function( guardianGuid, guardianRole ) {
-    return new Promise(function(resolve, reject) {
-        try {
-
-          var instructionObj = { 
-            mqtt: { 
-              topic: "guardians/"+guardianGuid+"/"+guardianRole.toLowerCase()+"/instructions" 
-            }, 
-            db: { 
-            },
-            rtrn: {
-              obj: { instruction_id: null, messages: [], prefs: [] }
-            }
-          };
-
-          resolve(instructionObj);
-
-        } catch (errParseInstructionObj) { console.log(errParseInstructionObj); reject(new Error(errParseInstructionObj)); }
-    }.bind(this));
   }
-
 
 
 };

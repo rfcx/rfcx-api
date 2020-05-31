@@ -162,7 +162,7 @@ function onMessageCheckin(data, messageId) {
       return mqttPublish.processAndCompressPublishJson(checkInObj);
     })
     .then((checkInObj) => {
-      return { guardian_guid: checkInObj.json.guardian.guid, gzip: checkInObj.rtrn.gzip };
+      return { guardian_guid: checkInObj.json.guardian.guid, obj: checkInObj.rtrn.obj, gzip: checkInObj.rtrn.gzip };
     });
 }
 

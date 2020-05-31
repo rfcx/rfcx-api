@@ -64,18 +64,6 @@ app.mqtt.on('close', () => {
 })
 
 
-// var mqttInstructions = require("../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
-// var mqttPublish = require("../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
-
-// mqttInstructions.setupInstructionAction( checkInObj.db.dbGuardian, "guardian" ).then(function(instructionObj){
-//   mqttPublish.processAndCompressPublishJson(instructionObj).then(function(instructionObj){
-
-//     app.mqtt.publish(instructionObj.mqtt.topic, instructionObj.rtrn.gzip);
-//     console.log(JSON.stringify(instructionObj.rtrn.obj));
-
-//   }).catch(function(errProcessInstructionJson){ console.log(errProcessInstructionJson); reject(new Error(errProcessInstructionJson)); });
-// }).catch(function(errSetupInstructionAction){ console.log(errSetupInstructionAction); });
-
 if (process && process.pid) {
   console.log('pid', process.pid);
 }
@@ -120,10 +108,11 @@ app.mqtt.on("message", (topic, data) => {
     
     return mqttPingRouter.onMessagePing(data, messageId)
       .then((result) => {
-        // logDebug('mqtt message return object', {
-        //   guardian_guid: result.guardian_guid,
-        //   gzip: result.gzip
-        // });
+
+        if (Object.keys(result.obj).length > 0) {
+          app.mqtt.publish(`${result.guardian_guid}/cmd`, result.gzip);
+        }
+
         console.log('mqtt message processed', topic, messageId);
         messageId = null;
         result = null;
