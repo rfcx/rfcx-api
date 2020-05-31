@@ -48,8 +48,6 @@ var cors = require("cors");
 var bodyParser = require("body-parser");
 var multer = require("multer");
 var addRequestId = require('express-request-id');
-//var addInstanceId = require('./middleware/misc/aws').addInstanceId;
-var toobusy = require("toobusy-js");
 const packageData = require('./package.json');
 
 app.http = express();
@@ -57,55 +55,24 @@ app.http.set("title", "rfcx-api-mqtt");
 app.http.set("port", process.env.PORT || 8080);
 app.http.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.http.use(cors());
-app.http.use(function(req, res, next) { if (toobusy()) { loggers.errorLogger.log('Server is too busy to handle request', { req: req, info: { url: req.url, body: req.body } }); } next(); });
-app.http.use(bodyParser.urlencoded({extended:false}));
+app.use(require('./middleware/toobusy'))
+app.http.use(bodyParser.urlencoded({ extended: false }));
 app.http.use(bodyParser.json({ limit: '1mb' }));
 app.http.use(multer(require("./config/multer").config(process.env)));
 app.http.use(passport.initialize());
 
-// app.http.use(express.static(path.join(__dirname, "public")));
-
-// Middleware
-app.http.use("/v1/", require("./middleware/v1.js").middleware.setApiParams);
-app.http.use("/v1/", require("./middleware/v1.js").middleware.insecureRequestRedirect);
+const routeMiddleware = require('./middleware/route')
 
 // Guardian Update Endpoints
-app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-register"));
+app.http.use("/v1/guardians", routeMiddleware, require("./utils/rfcx-mqtt/http/guardians-register"));
 //app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-software"));
 
-// Health Check HTTP Endpoint
-var healthCheck = require("./utils/rfcx-mqtt/health-check-mqtt.js").healthCheck;
-app.http.get("/health_check", function(req,res){ healthCheck.httpResponse(req,res); });
+// Default and health check routes
+app.http.use(require('./routes/info'))
 
-
-// var mqttInstructions = require("./utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
-// app.http.get("/instructions", function(req,res){
-//   mqttInstructions.sendInstruction(app.mqtt, "3f55b79d5967", "guardian");
-//   healthCheck.httpResponse(req,res);
-// });
-
-// Default HTTP Endpoint
-app.http.get('/',function(req,res){
-  res.status(200).json({
-    name: 'Rainforest Connection (RFCx)',
-    message: 'Access to this API requires authentication (mqtt). Please send requests for access by email to contact@rfcx.org',
-    info: 'https://rfcx.org/'
-  });
-});
-
-app.http.get('/app-info', (req, res) => {
-  res.status(200).json({
-    node: process.version,
-    app: packageData.version
-  });
-})
-
-// Catch & Report Various HTTP Errors (needs some work)
-app.http.use(function(req, res, next) { var err = new Error('Not Found'); err.status = 404; next(err); });
-app.http.use(function(err, req, res, next) {
-  var status = err.status || 500;
-  if (status != 404) { loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err }); }
-  res.status(status).json({ message: err.message, error: err });
-});
+// Catch errors
+const { notFound, exceptionOccurred } = require('./middleware/error')
+app.use(notFound) // Last route, catches all
+app.use(exceptionOccurred) // Catches all errors (including 404)
 
 module.exports = app;

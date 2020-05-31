@@ -1,5 +1,6 @@
 const router = require("express").Router()
 const { healthCheck } = require("../utils/internal-rfcx/health-check.js")
+const packageData = require('../package.json')
 
 // Health Check Endpoint
 router.get("/health_check", function (req, res) { healthCheck.httpResponse(req, res); })

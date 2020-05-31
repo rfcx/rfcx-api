@@ -7,7 +7,6 @@ const cors = require("cors")
 const bodyParser = require("body-parser")
 const addRequestId = require('express-request-id')
 const { addInstanceId } = require('./middleware/misc/aws')
-const packageData = require('./package.json')
 const loggers = require('./utils/logger')
 
 const app = express()
