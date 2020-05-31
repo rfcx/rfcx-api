@@ -76,23 +76,6 @@ exports.saveMeta = {
     return models.GuardianMetaDataTransfer.bulkCreate(dbMetaDataTransfer);
   },
 
-  Offline: function(metaOffline, guardianId, checkInId) {
-
-    var dbMetaOffline = [];
-
-    for (offlInd in metaOffline) {
-      dbMetaOffline.push({
-        guardian_id: guardianId,
-        check_in_id: checkInId,
-        ended_at: new Date(parseInt(metaOffline[offlInd][0])),
-        offline_duration: parseInt(metaOffline[offlInd][1]),
-        carrier_name: metaOffline[offlInd][2]
-      });
-    }
-
-    return models.GuardianMetaOffline.bulkCreate(dbMetaOffline);
-  },
-
   LightMeter: function(metaLightMeter, guardianId, checkInId) {
 
     var dbMetaLightMeter = [];

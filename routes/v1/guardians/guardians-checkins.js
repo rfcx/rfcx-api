@@ -97,7 +97,6 @@ router.route("/:guardian_id/checkins")
           checkInHelpers.saveMeta.Battery(strArrToJSArr(this.json.battery,"|","*"), this.dbGuardian.id, dbCheckIn.id),
           checkInHelpers.saveMeta.Power(strArrToJSArr(this.json.power,"|","*"), this.dbGuardian.id, dbCheckIn.id),
           checkInHelpers.saveMeta.Network(strArrToJSArr(this.json.network,"|","*"), this.dbGuardian.id, dbCheckIn.id),
-          checkInHelpers.saveMeta.Offline(strArrToJSArr(this.json.offline,"|","*"), this.dbGuardian.id, dbCheckIn.id),
           checkInHelpers.saveMeta.LightMeter(strArrToJSArr(this.json.lightmeter,"|","*"), this.dbGuardian.id, dbCheckIn.id),
           checkInHelpers.saveMeta.Accelerometer(strArrToJSArr(this.json.accelerometer,"|","*"), this.dbGuardian.id, dbCheckIn.id),
           checkInHelpers.saveMeta.DiskUsage(strArrToJSArr(this.json.disk_usage,"|","*"), this.dbGuardian.id, dbCheckIn.id),
