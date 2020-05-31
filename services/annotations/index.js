@@ -3,6 +3,13 @@ const models = require('../../modelsTimescale')
 const { toSnakeObject } = require('../../utils/formatters/snake-case')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 
+function formatFull (annotation) {
+  return models.Annotation.attributes.full.reduce((acc, attribute) => {
+    acc[attribute] = annotation[attribute]
+    return acc
+  }, {})
+}
+
 function query (start, end, streamId, classificationIds, limit, offset) {
   let condition = {
     start: {
@@ -11,18 +18,20 @@ function query (start, end, streamId, classificationIds, limit, offset) {
     }
   }
   if (streamId !== undefined) {
-    condition.streamId = streamId
+    condition.stream_id = streamId
   }
   if (classificationIds !== undefined) {
-    condition.classificationId = { [models.Sequelize.Op.or]: classificationIds }
+    condition.classification_id = { [models.Sequelize.Op.or]: classificationIds }
   }
   return models.Annotation
     .findAll({
       where: condition,
       include: [
         {
+          as: 'classification',
           model: models.Classification,
-          attributes: models.Classification.attributes.lite.filter(field => field !== 'id')
+          attributes: models.Classification.attributes.lite,
+          required: true
         }
       ],
       attributes: models.Annotation.attributes.lite,
@@ -57,6 +66,7 @@ function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunct
       where: condition,
       include: [
         {
+          as: 'classification',
           model: models.Classification,
           attributes: models.Classification.attributes.lite,
           required: true
@@ -66,7 +76,7 @@ function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunct
       offset: offset,
       limit: limit,
       order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
-      group: [timeBucketAttribute].concat(models.Sequelize.col('Classification.id')),
+      group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
       raw: true,
       nest: true
     }).then(annotations => annotations.map(propertyToFloat(aggregatedValueAttribute)))
@@ -74,25 +84,50 @@ function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunct
 
 function create (streamId, start, end, classificationId, frequencyMin, frequencyMax, userId) {
   return models.Annotation.create({
-    streamId, start, end, classificationId, frequencyMin, frequencyMax,
-    createdBy: userId, updatedBy: userId
-  })
+    start, end,
+    stream_id: streamId,
+    classification_id: classificationId,
+    frequency_min: frequencyMin,
+    frequency_max: frequencyMax,
+    created_by_id: userId,
+    updated_by_id: userId
+  }).then(annotation => formatFull(annotation))
 }
 
 function get (annotationId) {
-  return models.Annotation.findByPk(annotationId)
+  return models.Annotation.findByPk(annotationId, {
+    include: [
+      {
+        as: 'classification',
+        model: models.Classification,
+        attributes: models.Classification.attributes.lite,
+        required: true
+      },
+      {
+        as: 'created_by',
+        model: models.User,
+        attributes: models.User.attributes.lite
+      },
+      {
+        as: 'updated_by',
+        model: models.User,
+        attributes: models.User.attributes.lite
+      }
+    ],
+    attributes: models.Annotation.attributes.full
+  })
 }
 
 function update (annotationId, start, end, classificationId, frequencyMin, frequencyMax, userId) {
-  return get(annotationId).then(annotation => {
+  return models.Annotation.findByPk(annotationId).then(annotation => {
     // Timescale time columns cannot be updated (outside of their "chunk interval")
     // so need to delete + create, while maintaining existing createdBy/At + streamId
     return models.sequelize.transaction(transaction => {
       return annotation.destroy({ transaction }).then(() => {
         return models.Annotation.create({
-          id: annotationId, streamId: annotation.streamId,
-          start, end, classificationId, frequencyMin, frequencyMax,
-          createdAt: annotation.createdAt, createdBy: annotation.createdBy, updatedAt: new Date, updatedBy: userId
+          ...annotation.toJSON(), classification_id: classificationId,
+          start, end, frequency_min: frequencyMin, frequency_max: frequencyMax,
+          updated_by_id: userId, updated_at: new Date
         }, { transaction, silent: true })
       })
     })

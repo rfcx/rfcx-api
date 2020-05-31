@@ -110,11 +110,10 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
  *     responses:
  *       201:
  *         description: Created
- *         headers:
- *           X-Created-Id:
+ *         content:
+ *           application/json:
  *             schema:
- *               type: integer
- *             description: Identifier of the created annotation
+ *               $ref: '#/components/schemas/AnnotationFull'
  *       400:
  *         description: Invalid query parameters
  *       404:
@@ -137,8 +136,8 @@ router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functi
       const { start, end, classification, frequency_min, frequency_max } = convertedParams
       return annotationsService.create(streamId, start, end, classification, frequency_min, frequency_max, userId)
     })
-    .then((annotation) => res.set('X-Created-Id', annotation.id).sendStatus(201))
-    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
+    .then(annotation => res.status(201).json(annotation))
+    .catch(httpErrorHandler(req, res, 'Failed creating annotation'))
 })
 
 module.exports = router

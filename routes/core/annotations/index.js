@@ -79,6 +79,44 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
 })
 
+/**
+ * @swagger
+ *
+ * /annotations/{id}:
+ *   get:
+ *     summary: Get an annotation
+ *     tags:
+ *       - annotations
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AnnotationFull'
+ *       403:
+ *         description: Insufficient privileges
+ *       404:
+ *         description: Annotation not found
+ */
+router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
+  const annotationId = req.params.id
+  const userId = req.rfcx.auth_token_info.owner_id
+  const convertedParams = {}
+  const params = new Converter(req.body, convertedParams)
+  params.convert('start').toMoment()
+  params.convert('end').toMoment()
+  params.convert('classification').toInt()
+  params.convert('frequency_min').toInt()
+  params.convert('frequency_max').toInt()
+
+  if (!isUuid(annotationId)) {
+    return res.sendStatus(404)
+  }
+
+  return annotationsService.get(annotationId)
+    .then(annotation => res.json(annotation))
+    .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
+})
 
 /**
  * @swagger
@@ -133,14 +171,14 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      return streamsService.getStreamByGuid(annotation.streamId)
+      return streamsService.getStreamByGuid(annotation.stream_id)
     })
     .then(stream => streamsService.checkUserAccessToStream(req, stream))
     .then(() => {
       const { start, end, classification, frequency_min, frequency_max } = convertedParams
       return annotationsService.update(annotationId, start, end, classification, frequency_min, frequency_max, userId)
     })
-    .then(() => res.sendStatus(204))
+    .then(annotation => res.status(204).json(annotation))
     .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
 })
 
@@ -178,7 +216,7 @@ router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      return streamsService.getStreamByGuid(annotation.streamId)
+      return streamsService.getStreamByGuid(annotation.stream_id)
     })
     .then(stream => streamsService.checkUserAccessToStream(req, stream))
     .then(() => annotationsService.remove(annotationId))

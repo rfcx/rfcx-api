@@ -62,6 +62,18 @@
         "type": "string",
         "description": "Description or latin name",
         "example": "Carcharhinus falciformis"
+      },
+      "image": {
+        "type": "string"
+      },
+      "type": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "species"
+          }
+        }
       }
     },
     "required": [
@@ -80,7 +92,7 @@
             "type": "string",
             "example": "Found in temperate and tropical seas all around the world, they begin their lives spotless and steadily gain spots as they get older."
           },
-          "common_names": {
+          "alternative_names": {
             "type": "array",
             "items": {
               "type": "string"
@@ -89,9 +101,6 @@
               "Bridled Dolphin",
               "Pantropical Spotted Dolphin"
             ]
-          },
-          "image": {
-            "type": "string"
           },
           "reference_audio": {
             "type": "string"
