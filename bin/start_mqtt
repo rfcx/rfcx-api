@@ -96,7 +96,10 @@ app.mqtt.on("message", (topic, data) => {
           guardian_guid: result.guardian_guid,
           gzip: result.gzip
         });
+        
+        app.mqtt.publish(`${result.guardian_guid}/cmd`, result.gzip);
         app.mqtt.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip);
+
         console.log('mqtt message processed', topic, messageId);
         messageId = null;
         result = null;
