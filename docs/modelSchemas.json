@@ -95,18 +95,52 @@
           "alternative_names": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "language_id": {
+                  "type": "string"
+                }
+              }
             },
             "example": [
-              "Bridled Dolphin",
-              "Pantropical Spotted Dolphin"
+              {
+                "name": "Bridled Dolphin",
+                "language_id": "en_US"
+              },
+              {
+                "name": "Pantropical Spotted Dolphin",
+                "language_id": "en_US"
+              }
             ]
           },
-          "reference_audio": {
-            "type": "string"
-          },
-          "reference_spectrogram": {
-            "type": "string"
+          "reference_annotations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "uuid"
+                },
+                "stream_id": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "date"
+                },
+                "end": {
+                  "type": "date"
+                },
+                "frequency_min": {
+                  "type": "integer"
+                },
+                "frequency_max": {
+                  "type": "integer"
+                }
+              }
+            }
           }
         }
       }

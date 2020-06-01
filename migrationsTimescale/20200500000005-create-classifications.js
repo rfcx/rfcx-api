@@ -54,9 +54,6 @@ module.exports = {
       source_external_id: {
         type: Sequelize.INTEGER
       },
-      reference_annotation_id: {
-        type: Sequelize.UUID
-      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false

@@ -69,7 +69,7 @@ module.exports = {
         allowNull: false
       },
     }).then(() => {
-      queryInterface.sequelize.query('SELECT create_hypertable(\'annotations\', \'start\')', {
+      return queryInterface.sequelize.query('SELECT create_hypertable(\'annotations\', \'start\')', {
         type: queryInterface.sequelize.QueryTypes.RAW
       })
     })

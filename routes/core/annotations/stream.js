@@ -113,7 +113,7 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AnnotationFull'
+ *               $ref: '#/components/schemas/AnnotationLite'
  *       400:
  *         description: Invalid query parameters
  *       404:

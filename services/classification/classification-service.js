@@ -1,6 +1,6 @@
-const models = require('../../modelsTimescale');
-const EmptyResultError = require('../../utils/converter/empty-result-error');
-const streamsAssetsService = require('../streams/streams-assets-service');
+const models = require('../../modelsTimescale')
+const EmptyResultError = require('../../utils/converter/empty-result-error')
+
 
 function getByValue (value, ignoreMissing) {
   return models.Classification
@@ -20,16 +20,19 @@ function getByValue (value, ignoreMissing) {
         },
         {
           model: models.Annotation,
-          as: 'reference_annotation',
-          attributes: models.Annotation.attributes.lite
+          as: 'reference_annotations',
+          attributes: models.Annotation.attributes.lite,
+          through: { attributes: [] }
         },
       ],
       attributes: models.Classification.attributes.full
     })
     .then((item) => {
-      if (!item && !ignoreMissing) { throw new EmptyResultError('Classification with given value not found.'); }
-      return item;
-    });
+      if (!item && !ignoreMissing) {
+        throw new EmptyResultError('Classification with given value not found.')
+      }
+      return item
+    })
 }
 
 function queryByKeyword (opts) {
@@ -39,14 +42,23 @@ function queryByKeyword (opts) {
       value: {
         [models.Sequelize.Op.in]: opts.levels
       }
-    };
+    }
   }
   return models.Classification
     .findAll({
       where: {
-        title: {
-          [models.Sequelize.Op.iLike]: `%${opts.q}%`
-        }
+        [models.Sequelize.Op.or]: [
+          {
+            title: {
+              [models.Sequelize.Op.iLike]: `%${opts.q}%`
+            }
+          },
+          {
+            '$alternative_names.name$': {
+              [models.Sequelize.Op.iLike]: `%${opts.q}%`
+            }
+          }
+        ]
       },
       include: [
         {
@@ -62,7 +74,7 @@ function queryByKeyword (opts) {
         }
       ],
       attributes: models.Classification.attributes.lite
-    });
+    })
 }
 
 function queryByStream (streamId, limit, offset) {
@@ -102,35 +114,9 @@ function queryByParent (value, type) {
     })
 }
 
-function getReferenceMediaUrls (classification) {
-  let urls = {
-    reference_audio: null,
-    reference_spectrogram: null
-  };
-  if (classification.reference_annotation_id) {
-    urls.reference_audio = streamsAssetsService.combineUrlForAnnotation(classification.reference_annotation_id, 'mp3', 'mp3')
-    urls.reference_spectrogram = streamsAssetsService.combineUrlForAnnotation(classification.reference_annotation_id, 'spec', 'png', 200, 200);
-  }
-  return urls;
-}
-
-function formatClassifications (classifications) {
-  return classifications.map(formatClassification);
-}
-
-function formatClassification (classification) {
-  return {
-    ...classification.toJSON(),
-    ...getReferenceMediaUrls(classification)
-  }
-}
-
-
 module.exports = {
   getByValue,
   queryByKeyword,
   queryByStream,
   queryByParent,
-  formatClassifications,
-  formatClassification,
-};
+}

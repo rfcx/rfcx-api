@@ -91,9 +91,6 @@ router.get("/", authenticatedWithRoles('rfcxUser'), function (req, res) {
         levels: transformedParams.levels,
       })
     })
-    .then(classifications => {
-      return classificationService.formatClassifications(classifications)
-    })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))
 })
@@ -127,9 +124,6 @@ router.get("/", authenticatedWithRoles('rfcxUser'), function (req, res) {
 router.get("/:value/characteristics", authenticatedWithRoles('rfcxUser'), function (req, res) {
 
   return classificationService.queryByParent(req.params.value, 'characteristic')
-    .then((classifications) => {
-      return classificationService.formatClassifications(classifications)
-    })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting characteristics'))
 })

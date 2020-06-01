@@ -22,20 +22,16 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    reference_annotation_id: {
-      type: DataTypes.UUID,
-      allowNull: true,
-    },
   })
   Classification.associate = function (models) {
     Classification.belongsTo(models.ClassificationType, { as: 'type', foreignKey: "type_id" })
     Classification.belongsTo(models.ClassificationSource, { as: 'source', foreignKey: "source_id" })
     Classification.belongsTo(models.Classification, { as: 'parent', foreignKey: "parent_id" })
-    Classification.belongsTo(models.Annotation, { as: 'reference_annotation', foreignKey: "reference_annotation_id" })
     Classification.hasMany(models.ClassificationAlternativeName, { as: "alternative_names", foreignKey: "classification_id" })
+    Classification.belongsToMany(models.Annotation, { as: 'reference_annotations', through: 'classification_references', timestamps: false })
   }
   Classification.attributes = {
-    full: ['value', 'title', 'image', 'description', 'reference_annotation_id'],
+    full: ['value', 'title', 'image', 'description'],
     lite: ['value', 'title', 'image']
   }
   return Classification

@@ -92,7 +92,7 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AnnotationFull'
+ *               $ref: '#/components/schemas/Annotation'
  *       403:
  *         description: Insufficient privileges
  *       404:
