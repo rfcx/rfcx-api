@@ -8,7 +8,7 @@ var env = process.env.NODE_ENV || "development";
 let options = {
   dialect: 'postgres',
   dialectOptions: {
-    ssl: env !== 'development',
+    ssl: process.env.POSTGRES_SSL_ENABLED === 'true',
   },
   host: process.env.POSTGRES_HOSTNAME,
   port: process.env.POSTGRES_PORT,

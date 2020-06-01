@@ -39,6 +39,7 @@ exports.env = {
 
   POSTGRES_PORT: "5432",
   POSTGRES_HOSTNAME: "127.0.0.1",
+  POSTGRES_SSL_ENABLED: "false",
   POSTGRES_DB: "postgres",
   POSTGRES_USER: "postgres",
   POSTGRES_PASSWORD: "test",
