@@ -1090,6 +1090,7 @@ router.route("/auth0/users")
         res.status(200).json(body);
       })
       .catch((err) => {
+        console.log('v1/users/auth0/users error', err);
         res.status(500).json({ err });
       });
   });
