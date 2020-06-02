@@ -18,8 +18,9 @@ spec:
           ports:
             - containerPort: 5432
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data
+            - mountPath: /var/lib/postgresql
               name: timescaledata
+              readOnly: false
           env:
             - name: POSTGRES_USER
               value: postgres
@@ -34,4 +35,5 @@ spec:
               cpu: "1000m"
       volumes:
         - name: timescaledata
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: timescaleddb-data
