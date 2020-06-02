@@ -1,141 +1,129 @@
-const models = require('../../modelsTimescale');
-const EmptyResultError = require('../../utils/converter/empty-result-error');
-const streamsAssetsService = require('../streams/streams-assets-service');
+const models = require('../../modelsTimescale')
+const EmptyResultError = require('../../utils/converter/empty-result-error')
 
-function getClassificationByValue(value, ignoreMissing) {
+
+function get (value) {
   return models.Classification
     .findOne({
       where: { value },
-      include: [{ all: true }],
+      include: [
+        {
+          model: models.ClassificationType,
+          as: 'type',
+          attributes: ['value']
+        },
+        {
+          model: models.ClassificationAlternativeName,
+          as: 'alternative_names',
+          attributes: models.ClassificationAlternativeName.attributes.lite,
+          order: ['rank']
+        },
+        {
+          model: models.Annotation,
+          as: 'reference_annotations',
+          attributes: models.Annotation.attributes.lite,
+          through: { attributes: [] }
+        },
+      ],
+      attributes: models.Classification.attributes.full
     })
-    .then((item) => {
-      if (!item && !ignoreMissing) { throw new EmptyResultError('Classification with given value not found.'); }
-      return item;
-    });
+    .then(item => {
+      if (!item) {
+        throw new EmptyResultError('Classification with given value not found.')
+      }
+      return item
+    })
 }
 
-function search(opts) {
-  let typeClause = {};
-  if (opts.levels) {
-    typeClause = {
-      value: {
-        [models.Sequelize.Op.in]: opts.levels
+function getId (value) {
+  return models.Classification
+    .findOne({
+      where: { value },
+      attributes: ['id']
+    }).then(item => {
+      if (!item) {
+        throw new EmptyResultError('Classification with given value not found.')
       }
-    };
-  }
+      return item.id
+    })
+}
+
+function queryByKeyword (keyword, levels) {
+  const typeClause = levels ? { value: { [models.Sequelize.Op.in]: levels } } : {}
   return models.Classification
     .findAll({
       where: {
-        title: {
-          [models.Sequelize.Op.iLike]: `%${opts.q}%`
-        }
+        [models.Sequelize.Op.or]: [
+          {
+            title: {
+              [models.Sequelize.Op.iLike]: `%${keyword}%`
+            }
+          },
+          {
+            '$alternative_names.name$': {
+              [models.Sequelize.Op.iLike]: `%${keyword}%`
+            }
+          }
+        ]
       },
       include: [
         {
           model: models.ClassificationType,
-          as: 'Type',
+          as: 'type',
           where: typeClause,
+          attributes: models.ClassificationType.attributes.lite
         },
         {
-          model: models.SpeciesName,
-          as: 'Name',
-          include: [
-            {
-              model: models.Language,
-              as: 'Language'
-            }
-          ]
-        },
-        {
-          model: models.Annotation,
-          as: 'ReferenceAnnotation'
-        },
+          model: models.ClassificationAlternativeName,
+          as: 'alternative_names',
+          attributes: []
+        }
       ],
-    });
+      attributes: models.Classification.attributes.lite
+    })
 }
 
-function getByStream (streamId, limit, offset) {
-  limit = limit || 100
-  offset = offset || 0
-  const columns = models.Classification.attributes.full.map(col => `c."${col}"`).join(', ')
-  const sql = `SELECT DISTINCT ${columns} FROM "Classifications" c
+function queryByStream (streamId, limit, offset) {
+  const columns = models.Classification.attributes.lite.map(col => `c.${col} AS ${col}`).join(', ')
+  const typeColumns = models.ClassificationType.attributes.lite.map(col => `"type".${col} AS "type.${col}"`).join(', ')
+  const sql = `SELECT DISTINCT ${columns}, ${typeColumns} FROM classifications c
                JOIN annotations a ON c.id = a.classification_id
+               JOIN classification_types "type" ON c.type_id = "type".id
                WHERE a.stream_id = $streamId LIMIT $limit OFFSET $offset`
   const options = {
-    model: models.Classification,
-    mapToModel: true,
+    raw: true,
+    nest: true,
     bind: { streamId, limit, offset }
   }
   return models.sequelize.query(sql, options)
 }
 
-function getCharacteristicsForClassification(value) {
+function queryByParent (value, type) {
+  const typeCondition = type !== undefined ? { value: type } : {}
   return models.Classification
     .findAll({
       include: [
         {
           model: models.Classification,
-          as: 'Parent',
+          as: 'parent',
           where: { value },
+          attributes: []
         },
         {
           model: models.ClassificationType,
-          as: 'Type',
-          where: {
-            value: 'characteristic'
-          },
+          as: 'type',
+          where: typeCondition,
+          attributes: []
         },
       ],
-    });
-}
-
-function formatClassification(classification) {
-  return {
-    id: classification.id,
-    value: classification.value,
-    title: classification.title,
-    description: classification.description,
-    image: classification.image,
-    reference_audio: getReferenceMediaUrls(classification)['reference_audio'],
-    reference_spectrogram: getReferenceMediaUrls(classification)['reference_spectrogram'],
-    type: classification.Type? classification.Type.value : null,
-    common_names: extractCommonNames(classification),
-  };
-}
-
-function extractCommonNames(classification) {
-  if (!classification.Name || !classification.Name.length) {
-    return null;
-  }
-  return classification.Name.map((name) => {
-    return {
-      title: name.name,
-      language: name.Language? name.Language.value : name.language,
-    }
-  });
-}
-
-function getReferenceMediaUrls(classification) {
-  let urls = {
-    reference_audio: null,
-    reference_spectrogram: null
-  };
-  if (classification.ReferenceAnnotation) {
-    urls.reference_audio = streamsAssetsService.combineUrlForAnnotation(classification.ReferenceAnnotation, 'mp3', 'mp3')
-    urls.reference_spectrogram = streamsAssetsService.combineUrlForAnnotation(classification.ReferenceAnnotation, 'spec', 'png', 200, 200);
-  }
-  return urls;
-}
-
-function formatClassifications(classifications) {
-  return classifications.map(formatClassification);
+      attributes: models.Classification.attributes.lite
+    })
 }
 
 module.exports = {
-  getClassificationByValue,
-  search,
-  getCharacteristicsForClassification,
-  getByStream,
-  formatClassifications,
-  formatClassification,
-};
+  get,
+  getId,
+  queryByKeyword,
+  queryByStream,
+  queryByParent,
+}

@@ -4,6 +4,7 @@ const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
+const classificationService = require('../../../services/classification/classification-service')
 const Converter = require("../../../utils/converter/converter")
 
 function checkAccess (streamId, req) {
@@ -38,7 +39,7 @@ function checkAccess (streamId, req) {
  *       - name: classifications
  *         description: List of clasification identifiers
  *         in: query
- *         type: array|int
+ *         type: array
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -69,7 +70,7 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMoment()
   params.convert('end').toMoment()
-  params.convert('classifications').optional().toIntArray()
+  params.convert('classifications').optional().toArray()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
@@ -110,11 +111,10 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
  *     responses:
  *       201:
  *         description: Created
- *         headers:
- *           X-Created-Id:
+ *         content:
+ *           application/json:
  *             schema:
- *               type: integer
- *             description: Identifier of the created annotation
+ *               $ref: '#/components/schemas/AnnotationLite'
  *       400:
  *         description: Invalid query parameters
  *       404:
@@ -127,18 +127,23 @@ router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functi
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMoment()
   params.convert('end').toMoment()
-  params.convert('classification').toInt()
+  params.convert('classification').toString()
   params.convert('frequency_min').toInt()
   params.convert('frequency_max').toInt()
 
   return params.validate()
     .then(() => checkAccess(streamId, req))
-    .then(() => {
-      const { start, end, classification, frequency_min, frequency_max } = convertedParams
-      return annotationsService.create(streamId, start, end, classification, frequency_min, frequency_max, userId)
+    .then(() => classificationService.getId(convertedParams.classification))
+    .then(classificationId => {
+      const { start, end, frequency_min, frequency_max } = convertedParams
+      const annotation = {
+        streamId, classificationId, userId, start, end,
+        frequencyMin: frequency_min, frequencyMax: frequency_max
+      }
+      return annotationsService.create(annotation)
     })
-    .then((annotation) => res.set('X-Created-Id', annotation.id).sendStatus(201))
-    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
+    .then(annotation => res.status(201).json(annotation))
+    .catch(httpErrorHandler(req, res, 'Failed creating annotation'))
 })
 
 module.exports = router

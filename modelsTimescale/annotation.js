@@ -1,4 +1,3 @@
-'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Annotation = sequelize.define('Annotation', {
     id: {
@@ -7,12 +6,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true
     },
-    streamId: {
+    stream_id: {
       type: DataTypes.STRING(36),
-      allowNull: false
-    },
-    classificationId: {
-      type: DataTypes.INTEGER,
       allowNull: false
     },
     start: {
@@ -25,30 +20,31 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE(3),
       allowNull: false
     },
-    frequencyMin: {
+    frequency_min: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    frequencyMax: {
+    frequency_max: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    createdBy: {
+    created_by_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    updatedBy: {
+    updated_by_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     }
-  }, {
-    indexes: [
-      { fields: ["stream_id"] }
-    ]
-  });
-  Annotation.attributes = {
-    full: ['id', 'streamId', 'classificationId', 'start', 'end', 'createdAt', 'createdBy', 'updatedAt', 'updatedBy'],
-    lite: ['id', 'streamId', 'classificationId', 'start', 'end']
+  })
+  Annotation.associate = function (models) {
+    Annotation.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
+    Annotation.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
+    Annotation.belongsTo(models.User, { as: 'updated_by', foreignKey: 'updated_by_id' })
   }
-  return Annotation;
-};
+  Annotation.attributes = {
+    full: ['id', 'stream_id', 'start', 'end', 'frequency_min', 'frequency_max', 'created_at', 'updated_at'],
+    lite: ['id', 'stream_id', 'start', 'end', 'frequency_min', 'frequency_max']
+  }
+  return Annotation
+}

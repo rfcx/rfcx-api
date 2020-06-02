@@ -49,8 +49,8 @@ router.get("/:streamId/classifications", authenticatedWithRoles('rfcxUser'), fun
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
-  params.convert('limit').optional().toInt()
-  params.convert('offset').optional().toInt()
+  params.convert('limit').default(100).toInt()
+  params.convert('offset').default(0).toInt()
   return params.validate()
     .then(() => {
       return streamsService.getStreamByGuid(streamId)
@@ -58,7 +58,7 @@ router.get("/:streamId/classifications", authenticatedWithRoles('rfcxUser'), fun
     .then(stream => {
       streamsService.checkUserAccessToStream(req, stream)
       const { limit, offset } = convertedParams
-      return classificationsService.getByStream(streamId, limit, offset)
+      return classificationsService.queryByStream(streamId, limit, offset)
     })
     .then(classifications => res.json(classifications))
     .catch(httpErrorHandler(req, res, 'Failed getting stream classifications'))

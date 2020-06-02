@@ -10,13 +10,13 @@ let options = {
   dialect: 'mysql',
   host: process.env.DB_HOSTNAME,
   port: process.env.DB_PORT,
-  dialectOptions: {
-    collate: 'utf8_general_ci'
-  },
   define: {
     underscored: true,
     timestamps: true,
-    charset: 'utf8'
+    charset: 'utf8',
+    dialectOptions: {
+      collate: 'utf8_general_ci'
+    },
   }
 }
 if (env === 'development') {
