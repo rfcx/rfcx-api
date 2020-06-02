@@ -2,7 +2,7 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
 
-function getByValue (value, ignoreMissing) {
+function get (value) {
   return models.Classification
     .findOne({
       where: { value },
@@ -27,35 +27,41 @@ function getByValue (value, ignoreMissing) {
       ],
       attributes: models.Classification.attributes.full
     })
-    .then((item) => {
-      if (!item && !ignoreMissing) {
+    .then(item => {
+      if (!item) {
         throw new EmptyResultError('Classification with given value not found.')
       }
       return item
     })
 }
 
-function queryByKeyword (opts) {
-  let typeClause = {};
-  if (opts.levels) {
-    typeClause = {
-      value: {
-        [models.Sequelize.Op.in]: opts.levels
+function getId (value) {
+  return models.Classification
+    .findOne({
+      where: { value },
+      attributes: ['id']
+    }).then(item => {
+      if (!item) {
+        throw new EmptyResultError('Classification with given value not found.')
       }
-    }
-  }
+      return item.id
+    })
+}
+
+function queryByKeyword (keyword, levels) {
+  const typeClause = levels ? { value: { [models.Sequelize.Op.in]: levels } } : {}
   return models.Classification
     .findAll({
       where: {
         [models.Sequelize.Op.or]: [
           {
             title: {
-              [models.Sequelize.Op.iLike]: `%${opts.q}%`
+              [models.Sequelize.Op.iLike]: `%${keyword}%`
             }
           },
           {
             '$alternative_names.name$': {
-              [models.Sequelize.Op.iLike]: `%${opts.q}%`
+              [models.Sequelize.Op.iLike]: `%${keyword}%`
             }
           }
         ]
@@ -115,7 +121,8 @@ function queryByParent (value, type) {
 }
 
 module.exports = {
-  getByValue,
+  get,
+  getId,
   queryByKeyword,
   queryByStream,
   queryByParent,

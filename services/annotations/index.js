@@ -10,7 +10,7 @@ function formatFull (annotation) {
   }, {})
 }
 
-function query (start, end, streamId, classificationIds, limit, offset) {
+function query (start, end, streamId, classifications, limit, offset) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -20,9 +20,10 @@ function query (start, end, streamId, classificationIds, limit, offset) {
   if (streamId !== undefined) {
     condition.stream_id = streamId
   }
-  if (classificationIds !== undefined) {
-    condition.classification_id = { [models.Sequelize.Op.or]: classificationIds }
-  }
+  const classificationCondition = classifications === undefined ? {} :
+    {
+      value: { [models.Sequelize.Op.or]: classifications }
+    }
   return models.Annotation
     .findAll({
       where: condition,
@@ -30,6 +31,7 @@ function query (start, end, streamId, classificationIds, limit, offset) {
         {
           as: 'classification',
           model: models.Classification,
+          where: classificationCondition,
           attributes: models.Classification.attributes.lite,
           required: true
         }
@@ -47,7 +49,8 @@ const timeAggregatedQueryAttributes = function (timeInterval, func, field, model
   return [
     [models.Sequelize.fn('time_bucket', timeInterval, models.Sequelize.col(modelTimeField)), timeBucketAttribute],
     [models.Sequelize.fn(func, models.Sequelize.col(modelName + '.' + field)), aggregatedValueAttribute],
-    [models.Sequelize.fn('min', models.Sequelize.col(modelTimeField)), 'first_' + modelTimeField]
+    [models.Sequelize.fn('min', models.Sequelize.col(modelTimeField)), 'first_' + modelTimeField],
+    [models.Sequelize.fn('max', models.Sequelize.col(modelTimeField)), 'last_' + modelTimeField]
   ]
 }
 
@@ -59,7 +62,7 @@ function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunct
     }
   }
   if (streamId !== undefined) {
-    condition.streamId = streamId
+    condition.stream_id = streamId
   }
   return models.Annotation
     .findAll({

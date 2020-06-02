@@ -30,7 +30,7 @@ const Converter = require("../../../utils/converter/converter")
  */
 router.get("/:value", authenticatedWithRoles('rfcxUser'), function (req, res) {
 
-  return classificationService.getByValue(req.params.value)
+  return classificationService.get(req.params.value)
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classification'))
 })
@@ -48,12 +48,14 @@ router.get("/:value", authenticatedWithRoles('rfcxUser'), function (req, res) {
  *         description: Match classifications with title or alternative name
  *         in: query
  *         type: string
- *         example: gibbon
+ *         example: owl
  *       - name: levels
  *         description: Limit the results to classifications from specific levels in the hierarchy (meaning, different classification types)
  *         in: query
  *         type: array
- *         example: species
+ *         items:
+ *           type: string
+ *           example: species
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -86,10 +88,8 @@ router.get("/", authenticatedWithRoles('rfcxUser'), function (req, res) {
 
   params.validate()
     .then(() => {
-      return classificationService.queryByKeyword({
-        q: transformedParams.keyword,
-        levels: transformedParams.levels,
-      })
+      const { keyword, levels } = transformedParams
+      return classificationService.queryByKeyword(keyword, levels)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))

@@ -2,9 +2,10 @@
   "Annotation": {
     "type": "object",
     "properties": {
-      "classification_id": {
-        "type": "integer",
-        "example": 72
+      "classification": {
+        "type": "string",
+        "description": "A classification value",
+        "example": "obscurus"
       },
       "start": {
         "type": "date",
@@ -24,7 +25,7 @@
       }
     },
     "required": [
-      "classificationId",
+      "classification",
       "start",
       "end",
       "frequencyMin",
