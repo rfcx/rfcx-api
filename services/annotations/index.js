@@ -85,7 +85,8 @@ function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunct
     }).then(annotations => annotations.map(propertyToFloat(aggregatedValueAttribute)))
 }
 
-function create (streamId, start, end, classificationId, frequencyMin, frequencyMax, userId) {
+function create (annotation) {
+  const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId } = annotation
   return models.Annotation.create({
     start, end,
     stream_id: streamId,

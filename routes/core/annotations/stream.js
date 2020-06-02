@@ -136,7 +136,11 @@ router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functi
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
       const { start, end, frequency_min, frequency_max } = convertedParams
-      return annotationsService.create(streamId, start, end, classificationId, frequency_min, frequency_max, userId)
+      const annotation = {
+        streamId, classificationId, userId, start, end,
+        frequencyMin: frequency_min, frequencyMax: frequency_max
+      }
+      return annotationsService.create(annotation)
     })
     .then(annotation => res.status(201).json(annotation))
     .catch(httpErrorHandler(req, res, 'Failed creating annotation'))
