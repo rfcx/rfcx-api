@@ -8,19 +8,19 @@ const generator = require('generate-password');
 // get token for standard Auth0 API
 function getToken() {
   let tokenName = `auth0_token_${process.env.NODE_ENV}`;
-  return findOrCreateToken(tokenName, this.getNewToken);
+  return findOrCreateToken(tokenName, getNewToken);
 }
 
 // get token for Auth0 Authentication API
 function getAuthToken() {
   let tokenName = `auth0_auth_token_${process.env.NODE_ENV}`;
-  return findOrCreateToken(tokenName, this.getNewAuthToken);
+  return findOrCreateToken(tokenName, getNewAuthToken);
 }
 
 // get token for internal machine-to-machine authentication
 function getClientToken() {
   let tokenName = `auth0_client_token_${process.env.NODE_ENV}`;
-  return findOrCreateToken(tokenName, this.getNewClientToken);
+  return findOrCreateToken(tokenName, getNewClientToken);
 }
 
 function findOrCreateToken(tokenName, func) {
