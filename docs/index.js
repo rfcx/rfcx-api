@@ -61,7 +61,7 @@ const options = {
 
 const swaggerSpec = swaggerJSDoc(options)
 const swaggerUiOptions = {
-  oauth2RedirectUrl: 'http://localhost:8080/docs/auth-callback',
+  oauth2RedirectUrl: 'https://dev-api.rfcx.org/docs/auth-callback',
   operationsSorter: 'alpha'
 }
 const swaggerUiExpressOptions = {
