@@ -5,27 +5,29 @@ const guid    = require('../../utils/misc/guid');
 const redisClient = require('../../utils/redis');
 const generator = require('generate-password');
 
+// get token for standard Auth0 API
 function getToken() {
   let tokenName = `auth0_token_${process.env.NODE_ENV}`;
-  return getTokenFromRedis(tokenName)
-    .then((token) => {
-      if (!token) {
-        return this.getNewToken()
-          .then((tokenData) => {
-            saveTokenToRedis(tokenName, tokenData);
-            return tokenData.access_token;
-          });
-      }
-      return token;
-    });
+  return findOrCreateToken(tokenName, getNewToken);
 }
 
+// get token for Auth0 Authentication API
 function getAuthToken() {
   let tokenName = `auth0_auth_token_${process.env.NODE_ENV}`;
+  return findOrCreateToken(tokenName, getNewAuthToken);
+}
+
+// get token for internal machine-to-machine authentication
+function getClientToken() {
+  let tokenName = `auth0_client_token_${process.env.NODE_ENV}`;
+  return findOrCreateToken(tokenName, getNewClientToken);
+}
+
+function findOrCreateToken(tokenName, func) {
   return getTokenFromRedis(tokenName)
     .then((token) => {
       if (!token) {
-        return this.getNewAuthToken()
+        return func()
           .then((tokenData) => {
             saveTokenToRedis(tokenName, tokenData);
             return tokenData.access_token;
@@ -36,15 +38,14 @@ function getAuthToken() {
 }
 
 function saveTokenToRedis(tokenName, tokenData) {
-  redisClient.set(tokenName, tokenData.access_token, 'EX', tokenData.expires_in);
+  return redisClient.set(tokenName, tokenData.access_token, 'EX', tokenData.expires_in);
 }
 
 function getTokenFromRedis(tokenType) {
   return redisClient.getAsync(tokenType);
 }
 
-function getNewToken(audience) {
-  audience = audience || `https://${process.env.AUTH0_DOMAIN}/api/v2/`;
+function requestTokenFromAuth0(audience) {
   return new Promise((resolve, reject) => {
     var options = {
       method: 'POST',
@@ -72,8 +73,16 @@ function getNewToken(audience) {
   });
 }
 
+function getNewToken() {
+  return requestTokenFromAuth0(`https://${process.env.AUTH0_DOMAIN}/api/v2/`);
+}
+
 function getNewAuthToken() {
-  return this.getNewToken(process.env.AUTH0_AUTHZ_AUDIENCE);
+  return requestTokenFromAuth0(process.env.AUTH0_AUTHZ_AUDIENCE);
+}
+
+function getNewClientToken() {
+  return requestTokenFromAuth0(process.env.AUTH0_CLOUD_AUDIENCE);
 }
 
 function createAuth0User(token, opts) {
@@ -592,8 +601,7 @@ function hasAnyRoleFromArray(expectedRoles, roles) {
 module.exports = {
   getToken,
   getAuthToken,
-  getNewToken,
-  getNewAuthToken,
+  getClientToken,
   createAuth0User,
   updateAuth0User,
   getUsers,
