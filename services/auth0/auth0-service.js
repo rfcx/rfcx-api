@@ -74,15 +74,15 @@ function requestTokenFromAuth0(audience) {
 }
 
 function getNewToken() {
-  return this.requestTokenFromAuth0(`https://${process.env.AUTH0_DOMAIN}/api/v2/`);
+  return requestTokenFromAuth0(`https://${process.env.AUTH0_DOMAIN}/api/v2/`);
 }
 
 function getNewAuthToken() {
-  return this.requestTokenFromAuth0(process.env.AUTH0_AUTHZ_AUDIENCE);
+  return requestTokenFromAuth0(process.env.AUTH0_AUTHZ_AUDIENCE);
 }
 
 function getNewClientToken() {
-  return this.requestTokenFromAuth0(process.env.AUTH0_CLOUD_AUDIENCE);
+  return requestTokenFromAuth0(process.env.AUTH0_CLOUD_AUDIENCE);
 }
 
 function createAuth0User(token, opts) {

@@ -1235,8 +1235,6 @@ router.route("/:id/info")
 router.route("/info")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['rfcxUser', 'usersAdmin']), function(req,res) {
 
-    console.log('\n\nHEREEEEEE\n\n');
-
     usersService.getUserByGuidOrEmail(req.query.guid, req.query.email)
       .then((user) => {
         return usersService.formatUser(user);
