@@ -11,7 +11,6 @@ var EmptyResultError = require('../../../utils/converter/empty-result-error');
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const moment = require('moment-timezone');
 const streamsService = require('../../../services/streams/streams-service');
-const streamsAnnotationsService = require('../../../services/streams/streams-annotations-service');
 const streamsAssetsService = require('../../../services/streams/streams-assets-service');
 const sitesService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');

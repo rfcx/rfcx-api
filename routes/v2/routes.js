@@ -11,7 +11,6 @@ module.exports = {
   streams: [
     require("./streams/streams"),
     require("./streams/streams-assets"),
-    require("./streams/streams-detections"),
   ],
   tags: [
     require("./tags/tags"),

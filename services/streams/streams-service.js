@@ -4,7 +4,6 @@ const sqlUtils = require("../../utils/misc/sql");
 const Promise = require("bluebird");
 const moment = require('moment-timezone');
 const ForbiddenError = require("../../utils/converter/forbidden-error");
-const streamsAnnotationsService = require('./streams-annotations-service');
 const streamsAssetsService = require('./streams-assets-service');
 const redis = require('../../utils/redis');
 
@@ -343,10 +342,7 @@ function isStreamEmpty(stream) {
 
 function deleteAllStreamData(stream) {
   return removeAIDetetionsForStream(stream)
-    .then(() => {
-      console.log(`AI detections deleted from stream ${stream.guid}`);
-      return streamsAnnotationsService.deleteAnnotationsForStream(stream);
-    })
+    // TODO: implement delete cascade when streams are migrated
     .then(() => {
       console.log(`Annotations deleted from stream ${stream.guid}`);
       return streamsAssetsService.deleteFilesForStream(stream);
