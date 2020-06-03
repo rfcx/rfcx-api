@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: [NAMESPACE]
+spec:
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/[REPO_NAME]:latest
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "4000Mi"
+            cpu: "4000m"
+        ports:
+        - containerPort: 8081
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-service
+  namespace: media
+spec:
+  selector:
+    app: api
+  type: ClusterIP 
+  ports:
+  - name: node
+    port: 80
+    targetPort: 8081
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/backend-protocol: "http"
+    nginx.ingress.kubernetes.io/enable-cors: "flase"
+  name: api-ingress
+  namespace: [NAMESPACE]
+  labels:
+      app: "api"
+spec:
+  rules:
+  - host: [DOMAIN]
+    http:
+      paths:
+      - backend:
+          serviceName: api-service
+          servicePort: 80

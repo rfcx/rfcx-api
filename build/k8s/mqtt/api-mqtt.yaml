@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-mqtt
+  namespace: [NAMESPACE]
+spec:
+  selector:
+    matchLabels:
+      app: api-mqtt
+  template:
+    metadata:
+      labels:
+        app: api-mqtt
+    spec:
+      containers:
+      - name: api-mqtt
+        image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/[REPO_NAME]:latest
+        resources:
+        ports:
+        - containerPort: 3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-mqtt-service
+  namespace: [NAMESPACE]
+spec:
+  selector:
+    app: api-mqtt
+  type: ClusterIP 
+  ports:
+  - name: node
+    port: 3000
+    targetPort: 3000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/backend-protocol: "http"
+    nginx.ingress.kubernetes.io/enable-cors: "flase"
+  name: api-mqtt-ingress
+  namespace: [NAMESPACE]
+  labels:
+      app: "api-mqtt"
+spec:
+  rules:
+  - host: [DOMAIN]
+    http:
+      paths:
+      - backend:
+          serviceName: api-mqtt-service
+          servicePort: 3000
