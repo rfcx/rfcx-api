@@ -54,7 +54,7 @@ const timeAggregatedQueryAttributes = function (timeInterval, func, field, model
   ]
 }
 
-function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
+function timeAggregatedQuery (start, end, streamId, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -63,6 +63,9 @@ function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunct
   }
   if (streamId !== undefined) {
     condition.stream_id = streamId
+  }
+  if (createdById !== undefined) {
+    condition.created_by_id = createdById
   }
   return models.Annotation
     .findAll({

@@ -54,6 +54,10 @@ const models = require('../../../modelsTimescale')
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
+ *       - name: created_by
+ *         description: Limit results to only those created by a user (e.g. `me` or username)
+ *         in: query
+ *         type: string
  *       - name: descending
  *         description: Order by descending time (most recent first) 
  *         in: query
@@ -88,6 +92,7 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('stream').optional().toString()
+  params.convert('created_by').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('id').isEqualToAny(models.Annotation.attributes.full)
@@ -97,8 +102,18 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
 
   return params.validate()
     .then(() => {
-      const { start, end, stream, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return annotationsService.timeAggregatedQuery(start, end, stream, interval, aggregate, field, descending, limit, offset)
+      const createdBy = convertedParams.created_by
+      if (createdBy === undefined) {
+        return undefined
+      }
+      if (createdBy === 'me') {
+        return req.rfcx.auth_token_info.owner_id
+      }
+      return undefined // TODO: handler username or guid case
+    })
+    .then(() => {
+      const { start, end, stream, created_by, interval, aggregate, field, descending, limit, offset } = convertedParams
+      return annotationsService.timeAggregatedQuery(start, end, stream, created_by, interval, aggregate, field, descending, limit, offset)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
