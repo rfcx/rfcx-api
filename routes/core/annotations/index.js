@@ -62,8 +62,8 @@ function isUuid (str) {
 router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
-  params.convert('start').toMoment()
-  params.convert('end').toMoment()
+  params.convert('start').toMomentUtc()
+  params.convert('end').toMomentUtc()
   params.convert('stream').optional().toString()
   params.convert('classifications').optional().toIntArray()
   params.convert('limit').optional().toInt()
@@ -103,8 +103,8 @@ router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
-  params.convert('start').toMoment()
-  params.convert('end').toMoment()
+  params.convert('start').toMomentUtc()
+  params.convert('end').toMomentUtc()
   params.convert('classification').toInt()
   params.convert('frequency_min').toInt()
   params.convert('frequency_max').toInt()
@@ -155,8 +155,8 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
-  params.convert('start').toMoment()
-  params.convert('end').toMoment()
+  params.convert('start').toMomentUtc()
+  params.convert('end').toMomentUtc()
   params.convert('classification').toInt()
   params.convert('frequency_min').toInt()
   params.convert('frequency_max').toInt()

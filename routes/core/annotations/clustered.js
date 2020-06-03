@@ -85,8 +85,8 @@ const models = require('../../../modelsTimescale')
 router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
-  params.convert('start').toMoment()
-  params.convert('end').toMoment()
+  params.convert('start').toMomentUtc()
+  params.convert('end').toMomentUtc()
   params.convert('stream').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()

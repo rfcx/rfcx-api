@@ -68,8 +68,8 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
-  params.convert('start').toMoment()
-  params.convert('end').toMoment()
+  params.convert('start').toMomentUtc()
+  params.convert('end').toMomentUtc()
   params.convert('classifications').optional().toArray()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
@@ -125,8 +125,8 @@ router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functi
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
-  params.convert('start').toMoment()
-  params.convert('end').toMoment()
+  params.convert('start').toMomentUtc()
+  params.convert('end').toMomentUtc()
   params.convert('classification').toString()
   params.convert('frequency_min').toInt()
   params.convert('frequency_max').toInt()
