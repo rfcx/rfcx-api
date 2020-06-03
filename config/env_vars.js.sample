@@ -82,11 +82,13 @@ exports.env = {
   REDIS_HOST: "",
   REDIS_PORT: "",
 
-  FIREBASE_PRIVATE_KEY_RANGER_APP: "",
-  FIREBASE_CLIENT_EMAIL_RANGER_APP: "",
-
-  FIREBASE_PRIVATE_KEY_PLAYER_APP: "",
-  FIREBASE_CLIENT_EMAIL_PLAYER_APP: "",
+  /// Firebase features for sending notifications (not enabled by default)
+  /// When `FIREBASE_ENABLED` is set to `true` then the other env vars are required.
+  // FIREBASE_ENABLED: "true",
+  // FIREBASE_PRIVATE_KEY_RANGER_APP: "",
+  // FIREBASE_CLIENT_EMAIL_RANGER_APP: "",
+  // FIREBASE_PRIVATE_KEY_PLAYER_APP: "",
+  // FIREBASE_CLIENT_EMAIL_PLAYER_APP: "",
 
   STRIPE_SECRET_KEY: "",
   CLASSY_CLIENT_ID: "",
