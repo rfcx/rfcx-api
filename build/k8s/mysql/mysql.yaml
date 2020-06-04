@@ -1,0 +1,89 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mysqlvolume
+  namespace: [NAMESPACE]
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 40Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name:  mysqlpass
+  namespace: [NAMESPACE]
+type: Opaque
+data:
+   MYSQL_ROOT_PASSWORD: [MYSQL_PASSWORD_BASE64_FORMAT]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  namespace: [NAMESPACE]
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: "mysql"
+  clusterIP: None 
+---
+apiVersion:  apps/v1beta2
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: [NAMESPACE]
+  labels:
+    app: "mysql"
+spec:
+  selector:
+    matchLabels:
+      app: "mysql"
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: "mysql"
+    spec:
+      containers:
+      - image: mysql:5.7
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+        name: mysql
+        args:
+            - "--ignore-db-dir"
+            - "lost+found"
+            - --max_allowed_packet=2G
+            - --innodb_buffer_pool_size=10G
+            - --innodb_log_file_size=128M
+            - --query_cache_limit=128M
+            - --query_cache_type=0
+            - --query_cache_size=0
+            - --sql_mode=
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: MYSQL_ROOT_PASSWORD
+              name: mysqlpass
+        - name: MYSQL_DATABASE
+          value: basharjobs_production
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: datadir
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: mysqlvolumeapp
