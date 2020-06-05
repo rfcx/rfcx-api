@@ -10,6 +10,7 @@ const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 const assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
 const S3Service = require("../s3/s3-service");
 const mathUtil = require('../../utils/misc/math');
+const urlsUtil = require('../../utils/misc/urls');
 
 const possibleWindowFuncs = ["dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser"];
 const possibleExtensions = ['png', 'jpeg', 'wav', 'opus', 'flac', 'mp3'];
@@ -423,9 +424,39 @@ function combineStandardFilename(attrs, req) {
   return filename;
 }
 
+function toStreamTimeFormat(dateStr) {
+  return `${moment.tz(dateStr, 'UTC').format('YYYYMMDDTHHmmssSSS')}Z`;
+}
+
+function combineUrlForAnnotation(annotation, type, extension, width, height) {
+  console.log('annotation', annotation);
+  let standardFilename = combineStandardFilename({
+    streamGuid: annotation.streamId,
+    time: {
+      starts: toStreamTimeFormat(annotation.start),
+      ends: toStreamTimeFormat(annotation.end)
+    },
+    clip: 'full',
+    gain: 1,
+    fileType: type,
+    dimensions: {
+      x: width,
+      y: height
+    },
+    windowFunc: 'dolph',
+    zAxis: 95,
+  }, {
+    rfcx: {
+      content_type: null
+    }
+  })
+  return `${process.env.MEDIA_API_BASE_URL}v2/streams/assets/${standardFilename}.${extension}`;
+}
+
 module.exports = {
   parseFileNameAttrs,
   areFileNameAttrsValid,
   getFile,
   deleteFilesForStream,
+  combineUrlForAnnotation,
 }

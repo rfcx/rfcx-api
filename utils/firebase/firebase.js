@@ -1,3 +1,8 @@
+if (process.env.FIREBASE_ENABLED !== 'true') {
+  module.exports = {}
+  return
+}
+
 const admin = require("firebase-admin");
 
 const rangerAppCert = admin.credential.cert({

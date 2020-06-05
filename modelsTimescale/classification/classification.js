@@ -1,7 +1,5 @@
-"use strict";
-
-module.exports = function(sequelize, DataTypes) {
-  var Classification = sequelize.define("Classification", {
+module.exports = function (sequelize, DataTypes) {
+  const Classification = sequelize.define('Classification', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -13,18 +11,10 @@ module.exports = function(sequelize, DataTypes) {
       unique: false
     },
     description: {
-      type: DataTypes.TEXT('long'),
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     image: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    reference_audio: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    reference_spectrogram: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -32,13 +22,17 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-  }, {
-    indexes: [
-      { unique: true, fields: ["value"] },
-      { fields: ["title"] }
-    ],
-    tableName: "Classifications"
-  });
-
-  return Classification;
+  })
+  Classification.associate = function (models) {
+    Classification.belongsTo(models.ClassificationType, { as: 'type', foreignKey: "type_id" })
+    Classification.belongsTo(models.ClassificationSource, { as: 'source', foreignKey: "source_id" })
+    Classification.belongsTo(models.Classification, { as: 'parent', foreignKey: "parent_id" })
+    Classification.hasMany(models.ClassificationAlternativeName, { as: "alternative_names", foreignKey: "classification_id" })
+    Classification.belongsToMany(models.Annotation, { as: 'reference_annotations', through: 'classification_references', timestamps: false })
+  }
+  Classification.attributes = {
+    full: ['value', 'title', 'image', 'description'],
+    lite: ['value', 'title', 'image']
+  }
+  return Classification
 };

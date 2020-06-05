@@ -12,7 +12,9 @@
     "test": "./bin/setup; ./node_modules/.bin/mocha './test/test.*.js' -u bdd",
     "test-remote": "./bin/setup; ./node_modules/.bin/mocha './test/remote.test.*.js' -u bdd",
     "test-all": "./bin/setup; ./node_modules/.bin/mocha -u bdd",
-    "migrate": "./node_modules/sequelize-cli/bin/sequelize"
+    "migrate": "./node_modules/sequelize-cli/bin/sequelize",
+    "sync-mysql": "./bin/sync_sql --type=mysql",
+    "sync-timescale": "./bin/sync_sql --type=timescale"
   },
   "dependencies": {
     "archiver": "4.0.1",
@@ -64,6 +66,8 @@
     "sha.js": "2.4.8",
     "socket.io-client": "2.0.3",
     "stripe": "6.20.1",
+    "swagger-jsdoc": "^4.0.0",
+    "swagger-ui-express": "^4.1.4",
     "toobusy-js": "0.5.1",
     "winston": "2.3.1",
     "winston-aws-cloudwatch": "1.5.0"

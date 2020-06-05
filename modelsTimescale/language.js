@@ -1,6 +1,4 @@
-"use strict";
-
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   var Language = sequelize.define("Language", {
     id: {
       primaryKey: true,
@@ -14,13 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       unique: true
     }
   }, {
-    timestamps: false,
-    indexes: [
-      { unique: true, fields: ["id"] },
-      { unique: true, fields: ["value"] }
-    ],
-    tableName: "Languages"
-  });
-
-  return Language;
-};
+    timestamps: false
+  })
+  return Language
+}

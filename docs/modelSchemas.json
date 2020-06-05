@@ -1,0 +1,183 @@
+{
+  "AnnotationLite": {
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/Annotation"
+      },
+      {
+        "properties": {
+          "id": {
+            "type": "uuid",
+            "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+          },
+          "stream_id": {
+            "type": "string",
+            "example": "01a2ucztj8ax"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/ClassificationLite"
+          }
+        },
+        "required": [
+          "id",
+          "streamId"
+        ]
+      }
+    ]
+  },
+  "Annotation": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/AnnotationLite"
+      },
+      {
+        "properties": {
+          "created_at": {
+            "type": "date"
+          },
+          "created_by": {
+            "type": "integer",
+            "description": "The user who created the annotation"
+          },
+          "updated_at": {
+            "type": "date"
+          },
+          "updated_by": {
+            "type": "integer",
+            "description": "The user who last updated the annotation"
+          }
+        }
+      }
+    ]
+  },
+  "ClassificationLite": {
+    "type": "object",
+    "properties": {
+      "value": {
+        "type": "string",
+        "description": "Unique short name",
+        "example": "falciformis"
+      },
+      "title": {
+        "type": "string",
+        "description": "Description or latin name",
+        "example": "Carcharhinus falciformis"
+      },
+      "image": {
+        "type": "string"
+      },
+      "type": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "species"
+          }
+        }
+      }
+    },
+    "required": [
+      "value",
+      "title"
+    ]
+  },
+  "Classification": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassificationLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Found in temperate and tropical seas all around the world, they begin their lives spotless and steadily gain spots as they get older."
+          },
+          "alternative_names": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "language_id": {
+                  "type": "string"
+                }
+              }
+            },
+            "example": [
+              {
+                "name": "Bridled Dolphin",
+                "language_id": "en_US"
+              },
+              {
+                "name": "Pantropical Spotted Dolphin",
+                "language_id": "en_US"
+              }
+            ]
+          },
+          "reference_annotations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "uuid"
+                },
+                "stream_id": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "date"
+                },
+                "end": {
+                  "type": "date"
+                },
+                "frequency_min": {
+                  "type": "integer"
+                },
+                "frequency_max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "Cluster": {
+    "type": "object",
+    "properties": {
+      "time_bucket": {
+        "type": "date",
+        "description": "Timestamp of the start of the time bucket",
+        "example": "2020-06-02T00:00:00.000Z"
+      },
+      "aggregated_value": {
+        "type": "float",
+        "description": "The result of the aggregation over the cluster (sum, count, avg, etc)",
+        "example": 72
+      },
+      "first_start": {
+        "type": "date",
+        "description": "Timestamp of the first annotation in the cluster",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "last_start": {
+        "type": "date",
+        "description": "Timestamp of the last annotation in the cluster",
+        "example": "2020-05-12T12:48:21.500Z"
+      },
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
+      }
+    }
+  },
+  "AnnotationCluster": {
+    "$ref": "#/components/schemas/Cluster"
+  },
+  "DetectionCluster": {
+    "$ref": "#/components/schemas/Cluster"
+  }
+}
