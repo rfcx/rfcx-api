@@ -102,18 +102,12 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
 
   return params.validate()
     .then(() => {
-      const createdBy = convertedParams.created_by
-      if (createdBy === undefined) {
-        return undefined
-      }
-      if (createdBy === 'me') {
-        return req.rfcx.auth_token_info.owner_id
-      }
-      return undefined // TODO: handler username or guid case
+      // TODO: handler username or guid case
+      return convertedParams.created_by === 'me' ? req.rfcx.auth_token_info.owner_id : undefined
     })
-    .then(() => {
-      const { start, end, stream, created_by, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return annotationsService.timeAggregatedQuery(start, end, stream, created_by, interval, aggregate, field, descending, limit, offset)
+    .then(createdBy => {
+      const { start, end, stream, interval, aggregate, field, descending, limit, offset } = convertedParams
+      return annotationsService.timeAggregatedQuery(start, end, stream, createdBy, interval, aggregate, field, descending, limit, offset)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
