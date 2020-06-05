@@ -139,9 +139,15 @@ module.exports = class Conversion {
     return this;
   }
 
+  /**
+  * Converts from a ISO 8601 string to a moment.js object and
+  * applies timezone conversion (defaults to UTC)
+  * @param {string} tz
+  * @return {Conversion}
+  */
   toMoment (tz = "UTC") {
     this.conversions.push(() => {
-      let newValue = moment.tz(this.value, tz);
+      const newValue = moment.tz(this.value, tz);
 
       if (isNaN(newValue)) {
         this.throwError('should be a ISO8601 DateTime string');
@@ -149,6 +155,25 @@ module.exports = class Conversion {
 
       this.value = newValue;
     });
+    return this;
+  }
+
+  /**
+  * Converts from a ISO 8601 string or a UNIX epoch in milliseconds
+  * to a moment.js object in UTC
+  * @return {Conversion}
+  */
+  toMomentUtc () {
+    this.conversions.push(() => {
+      if (!isNaN(this.value)) {
+        this.value = parseInt(this.value)
+      }
+      const newValue = moment.utc(this.value)
+      if (!newValue.isValid()) {
+        this.throwError('should be an ISO8601 timestamp or an UNIX epoch (ms)')
+      }
+      this.value = newValue
+    })
     return this;
   }
 
@@ -270,6 +295,23 @@ module.exports = class Conversion {
         let number = parseInt(item);
         if (isNaN(number)) {
           this.throwError(`should be an array of integers`);
+        }
+        result.push(number);
+      });
+      this.value = result;
+    });
+  }
+
+  toFloatArray () {
+    this.conversions.push(() => {
+      if (!util.isArray(this.value)) {
+        this.value = [this.value];
+      }
+      let result = [];
+      this.value.forEach(item => {
+        let number = parseFloat(item);
+        if (isNaN(number)) {
+          this.throwError(`should be an array of floats`);
         }
         result.push(number);
       });

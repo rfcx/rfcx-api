@@ -31,5 +31,88 @@
       "frequencyMin",
       "frequencyMax"
     ]
+  },
+  "Detection": {
+    "type": "object",
+    "properties": {
+      "classifier": {
+        "type": "integer",
+        "description": "A classifier identifier",
+        "example": 1
+      },
+      "classification": {
+        "type": "string",
+        "description": "A classification value",
+        "example": "obscurus"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "confidence": {
+        "type": "float",
+        "example": 0.975123
+      }
+    },
+    "required": [
+      "classification",
+      "classifier",
+      "start",
+      "end",
+      "confidence"
+    ]
+  },
+  "DetectionsShortForm": {
+    "type": "object",
+    "properties": {
+      "classifier": {
+        "type": "integer",
+        "description": "A classifier identifier",
+        "example": 1
+      },
+      "classification": {
+        "type": "string",
+        "description": "A classification value",
+        "example": "obscurus"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "confidences": {
+        "type": "array",
+        "items": {
+          "type": "float"
+        },
+        "description": "An ordered list of confidence values defined as a sliding window from `start`/`end` incremented by `step`",
+        "example": [
+          0.975123,
+          0.994343,
+          0.831234,
+          0.201334
+        ]
+      },
+      "step": {
+        "type": "float",
+        "description": "Number of seconds between each confidence value",
+        "example": 2.0
+      }
+    },
+    "required": [
+      "classification",
+      "classifier",
+      "start",
+      "end",
+      "confidences",
+      "step"
+    ]
   }
 }

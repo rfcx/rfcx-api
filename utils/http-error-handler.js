@@ -1,7 +1,7 @@
 const httpError = require('./http-errors')
-var ValidationError = require("./converter/validation-error")
-var ForbiddenError = require("./converter/forbidden-error")
-var EmptyResultError = require('./converter/empty-result-error')
+const ValidationError = require("./converter/validation-error")
+const ForbiddenError = require("./converter/forbidden-error")
+const EmptyResultError = require('./converter/empty-result-error')
 
 function httpErrorHandler (req, res, fallbackMessage) {
   return (err) => {

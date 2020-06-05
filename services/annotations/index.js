@@ -1,7 +1,7 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
-const { toSnakeObject } = require('../../utils/formatters/snake-case')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
+const { timeBucketAttribute, aggregatedValueAttribute, timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 
 function formatFull (annotation) {
   return models.Annotation.attributes.full.reduce((acc, attribute) => {
@@ -40,21 +40,10 @@ function query (start, end, streamId, classifications, limit, offset) {
       offset: offset,
       limit: limit,
       order: ['start']
-    }).then(annotations => annotations.map(toSnakeObject))
+    })
 }
 
-const timeBucketAttribute = 'time_bucket'
-const aggregatedValueAttribute = 'aggregated_value'
-const timeAggregatedQueryAttributes = function (timeInterval, func, field, modelName, modelTimeField) {
-  return [
-    [models.Sequelize.fn('time_bucket', timeInterval, models.Sequelize.col(modelTimeField)), timeBucketAttribute],
-    [models.Sequelize.fn(func, models.Sequelize.col(modelName + '.' + field)), aggregatedValueAttribute],
-    [models.Sequelize.fn('min', models.Sequelize.col(modelTimeField)), 'first_' + modelTimeField],
-    [models.Sequelize.fn('max', models.Sequelize.col(modelTimeField)), 'last_' + modelTimeField]
-  ]
-}
-
-function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
+function timeAggregatedQuery (start, end, streamId, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -63,6 +52,9 @@ function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunct
   }
   if (streamId !== undefined) {
     condition.stream_id = streamId
+  }
+  if (createdById !== undefined) {
+    condition.created_by_id = createdById
   }
   return models.Annotation
     .findAll({

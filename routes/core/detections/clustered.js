@@ -2,19 +2,19 @@ const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
-const annotationsService = require('../../../services/annotations')
+const detectionsService = require('../../../services/detections')
 const Converter = require("../../../utils/converter/converter")
 const models = require('../../../modelsTimescale')
 
 /**
  * @swagger
  *
- * /clustered-annotations:
+ * /clustered-detections:
  *   get:
- *     summary: Get annotations as clusters based on an aggregate function
- *     description: Perform annotation search across streams and classifications
+ *     summary: Get detections as clusters based on an aggregate function
+ *     description: Perform detection search across streams and classifications
  *     tags:
- *       - annotations
+ *       - detections
  *     parameters:
  *       - name: interval
  *         description: Time interval for aggregate results. Supported intervals `d` (day), `h` (hour), `m` (minute), `s` (second).
@@ -54,10 +54,6 @@ const models = require('../../../modelsTimescale')
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
- *       - name: created_by
- *         description: Limit results to only those created by a user (e.g. `me` or username)
- *         in: query
- *         type: string
  *       - name: descending
  *         description: Order by descending time (most recent first) 
  *         in: query
@@ -76,13 +72,13 @@ const models = require('../../../modelsTimescale')
  *         default: 0
  *     responses:
  *       200:
- *         description: List of cluster annotation (lite) objects
+ *         description: List of cluster detection (lite) objects
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/AnnotationCluster'
+ *                 $ref: '#/components/schemas/DetectionCluster'
  *       400:
  *         description: Invalid query parameters
  */
@@ -92,31 +88,20 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('stream').optional().toString()
-  params.convert('created_by').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
-  params.convert('field').default('id').isEqualToAny(models.Annotation.attributes.full)
+  params.convert('field').default('id').isEqualToAny(models.Detection.attributes.full)
   params.convert('descending').default(false).toBoolean()
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
 
   return params.validate()
     .then(() => {
-      const createdBy = convertedParams.created_by
-      if (createdBy === undefined) {
-        return undefined
-      }
-      if (createdBy === 'me') {
-        return req.rfcx.auth_token_info.owner_id
-      }
-      return undefined // TODO: handler username or guid case
+      const { start, end, stream, interval, aggregate, field, descending, limit, offset } = convertedParams
+      return detectionsService.timeAggregatedQuery(start, end, stream, interval, aggregate, field, descending, limit, offset)
     })
-    .then(() => {
-      const { start, end, stream, created_by, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return annotationsService.timeAggregatedQuery(start, end, stream, created_by, interval, aggregate, field, descending, limit, offset)
-    })
-    .then(annotations => res.json(annotations))
-    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
+    .then(detections => res.json(detections))
+    .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })
 
 module.exports = router

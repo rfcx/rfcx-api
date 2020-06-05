@@ -5,11 +5,18 @@ module.exports = {
   'classifications': [
     require("./classifications")
   ],
+  'detections': [
+    require("./detections")
+  ],
   'streams': [
     require("./annotations/stream"),
-    require("./classifications/stream")
+    require("./classifications/stream"),
+    require("./detections/stream")
   ],
   'clustered-annotations': [
     require('./annotations/clustered')
+  ],
+  'clustered-detections': [
+    require('./detections/clustered')
   ]
 }
