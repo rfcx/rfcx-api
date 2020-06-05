@@ -55,7 +55,7 @@ app.http.set("title", "rfcx-api-mqtt");
 app.http.set("port", process.env.PORT || 8080);
 app.http.use(favicon(__dirname + "/public/img/logo/favicon.ico"));
 app.http.use(cors());
-app.use(require('./middleware/toobusy'))
+app.http.use(require('./middleware/toobusy'))
 app.http.use(bodyParser.urlencoded({ extended: false }));
 app.http.use(bodyParser.json({ limit: '1mb' }));
 app.http.use(multer(require("./config/multer").config(process.env)));
@@ -64,7 +64,6 @@ app.http.use(passport.initialize());
 const routeMiddleware = require('./middleware/route')
 
 // Guardian Update Endpoints
-app.http.use("/v1/guardians", routeMiddleware, require("./utils/rfcx-mqtt/http/guardians-register"));
 //app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-software"));
 
 // Default and health check routes
@@ -72,7 +71,7 @@ app.http.use(require('./routes/info'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('./middleware/error')
-app.use(notFound) // Last route, catches all
-app.use(exceptionOccurred) // Catches all errors (including 404)
+app.http.use(notFound) // Last route, catches all
+app.http.use(exceptionOccurred) // Catches all errors (including 404)
 
 module.exports = app;
