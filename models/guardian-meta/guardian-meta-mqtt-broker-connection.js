@@ -22,6 +22,13 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true
       }
+    },
+    subscription_latency: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true
+      }
     }
   }, {
     tableName: "GuardianMetaMqttBrokerConnections"

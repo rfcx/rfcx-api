@@ -13,6 +13,7 @@ const siteService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');
 const guardiansService = require('../../../services/guardians/guardians-service');
 const userService = require('../../../services/users/users-service');
+const streamsService = require('../../../services/streams/streams-service');
 var Converter = require("../../../utils/converter/converter");
 
 router.route("/")
@@ -391,6 +392,19 @@ router.route("/:guid")
       return guardiansService.getGuardianByGuid(req.params.guid)
         .then((guardian) => {
           return guardiansService.updateGuardian(guardian, transformedParams);
+        })
+        .then((guardian) => {
+          return streamsService.getStreamByGuid(guardian.guid, true)
+            .then((dbStream) => {
+              if (dbStream) {
+                dbStream.name = guardian.shortname;
+                return dbStream.save();
+              }
+              return true;
+            })
+            .then(() => {
+              return guardian;
+            });
         })
         .then((guardian) => {
           return guardiansService.formatGuardian(guardian);

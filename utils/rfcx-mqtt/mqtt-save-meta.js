@@ -38,23 +38,6 @@ exports.saveMeta = {
     return models.GuardianMetaBattery.bulkCreate(dbMetaBattery);
   },
 
-  // Power: function(metaPower, guardianId, checkInId) {
-
-  //   var dbMetaPower = [];
-
-  //   for (pwrInd in metaPower) {
-  //     dbMetaPower.push({
-  //       guardian_id: guardianId,
-  //       check_in_id: checkInId,
-  //       measured_at: new Date(parseInt(metaPower[pwrInd][0])),
-  //       is_powered: (metaPower[pwrInd][1] === "1") ? true : false,
-  //       is_charged: (metaPower[pwrInd][2] === "1") ? true : false
-  //     });
-  //   }
-
-  //   return models.GuardianMetaPower.bulkCreate(dbMetaPower);
-  // },
-
   Network: function(metaNetwork, guardianId, checkInId) {
 
     var dbMetaNetwork = [];
@@ -91,23 +74,6 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaDataTransfer.bulkCreate(dbMetaDataTransfer);
-  },
-
-  Offline: function(metaOffline, guardianId, checkInId) {
-
-    var dbMetaOffline = [];
-
-    for (offlInd in metaOffline) {
-      dbMetaOffline.push({
-        guardian_id: guardianId,
-        check_in_id: checkInId,
-        ended_at: new Date(parseInt(metaOffline[offlInd][0])),
-        offline_duration: parseInt(metaOffline[offlInd][1]),
-        carrier_name: metaOffline[offlInd][2]
-      });
-    }
-
-    return models.GuardianMetaOffline.bulkCreate(dbMetaOffline);
   },
 
   LightMeter: function(metaLightMeter, guardianId, checkInId) {
@@ -224,13 +190,14 @@ exports.saveMeta = {
     var dbMetaBrokerConnection = [];
 
     for (brkrInd in metaBrokerConnection) {
-      if (metaBrokerConnection[brkrInd][2] != null) {
+      if (metaBrokerConnection[brkrInd][3] != null) {
         dbMetaBrokerConnection.push({
             guardian_id: guardianId,
             check_in_id: checkInId,
             connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
             connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
-            broker_uri: metaBrokerConnection[brkrInd][2]
+            subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
+            broker_uri: metaBrokerConnection[brkrInd][3]
         });
       }
     }
@@ -261,6 +228,46 @@ exports.saveMeta = {
 
     return models.GuardianMetaDiskUsage.create(opts);
   },
+
+  // SentinelPower: function(metaSntnlPwr, guardianId, checkInId) {
+
+  //   var sntnlPwr = { internal: {}, external: {} };
+  //   for (duInd in metaSntnlPwr) {
+  //     sntnlPwr[metaSntnlPwr[duInd][0]] = {
+  //       measured_at: new Date(parseInt(metaSntnlPwr[duInd][1])),
+  //       used: parseInt(metaSntnlPwr[duInd][2]),
+  //       available: parseInt(metaSntnlPwr[duInd][3])
+  //     };
+  //   }
+
+  //   let opts = {
+  //     guardian_id: guardianId,
+  //     check_in_id: checkInId,
+  //     measured_at: sntnlPwr.internal.measured_at,
+  //     internal_bytes_available: sntnlPwr.internal.available,
+  //     internal_bytes_used: sntnlPwr.internal.used,
+  //     external_bytes_available: sntnlPwr.external.available,
+  //     external_bytes_used: sntnlPwr.external.used
+  //   };
+
+
+  //   var dbMetaBrokerConnection = [];
+
+  //   for (brkrInd in metaBrokerConnection) {
+  //     if (metaBrokerConnection[brkrInd][3] != null) {
+  //       dbMetaBrokerConnection.push({
+  //           guardian_id: guardianId,
+  //           check_in_id: checkInId,
+  //           connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
+  //           connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
+  //           subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
+  //           broker_uri: metaBrokerConnection[brkrInd][3]
+  //       });
+  //     }
+  //   }
+
+  //   return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection);
+  // },
 
   CheckInStatus: function(metaCheckInStatus, guardianId, measuredAt) {
 

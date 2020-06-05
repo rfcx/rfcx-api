@@ -1,8 +1,6 @@
 var verbose_logging = (process.env.NODE_ENV !== "production");
 var zlib = require("zlib");
 var Promise = require('bluebird');
-var checkInDatabase = require("../../utils/rfcx-mqtt/mqtt-database.js").checkInDatabase;
-//var saveMeta = require("../../utils/rfcx-mqtt/mqtt-save-meta.js").saveMeta;
 var loggers = require('../../utils/logger');
 
 exports.mqttPingProcess = {
@@ -28,7 +26,7 @@ exports.mqttPingProcess = {
 
           try {
             
-            pingObj.json = JSON.parse(jsonBuffer.toString("utf8")).ping;
+            pingObj.json = JSON.parse(jsonBuffer.toString("utf8"));
             resolve(pingObj);
 
           } catch (errParsePingObj) {

@@ -248,6 +248,15 @@ function generateFile(req, res, attrs, segments, additionalHeaders) {
         if (trim.start !== 0 || trim.end !== 0) {
           sox += ` trim ${trim.start} -${trim.end}`;
         }
+        try {
+          var sampleRate = segment.MasterSegment.SampleRate.value;
+        }
+        catch (e) {
+          console.error(`Could not get sampleRate for segment "${segment.guid}"`);
+        }
+        if (sampleRate) {
+          sox += ` rate ${sampleRate} `;
+        }
         sox += '"'
       })
       // Set sample rate, channels count and file name
