@@ -12,6 +12,7 @@ let options = {
   },
   host: process.env.POSTGRES_HOSTNAME,
   port: process.env.POSTGRES_PORT,
+  logging: false,
   define: {
     underscored: true,
     charset: 'utf8',
