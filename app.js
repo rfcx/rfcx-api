@@ -35,9 +35,7 @@ const coreRoutes = require('./routes/core/routes')
 
 for (apiVersion in versionedRoutes) {
   for (routeName in versionedRoutes[apiVersion]) {
-    for (route in versionedRoutes[apiVersion][routeName]) {
-      app.use("/" + apiVersion + "/" + routeName, routeMiddleware, versionedRoutes[apiVersion][routeName][route]);
-    }
+    app.use("/" + apiVersion + "/" + routeName, routeMiddleware, versionedRoutes[apiVersion][routeName]);
   }
 }
 for (routeName in coreRoutes) {
