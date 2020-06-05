@@ -50,6 +50,15 @@ function getUserByGuidOrEmail(field1, field2) {
   });
 }
 
+function getUserFromTokenInfo(auth_token_info) {
+  if (!auth_token_info || auth_token_info.userType !== 'auth0') {
+    return Promise.resolve(null);
+  }
+  else {
+    return getUserByGuid(auth_token_info.guid);
+  }
+}
+
 function getUserBySubscriptionEmail(email, ignoreMissing) {
   return models.User
     .findOne({
@@ -519,6 +528,7 @@ module.exports = {
   getUserByGuid,
   getUserByEmail,
   getUserByGuidOrEmail,
+  getUserFromTokenInfo,
   getUserBySubscriptionEmail,
   getAllUsers,
   createUser,

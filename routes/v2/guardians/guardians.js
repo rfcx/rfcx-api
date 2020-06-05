@@ -11,6 +11,8 @@ var ValidationError = require("../../../utils/converter/validation-error");
 var hasRole = require('../../../middleware/authorization/authorization').hasRole;
 const usersService = require('../../../services/users/users-service');
 const guardiansService = require('../../../services/guardians/guardians-service');
+const sitesService = require('../../../services/sites/sites-service');
+const streamsService = require('../../../services/streams/streams-service');
 var Converter = require("../../../utils/converter/converter");
 
 router.route("/public")
@@ -67,100 +69,67 @@ router.route("/:guid")
   });
 
 router.route("/register")
-  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'guardianCreator']), function(req,res) {
+  .post(passport.authenticate(["token", 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser', 'guardianCreator']), async function(req, res) {
 
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
     params.convert('guid').toString().toLowerCase();
     params.convert('shortname').optional().toString();
-    params.convert('platform').optional().toString();
     params.convert('site').optional().toString();
 
     let token = hash.randomString(40);
 
-    params.validate()
-      .then(() => {
-        return models.Guardian
-          .findOrCreate({
-            where: {
-              guid: transformedParams.guid,
-              shortname: transformedParams.shortname? transformedParams.shortname : `RFCx Guardian (${transformedParams.guid.substr(0,6).toUpperCase()})`,
-              latitude: 0,
-              longitude: 0
-            }
-          })
-      })
-      .spread((dbGuardian, created) => {
+    try {
 
-        var token_salt = hash.randomHash(320);
-        dbGuardian.auth_token_salt = token_salt;
-        dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt, token);
-        dbGuardian.auth_token_updated_at = new Date();
-        dbGuardian.site_id = 1;
+      await params.validate();
 
-        return dbGuardian.save()
-          .bind({})
-          .then((dbGuardian) => {
-            if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
-              return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
-                .then((user) => {
-                  dbGuardian.creator = user.id;
-                  dbGuardian.is_private = true;
-                  return dbGuardian.save();
-                });
-            } else {
-              return this.dbGuardian;
-            };
-          })
-          .then((dbGuardian) => {
-            let visibility = dbGuardian.is_private? 'private' : 'public';
-            return models.StreamVisibility
-              .findOrCreate({
-                where:    { value: visibility },
-                defaults: { value: visibility }
-              })
-              .spread((dbVisibility) => {
-                let opts = {
-                  guid: dbGuardian.guid,
-                  name: dbGuardian.shortname,
-                  site: dbGuardian.site_id,
-                  created_by: dbGuardian.creator,
-                  visibility: dbVisibility.id,
-                }
-                if (dbGuardian.creator) {
-                  opts.created_by = dbGuardian.creator;
-                }
-                return models.Stream
-                  .findOrCreate({
-                    where: opts 
-                  }).spread((dbStream) => {
-                    console.log("stream: "+dbStream.guid);
-                  });
-              });
-          })
-          .then(() => {
-            res.status(200).json({
-              name: dbGuardian.shortname,
-              guid: dbGuardian.guid,
-              token: token,
-              keystore_passphrase: "tr33PROtect10n",
-              stream: "stream_guid"
-            });
-          });
-      })
-      .catch(sequelize.ValidationError, e => {
+      let guardianAttrs = { ...transformedParams, token };
+
+      // Obtain creator info
+      const dbUser = await usersService.getUserFromTokenInfo(req.rfcx.auth_token_info);
+      if (dbUser) {
+        guardianAttrs.creator_id = dbUser.id;
+        guardianAttrs.is_private = true;
+      }
+
+      // Obtain site info
+      if (transformedParams.site) {
+        const dbSite = await sitesService.getSiteByGuid(transformedParams.site);
+        if (dbSite) {
+          guardianAttrs.site_id = dbSite.id;
+        }
+      }
+
+      // Create guardian
+      const dbGuardian = await guardiansService.createGuardian(guardianAttrs);
+      // Create stream
+      const dbStream = await streamsService.createStreamForGuardian(dbGuardian);
+
+      res.status(200).json({
+        name: dbGuardian.shortname,
+        guid: dbGuardian.guid,
+        stream: dbStream.guid,
+        token: token,
+        keystore_passphrase: process.env.GUARDIAN_KEYSTORE_PASSPHRASE,
+      });
+    }
+    catch (e) {
+      console.log('v2/guardians/register error', e);
+      if (e instanceof sequelize.ValidationError) {
         let message = 'Validation error';
         try {
           message = e.errors && e.errors.length? e.errors.map((er) => er.message).join('; ') : e.message;
         } catch (err) { }
         httpError(req, res, 400, null, message);
-      })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message); })
-      .catch(function(err) {
-        console.log(err);
-        res.status(500).json({ message: err.message, error: { status: 500 } });
-      });
+      }
+      else if (e instanceof sequelize.EmptyResultError) {
+        httpError(req, res, 404, null, e.message);
+      }
+      else {
+        res.status(500).json({ message: e.message, error: { status: 500 } });
+      }
+    }
 
   });
 

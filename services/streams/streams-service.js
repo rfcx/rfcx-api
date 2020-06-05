@@ -623,6 +623,25 @@ function combineRedisKeyForCoverage(streamGuid, starts, ends) {
   return `st_cov_${streamGuid}_${starts}_${ends}`;
 }
 
+async function createStreamForGuardian(dbGuardian) {
+  const visibility = dbGuardian.is_private? 'private' : 'public';
+  let [dbVisibility, dbVisibilityCreated] = await models.StreamVisibility.findOrCreate({ where: { value: visibility } })
+
+  let streamAttrs = {
+    guid: dbGuardian.guid,
+    name: dbGuardian.shortname,
+    site: dbGuardian.site_id,
+    visibility: dbVisibility.id,
+  }
+  if (dbGuardian.creator) {
+    streamAttrs.created_by = dbGuardian.creator;
+  }
+  return models.Stream.findOrCreate({ where: streamAttrs })
+    .spread((dbStream) => {
+      return dbStream;
+    })
+}
+
 module.exports = {
   getStreamByGuid,
   updateStream,
@@ -661,4 +680,5 @@ module.exports = {
   cacheCoverageForTime,
   getCachedCoverageForTime,
   clearCacheForTime,
+  createStreamForGuardian,
 };

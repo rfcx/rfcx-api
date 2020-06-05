@@ -91,4 +91,6 @@ exports.env = {
 
   RECAPTCHA_V3_SECRET_KEY: "",
 
+  GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used for guardian registration
+
 }
