@@ -33,9 +33,14 @@ var versionedRoutes = {
 }
 const coreRoutes = require('./routes/core/routes')
 
+// Routes middleware must stay on /v1 and /v2 level to keep the middleware logic valid
+for (apiVersion in versionedRoutes) {
+  app.use("/" + apiVersion, routeMiddleware);
+}
+
 for (apiVersion in versionedRoutes) {
   for (routeName in versionedRoutes[apiVersion]) {
-    app.use("/" + apiVersion + "/" + routeName, routeMiddleware, versionedRoutes[apiVersion][routeName]);
+    app.use("/" + apiVersion + "/" + routeName, versionedRoutes[apiVersion][routeName]);
   }
 }
 for (routeName in coreRoutes) {
