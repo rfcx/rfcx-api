@@ -146,7 +146,7 @@
       }
     ]
   },
-  "AnnotationCluster": {
+  "Cluster": {
     "type": "object",
     "properties": {
       "time_bucket": {
@@ -164,9 +164,20 @@
         "description": "Timestamp of the first annotation in the cluster",
         "example": "2020-05-12T07:30:21.500Z"
       },
+      "last_start": {
+        "type": "date",
+        "description": "Timestamp of the last annotation in the cluster",
+        "example": "2020-05-12T12:48:21.500Z"
+      },
       "classification": {
         "$ref": "#/components/schemas/ClassificationLite"
       }
     }
+  },
+  "AnnotationCluster": {
+    "$ref": "#/components/schemas/Cluster"
+  },
+  "DetectionCluster": {
+    "$ref": "#/components/schemas/Cluster"
   }
 }
