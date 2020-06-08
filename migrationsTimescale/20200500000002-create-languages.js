@@ -4,7 +4,7 @@ module.exports = {
     return queryInterface.createTable('languages', {
       id: {
         primaryKey: true,
-        type: Sequelize.STRING(7),
+        type: Sequelize.STRING(5),
         allowNull: false,
         unique: true
       },
