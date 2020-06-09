@@ -95,4 +95,6 @@ exports.env = {
 
   GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used for guardian registration
 
+  INGEST_SERVICE_ENABLED: 'false',
+
 }

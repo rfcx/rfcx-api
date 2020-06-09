@@ -28,11 +28,30 @@ function putObject(localPath, filename, bucket, acl) {
       }
       else {
         aws.s3(bucket).putFile(localPath, filename, (err, res) => {
-          res.resume();
+          if (res) res.resume();
           if (err) { return reject(err); }
           return resolve();
         });
       }
+  });
+}
+
+/**
+ * Creates a copy of an object that is already stored in Amazon S3
+ * @param {string} sourcePath - source path including bucket name
+ * @param {string} destinationBucket - destination bucket name
+ * @param {string} destinationPath - path to copy to
+ */
+function copyObject(sourceBucket, sourcePath, destinationBucket, destinationPath) {
+  return new Promise((resolve, reject) => {
+    aws.s3(sourceBucket).copyTo(sourcePath, destinationBucket, destinationPath)
+      .on('error', function(err) {
+        reject(err);
+      })
+      .on('response', function(res) {
+        resolve();
+      })
+      .end();
   });
 }
 
@@ -112,6 +131,7 @@ function getObject(localPath, filename, bucket) {
 
 module.exports = {
   putObject,
+  copyObject,
   headObject,
   getObject,
   deleteObject,
