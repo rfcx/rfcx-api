@@ -7,6 +7,7 @@ const streamsService = require('../../../services/streams/streams-service')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
 const Converter = require("../../../utils/converter/converter")
+const ArrayConverter = require("../../../utils/converter/array-converter")
 
 function checkAccess (streamId, req) {
   return streamsService.getStreamByGuid(streamId)
@@ -100,7 +101,7 @@ router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function
  *         required: true
  *         type: string
  *     requestBody:
- *       description: A single Detection object or consequetive Detections for a specific classification and classifier
+ *       description: A single detection object or multiple detections (supports multiple classification values in a single request)
  *       required: true
  *       content:
  *         application/x-www-form-urlencoded:
@@ -108,9 +109,17 @@ router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function
  *             $ref: '#/components/requestBodies/Detection'
  *         application/json:
  *           schema:
- *             oneOf:
+ *             anyOf:
  *               - $ref: '#/components/requestBodies/Detection'
- *               - $ref: '#/components/requestBodies/DetectionsShortForm'
+ *               - type: array
+ *                 items:
+ *                   - $ref: '#/components/requestBodies/Detection'
+ *             example:
+ *               - start: '2020-05-19T09:35:03.500Z'
+ *                 end: '2020-05-19T09:35:05.500Z'
+ *                 classification: obscura
+ *                 classifier: 1
+ *                 confidence: 0.967814
  *     responses:
  *       201:
  *         description: Created
@@ -125,41 +134,52 @@ router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function
  */
 router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
+  const detections = Array.isArray(req.body) ? req.body : [req.body]
+
+  const params = new ArrayConverter(detections)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classification').toString()
   params.convert('classifier').toInt()
-  params.convert('confidence').optional().toFloat()
-  params.convert('confidences').optional().toFloatArray()
-  params.convert('step').optional().toFloat()
+  params.convert('confidence').toFloat()
 
   return params.validate()
     .then(() => checkAccess(streamId, req))
-    .then(() => classificationService.getId(convertedParams.classification))
-    .then(classificationId => {
-      let { start, end, classifier, confidence, confidences, step } = convertedParams
-
-      // Can specify either confidence (float) or confidences (array of floats)
-      if (confidence === undefined && confidences === undefined) {
-        throw new ValidationError('Either parameter "confidence" or "confidences" is required')
-      } else if (confidences !== undefined && step === undefined) {
-        throw new ValidationError('Parameter "step" is required with parameter "confidences"')
-      } else if (confidences === undefined) {
-        confidences = [confidence]
-      }
-
-      const detections = confidences.map((confidence, i) => {
-        // If there are mulitple confidences then they are spaced by "step" seconds
-        const offsetStart = start.clone().add(i * step, 's')
-        const offsetEnd = end.clone().add(i * step, 's')
-        return { streamId, classificationId, classifierId: classifier, start: offsetStart, end: offsetEnd, confidence }
+    .then(() => {
+      const validatedDetections = params.transformedArray
+      // Get all the distinct classification values
+      const classificationValues = [...new Set(validatedDetections.map(d => d.classification))]
+      return mappingClassificationValuesToIds(classificationValues)
+    })
+    .then(classificationMapping => {
+      const validatedDetections = params.transformedArray
+      const detections = validatedDetections.map(detection => {
+        const classificationId = classificationMapping[detection.classification]
+        return {
+          streamId,
+          classificationId,
+          classifierId: detection.classifier,
+          start: detection.start,
+          end: detection.end,
+          confidence: detection.confidence
+        }
       })
       return detectionsService.create(detections)
     })
     .then(detections => res.sendStatus(201))
-    .catch(httpErrorHandler(req, res, 'Failed creating annotation'))
+    .catch(httpErrorHandler(req, res, 'Failed creating detections'))
 })
+
+function mappingClassificationValuesToIds (values) {
+  return Promise.all(values.map(value => classificationService.getId(value)))
+    .then(ids => {
+      // Combine 2 arrays into a map
+      const mapping = {}
+      for (let i = 0; i < ids.length; i++) {
+        mapping[values[i]] = ids[i]
+      }
+      return mapping
+    })
+}
 
 module.exports = router
