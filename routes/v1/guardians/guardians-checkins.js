@@ -247,6 +247,12 @@ router.route("/:guardian_id/checkins")
                 return this.audioInfoPostQueue;
               }
             })
+            .then(function () {
+              if (process.env.INGEST_SERVICE_ENABLED === 'true') {
+                return checkInHelpers.streams.ingestGuardianAudio(this.audioInfoPostQueue, self.dbGuardian);
+              }
+              return Promise.resolve();
+            })
           proms.push(prom);
         }
         return Promise.all(proms);

@@ -104,7 +104,7 @@ router.route("/register")
       // Create guardian
       const dbGuardian = await guardiansService.createGuardian(guardianAttrs);
       // Create stream
-      const dbStream = await streamsService.createStreamForGuardian(dbGuardian);
+      const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian);
 
       res.status(200).json({
         name: dbGuardian.shortname,
