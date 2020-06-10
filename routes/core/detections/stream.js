@@ -10,7 +10,7 @@ const Converter = require("../../../utils/converter/converter")
 const ArrayConverter = require("../../../utils/converter/array-converter")
 
 function checkAccess (streamId, req) {
-  if (req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
+  if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
     return true
   }
   return streamsService.getStreamByGuid(streamId)
@@ -152,7 +152,7 @@ router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemU
       const validatedDetections = params.transformedArray
       // Get all the distinct classification values
       const classificationValues = [...new Set(validatedDetections.map(d => d.classification))]
-      return mappingClassificationValuesToIds(classificationValues)
+      return classificationService.getIds(classificationValues)
     })
     .then(classificationMapping => {
       const validatedDetections = params.transformedArray
@@ -172,17 +172,5 @@ router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemU
     .then(detections => res.sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))
 })
-
-function mappingClassificationValuesToIds (values) {
-  return Promise.all(values.map(value => classificationService.getId(value)))
-    .then(ids => {
-      // Combine 2 arrays into a map
-      const mapping = {}
-      for (let i = 0; i < ids.length; i++) {
-        mapping[values[i]] = ids[i]
-      }
-      return mapping
-    })
-}
 
 module.exports = router
