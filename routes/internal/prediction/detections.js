@@ -33,7 +33,7 @@ const Converter = require("../../../utils/converter/converter")
  *       404:
  *         description: Stream not found
  */
-router.post("/detections", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.post("/detections", authenticatedWithRoles('systemUser'), function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('stream').toString()

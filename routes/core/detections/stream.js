@@ -69,7 +69,7 @@ function checkAccess (streamId, req) {
  *       404:
  *         description: Stream not found
  */
-router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -135,7 +135,7 @@ router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemUs
  *       404:
  *         description: Stream not found
  */
-router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const streamId = req.params.streamId
   const detections = Array.isArray(req.body) ? req.body : [req.body]
 
