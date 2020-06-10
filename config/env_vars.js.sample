@@ -60,8 +60,7 @@ exports.env = {
   DASHBOARD_BASE_URL: 'http://localhost:5555/#/',
 
   MEDIA_API_BASE_URL: 'https://media-api.rfcx.org/',
-  INGEST_SERVICE_BASE_URL: 'https://ingest.rfcx.org/',
-
+  
   NODE_LOG_LEVEL: "info", // error, warn, info, debug
   CLOUDWATCH_ENABLED: false, // cloudwatch should be disabled for developers by default
   CLOUDWATCH_LOGS_GROUP_NAME: "",
@@ -99,6 +98,8 @@ exports.env = {
 
   GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used for guardian registration
 
-  INGEST_SERVICE_ENABLED: 'false',
+  /// Enabling ingest service features will push guardian audio to the ingest service
+  // INGEST_SERVICE_ENABLED: 'false',
+  // INGEST_SERVICE_BASE_URL: 'https://ingest.rfcx.org/',
 
 }
