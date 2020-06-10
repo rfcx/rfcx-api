@@ -10,6 +10,9 @@ const Converter = require("../../../utils/converter/converter")
 const ArrayConverter = require("../../../utils/converter/array-converter")
 
 function checkAccess (streamId, req) {
+  if (req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
+    return true
+  }
   return streamsService.getStreamByGuid(streamId)
     .then(stream => streamsService.checkUserAccessToStream(req, stream))
 }
@@ -66,7 +69,7 @@ function checkAccess (streamId, req) {
  *       404:
  *         description: Stream not found
  */
-router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
