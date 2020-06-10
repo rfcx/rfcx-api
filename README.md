@@ -81,7 +81,7 @@ npx sequelize migration:create --migrations-path ./migrations --name this-is-exa
 ```
 For TimescaleDB:
 ```
-npx sequelize migration:create --migrations-path ./migrationsTimescale--name this-is-example-of-name
+npx sequelize migration:create --migrations-path ./migrationsTimescale --name this-is-example-of-name
 ```
 
 #### To run sync and migrations
