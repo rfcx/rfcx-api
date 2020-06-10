@@ -1,0 +1,10 @@
+INSERT INTO public.classification_types (id, value) VALUES (1, 'section');
+INSERT INTO public.classification_types (id, value) VALUES (2, 'kingdom');
+INSERT INTO public.classification_types (id, value) VALUES (3, 'phylum');
+INSERT INTO public.classification_types (id, value) VALUES (4, 'class');
+INSERT INTO public.classification_types (id, value) VALUES (5, 'order');
+INSERT INTO public.classification_types (id, value) VALUES (6, 'family');
+INSERT INTO public.classification_types (id, value) VALUES (7, 'genus');
+INSERT INTO public.classification_types (id, value) VALUES (8, 'species');
+INSERT INTO public.classification_types (id, value) VALUES (9, 'subspecies');
+INSERT INTO public.classification_types (id, value) VALUES (10, 'characteristic');
