@@ -48,6 +48,24 @@ function getId (value) {
     })
 }
 
+/**
+ * Given a set of values, returns their ids as an object map
+ *
+ * @param {Array<String>} values An array of classification values
+ * @returns {Promise<Object>} Object that maps values to ids
+ */
+function getIds (values) {
+  return Promise.all(values.map(value => getId(value)))
+    .then(ids => {
+      // Combine 2 arrays into a map
+      const mapping = {}
+      for (let i = 0; i < ids.length; i++) {
+        mapping[values[i]] = ids[i]
+      }
+      return mapping
+    })
+}
+
 function queryByKeyword (keyword, levels) {
   const typeClause = levels ? { value: { [models.Sequelize.Op.in]: levels } } : {}
   return models.Classification
@@ -123,6 +141,7 @@ function queryByParent (value, type) {
 module.exports = {
   get,
   getId,
+  getIds,
   queryByKeyword,
   queryByStream,
   queryByParent,
