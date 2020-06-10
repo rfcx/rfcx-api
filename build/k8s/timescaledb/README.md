@@ -186,3 +186,27 @@ To also purge these items, have a look at the [Administrator Guide](admin-guide.
 
 - [Administrator Guide](admin-guide.md)
 - [TimescaleDB Documentation](https://docs.timescale.com/latest/main)
+
+## Getting credentials
+TimescaleDB can be accessed via port 5432 on the following DNS name from within your cluster:
+timescale.staging.svc.cluster.local
+To get your password for superuser run:
+    # superuser password
+    PGPASSWORD_POSTGRES=$(kubectl get secret --namespace staging timescale-credentials -o jsonpath="{.data.PATRONI_SUPERUSER_PASSWORD}" | base64 --decode)
+    # admin password
+    PGPASSWORD_ADMIN=$(kubectl get secret --namespace staging timescale-credentials -o jsonpath="{.data.PATRONI_admin_PASSWORD}" | base64 --decode)
+To connect to your database, chose one of these options:
+1. Run a postgres pod and connect using the psql cli:
+    # login as superuser
+    kubectl run -i --tty --rm psql --image=postgres \
+      --env "PGPASSWORD=$PGPASSWORD_POSTGRES" \
+      --command -- psql -U postgres \
+      -h timescale.staging.svc.cluster.local postgres
+    # login as admin
+    kubectl run -i --tty --rm psql --image=postgres \
+      --env "PGPASSWORD=$PGPASSWORD_ADMIN" \
+      --command -- psql -U admin \
+      -h timescale.staging.svc.cluster.local postgres
+2. Directly execute a psql session on the master node
+   MASTERPOD="$(kubectl get pod -o name --namespace staging -l release=timescale,role=master)"
+   kubectl exec -i --tty --namespace staging ${MASTERPOD} -- psql -U postgres
