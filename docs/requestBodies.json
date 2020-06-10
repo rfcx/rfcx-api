@@ -69,9 +69,14 @@
   "DetectionsShortForm": {
     "type": "object",
     "properties": {
+      "stream": {
+        "type": "string",
+        "description": "A stream id",
+        "example": "xu82jDgX49"
+      },
       "classifier": {
         "type": "integer",
-        "description": "A classifier identifier",
+        "description": "A classifier id",
         "example": 1
       },
       "classification": {
@@ -107,6 +112,7 @@
       }
     },
     "required": [
+      "stream",
       "classification",
       "classifier",
       "start",
