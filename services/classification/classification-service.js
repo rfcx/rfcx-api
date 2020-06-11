@@ -66,37 +66,38 @@ function getIds (values) {
     })
 }
 
-function queryByKeyword (keyword, levels, limit, offset) {
-  const keywordClause = keyword ? {
+function queryByKeyword (keyword, types, limit, offset) {
+  const keywordClause = {
         [models.Sequelize.Op.or]: [
           {
-            title: {
+            '$Classification.title$': {
               [models.Sequelize.Op.iLike]: `%${keyword}%`
             }
           },
           {
-            '$alternative_names.name$': {
+            'name': {
               [models.Sequelize.Op.iLike]: `%${keyword}%`
             }
           }
         ]
-      } : {}
-  const typeClause = levels ? { value: { [models.Sequelize.Op.in]: levels } } : {}
+      }
+  const typeClause = { value: { [models.Sequelize.Op.in]: types } }
   return models.Classification
     .findAll({
-      where: keywordClause,
       include: [
         {
           model: models.ClassificationType,
           as: 'type',
-          where: typeClause,
-          attributes: models.ClassificationType.attributes.lite
+          where: types ? typeClause : {},
+          attributes: models.ClassificationType.attributes.lite,
+          required: true
         },
         {
           model: models.ClassificationAlternativeName,
           as: 'alternative_names',
           // Only include the alternative names that are matched by the keyword
           attributes: keyword ? models.ClassificationAlternativeName.attributes.lite : [],
+          where: keyword ? keywordClause : {},
           order: ['rank']
         }
       ],
