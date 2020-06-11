@@ -41,11 +41,22 @@ const Converter = require('../../../utils/converter/converter')
  *                 $allOf:
  *                   - $ref: '#/components/schemas/ClassificationLite'
  *                   - type: object
- *                       properties:
- *                         characteristics:
- *                           type: array
- *                           items:
- *                             $ref: '#/components/schemas/ClassificationLite'
+ *                     properties:
+ *                       characteristics:
+ *                         type: array
+ *                         items:
+ *                           $ref: '#/components/schemas/ClassificationLite'
+ *               example:
+ *                 - value: "obscurus"
+ *                   title: "Trachypithecus obscurus"
+ *                   image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Dusky_leaf_monkey_%288050982300%29.jpg/360px-Dusky_leaf_monkey_%288050982300%29.jpg"
+ *                   type:
+ *                     value: "species"
+ *                   characteristics:
+ *                     - value: obscurus_laugh
+ *                       title: Laugh
+ *                     - value: obscurus_giggle
+ *                       title: Giggle
  *       400:
  *         description: Invalid query parameters
  *       404:
