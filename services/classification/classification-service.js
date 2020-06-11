@@ -66,7 +66,7 @@ function getIds (values) {
     })
 }
 
-function queryByKeyword (keyword, levels) {
+function queryByKeyword (keyword, levels, limit, offset) {
   const keywordClause = keyword ? {
         [models.Sequelize.Op.or]: [
           {
@@ -100,7 +100,10 @@ function queryByKeyword (keyword, levels) {
           order: ['rank']
         }
       ],
-      attributes: models.Classification.attributes.lite
+      attributes: models.Classification.attributes.lite,
+      offset: offset,
+      limit: limit,
+      order: ['title']
     })
 }
 

@@ -85,11 +85,13 @@ router.get("/", authenticatedWithRoles('rfcxUser'), function (req, res) {
 
   params.convert('keyword').optional().toString()
   params.convert('levels').optional().toArray()
+  params.convert('limit').default(100).toInt()
+  params.convert('offset').default(0).toInt()
 
   params.validate()
     .then(() => {
-      const { keyword, levels } = transformedParams
-      return classificationService.queryByKeyword(keyword, levels)
+      const { keyword, levels, limit, offset } = transformedParams
+      return classificationService.queryByKeyword(keyword, levels, limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))
