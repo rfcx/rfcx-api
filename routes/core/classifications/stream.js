@@ -1,10 +1,10 @@
-const router = require("express").Router()
-const models = require("../../../models")
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const models = require('../../../models')
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const classificationsService = require('../../../services/classification/classification-service')
-const Converter = require("../../../utils/converter/converter")
+const Converter = require('../../../utils/converter/converter')
 
 /**
  * @swagger
@@ -45,7 +45,7 @@ const Converter = require("../../../utils/converter/converter")
  *         description: Stream not found
  */
 
-router.get("/:streamId/classifications", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:streamId/classifications', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

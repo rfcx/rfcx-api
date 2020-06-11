@@ -1,13 +1,13 @@
-const router = require("express").Router()
-const models = require("../../../models")
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
-const ValidationError = require("../../../utils/converter/validation-error")
+const router = require('express').Router()
+const models = require('../../../models')
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+const ValidationError = require('../../../utils/converter/validation-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
-const Converter = require("../../../utils/converter/converter")
-const ArrayConverter = require("../../../utils/converter/array-converter")
+const Converter = require('../../../utils/converter/converter')
+const ArrayConverter = require('../../../utils/converter/array-converter')
 
 function checkAccess (streamId, req) {
   if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
@@ -69,7 +69,7 @@ function checkAccess (streamId, req) {
  *       404:
  *         description: Stream not found
  */
-router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -135,7 +135,7 @@ router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function
  *       404:
  *         description: Stream not found
  */
-router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const streamId = req.params.streamId
   const detections = Array.isArray(req.body) ? req.body : [req.body]
 

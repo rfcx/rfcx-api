@@ -130,7 +130,7 @@ npm run start.mqtt
 This project uses [Jest](https://jestjs.io) for testing and [Standard](https://standardjs.com) for linting. To run both:
 
 ```
-npm run test
+npm test
 ```
 
 In general, unit tests should be saved alongside the code files that they apply to (e.g. for a module `xyz.js`, if there are tests then they will be stored in `xyz.test.js`).

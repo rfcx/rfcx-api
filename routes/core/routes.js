@@ -1,17 +1,17 @@
 module.exports = {
-  'annotations': [
-    require("./annotations")
+  annotations: [
+    require('./annotations')
   ],
-  'classifications': [
-    require("./classifications")
+  classifications: [
+    require('./classifications')
   ],
-  'detections': [
-    require("./detections")
+  detections: [
+    require('./detections')
   ],
-  'streams': [
-    require("./annotations/stream"),
-    require("./classifications/stream"),
-    require("./detections/stream")
+  streams: [
+    require('./annotations/stream'),
+    require('./classifications/stream'),
+    require('./detections/stream')
   ],
   'clustered-annotations': [
     require('./annotations/clustered')

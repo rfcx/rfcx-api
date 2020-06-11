@@ -1,9 +1,9 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const detectionsService = require('../../../services/detections')
-const Converter = require("../../../utils/converter/converter")
+const Converter = require('../../../utils/converter/converter')
 const models = require('../../../modelsTimescale')
 
 /**
@@ -22,7 +22,7 @@ const models = require('../../../modelsTimescale')
  *         schema:
  *           type: string
  *         default: 1d
- *         examples: 
+ *         examples:
  *           hours:
  *             value: 3h
  *           minutes:
@@ -55,7 +55,7 @@ const models = require('../../../modelsTimescale')
  *         in: query
  *         type: string
  *       - name: descending
- *         description: Order by descending time (most recent first) 
+ *         description: Order by descending time (most recent first)
  *         in: query
  *         type: boolean
  *         default: false
@@ -82,7 +82,7 @@ const models = require('../../../modelsTimescale')
  *       400:
  *         description: Invalid query parameters
  */
-router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()

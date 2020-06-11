@@ -1,10 +1,9 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
-const Converter = require("../../../utils/converter/converter")
-
+const Converter = require('../../../utils/converter/converter')
 
 /**
  * @swagger
@@ -33,7 +32,7 @@ const Converter = require("../../../utils/converter/converter")
  *       404:
  *         description: Stream not found
  */
-router.post("/detections", authenticatedWithRoles('systemUser'), function (req, res) {
+router.post('/detections', authenticatedWithRoles('systemUser'), function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('stream').toString()
@@ -47,12 +46,12 @@ router.post("/detections", authenticatedWithRoles('systemUser'), function (req, 
   return params.validate()
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
-      let { stream, start, end, classifier, confidences, step } = convertedParams
+      const { stream, start, end, classifier, confidences, step } = convertedParams
       const detections = confidences.map((confidence, i) => {
         // Confidences then they are spaced by "step" seconds
         const offsetStart = start.clone().add(i * step, 's')
         const offsetEnd = end.clone().add(i * step, 's')
-        return { streamId, classificationId, classifierId: classifier, start: offsetStart, end: offsetEnd, confidence }
+        return { streamId: stream, classificationId, classifierId: classifier, start: offsetStart, end: offsetEnd, confidence }
       })
       return detectionsService.create(detections)
     })
