@@ -99,8 +99,7 @@
       "utils/**",
       "views/**",
       "app.js",
-      "app-mqtt.js",
-      "docs/**"
+      "app-mqtt.js"
     ]
   }
 }
