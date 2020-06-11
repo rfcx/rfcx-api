@@ -79,8 +79,8 @@ exports.env = {
 
   KAFKA_HOST: "",
 
-  REDIS_HOST: "",
-  REDIS_PORT: "",
+  REDIS_HOST: "127.0.0.1",
+  REDIS_PORT: "6379",
 
   /// Firebase features for sending notifications (not enabled by default)
   /// When `FIREBASE_ENABLED` is set to `true` then the other env vars are required.
