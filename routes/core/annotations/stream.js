@@ -142,7 +142,7 @@ router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functi
       }
       return annotationsService.create(annotation)
     })
-    .then(annotation => res.status(201).json(annotation))
+    .then(annotation => res.status(201).json(annotation)) // TODO: the annotation is not any of our valid schemas
     .catch(httpErrorHandler(req, res, 'Failed creating annotation'))
 })
 

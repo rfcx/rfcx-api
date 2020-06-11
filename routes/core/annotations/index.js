@@ -181,7 +181,7 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
       const { start, end, frequency_min, frequency_max } = convertedParams
       return annotationsService.update(annotationId, start, end, classificationId, frequency_min, frequency_max, userId)
     })
-    .then(annotation => res.status(204).json(annotation))
+    .then(annotation => res.json(annotation)) // TODO: the annotation is not any of our valid schemas
     .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
 })
 
