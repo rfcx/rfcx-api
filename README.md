@@ -91,8 +91,9 @@ For TimescaleDb:
 
 Note: you may need to create an empty `migrations` folder (or `migrationsTimescale` folder).
 
-# Running the API locally
-## HTTP API
+## Running the API
+
+### HTTP API
 To start http API run the following command in the project root:
 ```
 npm start
@@ -103,7 +104,7 @@ To run the API with auto-reload (requires nodemon  `npm i nodemon -g`):
 nodemon bin/start
 ```
 
-## MQTT API
+### MQTT API
 
 To run a development MQTT broker locally, first generate the required certs:
 
@@ -124,3 +125,20 @@ To start the MQTT client and API, open another terminal then:
 npm run start.mqtt
 ```
 
+## Testing
+
+This project uses [Jest](https://jestjs.io) for testing and [Standard](https://standardjs.com) for linting. To run both:
+
+```
+npm run test
+```
+
+In general, unit tests should be saved alongside the code files that they apply to (e.g. for a module `xyz.js`, if there are tests then they will be stored in `xyz.test.js`).
+
+To run only Jest: `npm run jest`
+
+To run only Standard: `npm run lint`
+
+Recommend developers to setup Standard in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [StandardJS extension](https://marketplace.visualstudio.com/items?itemName=chenxsan.vscode-standardjs) is installed.
+
+Standard options are kept in package.json -- currently required as there are a long list of ignores.
