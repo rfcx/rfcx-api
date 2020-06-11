@@ -49,8 +49,6 @@ pids
 /.idea
 rfcx-api.iml
 
-/.vscode
-
 # MongoDB-related stuff
 bin/mongo/.env
 
