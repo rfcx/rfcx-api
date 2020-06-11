@@ -9,10 +9,6 @@
   "scripts": {
     "start": "./bin/setup; ./bin/start;",
     "start.mqtt": "./bin/setup; ./bin/start_mqtt;",
-    "test": "./bin/setup; ./node_modules/.bin/mocha './test/test.*.js' -u bdd",
-    "test-remote": "./bin/setup; ./node_modules/.bin/mocha './test/remote.test.*.js' -u bdd",
-    "test-all": "./bin/setup; ./node_modules/.bin/mocha -u bdd",
-    "migrate": "./node_modules/sequelize-cli/bin/sequelize",
     "sync-mysql": "./bin/sync_sql --type=mysql",
     "sync-timescale": "./bin/sync_sql --type=timescale"
   },
@@ -73,14 +69,10 @@
     "winston-aws-cloudwatch": "1.5.0"
   },
   "devDependencies": {
-    "chai": "3.5.0",
     "faux-knox": "0.1.16",
     "minimist": "1.2.5",
-    "mocha": "2.4.5",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",
-    "sinon": "1.17.7",
-    "supertest": "1.2.0",
     "sync-exec": "0.6.2"
   },
   "resolutions": {
