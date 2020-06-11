@@ -67,10 +67,7 @@ function getIds (values) {
 }
 
 function queryByKeyword (keyword, levels) {
-  const typeClause = levels ? { value: { [models.Sequelize.Op.in]: levels } } : {}
-  return models.Classification
-    .findAll({
-      where: {
+  const keywordClause = keyword ? {
         [models.Sequelize.Op.or]: [
           {
             title: {
@@ -83,7 +80,11 @@ function queryByKeyword (keyword, levels) {
             }
           }
         ]
-      },
+      } : {}
+  const typeClause = levels ? { value: { [models.Sequelize.Op.in]: levels } } : {}
+  return models.Classification
+    .findAll({
+      where: keywordClause,
       include: [
         {
           model: models.ClassificationType,
@@ -94,7 +95,9 @@ function queryByKeyword (keyword, levels) {
         {
           model: models.ClassificationAlternativeName,
           as: 'alternative_names',
-          attributes: []
+          // Only include the alternative names that are matched by the keyword
+          attributes: keyword ? models.ClassificationAlternativeName.attributes.lite : [],
+          order: ['rank']
         }
       ],
       attributes: models.Classification.attributes.lite
