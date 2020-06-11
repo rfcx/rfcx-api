@@ -116,6 +116,48 @@ function queryByStream (streamId, limit, offset) {
   return models.sequelize.query(sql, options)
 }
 
+async function queryByStreamIncludeChildren (streamId, childType, limit, offset) {
+  const sql = 'SELECT DISTINCT classification_id id FROM annotations WHERE stream_id = $streamId'
+  const ids = await models.sequelize.query(sql, { bind: { streamId }, raw: true, type: models.Sequelize.QueryTypes.SELECT})
+    .map(x => x.id)
+  models.Classification.hasMany(models.Classification, { as: 'characteristics', foreignKey: 'parent_id' })
+  return models.Classification
+    .findAll({
+      where: {
+        id: ids
+      },
+      include: [
+        {
+          model: models.ClassificationType,
+          as: 'type',
+          attributes: models.ClassificationType.attributes.lite,
+          required: true
+        },
+        {
+          model: models.Classification,
+          as: 'characteristics',
+          attributes: models.Classification.attributes.lite,
+          include: [
+            {
+              model: models.ClassificationType,
+              as: 'type',
+              attributes: [],
+              value: {
+                'characteristic': {
+                  [models.Sequelize.Op.or]: [null, 'characteristic']
+                }
+              }
+            }
+          ]
+        }
+      ],
+      attributes: models.Classification.attributes.lite,
+      offset: offset,
+      limit: limit,
+      order: ['title']
+    })
+}
+
 function queryByParent (value, type) {
   const typeCondition = type !== undefined ? { value: type } : {}
   return models.Classification
@@ -144,5 +186,6 @@ module.exports = {
   getIds,
   queryByKeyword,
   queryByStream,
+  queryByStreamIncludeChildren,
   queryByParent,
 }

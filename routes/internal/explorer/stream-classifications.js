@@ -1,19 +1,19 @@
-const router = require("express").Router()
-const models = require("../../../models")
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const classificationsService = require('../../../services/classification/classification-service')
-const Converter = require("../../../utils/converter/converter")
+const Converter = require('../../../utils/converter/converter')
 
 /**
  * @swagger
  *
- * /streams/{id}/classifications:
+ * /internal/explorer/streams/{id}/classifications:
  *   get:
- *     summary: Get list of classifications that have been annotated on a stream
+ *     summary: Get a list of classifications for a stream, together with their characteristics
+ *     description: This endpoint is used by the Explorer "classification list" component
  *     tags:
- *       - classfications
+ *       - internal
  *     parameters:
  *       - name: id
  *         description: Stream identifier
@@ -32,21 +32,27 @@ const Converter = require("../../../utils/converter/converter")
  *         default: 0
  *     responses:
  *       200:
- *         description: List of classification objects
+ *         description: List of classification with their characteristics
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/ClassificationLite'
+ *                 $allOf:
+ *                   - $ref: '#/components/schemas/ClassificationLite'
+ *                   - type: object
+ *                       properties:
+ *                         characteristics:
+ *                           type: array
+ *                           items:
+ *                             $ref: '#/components/schemas/ClassificationLite'
  *       400:
  *         description: Invalid query parameters
  *       404:
  *         description: Stream not found
  */
-
-router.get("/:streamId/classifications", authenticatedWithRoles('rfcxUser'), function (req, res) {
-  const streamId = req.params.streamId
+router.get("/streams/:id/classifications", authenticatedWithRoles('rfcxUser'), function (req, res) {
+  const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('limit').default(100).toInt()
@@ -58,7 +64,7 @@ router.get("/:streamId/classifications", authenticatedWithRoles('rfcxUser'), fun
     .then(stream => {
       streamsService.checkUserAccessToStream(req, stream)
       const { limit, offset } = convertedParams
-      return classificationsService.queryByStream(streamId, limit, offset)
+      return classificationsService.queryByStreamIncludeChildren(streamId, 'characteristic', limit, offset)
     })
     .then(classifications => res.json(classifications))
     .catch(httpErrorHandler(req, res, 'Failed getting stream classifications'))
