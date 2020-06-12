@@ -18,11 +18,11 @@ module.exports = {
           allowNull: true,
         },
         latitude: {
-          type: Sequelize.FLOAT,
+          type: Sequelize.DOUBLE,
           allowNull: false,
         },
         longitude: {
-          type: Sequelize.FLOAT,
+          type: Sequelize.DOUBLE,
           allowNull: false,
         },
       })
