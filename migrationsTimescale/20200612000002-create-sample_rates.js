@@ -7,11 +7,12 @@ module.exports = {
           type: Sequelize.INTEGER,
           autoIncrement: true,
           allowNull: false,
-          primaryKey: true
+          primaryKey: true,
         },
         value: {
           type: Sequelize.INTEGER,
           allowNull: false,
+          unique: true,
         },
       })
       .then(() => {
