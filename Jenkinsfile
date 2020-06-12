@@ -27,7 +27,6 @@ pipeline {
             sh "docker build -f build/mqtt/Dockerfile -t ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ."
             sh "docker tag ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER}"
             sh "docker push ${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER}"
-            sh "docker system prune -af"
             }
            post {
                success {
@@ -60,6 +59,7 @@ pipeline {
             sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
             slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
+	    sh "docker system prune -af"
             slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*API MQTT*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             }
             }
