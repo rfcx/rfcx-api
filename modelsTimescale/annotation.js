@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
     stream_id: {
-      type: DataTypes.STRING(36),
+      type: DataTypes.UUID,
       allowNull: false
     },
     start: {
@@ -38,6 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   })
   Annotation.associate = function (models) {
+    Annotation.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     Annotation.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
     Annotation.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
     Annotation.belongsTo(models.User, { as: 'updated_by', foreignKey: 'updated_by_id' })
