@@ -28,15 +28,13 @@ module.exports = {
         defaultValue: true,
         allowNull: false,
       },
-      location_id: {
-        type: Sequelize.UUID,
+      latitude: {
+        type: Sequelize.DOUBLE,
         allowNull: true,
-        references: {
-          model: {
-            tableName: 'locations'
-          },
-          key: 'id'
-        },
+      },
+      longitude: {
+        type: Sequelize.DOUBLE,
+        allowNull: true,
       },
       max_sample_rate_id: {
         type: Sequelize.INTEGER,
@@ -66,6 +64,34 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false
       },
+    })
+    .then(() => {
+      return Promise.all([
+        queryInterface.addConstraint('streams', {
+          type: 'CHECK',
+          fields: ['latitude'],
+          where: {
+            latitude: {
+              [Sequelize.Op.and]: {
+                [Sequelize.Op.gte]: -90,
+                [Sequelize.Op.lte]: 90,
+              }
+            }
+          }
+        }),
+        queryInterface.addConstraint('streams', {
+          type: 'CHECK',
+          fields: ['longitude'],
+          where: {
+            longitude: {
+              [Sequelize.Op.and]: {
+                [Sequelize.Op.gte]: -180,
+                [Sequelize.Op.lte]: 180,
+              }
+            }
+          }
+        }),
+      ])
     })
   },
   down: (queryInterface, Sequelize) => {

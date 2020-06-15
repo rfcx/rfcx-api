@@ -2,7 +2,6 @@ const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams-timescale')
-const locationService = require('../../../services/location/location-service');
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb');
 const hash = require("../../../utils/misc/hash.js").hash;
 const Converter = require("../../../utils/converter/converter")
@@ -42,24 +41,16 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const params = new Converter(req.body, convertedParams)
   params.convert('id').optional().toString();
   params.convert('name').toString();
+  params.convert('latitude').optional().toFloat().minimum(-90).maximum(90);
+  params.convert('longitude').optional().toFloat().minimum(-180).maximum(180);
   params.convert('description').optional().toString();
   params.convert('is_private').optional().toString();
-  params.convert('location').optional().toString();
 
   return params.validate()
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
     .then(() => {
       convertedParams.id = convertedParams.id || hash.randomString(12);
       convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id;
-      if (convertedParams.location) {
-        return locationService.getById(convertedParams.location);
-      }
-      return null;
-    })
-    .then((location) => {
-      if (location) {
-        convertedParams.location_id = location.id;
-      }
       return streamsService.create(convertedParams, true);
     })
     .then(streamsService.formatStream)
@@ -94,7 +85,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *         description: Stream not found
  */
 router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
-  return streamsService.getById(req.params.id)
+  return streamsService.getById(req.params.id, true)
     .then(stream => {
       streamsService.checkUserAccessToStream(req, stream);
       return streamsService.formatStream(stream);
@@ -146,33 +137,19 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('name').optional().toString()
   params.convert('description').optional().toString()
   params.convert('is_private').optional().toBoolean()
-  params.convert('location').optional().toString()
-
-  let stream;
+  params.convert('latitude').optional().toFloat().minimum(-90).maximum(90);
+  params.convert('longitude').optional().toFloat().minimum(-180).maximum(180);
 
   return params.validate()
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
     .then(() => streamsService.getById(streamId))
-    .then(dbStream => {
-      stream = dbStream;
+    .then(stream => {
       streamsService.checkUserAccessToStream(req, stream);
-    })
-    .then(() => {
-      if (convertedParams.location) {
-        return locationService.getById(convertedParams.location);
-      }
-      return null;
-    })
-    .then((location) => {
-      if (location) {
-        convertedParams.location_id = location.id;
-      }
       return streamsService.update(stream, convertedParams, true);
     })
     .then(streamsService.formatStream)
     .then(json => res.status(200).json(json))
     .catch(httpErrorHandler(req, res, 'Failed updating stream'))
-    .finally(() => stream = null);
 })
 
 /**

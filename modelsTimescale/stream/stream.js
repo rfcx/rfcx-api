@@ -26,9 +26,35 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue: true,
       allowNull: false,
     },
-    location_id: {
-      type: DataTypes.UUID,
+    latitude: {
+      type: DataTypes.DOUBLE,
       allowNull: true,
+      validate: {
+        isFloat: true,
+        min: {
+          args: [ -90 ],
+          msg: 'latitude should be equal to or greater than -90'
+        },
+        max: {
+          args: [ 90 ],
+          msg: 'latitude should be equal to or less than 90'
+        }
+      }
+    },
+    longitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: {
+          args: [ -180 ],
+          msg: 'longitude should be equal to or greater than -180'
+        },
+        max: {
+          args: [ 180 ],
+          msg: 'longitude should be equal to or less than 180'
+        }
+      }
     },
     max_sample_rate_id: {
       type: DataTypes.INTEGER,
@@ -42,12 +68,11 @@ module.exports = function (sequelize, DataTypes) {
     timestamps: true,
   })
   Stream.associate = function (models) {
-    Stream.belongsTo(models.Location, { as: 'location', foreignKey: 'location_id' })
     Stream.belongsTo(models.SampleRate, { as: 'max_sample_rate', foreignKey: 'max_sample_rate_id' })
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'is_private', 'location_id', 'max_sample_rate_id', 'created_by_id', 'created_at', 'updated_at'],
+    full: ['id', 'name', 'description', 'start', 'end', 'is_private', 'latitude', 'longitude', 'max_sample_rate_id', 'created_by_id', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'start', 'end', 'is_private']
   }
   return Stream
