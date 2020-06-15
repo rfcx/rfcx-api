@@ -65,7 +65,9 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
     },
   }, {
+    paranoid: true,
     timestamps: true,
+    deletedAt: 'deleted_at',
   })
   Stream.associate = function (models) {
     Stream.belongsTo(models.SampleRate, { as: 'max_sample_rate', foreignKey: 'max_sample_rate_id' })

@@ -155,6 +155,38 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
 /**
  * @swagger
  *
+ * /streams/{id}:
+ *   delete:
+ *     summary: Delete a stream (soft-delete)
+ *     tags:
+ *       - streams
+ *     parameters:
+ *       - name: id
+ *         description: Stream id
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Success
+ *       403:
+ *         description: Insufficient privileges
+ *       404:
+ *         description: Stream not found
+ */
+router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
+  return streamsService.getById(req.params.id, true)
+    .then(stream => {
+      streamsService.checkUserAccessToStream(req, stream);
+      return streamsService.softDelete(stream);
+    })
+    .then(json => res.sendStatus(204))
+    .catch(httpErrorHandler(req, res, 'Failed deleting stream'));
+})
+
+/**
+ * @swagger
+ *
  * /streams:
  *   get:
  *     summary: Get list of streams (not yet implemented)

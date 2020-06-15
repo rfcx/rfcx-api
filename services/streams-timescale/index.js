@@ -36,7 +36,9 @@ function getById (id, joinRelations = false) {
       return item
     })
     .catch((e) => {
-      console.error('Streams service -> getById -> error', e);
+      if (!e instanceof EmptyResultError) {
+        console.error('Streams service -> getById -> error', e);
+      }
       // We need to rethrow error with "EmptyResultError" type for this method
       throw new EmptyResultError('Stream with given id not found.');
     })
@@ -85,6 +87,18 @@ function update(stream, data, joinRelations = false) {
 }
 
 /**
+ * Deletes stream softly
+ * @param {*} stream stream model item
+ */
+function softDelete(stream) {
+  return stream.destroy()
+    .catch((e) => {
+      console.error('Streams service -> softDelete -> error', e);
+      throw new ValidationError('Cannot delete stream.');
+    })
+}
+
+/**
  * A function which checks whether user has access to stream or not.
  * This function will be extended with new streams permissions logic later.
  * @param {*} req express request object
@@ -120,6 +134,7 @@ module.exports = {
   getById,
   create,
   update,
+  softDelete,
   checkUserAccessToStream,
   formatStream,
 }
