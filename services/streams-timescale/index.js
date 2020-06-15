@@ -22,12 +22,13 @@ let streamBaseInclude = [
  * @param {*} joinRelations whether include join tables into returning model or not
  * @returns {*} stream model item
  */
-function getById (id, joinRelations = false) {
+function getById (id, opts = {}) {
   return models.Stream
     .findOne({
       where: { id },
       attributes: models.Stream.attributes.full,
-      include: joinRelations? streamBaseInclude : []
+      include: opts.joinRelations? streamBaseInclude : [],
+      paranoid: !opts.includeDeleted
     })
     .then(item => {
       if (!item) {
@@ -99,6 +100,18 @@ function softDelete(stream) {
 }
 
 /**
+ * Restored deleted stream
+ * @param {*} stream stream model item
+ */
+function restore(stream) {
+  return stream.restore()
+    .catch((e) => {
+      console.error('Streams service -> restore -> error', e);
+      throw new ValidationError('Cannot restore stream.');
+    })
+}
+
+/**
  * A function which checks whether user has access to stream or not.
  * This function will be extended with new streams permissions logic later.
  * @param {*} req express request object
@@ -135,6 +148,7 @@ module.exports = {
   create,
   update,
   softDelete,
+  restore,
   checkUserAccessToStream,
   formatStream,
 }

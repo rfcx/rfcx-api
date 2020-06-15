@@ -85,7 +85,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *         description: Stream not found
  */
 router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
-  return streamsService.getById(req.params.id, true)
+  return streamsService.getById(req.params.id, { joinRelations: true })
     .then(stream => {
       streamsService.checkUserAccessToStream(req, stream);
       return streamsService.formatStream(stream);
@@ -139,12 +139,16 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('is_private').optional().toBoolean()
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90);
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180);
+  params.convert('restore').optional().toBoolean();
 
   return params.validate()
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
-    .then(() => streamsService.getById(streamId))
-    .then(stream => {
+    .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
+    .then(async stream => {
       streamsService.checkUserAccessToStream(req, stream);
+      if (convertedParams.restore === true) {
+        await streamsService.restore(stream);
+      }
       return streamsService.update(stream, convertedParams, true);
     })
     .then(streamsService.formatStream)
@@ -175,7 +179,7 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
  *         description: Stream not found
  */
 router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
-  return streamsService.getById(req.params.id, true)
+  return streamsService.getById(req.params.id, { joinRelations: true })
     .then(stream => {
       streamsService.checkUserAccessToStream(req, stream);
       return streamsService.softDelete(stream);

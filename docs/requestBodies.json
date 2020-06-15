@@ -186,6 +186,11 @@
         "type": "boolean",
         "description": "Whether stream is private or public",
         "example": true
+      },
+      "restore": {
+        "type": "boolean",
+        "description": "Restore previously deleted stream",
+        "example": true
       }
     },
     "required": []
