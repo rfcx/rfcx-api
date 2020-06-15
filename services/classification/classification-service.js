@@ -120,7 +120,6 @@ async function queryByStreamIncludeChildren (streamId, childType, limit, offset)
   const sql = 'SELECT DISTINCT classification_id id FROM annotations WHERE stream_id = $streamId'
   const ids = await models.sequelize.query(sql, { bind: { streamId }, raw: true, type: models.Sequelize.QueryTypes.SELECT})
     .map(x => x.id)
-  models.Classification.hasMany(models.Classification, { as: 'characteristics', foreignKey: 'parent_id' })
   return models.Classification
     .findAll({
       where: {
@@ -135,16 +134,16 @@ async function queryByStreamIncludeChildren (streamId, childType, limit, offset)
         },
         {
           model: models.Classification,
-          as: 'characteristics',
+          as: 'children',
           attributes: models.Classification.attributes.lite,
           include: [
             {
               model: models.ClassificationType,
               as: 'type',
               attributes: [],
-              value: {
-                'characteristic': {
-                  [models.Sequelize.Op.or]: [null, 'characteristic']
+              where: {
+                'value': {
+                  [models.Sequelize.Op.or]: [null, childType]
                 }
               }
             }

@@ -42,7 +42,7 @@ const Converter = require('../../../utils/converter/converter')
  *                   - $ref: '#/components/schemas/ClassificationLite'
  *                   - type: object
  *                     properties:
- *                       characteristics:
+ *                       children:
  *                         type: array
  *                         items:
  *                           $ref: '#/components/schemas/ClassificationLite'
@@ -52,7 +52,7 @@ const Converter = require('../../../utils/converter/converter')
  *                   image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Dusky_leaf_monkey_%288050982300%29.jpg/360px-Dusky_leaf_monkey_%288050982300%29.jpg"
  *                   type:
  *                     value: "species"
- *                   characteristics:
+ *                   children:
  *                     - value: obscurus_laugh
  *                       title: Laugh
  *                     - value: obscurus_giggle
