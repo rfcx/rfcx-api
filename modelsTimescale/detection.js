@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE(3),
     },
     stream_id: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING(12),
     },
     classifier_id: {
       type: DataTypes.INTEGER,

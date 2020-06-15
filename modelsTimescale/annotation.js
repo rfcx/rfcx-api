@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
     stream_id: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING(12),
       allowNull: false
     },
     start: {
