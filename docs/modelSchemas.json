@@ -210,5 +210,102 @@
         ]
       }
     ]
+  },
+  "Stream": {
+    "allOf": [
+      {
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "xu82jDgX49"
+          },
+          "name": {
+            "type": "string",
+            "example": "My Stream 1"
+          },
+          "description": {
+            "type": "string",
+            "example": "Stream 1 description"
+          },
+          "start": {
+            "type": "date",
+            "example": "2020-05-12T07:30:21.500Z"
+          },
+          "end": {
+            "type": "date",
+            "example": "2020-05-12T07:30:22.500Z"
+          },
+          "is_private": {
+            "type": "boolean",
+            "example": true
+          },
+          "created_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "max_sample_rate": {
+            "type": "integer",
+            "example": 32000
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationLite"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    ]
+  },
+  "UserLite": {
+    "allOf": [
+      {
+        "properties": {
+          "firstname": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastname": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "picture": {
+            "type": "string",
+            "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
+          }
+        }
+      }
+    ]
+  },
+  "LocationLite": {
+    "allOf": [
+      {
+        "properties": {
+          "id": {
+            "type": "uuid",
+            "example": "a4fa4917-32d5-4e23-891d-56e068b476c3"
+          },
+          "name": {
+            "type": "string",
+            "example": "Location 1"
+          },
+          "latitude": {
+            "type": "float",
+            "example": 91.213
+          },
+          "longitude": {
+            "type": "float",
+            "example": 124.6123
+          }
+        }
+      }
+    ]
   }
 }

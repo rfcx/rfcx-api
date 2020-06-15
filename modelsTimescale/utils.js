@@ -1,6 +1,6 @@
 const ValidationError = require('../utils/converter/validation-error');
 
-function formatModeiItem (model, item, format) {
+function formatModelItem (model, item, format) {
   if (!model.attributes || !model.attributes[format]) {
     throw new ValidationError(`${model.name} model does not have "${format}" attributes set.`);
   }
@@ -12,5 +12,5 @@ function formatModeiItem (model, item, format) {
 
 
 module.exports = {
-  formatModeiItem,
+  formatModelItem,
 }
