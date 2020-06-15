@@ -3,8 +3,7 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('streams', {
       id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        type: Sequelize.STRING(12),
         allowNull: false,
         primaryKey: true
       },
@@ -18,11 +17,11 @@ module.exports = {
       },
       start: {
         type: Sequelize.DATE(3),
-        allowNull: false,
+        allowNull: true,
       },
       end: {
         type: Sequelize.DATE(3),
-        allowNull: false,
+        allowNull: true,
       },
       is_private: {
         type: Sequelize.BOOLEAN,
@@ -58,6 +57,14 @@ module.exports = {
           },
           key: 'id'
         },
+      },
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false
       },
     })
   },

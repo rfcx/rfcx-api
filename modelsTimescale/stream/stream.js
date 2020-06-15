@@ -1,8 +1,7 @@
 module.exports = function (sequelize, DataTypes) {
   const Stream = sequelize.define("Stream", {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.STRING(12),
       allowNull: false,
       primaryKey: true,
     },
@@ -16,11 +15,11 @@ module.exports = function (sequelize, DataTypes) {
     },
     start: {
       type: DataTypes.DATE(3),
-      allowNull: false,
+      allowNull: true,
     },
     end: {
       type: DataTypes.DATE(3),
-      allowNull: false,
+      allowNull: true,
     },
     is_private: {
       type: DataTypes.BOOLEAN,
@@ -38,7 +37,9 @@ module.exports = function (sequelize, DataTypes) {
     created_by_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    }
+    },
+  }, {
+    timestamps: true,
   })
   Stream.associate = function (models) {
     Stream.belongsTo(models.Location, { as: 'location', foreignKey: 'location_id' })

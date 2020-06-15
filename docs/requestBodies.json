@@ -120,5 +120,38 @@
       "confidences",
       "step"
     ]
+  },
+  "Stream": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "A stream id",
+        "example": "xu82jDgX49"
+      },
+      "name": {
+        "type": "string",
+        "description": "A stream name",
+        "example": "My Stream 1"
+      },
+      "description": {
+        "type": "string",
+        "description": "A stream description",
+        "example": "Stream 1 description"
+      },
+      "is_private": {
+        "type": "boolean",
+        "description": "Whether stream is private or public",
+        "example": true
+      },
+      "location": {
+        "type": "string",
+        "description": "A location id",
+        "example": "f0113435-25cb-4cbc-a431-bf588a7418e2"
+      }
+    },
+    "required": [
+      "name"
+    ]
   }
 }

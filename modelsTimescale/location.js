@@ -45,6 +45,8 @@ module.exports = function (sequelize, DataTypes) {
         }
       }
     },
+  }, {
+    timestamps: true,
   })
   Location.attributes = {
     full: ['id', 'name', 'description', 'latitude', 'longitude', 'created_at', 'updated_at'],
