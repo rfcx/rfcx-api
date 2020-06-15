@@ -1,11 +1,11 @@
 const router = require('express').Router()
-const models = require('../../../models')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
 const Converter = require('../../../utils/converter/converter')
+const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 
 function checkAccess (streamId, req) {
   return streamsService.getStreamByGuid(streamId)
@@ -132,6 +132,7 @@ router.post('/:streamId/annotations', authenticatedWithRoles('rfcxUser'), functi
   params.convert('frequency_max').toInt()
 
   return params.validate()
+    .then(() => usersTimescaleDBService.ensureUserSynced(req))
     .then(() => checkAccess(streamId, req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
@@ -147,7 +148,7 @@ router.post('/:streamId/annotations', authenticatedWithRoles('rfcxUser'), functi
       }
       return annotationsService.create(annotation)
     })
-    .then(annotation => res.status(201).json(annotation))
+    .then(annotation => res.status(201).json(annotation)) // TODO: the annotation is not any of our valid schemas
     .catch(httpErrorHandler(req, res, 'Failed creating annotation'))
 })
 

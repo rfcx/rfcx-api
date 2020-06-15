@@ -20,7 +20,6 @@ var fs = require('fs');
 const unsubscriptionSalt = 'you_will_never_guess_this_salt';
 
 function getUserByParams(params, ignoreMissing) {
-  console.log('\n\nparams', params, '\n\n');
   return models.User
     .findOne({
       where: params,
@@ -465,6 +464,15 @@ function getUserDataFromReq(req) {
   }
 }
 
+function collectUserDataForSync(req) {
+  const { guid, email, avatar } = getUserDataFromReq(req);
+  return getUserByGuidOrEmail(guid, email)
+    .then((dbUser) => {
+      const { id, firstname, lastname, username } = dbUser;
+      return { id, firstname, lastname, username, email, guid, picture: avatar };
+    });
+}
+
 function checkUserPicture(files) {
   return new Promise((resolve, reject) => {
     console.log('\n\n', files.file)
@@ -552,6 +560,7 @@ module.exports = {
   removeUserByGuidFromMySQL,
   updateMySQLUserPassword,
   getUserDataFromReq,
+  collectUserDataForSync,
   checkUserPicture,
   checkUserConnection,
   uploadImageFile,

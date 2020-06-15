@@ -44,7 +44,7 @@ router.get('/:value', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *       - classfications
  *     parameters:
  *       - name: keyword
- *         description: Match classifications with title or alternative name
+ *         description: Match classifications with title or alternative name (if keyword matches an alternative name then it will be included in the response)
  *         in: query
  *         type: string
  *         example: owl
@@ -81,13 +81,15 @@ router.get('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.query, transformedParams)
 
-  params.convert('keyword').toString()
+  params.convert('keyword').optional().toString()
   params.convert('levels').optional().toArray()
+  params.convert('limit').default(100).toInt()
+  params.convert('offset').default(0).toInt()
 
   params.validate()
     .then(() => {
-      const { keyword, levels } = transformedParams
-      return classificationService.queryByKeyword(keyword, levels)
+      const { keyword, levels, limit, offset } = transformedParams
+      return classificationService.queryByKeyword(keyword, levels, limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))

@@ -169,7 +169,7 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
       })
       return detectionsService.create(detections)
     })
-    .then(detections => res.sendStatus(201))
+    .then(detections => res.sendStatus(201)) // TODO: not returning the ids of the created detections
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))
 })
 
