@@ -71,6 +71,42 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  * @swagger
  *
  * /streams/{id}:
+ *   get:
+ *     summary: Get a stream
+ *     tags:
+ *       - streams
+ *     parameters:
+ *       - name: id
+ *         description: Stream id
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Stream'
+ *       403:
+ *         description: Insufficient privileges
+ *       404:
+ *         description: Stream not found
+ */
+router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
+  return streamsService.getById(req.params.id)
+    .then(stream => {
+      streamsService.checkUserAccessToStream(req, stream);
+      return streamsService.formatStream(stream);
+    })
+    .then(json => res.status(200).json(json))
+    .catch(httpErrorHandler(req, res, 'Failed getting stream'));
+})
+
+/**
+ * @swagger
+ *
+ * /streams/{id}:
  *   patch:
  *     summary: Update a stream
  *     tags:
