@@ -28,6 +28,7 @@ module.exports = function (sequelize, DataTypes) {
     Classification.belongsTo(models.ClassificationSource, { as: 'source', foreignKey: "source_id" })
     Classification.belongsTo(models.Classification, { as: 'parent', foreignKey: "parent_id" })
     Classification.hasMany(models.ClassificationAlternativeName, { as: "alternative_names", foreignKey: "classification_id" })
+    Classification.hasMany(models.Classification, { as: 'children', foreignKey: 'parent_id' })
     Classification.belongsToMany(models.Annotation, { as: 'reference_annotations', through: 'classification_references', timestamps: false })
   }
   Classification.attributes = {

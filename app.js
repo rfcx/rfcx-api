@@ -32,6 +32,7 @@ var versionedRoutes = {
   v2: require('./routes/v2/routes')
 }
 const coreRoutes = require('./routes/core/routes')
+const internalRoutes = require('./routes/internal/routes')
 
 // Routes middleware must stay on /v1 and /v2 level to keep the middleware logic valid
 for (apiVersion in versionedRoutes) {
@@ -48,6 +49,12 @@ for (routeName in coreRoutes) {
     app.use('/' + routeName, routeMiddleware, coreRoutes[routeName][route])
   }
 }
+for (routeName in internalRoutes) {
+  for (route in internalRoutes[routeName]) {
+    app.use('/internal/' + routeName, routeMiddleware, internalRoutes[routeName][route])
+  }
+}
+
 
 // Enable documentation
 app.use('/docs', require('./docs'))
