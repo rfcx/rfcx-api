@@ -61,6 +61,89 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
 /**
  * @swagger
  *
+ * /streams:
+ *   get:
+ *     summary: Get list of streams
+ *     tags:
+ *       - streams
+ *     parameters:
+ *       - name: is_private
+ *         description: Return only your private streams or all shared with you streams
+ *         in: query
+ *         type: string
+ *       - name: is_deleted
+ *         description: Return only your deleted streams (forces `is_private` to be true)
+ *         in: query
+ *         type: string
+ *       - name: start
+ *         description: Limit to a start date on or after (iso8601 or epoch)
+ *         in: query
+ *         type: string
+ *       - name: end
+ *         description: Limit to a start date before (iso8601 or epoch)
+ *         in: query
+ *         type: string
+ *       - name: keyword
+ *         description: Match streams with name
+ *         in: query
+ *         type: string
+ *       - name: limit
+ *         description: Maximum number of results to return
+ *         in: query
+ *         type: int
+ *         default: 100
+ *       - name: offset
+ *         description: Number of results to skip
+ *         in: query
+ *         type: int
+ *         default: 0
+ *     responses:
+ *       200:
+ *         description: List of streams objects
+ *         headers:
+ *           x-rfcx-total:
+ *             schema:
+ *               type: integer
+ *             description: Total number of items without limit and offset.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Stream'
+ *       400:
+ *         description: Invalid query parameters
+ */
+router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
+  const convertedParams = {}
+  const params = new Converter(req.query, convertedParams)
+  params.convert('is_private').optional().toBoolean()
+  params.convert('is_deleted').optional().toBoolean()
+  params.convert('start').optional().toMomentUtc()
+  params.convert('end').optional().toMomentUtc()
+  params.convert('keyword').optional().toString()
+  params.convert('limit').optional().toInt().default(100)
+  params.convert('offset').optional().toInt().default(0)
+
+  return params.validate()
+    .then(() => {
+      if (convertedParams.is_deleted) { // return only user's private streams when user requests deleted streams
+        convertedParams.is_private = true;
+      }
+      return streamsService.query(convertedParams, { joinRelations: true });
+    })
+    .then((data) => {
+      res
+        .header('x-rfcx-total', data.count)
+        .status(200)
+        .json(streamsService.formatStreams(data.streams))
+    })
+    .catch(httpErrorHandler(req, res, 'Failed getting streams'))
+})
+
+/**
+ * @swagger
+ *
  * /streams/{id}:
  *   get:
  *     summary: Get a stream
@@ -186,34 +269,6 @@ router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
     })
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'));
-})
-
-/**
- * @swagger
- *
- * /streams:
- *   get:
- *     summary: Get list of streams (not yet implemented)
- *     description:
- *     tags:
- *       - streams
- *     parameters:
- *       - name: access
- *         description: Limit to streams `private`, `shared`
- *         in: query
- *         type: string
- *     responses:
- *       200:
- *         description: List of stream (lite) objects
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *       400:
- *         description: Invalid query parameters
- */
-router.get("/", (req, res) => {
-  res.sendStatus(504)
 })
 
 module.exports = router

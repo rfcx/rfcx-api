@@ -66,6 +66,55 @@ function create(data, joinRelations = false) {
 }
 
 /**
+ * Returns list of streams with total number filtered by specified attributes
+ * @param {*} attrs stream attributes
+ * @param {*} opts additional function params
+ */
+function query(attrs, opts = {}) {
+
+  let where = { [models.Sequelize.Op.and]: {} };
+  if (attrs.start !== undefined) {
+    where[models.Sequelize.Op.and]['start'] = {
+      [models.Sequelize.Op.gte]: attrs.start
+    }
+  }
+  if (attrs.end !== undefined) {
+    where[models.Sequelize.Op.and]['end'] = {
+      [models.Sequelize.Op.lt]: attrs.end
+    }
+  }
+  if (attrs.is_private !== undefined) {
+    where[models.Sequelize.Op.and]['is_private'] = attrs.is_private;
+  }
+  if (attrs.is_deleted === true) {
+    where[models.Sequelize.Op.and]['deleted_at'] = {
+      [models.Sequelize.Op.ne]: null
+    }
+  }
+  if (attrs.keyword) {
+    where[models.Sequelize.Op.and]['name'] = {
+      [models.Sequelize.Op.iLike]: `%${attrs.keyword}%`
+    }
+  }
+
+  let method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll'; // don't use findAndCountAll if we don't need to limit and offset
+  return models.Stream[method]({
+    where,
+    limit: attrs.limit,
+    offset: attrs.offset,
+    attributes: models.Stream.attributes.full,
+    include: opts.joinRelations? streamBaseInclude : [],
+    paranoid: attrs.is_deleted === true? false : true,
+  })
+  .then((data) => {
+    return {
+      count: method === 'findAndCountAll' ? data.count : data.length,
+      streams: method === 'findAndCountAll' ? data.rows : data,
+    };
+  })
+}
+
+/**
  * Updates existing stream item
  * @param {*} stream stream model item
  * @param {*} data attributes to update
@@ -143,12 +192,18 @@ function formatStream(stream) {
   };
 }
 
+function formatStreams(streams) {
+  return streams.map(formatStream);
+}
+
 module.exports = {
   getById,
   create,
+  query,
   update,
   softDelete,
   restore,
   checkUserAccessToStream,
   formatStream,
+  formatStreams,
 }
