@@ -36,15 +36,9 @@ module.exports = {
         type: Sequelize.DOUBLE,
         allowNull: true,
       },
-      max_sample_rate_id: {
+      max_sample_rate: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: {
-            tableName: 'sample_rates'
-          },
-          key: 'id'
-        },
       },
       created_by_id: {
         type: Sequelize.INTEGER,
@@ -95,6 +89,15 @@ module.exports = {
             }
           }
         }),
+        queryInterface.addConstraint('streams', {
+          type: 'CHECK',
+          fields: ['max_sample_rate'],
+          where: {
+            max_sample_rate: {
+              [Sequelize.Op.gt]: 0
+            }
+          }
+        })
       ])
     })
   },

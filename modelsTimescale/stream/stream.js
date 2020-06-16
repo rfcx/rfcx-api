@@ -56,7 +56,7 @@ module.exports = function (sequelize, DataTypes) {
         }
       }
     },
-    max_sample_rate_id: {
+    max_sample_rate: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
@@ -70,11 +70,10 @@ module.exports = function (sequelize, DataTypes) {
     deletedAt: 'deleted_at',
   })
   Stream.associate = function (models) {
-    Stream.belongsTo(models.SampleRate, { as: 'max_sample_rate', foreignKey: 'max_sample_rate_id' })
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'is_private', 'latitude', 'longitude', 'max_sample_rate_id', 'created_by_id', 'created_at', 'updated_at'],
+    full: ['id', 'name', 'description', 'start', 'end', 'is_private', 'latitude', 'longitude', 'max_sample_rate', 'created_by_id', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'start', 'end', 'is_private']
   }
   return Stream

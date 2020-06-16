@@ -5,11 +5,6 @@ const ForbiddenError = require('../../utils/converter/forbidden-error')
 
 let streamBaseInclude = [
   {
-    model: models.SampleRate,
-    as: 'max_sample_rate',
-    attributes: ['value'],
-  },
-  {
     model: models.User,
     as: 'created_by',
     attributes: models.User.attributes.lite,
@@ -175,7 +170,7 @@ function checkUserAccessToStream(req, stream) {
 }
 
 function formatStream(stream) {
-  const { id, name, description, start, end, is_private, latitude, longitude, created_at, updated_at } = stream;
+  const { id, name, description, start, end, is_private, latitude, longitude, created_at, updated_at, max_sample_rate } = stream;
   return {
     id,
     name,
@@ -186,7 +181,7 @@ function formatStream(stream) {
     created_at,
     created_by: stream.created_by || null,
     updated_at,
-    max_sample_rate: stream.max_sample_rate? stream.max_sample_rate.value : null,
+    max_sample_rate,
     latitude,
     longitude,
   };
