@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage("Build") {
             when {
-                 expression { BRANCH_NAME ==~ /(staging|master)/ }
+                 expression { BRANCH_NAME ==~ /(staging|master|media)/ }
             }
             steps {
             slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
@@ -42,7 +42,7 @@ pipeline {
         }
         stage('Deploy') {
             when {
-                 expression { BRANCH_NAME ==~ /(staging|master)/ }
+                 expression { BRANCH_NAME ==~ /(staging|master|media)/ }
             }
             steps {
                 sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
@@ -51,7 +51,7 @@ pipeline {
         }
         stage('Verifying') {
             when {
-                 expression { BRANCH_NAME ==~ /(staging|master)/ }
+                 expression { BRANCH_NAME ==~ /(staging|master|media)/ }
             }
             steps {
             catchError {
@@ -83,6 +83,14 @@ def branchToConfig(branch) {
         withCredentials([file(credentialsId: 'api_production_env', variable: 'PRIVATE_ENV')]) {
         sh "cp $PRIVATE_ENV rfcx.sh"
         sh "chmod 777 rfcx.sh"
+        }
+        if (branch == 'media') {
+             result = "media"
+             slackChannel = "alerts-deployment-prod"
+        withCredentials([file(credentialsId: 'api_production_env', variable: 'PRIVATE_ENV')]) {
+        sh "cp $PRIVATE_ENV rfcx.sh"
+        sh "chmod 777 rfcx.sh"
+            }
         }
          }
          echo "BRANCH:${branch} -> CONFIGURATION:${result}"
