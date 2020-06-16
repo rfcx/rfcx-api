@@ -187,6 +187,8 @@ function generateFile(req, res, attrs, segments, additionalHeaders) {
   const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
 
+  let shouldCacheFile = true;
+
   let proms = [];
   let sox = `${process.env.SOX_PATH} --combine concatenate `;
   // Step 1: Download all segment files
@@ -243,6 +245,7 @@ function generateFile(req, res, attrs, segments, additionalHeaders) {
         }
         if (pad.start !== 0 || pad.end !== 0) {
           sox += ` pad ${pad.start} ${pad.end}`;
+          shouldCacheFile = false; // do not cache files which have gaps - these gaps could be filled with audio data later
         }
         if (trim.start !== 0 || trim.end !== 0) {
           sox += ` trim ${trim.start} -${trim.end}`;
@@ -327,6 +330,9 @@ function generateFile(req, res, attrs, segments, additionalHeaders) {
       }
     })
     .then(() => {
+      if (!shouldCacheFile) {
+        return Promise.resolve();
+      }
       // Upload files to cache S3 bucket
       let proms = [
         S3Service.putObject(audioFilePathCached, s3AudioFilePath, process.env.STREAMS_CACHE_BUCKET)
