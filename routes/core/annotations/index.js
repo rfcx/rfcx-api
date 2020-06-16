@@ -1,8 +1,12 @@
 const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const ValidationError = require("../../../utils/converter/validation-error")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
+const classificationService = require('../../../services/classification/classification-service')
+const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb');
 const Converter = require("../../../utils/converter/converter")
 
 function isUuid (str) {
@@ -30,9 +34,9 @@ function isUuid (str) {
  *         required: true
  *         type: string
  *       - name: classifications
- *         description: List of clasification identifiers
+ *         description: List of clasification values
  *         in: query
- *         type: array|int
+ *         type: array|string
  *       - name: stream
  *         description: Limit results to a selected stream
  *         in: query
@@ -65,7 +69,7 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('stream').optional().toString()
-  params.convert('classifications').optional().toIntArray()
+  params.convert('classifications').optional().toArray()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
@@ -101,18 +105,12 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
 router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('classification').toInt()
-  params.convert('frequency_min').toInt()
-  params.convert('frequency_max').toInt()
 
   if (!isUuid(annotationId)) {
     return res.sendStatus(404)
   }
 
+  // TODO check stream permission
   return annotationsService.get(annotationId)
     .then(annotation => res.json(annotation))
     .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
@@ -157,15 +155,16 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
-  params.convert('classification').toInt()
+  params.convert('classification').toString()
   params.convert('frequency_min').toInt()
   params.convert('frequency_max').toInt()
 
   if (!isUuid(annotationId)) {
-    return res.sendStatus(404)
+    return httpErrorHandler(req, res)(new EmptyResultError('Annotation not found'))
   }
 
   return params.validate()
+    .then(() => usersTimescaleDBService.ensureUserSynced(req))
     .then(() => annotationsService.get(annotationId))
     .then(annotation => {
       if (!annotation) {
@@ -175,10 +174,16 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
     })
     .then(stream => streamsService.checkUserAccessToStream(req, stream))
     .then(() => {
-      const { start, end, classification, frequency_min, frequency_max } = convertedParams
-      return annotationsService.update(annotationId, start, end, classification, frequency_min, frequency_max, userId)
+      return classificationService.getId(convertedParams.classification)
+        .catch(err => {
+          throw new ValidationError('Classification value not found')
+        })
     })
-    .then(annotation => res.status(204).json(annotation))
+    .then(classificationId => {
+      const { start, end, frequency_min, frequency_max } = convertedParams
+      return annotationsService.update(annotationId, start, end, classificationId, frequency_min, frequency_max, userId)
+    })
+    .then(annotation => res.json(annotation)) // TODO: the annotation is not any of our valid schemas
     .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
 })
 
@@ -208,7 +213,7 @@ router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
 
   if (!isUuid(annotationId)) {
-    return res.sendStatus(404)
+    return httpErrorHandler(req, res)(new EmptyResultError('Annotation not found'))
   }
 
   return annotationsService.get(annotationId)

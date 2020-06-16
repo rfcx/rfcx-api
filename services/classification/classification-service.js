@@ -48,38 +48,63 @@ function getId (value) {
     })
 }
 
-function queryByKeyword (keyword, levels) {
-  const typeClause = levels ? { value: { [models.Sequelize.Op.in]: levels } } : {}
-  return models.Classification
-    .findAll({
-      where: {
+/**
+ * Given a set of values, returns their ids as an object map
+ *
+ * @param {Array<String>} values An array of classification values
+ * @returns {Promise<Object>} Object that maps values to ids
+ */
+function getIds (values) {
+  return Promise.all(values.map(value => getId(value)))
+    .then(ids => {
+      // Combine 2 arrays into a map
+      const mapping = {}
+      for (let i = 0; i < ids.length; i++) {
+        mapping[values[i]] = ids[i]
+      }
+      return mapping
+    })
+}
+
+function queryByKeyword (keyword, types, limit, offset) {
+  const keywordClause = {
         [models.Sequelize.Op.or]: [
           {
-            title: {
+            '$Classification.title$': {
               [models.Sequelize.Op.iLike]: `%${keyword}%`
             }
           },
           {
-            '$alternative_names.name$': {
+            'name': {
               [models.Sequelize.Op.iLike]: `%${keyword}%`
             }
           }
         ]
-      },
+      }
+  const typeClause = { value: { [models.Sequelize.Op.in]: types } }
+  return models.Classification
+    .findAll({
       include: [
         {
           model: models.ClassificationType,
           as: 'type',
-          where: typeClause,
-          attributes: models.ClassificationType.attributes.lite
+          where: types ? typeClause : {},
+          attributes: models.ClassificationType.attributes.lite,
+          required: true
         },
         {
           model: models.ClassificationAlternativeName,
           as: 'alternative_names',
-          attributes: []
+          // Only include the alternative names that are matched by the keyword
+          attributes: keyword ? models.ClassificationAlternativeName.attributes.lite : [],
+          where: keyword ? keywordClause : {},
+          order: ['rank']
         }
       ],
-      attributes: models.Classification.attributes.lite
+      attributes: models.Classification.attributes.lite,
+      offset: offset,
+      limit: limit,
+      order: ['title']
     })
 }
 
@@ -96,6 +121,47 @@ function queryByStream (streamId, limit, offset) {
     bind: { streamId, limit, offset }
   }
   return models.sequelize.query(sql, options)
+}
+
+async function queryByStreamIncludeChildren (streamId, childType, limit, offset) {
+  const sql = 'SELECT DISTINCT classification_id id FROM annotations WHERE stream_id = $streamId'
+  const ids = await models.sequelize.query(sql, { bind: { streamId }, raw: true, type: models.Sequelize.QueryTypes.SELECT})
+    .map(x => x.id)
+  return models.Classification
+    .findAll({
+      where: {
+        id: ids
+      },
+      include: [
+        {
+          model: models.ClassificationType,
+          as: 'type',
+          attributes: models.ClassificationType.attributes.lite,
+          required: true
+        },
+        {
+          model: models.Classification,
+          as: 'children',
+          attributes: models.Classification.attributes.lite,
+          include: [
+            {
+              model: models.ClassificationType,
+              as: 'type',
+              attributes: [],
+              where: {
+                'value': {
+                  [models.Sequelize.Op.or]: [null, childType]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      attributes: models.Classification.attributes.lite,
+      offset: offset,
+      limit: limit,
+      order: ['title']
+    })
 }
 
 function queryByParent (value, type) {
@@ -123,7 +189,9 @@ function queryByParent (value, type) {
 module.exports = {
   get,
   getId,
+  getIds,
   queryByKeyword,
   queryByStream,
+  queryByStreamIncludeChildren,
   queryByParent,
 }

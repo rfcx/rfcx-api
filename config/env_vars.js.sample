@@ -60,7 +60,6 @@ exports.env = {
   DASHBOARD_BASE_URL: 'http://localhost:5555/#/',
 
   MEDIA_API_BASE_URL: 'https://media-api.rfcx.org/',
-  INGEST_SERVICE_BASE_URL: 'https://ingest.rfcx.org/',
 
   NODE_LOG_LEVEL: "info", // error, warn, info, debug
   CLOUDWATCH_ENABLED: false, // cloudwatch should be disabled for developers by default
@@ -80,8 +79,8 @@ exports.env = {
 
   KAFKA_HOST: "",
 
-  REDIS_HOST: "",
-  REDIS_PORT: "",
+  REDIS_HOST: "127.0.0.1",
+  REDIS_PORT: "6379",
 
   /// Firebase features for sending notifications (not enabled by default)
   /// When `FIREBASE_ENABLED` is set to `true` then the other env vars are required.
@@ -99,6 +98,8 @@ exports.env = {
 
   GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used for guardian registration
 
-  INGEST_SERVICE_ENABLED: 'false',
+  /// Enabling ingest service features will push guardian audio to the ingest service
+  // INGEST_SERVICE_ENABLED: 'false',
+  // INGEST_SERVICE_BASE_URL: 'https://ingest.rfcx.org/',
 
 }

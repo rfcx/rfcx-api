@@ -19,7 +19,7 @@ function requireTokenType(type) {
 }
 
 /**
- * Checks if user has required role to access the endpoint
+ * Creates a middleware for checking if user has one or more of the roles
  * How to use:
  * var hasRole = require('..../middleware/authorization/authorization').hasRole;
  * router.route("/").get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) { ... })
@@ -39,7 +39,8 @@ function hasRole(expectedRoles) {
 };
 
 /**
- * Ensure user is authenticated (with JWT) and has the roles
+ * Creates an array of middleware that checks the user is authenticated
+ * (with JWT) and has one or more of the roles
  * 
  * @param  {...String} roles 
  */

@@ -393,32 +393,6 @@ function getAllRoles(token) {
       }
     });
   });
-
-}
-
-function getAllRoles(token) {
-
-  return new Promise(function(resolve, reject) {
-    request({
-      method: 'GET',
-      uri: `https://${process.env.AUTH0_EXTENSION_URL}/roles`,
-      json: true,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    }, (err, res, body) => {
-      if (err) {
-        reject(err);
-      }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
 }
 
 function getAllRolesByLabels(token, names) {
