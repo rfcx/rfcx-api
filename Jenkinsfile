@@ -84,16 +84,16 @@ def branchToConfig(branch) {
         sh "cp $PRIVATE_ENV rfcx.sh"
         sh "chmod 777 rfcx.sh"
         }
+        }
         if (branch == 'media') {
              result = "media"
              slackChannel = "alerts-deployment-prod"
         withCredentials([file(credentialsId: 'api_production_env', variable: 'PRIVATE_ENV')]) {
         sh "cp $PRIVATE_ENV rfcx.sh"
         sh "chmod 777 rfcx.sh"
-            }
         }
-         }
-         echo "BRANCH:${branch} -> CONFIGURATION:${result}"
-         }
+        }
+        echo "BRANCH:${branch} -> CONFIGURATION:${result}"
+        }
          return result
 }
