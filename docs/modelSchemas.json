@@ -92,6 +92,14 @@
             "type": "string",
             "example": "Found in temperate and tropical seas all around the world, they begin their lives spotless and steadily gain spots as they get older."
           },
+          "frequency_min": {
+            "type": "integer",
+            "example": 4500
+          },
+          "frequency_max": {
+            "type": "integer",
+            "example": 9800
+          },
           "alternative_names": {
             "type": "array",
             "items": {
