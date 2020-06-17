@@ -22,6 +22,14 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    frequency_min: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    frequency_max: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   })
   Classification.associate = function (models) {
     Classification.belongsTo(models.ClassificationType, { as: 'type', foreignKey: "type_id" })
@@ -32,7 +40,7 @@ module.exports = function (sequelize, DataTypes) {
     Classification.belongsToMany(models.Annotation, { as: 'reference_annotations', through: 'classification_references', timestamps: false })
   }
   Classification.attributes = {
-    full: ['value', 'title', 'image', 'description'],
+    full: ['value', 'title', 'image', 'description', 'frequency_min', 'frequency_max'],
     lite: ['value', 'title', 'image']
   }
   return Classification
