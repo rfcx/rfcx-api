@@ -38,7 +38,7 @@ const Converter = require("../../../utils/converter/converter")
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Classification'
+ *                 $ref: '#/components/schemas/ClassificationLite'
  *       400:
  *         description: Invalid query parameters
  *       404:

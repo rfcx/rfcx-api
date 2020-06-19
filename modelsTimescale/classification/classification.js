@@ -22,16 +22,25 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    frequency_min: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    frequency_max: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   })
   Classification.associate = function (models) {
     Classification.belongsTo(models.ClassificationType, { as: 'type', foreignKey: "type_id" })
     Classification.belongsTo(models.ClassificationSource, { as: 'source', foreignKey: "source_id" })
     Classification.belongsTo(models.Classification, { as: 'parent', foreignKey: "parent_id" })
     Classification.hasMany(models.ClassificationAlternativeName, { as: "alternative_names", foreignKey: "classification_id" })
+    Classification.hasMany(models.Classification, { as: 'children', foreignKey: 'parent_id' })
     Classification.belongsToMany(models.Annotation, { as: 'reference_annotations', through: 'classification_references', timestamps: false })
   }
   Classification.attributes = {
-    full: ['value', 'title', 'image', 'description'],
+    full: ['value', 'title', 'image', 'description', 'frequency_min', 'frequency_max'],
     lite: ['value', 'title', 'image']
   }
   return Classification
