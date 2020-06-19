@@ -189,63 +189,42 @@
     "$ref": "#/components/schemas/Cluster"
   },
   "StreamLite": {
-    "allOf": [
-      {
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "xu82jDgX49"
-          },
-          "name": {
-            "type": "string",
-            "example": "My Stream 1"
-          },
-          "start": {
-            "type": "date",
-            "example": "2020-05-12T07:30:21.500Z"
-          },
-          "end": {
-            "type": "date",
-            "example": "2020-05-12T07:30:22.500Z"
-          },
-          "is_private": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "name"
-        ]
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "name": {
+        "type": "string",
+        "example": "My Stream 1"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "is_private": {
+        "type": "boolean",
+        "example": true
       }
+    },
+    "required": [
+      "name"
     ]
   },
   "Stream": {
     "allOf": [
       {
+        "$ref": "#/components/schemas/StreamLite"
+      },
+      {
         "properties": {
-          "id": {
-            "type": "string",
-            "example": "xu82jDgX49"
-          },
-          "name": {
-            "type": "string",
-            "example": "My Stream 1"
-          },
           "description": {
             "type": "string",
             "example": "Stream 1 description"
-          },
-          "start": {
-            "type": "date",
-            "example": "2020-05-12T07:30:21.500Z"
-          },
-          "end": {
-            "type": "date",
-            "example": "2020-05-12T07:30:22.500Z"
-          },
-          "is_private": {
-            "type": "boolean",
-            "example": true
           },
           "created_at": {
             "type": "date",
