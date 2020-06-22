@@ -189,7 +189,7 @@ function restore(stream) {
  */
 function checkUserAccessToStream(req, stream) {
   let userId = req.rfcx.auth_token_info.owner_id;
-  if (stream.created_by_id !== userId) {
+  if (stream.is_private && stream.created_by_id !== userId) {
     throw new ForbiddenError(`You don't have enough permissions for this operation.`);
   }
   return true;
