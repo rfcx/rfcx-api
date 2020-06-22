@@ -30,14 +30,7 @@ function getById (id, opts = {}) {
         throw new EmptyResultError('Stream with given id not found.')
       }
       return item
-    })
-    .catch((e) => {
-      if (!e instanceof EmptyResultError) {
-        console.error('Streams service -> getById -> error', e);
-      }
-      // We need to rethrow error with "EmptyResultError" type for this method
-      throw new EmptyResultError('Stream with given id not found.');
-    })
+    });
 }
 
 /**
