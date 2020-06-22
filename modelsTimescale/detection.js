@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE(3),
     },
     stream_id: {
-      type: DataTypes.STRING(36),
+      type: DataTypes.STRING(12),
     },
     classifier_id: {
       type: DataTypes.INTEGER,
@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: false
   })
   Detection.associate = function (models) {
+    Detection.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     Detection.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
     Detection.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
   }

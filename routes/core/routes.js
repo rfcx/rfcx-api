@@ -9,6 +9,7 @@ module.exports = {
     require("./detections")
   ],
   'streams': [
+    require("./streams"),
     require("./annotations/stream"),
     require("./classifications/stream"),
     require("./detections/stream")
