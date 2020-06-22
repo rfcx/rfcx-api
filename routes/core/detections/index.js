@@ -1,4 +1,4 @@
-const router = require("express").Router()
+const router = require('express').Router()
 
 /**
  * @swagger
@@ -19,7 +19,7 @@ const router = require("express").Router()
  *       400:
  *         description: Invalid query parameters
  */
-router.get("/", (req, res) => {
+router.get('/', (req, res) => {
   res.sendStatus(504)
 })
 
