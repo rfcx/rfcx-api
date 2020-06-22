@@ -37,8 +37,14 @@ module.exports = {
         }
       },
       stream_id: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: Sequelize.STRING(12),
+        allowNull: false,
+        references: {
+          model: {
+            tableName: 'streams'
+          },
+          key: 'id'
+        }
       },
       created_by_id: {
         type: Sequelize.INTEGER,

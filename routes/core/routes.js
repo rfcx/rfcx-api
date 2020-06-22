@@ -9,9 +9,10 @@ module.exports = {
     require('./detections')
   ],
   streams: [
-    require('./annotations/stream'),
-    require('./classifications/stream'),
-    require('./detections/stream')
+    require("./streams"),
+    require("./annotations/stream"),
+    require("./classifications/stream"),
+    require("./detections/stream")
   ],
   'clustered-annotations': [
     require('./annotations/clustered')

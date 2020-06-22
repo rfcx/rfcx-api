@@ -19,8 +19,14 @@ module.exports = {
         allowNull: false,
       },
       stream_id: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(12),
         allowNull: false,
+        references: {
+          model: {
+            tableName: 'streams'
+          },
+          key: 'id'
+        }
       },
       classification_id: {
         type: Sequelize.INTEGER,
