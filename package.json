@@ -9,12 +9,11 @@
   "scripts": {
     "start": "./bin/setup; ./bin/start;",
     "start.mqtt": "./bin/setup; ./bin/start_mqtt;",
-    "test": "./bin/setup; ./node_modules/.bin/mocha './test/test.*.js' -u bdd",
-    "test-remote": "./bin/setup; ./node_modules/.bin/mocha './test/remote.test.*.js' -u bdd",
-    "test-all": "./bin/setup; ./node_modules/.bin/mocha -u bdd",
-    "migrate": "./node_modules/sequelize-cli/bin/sequelize",
     "sync-mysql": "./bin/sync_sql --type=mysql",
-    "sync-timescale": "./bin/sync_sql --type=timescale"
+    "sync-timescale": "./bin/sync_sql --type=timescale",
+    "test": "standard && jest",
+    "jest": "jest",
+    "lint": "standard"
   },
   "dependencies": {
     "archiver": "4.0.1",
@@ -73,17 +72,35 @@
     "winston-aws-cloudwatch": "1.5.0"
   },
   "devDependencies": {
-    "chai": "3.5.0",
     "faux-knox": "0.1.16",
+    "jest": "^26.0.1",
     "minimist": "1.2.5",
-    "mocha": "2.4.5",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",
-    "sinon": "1.17.7",
-    "supertest": "1.2.0",
+    "standard": "*",
     "sync-exec": "0.6.2"
   },
   "resolutions": {
     "js-beautify": "1.6.14"
+  },
+  "standard": {
+    "ignore": [
+      "bin/**",
+      "build/**",
+      "config/**",
+      "hooks/**",
+      "middleware/**",
+      "migrationsOld/**",
+      "migrationsTimescale/**",
+      "models/**",
+      "modelsTimescale/**",
+      "routes/v1/**",
+      "routes/v2/**",
+      "services/**",
+      "utils/**",
+      "views/**",
+      "app.js",
+      "app-mqtt.js"
+    ]
   }
 }

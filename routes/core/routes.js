@@ -1,14 +1,14 @@
 module.exports = {
-  'annotations': [
-    require("./annotations")
+  annotations: [
+    require('./annotations')
   ],
-  'classifications': [
-    require("./classifications")
+  classifications: [
+    require('./classifications')
   ],
-  'detections': [
-    require("./detections")
+  detections: [
+    require('./detections')
   ],
-  'streams': [
+  streams: [
     require("./streams"),
     require("./annotations/stream"),
     require("./classifications/stream"),
