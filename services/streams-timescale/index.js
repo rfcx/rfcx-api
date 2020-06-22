@@ -14,7 +14,7 @@ let streamBaseInclude = [
 /**
  * Searches for stream model with given id
  * @param {string} id
- * @param {*} joinRelations whether include join tables into returning model or not
+ * @param {*} opts additional function params
  * @returns {*} stream model item
  */
 function getById (id, opts = {}) {
@@ -22,7 +22,7 @@ function getById (id, opts = {}) {
     .findOne({
       where: { id },
       attributes: models.Stream.attributes.full,
-      include: opts.joinRelations? streamBaseInclude : [],
+      include: opts && opts.joinRelations? streamBaseInclude : [],
       paranoid: !opts.includeDeleted
     })
     .then(item => {
@@ -43,17 +43,17 @@ function getById (id, opts = {}) {
 /**
  * Creates stream item
  * @param {*} data stream attributes
- * @param {*} joinRelations whether include join tables into returning model or not
+ * @param {*} opts additional function params
  * @returns {*} stream model item
  */
-function create(data, joinRelations = false) {
+function create(data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create stream with empty object.');
   }
   const { id, name, description, start, end, is_private, latitude, longitude, created_by_id } = data; // do not use raw input object for security reasons
   return models.Stream
     .create({ id, name, description, start, end, is_private, latitude, longitude, created_by_id })
-    .then(item => { return joinRelations? item.reload({ include: streamBaseInclude }) : item })
+    .then(item => { return opts && opts.joinRelations? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> create -> error', e);
       throw new ValidationError('Cannot create stream with provided data.');
@@ -146,10 +146,10 @@ function query(attrs, opts = {}) {
  * Updates existing stream item
  * @param {*} stream stream model item
  * @param {*} data attributes to update
- * @param {*} joinRelations whether include join tables into returning model or not
+ * @param {*} opts additional function params
  * @returns {*} stream model item
  */
-function update(stream, data, joinRelations = false) {
+function update(stream, data, opts = {}) {
   ['name', 'description', 'is_private', 'start', 'end', 'latitude', 'longitude'].forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr];
@@ -157,7 +157,7 @@ function update(stream, data, joinRelations = false) {
   });
   return stream
     .save()
-    .then(item => { return joinRelations? item.reload({ include: streamBaseInclude }) : item })
+    .then(item => { return opts && opts.joinRelations? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> update -> error', e);
       throw new ValidationError('Cannot update stream with provided data.');

@@ -51,7 +51,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
     .then(() => {
       convertedParams.id = convertedParams.id || hash.randomString(12);
       convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id;
-      return streamsService.create(convertedParams, true);
+      return streamsService.create(convertedParams, { joinRelations: true });
     })
     .then(streamsService.formatStream)
     .then(stream => res.status(201).json(stream))
@@ -238,7 +238,7 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
       if (convertedParams.restore === true) {
         await streamsService.restore(stream);
       }
-      return streamsService.update(stream, convertedParams, true);
+      return streamsService.update(stream, convertedParams, { joinRelations: true });
     })
     .then(streamsService.formatStream)
     .then(json => res.json(json))
