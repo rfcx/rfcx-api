@@ -75,6 +75,14 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *         description: Return only your deleted streams (forces `is_private` to be true)
  *         in: query
  *         type: string
+ *       - name: created_by
+ *         description: Returns different set of streams based on who has created it
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - me
+ *             - collaborators
  *       - name: start
  *         description: Limit to a start date on or after (iso8601 or epoch)
  *         in: query
@@ -101,7 +109,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *       200:
  *         description: List of streams objects
  *         headers:
- *           x-rfcx-total:
+ *           Total-Items:
  *             schema:
  *               type: integer
  *             description: Total number of items without limit and offset.
@@ -119,6 +127,7 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
   const params = new Converter(req.query, convertedParams)
   params.convert('is_private').optional().toBoolean()
   params.convert('is_deleted').optional().toBoolean()
+  params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators']);
   params.convert('start').optional().toMomentUtc()
   params.convert('end').optional().toMomentUtc()
   params.convert('keyword').optional().toString()
@@ -127,15 +136,12 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
 
   return params.validate()
     .then(() => {
-      if (convertedParams.is_deleted) { // return only user's private streams when user requests deleted streams
-        convertedParams.is_private = true;
-      }
+      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id;
       return streamsService.query(convertedParams, { joinRelations: true });
     })
     .then((data) => {
       res
-        .header('x-rfcx-total', data.count)
-        .status(200)
+        .header('Total-Items', data.count)
         .json(streamsService.formatStreams(data.streams))
     })
     .catch(httpErrorHandler(req, res, 'Failed getting streams'))
@@ -173,7 +179,7 @@ router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
       streamsService.checkUserAccessToStream(req, stream);
       return streamsService.formatStream(stream);
     })
-    .then(json => res.status(200).json(json))
+    .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed getting stream'));
 })
 
@@ -235,7 +241,7 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
       return streamsService.update(stream, convertedParams, true);
     })
     .then(streamsService.formatStream)
-    .then(json => res.status(200).json(json))
+    .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed updating stream'))
 })
 

@@ -67,28 +67,61 @@ function create(data, joinRelations = false) {
  */
 function query(attrs, opts = {}) {
 
-  let where = { [models.Sequelize.Op.and]: {} };
+  let where = {};
   if (attrs.start !== undefined) {
-    where[models.Sequelize.Op.and]['start'] = {
+    where.start = {
       [models.Sequelize.Op.gte]: attrs.start
     }
   }
   if (attrs.end !== undefined) {
-    where[models.Sequelize.Op.and]['end'] = {
+    where.end = {
       [models.Sequelize.Op.lt]: attrs.end
     }
   }
-  if (attrs.is_private !== undefined) {
-    where[models.Sequelize.Op.and]['is_private'] = attrs.is_private;
-  }
-  if (attrs.is_deleted === true) {
-    where[models.Sequelize.Op.and]['deleted_at'] = {
-      [models.Sequelize.Op.ne]: null
+
+  if (attrs.keyword) {
+    where.name = {
+      [models.Sequelize.Op.iLike]: `%${attrs.keyword}%`
     }
   }
-  if (attrs.keyword) {
-    where[models.Sequelize.Op.and]['name'] = {
-      [models.Sequelize.Op.iLike]: `%${attrs.keyword}%`
+
+  if (attrs.created_by === 'me') {
+    where.created_by_id = attrs.current_user_id;
+    if (attrs.is_private !== undefined) {
+      where.is_private = attrs.is_private;
+    }
+  }
+  else if (attrs.created_by === 'collaborators') {
+    // TODO: change this logic when streams sharing is implemented
+    return Promise.resolve({ count: 0, streams: [] });
+  }
+  else {
+    where[models.Sequelize.Op.or] = [
+      {
+        [models.Sequelize.Op.and]: {
+          created_by_id: attrs.current_user_id,
+          ...attrs.is_private !== undefined && { is_private: attrs.is_private }
+        }
+      }
+    ]
+    if (attrs.is_private !== true) {
+      where[models.Sequelize.Op.or].push(
+        {
+          [models.Sequelize.Op.and]: {
+            is_private: false,
+            created_by_id: {
+              [models.Sequelize.Op.ne]: attrs.current_user_id
+            }
+          }
+        }
+      )
+    }
+  }
+
+  if (attrs.is_deleted === true) { // user can get only personal deleted streams
+    where.created_by_id = attrs.current_user_id;
+    where.deleted_at = {
+      [models.Sequelize.Op.ne]: null
     }
   }
 
