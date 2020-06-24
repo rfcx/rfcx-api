@@ -1,13 +1,13 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const ValidationError = require("../../../utils/converter/validation-error")
+const ValidationError = require('../../../utils/converter/validation-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb');
-const Converter = require("../../../utils/converter/converter")
+const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const Converter = require('../../../utils/converter/converter')
 
 function isUuid (str) {
   return str.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/g) !== null
@@ -63,7 +63,7 @@ function isUuid (str) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -102,7 +102,7 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
 
@@ -148,7 +148,7 @@ router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
@@ -209,7 +209,7 @@ router.put("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.delete('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
 
   if (!isUuid(annotationId)) {

@@ -28,7 +28,7 @@ module.exports = {
         }
       },
       language_id: {
-        type: Sequelize.STRING(5),
+        type: Sequelize.STRING(7),
         allowNull: false,
         references: {
           model: {
