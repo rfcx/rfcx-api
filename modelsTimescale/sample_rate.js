@@ -12,6 +12,8 @@ module.exports = function (sequelize, DataTypes) {
         },
       }
     },
+  }, {
+    timestamps: false,
   })
   SampleRate.attributes = {
     full: ['value'],
