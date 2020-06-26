@@ -1,9 +1,10 @@
 module.exports = function (sequelize, DataTypes) {
   const Segment = sequelize.define("Segment", {
-    uuid: {
+    id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      allowNull: false
+      allowNull: false,
+      primaryKey: true
     },
     start: {
       // Hypertable key
@@ -47,8 +48,8 @@ module.exports = function (sequelize, DataTypes) {
     Segment.belongsTo(models.FileExtension, { as: 'file_extension', foreignKey: 'file_extension_id' })
   }
   Segment.attributes = {
-    full: ['uuid', 'start', 'end', 'sample_count', 'stream_id', 'master_segment_id', 'file_extension_id', 'created_at', 'updated_at'],
-    lite: ['uuid', 'start', 'end'],
+    full: ['id', 'start', 'end', 'sample_count', 'stream_id', 'master_segment_id', 'file_extension_id', 'created_at', 'updated_at'],
+    lite: ['id', 'start', 'end'],
   }
   return Segment
 };

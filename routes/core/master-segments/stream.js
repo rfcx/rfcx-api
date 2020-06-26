@@ -53,38 +53,22 @@ router.post('/:streamId/master-segments', authenticatedWithRoles('rfcxUser', 'sy
   params.convert('sha1_checksum').toString();
   params.convert('meta').optional();
 
-  let stream;
-
   return params.validate()
-    .then(() => {
-      return streamsService.getById(streamId) // we call this function to ensure that stream with given id exists
-    })
-    .then((dbStream) => {
-      stream = dbStream;
-      convertedParams.stream_id = streamId;
-      return masterSegmentService.checkForDuplicates(streamId, convertedParams.sha1_checksum)
-    })
     .then(async () => {
+      const stream = await streamsService.getById(streamId)
+      convertedParams.stream_id = streamId;
+      await masterSegmentService.checkForDuplicates(streamId, convertedParams.sha1_checksum)
       if (convertedParams.meta && Object.keys(convertedParams.meta).length !== 0 && convertedParams.meta.constructor === Object) {
         convertedParams.meta = JSON.stringify(convertedParams.meta);
       }
       else {
         delete convertedParams.meta;
       }
-      const mappings = await masterSegmentService.findOrCreateRelationships(convertedParams);
-      ['codec', 'format', 'sample_rate', 'channel_layout'].forEach((attr) => {
-        convertedParams[`${attr}_id`] = mappings[attr];
-      });
-    })
-    .then(() => {
-      return masterSegmentService.create(convertedParams, { joinRelations: true });
-    })
-    .then(async (masterSegment) => {
+      await masterSegmentService.findOrCreateRelationships(convertedParams)
+      const masterSegment = await masterSegmentService.create(convertedParams, { joinRelations: true });
       await streamsService.refreshStreamMaxSampleRate(stream, masterSegment)
-      return masterSegment
+      return res.status(201).json(masterSegmentService.format(masterSegment))
     })
-    .then(masterSegmentService.format)
-    .then(stream => res.status(201).json(stream))
     .catch(httpErrorHandler(req, res, 'Failed creating master segment'))
 })
 

@@ -3,15 +3,10 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('segments', {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true,
-      },
-      uuid: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
       },
       start: {
         // Hypertable key
@@ -38,7 +33,7 @@ module.exports = {
         },
       },
       master_segment_id: {
-        type: Sequelize.STRING(24),
+        type: Sequelize.UUID,
         allowNull: false,
         references: {
           model: {

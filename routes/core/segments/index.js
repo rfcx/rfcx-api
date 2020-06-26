@@ -1,22 +1,21 @@
 const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams-timescale')
-const masterSegmentService = require('../../../services/streams-timescale/master-segment')
+const segmentService = require('../../../services/streams-timescale/segment')
 const Converter = require("../../../utils/converter/converter")
 const { sequelize, utils } = require("../../../modelsTimescale")
 
 /**
  * @swagger
  *
- * /master-segments/{id}:
+ * /segments/{id}:
  *   delete:
- *     summary: Delete a master segment
+ *     summary: Delete a segment
  *     tags:
- *       - master-segments
+ *       - segments
  *     parameters:
  *       - name: id
- *         description: Master segment id
+ *         description: Segment id
  *         in: path
  *         required: true
  *         type: string
@@ -30,14 +29,10 @@ const { sequelize, utils } = require("../../../modelsTimescale")
  */
 router.delete("/:uuid", authenticatedWithRoles('systemUser'), (req, res) => {
 
-  return masterSegmentService.getById(req.params.uuid)
-    .then(async (masterSegment) => {
-      const stream = await streamsService.getById(masterSegment.stream_id)
-      await masterSegmentService.remove(masterSegment)
-      return streamsService.refreshStreamMaxSampleRate(stream)
-    })
+  return segmentService.getById(req.params.uuid)
+    .then(segmentService.remove)
     .then(() => res.sendStatus(204))
-    .catch(httpErrorHandler(req, res, 'Failed deleting master segment'));
+    .catch(httpErrorHandler(req, res, 'Failed deleting segment'));
 })
 
 module.exports = router

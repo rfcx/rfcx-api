@@ -268,5 +268,40 @@
       "codec",
       "sha1_checksum"
     ]
+  },
+  "Segment": {
+    "type": "object",
+    "properties": {
+      "master_segment_id": {
+        "type": "uuid",
+        "description": "Master Segment id",
+        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:23.250Z"
+      },
+      "sample_count": {
+        "type": "integer",
+        "description": "Segment samples count",
+        "example": 4326072
+      },
+      "file_extension": {
+        "type": "string",
+        "description": "Segment file extension",
+        "example": "opus"
+      }
+    },
+    "required": [
+      "master_segment_id",
+      "start",
+      "end",
+      "sample_count",
+      "file_extension"
+    ]
   }
 }

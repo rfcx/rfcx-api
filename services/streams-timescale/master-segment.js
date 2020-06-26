@@ -53,16 +53,6 @@ function getById (id, opts = {}) {
 }
 
 /**
- * Searches for master segment model with given uuid
- * @param {string} uuid
- * @param {*} opts additional function params
- * @returns {*} master segment model item
- */
-function getByUuid (uuid, opts = {}) {
-  return getByAttr('uuid', uuid, opts);
-}
-
-/**
  * Creates master segment item
  * @param {*} data master segment attributes
  * @param {*} opts additional function params
@@ -115,7 +105,6 @@ function checkForDuplicates(stream_id, sha1_checksum) {
  * @returns {*} object with mappings between attribute keys and ids
  */
 async function findOrCreateRelationships(data) {
-  let res = {}
   const arr = [
     { modelName: 'Codec', objKey: 'codec' },
     { modelName: 'Format', objKey: 'format' },
@@ -125,9 +114,8 @@ async function findOrCreateRelationships(data) {
   for (let item of arr) {
     const where = { value: data[item.objKey] }
     let modelItem = await models.utils.findOrCreateItem(models[item.modelName], where, where)
-    res[item.objKey] = modelItem.id
+    data[`${item.objKey}_id`] = modelItem.id
   }
-  return res
 }
 
 function format(masterSegment) {
