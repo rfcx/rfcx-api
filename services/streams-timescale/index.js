@@ -182,17 +182,22 @@ function restore(stream) {
 }
 
 /**
- * A function which checks whether user has access to stream or not.
- * This function will be extended with new streams permissions logic later.
- * @param {*} req express request object
- * @param {*} stream stream model item
+ * Returns true if the user has permission on the stream
+ * @param {number} userId
+ * @param {string} streamId
+ * @param {string} permission
  */
-function checkUserAccessToStream(req, stream) {
-  let userId = req.rfcx.auth_token_info.owner_id;
-  if (stream.is_private && stream.created_by_id !== userId) {
-    throw new ForbiddenError(`You don't have enough permissions for this operation.`);
-  }
-  return true;
+function hasPermission(userId, streamOrId, permission) {
+  const promise = typeof streamOrId === 'string' ? getById(streamOrId) : Promise.resolve(streamOrId)
+  return promise.then(stream => {
+    if (stream.created_by_id === userId) {
+      return true
+    }
+    if (!stream.is_private) {
+      return permission === 'read'
+    }
+    return false
+  })
 }
 
 function formatStream(stream) {
@@ -224,7 +229,7 @@ module.exports = {
   update,
   softDelete,
   restore,
-  checkUserAccessToStream,
+  hasPermission,
   formatStream,
   formatStreams,
 }

@@ -1,5 +1,6 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams-timescale')
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb');
@@ -176,8 +177,10 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
 router.get("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(stream => {
-      streamsService.checkUserAccessToStream(req, stream);
-      return streamsService.formatStream(stream);
+      if (!streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'read')) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
+      return streamsService.formatStream(stream)
     })
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed getting stream'));
@@ -234,7 +237,9 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
-      streamsService.checkUserAccessToStream(req, stream);
+      if (!streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
       if (convertedParams.restore === true) {
         await streamsService.restore(stream);
       }
@@ -270,8 +275,10 @@ router.patch("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
 router.delete("/:id", authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(stream => {
-      streamsService.checkUserAccessToStream(req, stream);
-      return streamsService.softDelete(stream);
+      if (!streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
+      return streamsService.softDelete(stream)
     })
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'));
