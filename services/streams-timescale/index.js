@@ -143,7 +143,7 @@ function query(attrs, opts = {}) {
  * @returns {*} stream model item
  */
 function update(stream, data, opts = {}) {
-  ['name', 'description', 'is_private', 'start', 'end', 'latitude', 'longitude'].forEach((attr) => {
+  ['name', 'description', 'is_private', 'start', 'end', 'latitude', 'longitude', 'max_sample_rate'].forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr];
     }
@@ -217,6 +217,30 @@ function formatStreams(streams) {
   return streams.map(formatStream);
 }
 
+/**
+ * Finds max sample rate value of master segments belonging to stream and updates max_sample_rate attribute of the stream
+ * @param {*} stream stream model item
+ */
+function refreshStreamMaxSampleRate(stream) {
+  let sql = `SELECT b.id, b.value
+              FROM master_segments a
+              INNER JOIN sample_rates b ON a.sample_rate_id = b.id
+              INNER JOIN ( SELECT id, MAX(value) max_sample_rate FROM sample_rates GROUP BY id) c ON b.id = c.id AND b.value = c.max_sample_rate
+              WHERE a.stream_id = '${stream.id}' ORDER BY b.value DESC LIMIT 1;`
+  return models.sequelize
+    .query(sql,
+      { replacements: {}, type: models.sequelize.QueryTypes.SELECT }
+    )
+    .then((data) => {
+      let mas_sample_rate = null;
+      if (data && data[0] && data[0].value) {
+        max_sample_rate = data[0].value
+      }
+      return update(stream, { max_sample_rate })
+    });
+}
+
+
 module.exports = {
   getById,
   create,
@@ -227,4 +251,5 @@ module.exports = {
   checkUserAccessToStream,
   formatStream,
   formatStreams,
+  refreshStreamMaxSampleRate,
 }

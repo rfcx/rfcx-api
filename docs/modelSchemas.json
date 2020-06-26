@@ -271,5 +271,64 @@
         "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
+  },
+  "MasterSegment": {
+    "properties": {
+      "id": {
+        "type": "uuid",
+        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+      },
+      "stream": {
+        "$ref": "#/components/schemas/StreamLite"
+      },
+      "filename": {
+        "type": "string",
+        "example": "1feb70b91439-2020-06-24T17-15-26.opus"
+      },
+      "format": {
+        "type": "string",
+        "example": "opus"
+      },
+      "duration": {
+        "type": "integer",
+        "example": 90126
+      },
+      "sample_count": {
+        "type": "integer",
+        "example": 4326072
+      },
+      "sample_rate": {
+        "type": "integer",
+        "example": 12000
+      },
+      "channel_layout": {
+        "type": "string",
+        "example": "mono"
+      },
+      "channels_count": {
+        "type": "integer",
+        "example": 1
+      },
+      "bit_rate": {
+        "type": "integer",
+        "example": 16384
+      },
+      "codec": {
+        "type": "string",
+        "example": "opus"
+      },
+      "sha1_checksum": {
+        "type": "string",
+        "example": "7ea9896798385afb5939cdf8349ce389f5e3b128"
+      },
+      "meta": {
+        "type": "object",
+        "example": {
+          "date": "2020-06-24T10:11:38-07",
+          "title": "SBW1607_20200624_171138.wav",
+          "album": "SBx-ETH R4"
+        }
+      }
+    }
   }
 }

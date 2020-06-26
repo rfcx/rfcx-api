@@ -194,5 +194,79 @@
       }
     },
     "required": []
+  },
+  "MasterSegment": {
+    "type": "object",
+    "properties": {
+      "filename": {
+        "type": "string",
+        "description": "Original file name",
+        "example": "1feb70b91439-2020-06-24T17-15-26.opus"
+      },
+      "format": {
+        "type": "string",
+        "description": "Original file format",
+        "example": "opus"
+      },
+      "duration": {
+        "type": "integer",
+        "description": "Original file duration in ms",
+        "example": 90126
+      },
+      "sample_count": {
+        "type": "integer",
+        "description": "Original file samples count",
+        "example": 4326072
+      },
+      "sample_rate": {
+        "type": "integer",
+        "description": "Original file sample rate",
+        "example": 12000
+      },
+      "channel_layout": {
+        "type": "string",
+        "description": "Original file channel layout (default 'mono')",
+        "default": "mono"
+      },
+      "channels_count": {
+        "type": "integer",
+        "description": "Original file channels count (default 1)",
+        "default": 1
+      },
+      "bit_rate": {
+        "type": "integer",
+        "description": "Original file bit rate",
+        "example": 16384
+      },
+      "codec": {
+        "type": "string",
+        "description": "Original file codec",
+        "example": "opus"
+      },
+      "sha1_checksum": {
+        "type": "string",
+        "description": "Original file sha1 checksum",
+        "example": "7ea9896798385afb5939cdf8349ce389f5e3b128"
+      },
+      "meta": {
+        "type": "object",
+        "description": "Any additional metadata",
+        "example": {
+          "date": "2020-06-24T10:11:38-07",
+          "title": "SBW1607_20200624_171138.wav",
+          "album": "SBx-ETH R4"
+        }
+      }
+    },
+    "required": [
+      "filename",
+      "format",
+      "duration",
+      "sample_count",
+      "sample_rate",
+      "bit_rate",
+      "codec",
+      "sha1_checksum"
+    ]
   }
 }

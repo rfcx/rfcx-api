@@ -38,7 +38,7 @@ module.exports = {
         },
       },
       master_segment_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING(24),
         allowNull: false,
         references: {
           model: {

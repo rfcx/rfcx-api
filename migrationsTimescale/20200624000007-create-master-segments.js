@@ -3,12 +3,6 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('master_segments', {
       id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true,
-      },
-      uuid: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
