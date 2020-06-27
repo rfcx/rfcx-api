@@ -9,15 +9,19 @@ module.exports = {
     require('./detections')
   ],
   streams: [
-    require("./streams"),
-    require("./annotations/stream"),
-    require("./classifications/stream"),
-    require("./detections/stream")
+    require('./streams'),
+    require('./annotations/stream'),
+    require('./classifications/stream'),
+    require('./detections/stream'),
+    require('./indices/stream')
   ],
   'clustered-annotations': [
     require('./annotations/clustered')
   ],
   'clustered-detections': [
     require('./detections/clustered')
+  ],
+  indices: [
+    require('./indices')
   ]
 }

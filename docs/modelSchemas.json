@@ -271,5 +271,37 @@
         "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
+  },
+  "IndexLite": {
+    "properties": {
+      "code": {
+        "type": "string",
+        "example": "ad"
+      },
+      "name": {
+        "type": "string",
+        "example": "Acoustic Diversity Index"
+      },
+      "range_min": {
+        "type": "float",
+        "example": 0.0
+      },
+      "range_max": {
+        "type": "float",
+        "example": 1.0
+      }
+    }
+  },
+  "IndexValueLite": {
+    "properties": {
+      "time": {
+        "type": "date",
+        "example": "2020-05-13T07:30:00.000Z"
+      },
+      "value": {
+        "type": "float",
+        "example": 0.1234
+      }
+    }
   }
 }

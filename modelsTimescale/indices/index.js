@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING(255),
-      allowNull: false,
+      allowNull: false
     },
     range_min: {
       type: DataTypes.FLOAT
@@ -15,13 +15,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT
     }
   }, {
-    timestamps: false,
+    timestamps: false
   })
   Index.associate = function (models) {
     Index.belongsTo(models.IndexType, { as: 'type', foreignKey: 'type_id' })
   }
   Index.attributes = {
-    lite: ['id', 'code', 'name']
+    lite: ['code', 'name']
   }
   return Index
 }

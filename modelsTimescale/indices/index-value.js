@@ -1,19 +1,19 @@
 module.exports = (sequelize, DataTypes) => {
   const IndexValue = sequelize.define('IndexValue', {
     time: {
-      type: DataTypes.DATE(3),
+      type: DataTypes.DATE(3)
     },
     stream_id: {
-      type: DataTypes.STRING(12),
+      type: DataTypes.STRING(12)
     },
     type_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER
     },
     value: {
       type: DataTypes.FLOAT
     }
   }, {
-    timestamps: false,
+    timestamps: false
   })
   IndexValue.removeAttribute('id')
   IndexValue.associate = function (models) {
