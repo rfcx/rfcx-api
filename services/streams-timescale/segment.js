@@ -2,6 +2,7 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
+const redis = require('../../utils/redis');
 
 let segmentBaseInclude = [
   {
@@ -27,28 +28,29 @@ let segmentBaseInclude = [
  * @param {*} opts additional function params
  */
 function query (attrs, opts = {}) {
+  if (attrs.end < attrs.start) {
+    throw new ValidationError('"end" attribute can not be less than "start" attribute')
+  }
   let where = {
-    stream_id: attrs.stream_id,
-    [models.Sequelize.Op.or]: [
-      {
-        [models.Sequelize.Op.and]: {
-          start: { [models.Sequelize.Op.lte]: attrs.start },
-          end:   { [models.Sequelize.Op.gt]: attrs.end }
-        },
-      },
-      {
-        [models.Sequelize.Op.and]: {
-          start: { [models.Sequelize.Op.gte]: attrs.start },
-          end:   { [models.Sequelize.Op.lte]: attrs.end }
-        },
-      },
-      {
-        [models.Sequelize.Op.and]: {
-          start: { [models.Sequelize.Op.lt]: attrs.end },
-          end:   { [models.Sequelize.Op.gte]: attrs.end }
-        }
+    stream_id: attrs.stream_id
+  }
+  if (attrs.start.valueOf() === attrs.end.valueOf()) {
+    where[models.Sequelize.Op.or] = {
+      start: attrs.start.valueOf(),
+      end: attrs.start.valueOf(),
+      [models.Sequelize.Op.and]: {
+        start: { [models.Sequelize.Op.lt]: attrs.start.valueOf() },
+        end: { [models.Sequelize.Op.gt]: attrs.end.valueOf() },
       }
-    ]
+    }
+  }
+  else {
+    where[models.Sequelize.Op.not] = {
+      [models.Sequelize.Op.or]: [
+        { start: { [models.Sequelize.Op.gte]: attrs.end.valueOf() } },
+        { end: { [models.Sequelize.Op.lte]: attrs.start.valueOf() } },
+      ]
+    }
   }
 
   let method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll'; // don't use findAndCountAll if we don't need to limit and offset
@@ -136,6 +138,49 @@ async function findOrCreateRelationships(data) {
 }
 
 /**
+ * Collects gaps for selected time range and calculates coverage
+ * @param {*} attrs segment attributes
+ */
+async function getStreamCoverage(attrs) {
+  const queryData = await query(attrs)
+  const segments = queryData.segments
+  if (!segments.length) {
+    return {
+      coverage: 0,
+      gaps: [{
+        start: attrs.start,
+        end: attrs.end
+      }]
+    }
+  }
+  let gaps = [];
+  let totalDuration = 0;
+  segments.forEach((current, index) => {
+    let prev = index === 0 ? null : segments[index - 1];
+    let prevEnds = prev? prev.end : attrs.start;
+    totalDuration += (current.end - current.start);
+    if (current.start > prevEnds) {
+      gaps.push({
+        start: prevEnds,
+        end: current.start
+      });
+    }
+  })
+  let lastSegment = segments[segments.length - 1]
+  if (lastSegment && (attrs.end > lastSegment.end)) {
+    gaps.push({
+      start: lastSegment.end,
+      end: attrs.end
+    });
+  }
+  const coverage = {
+    coverage: totalDuration / (attrs.end - attrs.start),
+    gaps
+  }
+  return coverage
+}
+
+/**
  * Formats single item or array with multiple items
  * @param {*} items single item or array with multiple items
  */
@@ -163,5 +208,6 @@ module.exports = {
   create,
   remove,
   findOrCreateRelationships,
+  getStreamCoverage,
   format
 }
