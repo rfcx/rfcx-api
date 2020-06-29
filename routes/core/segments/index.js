@@ -1,6 +1,7 @@
 const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
+const streamsService = require('../../../services/streams-timescale')
 const segmentService = require('../../../services/streams-timescale/segment')
 const Converter = require("../../../utils/converter/converter")
 const { sequelize, utils } = require("../../../modelsTimescale")
@@ -30,8 +31,12 @@ const { sequelize, utils } = require("../../../modelsTimescale")
 router.delete("/:uuid", authenticatedWithRoles('systemUser'), (req, res) => {
 
   return segmentService.getById(req.params.uuid)
-    .then(segmentService.remove)
-    .then(() => res.sendStatus(204))
+    .then(async (segment) => {
+      const stream = await streamsService.getById(segment.stream_id)
+      await segmentService.remove(segment)
+      await streamsService.refreshStreamStartEnd(stream) // refresh start and end columns of releated stream
+      res.sendStatus(204)
+    })
     .catch(httpErrorHandler(req, res, 'Failed deleting segment'));
 })
 
