@@ -1,4 +1,7 @@
 module.exports = {
+  assets: [
+    require('./assets/streams')
+  ],
   cron: [
     require('./cron/streams')
   ],
