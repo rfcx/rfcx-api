@@ -22,6 +22,53 @@ let segmentBaseInclude = [
 ];
 
 /**
+ * Returns list of segments with total number filtered by specified attributes
+ * @param {*} attrs segment attributes
+ * @param {*} opts additional function params
+ */
+function query (attrs, opts = {}) {
+  let where = {
+    stream_id: attrs.stream_id,
+    [models.Sequelize.Op.or]: [
+      {
+        [models.Sequelize.Op.and]: {
+          start: { [models.Sequelize.Op.lte]: attrs.start },
+          end:   { [models.Sequelize.Op.gt]: attrs.end }
+        },
+      },
+      {
+        [models.Sequelize.Op.and]: {
+          start: { [models.Sequelize.Op.gte]: attrs.start },
+          end:   { [models.Sequelize.Op.lte]: attrs.end }
+        },
+      },
+      {
+        [models.Sequelize.Op.and]: {
+          start: { [models.Sequelize.Op.lt]: attrs.end },
+          end:   { [models.Sequelize.Op.gte]: attrs.end }
+        }
+      }
+    ]
+  }
+
+  let method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll'; // don't use findAndCountAll if we don't need to limit and offset
+  return models.Segment[method]({
+    where,
+    limit: attrs.limit,
+    offset: attrs.offset,
+    attributes: models.Segment.attributes.full,
+    include: opts.joinRelations? segmentBaseInclude : [],
+    order: [ ['start', 'ASC'] ]
+  })
+  .then((data) => {
+    return {
+      count: method === 'findAndCountAll' ? data.count : data.length,
+      segments: method === 'findAndCountAll' ? data.rows : data,
+    };
+  })
+}
+
+/**
  * Searches for segment model with given id
  * @param {string} id
  * @param {*} opts additional function params
@@ -88,20 +135,30 @@ async function findOrCreateRelationships(data) {
   }
 }
 
-function format(segment) {
-  const { id, stream, start, end, sample_count, master_segment, file_extension } = segment
-  return {
-    id,
-    stream,
-    start,
-    end,
-    sample_count,
-    master_segment,
-    file_extension: file_extension && file_extension.value? file_extension.value : null,
-  };
+/**
+ * Formats single item or array with multiple items
+ * @param {*} items single item or array with multiple items
+ */
+function format(data) {
+  let isArray = Array.isArray(data)
+  data = isArray ? data : [ data ];
+  data = data.map((item) => {
+    const { id, stream, start, end, sample_count, master_segment, file_extension } = item
+    return {
+      id,
+      stream,
+      start,
+      end,
+      sample_count,
+      master_segment,
+      file_extension: file_extension && file_extension.value? file_extension.value : null,
+    };
+  })
+  return isArray? data : data[0];
 }
 
 module.exports = {
+  query,
   getById,
   create,
   remove,
