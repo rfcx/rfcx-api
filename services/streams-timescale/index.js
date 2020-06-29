@@ -240,6 +240,20 @@ function refreshStreamMaxSampleRate(stream) {
     });
 }
 
+/**
+ * Finds first and last time points of stream segments and updates start and end columns of the stream
+ * @param {*} stream stream model item
+ */
+async function refreshStreamStartEnd(stream) {
+  const where = { stream_id: stream.id }
+  const start = await models.Segment.min('start', { where })
+  const end = await models.Segment.max('end', { where })
+  if (start && end) {
+    return update(stream, { start, end })
+  }
+  return
+}
+
 
 module.exports = {
   getById,
@@ -252,4 +266,5 @@ module.exports = {
   formatStream,
   formatStreams,
   refreshStreamMaxSampleRate,
+  refreshStreamStartEnd,
 }

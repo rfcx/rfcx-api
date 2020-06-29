@@ -51,11 +51,13 @@ router.post('/:streamId/segments', authenticatedWithRoles('rfcxUser', 'systemUse
 
   return params.validate()
     .then(async () => {
-      await streamsService.getById(streamId) // we call this function to ensure that stream with given id exists
+      const stream = await streamsService.getById(streamId)
       await masterSegmentService.getById(convertedParams.master_segment_id) // we call this function to ensure that master segment with given id exists
       convertedParams.stream_id = streamId;
       await segmentService.findOrCreateRelationships(convertedParams);
       const segment = await segmentService.create(convertedParams, { joinRelations: true });
+      await streamsService.refreshStreamStartEnd(stream) // refresh start and end columns of releated stream
+      await segment.reload() // reload segment model to apply stream model updates
       return res.status(201).json(segmentService.format(segment))
     })
     .catch(httpErrorHandler(req, res, 'Failed creating segment'))
