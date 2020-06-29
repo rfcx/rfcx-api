@@ -175,11 +175,12 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
  */
 router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
-    .then(stream => {
-      if (!streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'read')) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
+    .then(async stream => {
+      const allowed = await streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'read')
+      if (allowed) {
+        return streamsService.formatStream(stream)
       }
-      return streamsService.formatStream(stream)
+      throw new ForbiddenError('You do not have permission to access this stream.')
     })
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed getting stream'))
@@ -236,8 +237,9 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
-      if (!streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
+      const allowed = await streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to write to this stream.')
       }
       if (convertedParams.restore === true) {
         await streamsService.restore(stream)
@@ -273,9 +275,10 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
  */
 router.delete('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
-    .then(stream => {
-      if (!streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
+    .then(async stream => {
+      const allowed = await streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to delete this stream.')
       }
       return streamsService.softDelete(stream)
     })
