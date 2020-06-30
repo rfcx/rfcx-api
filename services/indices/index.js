@@ -19,5 +19,18 @@ function query (limit, offset) {
     })
 }
 
+function getId (code) {
+  return models.Index
+    .findOne({
+      where: { code },
+      attributes: ['id']
+    }).then(item => {
+      if (!item) {
+        throw new EmptyResultError('Index with given code not found')
+      }
+      return item.id
+    })
+}
 
-module.exports = { query }
+
+module.exports = { query, getId }

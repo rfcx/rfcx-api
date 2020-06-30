@@ -48,4 +48,14 @@ function timeAggregatedQuery (streamId, index, start, end, timeInterval, aggrega
     .findAll(queryOptions)
 }
 
-module.exports = { query, timeAggregatedQuery }
+function create (values) {
+  return models.IndexValue.bulkCreate(
+    values.map(d => ({
+      stream_id: d.streamId,
+      index_id: d.indexId,
+      time: d.time,
+      value: d.value
+    })))
+}
+
+module.exports = { query, timeAggregatedQuery, create }

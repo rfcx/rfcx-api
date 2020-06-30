@@ -92,7 +92,7 @@ router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function
  *
  * /streams/{id}/detections:
  *   post:
- *     summary: Create an annotation belonging to a stream
+ *     summary: Create a detection belonging to a stream
  *     tags:
  *       - detections
  *     parameters:

@@ -150,4 +150,14 @@ router.get('/:streamId/indices/:index/heatmap', hasPermission('read'), (req, res
     .catch(httpErrorHandler(req, res, 'Failed getting values'))
 })
 
+/**
+ * @swagger
+ *
+ * /streams/{id}/indices/{index}/values
+ */
+router.get('/:streamId/indices/:index/values', hasPermission('read'), (req, res) => {
+  const streamId = req.params.streamId
+  const index = req.params.index
+})
+
 module.exports = router

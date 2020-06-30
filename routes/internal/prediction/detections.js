@@ -18,12 +18,9 @@ const Converter = require('../../../utils/converter/converter')
  *       description: A short form for a sequence of consequetive detections for a specific classification and classifier
  *       required: true
  *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             $ref: '#/components/requestBodies/Detection'
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/DetectionsShortForm'
+ *             $ref: '#/components/requestBodies/DetectionsCompact'
  *     responses:
  *       201:
  *         description: Created
