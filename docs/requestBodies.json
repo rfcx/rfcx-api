@@ -195,7 +195,7 @@
     },
     "required": []
   },
-  "MasterSegment": {
+  "StreamSourceFile": {
     "type": "object",
     "properties": {
       "filename": {
@@ -269,10 +269,10 @@
       "sha1_checksum"
     ]
   },
-  "Segment": {
+  "StreamSegment": {
     "type": "object",
     "properties": {
-      "master_segment_id": {
+      "stream_source_file_id": {
         "type": "uuid",
         "description": "Master Segment id",
         "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
@@ -297,7 +297,7 @@
       }
     },
     "required": [
-      "master_segment_id",
+      "stream_source_file_id",
       "start",
       "end",
       "sample_count",

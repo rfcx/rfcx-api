@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('segments', {
+    return queryInterface.createTable('stream_segments', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -32,12 +32,12 @@ module.exports = {
           key: 'id'
         },
       },
-      master_segment_id: {
+      stream_source_file_id: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
           model: {
-            tableName: 'master_segments'
+            tableName: 'stream_source_files'
           },
           key: 'id'
         },
@@ -62,7 +62,7 @@ module.exports = {
       },
     })
     .then(() => {
-      return queryInterface.addConstraint('segments', {
+      return queryInterface.addConstraint('stream_segments', {
         type: 'CHECK',
         fields: ['sample_count'],
         where: {
@@ -73,12 +73,12 @@ module.exports = {
       })
     })
     .then(() => {
-      return queryInterface.sequelize.query('SELECT create_hypertable(\'segments\', \'start\')', {
+      return queryInterface.sequelize.query('SELECT create_hypertable(\'stream_segments\', \'start\')', {
         type: queryInterface.sequelize.QueryTypes.RAW
       })
     })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('segments')
+    return queryInterface.dropTable('stream_segments')
   }
 }

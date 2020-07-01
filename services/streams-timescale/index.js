@@ -223,7 +223,7 @@ function formatStreams(streams) {
  */
 function refreshStreamMaxSampleRate(stream) {
   let sql = `SELECT b.id, b.value
-              FROM master_segments a
+              FROM stream_source_files a
               INNER JOIN sample_rates b ON a.sample_rate_id = b.id
               INNER JOIN ( SELECT id, MAX(value) max_sample_rate FROM sample_rates GROUP BY id) c ON b.id = c.id AND b.value = c.max_sample_rate
               WHERE a.stream_id = '${stream.id}' ORDER BY b.value DESC LIMIT 1;`
@@ -246,8 +246,8 @@ function refreshStreamMaxSampleRate(stream) {
  */
 async function refreshStreamStartEnd(stream) {
   const where = { stream_id: stream.id }
-  const start = await models.Segment.min('start', { where })
-  const end = await models.Segment.max('end', { where })
+  const start = await models.StreamSegment.min('start', { where })
+  const end = await models.StreamSegment.max('end', { where })
   if (start && end) {
     return update(stream, { start, end })
   }

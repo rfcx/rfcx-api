@@ -2,8 +2,8 @@ const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams-timescale')
-const masterSegmentService = require('../../../services/streams-timescale/master-segment')
-const segmentService = require('../../../services/streams-timescale/segment')
+const streamSourceFileService = require('../../../services/streams-timescale/stream-source-file')
+const streamSegmentService = require('../../../services/streams-timescale/stream-segment')
 const Converter = require("../../../utils/converter/converter")
 const ValidationError = require("../../../utils/converter/validation-error")
 const { sequelize, utils } = require("../../../modelsTimescale")
@@ -11,39 +11,39 @@ const { sequelize, utils } = require("../../../modelsTimescale")
 /**
  * @swagger
  *
- * /streams/{id}/segments:
+ * /streams/{id}/stream-segments:
  *   post:
- *     summary: Create a segment
+ *     summary: Create a stream segment
  *     tags:
- *       - segments
+ *       - stream-segments
  *     requestBody:
- *       description: Segment object
+ *       description: StreamSegment object
  *       required: true
  *       content:
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/Segment'
+ *             $ref: '#/components/requestBodies/StreamSegment'
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/Segment'
+ *             $ref: '#/components/requestBodies/StreamSegment'
  *     responses:
  *       201:
  *         description: Created
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Segment'
+ *               $ref: '#/components/schemas/StreamSegment'
  *       400:
  *         description: Invalid query parameters
  */
 
-router.post('/:streamId/segments', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
 
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
 
-  params.convert('master_segment_id').toString()
+  params.convert('stream_source_file_id').toString()
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('sample_count').toInt().minimum(1)
@@ -52,25 +52,25 @@ router.post('/:streamId/segments', authenticatedWithRoles('rfcxUser', 'systemUse
   return params.validate()
     .then(async () => {
       const stream = await streamsService.getById(streamId)
-      await masterSegmentService.getById(convertedParams.master_segment_id) // we call this function to ensure that master segment with given id exists
+      await streamSourceFileService.getById(convertedParams.stream_source_file_id) // we call this function to ensure that source file with given id exists
       convertedParams.stream_id = streamId;
-      await segmentService.findOrCreateRelationships(convertedParams);
-      const segment = await segmentService.create(convertedParams, { joinRelations: true });
+      await streamSegmentService.findOrCreateRelationships(convertedParams);
+      const streamSegment = await streamSegmentService.create(convertedParams, { joinRelations: true });
       await streamsService.refreshStreamStartEnd(stream) // refresh start and end columns of releated stream
-      await segment.reload() // reload segment model to apply stream model updates
-      return res.status(201).json(segmentService.format(segment))
+      await streamSegment.reload() // reload segment model to apply stream model updates
+      return res.status(201).json(streamSegmentService.format(streamSegment))
     })
-    .catch(httpErrorHandler(req, res, 'Failed creating segment'))
+    .catch(httpErrorHandler(req, res, 'Failed creating stream segment'))
 })
 
 /**
  * @swagger
  *
- * /streams/{id}/segments:
+ * /streams/{id}/stream-segments:
  *   get:
- *     summary: Get list of segments belonging to a stream
+ *     summary: Get list of stream segments belonging to a stream
  *     tags:
- *       - segments
+ *       - stream-segments
  *     parameters:
  *       - name: id
  *         description: Stream identifier
@@ -99,7 +99,7 @@ router.post('/:streamId/segments', authenticatedWithRoles('rfcxUser', 'systemUse
  *         default: 0
  *     responses:
  *       200:
- *         description: List of segments objects
+ *         description: List of stream segments objects
  *         headers:
  *           Total-Items:
  *             schema:
@@ -110,13 +110,13 @@ router.post('/:streamId/segments', authenticatedWithRoles('rfcxUser', 'systemUse
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Segment'
+ *                 $ref: '#/components/schemas/StreamSegment'
  *       400:
  *         description: Invalid query parameters
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/segments', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -130,14 +130,14 @@ router.get('/:streamId/segments', authenticatedWithRoles('rfcxUser'), function (
       const stream = await streamsService.getById(streamId)
       streamsService.checkUserAccessToStream(req, stream)
       convertedParams.stream_id = streamId
-      return segmentService.query(convertedParams, { joinRelations: true })
+      return streamSegmentService.query(convertedParams, { joinRelations: true })
     })
     .then((data) => {
       res
         .header('Total-Items', data.count)
-        .json(segmentService.format(data.segments))
+        .json(streamSegmentService.format(data.streamSegments))
     })
-    .catch(httpErrorHandler(req, res, 'Failed getting segments'))
+    .catch(httpErrorHandler(req, res, 'Failed getting stream segments'))
 })
 
 module.exports = router

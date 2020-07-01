@@ -2,18 +2,17 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
-const redis = require('../../utils/redis');
 
-let segmentBaseInclude = [
+let streamSegmentBaseInclude = [
   {
     model: models.Stream,
     as: 'stream',
     attributes: models.Stream.attributes.lite,
   },
   {
-    model: models.MasterSegment,
-    as: 'master_segment',
-    attributes: models.MasterSegment.attributes.lite,
+    model: models.StreamSourceFile,
+    as: 'stream_source_file',
+    attributes: models.StreamSourceFile.attributes.lite,
   },
   {
     model: models.FileExtension,
@@ -23,8 +22,8 @@ let segmentBaseInclude = [
 ];
 
 /**
- * Returns list of segments with total number filtered by specified attributes
- * @param {*} attrs segment attributes
+ * Returns list of stream segments with total number filtered by specified attributes
+ * @param {*} attrs stream segment attributes
  * @param {*} opts additional function params
  */
 function query (attrs, opts = {}) {
@@ -54,18 +53,18 @@ function query (attrs, opts = {}) {
   }
 
   let method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll'; // don't use findAndCountAll if we don't need to limit and offset
-  return models.Segment[method]({
+  return models.StreamSegment[method]({
     where,
     limit: attrs.limit,
     offset: attrs.offset,
-    attributes: models.Segment.attributes.full,
-    include: opts.joinRelations? segmentBaseInclude : [],
+    attributes: models.StreamSegment.attributes.full,
+    include: opts.joinRelations? streamSegmentBaseInclude : [],
     order: [ ['start', 'ASC'] ]
   })
   .then((data) => {
     return {
       count: method === 'findAndCountAll' ? data.count : data.length,
-      segments: method === 'findAndCountAll' ? data.rows : data,
+      streamSegments: method === 'findAndCountAll' ? data.rows : data,
     };
   })
 }
@@ -77,38 +76,37 @@ function query (attrs, opts = {}) {
  * @returns {*} segment model item
  */
 function getById (id, opts = {}) {
-  return models.Segment
+  return models.StreamSegment
     .findOne({
       where: { id },
-      attributes: models.Segment.attributes.full,
-      include: opts && opts.joinRelations? segmentBaseInclude : []
+      attributes: models.StreamSegment.attributes.full,
+      include: opts && opts.joinRelations? streamSegmentBaseInclude : []
     })
     .then(item => {
       if (!item) {
-        throw new EmptyResultError(`Segment with given id not found.`)
+        throw new EmptyResultError(`Stream segment with given id not found.`)
       }
       return item
     });
 }
 
 /**
- * Creates segment item
- * @param {*} data segment attributes
+ * Creates stream segment item
+ * @param {*} data stream segment attributes
  * @param {*} opts additional function params
- * @returns {*} segment model item
+ * @returns {*} stream segment model item
  */
 function create(data, opts = {}) {
   if (!data) {
-    throw new ValidationError('Cannot create segment with empty object.');
+    throw new ValidationError('Cannot create stream segment with empty object.');
   }
-  // const { stream_id, filename, format_id, duration, sample_count, sample_rate_id, channel_layout_id, channels_count, bit_rate, codec_id, sha1_checksum, meta } = data;
-  const { stream_id, start, end, sample_count, master_segment_id, file_extension_id }  = data
-  return models.Segment
-    .create({ stream_id, start, end, sample_count, stream_id, master_segment_id, file_extension_id })
-    .then(item => { return opts && opts.joinRelations? item.reload({ include: segmentBaseInclude }) : item })
+  const { stream_id, start, end, sample_count, stream_source_file_id, file_extension_id }  = data
+  return models.StreamSegment
+    .create({ stream_id, start, end, sample_count, stream_id, stream_source_file_id, file_extension_id })
+    .then(item => { return opts && opts.joinRelations? item.reload({ include: streamSegmentBaseInclude }) : item })
     .catch((e) => {
-      console.error('Segment service -> create -> error', e);
-      throw new ValidationError('Cannot create segment with provided data.');
+      console.error('Stream segment service -> create -> error', e);
+      throw new ValidationError('Cannot create stream segment with provided data.');
     })
 }
 
@@ -143,7 +141,7 @@ async function findOrCreateRelationships(data) {
  */
 async function getStreamCoverage(attrs) {
   const queryData = await query(attrs)
-  const segments = queryData.segments
+  const segments = queryData.streamSegments
   if (!segments.length) {
     return {
       coverage: 0,
@@ -188,14 +186,14 @@ function format(data) {
   let isArray = Array.isArray(data)
   data = isArray ? data : [ data ];
   data = data.map((item) => {
-    const { id, stream, start, end, sample_count, master_segment, file_extension } = item
+    const { id, stream, start, end, sample_count, source_file, file_extension } = item
     return {
       id,
       stream,
       start,
       end,
       sample_count,
-      master_segment,
+      source_file,
       file_extension: file_extension && file_extension.value? file_extension.value : null,
     };
   })

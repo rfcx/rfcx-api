@@ -2,40 +2,40 @@ const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams-timescale')
-const masterSegmentService = require('../../../services/streams-timescale/master-segment')
+const streamSourceFileService = require('../../../services/streams-timescale/stream-source-file')
 const Converter = require("../../../utils/converter/converter")
 const { sequelize, utils } = require("../../../modelsTimescale")
 
 /**
  * @swagger
  *
- * /streams/{id}/master-segments:
+ * /streams/{id}/stream-source-files:
  *   post:
- *     summary: Create a master segment
+ *     summary: Create a stream source file
  *     tags:
- *       - master-segments
+ *       - stream-source-files
  *     requestBody:
- *       description: Master Segment object
+ *       description: Stream source file object
  *       required: true
  *       content:
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/MasterSegment'
+ *             $ref: '#/components/requestBodies/StreamSourceFile'
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/MasterSegment'
+ *             $ref: '#/components/requestBodies/StreamSourceFile'
  *     responses:
  *       201:
  *         description: Created
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/MasterSegment'
+ *               $ref: '#/components/schemas/StreamSourceFile'
  *       400:
  *         description: Invalid query parameters
  */
 
-router.post('/:streamId/master-segments', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/stream-source-files', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
 
   const streamId = req.params.streamId
   const convertedParams = {}
@@ -57,19 +57,19 @@ router.post('/:streamId/master-segments', authenticatedWithRoles('rfcxUser', 'sy
     .then(async () => {
       const stream = await streamsService.getById(streamId)
       convertedParams.stream_id = streamId;
-      await masterSegmentService.checkForDuplicates(streamId, convertedParams.sha1_checksum)
+      await streamSourceFileService.checkForDuplicates(streamId, convertedParams.sha1_checksum)
       if (convertedParams.meta && Object.keys(convertedParams.meta).length !== 0 && convertedParams.meta.constructor === Object) {
         convertedParams.meta = JSON.stringify(convertedParams.meta);
       }
       else {
         delete convertedParams.meta;
       }
-      await masterSegmentService.findOrCreateRelationships(convertedParams)
-      const masterSegment = await masterSegmentService.create(convertedParams, { joinRelations: true });
-      await streamsService.refreshStreamMaxSampleRate(stream, masterSegment)
-      return res.status(201).json(masterSegmentService.format(masterSegment))
+      await streamSourceFileService.findOrCreateRelationships(convertedParams)
+      const streamSourceFile = await streamSourceFileService.create(convertedParams, { joinRelations: true });
+      await streamsService.refreshStreamMaxSampleRate(stream, streamSourceFile)
+      return res.status(201).json(streamSourceFileService.format(streamSourceFile))
     })
-    .catch(httpErrorHandler(req, res, 'Failed creating master segment'))
+    .catch(httpErrorHandler(req, res, 'Failed creating stream source file'))
 })
 
 module.exports = router

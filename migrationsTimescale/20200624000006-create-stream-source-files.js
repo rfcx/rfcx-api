@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('master_segments', {
+    return queryInterface.createTable('stream_source_files', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -97,7 +97,7 @@ module.exports = {
     })
     .then(() => {
       return Promise.all([
-        queryInterface.addConstraint('master_segments', {
+        queryInterface.addConstraint('stream_source_files', {
           type: 'CHECK',
           fields: ['duration'],
           where: {
@@ -106,7 +106,7 @@ module.exports = {
             }
           }
         }),
-        queryInterface.addConstraint('master_segments', {
+        queryInterface.addConstraint('stream_source_files', {
           type: 'CHECK',
           fields: ['sample_count'],
           where: {
@@ -115,7 +115,7 @@ module.exports = {
             }
           }
         }),
-        queryInterface.addConstraint('master_segments', {
+        queryInterface.addConstraint('stream_source_files', {
           type: 'CHECK',
           fields: ['channels_count'],
           where: {
@@ -128,6 +128,6 @@ module.exports = {
     })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('master_segments')
+    return queryInterface.dropTable('stream_source_files')
   }
 }

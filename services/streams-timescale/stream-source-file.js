@@ -3,7 +3,7 @@ const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 
-let masterSegmentBaseInclude = [
+let streamSourceFileBaseInclude = [
   {
     model: models.Stream,
     as: 'stream',
@@ -32,66 +32,66 @@ let masterSegmentBaseInclude = [
 ];
 
 /**
- * Searches for master segment model with given id
+ * Searches for source file model with given id
  * @param {string} id
  * @param {*} opts additional function params
- * @returns {*} master segment model item
+ * @returns {*} source file model item
  */
 function getById (id, opts = {}) {
-  return models.MasterSegment
+  return models.StreamSourceFile
     .findOne({
       where: { id },
-      attributes: models.MasterSegment.attributes.full,
-      include: opts && opts.joinRelations? masterSegmentBaseInclude : []
+      attributes: models.StreamSourceFile.attributes.full,
+      include: opts && opts.joinRelations? streamSourceFileBaseInclude : []
     })
     .then(item => {
       if (!item) {
-        throw new EmptyResultError(`Master segment with given id not found.`)
+        throw new EmptyResultError(`Source file with given id not found.`)
       }
       return item
     });
 }
 
 /**
- * Creates master segment item
- * @param {*} data master segment attributes
+ * Creates source file item
+ * @param {*} data source file attributes
  * @param {*} opts additional function params
- * @returns {*} master segment model item
+ * @returns {*} source file model item
  */
 function create(data, opts = {}) {
   if (!data) {
-    throw new ValidationError('Cannot create master segment with empty object.');
+    throw new ValidationError('Cannot create source file with empty object.');
   }
   const { stream_id, filename, format_id, duration, sample_count, sample_rate_id, channel_layout_id, channels_count, bit_rate, codec_id, sha1_checksum, meta } = data;
-  return models.MasterSegment
+  return models.StreamSourceFile
     .create({ stream_id, filename, format_id, duration, sample_count, sample_rate_id, channel_layout_id, channels_count, bit_rate, codec_id, sha1_checksum, meta })
-    .then(item => { return opts && opts.joinRelations? item.reload({ include: masterSegmentBaseInclude }) : item })
+    .then(item => { return opts && opts.joinRelations? item.reload({ include: streamSourceFileBaseInclude }) : item })
     .catch((e) => {
-      console.error('Master segment service -> create -> error', e);
-      throw new ValidationError('Cannot create master segment with provided data.');
+      console.error('Source file service -> create -> error', e);
+      throw new ValidationError('Cannot create source file with provided data.');
     })
 }
 
 /**
- * Destroys master segment item
- * @param {*} masterSegment master segment modei item
+ * Destroys source file item
+ * @param {*} streamSourceFile source file modei item
  */
-function remove(masterSegment) {
-  return masterSegment.destroy();
+function remove(streamSourceFile) {
+  return streamSourceFile.destroy();
 }
 
 /**
- * Checks if master segment with given sha1 checksum exists in specified stream
+ * Checks if source file with given sha1 checksum exists in specified stream
  * @param {*} stream_id
  * @param {*} sha1_checksum
  * @returns {boolean} returns false if no duplicates, throws ValidationError if exists
  */
 function checkForDuplicates(stream_id, sha1_checksum) {
-  // check for duplicate master segment files in this stream
-  return models.MasterSegment
+  // check for duplicate source file files in this stream
+  return models.StreamSourceFile
     .findAll({ where: { stream_id, sha1_checksum } })
-    .then((existingMasterSegment) => {
-      if (existingMasterSegment && existingMasterSegment.length) {
+    .then((existingStreamSourceFile) => {
+      if (existingStreamSourceFile && existingStreamSourceFile.length) {
         throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.');
       }
       return false;
@@ -118,8 +118,8 @@ async function findOrCreateRelationships(data) {
   }
 }
 
-function format(masterSegment) {
-  const { id, stream, filename, format, duration, sample_count, sample_rate, channel_layout, channels_count, bit_rate, codec, sha1_checksum, meta } = masterSegment
+function format(streamSourceFile) {
+  const { id, stream, filename, format, duration, sample_count, sample_rate, channel_layout, channels_count, bit_rate, codec, sha1_checksum, meta } = streamSourceFile
   let parsedMeta;
   try {
     parsedMeta = JSON.parse(meta);

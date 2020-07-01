@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const Segment = sequelize.define("Segment", {
+  const StreamSegment = sequelize.define("StreamSegment", {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -31,8 +31,8 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(12),
       allowNull: false
     },
-    master_segment_id: {
-      type: DataTypes.STRING(24),
+    stream_source_file_id: {
+      type: DataTypes.UUID,
       allowNull: false
     },
     file_extension_id: {
@@ -42,14 +42,14 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     timestamps: true,
   })
-  Segment.associate = function (models) {
-    Segment.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
-    Segment.belongsTo(models.MasterSegment, { as: 'master_segment', foreignKey: 'master_segment_id' })
-    Segment.belongsTo(models.FileExtension, { as: 'file_extension', foreignKey: 'file_extension_id' })
+  StreamSegment.associate = function (models) {
+    StreamSegment.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
+    StreamSegment.belongsTo(models.StreamSourceFile, { as: 'stream_source_file', foreignKey: 'stream_source_file_id' })
+    StreamSegment.belongsTo(models.FileExtension, { as: 'file_extension', foreignKey: 'file_extension_id' })
   }
-  Segment.attributes = {
-    full: ['id', 'start', 'end', 'sample_count', 'stream_id', 'master_segment_id', 'file_extension_id', 'created_at', 'updated_at'],
+  StreamSegment.attributes = {
+    full: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'file_extension_id', 'created_at', 'updated_at'],
     lite: ['id', 'start', 'end'],
   }
-  return Segment
+  return StreamSegment
 };

@@ -272,7 +272,7 @@
       }
     }
   },
-  "MasterSegmentLite": {
+  "StreamSourceFileLite": {
     "properties": {
       "id": {
         "type": "uuid",
@@ -288,10 +288,10 @@
       }
     }
   },
-  "MasterSegment": {
+  "StreamSourceFile": {
     "allOf": [
       {
-        "$ref": "#/components/schemas/MasterSegmentLite"
+        "$ref": "#/components/schemas/StreamSourceFileLite"
       },
       {
         "properties": {
@@ -342,7 +342,7 @@
       }
     ]
   },
-  "Segment": {
+  "StreamSegment": {
     "properties": {
       "id": {
         "type": "uuid",
@@ -363,8 +363,8 @@
         "type": "integer",
         "example": 4326072
       },
-      "master_segment": {
-        "$ref": "#/components/schemas/MasterSegmentLite"
+      "stream_source_file": {
+        "$ref": "#/components/schemas/StreamSourceFileLite"
       },
       "file_extension": {
         "type": "string",

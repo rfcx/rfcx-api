@@ -2,21 +2,21 @@ const router = require("express").Router()
 const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams-timescale')
-const masterSegmentService = require('../../../services/streams-timescale/master-segment')
+const streamSegmentService = require('../../../services/streams-timescale/stream-segment')
 const Converter = require("../../../utils/converter/converter")
 const { sequelize, utils } = require("../../../modelsTimescale")
 
 /**
  * @swagger
  *
- * /master-segments/{id}:
+ * /stream-segments/{id}:
  *   delete:
- *     summary: Delete a master segment
+ *     summary: Delete a stream segment
  *     tags:
- *       - master-segments
+ *       - stream-segments
  *     parameters:
  *       - name: id
- *         description: Master segment id
+ *         description: Stram segment id
  *         in: path
  *         required: true
  *         type: string
@@ -30,14 +30,14 @@ const { sequelize, utils } = require("../../../modelsTimescale")
  */
 router.delete("/:uuid", authenticatedWithRoles('systemUser'), (req, res) => {
 
-  return masterSegmentService.getById(req.params.uuid)
-    .then(async (masterSegment) => {
-      const stream = await streamsService.getById(masterSegment.stream_id)
-      await masterSegmentService.remove(masterSegment)
-      return streamsService.refreshStreamMaxSampleRate(stream)
+  return streamSegmentService.getById(req.params.uuid)
+    .then(async (streamSegment) => {
+      const stream = await streamsService.getById(streamSegment.stream_id)
+      await streamSegmentService.remove(streamSegment)
+      await streamsService.refreshStreamStartEnd(stream) // refresh start and end columns of releated stream
+      res.sendStatus(204)
     })
-    .then(() => res.sendStatus(204))
-    .catch(httpErrorHandler(req, res, 'Failed deleting master segment'));
+    .catch(httpErrorHandler(req, res, 'Failed deleting stream segment'));
 })
 
 module.exports = router

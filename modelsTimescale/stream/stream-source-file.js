@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const MasterSegment = sequelize.define("MasterSegment", {
+  const StreamSourceFile = sequelize.define("StreamSourceFile", {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -78,17 +78,17 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     timestamps: true,
   })
-  MasterSegment.associate = function (models) {
-    MasterSegment.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
-    MasterSegment.belongsTo(models.Codec, { as: 'codec', foreignKey: 'codec_id' })
-    MasterSegment.belongsTo(models.Format, { as: 'format', foreignKey: 'format_id' })
-    MasterSegment.belongsTo(models.SampleRate, { as: 'sample_rate', foreignKey: 'sample_rate_id' })
-    MasterSegment.belongsTo(models.ChannelLayout, { as: 'channel_layout', foreignKey: 'channel_layout_id' })
+  StreamSourceFile.associate = function (models) {
+    StreamSourceFile.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
+    StreamSourceFile.belongsTo(models.Codec, { as: 'codec', foreignKey: 'codec_id' })
+    StreamSourceFile.belongsTo(models.Format, { as: 'format', foreignKey: 'format_id' })
+    StreamSourceFile.belongsTo(models.SampleRate, { as: 'sample_rate', foreignKey: 'sample_rate_id' })
+    StreamSourceFile.belongsTo(models.ChannelLayout, { as: 'channel_layout', foreignKey: 'channel_layout_id' })
   }
-  MasterSegment.attributes = {
+  StreamSourceFile.attributes = {
     full: ['id', 'filename', 'duration', 'sample_count', 'channels_count', 'bit_rate', 'meta', 'sha1_checksum', 'stream_id',
            'codec_id', 'format_id', 'sample_rate_id', 'channel_layout_id', 'created_at', 'updated_at'],
     lite: ['id', 'filename', 'duration']
   }
-  return MasterSegment
+  return StreamSourceFile
 };
