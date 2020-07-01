@@ -43,6 +43,7 @@ router.post('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser', 'sy
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
 
+  params.convert('id').optional().toString()
   params.convert('stream_source_file_id').toString()
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()

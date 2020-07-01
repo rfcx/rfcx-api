@@ -100,9 +100,9 @@ function create(data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create stream segment with empty object.');
   }
-  const { stream_id, start, end, sample_count, stream_source_file_id, file_extension_id }  = data
+  const { id, stream_id, start, end, sample_count, stream_source_file_id, file_extension_id }  = data
   return models.StreamSegment
-    .create({ stream_id, start, end, sample_count, stream_id, stream_source_file_id, file_extension_id })
+    .create({ id, stream_id, start, end, sample_count, stream_id, stream_source_file_id, file_extension_id })
     .then(item => { return opts && opts.joinRelations? item.reload({ include: streamSegmentBaseInclude }) : item })
     .catch((e) => {
       console.error('Stream segment service -> create -> error', e);

@@ -272,9 +272,14 @@
   "StreamSegment": {
     "type": "object",
     "properties": {
+      "id": {
+        "type": "uuid",
+        "description": "Stream Segment id",
+        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+      },
       "stream_source_file_id": {
         "type": "uuid",
-        "description": "Master Segment id",
+        "description": "Stream source file id",
         "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
       },
       "start": {
