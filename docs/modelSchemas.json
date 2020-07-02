@@ -310,10 +310,6 @@
             "type": "integer",
             "example": 12000
           },
-          "channel_layout": {
-            "type": "string",
-            "example": "mono"
-          },
           "channels_count": {
             "type": "integer",
             "example": 1

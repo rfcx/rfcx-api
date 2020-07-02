@@ -20,6 +20,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      sample_rate: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
       channels_count: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -66,26 +70,6 @@ module.exports = {
           key: 'id'
         },
       },
-      sample_rate_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: {
-            tableName: 'sample_rates'
-          },
-          key: 'id'
-        },
-      },
-      channel_layout_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: {
-            tableName: 'channel_layouts'
-          },
-          key: 'id'
-        },
-      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false
@@ -124,6 +108,15 @@ module.exports = {
             }
           }
         }),
+        queryInterface.addConstraint('stream_source_files', {
+          type: 'CHECK',
+          fields: ['sample_rate'],
+          where: {
+            sample_rate: {
+              [Sequelize.Op.gt]: 0
+            }
+          }
+        })
       ])
     })
   },

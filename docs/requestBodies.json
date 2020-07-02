@@ -223,11 +223,6 @@
         "description": "Original file sample rate",
         "example": 12000
       },
-      "channel_layout": {
-        "type": "string",
-        "description": "Original file channel layout (default 'mono')",
-        "default": "mono"
-      },
       "channels_count": {
         "type": "integer",
         "description": "Original file channels count (default 1)",

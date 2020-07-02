@@ -32,6 +32,17 @@ module.exports = function (sequelize, DataTypes) {
         },
       }
     },
+    sample_rate: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        isInt: true,
+        min: {
+          args: [ 1 ],
+          msg: 'sample_rate should be greater than 0'
+        },
+      }
+    },
     channels_count: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -66,14 +77,6 @@ module.exports = function (sequelize, DataTypes) {
     audio_file_format_id: {
       type: DataTypes.INTEGER,
       allowNull: false
-    },
-    sample_rate_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    channel_layout_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
     }
   }, {
     timestamps: true,
@@ -82,12 +85,10 @@ module.exports = function (sequelize, DataTypes) {
     StreamSourceFile.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     StreamSourceFile.belongsTo(models.AudioCodec, { as: 'audio_codec', foreignKey: 'audio_codec_id' })
     StreamSourceFile.belongsTo(models.AudioFileFormat, { as: 'audio_file_format', foreignKey: 'audio_file_format_id' })
-    StreamSourceFile.belongsTo(models.SampleRate, { as: 'sample_rate', foreignKey: 'sample_rate_id' })
-    StreamSourceFile.belongsTo(models.ChannelLayout, { as: 'channel_layout', foreignKey: 'channel_layout_id' })
   }
   StreamSourceFile.attributes = {
     full: ['id', 'filename', 'duration', 'sample_count', 'channels_count', 'bit_rate', 'meta', 'sha1_checksum', 'stream_id',
-           'audio_codec_id', 'audio_file_format_id', 'sample_rate_id', 'channel_layout_id', 'created_at', 'updated_at'],
+           'audio_codec_id', 'audio_file_format_id', 'sample_rate', 'created_at', 'updated_at'],
     lite: ['id', 'filename', 'duration']
   }
   return StreamSourceFile

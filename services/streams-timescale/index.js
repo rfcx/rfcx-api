@@ -218,26 +218,14 @@ function formatStreams(streams) {
 }
 
 /**
- * Finds max sample rate value of master segments belonging to stream and updates max_sample_rate attribute of the stream
+ * Finds max sample rate value of stream source files belonging to stream and updates max_sample_rate attribute of the stream
  * @param {*} stream stream model item
  */
-function refreshStreamMaxSampleRate(stream) {
-  let sql = `SELECT b.id, b.value
-              FROM stream_source_files a
-              INNER JOIN sample_rates b ON a.sample_rate_id = b.id
-              INNER JOIN ( SELECT id, MAX(value) max_sample_rate FROM sample_rates GROUP BY id) c ON b.id = c.id AND b.value = c.max_sample_rate
-              WHERE a.stream_id = '${stream.id}' ORDER BY b.value DESC LIMIT 1;`
-  return models.sequelize
-    .query(sql,
-      { replacements: {}, type: models.sequelize.QueryTypes.SELECT }
-    )
-    .then((data) => {
-      let mas_sample_rate = null;
-      if (data && data[0] && data[0].value) {
-        max_sample_rate = data[0].value
-      }
-      return update(stream, { max_sample_rate })
-    });
+async function refreshStreamMaxSampleRate(stream) {
+  const where = { stream_id: stream.id }
+  let max_sample_rate = await models.StreamSourceFile.max('sample_rate', { where })
+  max_sample_rate = max_sample_rate || null
+  return update(stream, { max_sample_rate })
 }
 
 /**
@@ -246,12 +234,11 @@ function refreshStreamMaxSampleRate(stream) {
  */
 async function refreshStreamStartEnd(stream) {
   const where = { stream_id: stream.id }
-  const start = await models.StreamSegment.min('start', { where })
-  const end = await models.StreamSegment.max('end', { where })
-  if (start && end) {
-    return update(stream, { start, end })
-  }
-  return
+  let start = await models.StreamSegment.min('start', { where })
+  let end = await models.StreamSegment.max('end', { where })
+  start = start || null
+  end = end || null
+  return update(stream, { start, end })
 }
 
 

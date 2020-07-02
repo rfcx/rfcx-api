@@ -46,7 +46,6 @@ router.post('/:streamId/stream-source-files', authenticatedWithRoles('rfcxUser',
   params.convert('duration').toInt().minimum(1);
   params.convert('sample_count').toInt().minimum(1);
   params.convert('sample_rate').toInt().default(1).minimum(1);
-  params.convert('channel_layout').optional().toString().default('mono');
   params.convert('channels_count').optional().toInt().default(1).minimum(1);
   params.convert('bit_rate').toInt().default(1).minimum(1);
   params.convert('audio_codec').toString();
