@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const Format = sequelize.define('Format', {
+  const AudioFileFormat = sequelize.define('AudioFileFormat', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -8,10 +8,10 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: false,
   })
-  Format.associate = function (models) {
+  AudioFileFormat.associate = function (models) {
   }
-  Format.attributes = {
+  AudioFileFormat.attributes = {
     lite: ['value']
   }
-  return Format
+  return AudioFileFormat
 }

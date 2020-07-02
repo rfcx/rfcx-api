@@ -203,7 +203,7 @@
         "description": "Original file name",
         "example": "1feb70b91439-2020-06-24T17-15-26.opus"
       },
-      "format": {
+      "audio_file_format": {
         "type": "string",
         "description": "Original file format",
         "example": "opus"
@@ -260,7 +260,7 @@
     },
     "required": [
       "filename",
-      "format",
+      "audio_file_format",
       "duration",
       "sample_count",
       "sample_rate",

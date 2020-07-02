@@ -56,12 +56,12 @@ module.exports = {
           key: 'id'
         },
       },
-      format_id: {
+      audio_file_format_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: {
-            tableName: 'formats'
+            tableName: 'audio_file_formats'
           },
           key: 'id'
         },

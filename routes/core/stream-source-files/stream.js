@@ -42,7 +42,7 @@ router.post('/:streamId/stream-source-files', authenticatedWithRoles('rfcxUser',
   const params = new Converter(req.body, convertedParams)
 
   params.convert('filename').toString();
-  params.convert('format').toString();
+  params.convert('audio_file_format').toString();
   params.convert('duration').toInt().minimum(1);
   params.convert('sample_count').toInt().minimum(1);
   params.convert('sample_rate').toInt().default(1).minimum(1);

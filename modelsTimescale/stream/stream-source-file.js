@@ -63,7 +63,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    format_id: {
+    audio_file_format_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -81,13 +81,13 @@ module.exports = function (sequelize, DataTypes) {
   StreamSourceFile.associate = function (models) {
     StreamSourceFile.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     StreamSourceFile.belongsTo(models.AudioCodec, { as: 'audio_codec', foreignKey: 'audio_codec_id' })
-    StreamSourceFile.belongsTo(models.Format, { as: 'format', foreignKey: 'format_id' })
+    StreamSourceFile.belongsTo(models.AudioFileFormat, { as: 'audio_file_format', foreignKey: 'audio_file_format_id' })
     StreamSourceFile.belongsTo(models.SampleRate, { as: 'sample_rate', foreignKey: 'sample_rate_id' })
     StreamSourceFile.belongsTo(models.ChannelLayout, { as: 'channel_layout', foreignKey: 'channel_layout_id' })
   }
   StreamSourceFile.attributes = {
     full: ['id', 'filename', 'duration', 'sample_count', 'channels_count', 'bit_rate', 'meta', 'sha1_checksum', 'stream_id',
-           'audio_codec_id', 'format_id', 'sample_rate_id', 'channel_layout_id', 'created_at', 'updated_at'],
+           'audio_codec_id', 'audio_file_format_id', 'sample_rate_id', 'channel_layout_id', 'created_at', 'updated_at'],
     lite: ['id', 'filename', 'duration']
   }
   return StreamSourceFile
