@@ -43,9 +43,9 @@ function create(data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create stream with empty object.');
   }
-  const { id, name, description, start, end, is_private, latitude, longitude, created_by_id } = data; // do not use raw input object for security reasons
+  const { id, name, description, start, end, is_public, latitude, longitude, created_by_id } = data; // do not use raw input object for security reasons
   return models.Stream
-    .create({ id, name, description, start, end, is_private, latitude, longitude, created_by_id })
+    .create({ id, name, description, start, end, is_public, latitude, longitude, created_by_id })
     .then(item => { return opts && opts.joinRelations? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> create -> error', e);
@@ -80,8 +80,8 @@ function query(attrs, opts = {}) {
 
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id;
-    if (attrs.is_private !== undefined) {
-      where.is_private = attrs.is_private;
+    if (attrs.is_public !== undefined) {
+      where.is_public = attrs.is_public;
     }
   }
   else if (attrs.created_by === 'collaborators') {
@@ -93,15 +93,15 @@ function query(attrs, opts = {}) {
       {
         [models.Sequelize.Op.and]: {
           created_by_id: attrs.current_user_id,
-          ...attrs.is_private !== undefined && { is_private: attrs.is_private }
+          ...attrs.is_public !== undefined && { is_public: attrs.is_public }
         }
       }
     ]
-    if (attrs.is_private !== true) {
+    if (attrs.is_public !== false) {
       where[models.Sequelize.Op.or].push(
         {
           [models.Sequelize.Op.and]: {
-            is_private: false,
+            is_public: true,
             created_by_id: {
               [models.Sequelize.Op.ne]: attrs.current_user_id
             }
@@ -143,7 +143,7 @@ function query(attrs, opts = {}) {
  * @returns {*} stream model item
  */
 function update(stream, data, opts = {}) {
-  ['name', 'description', 'is_private', 'start', 'end', 'latitude', 'longitude', 'max_sample_rate'].forEach((attr) => {
+  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'max_sample_rate'].forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr];
     }
@@ -189,21 +189,21 @@ function restore(stream) {
  */
 function checkUserAccessToStream(req, stream) {
   let userId = req.rfcx.auth_token_info.owner_id;
-  if (stream.is_private && stream.created_by_id !== userId) {
+  if (!stream.is_public && stream.created_by_id !== userId) {
     throw new ForbiddenError(`You don't have enough permissions for this operation.`);
   }
   return true;
 }
 
 function formatStream(stream) {
-  const { id, name, description, start, end, is_private, latitude, longitude, created_at, updated_at, max_sample_rate } = stream;
+  const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream;
   return {
     id,
     name,
     description,
     start,
     end,
-    is_private,
+    is_public,
     created_at,
     created_by: stream.created_by || null,
     updated_at,

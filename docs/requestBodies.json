@@ -149,10 +149,10 @@
         "description": "A stream description",
         "example": "Stream 1 description"
       },
-      "is_private": {
+      "is_public": {
         "type": "boolean",
-        "description": "Whether stream is private or public",
-        "example": true
+        "description": "Whether stream is public (default false)",
+        "default": "false"
       }
     },
     "required": [
@@ -182,10 +182,10 @@
         "description": "A stream description",
         "example": "Stream 1 description"
       },
-      "is_private": {
+      "is_public": {
         "type": "boolean",
-        "description": "Whether stream is private or public",
-        "example": true
+        "description": "Whether stream is public",
+        "example": false
       },
       "restore": {
         "type": "boolean",

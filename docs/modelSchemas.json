@@ -206,9 +206,9 @@
         "type": "date",
         "example": "2020-05-12T07:30:22.500Z"
       },
-      "is_private": {
+      "is_public": {
         "type": "boolean",
-        "example": true
+        "example": false
       }
     },
     "required": [
