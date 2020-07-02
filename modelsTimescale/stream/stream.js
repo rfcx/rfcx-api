@@ -21,9 +21,9 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
     },
-    is_private: {
+    is_public: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true,
+      defaultValue: false,
       allowNull: false,
     },
     latitude: {
@@ -73,8 +73,8 @@ module.exports = function (sequelize, DataTypes) {
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'is_private', 'latitude', 'longitude', 'max_sample_rate', 'created_by_id', 'created_at', 'updated_at'],
-    lite: ['id', 'name', 'start', 'end', 'is_private']
+    full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'max_sample_rate', 'created_by_id', 'created_at', 'updated_at'],
+    lite: ['id', 'name', 'start', 'end', 'is_public']
   }
   return Stream
 };

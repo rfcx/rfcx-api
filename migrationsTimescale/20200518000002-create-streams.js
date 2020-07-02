@@ -23,9 +23,9 @@ module.exports = {
         type: Sequelize.DATE(3),
         allowNull: true,
       },
-      is_private: {
+      is_public: {
         type: Sequelize.BOOLEAN,
-        defaultValue: true,
+        defaultValue: false,
         allowNull: false,
       },
       latitude: {
