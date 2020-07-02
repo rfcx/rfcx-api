@@ -83,7 +83,7 @@ router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function
   params.convert('offset').optional().toInt()
 
   return params.validate()
-    .then(() => checkAccess(streamId, req))
+    // .then(() => checkAccess(streamId, req))
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
       return detectionsService.query(start, end, streamId, classifications, limit, offset)
