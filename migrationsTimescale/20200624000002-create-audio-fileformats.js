@@ -2,7 +2,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface
-      .createTable('sample_rates', {
+      .createTable('audio_file_formats', {
         id: {
           type: Sequelize.INTEGER,
           autoIncrement: true,
@@ -10,24 +10,13 @@ module.exports = {
           primaryKey: true,
         },
         value: {
-          type: Sequelize.INTEGER,
+          type: Sequelize.STRING,
           allowNull: false,
           unique: true,
         },
       })
-      .then(() => {
-        return queryInterface.addConstraint('sample_rates', {
-          type: 'CHECK',
-          fields: ['value'],
-          where: {
-            value: {
-              [Sequelize.Op.gt]: 0
-            }
-          }
-        })
-      })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('sample_rates')
+    return queryInterface.dropTable('audio_file_formats')
   }
 }
