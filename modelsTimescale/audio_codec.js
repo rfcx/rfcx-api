@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const Codec = sequelize.define('Codec', {
+  const AudioCodec = sequelize.define('AudioCodec', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -8,10 +8,10 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: false,
   })
-  Codec.associate = function (models) {
+  AudioCodec.associate = function (models) {
   }
-  Codec.attributes = {
+  AudioCodec.attributes = {
     lite: ['value']
   }
-  return Codec
+  return AudioCodec
 }

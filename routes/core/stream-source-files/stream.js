@@ -49,7 +49,7 @@ router.post('/:streamId/stream-source-files', authenticatedWithRoles('rfcxUser',
   params.convert('channel_layout').optional().toString().default('mono');
   params.convert('channels_count').optional().toInt().default(1).minimum(1);
   params.convert('bit_rate').toInt().default(1).minimum(1);
-  params.convert('codec').toString();
+  params.convert('audio_codec').toString();
   params.convert('sha1_checksum').toString();
   params.convert('meta').optional();
 

@@ -46,12 +46,12 @@ module.exports = {
           key: 'id'
         },
       },
-      codec_id: {
+      audio_codec_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: {
-            tableName: 'codecs'
+            tableName: 'audio_codecs'
           },
           key: 'id'
         },

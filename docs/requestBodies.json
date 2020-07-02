@@ -238,7 +238,7 @@
         "description": "Original file bit rate",
         "example": 16384
       },
-      "codec": {
+      "audio_codec": {
         "type": "string",
         "description": "Original file codec",
         "example": "opus"
@@ -265,7 +265,7 @@
       "sample_count",
       "sample_rate",
       "bit_rate",
-      "codec",
+      "audio_codec",
       "sha1_checksum"
     ]
   },

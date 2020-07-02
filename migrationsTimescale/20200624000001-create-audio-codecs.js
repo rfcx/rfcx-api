@@ -2,7 +2,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface
-      .createTable('codecs', {
+      .createTable('audio_codecs', {
         id: {
           type: Sequelize.INTEGER,
           autoIncrement: true,
@@ -17,6 +17,6 @@ module.exports = {
       })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('codecs')
+    return queryInterface.dropTable('audio_codecs')
   }
 }
