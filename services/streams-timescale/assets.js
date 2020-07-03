@@ -370,7 +370,6 @@ function deleteFilesForStream(dbStream) {
             attributes: models.FileExtension.attributes.lite,
           }
         ]
-        // include: [{ all: true }],
       })
       .then((dbSegments) => {
         if (dbSegments || dbSegments.length) {
