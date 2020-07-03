@@ -1,11 +1,11 @@
 const router = require('express').Router()
-const EmptyResultError = require('../../../utils/converter/empty-result-error');
+const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 
-const streamsService = require('../../../services/streams-timescale');
+const streamsService = require('../../../services/streams-timescale')
 const streamSegmentService = require('../../../services/streams-timescale/stream-segment')
-const streamsAssetsService = require('../../../services/streams-timescale/assets');
+const streamsAssetsService = require('../../../services/streams-timescale/assets')
 
 /**
   Spectrogram format (fspec):
@@ -62,28 +62,26 @@ const streamsAssetsService = require('../../../services/streams-timescale/assets
  *       403:
  *         description: Insufficient privileges
  */
-router.get("/streams/:attrs", authenticatedWithRoles('rfcxUser'), async function (req, res) {
 
+router.get('/streams/:attrs', authenticatedWithRoles('rfcxUser'), async function (req, res) {
   try {
     const attrs = await streamsAssetsService.parseFileNameAttrs(req)
     await streamsAssetsService.checkAttrsValidity(req, attrs)
     const stream = await streamsService.getById(attrs.streamId)
-    const stream_id = stream.id
-    await streamsService.checkUserAccessToStream(req, stream);
-    let start = streamsAssetsService.gluedDateToISO(attrs.time.starts);
-    let end = streamsAssetsService.gluedDateToISO(attrs.time.ends);
+    const stream_id = stream.id // eslint-disable-line camelcase
+    await streamsService.checkUserAccessToStream(req, stream)
+    const start = streamsAssetsService.gluedDateToISO(attrs.time.starts)
+    const end = streamsAssetsService.gluedDateToISO(attrs.time.ends)
     const queryData = await streamSegmentService.query({ stream_id, start, end }, { joinRelations: true })
     const segments = queryData.streamSegments
     if (!segments.length) {
-      throw new EmptyResultError('No audio files found for selected time range.');
+      throw new EmptyResultError('No audio files found for selected time range.')
     }
-    const nextTimestamp = await streamSegmentService.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end);
-    return await streamsAssetsService.getFile(req, res, attrs, segments, nextTimestamp);
-  }
-  catch (e) {
+    const nextTimestamp = await streamSegmentService.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
+    return await streamsAssetsService.getFile(req, res, attrs, segments, nextTimestamp)
+  } catch (e) {
     httpErrorHandler(req, res, 'Failed getting stream asset.')(e)
   }
-
 })
 
 module.exports = router
