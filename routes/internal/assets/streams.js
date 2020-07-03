@@ -15,7 +15,7 @@ const streamsAssetsService = require('../../../services/streams-timescale/assets
     ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_rfull_g1_fwav.wav
     ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_r100.2000_g1.5_fwav.wav
 
-  First part of the filename is the stream id 65c07254-3801-4de8-b107-bb18167a0f22
+  First part of the filename is the stream id `LilSjZJkRK02`
   All following parameters are separated by _ and start with a single character that identifies the parameter type
     t  = start-end time range jointed with dot (custom format). includes milliseconds
     r  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (NOT IMPLEMENTED YET)
@@ -29,17 +29,33 @@ const streamsAssetsService = require('../../../services/streams-timescale/assets
 /**
  * @swagger
  *
- * /internal/assets/streams/{attrs}:
+ * /internal/assets/streams/{filename}:
  *   get:
  *     summary: Generate stream asset file (audio or spectrogram)
  *     tags:
  *       - internal
  *     parameters:
- *       - name: attrs
- *         description: Required attributes joined into file name
+ *       - name: filename
+ *         description: First part of the filename is the stream id `LilSjZJkRK02`</br>
+ *                      All following parameters are separated by _ and start with a single character that identifies the parameter type</br>
+ *                      `t`  = start-end time range jointed with dot (custom format). includes milliseconds (e.g. `t20191227T134400000Z.20191227T134420000Z`)</br>
+ *                      `r`  = (**NOT YET IMPLEMENTED**) frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (e,g, `rfull`)</br>
+ *                      `g`  = gain (volume) (int/float) `1` by default, which means 100% volume. `0` means no sound. `0.5` - 50% of volume. `2` - 200% volume (e,g, `g1`)</br>
+ *                      `f`  = file type (spec, wav, opus, flac, mp3) (e.g. `fwav`)</br>
+ *                      `d`  = dimension e.g. 200x512 (for file type spec only) (e.g. `d600.512`)</br>
+ *                      `w`  = window function dolph by default (for file type spec only) (e,g, `wdolph`)</br>
+ *                      `z`  = contrast of spectrogram (int) possible range is between 20 and 180 (for file type spec only) (e.g. `z120`)</br>
+ *                      Full examples:</br>
+ *                      - Spectrogram format (fspec):</br>
+ *                      `ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_rfull_g1_fspec_d600.512_wdolph_z120.png`</br>
+ *                      `ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_r100.2000_g1.5_fspec_d600.512_wdolph_z120.png`</br>
+ *                      - Audio format (fwav , fopus, fflac, fmp3):</br>
+ *                      `ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_rfull_g1_fwav.wav`</br>
+ *                      `ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_r100.2000_g1.5_fwav.wav`</br>
  *         in: query
  *         type: string
  *         required: true
+ *         example: ij4yexu6o52d_t20191227T134400000Z.20191227T134420000Z_rfull_g1_fspec_d600.512_wdolph_z120.png
  *     responses:
  *       200:
  *         description: Success
