@@ -7,7 +7,7 @@ const Converter = require('../../../utils/converter/converter')
 /**
  * @swagger
  *
- * /classifications:
+ * /indices:
  *   get:
  *     summary: Get list of indices
  *     tags:

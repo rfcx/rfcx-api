@@ -14,7 +14,7 @@ const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
  *     summary:
  *     description:
  *     tags:
- *       - indices
+ *       - internal
  *     parameters:
  *       - name: id
  *         description: Stream identifier
