@@ -37,7 +37,7 @@
     "properties": {
       "classifier": {
         "type": "integer",
-        "description": "A classifier identifier",
+        "description": "A classifier uuid",
         "example": 1
       },
       "classification": {
@@ -66,10 +66,10 @@
       "confidence"
     ]
   },
-  "DetectionsShortForm": {
+  "DetectionsCompact": {
     "type": "object",
     "properties": {
-      "stream": {
+      "stream_id": {
         "type": "string",
         "description": "A stream id",
         "example": "xu82jDgX49"
@@ -112,12 +112,56 @@
       }
     },
     "required": [
-      "stream",
+      "stream_id",
       "classification",
       "classifier",
       "start",
       "end",
       "confidences",
+      "step"
+    ]
+  },
+  "IndexValuesCompact": {
+    "type": "object",
+    "properties": {
+      "stream_id": {
+        "type": "string",
+        "description": "A stream id",
+        "example": "xu82jDgX49"
+      },
+      "index": {
+        "type": "string",
+        "description": "An index code",
+        "example": "se"
+      },
+      "time": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "values": {
+        "type": "array",
+        "items": {
+          "type": "float"
+        },
+        "description": "An ordered list of values from `time` incremented by `step`",
+        "example": [
+          0.975123,
+          0.994343,
+          0.831234,
+          0.201334
+        ]
+      },
+      "step": {
+        "type": "float",
+        "description": "Number of seconds between each value",
+        "example": 2.0
+      }
+    },
+    "required": [
+      "stream_id",
+      "index",
+      "time",
+      "values",
       "step"
     ]
   },

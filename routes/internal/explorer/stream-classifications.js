@@ -62,7 +62,7 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Stream not found
  */
-router.get("/streams/:id/classifications", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/streams/:id/classifications', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
