@@ -32,23 +32,25 @@ const Converter = require('../../../utils/converter/converter')
 router.post('/detections', authenticatedWithRoles('systemUser'), function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
-  params.convert('stream').toString()
+  params.convert('stream_id').toString()
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classification').toString()
-  params.convert('classifier').toInt()
+  params.convert('classifier_id').toInt()
   params.convert('confidences').toFloatArray()
   params.convert('step').toFloat()
 
   return params.validate()
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
-      const { stream, start, end, classifier, confidences, step } = convertedParams
+      const streamId = convertedParams.stream_id
+      const classifierId = convertedParams.classifier_id
+      const { start, end, confidences, step } = convertedParams
       const detections = confidences.map((confidence, i) => {
         // Confidences then they are spaced by "step" seconds
         const offsetStart = start.clone().add(i * step, 's')
         const offsetEnd = end.clone().add(i * step, 's')
-        return { streamId: stream, classificationId, classifierId: classifier, start: offsetStart, end: offsetEnd, confidence }
+        return { streamId, classificationId, classifierId, start: offsetStart, end: offsetEnd, confidence }
       })
       return detectionsService.create(detections)
     })

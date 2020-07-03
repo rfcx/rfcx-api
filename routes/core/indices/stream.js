@@ -3,8 +3,6 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { hasPermission } = require('../../../middleware/authorization/streams')
 const indicesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
-const heatmapGenerate = require('./heatmaps/generate')
-const heatmapDistribute = require('./heatmaps/distribute')
 
 /**
  * @swagger
@@ -106,58 +104,6 @@ router.get('/:streamId/indices/:index/values', hasPermission('read'), (req, res)
     })
     .then(values => res.json(values))
     .catch(httpErrorHandler(req, res, 'Failed getting values'))
-})
-
-/**
- * We could do it like this... or we could use the Accept (content type)
- * to return either json or image (or csv?)
- *
- * @swagger
- *
- * /streams/{streamId}/indices/{indexId}/heatmap:
- *   get:
- *     summary:
- *     description:
- *     tags:
- *       - indices
- */
-router.get('/:streamId/indices/:index/heatmap', hasPermission('read'), (req, res) => {
-  const streamId = req.params.streamId
-  const index = req.params.index
-
-  const convertedParams = {}
-  const params = new Converter(req.query, convertedParams)
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('interval').default('15m').toTimeInterval()
-  params.convert('grouping').default('1d').toTimeInterval()
-  params.convert('aggregate').default('avg').toAggregateFunction()
-
-  return params.validate()
-    .then(() => {
-      const { start, end, interval, aggregate } = convertedParams
-      return indicesService.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, false, undefined, 0)
-    })
-    .then(values => {
-      const { start, end, interval, grouping } = convertedParams
-      const heatmapData = heatmapDistribute(start, end, interval, grouping, values)
-      return heatmapGenerate(heatmapData)
-    })
-    .then(buffer => {
-      res.set('Content-Type', 'image/png')
-      res.send(buffer)
-    })
-    .catch(httpErrorHandler(req, res, 'Failed getting values'))
-})
-
-/**
- * @swagger
- *
- * /streams/{id}/indices/{index}/values
- */
-router.get('/:streamId/indices/:index/values', hasPermission('read'), (req, res) => {
-  const streamId = req.params.streamId
-  const index = req.params.index
 })
 
 module.exports = router

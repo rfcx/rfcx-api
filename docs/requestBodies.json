@@ -35,7 +35,7 @@
   "Detection": {
     "type": "object",
     "properties": {
-      "classifier": {
+      "classifier_id": {
         "type": "integer",
         "description": "A classifier identifier",
         "example": 1
@@ -60,7 +60,7 @@
     },
     "required": [
       "classification",
-      "classifier",
+      "classifier_id",
       "start",
       "end",
       "confidence"
@@ -69,12 +69,12 @@
   "DetectionsCompact": {
     "type": "object",
     "properties": {
-      "stream": {
+      "stream_id": {
         "type": "string",
         "description": "A stream id",
         "example": "xu82jDgX49"
       },
-      "classifier": {
+      "classifier_id": {
         "type": "integer",
         "description": "A classifier id",
         "example": 1
@@ -112,9 +112,9 @@
       }
     },
     "required": [
-      "stream",
+      "stream_id",
       "classification",
-      "classifier",
+      "classifier_id",
       "start",
       "end",
       "confidences",
@@ -124,14 +124,14 @@
   "IndexValuesCompact": {
     "type": "object",
     "properties": {
-      "stream": {
+      "stream_id": {
         "type": "string",
         "description": "A stream id",
         "example": "xu82jDgX49"
       },
       "index": {
         "type": "string",
-        "description": "An index id",
+        "description": "An index code",
         "example": "se"
       },
       "time": {
@@ -158,7 +158,7 @@
       }
     },
     "required": [
-      "stream",
+      "stream_id",
       "index",
       "time",
       "values",

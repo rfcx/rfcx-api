@@ -141,7 +141,7 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classification').toString()
-  params.convert('classifier').toInt()
+  params.convert('classifier_id').toInt()
   params.convert('confidence').toFloat()
 
   return params.validate()
@@ -159,7 +159,7 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
         return {
           streamId,
           classificationId,
-          classifierId: detection.classifier,
+          classifierId: detection.classifier_id,
           start: detection.start,
           end: detection.end,
           confidence: detection.confidence

@@ -32,7 +32,7 @@ const Converter = require('../../../utils/converter/converter')
 router.post('/index-values', authenticatedWithRoles('systemUser'), function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
-  params.convert('stream').toString()
+  params.convert('stream_id').toString()
   params.convert('time').toMomentUtc()
   params.convert('index').toString()
   params.convert('values').toFloatArray()
@@ -41,11 +41,12 @@ router.post('/index-values', authenticatedWithRoles('systemUser'), function (req
   return params.validate()
     .then(() => indicesService.getId(convertedParams.index))
     .then(indexId => {
-      const { stream, time, values, step } = convertedParams
+      const streamId = convertedParams.stream_id
+      const { time, values, step } = convertedParams
       const objects = values.map((value, i) => {
         // Values are spaced by "step" seconds
         const offsetTime = time.clone().add(i * step, 's')
-        return { streamId: stream, indexId, time: offsetTime, value }
+        return { streamId, indexId, time: offsetTime, value }
       })
       return indexValuesService.create(objects)
     })

@@ -4,22 +4,22 @@ const dateKey = 'time_bucket'
 const valueKey = 'aggregated_value'
 
 function distribute (startTimestamp, endTimestamp, interval, groupInterval, data) {
-  const startSecs = moment(startTimestamp).unix()
-  const endSecs = moment(endTimestamp).unix()
+  const startSecs = moment.utc(startTimestamp).unix()
+  const endSecs = moment.utc(endTimestamp).unix()
   const intervalSecs = intervalToSeconds(interval)
   const groupSize = intervalToSeconds(groupInterval) / intervalSecs
 
   const distributed = []
   let currentSecs = startSecs
-  for (let i = 0; i < data.length; i++) {
-    const rowSecs = moment(data[i][dateKey]).unix()
+  data.forEach(item => {
+    const rowSecs = moment(item[dateKey]).unix()
     while (currentSecs < rowSecs) {
       distributed.push(-1)
       currentSecs += intervalSecs
     }
-    distributed.push(data[i][valueKey])
+    distributed.push(item[valueKey])
     currentSecs += intervalSecs
-  }
+  })
   while (currentSecs < endSecs) {
     distributed.push(-1)
     currentSecs += intervalSecs
