@@ -1,9 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams/streams-service')
+const streamsService = require('../../../services/streams-timescale')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
+const classifierService = require('../../../services/classifier/classifier-service')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 
@@ -11,8 +12,10 @@ function checkAccess (streamId, req) {
   if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
     return true
   }
-  return streamsService.getStreamByGuid(streamId)
-    .then(stream => streamsService.checkUserAccessToStream(req, stream))
+  return streamsService.getById(streamId)
+    .then(stream => {
+      streamsService.checkUserAccessToStream(req, stream)
+    })
 }
 
 /**
@@ -78,7 +81,7 @@ router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function
   params.convert('offset').optional().toInt()
 
   return params.validate()
-    .then(() => checkAccess(streamId, req))
+    // .then(() => checkAccess(streamId, req))
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
       return detectionsService.query(start, end, streamId, classifications, limit, offset)
@@ -141,8 +144,10 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classification').toString()
-  params.convert('classifier_id').toInt()
+  params.convert('classifier').toString()
   params.convert('confidence').toFloat()
+
+  let classificationMapping
 
   return params.validate()
     .then(() => checkAccess(streamId, req))
@@ -152,14 +157,22 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
       const classificationValues = [...new Set(validatedDetections.map(d => d.classification))]
       return classificationService.getIds(classificationValues)
     })
-    .then(classificationMapping => {
+    .then(data => {
+      classificationMapping = data
+      const validatedDetections = params.transformedArray
+      // Get all the distinct classifier uuids
+      const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))]
+      return classifierService.getIds(classifierUuids)
+    })
+    .then(classifierMapping => {
       const validatedDetections = params.transformedArray
       const detections = validatedDetections.map(detection => {
         const classificationId = classificationMapping[detection.classification]
+        const classifierId = classifierMapping[detection.classifier]
         return {
           streamId,
           classificationId,
-          classifierId: detection.classifier_id,
+          classifierId,
           start: detection.start,
           end: detection.end,
           confidence: detection.confidence

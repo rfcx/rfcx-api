@@ -35,9 +35,9 @@
   "Detection": {
     "type": "object",
     "properties": {
-      "classifier_id": {
+      "classifier": {
         "type": "integer",
-        "description": "A classifier identifier",
+        "description": "A classifier uuid",
         "example": 1
       },
       "classification": {
@@ -60,7 +60,7 @@
     },
     "required": [
       "classification",
-      "classifier_id",
+      "classifier",
       "start",
       "end",
       "confidence"
@@ -74,7 +74,7 @@
         "description": "A stream id",
         "example": "xu82jDgX49"
       },
-      "classifier_id": {
+      "classifier": {
         "type": "integer",
         "description": "A classifier id",
         "example": 1
@@ -114,7 +114,7 @@
     "required": [
       "stream_id",
       "classification",
-      "classifier_id",
+      "classifier",
       "start",
       "end",
       "confidences",
@@ -193,10 +193,10 @@
         "description": "A stream description",
         "example": "Stream 1 description"
       },
-      "is_private": {
+      "is_public": {
         "type": "boolean",
-        "description": "Whether stream is private or public",
-        "example": true
+        "description": "Whether stream is public (default false)",
+        "default": "false"
       }
     },
     "required": [
@@ -226,10 +226,10 @@
         "description": "A stream description",
         "example": "Stream 1 description"
       },
-      "is_private": {
+      "is_public": {
         "type": "boolean",
-        "description": "Whether stream is private or public",
-        "example": true
+        "description": "Whether stream is public",
+        "example": false
       },
       "restore": {
         "type": "boolean",
@@ -238,5 +238,114 @@
       }
     },
     "required": []
+  },
+  "StreamSourceFile": {
+    "type": "object",
+    "properties": {
+      "filename": {
+        "type": "string",
+        "description": "Original file name",
+        "example": "1feb70b91439-2020-06-24T17-15-26.opus"
+      },
+      "audio_file_format": {
+        "type": "string",
+        "description": "Original file format",
+        "example": "opus"
+      },
+      "duration": {
+        "type": "integer",
+        "description": "Original file duration in ms",
+        "example": 90126
+      },
+      "sample_count": {
+        "type": "integer",
+        "description": "Original file samples count",
+        "example": 4326072
+      },
+      "sample_rate": {
+        "type": "integer",
+        "description": "Original file sample rate",
+        "example": 12000
+      },
+      "channels_count": {
+        "type": "integer",
+        "description": "Original file channels count (default 1)",
+        "default": 1
+      },
+      "bit_rate": {
+        "type": "integer",
+        "description": "Original file bit rate",
+        "example": 16384
+      },
+      "audio_codec": {
+        "type": "string",
+        "description": "Original file codec",
+        "example": "opus"
+      },
+      "sha1_checksum": {
+        "type": "string",
+        "description": "Original file sha1 checksum",
+        "example": "7ea9896798385afb5939cdf8349ce389f5e3b128"
+      },
+      "meta": {
+        "type": "object",
+        "description": "Any additional metadata",
+        "example": {
+          "date": "2020-06-24T10:11:38-07",
+          "title": "SBW1607_20200624_171138.wav",
+          "album": "SBx-ETH R4"
+        }
+      }
+    },
+    "required": [
+      "filename",
+      "audio_file_format",
+      "duration",
+      "sample_count",
+      "sample_rate",
+      "bit_rate",
+      "audio_codec",
+      "sha1_checksum"
+    ]
+  },
+  "StreamSegment": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "uuid",
+        "description": "Stream Segment id",
+        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+      },
+      "stream_source_file_id": {
+        "type": "uuid",
+        "description": "Stream source file id",
+        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:23.250Z"
+      },
+      "sample_count": {
+        "type": "integer",
+        "description": "Segment samples count",
+        "example": 4326072
+      },
+      "file_extension": {
+        "type": "string",
+        "description": "Segment file extension",
+        "example": "opus"
+      }
+    },
+    "required": [
+      "stream_source_file_id",
+      "start",
+      "end",
+      "sample_count",
+      "file_extension"
+    ]
   }
 }

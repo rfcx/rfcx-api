@@ -44,7 +44,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   params.convert('description').optional().toString()
-  params.convert('is_private').optional().toString()
+  params.convert('is_public').optional().toBoolean().default(false)
 
   return params.validate()
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
@@ -67,12 +67,12 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *     tags:
  *       - streams
  *     parameters:
- *       - name: is_private
- *         description: Return only your private streams or all shared with you streams
+ *       - name: is_public
+ *         description: Return public or private streams
  *         in: query
- *         type: string
+ *         type: boolean
  *       - name: is_deleted
- *         description: Return only your deleted streams (forces `is_private` to be true)
+ *         description: Return only your deleted streams
  *         in: query
  *         type: string
  *       - name: created_by
@@ -125,7 +125,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
 router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
-  params.convert('is_private').optional().toBoolean()
+  params.convert('is_public').optional().toBoolean()
   params.convert('is_deleted').optional().toBoolean()
   params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('start').optional().toMomentUtc()
@@ -228,7 +228,7 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const params = new Converter(req.body, convertedParams)
   params.convert('name').optional().toString()
   params.convert('description').optional().toString()
-  params.convert('is_private').optional().toBoolean()
+  params.convert('is_public').optional().toBoolean()
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   params.convert('restore').optional().toBoolean()
