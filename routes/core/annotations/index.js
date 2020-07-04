@@ -37,7 +37,7 @@ function isUuid (str) {
  *         description: List of clasification values
  *         in: query
  *         type: array|string
- *       - name: stream
+ *       - name: stream_id
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
@@ -68,7 +68,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
-  params.convert('stream').optional().toString()
+  params.convert('stream_id').optional().toString()
   params.convert('classifications').optional().toArray()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
@@ -76,8 +76,9 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   // TODO: need to limit to only those annotations on streams visisble to the user
   return params.validate()
     .then(() => {
-      const { start, end, stream, classifications, limit, offset } = convertedParams
-      return annotationsService.query(start, end, stream, classifications, limit, offset)
+      const streamId = convertedParams.stream_id
+      const { start, end, classifications, limit, offset } = convertedParams
+      return annotationsService.query(start, end, streamId, classifications, limit, offset)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
@@ -175,7 +176,7 @@ router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
     .then(stream => streamsService.checkUserAccessToStream(req, stream))
     .then(() => {
       return classificationService.getId(convertedParams.classification)
-        .catch(err => {
+        .catch(_ => {
           throw new ValidationError('Classification value not found')
         })
     })

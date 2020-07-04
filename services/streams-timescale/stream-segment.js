@@ -178,6 +178,25 @@ async function getStreamCoverage(attrs) {
   return coverage
 }
 
+function getNextSegmentTimeAfterSegment(segment, time) {
+  if (segment.end > time) {
+    return Promise.resolve(time);
+  }
+  else {
+    return models.StreamSegment
+      .findOne({
+        where: {
+          stream_id: segment.stream_id,
+          start: { [models.Sequelize.Op.gte]: time },
+        },
+        order: [ ['start', 'ASC'] ]
+      })
+      .then((dbSegment) => {
+        return dbSegment? dbSegment.start : null
+      });
+  }
+}
+
 /**
  * Formats single item or array with multiple items
  * @param {*} items single item or array with multiple items
@@ -207,5 +226,7 @@ module.exports = {
   remove,
   findOrCreateRelationships,
   getStreamCoverage,
-  format
+  format,
+  getNextSegmentTimeAfterSegment,
+  streamSegmentBaseInclude,
 }

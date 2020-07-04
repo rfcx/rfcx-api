@@ -15,17 +15,21 @@ module.exports = {
     require('./stream-segments')
   ],
   streams: [
-    require("./streams"),
-    require("./annotations/stream"),
-    require("./classifications/stream"),
-    require("./detections/stream"),
-    require("./stream-source-files/stream"),
-    require("./stream-segments/stream")
+    require('./streams'),
+    require('./annotations/stream'),
+    require('./classifications/stream'),
+    require('./detections/stream'),
+    require('./indices/stream'),
+    require('./stream-source-files/stream'),
+    require('./stream-segments/stream')
   ],
   'clustered-annotations': [
     require('./annotations/clustered')
   ],
   'clustered-detections': [
     require('./detections/clustered')
+  ],
+  indices: [
+    require('./indices')
   ]
 }

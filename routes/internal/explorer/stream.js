@@ -59,7 +59,7 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Stream not found
  */
-router.get("/streams/:id/coverage", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/streams/:id/coverage', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -72,7 +72,7 @@ router.get("/streams/:id/coverage", authenticatedWithRoles('rfcxUser'), function
       streamsService.checkUserAccessToStream(req, stream)
       convertedParams.stream_id = streamId
       const data = await segmentService.getStreamCoverage(convertedParams)
-      res.json(data);
+      res.json(data)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream coverage'))
 })

@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams/streams-service')
 const detectionsService = require('../../../services/detections')
 const Converter = require('../../../utils/converter/converter')
 const models = require('../../../modelsTimescale')
@@ -50,7 +49,7 @@ const models = require('../../../modelsTimescale')
  *         in: query
  *         required: true
  *         type: string
- *       - name: stream
+ *       - name: stream_id
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
@@ -87,7 +86,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
-  params.convert('stream').optional().toString()
+  params.convert('stream_id').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('id').isEqualToAny(models.Detection.attributes.full)
@@ -97,8 +96,9 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
 
   return params.validate()
     .then(() => {
-      const { start, end, stream, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return detectionsService.timeAggregatedQuery(start, end, stream, interval, aggregate, field, descending, limit, offset)
+      const streamId = convertedParams.stream_id
+      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
+      return detectionsService.timeAggregatedQuery(start, end, streamId, interval, aggregate, field, descending, limit, offset)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

@@ -1,9 +1,7 @@
 const router = require('express').Router()
-const models = require('../../../models')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const ValidationError = require('../../../utils/converter/validation-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams-timescale');
+const streamsService = require('../../../services/streams-timescale')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
 const classifierService = require('../../../services/classifier/classifier-service')
@@ -16,8 +14,8 @@ function checkAccess (streamId, req) {
   }
   return streamsService.getById(streamId)
     .then(stream => {
-      streamsService.checkUserAccessToStream(req, stream);
-    });
+      streamsService.checkUserAccessToStream(req, stream)
+    })
 }
 
 /**
@@ -97,7 +95,7 @@ router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function
  *
  * /streams/{id}/detections:
  *   post:
- *     summary: Create an annotation belonging to a stream
+ *     summary: Create a detection belonging to a stream
  *     tags:
  *       - detections
  *     parameters:
@@ -149,7 +147,7 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
   params.convert('classifier').toString()
   params.convert('confidence').toFloat()
 
-  let classificationMapping;
+  let classificationMapping
 
   return params.validate()
     .then(() => checkAccess(streamId, req))
@@ -160,17 +158,17 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
       return classificationService.getIds(classificationValues)
     })
     .then(data => {
-      classificationMapping = data;
+      classificationMapping = data
       const validatedDetections = params.transformedArray
       // Get all the distinct classifier uuids
-      const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))];
-      return classifierService.getIds(classifierUuids);
+      const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))]
+      return classifierService.getIds(classifierUuids)
     })
     .then(classifierMapping => {
       const validatedDetections = params.transformedArray
       const detections = validatedDetections.map(detection => {
         const classificationId = classificationMapping[detection.classification]
-        const classifierId = classifierMapping[detection.classifier];
+        const classifierId = classifierMapping[detection.classifier]
         return {
           streamId,
           classificationId,

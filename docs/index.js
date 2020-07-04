@@ -70,13 +70,12 @@ const swaggerUiExpressOptions = {
   swaggerOptions: swaggerUiOptions
 }
 
-// const middleware = function (req, res, next) {
-//   swaggerSpec.host = req.get('host')
-//   req.swaggerDoc = swaggerSpec
-//   next()
-// }
-
 router.get('/auth-callback', (req, res) => res.sendFile('/docs/oauth-redirect.html', { root: '.' }))
-router.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiExpressOptions))
+router.use('/', swaggerUi.serve, (req, res) => {
+  const host = req.get('host')
+  const oauth2RedirectUrl = `${host.endsWith('.rfcx.org') ? 'https' : 'http'}://${host}/docs/auth-callback`
+  const options = { ...swaggerUiExpressOptions, swaggerOptions: { ...swaggerUiOptions, oauth2RedirectUrl } }
+  swaggerUi.setup(swaggerSpec, options)(req, res)
+})
 
 module.exports = router
