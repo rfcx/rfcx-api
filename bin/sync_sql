@@ -54,6 +54,7 @@ function initializeSequelize () {
         return new Promise((resolve, reject) => {
           const command = `npx sequelize db:migrate --models-path ./${modelsPath} --migrations-path ./${migrationsPath}`
           exec(command, function (err, sOut, sErr) {
+            console.log(sOut)
             if (err) { return reject(err); }
             if (sErr) { return reject(sErr); }
             return resolve();
