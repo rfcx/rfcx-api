@@ -1,13 +1,8 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams-timescale')
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamPermissionService = require('../../../services/streams-timescale/permission')
 const userService = require('../../../services/users/users-service-timescaledb')
-const Converter = require("../../../utils/converter/converter")
-const ValidationError = require("../../../utils/converter/validation-error")
-const { sequelize, utils } = require("../../../modelsTimescale")
-const { isOwner } = require('../../../middleware/authorization/streams')
+const Converter = require('../../../utils/converter/converter')
 const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
@@ -35,7 +30,6 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  */
 
 router.put('/:streamId/users', hasPermission('W'), function (req, res) {
-
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -71,7 +65,6 @@ router.put('/:streamId/users', hasPermission('W'), function (req, res) {
  */
 
 router.delete('/:streamId/users', hasPermission('W'), function (req, res) {
-
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

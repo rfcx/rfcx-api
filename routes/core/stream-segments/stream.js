@@ -1,12 +1,10 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams-timescale')
 const streamSourceFileService = require('../../../services/streams-timescale/stream-source-file')
 const streamSegmentService = require('../../../services/streams-timescale/stream-segment')
-const Converter = require("../../../utils/converter/converter")
-const ValidationError = require("../../../utils/converter/validation-error")
-const { sequelize, utils } = require("../../../modelsTimescale")
+const Converter = require('../../../utils/converter/converter')
 const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
@@ -39,7 +37,6 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  */
 
 router.post('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
-
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -55,9 +52,9 @@ router.post('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser', 'sy
     .then(async () => {
       const stream = await streamsService.getById(streamId)
       await streamSourceFileService.getById(convertedParams.stream_source_file_id) // we call this function to ensure that source file with given id exists
-      convertedParams.stream_id = streamId;
-      await streamSegmentService.findOrCreateRelationships(convertedParams);
-      const streamSegment = await streamSegmentService.create(convertedParams, { joinRelations: true });
+      convertedParams.stream_id = streamId
+      await streamSegmentService.findOrCreateRelationships(convertedParams)
+      const streamSegment = await streamSegmentService.create(convertedParams, { joinRelations: true })
       await streamsService.refreshStreamStartEnd(stream) // refresh start and end columns of releated stream
       await streamSegment.reload() // reload segment model to apply stream model updates
       return res.status(201).json(streamSegmentService.format(streamSegment))
