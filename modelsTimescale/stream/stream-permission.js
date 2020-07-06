@@ -11,10 +11,15 @@ module.exports = function (sequelize, DataTypes) {
     organization_id: {
       type: DataTypes.INTEGER,
       allowNull: true
-    }
+    },
+    type: {
+      type: DataTypes.STRING(1),
+      allowNull: false
+    },
   }, {
     timestamps: true,
   })
+  StreamPermission.removeAttribute('id')
   StreamPermission.associate = function (models) {
     StreamPermission.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     StreamPermission.belongsTo(models.User, { as: 'user', foreignKey: 'user_id' })

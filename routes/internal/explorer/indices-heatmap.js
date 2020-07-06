@@ -62,7 +62,7 @@ const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/streams/:streamId/indices/:index/heatmap', hasPermission('read'), (req, res) => {
+router.get('/streams/:streamId/indices/:index/heatmap', hasPermission('R'), (req, res) => {
   const streamId = req.params.streamId
   const index = req.params.index
 

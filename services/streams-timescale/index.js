@@ -181,25 +181,6 @@ function restore(stream) {
     })
 }
 
-/**
- * Returns true if the user has permission on the stream
- * @param {number} userId
- * @param {string} streamId
- * @param {string} permission
- */
-function hasPermission(userId, streamOrId, permission) {
-  const promise = typeof streamOrId === 'string' ? getById(streamOrId) : Promise.resolve(streamOrId)
-  return promise.then(stream => {
-    if (stream.created_by_id === userId) {
-      return true
-    }
-    if (stream.is_public) {
-      return permission === 'read'
-    }
-    return false
-  })
-}
-
 function formatStream(stream) {
   const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream;
   return {
@@ -254,7 +235,6 @@ module.exports = {
   update,
   softDelete,
   restore,
-  hasPermission,
   formatStream,
   formatStreams,
   refreshStreamMaxSampleRate,

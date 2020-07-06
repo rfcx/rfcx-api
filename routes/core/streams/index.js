@@ -3,6 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams-timescale')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
@@ -176,7 +177,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
 router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      const allowed = await streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'read')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
       if (allowed) {
         return streamsService.formatStream(stream)
       }
@@ -237,7 +238,7 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
-      const allowed = await streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to write to this stream.')
       }
@@ -276,7 +277,7 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
 router.delete('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      const allowed = await streamsService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'write')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to delete this stream.')
       }

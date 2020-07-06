@@ -21,7 +21,8 @@ module.exports = {
     require('./detections/stream'),
     require('./indices/stream'),
     require('./stream-source-files/stream'),
-    require('./stream-segments/stream')
+    require('./stream-segments/stream'),
+    require('./stream-permissions/stream')
   ],
   'clustered-annotations': [
     require('./annotations/clustered')

@@ -79,7 +79,7 @@ const Converter = require('../../../utils/converter/converter')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/:streamId/indices/:index/values', hasPermission('read'), (req, res) => {
+router.get('/:streamId/indices/:index/values', hasPermission('R'), (req, res) => {
   const streamId = req.params.streamId
   const index = req.params.index
 
