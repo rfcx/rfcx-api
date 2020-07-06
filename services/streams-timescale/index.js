@@ -246,6 +246,23 @@ async function refreshStreamStartEnd(stream) {
   return update(stream, { start, end })
 }
 
+function ensureStreamExistsForGuardian(dbGuardian) {
+  const where = {
+    id: dbGuardian.guid,
+  }
+  const defaults = {
+    name: dbGuardian.shortname,
+    is_public: !dbGuardian.is_private,
+    ...dbGuardian.latitude && { latitude: dbGuardian.latitude },
+    ...dbGuardian.longitude && { longitude: dbGuardian.longitude },
+    created_by_id: dbGuardian.creator? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
+  }
+  return models.Stream.findOrCreate({ where, defaults })
+    .spread((dbStream) => {
+      return dbStream;
+    })
+}
+
 
 module.exports = {
   getById,
@@ -259,4 +276,5 @@ module.exports = {
   formatStreams,
   refreshStreamMaxSampleRate,
   refreshStreamStartEnd,
+  ensureStreamExistsForGuardian,
 }
