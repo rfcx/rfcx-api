@@ -8,6 +8,7 @@ const Converter = require("../../../utils/converter/converter")
 const ValidationError = require("../../../utils/converter/validation-error")
 const { sequelize, utils } = require("../../../modelsTimescale")
 const { isOwner } = require('../../../middleware/authorization/streams')
+const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
  * @swagger
@@ -33,7 +34,7 @@ const { isOwner } = require('../../../middleware/authorization/streams')
  *         description: Created
  */
 
-router.put('/:streamId/users', isOwner(), function (req, res) {
+router.put('/:streamId/users', hasPermission('W'), function (req, res) {
 
   const streamId = req.params.streamId
   const convertedParams = {}
@@ -69,7 +70,7 @@ router.put('/:streamId/users', isOwner(), function (req, res) {
  *         description: Created
  */
 
-router.delete('/:streamId/users', isOwner(), function (req, res) {
+router.delete('/:streamId/users', hasPermission('W'), function (req, res) {
 
   const streamId = req.params.streamId
   const convertedParams = {}

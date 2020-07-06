@@ -58,7 +58,7 @@ function create(data, opts = {}) {
  * @param {*} attrs stream attributes
  * @param {*} opts additional function params
  */
-function query(attrs, opts = {}) {
+async function query(attrs, opts = {}) {
 
   let where = {};
   if (attrs.start !== undefined) {
@@ -85,8 +85,11 @@ function query(attrs, opts = {}) {
     }
   }
   else if (attrs.created_by === 'collaborators') {
-    // TODO: change this logic when streams sharing is implemented
-    return Promise.resolve({ count: 0, streams: [] });
+    const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
+    const streamIds = [...new Set(permissions.map(d => d.stream_id))]
+    where.id = {
+      [models.Sequelize.Op.in]: streamIds
+    }
   }
   else {
     where[models.Sequelize.Op.or] = [

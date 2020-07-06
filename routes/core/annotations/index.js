@@ -2,8 +2,10 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const ValidationError = require('../../../utils/converter/validation-error')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
@@ -75,8 +77,14 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
 
   // TODO: need to limit to only those annotations on streams visisble to the user
   return params.validate()
-    .then(() => {
+    .then(async () => {
       const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to access this stream.')
+        }
+      }
       const { start, end, classifications, limit, offset } = convertedParams
       return annotationsService.query(start, end, streamId, classifications, limit, offset)
     })
@@ -111,8 +119,14 @@ router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
     return res.sendStatus(404)
   }
 
-  // TODO check stream permission
   return annotationsService.get(annotationId)
+    .then(async (annotation) => {
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'R')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
+      return annotation
+    })
     .then(annotation => res.json(annotation))
     .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
 })
@@ -173,7 +187,13 @@ router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
       }
       return streamsService.getStreamByGuid(annotation.stream_id)
     })
-    .then(stream => streamsService.checkUserAccessToStream(req, stream))
+    .then(async (stream) => {
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission for this operation.')
+      }
+      return stream
+    })
     .then(() => {
       return classificationService.getId(convertedParams.classification)
         .catch(_ => {

@@ -178,10 +178,10 @@ router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
       const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
-      if (allowed) {
-        return streamsService.formatStream(stream)
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
       }
-      throw new ForbiddenError('You do not have permission to access this stream.')
+      return streamsService.formatStream(stream)
     })
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed getting stream'))
@@ -277,8 +277,7 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
 router.delete('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
-      if (!allowed) {
+      if (stream.created_by_id !== req.rfcx.auth_token_info.owner_id) {
         throw new ForbiddenError('You do not have permission to delete this stream.')
       }
       return streamsService.softDelete(stream)

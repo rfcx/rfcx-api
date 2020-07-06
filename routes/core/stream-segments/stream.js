@@ -7,6 +7,7 @@ const streamSegmentService = require('../../../services/streams-timescale/stream
 const Converter = require("../../../utils/converter/converter")
 const ValidationError = require("../../../utils/converter/validation-error")
 const { sequelize, utils } = require("../../../modelsTimescale")
+const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
  * @swagger
@@ -117,7 +118,7 @@ router.post('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser', 'sy
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:streamId/stream-segments', hasPermission('R'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -128,8 +129,6 @@ router.get('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser'), fun
 
   return params.validate()
     .then(async () => {
-      const stream = await streamsService.getById(streamId)
-      streamsService.checkUserAccessToStream(req, stream)
       convertedParams.stream_id = streamId
       return streamSegmentService.query(convertedParams, { joinRelations: true })
     })

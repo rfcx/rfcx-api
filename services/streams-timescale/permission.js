@@ -8,19 +8,27 @@ const streamsService = require('./index')
  * Returns true if the user has permission on the stream
  * @param {number} userId
  * @param {string} streamOrId stream id or stream model item
- * @param {string} permission
+ * @param {string} type
  */
-function hasPermission(userId, streamOrId, permission) {
-  const promise = typeof streamOrId === 'string' ? streamsService.getById(streamOrId) : Promise.resolve(streamOrId)
-  return promise.then(stream => {
-    if (stream.created_by_id === userId) {
-      return true
-    }
-    if (stream.is_public) {
-      return permission === 'R'
-    }
+async function hasPermission(userId, streamOrId, type) {
+  const stream = await (typeof streamOrId === 'string' ? streamsService.getById(streamOrId) : Promise.resolve(streamOrId))
+  if (!stream) {
     return false
-  })
+  }
+  if (stream.created_by_id === userId) {
+    return true
+  }
+  if (stream.is_public) {
+    return type === 'R'
+  }
+  const permission = await get(stream.id, userId)
+  if (permission) {
+    if (type === 'W') {
+      return permission.type === 'W'
+    }
+    return true
+  }
+  return false
 }
 
 /**
@@ -36,6 +44,16 @@ function isOwner(userId, streamOrId) {
       return true
     }
     return false
+  })
+}
+
+function get(stream_id, user_id, type) {
+  return models.StreamPermission.findOne({
+    where: {
+      stream_id,
+      user_id,
+      ...type && { type }
+    }
   })
 }
 
