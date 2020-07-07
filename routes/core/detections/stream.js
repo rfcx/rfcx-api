@@ -46,6 +46,10 @@ function checkAccess (streamId, req) {
  *         description: List of clasification identifiers
  *         in: query
  *         type: array
+ *       - name: min_confidence
+ *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
+ *         in: query
+ *         type: float
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -77,16 +81,17 @@ router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classifications').optional().toArray()
+  params.convert('min_confidence').optional().toFloat()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
   return params.validate()
-    // .then(() => checkAccess(streamId, req))
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
-      return detectionsService.query(start, end, streamId, classifications, limit, offset)
+      const minConfidence = convertedParams.min_confidence
+      return detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset)
     })
-    .then((detections) => res.json(detections))
+    .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })
 
