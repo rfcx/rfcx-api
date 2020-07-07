@@ -31,22 +31,6 @@ async function hasPermission(userId, streamOrId, type) {
   return false
 }
 
-/**
- * Returns true if the user is owner of the stream
- * @param {number} userId
- * @param {string} streamOrId stream id or stream model item
- * @param {string} permission
- */
-function isOwner(userId, streamOrId) {
-  const promise = typeof streamOrId === 'string' ? streamsService.getById(streamOrId) : Promise.resolve(streamOrId)
-  return promise.then(stream => {
-    if (stream.created_by_id === userId) {
-      return true
-    }
-    return false
-  })
-}
-
 function get(stream_id, user_id, type) {
   return models.StreamPermission.findOne({
     where: {
@@ -82,7 +66,6 @@ function remove(stream_id, user_id) {
 
 module.exports = {
   hasPermission,
-  isOwner,
   add,
   remove,
 }

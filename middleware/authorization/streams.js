@@ -24,24 +24,6 @@ function hasPermission (permission) {
     })
 }
 
-/**
- * A middleware that ensures the user is owner of the stream
- */
-function isOwner () {
-  return authenticatedWithRoles('rfcxUser').concat((req, res, next) => {
-    const streamId = req.params.streamId || req.params.id
-    const userId = req.rfcx.auth_token_info.owner_id
-    return streamPermissionService.isOwner(userId, streamId)
-      .then(allowed => {
-        if (!allowed) {
-          return httpError(req, res, 403, null, 'You are not an owner of this stream.')
-        }
-        next()
-      })
-    })
-}
-
 module.exports = {
-  hasPermission,
-  isOwner
+  hasPermission
 }
