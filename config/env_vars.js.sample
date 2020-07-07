@@ -76,8 +76,6 @@ exports.env = {
   AUTH0_CLOUD_AUDIENCE: "https://rfcx.org",
   AUTH0_DEFAULT_DB_CONNECTION: "",
 
-  WEBSOCKET_URL: "",
-
   MQTT_BROKER_HOST: "mqtt.rfcx.org",
 
   KAFKA_HOST: "",
