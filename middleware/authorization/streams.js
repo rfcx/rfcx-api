@@ -1,6 +1,7 @@
 const { authenticatedWithRoles } = require('./authorization')
 const streamPermissionService = require('../../services/streams-timescale/permission')
 const httpError = require('../../utils/http-errors')
+const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 
 /**
  * @typedef {string} Permission Supported values "R" (read) or "W" (write)
@@ -21,6 +22,7 @@ function hasPermission (permission) {
         }
         next()
       })
+      .catch(httpErrorHandler(req, res, 'Unable to process request.'))
     })
 }
 
