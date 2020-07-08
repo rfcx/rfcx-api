@@ -12,6 +12,36 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
  * @swagger
  *
  * /streams/{id}/users:
+ *   get:
+ *     summary: Get list of users which have been granted permission to stream
+ *     tags:
+ *       - stream-permissions
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: List of permissions objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Permission'
+ */
+
+router.get('/:streamId/users', hasPermission('W'), async function (req, res) {
+  try {
+    const streamId = req.params.streamId
+    const permissions = await streamPermissionService.query({ stream_id: streamId }, { joinRelations: true })
+    return res.json(streamPermissionService.formatMultiple(permissions))
+  } catch (e) {
+    httpErrorHandler(req, res, 'Failed getting stream permission.')(e)
+  }
+})
+
+/**
+ * @swagger
+ *
+ * /streams/{id}/users:
  *   put:
  *     summary: Add or update stream permission
  *     tags:
@@ -71,8 +101,8 @@ router.put('/:streamId/users', authenticatedWithRoles('rfcxUser'), function (req
  *         type: string
  *         example: john@doe.com
  *     responses:
- *       201:
- *         description: Created
+ *       200:
+ *         description: OK
  */
 
 router.delete('/:streamId/users', hasPermission('W'), function (req, res) {
@@ -87,7 +117,7 @@ router.delete('/:streamId/users', hasPermission('W'), function (req, res) {
       await streamPermissionService.remove(streamId, user.id)
       return res.sendStatus(200)
     })
-    .catch(httpErrorHandler(req, res, 'Failed removing stream permission'))
+    .catch(httpErrorHandler(req, res, 'Failed removing stream permission.'))
 })
 
 module.exports = router

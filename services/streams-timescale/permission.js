@@ -4,6 +4,24 @@ const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const streamsService = require('./index')
 
+const permissionBaseInclude = [
+  {
+    model: models.Stream,
+    as: 'stream',
+    attributes: models.Stream.attributes.lite,
+  },
+  {
+    model: models.User,
+    as: 'user',
+    attributes: models.User.attributes.lite,
+  },
+  {
+    model: models.Organization,
+    as: 'organization',
+    attributes: models.Organization.attributes.lite,
+  },
+];
+
 /**
  * Returns true if the user has permission on the stream
  * @param {number} userId
@@ -21,7 +39,7 @@ async function hasPermission(userId, streamOrId, type) {
   if (stream.is_public) {
     return type === 'R'
   }
-  const permission = await get(stream.id, userId)
+  const permission = (await query({ stream_id: stream.id, user_id: userId }))[0]
   if (permission) {
     if (type === 'W') {
       return permission.type === 'W'
@@ -31,13 +49,20 @@ async function hasPermission(userId, streamOrId, type) {
   return false
 }
 
-function get(stream_id, user_id, type) {
-  return models.StreamPermission.findOne({
+/**
+ * Returns list of permissions
+ * @param {*} attrs permission attributes
+ * @param {*} opts additional function params
+ */
+async function query(attrs, opts = {}) {
+  return models.StreamPermission.findAll({
     where: {
-      stream_id,
-      user_id,
-      ...type && { type }
-    }
+      stream_id: attrs.stream_id,
+      ...attrs.user_id && { user_id: attrs.user_id },
+      ...attrs.type && { type: attrs.type }
+    },
+    attributes: models.StreamPermission.attributes.full,
+    include: opts.joinRelations? permissionBaseInclude : [],
   })
 }
 
@@ -64,8 +89,27 @@ function remove(stream_id, user_id) {
   return models.StreamPermission.destroy({ where: { stream_id, user_id } })
 }
 
+function format(permission) {
+  const { stream, user, organization, type, created_at, updated_at } = permission
+  return {
+    stream: permission.stream || null,
+    user: permission.user || null,
+    organization: permission.organization || null,
+    type,
+    created_at,
+    updated_at
+  };
+}
+
+function formatMultiple(permissions) {
+  return permissions.map(format)
+}
+
 module.exports = {
   hasPermission,
+  query,
   add,
   remove,
+  format,
+  formatMultiple
 }

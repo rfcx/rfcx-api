@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
     StreamPermission.belongsTo(models.Organization, { as: 'organization', foreignKey: 'organization_id' })
   }
   StreamPermission.attributes = {
-    full: ['id', 'stream_id', 'user_id', 'organization_id', 'created_at', 'updated_at'],
+    full: ['stream_id', 'user_id', 'organization_id', 'type', 'created_at', 'updated_at'],
     lite: ['stream_id', 'user_id', 'organization_id'],
   }
   return StreamPermission
