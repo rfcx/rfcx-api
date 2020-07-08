@@ -1,5 +1,28 @@
 const models = require('../../modelsTimescale');
 const usersService = require('./users-service');
+const EmptyResultError = require('../../utils/converter/empty-result-error')
+
+function getByParams(where, opts = {}) {
+  return models.User.findOne({ where })
+    .then(item => {
+      if (!item) {
+        throw new EmptyResultError('User with given parameters not found.')
+      }
+      return item
+    });
+}
+
+function getByGuid(guid, opts = {}) {
+  return getByParams({ guid }, opts);
+}
+
+function getByEmail(email, opts = {}) {
+  return getByParams({ email }, opts);
+}
+
+function getByGuidOrEmail(guid, email) {
+  return getByParams({ [models.Sequelize.Op.or]: { guid, email } });
+}
 
 async function ensureUserSynced(req) {
 
@@ -30,5 +53,9 @@ async function ensureUserSynced(req) {
 }
 
 module.exports = {
+  getByParams,
+  getByGuid,
+  getByEmail,
+  getByGuidOrEmail,
   ensureUserSynced,
 };

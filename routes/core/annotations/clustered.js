@@ -3,7 +3,9 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const annotationsService = require('../../../services/annotations')
 const Converter = require('../../../utils/converter/converter')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const models = require('../../../modelsTimescale')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
 
 /**
  * @swagger
@@ -104,8 +106,14 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
       // TODO: handler username or guid case
       return convertedParams.created_by === 'me' ? req.rfcx.auth_token_info.owner_id : undefined
     })
-    .then(createdBy => {
+    .then(async (createdBy) => {
       const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to access this stream.')
+        }
+      }
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
       return annotationsService.timeAggregatedQuery(start, end, streamId, createdBy, interval, aggregate, field, descending, limit, offset)
     })

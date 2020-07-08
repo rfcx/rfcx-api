@@ -58,7 +58,7 @@ function create(data, opts = {}) {
  * @param {*} attrs stream attributes
  * @param {*} opts additional function params
  */
-function query(attrs, opts = {}) {
+async function query(attrs, opts = {}) {
 
   let where = {};
   if (attrs.start !== undefined) {
@@ -85,8 +85,11 @@ function query(attrs, opts = {}) {
     }
   }
   else if (attrs.created_by === 'collaborators') {
-    // TODO: change this logic when streams sharing is implemented
-    return Promise.resolve({ count: 0, streams: [] });
+    const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
+    const streamIds = [...new Set(permissions.map(d => d.stream_id))]
+    where.id = {
+      [models.Sequelize.Op.in]: streamIds
+    }
   }
   else {
     where[models.Sequelize.Op.or] = [
@@ -181,25 +184,6 @@ function restore(stream) {
     })
 }
 
-/**
- * Returns true if the user has permission on the stream
- * @param {number} userId
- * @param {string} streamId
- * @param {string} permission
- */
-function hasPermission(userId, streamOrId, permission) {
-  const promise = typeof streamOrId === 'string' ? getById(streamOrId) : Promise.resolve(streamOrId)
-  return promise.then(stream => {
-    if (stream.created_by_id === userId) {
-      return true
-    }
-    if (stream.is_public) {
-      return permission === 'read'
-    }
-    return false
-  })
-}
-
 function formatStream(stream) {
   const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream;
   return {
@@ -271,7 +255,6 @@ module.exports = {
   update,
   softDelete,
   restore,
-  hasPermission,
   formatStream,
   formatStreams,
   refreshStreamMaxSampleRate,

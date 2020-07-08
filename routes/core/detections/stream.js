@@ -7,16 +7,9 @@ const classificationService = require('../../../services/classification/classifi
 const classifierService = require('../../../services/classifier/classifier-service')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
+const { hasPermission } = require('../../../middleware/authorization/streams')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
 
-function checkAccess (streamId, req) {
-  if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
-    return true
-  }
-  return streamsService.getById(streamId)
-    .then(stream => {
-      streamsService.checkUserAccessToStream(req, stream)
-    })
-}
 
 /**
  * @swagger
@@ -70,7 +63,7 @@ function checkAccess (streamId, req) {
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -81,7 +74,6 @@ router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function
   params.convert('offset').optional().toInt()
 
   return params.validate()
-    // .then(() => checkAccess(streamId, req))
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
       return detectionsService.query(start, end, streamId, classifications, limit, offset)
@@ -150,7 +142,12 @@ router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemU
   let classificationMapping
 
   return params.validate()
-    .then(() => checkAccess(streamId, req))
+    .then(() => {
+      if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
+        return true
+      }
+      return streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'W')
+    })
     .then(() => {
       const validatedDetections = params.transformedArray
       // Get all the distinct classification values

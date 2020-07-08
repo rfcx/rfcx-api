@@ -266,6 +266,10 @@
         "type": "string",
         "example": "Doe"
       },
+      "email": {
+        "type": "string",
+        "example": "john@doe.com"
+      },
       "picture": {
         "type": "string",
         "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
@@ -397,6 +401,39 @@
       "file_extension": {
         "type": "string",
         "example": "opus"
+      }
+    }
+  },
+  "OrganizationLite": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "RFCx"
+      }
+    }
+  },
+  "Permission": {
+    "properties": {
+      "stream": {
+        "$ref": "#/components/schemas/StreamLite"
+      },
+      "created_by": {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      "organization": {
+        "$ref": "#/components/schemas/OrganizationLite"
+      },
+      "type": {
+        "type": "string",
+        "example": "R"
+      },
+      "created_at": {
+        "type": "date",
+        "example": "2020-05-13T07:30:22.500Z"
+      },
+      "updated_at": {
+        "type": "date",
+        "example": "2020-05-13T07:30:22.500Z"
       }
     }
   }
