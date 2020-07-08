@@ -1,9 +1,12 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+const streamsService = require('../../../services/streams-timescale')
 const streamPermissionService = require('../../../services/streams-timescale/permission')
 const userService = require('../../../services/users/users-service-timescaledb')
 const Converter = require('../../../utils/converter/converter')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { hasPermission } = require('../../../middleware/authorization/streams')
+const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -29,7 +32,7 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *         description: Created
  */
 
-router.put('/:streamId/users', hasPermission('W'), function (req, res) {
+router.put('/:streamId/users', authenticatedWithRoles('rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -38,7 +41,15 @@ router.put('/:streamId/users', hasPermission('W'), function (req, res) {
 
   return params.validate()
     .then(async () => {
+      const stream = await streamsService.getById(streamId, { joinRelations: true })
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
       const user = await userService.getByEmail(convertedParams.email)
+      if (stream.created_by_id === user.id) {
+        throw new ForbiddenError('You can not assign permission to stream owner.')
+      }
       await streamPermissionService.add(streamId, user.id, convertedParams.type)
       return res.sendStatus(201)
     })
