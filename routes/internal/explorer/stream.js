@@ -4,6 +4,7 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
 const streamsService = require('../../../services/streams-timescale')
 const segmentService = require('../../../services/streams-timescale/stream-segment')
 const Converter = require('../../../utils/converter/converter')
+const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
  * @swagger
@@ -59,7 +60,7 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/:id/coverage', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/streams/:id/coverage', hasPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -68,8 +69,6 @@ router.get('/streams/:id/coverage', authenticatedWithRoles('rfcxUser'), function
 
   return params.validate()
     .then(async () => {
-      const stream = await streamsService.getById(streamId)
-      streamsService.checkUserAccessToStream(req, stream)
       convertedParams.stream_id = streamId
       const data = await segmentService.getStreamCoverage(convertedParams)
       res.json(data)
