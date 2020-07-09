@@ -74,8 +74,17 @@ function get (detectionId) {
         model: models.Classification,
         attributes: models.Classification.attributes.lite,
         required: true
+      },
+      {
+        as: 'stream',
+        model: models.Stream,
+        attributes: models.Stream.attributes.lite
+      },
+      {
+        as: 'classifier',
+        model: models.Classifier,
+        attributes: models.Classifier.attributes.lite
       }
-      // TODO: include classifier and stream
     ],
     attributes: models.Detection.attributes.full
   })
