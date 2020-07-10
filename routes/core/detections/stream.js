@@ -75,8 +75,7 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function (req, res) {
-// router.get('/:streamId/detections', hasPermission('R'), function (req, res) { TODO: get back this code when we migrate to new streams db
+router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

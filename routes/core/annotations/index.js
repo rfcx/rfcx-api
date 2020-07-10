@@ -120,10 +120,10 @@ router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
 
   return annotationsService.get(annotationId)
     .then(async (annotation) => {
-      // const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'R')
-      // if (!allowed) {
-      //   throw new ForbiddenError('You do not have permission to access this stream.')
-      // }
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'R')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
       return annotation
     })
     .then(annotation => res.json(annotation))
@@ -184,10 +184,10 @@ router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      // const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
-      // if (!allowed) {
-      //   throw new ForbiddenError('You do not have permission for this operation.')
-      // }
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission for this operation.')
+      }
       return classificationService.getId(convertedParams.classification)
         .catch(_ => {
           throw new ValidationError('Classification value not found')
@@ -235,10 +235,10 @@ router.delete('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      // const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
-      // if (!allowed) {
-      //   throw new ForbiddenError('You do not have permission for this operation.')
-      // }
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission for this operation.')
+      }
       return annotationsService.remove(annotationId)
     })
     .then(() => res.sendStatus(204))

@@ -60,8 +60,7 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/annotations', authenticatedWithRoles('rfcxUser'), function (req, res) {
-// router.get('/:streamId/annotations', hasPermission('R'), function (req, res) { TODO: get back this code when we migrate to new streams db
+router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -116,8 +115,7 @@ router.get('/:streamId/annotations', authenticatedWithRoles('rfcxUser'), functio
  *       404:
  *         description: Stream not found
  */
-router.post('/:streamId/annotations', authenticatedWithRoles('rfcxUser'), function (req, res) {
-// router.post('/:streamId/annotations', hasPermission('W'), function (req, res) { TODO: get back this code when we migrate to new streams db
+router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
   const streamId = req.params.streamId
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
