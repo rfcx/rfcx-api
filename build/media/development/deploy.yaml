@@ -83,8 +83,6 @@ spec:
               value: ""
             - name: CLOUDWATCH_LOGS_GROUP_NAME
               value: ""
-            - name: WEBSOCKET_URL
-              value: ""
             - name: MQTT_BROKER_HOST
               value: ""
             - name: KAFKA_HOST

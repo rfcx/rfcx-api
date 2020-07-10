@@ -43,6 +43,10 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         description: List of clasification identifiers
  *         in: query
  *         type: array
+ *       - name: min_confidence
+ *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
+ *         in: query
+ *         type: float
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -71,13 +75,15 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
+router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function (req, res) {
+// router.get('/:streamId/detections', hasPermission('R'), function (req, res) { TODO: get back this code when we migrate to new streams db
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classifications').optional().toArray()
+  params.convert('min_confidence').optional().toFloat()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
   params.convert('reviews').optional().toBoolean()
@@ -85,7 +91,8 @@ router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
   return params.validate()
     .then(async () => {
       const { start, end, classifications, limit, offset, reviews } = convertedParams
-      const detections = await detectionsService.query(start, end, streamId, classifications, limit, offset, reviews)
+      const minConfidence = convertedParams.min_confidence
+      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset)
       return res.json(detections)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

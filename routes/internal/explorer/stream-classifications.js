@@ -63,21 +63,18 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Stream not found
  */
 router.get('/streams/:id/classifications', authenticatedWithRoles('rfcxUser'), function (req, res) {
+// router.get('/streams/:id/classifications', hasPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
   return params.validate()
-    .then(() => {
-      return streamsService.getStreamByGuid(streamId)
-    })
-    .then(stream => {
-      streamsService.checkUserAccessToStream(req, stream)
+    .then(async () => {
       const { limit, offset } = convertedParams
-      return classificationsService.queryByStreamIncludeChildren(streamId, 'characteristic', limit, offset)
+      const classifications = await classificationsService.queryByStreamIncludeChildren(streamId, 'characteristic', limit, offset)
+      return res.json(classifications)
     })
-    .then(classifications => res.json(classifications))
     .catch(httpErrorHandler(req, res, 'Failed getting stream classifications'))
 })
 

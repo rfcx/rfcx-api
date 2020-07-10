@@ -33,9 +33,12 @@ exports.env = {
   DB_PASSWORD: "test",
   DB_PORT: 3306,
 
-  NEO4J_URL: "",
-  NEO4J_USER: "",
-  NEO4J_PASSWORD: "",
+  /// Neo4j database is required for endpoints related to legacy AIs, events, tags, sensations.
+  /// When `NEO4J_ENABLED` is set to true then URL, user and password are required.
+  // NEO4J_ENABLED: "true",
+  // NEO4J_URL: "",
+  // NEO4J_USER: "",
+  // NEO4J_PASSWORD: "",
 
   POSTGRES_PORT: "5432",
   POSTGRES_HOSTNAME: "127.0.0.1",
@@ -72,8 +75,6 @@ exports.env = {
   AUTH0_AUTHZ_AUDIENCE: "urn:auth0-authz-api",
   AUTH0_CLOUD_AUDIENCE: "https://rfcx.org",
   AUTH0_DEFAULT_DB_CONNECTION: "",
-
-  WEBSOCKET_URL: "",
 
   MQTT_BROKER_HOST: "mqtt.rfcx.org",
 

@@ -6,6 +6,8 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
 const streamsService = require('../../../services/streams-timescale')
 const streamSegmentService = require('../../../services/streams-timescale/stream-segment')
 const streamsAssetsService = require('../../../services/streams-timescale/assets')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
   Spectrogram format (fspec):
@@ -69,7 +71,10 @@ router.get('/streams/:attrs', authenticatedWithRoles('rfcxUser'), async function
     await streamsAssetsService.checkAttrsValidity(req, attrs)
     const stream = await streamsService.getById(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
-    await streamsService.checkUserAccessToStream(req, stream)
+    const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+    if (!allowed) {
+      throw new ForbiddenError('You do not have permission to access this stream.')
+    }
     const start = streamsAssetsService.gluedDateToISO(attrs.time.starts)
     const end = streamsAssetsService.gluedDateToISO(attrs.time.ends)
     const queryData = await streamSegmentService.query({ stream_id, start, end }, { joinRelations: true })
