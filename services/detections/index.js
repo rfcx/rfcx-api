@@ -35,8 +35,23 @@ function defaultQueryOptions (start, end, streamId, classifications, descending,
     }
 }
 
-function query (start, end, streamId, classifications, limit, offset) {
-  return models.Detection.findAll(defaultQueryOptions(start, end, streamId, classifications, false, limit, offset))
+function query (start, end, streamId, classifications, limit, offset, reviews) {
+  let opts = defaultQueryOptions(start, end, streamId, classifications, false, limit, offset)
+  if (reviews) {
+    opts.include.push({
+      as: 'reviews',
+      model: models.DetectionReview,
+      include: [
+        {
+          as: 'user',
+          model: models.User,
+          attributes: models.User.attributes.lite
+        }
+      ],
+      attributes: ['positive', 'created_at']
+    })
+  }
+  return models.Detection.findAll(opts)
 }
 
 function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
@@ -89,6 +104,5 @@ function get (detectionId) {
     attributes: models.Detection.attributes.full
   })
 }
-
 
 module.exports = { query, timeAggregatedQuery, get, create }
