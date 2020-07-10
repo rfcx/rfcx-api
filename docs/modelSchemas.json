@@ -65,15 +65,6 @@
       },
       "image": {
         "type": "string"
-      },
-      "type": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "string",
-            "example": "species"
-          }
-        }
       }
     },
     "required": [
@@ -88,6 +79,15 @@
       },
       {
         "properties": {
+          "type": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "example": "species"
+              }
+            }
+          },
           "description": {
             "type": "string",
             "example": "Found in temperate and tropical seas all around the world, they begin their lives spotless and steadily gain spots as they get older."
@@ -187,6 +187,65 @@
   },
   "DetectionCluster": {
     "$ref": "#/components/schemas/Cluster"
+  },
+  "Review": {
+    "properties": {
+      "positive": {
+        "type": "boolean",
+        "example": true
+      },
+      "created_at": {
+        "type": "date",
+        "example": "2020-05-13T09:25:21.500Z"
+      },
+      "user": {
+        "$ref": "#/components/schemas/UserLite"
+      }
+    }
+  },
+  "Detection": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "cf8a7ac9-0dd2-40b6-b03f-a067d6c43325"
+      },
+      "stream_id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "confidence": {
+        "type": "float",
+        "example": 0.55471558926584
+      },
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
+      }
+    }
+  },
+  "DetectionWithReviews": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/Detection"
+      },
+      {
+        "properties": {
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            }
+          }
+        }
+      }
+    ]
   },
   "StreamLite": {
     "properties": {

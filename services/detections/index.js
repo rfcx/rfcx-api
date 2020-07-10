@@ -18,14 +18,14 @@ function defaultQueryOptions (start, end, streamId, classifications, minConfiden
     {
       value: { [models.Sequelize.Op.or]: classifications }
     }
-  
+
   if (minConfidence === undefined) {
     condition.confidence = { [models.Sequelize.Op.gte]: models.Sequelize.literal('classifier.min_confidence') }
   }
   else {
     condition.confidence = { [models.Sequelize.Op.gte]: minConfidence }
   }
-  
+
   return {
       where: condition,
       include: [
@@ -50,8 +50,23 @@ function defaultQueryOptions (start, end, streamId, classifications, minConfiden
     }
 }
 
-function query (start, end, streamId, classifications, minConfidence, limit, offset) {
-  return models.Detection.findAll(defaultQueryOptions(start, end, streamId, classifications, minConfidence, false, limit, offset))
+function query (start, end, streamId, classifications, minConfidence, reviews, limit, offset) {
+  let opts = defaultQueryOptions(start, end, streamId, classifications, minConfidence, false, limit, offset)
+  if (reviews) {
+    opts.include.push({
+      as: 'reviews',
+      model: models.DetectionReview,
+      include: [
+        {
+          as: 'user',
+          model: models.User,
+          attributes: models.User.attributes.lite
+        }
+      ],
+      attributes: ['positive', 'created_at']
+    })
+  }
+  return models.Detection.findAll(opts)
 }
 
 function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset) {
@@ -89,12 +104,20 @@ function get (detectionId) {
         model: models.Classification,
         attributes: models.Classification.attributes.lite,
         required: true
+      },
+      {
+        as: 'stream',
+        model: models.Stream,
+        attributes: models.Stream.attributes.lite
+      },
+      {
+        as: 'classifier',
+        model: models.Classifier,
+        attributes: models.Classifier.attributes.lite
       }
-      // TODO: include classifier and stream
     ],
     attributes: models.Detection.attributes.full
   })
 }
-
 
 module.exports = { query, timeAggregatedQuery, get, create }

@@ -32,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     Detection.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     Detection.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
     Detection.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
+    Detection.hasMany(models.DetectionReview, { as: 'reviews', foreignKey: 'detection_id' })
   }
   Detection.attributes = {
     lite: ['id', 'stream_id', 'start', 'end', 'confidence'],

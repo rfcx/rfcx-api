@@ -35,6 +35,10 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         in: query
  *         required: true
  *         type: string
+ *       - name: reviews
+ *         description: Whether or not to include detection user reviews or not
+ *         in: query
+ *         type: boolean
  *       - name: classifications
  *         description: List of clasification identifiers
  *         in: query
@@ -55,13 +59,17 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         default: 0
  *     responses:
  *       200:
- *         description: List of detections (lite) objects
+ *         description: List of detections objects. **"reviews" attribute is included based on "reviews" query parameter**
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/DetectionLite'
+ *                 oneOf:
+ *                   - $ref: '#/components/schemas/Detection'
+ *                   - $ref: '#/components/schemas/DetectionWithReviews'
+ *                 discriminator:
+ *                   propertyName: reviews
  *       400:
  *         description: Invalid query parameters
  *       404:
@@ -78,14 +86,15 @@ router.get('/:streamId/detections', authenticatedWithRoles('rfcxUser'), function
   params.convert('min_confidence').optional().toFloat()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
+  params.convert('reviews').optional().toBoolean()
 
   return params.validate()
-    .then(() => {
-      const { start, end, classifications, limit, offset } = convertedParams
+    .then(async () => {
+      const { start, end, classifications, limit, offset, reviews } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      return detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset)
+      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset)
+      return res.json(detections)
     })
-    .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })
 
