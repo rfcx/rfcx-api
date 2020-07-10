@@ -55,6 +55,10 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
+ *       - name: min_confidence
+ *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
+ *         in: query
+ *         type: float
  *       - name: descending
  *         description: Order by descending time (most recent first)
  *         in: query
@@ -92,6 +96,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('id').isEqualToAny(models.Detection.attributes.full)
+  params.convert('min_confidence').optional().toFloat()
   params.convert('descending').default(false).toBoolean()
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
@@ -106,7 +111,8 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
         }
       }
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return detectionsService.timeAggregatedQuery(start, end, streamId, interval, aggregate, field, descending, limit, offset)
+      const minConfidence = convertedParams.min_confidence
+      return detectionsService.timeAggregatedQuery(start, end, streamId, interval, aggregate, field, minConfidence, descending, limit, offset)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
