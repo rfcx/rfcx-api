@@ -495,5 +495,61 @@
         "example": "2020-05-13T07:30:22.500Z"
       }
     }
+  },
+  "UploadsStatistics": {
+    "properties": {
+      "uploads": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "streamName": {
+              "type": "string"
+            },
+            "recentUploads": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "month": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": [
+          {
+              "streamName": "City bells",
+              "recentUploads": [
+                  {
+                      "month": "May",
+                      "value": 1
+                  },
+                  {
+                      "month": "Jun",
+                      "value": 2
+                  },
+                  {
+                      "month": "Jul",
+                      "value": 0
+                  }
+              ]
+          }
+        ]
+      },
+      "totalUploads": {
+        "type": "number",
+        "example": 3
+      },
+      "totalHours": {
+        "type": "float",
+        "example": 0.15913981481481482
+      }
+    }
   }
 }
