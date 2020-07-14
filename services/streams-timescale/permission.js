@@ -36,8 +36,8 @@ async function hasPermission(userId, streamOrId, type) {
   if (stream.created_by_id === userId) {
     return true
   }
-  if (stream.is_public) {
-    return type === 'R'
+  if (stream.is_public && type === 'R') {
+    return true
   }
   const permission = (await query({ stream_id: stream.id, user_id: userId }))[0]
   if (permission) {
