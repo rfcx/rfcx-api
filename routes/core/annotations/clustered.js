@@ -1,10 +1,11 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
-const Converter = require("../../../utils/converter/converter")
+const Converter = require('../../../utils/converter/converter')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const models = require('../../../modelsTimescale')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
 
 /**
  * @swagger
@@ -22,7 +23,7 @@ const models = require('../../../modelsTimescale')
  *         schema:
  *           type: string
  *         default: 1d
- *         examples: 
+ *         examples:
  *           hours:
  *             value: 3h
  *           minutes:
@@ -50,7 +51,7 @@ const models = require('../../../modelsTimescale')
  *         in: query
  *         required: true
  *         type: string
- *       - name: stream
+ *       - name: stream_id
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
@@ -59,7 +60,7 @@ const models = require('../../../modelsTimescale')
  *         in: query
  *         type: string
  *       - name: descending
- *         description: Order by descending time (most recent first) 
+ *         description: Order by descending time (most recent first)
  *         in: query
  *         type: boolean
  *         default: false
@@ -86,12 +87,12 @@ const models = require('../../../modelsTimescale')
  *       400:
  *         description: Invalid query parameters
  */
-router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
-  params.convert('stream').optional().toString()
+  params.convert('stream_id').optional().toString()
   params.convert('created_by').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
@@ -105,9 +106,16 @@ router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
       // TODO: handler username or guid case
       return convertedParams.created_by === 'me' ? req.rfcx.auth_token_info.owner_id : undefined
     })
-    .then(createdBy => {
-      const { start, end, stream, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return annotationsService.timeAggregatedQuery(start, end, stream, createdBy, interval, aggregate, field, descending, limit, offset)
+    .then(async (createdBy) => {
+      const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to access this stream.')
+        }
+      }
+      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
+      return annotationsService.timeAggregatedQuery(start, end, streamId, createdBy, interval, aggregate, field, descending, limit, offset)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

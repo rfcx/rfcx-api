@@ -65,15 +65,6 @@
       },
       "image": {
         "type": "string"
-      },
-      "type": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "string",
-            "example": "species"
-          }
-        }
       }
     },
     "required": [
@@ -88,6 +79,15 @@
       },
       {
         "properties": {
+          "type": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "example": "species"
+              }
+            }
+          },
           "description": {
             "type": "string",
             "example": "Found in temperate and tropical seas all around the world, they begin their lives spotless and steadily gain spots as they get older."
@@ -187,5 +187,313 @@
   },
   "DetectionCluster": {
     "$ref": "#/components/schemas/Cluster"
+  },
+  "Review": {
+    "properties": {
+      "positive": {
+        "type": "boolean",
+        "example": true
+      },
+      "created_at": {
+        "type": "date",
+        "example": "2020-05-13T09:25:21.500Z"
+      },
+      "user": {
+        "$ref": "#/components/schemas/UserLite"
+      }
+    }
+  },
+  "Detection": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "cf8a7ac9-0dd2-40b6-b03f-a067d6c43325"
+      },
+      "stream_id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "confidence": {
+        "type": "float",
+        "example": 0.55471558926584
+      },
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
+      }
+    }
+  },
+  "DetectionWithReviews": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/Detection"
+      },
+      {
+        "properties": {
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "StreamLite": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "name": {
+        "type": "string",
+        "example": "My Stream 1"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "is_public": {
+        "type": "boolean",
+        "example": false
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "Stream": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/StreamLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Stream 1 description"
+          },
+          "created_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "max_sample_rate": {
+            "type": "integer",
+            "example": 32000
+          },
+          "latitude": {
+            "type": "float",
+            "example": 90.123
+          },
+          "longitude": {
+            "type": "float",
+            "example": 125.912
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    ]
+  },
+  "UserLite": {
+    "properties": {
+      "firstname": {
+        "type": "string",
+        "example": "John"
+      },
+      "lastname": {
+        "type": "string",
+        "example": "Doe"
+      },
+      "email": {
+        "type": "string",
+        "example": "john@doe.com"
+      },
+      "picture": {
+        "type": "string",
+        "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
+      }
+    }
+  },
+  "IndexLite": {
+    "properties": {
+      "code": {
+        "type": "string",
+        "example": "ad"
+      },
+      "name": {
+        "type": "string",
+        "example": "Acoustic Diversity Index"
+      },
+      "range_min": {
+        "type": "float",
+        "example": 0.0
+      },
+      "range_max": {
+        "type": "float",
+        "example": 1.0
+      }
+    }
+  },
+  "IndexValueLite": {
+    "properties": {
+      "time": {
+        "type": "date",
+        "example": "2020-05-13T07:30:00.000Z"
+      },
+      "value": {
+        "type": "float",
+        "example": 0.1234
+      }
+    }
+  },
+  "StreamSourceFileLite": {
+    "properties": {
+      "id": {
+        "type": "uuid",
+        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+      },
+      "filename": {
+        "type": "string",
+        "example": "1feb70b91439-2020-06-24T17-15-26.opus"
+      },
+      "duration": {
+        "type": "integer",
+        "example": 90126
+      }
+    }
+  },
+  "StreamSourceFile": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/StreamSourceFileLite"
+      },
+      {
+        "properties": {
+          "stream": {
+            "$ref": "#/components/schemas/StreamLite"
+          },
+          "audio_file_format": {
+            "type": "string",
+            "example": "opus"
+          },
+          "sample_count": {
+            "type": "integer",
+            "example": 4326072
+          },
+          "sample_rate": {
+            "type": "integer",
+            "example": 12000
+          },
+          "channels_count": {
+            "type": "integer",
+            "example": 1
+          },
+          "bit_rate": {
+            "type": "integer",
+            "example": 16384
+          },
+          "audio_codec": {
+            "type": "string",
+            "example": "opus"
+          },
+          "sha1_checksum": {
+            "type": "string",
+            "example": "7ea9896798385afb5939cdf8349ce389f5e3b128"
+          },
+          "meta": {
+            "type": "object",
+            "example": {
+              "date": "2020-06-24T10:11:38-07",
+              "title": "SBW1607_20200624_171138.wav",
+              "album": "SBx-ETH R4"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "StreamSegment": {
+    "properties": {
+      "id": {
+        "type": "uuid",
+        "example": "e44e4fb1-df10-4176-9f8c-e989ccf4d0d8"
+      },
+      "stream": {
+        "$ref": "#/components/schemas/StreamLite"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "sample_count": {
+        "type": "integer",
+        "example": 4326072
+      },
+      "stream_source_file": {
+        "$ref": "#/components/schemas/StreamSourceFileLite"
+      },
+      "file_extension": {
+        "type": "string",
+        "example": "opus"
+      }
+    }
+  },
+  "OrganizationLite": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "RFCx"
+      }
+    }
+  },
+  "Permission": {
+    "properties": {
+      "stream": {
+        "$ref": "#/components/schemas/StreamLite"
+      },
+      "created_by": {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      "organization": {
+        "$ref": "#/components/schemas/OrganizationLite"
+      },
+      "type": {
+        "type": "string",
+        "example": "R"
+      },
+      "created_at": {
+        "type": "date",
+        "example": "2020-05-13T07:30:22.500Z"
+      },
+      "updated_at": {
+        "type": "date",
+        "example": "2020-05-13T07:30:22.500Z"
+      }
+    }
   }
 }

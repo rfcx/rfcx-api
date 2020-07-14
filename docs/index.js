@@ -1,31 +1,31 @@
 const swaggerJSDoc = require('swagger-jsdoc')
 const swaggerUi = require('swagger-ui-express')
-const router = require("express").Router()
+const router = require('express').Router()
 
 const options = {
   definition: {
     openapi: '3.0.0',
     info: {
       title: 'RFCx API Documentation',
-      version: '0.0.1',
+      version: '0.0.1'
     },
     servers: [
       {
         url: 'https://dev-api.rfcx.org',
-        description: "Development server"
+        description: 'Development server'
       },
       {
         url: 'https://staging-api.rfcx.org',
-        description: "Staging server"
+        description: 'Staging server'
       },
       {
         url: 'https://api.rfcx.org',
-        description: "Production server (live data - use with care)"
+        description: 'Production server (live data - use with care)'
       },
       {
-        url: `http://localhost:8080`,
-        description: "Local development"
-      },
+        url: 'http://localhost:8080',
+        description: 'Local development'
+      }
     ],
     components: {
       schemas: require('./modelSchemas.json'),
@@ -39,10 +39,10 @@ const options = {
               authorizationUrl: 'https://auth.rfcx.org/authorize',
               tokenUrl: 'https://auth.rfcx.org/oauth/token',
               scopes: {
-                'openid': 'required',
-                'email': 'required',
-                'profile': 'required',
-                'offline': 'required'
+                openid: 'required',
+                email: 'required',
+                profile: 'required',
+                offline: 'required'
               }
             }
           },
@@ -56,7 +56,7 @@ const options = {
       }
     ]
   },
-  apis: ['./routes/core/**/*.js', './routes/internal/**/*.js', './routes/*.js'],
+  apis: ['./routes/core/**/*.js', './routes/internal/**/*.js', './routes/*.js']
 }
 
 const swaggerSpec = swaggerJSDoc(options)
@@ -70,13 +70,12 @@ const swaggerUiExpressOptions = {
   swaggerOptions: swaggerUiOptions
 }
 
-const middleware = function (req, res, next) {
-  swaggerSpec.host = req.get('host')
-  req.swaggerDoc = swaggerSpec
-  next()
-}
-
 router.get('/auth-callback', (req, res) => res.sendFile('/docs/oauth-redirect.html', { root: '.' }))
-router.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiExpressOptions))
+router.use('/', swaggerUi.serve, (req, res) => {
+  const host = req.get('host')
+  const oauth2RedirectUrl = `${host.endsWith('.rfcx.org') ? 'https' : 'http'}://${host}/docs/auth-callback`
+  const options = { ...swaggerUiExpressOptions, swaggerOptions: { ...swaggerUiOptions, oauth2RedirectUrl } }
+  swaggerUi.setup(swaggerSpec, options)(req, res)
+})
 
 module.exports = router

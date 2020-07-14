@@ -1,17 +1,12 @@
-const router = require("express").Router()
-const models = require("../../../models")
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
-const Converter = require("../../../utils/converter/converter")
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb');
-
-function checkAccess (streamId, req) {
-  return streamsService.getStreamByGuid(streamId)
-    .then(stream => streamsService.checkUserAccessToStream(req, stream))
-}
+const Converter = require('../../../utils/converter/converter')
+const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
  * @swagger
@@ -65,7 +60,7 @@ function checkAccess (streamId, req) {
  *       404:
  *         description: Stream not found
  */
-router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -76,7 +71,6 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
   params.convert('offset').optional().toInt()
 
   return params.validate()
-    .then(() => checkAccess(streamId, req))
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
       return annotationsService.query(start, end, streamId, classifications, limit, offset)
@@ -121,7 +115,7 @@ router.get("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functio
  *       404:
  *         description: Stream not found
  */
-router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
   const streamId = req.params.streamId
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
@@ -134,13 +128,17 @@ router.post("/:streamId/annotations", authenticatedWithRoles('rfcxUser'), functi
 
   return params.validate()
     .then(() => usersTimescaleDBService.ensureUserSynced(req))
-    .then(() => checkAccess(streamId, req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
       const { start, end, frequency_min, frequency_max } = convertedParams
       const annotation = {
-        streamId, classificationId, userId, start, end,
-        frequencyMin: frequency_min, frequencyMax: frequency_max
+        streamId,
+        classificationId,
+        userId,
+        start,
+        end,
+        frequencyMin: frequency_min,
+        frequencyMax: frequency_max
       }
       return annotationsService.create(annotation)
     })

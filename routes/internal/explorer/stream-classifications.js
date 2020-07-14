@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
+const { hasPermission } = require('../../../middleware/authorization/streams')
 const streamsService = require('../../../services/streams/streams-service')
 const classificationsService = require('../../../services/classification/classification-service')
 const Converter = require('../../../utils/converter/converter')
@@ -62,22 +63,18 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Stream not found
  */
-router.get("/streams/:id/classifications", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/streams/:id/classifications', hasPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
   return params.validate()
-    .then(() => {
-      return streamsService.getStreamByGuid(streamId)
-    })
-    .then(stream => {
-      streamsService.checkUserAccessToStream(req, stream)
+    .then(async () => {
       const { limit, offset } = convertedParams
-      return classificationsService.queryByStreamIncludeChildren(streamId, 'characteristic', limit, offset)
+      const classifications = await classificationsService.queryByStreamIncludeChildren(streamId, 'characteristic', limit, offset)
+      return res.json(classifications)
     })
-    .then(classifications => res.json(classifications))
     .catch(httpErrorHandler(req, res, 'Failed getting stream classifications'))
 })
 
