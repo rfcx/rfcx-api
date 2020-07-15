@@ -551,5 +551,53 @@
         "example": 0.15913981481481482
       }
     }
+  },
+  "AnnotationsStatistics": {
+    "properties": {
+      "frequentClassifications": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        "example": [
+          {
+            "name": "Accipiter butleri",
+            "value": 5
+          },
+          {
+              "name": "Aonyx capensis",
+              "value": 4
+          },
+          {
+              "name": "Orcinus orca",
+              "value": 3
+          },
+          {
+              "name": "Bunopithecus hoolock",
+              "value": 3
+          }
+        ]
+      },
+      "totalAnnotations": {
+        "type": "number",
+        "example": 18
+      },
+      "totalClassifications": {
+        "type": "number",
+        "example": 6
+      },
+      "weeklyIncreasedPercentage": {
+        "type": "number",
+        "example": 300
+      }
+    }
   }
 }
