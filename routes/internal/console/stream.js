@@ -40,6 +40,8 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
 router.get('/streams/statistics/uploads', authenticatedWithRoles('rfcxUser'), async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
+  params.convert('is_public').optional().toBoolean()
+  params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('stream_id').optional().toString()
 
   return params.validate()
@@ -88,6 +90,8 @@ router.get('/streams/statistics/uploads', authenticatedWithRoles('rfcxUser'), as
 router.get('/streams/statistics/annotations', authenticatedWithRoles('rfcxUser'), async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
+  params.convert('is_public').optional().toBoolean()
+  params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('stream_id').optional().toString()
 
   return params.validate()
@@ -136,6 +140,8 @@ router.get('/streams/statistics/annotations', authenticatedWithRoles('rfcxUser')
 router.get('/streams/statistics/detections', authenticatedWithRoles('rfcxUser'), async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
+  params.convert('is_public').optional().toBoolean()
+  params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('stream_id').optional().toString()
 
   return params.validate()

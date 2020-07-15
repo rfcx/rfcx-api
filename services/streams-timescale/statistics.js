@@ -13,7 +13,6 @@ async function getStreams(attrs) {
     var streams = [stream]
   }
   else {
-    attrs.created_by = 'me'
     const streamsData = await streamsService.query(attrs)
     var streams = streamsData.streams
   }
