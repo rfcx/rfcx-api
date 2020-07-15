@@ -599,5 +599,17 @@
         "example": 300
       }
     }
+  },
+  "DetectionsStatistics": {
+    "properties": {
+      "totalDetections": {
+        "type": "number",
+        "example": 300
+      },
+      "totalVerified": {
+        "type": "number",
+        "totalVerified": 20
+      }
+    }
   }
 }

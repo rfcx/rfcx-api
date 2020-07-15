@@ -8,12 +8,12 @@ const moment = require('moment')
 const MS_IN_HR = 10800000;
 
 async function getStreams(attrs) {
-  attrs.created_by = 'me'
   if (attrs.stream_id) { // if client requested single id, request only it
     const stream = await streamsService.getById(attrs.stream_id)
     var streams = [stream]
   }
   else {
+    attrs.created_by = 'me'
     const streamsData = await streamsService.query(attrs)
     var streams = streamsData.streams
   }
@@ -155,7 +155,43 @@ async function getAnnotations(attrs) {
   return statistics
 }
 
+async function getDetections(attrs) {
+  // TODO: we may want to think of caching these calculations in REDIS
+  // cache will be cleared on each annotation creation request
+  let statistics = {}
+  const streams = await getStreams(attrs)
+  const streamsIDs = (streams || []).map(x => x.id)
+
+  const where = {
+    start: {
+      [models.Sequelize.Op.gte]: 0,
+      [models.Sequelize.Op.lt]: moment.utc().valueOf()
+    },
+    stream_id: {
+      [models.Sequelize.Op.in]: streamsIDs,
+    }
+  }
+
+  const totalDetections = await models.Detection.count({ where })
+  statistics.totalDetections = totalDetections
+
+  const totalReviews = await models.Detection.count({
+    where,
+    include: [
+      {
+        as: 'reviews',
+        model: models.DetectionReview,
+        required: true
+      }
+    ]
+  })
+  statistics.totalVerified = totalReviews
+
+  return statistics
+}
+
 module.exports = {
   getUploads,
-  getAnnotations
+  getAnnotations,
+  getDetections
 }
