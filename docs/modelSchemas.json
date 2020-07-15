@@ -495,5 +495,121 @@
         "example": "2020-05-13T07:30:22.500Z"
       }
     }
+  },
+  "UploadsStatistics": {
+    "properties": {
+      "uploads": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "streamName": {
+              "type": "string"
+            },
+            "recentUploads": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "month": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": [
+          {
+              "streamName": "City bells",
+              "recentUploads": [
+                  {
+                      "month": "May",
+                      "value": 1
+                  },
+                  {
+                      "month": "Jun",
+                      "value": 2
+                  },
+                  {
+                      "month": "Jul",
+                      "value": 0
+                  }
+              ]
+          }
+        ]
+      },
+      "totalUploads": {
+        "type": "number",
+        "example": 3
+      },
+      "totalHours": {
+        "type": "float",
+        "example": 0.15913981481481482
+      }
+    }
+  },
+  "AnnotationsStatistics": {
+    "properties": {
+      "frequentClassifications": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        "example": [
+          {
+            "name": "Accipiter butleri",
+            "value": 5
+          },
+          {
+              "name": "Aonyx capensis",
+              "value": 4
+          },
+          {
+              "name": "Orcinus orca",
+              "value": 3
+          },
+          {
+              "name": "Bunopithecus hoolock",
+              "value": 3
+          }
+        ]
+      },
+      "totalAnnotations": {
+        "type": "number",
+        "example": 18
+      },
+      "totalClassifications": {
+        "type": "number",
+        "example": 6
+      },
+      "weeklyIncreasedPercentage": {
+        "type": "number",
+        "example": 300
+      }
+    }
+  },
+  "DetectionsStatistics": {
+    "properties": {
+      "totalDetections": {
+        "type": "number",
+        "example": 300
+      },
+      "totalVerified": {
+        "type": "number",
+        "totalVerified": 20
+      }
+    }
   }
 }

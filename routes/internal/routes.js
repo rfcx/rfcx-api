@@ -5,6 +5,9 @@ module.exports = {
   cron: [
     require('./cron/streams')
   ],
+  console: [
+    require('./console/stream'),
+  ],
   explorer: [
     require('./explorer/indices-heatmap'),
     require('./explorer/stream'),
