@@ -75,7 +75,7 @@ async function query(attrs, opts = {}) {
 async function add(stream_id, user_id, type) {
   return models.sequelize.transaction(async (transaction) => {
     await models.StreamPermission.destroy({ where: { stream_id, user_id }, transaction })
-    const permission = await models.StreamPermission.create({ stream_id, user_id, type }, transaction)
+    let permission = await models.StreamPermission.create({ stream_id, user_id, type }, { transaction })
     return permission
   })
 }
