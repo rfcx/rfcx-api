@@ -81,7 +81,8 @@ router.put('/:streamId/users', authenticatedWithRoles('rfcxUser'), function (req
         throw new ForbiddenError('You can not assign permission to stream owner.')
       }
       await streamPermissionService.add(streamId, user.id, convertedParams.type)
-      return res.sendStatus(201)
+      let permissions = await streamPermissionService.query({ stream_id: streamId, user_id: user.id, type: convertedParams.type }, { joinRelations: true })
+      return res.status(201).json(streamPermissionService.format(permissions[0]))
     })
     .catch(httpErrorHandler(req, res, 'Failed updating stream permission'))
 })
