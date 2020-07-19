@@ -135,7 +135,10 @@ async function queryByStreamIncludeChildren (streamId, childType, limit, offset)
   return models.Classification
     .findAll({
       where: {
-        id: ids
+        id: ids,
+        type_id: {
+          [models.Sequelize.Op.ne]: typeId
+        }
       },
       include: [
         {
