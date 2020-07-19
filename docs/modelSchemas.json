@@ -315,6 +315,24 @@
       }
     ]
   },
+  "StreamWithPermissions": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/Stream"
+      },
+      {
+        "properties": {
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["O", "W", "R"]
+          }
+        }
+      }
+    ]
+  },
   "UserLite": {
     "properties": {
       "firstname": {
