@@ -67,45 +67,31 @@ function getIds (values) {
 }
 
 function queryByKeyword (keyword, types, limit, offset) {
-  const keywordClause = {
-        [models.Sequelize.Op.or]: [
-          {
-            '$Classification.title$': {
-              [models.Sequelize.Op.iLike]: `%${keyword}%`
-            }
-          },
-          {
-            'name': {
-              [models.Sequelize.Op.iLike]: `%${keyword}%`
-            }
-          }
-        ]
+  const columns = models.Classification.attributes.lite.map(col => `c.${col} AS ${col}`).join(', ')
+  const typeColumns = models.ClassificationType.attributes.lite.map(col => `ct.${col} AS "type.${col}"`).join(', ')
+  const nameColumns = models.ClassificationAlternativeName.attributes.lite.map(col => `can.${col} AS "alternative_names.${col}"`).join(', ')
+  const sql = `SELECT ${columns}, ${typeColumns}, ${nameColumns}
+       FROM classifications c
+       INNER JOIN classification_types ct ON c.type_id = ct.id AND ct.value = ANY($types)
+       LEFT JOIN classification_alternative_names can ON c.id = can.classification_id
+       WHERE c.title ILIKE $keyword OR can.name ILIKE $keyword
+       ORDER BY c.title, can."rank" LIMIT $limit OFFSET $offset`
+  const options = {
+    raw: true,
+    nest: true,
+    bind: { keyword: '%' + keyword + '%', types, limit, offset }
+  }
+  return models.sequelize.query(sql, options)
+    .reduce((acc, x) => {
+      const index = acc.findIndex(y => y.value == x.value)
+      if (index === -1) {
+        x.alternative_names = [x.alternative_names]
+        acc.push(x)
+      } else {
+        acc[index].alternative_names.push(x.alternative_names)
       }
-  const typeClause = { value: { [models.Sequelize.Op.in]: types } }
-  return models.Classification
-    .findAll({
-      include: [
-        {
-          model: models.ClassificationType,
-          as: 'type',
-          where: types ? typeClause : {},
-          attributes: models.ClassificationType.attributes.lite,
-          required: true
-        },
-        {
-          model: models.ClassificationAlternativeName,
-          as: 'alternative_names',
-          // Only include the alternative names that are matched by the keyword
-          attributes: keyword ? models.ClassificationAlternativeName.attributes.lite : [],
-          where: keyword ? keywordClause : {},
-          order: ['rank']
-        }
-      ],
-      attributes: models.Classification.attributes.lite,
-      offset: offset,
-      limit: limit,
-      order: ['title']
-    })
+      return acc
+    }, [])
 }
 
 function queryByStream (streamId, limit, offset) {
