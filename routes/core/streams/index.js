@@ -119,7 +119,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Stream'
+ *                 $ref: '#/components/schemas/StreamWithPermissions'
  *       400:
  *         description: Invalid query parameters
  */
@@ -136,14 +136,16 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('offset').optional().toInt().default(0)
 
   return params.validate()
-    .then(() => {
+    .then(async () => {
       convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
-      return streamsService.query(convertedParams, { joinRelations: true })
-    })
-    .then((data) => {
-      res
-        .header('Total-Items', data.count)
-        .json(streamsService.formatStreams(data.streams))
+      const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
+      const streams = await Promise.all(streamsData.streams.map(async (stream) => {
+        const permissions = await streamPermissionService.getPermissionsForStream(convertedParams.current_user_id, stream)
+        return streamsService.formatStream(stream, permissions)
+      }))
+      return res
+        .header('Total-Items', streamsData.count)
+        .json(streams)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting streams'))
 })
@@ -168,7 +170,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Stream'
+ *               $ref: '#/components/schemas/StreamWithPermissions'
  *       403:
  *         description: Insufficient privileges
  *       404:
@@ -177,11 +179,13 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
 router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+      const userId = req.rfcx.auth_token_info.owner_id
+      const allowed = await streamPermissionService.hasPermission(userId, stream, 'R')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
-      return streamsService.formatStream(stream)
+      const permissions = await streamPermissionService.getPermissionsForStream(userId, stream)
+      return streamsService.formatStream(stream, permissions)
     })
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed getting stream'))

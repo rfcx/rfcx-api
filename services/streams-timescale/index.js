@@ -184,7 +184,7 @@ function restore(stream) {
     })
 }
 
-function formatStream(stream) {
+function formatStream(stream, permissions = []) {
   const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream;
   return {
     id,
@@ -199,11 +199,14 @@ function formatStream(stream) {
     max_sample_rate,
     latitude,
     longitude,
+    permissions,
   };
 }
 
-function formatStreams(streams) {
-  return streams.map(formatStream);
+function formatStreams(data) {
+  return data.map((item) => {
+    return formatStream(item.stream, item.permissions)
+  });
 }
 
 /**
