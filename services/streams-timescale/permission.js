@@ -50,6 +50,30 @@ async function hasPermission(userId, streamOrId, type) {
 }
 
 /**
+ * Returns permissions list for user per stream
+ * @param {number} userId
+ * @param {string} streamOrId stream id or stream model item
+ */
+async function getPermissionsForStream (userId, streamOrId) {
+  const stream = await (typeof streamOrId === 'string' ? streamsService.getById(streamOrId) : Promise.resolve(streamOrId))
+  if (!stream) {
+    throw new EmptyResultError('Stream with given id not found.')
+  }
+  if (stream.created_by_id === userId) {
+    return ['O', 'W', 'R']
+  }
+  const permissionsModels = await query({
+    stream_id: stream.id,
+    user_id: userId
+  })
+  let permissions = permissionsModels.map(x => x.type)
+  if (stream.is_public && !permissions.includes('R')) {
+    permissions.push('R')
+  }
+  return permissions
+}
+
+/**
  * Returns list of permissions
  * @param {*} attrs permission attributes
  * @param {*} opts additional function params
@@ -107,6 +131,7 @@ function formatMultiple(permissions) {
 
 module.exports = {
   hasPermission,
+  getPermissionsForStream,
   query,
   add,
   remove,

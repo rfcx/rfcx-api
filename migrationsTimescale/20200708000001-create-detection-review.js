@@ -5,7 +5,8 @@ module.exports = {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        allowNull: false
+        allowNull: false,
+        autoIncrement: true,
       },
       detection_id: {
         type: Sequelize.UUID,
