@@ -8,6 +8,7 @@ const bodyParser = require("body-parser")
 const addRequestId = require('express-request-id')
 const { addInstanceId } = require('./middleware/misc/aws')
 const loggers = require('./utils/logger')
+const promBundle = require("express-prom-bundle")
 
 const app = express()
 
@@ -24,6 +25,9 @@ app.use(bodyParser.json({ limit: '5mb' }))
 app.use(multer(require("./config/multer").config(process.env)))
 app.use(express.static(path.join(__dirname, "public")))
 app.use(passport.initialize())
+
+const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
+app.use(metricsMiddleware)
 
 const routeMiddleware = require('./middleware/route')
 
