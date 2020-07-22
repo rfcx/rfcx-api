@@ -40,7 +40,9 @@ async function getUploads(attrs) {
     // get all stream segment files for stream
     const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id }})
     // calculate duration for stream
-    const streamTotalMilliseconds = (stream.start && stream.end) ? (stream.end - stream.start) : 0
+    const streamTotalMilliseconds = streamSegments.reduce((acc, segment) => {
+      return acc + (segment.end - segment.start)
+    }, 0)
     // calculate total uploads number based on distinct source files number
     totalUploads += [...new Set(streamSegments.map(d => d.stream_source_file_id))].length
     totalMilliseconds += streamTotalMilliseconds
