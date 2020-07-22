@@ -127,7 +127,7 @@ async function getAnnotations(attrs) {
   // get total count of annotations in previous 7 days
   const totalAnnPrev7Days = await models.Annotation.count({
     where: {
-      start: {
+      created_at: {
         [models.Sequelize.Op.gte]: moment.utc().subtract(14, 'days').valueOf(),
         [models.Sequelize.Op.lt]: moment.utc().subtract(7, 'days').valueOf()
       },
@@ -140,7 +140,7 @@ async function getAnnotations(attrs) {
   // get total count of annotations in last 7 days
   const totalAnnLast7Days = await models.Annotation.count({
     where: {
-      start: {
+      created_at: {
         [models.Sequelize.Op.gte]: moment.utc().subtract(7, 'days').valueOf(),
         [models.Sequelize.Op.lt]: moment.utc().valueOf()
       },
