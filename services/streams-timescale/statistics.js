@@ -42,18 +42,18 @@ async function getUploads(attrs) {
     // calculate duration for stream
     const streamTotalMilliseconds = (stream.start && stream.end) ? (stream.end - stream.start) : 0
     // calculate total uploads number based on distinct source files number
-    totalUploads += [...new Set(streamSegments.map(d => d.source_file_id))].length
+    totalUploads += [...new Set(streamSegments.map(d => d.stream_source_file_id))].length
     totalMilliseconds += streamTotalMilliseconds
 
     let recentUploads = []
     // calculate uploads for last 3 months
     for (let month of last3Mo) {
       let filteredSegments = streamSegments.filter((segment) => {
-        return segment.start >= month[0] && segment.end <= month[1]
+        return segment.created_at >= month[0] && segment.created_at <= month[1]
       })
       recentUploads.push({
         month: month[0].format('MMM'),
-        value: [...new Set(filteredSegments.map(d => d.source_file_id))].length
+        value: [...new Set(filteredSegments.map(d => d.stream_source_file_id))].length
       })
     }
 
