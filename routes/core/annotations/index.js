@@ -65,6 +65,7 @@ function isUuid (str) {
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -74,18 +75,17 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
-  // TODO: need to limit to only those annotations on streams visisble to the user
   return params.validate()
     .then(async () => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query(start, end, streamId, classifications, limit, offset)
+      return annotationsService.query(start, end, streamId, classifications, limit, offset, userId)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

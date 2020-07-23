@@ -113,6 +113,21 @@ function remove(stream_id, user_id) {
   return models.StreamPermission.destroy({ where: { stream_id, user_id } })
 }
 
+async function getAccessibleStreamIds(user_id) {
+  const s1 = await streamsService.query({
+    current_user_id: user_id
+  })
+  const s2 = await streamsService.query({
+    current_user_id: user_id,
+    created_by: 'collaborators'
+  })
+  const streamIds = [ ...new Set([
+    ...s1.streams.map(d => d.id),
+    ...s2.streams.map(d => d.id)
+  ]) ]
+  return streamIds
+}
+
 function format(permission) {
   const { stream, user, organization, type, created_at, updated_at } = permission
   return {
@@ -135,6 +150,7 @@ module.exports = {
   query,
   add,
   remove,
+  getAccessibleStreamIds,
   format,
   formatMultiple
 }

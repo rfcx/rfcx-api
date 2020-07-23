@@ -61,6 +61,7 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *         description: Stream not found
  */
 router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
+  const userId = req.rfcx.auth_token_info.owner_id
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -73,7 +74,7 @@ router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
   return params.validate()
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query(start, end, streamId, classifications, limit, offset)
+      return annotationsService.query(start, end, streamId, classifications, limit, offset, userId)
     })
     .then((annotations) => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
