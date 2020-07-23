@@ -88,6 +88,7 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -105,14 +106,14 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
     .then(async () => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'R')
+        const allowed = await streamPermissionService.hasPermission(userId, streamId, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      return detectionsService.timeAggregatedQuery(start, end, streamId, interval, aggregate, field, minConfidence, descending, limit, offset)
+      return detectionsService.timeAggregatedQuery(start, end, streamId, interval, aggregate, field, minConfidence, descending, limit, offset, userId)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
