@@ -2,8 +2,9 @@ const moment = require('moment')
 const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeBucketAttribute, aggregatedValueAttribute, timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
+const streamPermissionService = require('../streams-timescale/permission')
 
-function defaultQueryOptions (start, end, streamId, classifications, descending, limit, offset) {
+async function defaultQueryOptions (start, end, streamId, classifications, descending, limit, offset, userId) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -13,10 +14,16 @@ function defaultQueryOptions (start, end, streamId, classifications, descending,
   if (streamId !== undefined) {
     condition.stream_id = streamId
   }
-  const classificationCondition = classifications === undefined ? {} :
-    {
-      value: { [models.Sequelize.Op.or]: classifications }
+  else {
+    const streamIds = await streamPermissionService.getAccessibleStreamIds(userId)
+    condition.stream_id = {
+      [models.Sequelize.Op.in]: streamIds
     }
+  }
+  const classificationCondition = classifications === undefined ? {} :
+  {
+    value: { [models.Sequelize.Op.or]: classifications }
+  }
   return {
       where: condition,
       include: [
@@ -42,13 +49,13 @@ function formatFull (annotation) {
   }, {})
 }
 
-function query (start, end, streamId, classifications, limit, offset) {
-  const queryOptions = defaultQueryOptions(start, end, streamId, classifications, false, limit, offset)
+async function query (start, end, streamId, classifications, limit, offset, userId) {
+  const queryOptions = await defaultQueryOptions(start, end, streamId, classifications, false, limit, offset, userId)
   return models.Annotation.findAll(queryOptions)
 }
 
-function timeAggregatedQuery (start, end, streamId, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
-  let queryOptions = defaultQueryOptions(start, end, streamId, undefined, descending, limit, offset)
+async function timeAggregatedQuery (start, end, streamId, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset, userId) {
+  let queryOptions = await defaultQueryOptions(start, end, streamId, undefined, descending, limit, offset, userId)
   if (createdById !== undefined) {
     queryOptions.where.created_by_id = createdById
   }

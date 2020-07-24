@@ -88,6 +88,7 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -115,7 +116,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
         }
       }
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return annotationsService.timeAggregatedQuery(start, end, streamId, createdBy, interval, aggregate, field, descending, limit, offset)
+      return annotationsService.timeAggregatedQuery(start, end, streamId, createdBy, interval, aggregate, field, descending, limit, offset, userId)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
