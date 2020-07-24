@@ -76,6 +76,7 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         description: Stream not found
  */
 router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
+  const userId = req.rfcx.auth_token_info.owner_id;
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -91,7 +92,7 @@ router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
     .then(async () => {
       const { start, end, classifications, limit, offset, reviews } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset)
+      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset, userId)
       return res.json(detections)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

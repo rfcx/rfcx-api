@@ -2,8 +2,9 @@ const moment = require('moment')
 const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
+const streamPermissionService = require('../streams-timescale/permission')
 
-function defaultQueryOptions (start, end, streamId, classifications, minConfidence, descending, limit, offset) {
+async function defaultQueryOptions (start, end, streamId, classifications, minConfidence, descending, limit, offset, userId) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -12,6 +13,12 @@ function defaultQueryOptions (start, end, streamId, classifications, minConfiden
   }
   if (streamId !== undefined) {
     condition.stream_id = streamId
+  }
+  else {
+    const streamIds = await streamPermissionService.getAccessibleStreamIds(userId)
+    condition.stream_id = {
+      [models.Sequelize.Op.in]: streamIds
+    }
   }
 
   const classificationCondition = classifications === undefined ? {} :
@@ -50,8 +57,8 @@ function defaultQueryOptions (start, end, streamId, classifications, minConfiden
     }
 }
 
-function query (start, end, streamId, classifications, minConfidence, reviews, limit, offset) {
-  let opts = defaultQueryOptions(start, end, streamId, classifications, minConfidence, false, limit, offset)
+async function query (start, end, streamId, classifications, minConfidence, reviews, limit, offset, userId) {
+  let opts = await defaultQueryOptions(start, end, streamId, classifications, minConfidence, false, limit, offset, userId)
   if (reviews) {
     opts.include.push({
       as: 'reviews',
@@ -69,11 +76,11 @@ function query (start, end, streamId, classifications, minConfidence, reviews, l
   return models.Detection.findAll(opts)
 }
 
-function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset) {
+async function timeAggregatedQuery (start, end, streamId, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset, userId) {
   const timeBucketAttribute = 'time_bucket'
   const aggregatedValueAttribute = 'aggregated_value'
   const queryOptions = {
-    ...defaultQueryOptions(start, end, streamId, undefined, minConfidence, descending, limit, offset),
+    ...(await defaultQueryOptions(start, end, streamId, undefined, minConfidence, descending, limit, offset, userId)),
     attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Detection', 'start', timeBucketAttribute, aggregatedValueAttribute),
       order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
       group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
