@@ -1,10 +1,11 @@
-const router = require("express").Router()
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams/streams-service')
 const detectionsService = require('../../../services/detections')
-const Converter = require("../../../utils/converter/converter")
+const Converter = require('../../../utils/converter/converter')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const models = require('../../../modelsTimescale')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
 
 /**
  * @swagger
@@ -22,7 +23,7 @@ const models = require('../../../modelsTimescale')
  *         schema:
  *           type: string
  *         default: 1d
- *         examples: 
+ *         examples:
  *           hours:
  *             value: 3h
  *           minutes:
@@ -50,12 +51,16 @@ const models = require('../../../modelsTimescale')
  *         in: query
  *         required: true
  *         type: string
- *       - name: stream
+ *       - name: stream_id
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
+ *       - name: min_confidence
+ *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
+ *         in: query
+ *         type: float
  *       - name: descending
- *         description: Order by descending time (most recent first) 
+ *         description: Order by descending time (most recent first)
  *         in: query
  *         type: boolean
  *         default: false
@@ -82,23 +87,33 @@ const models = require('../../../modelsTimescale')
  *       400:
  *         description: Invalid query parameters
  */
-router.get("/", authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
-  params.convert('stream').optional().toString()
+  params.convert('stream_id').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('id').isEqualToAny(models.Detection.attributes.full)
+  params.convert('min_confidence').optional().toFloat()
   params.convert('descending').default(false).toBoolean()
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
 
   return params.validate()
-    .then(() => {
-      const { start, end, stream, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return detectionsService.timeAggregatedQuery(start, end, stream, interval, aggregate, field, descending, limit, offset)
+    .then(async () => {
+      const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await streamPermissionService.hasPermission(userId, streamId, 'R')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to access this stream.')
+        }
+      }
+      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
+      const minConfidence = convertedParams.min_confidence
+      return detectionsService.timeAggregatedQuery(start, end, streamId, interval, aggregate, field, minConfidence, descending, limit, offset, userId)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

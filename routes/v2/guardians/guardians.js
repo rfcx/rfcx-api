@@ -13,6 +13,8 @@ const usersService = require('../../../services/users/users-service');
 const guardiansService = require('../../../services/guardians/guardians-service');
 const sitesService = require('../../../services/sites/sites-service');
 const streamsService = require('../../../services/streams/streams-service');
+const streamsTimescaleService = require('../../../services/streams-timescale');
+const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 var Converter = require("../../../utils/converter/converter");
 
 router.route("/public")
@@ -86,6 +88,8 @@ router.route("/register")
 
       let guardianAttrs = { ...transformedParams, token };
 
+      await usersTimescaleDBService.ensureUserSynced(req)
+
       // Obtain creator info
       const dbUser = await usersService.getUserFromTokenInfo(req.rfcx.auth_token_info);
       if (dbUser) {
@@ -105,6 +109,7 @@ router.route("/register")
       const dbGuardian = await guardiansService.createGuardian(guardianAttrs);
       // Create stream
       const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian);
+      await streamsTimescaleService.ensureStreamExistsForGuardian(dbGuardian);
 
       res.status(200).json({
         name: dbGuardian.shortname,

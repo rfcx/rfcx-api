@@ -2,15 +2,9 @@ const moment = require('moment')
 const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeBucketAttribute, aggregatedValueAttribute, timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
+const streamPermissionService = require('../streams-timescale/permission')
 
-function formatFull (annotation) {
-  return models.Annotation.attributes.full.reduce((acc, attribute) => {
-    acc[attribute] = annotation[attribute]
-    return acc
-  }, {})
-}
-
-function query (start, end, streamId, classifications, limit, offset) {
+async function defaultQueryOptions (start, end, streamId, classifications, descending, limit, offset, userId) {
   let condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -20,12 +14,17 @@ function query (start, end, streamId, classifications, limit, offset) {
   if (streamId !== undefined) {
     condition.stream_id = streamId
   }
-  const classificationCondition = classifications === undefined ? {} :
-    {
-      value: { [models.Sequelize.Op.or]: classifications }
+  else {
+    const streamIds = await streamPermissionService.getAccessibleStreamIds(userId)
+    condition.stream_id = {
+      [models.Sequelize.Op.in]: streamIds
     }
-  return models.Annotation
-    .findAll({
+  }
+  const classificationCondition = classifications === undefined ? {} :
+  {
+    value: { [models.Sequelize.Op.or]: classifications }
+  }
+  return {
       where: condition,
       include: [
         {
@@ -39,42 +38,36 @@ function query (start, end, streamId, classifications, limit, offset) {
       attributes: models.Annotation.attributes.lite,
       offset: offset,
       limit: limit,
-      order: ['start']
-    })
+      order: [['start', descending ? 'DESC' : 'ASC']]
+  }
 }
 
-function timeAggregatedQuery (start, end, streamId, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset) {
-  let condition = {
-    start: {
-      [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
-      [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
-    }
-  }
-  if (streamId !== undefined) {
-    condition.stream_id = streamId
-  }
+function formatFull (annotation) {
+  return models.Annotation.attributes.full.reduce((acc, attribute) => {
+    acc[attribute] = annotation[attribute]
+    return acc
+  }, {})
+}
+
+async function query (start, end, streamId, classifications, limit, offset, userId) {
+  const queryOptions = await defaultQueryOptions(start, end, streamId, classifications, false, limit, offset, userId)
+  return models.Annotation.findAll(queryOptions)
+}
+
+async function timeAggregatedQuery (start, end, streamId, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset, userId) {
+  let queryOptions = await defaultQueryOptions(start, end, streamId, undefined, descending, limit, offset, userId)
   if (createdById !== undefined) {
-    condition.created_by_id = createdById
+    queryOptions.where.created_by_id = createdById
   }
-  return models.Annotation
-    .findAll({
-      where: condition,
-      include: [
-        {
-          as: 'classification',
-          model: models.Classification,
-          attributes: models.Classification.attributes.lite,
-          required: true
-        }
-      ],
-      attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Annotation', 'start'),
-      offset: offset,
-      limit: limit,
-      order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
-      group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
-      raw: true,
-      nest: true
-    }).then(annotations => annotations.map(propertyToFloat(aggregatedValueAttribute)))
+  const timeBucketAttribute = 'time_bucket'
+  const aggregatedValueAttribute = 'aggregated_value'
+  queryOptions.attributes = timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Annotation', 'start', timeBucketAttribute, aggregatedValueAttribute)
+  queryOptions.order = [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))]
+  queryOptions.group = [timeBucketAttribute].concat(models.Sequelize.col('classification.id'))
+  queryOptions.raw = true
+  queryOptions.nest = true
+  return models.Annotation.findAll(queryOptions)
+    .then(annotations => annotations.map(propertyToFloat(aggregatedValueAttribute)))
 }
 
 function create (annotation) {

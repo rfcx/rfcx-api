@@ -82,10 +82,10 @@ def branchToConfig(branch) {
         if (branch == 'develop') {
              result = "testing"
              slackChannel = "alerts-deployment"
-        withCredentials([file(credentialsId: 'api_testing_env', variable: 'PRIVATE_ENV')]) {
-        sh "cp $PRIVATE_ENV rfcx.sh"
-        sh "chmod 777 rfcx.sh"
-        }
+//       withCredentials([file(credentialsId: 'api_testing_env', variable: 'PRIVATE_ENV')]) {
+//       sh "cp $PRIVATE_ENV rfcx.sh"
+//        sh "chmod 777 rfcx.sh"
+//        }
         }
         if (branch == 'staging') {
              result = "staging"

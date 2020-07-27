@@ -25,7 +25,7 @@ module.exports = function (sequelize, DataTypes) {
   })
   User.attributes = {
     full: ['firstname', 'lastname', 'picture', 'username', 'email', 'guid'],
-    lite: ['firstname', 'lastname', 'picture']
+    lite: ['firstname', 'lastname', 'email', 'picture']
   }
   return User
 };

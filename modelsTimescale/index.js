@@ -19,7 +19,9 @@ let options = {
     dialectOptions: {
       collate: 'utf8_general_ci'
     },
-    timestamps: true
+    timestamps: true,
+    createdAt: 'created_at', // force sequelize to respect snake_case for created_at
+    updatedAt: 'updated_at',  // force sequelize to respect snake_case for updated_at
   },
   migrationStorageTableName: "migrations",
   migrationStorageTableSchema: "sequelize"
@@ -44,7 +46,7 @@ sequelize
 
 // get file listing in 'models' directory, filtered by those we know to ignore...
 fs.readdirSync(__dirname).filter(function (file) {
-  return (file.indexOf(".") !== 0) && (file !== "index.js") && (file !== "relationships.js") && !fs.statSync(path.join(__dirname, file)).isDirectory();
+  return (file.indexOf(".") !== 0) && (file !== "index.js") && (file !== "relationships.js") && (file !== "utils.js") && !fs.statSync(path.join(__dirname, file)).isDirectory();
 }).forEach(function (file) { importSequelizeModelFile(file); });
 
 // get file listings from inner directories in models
@@ -65,6 +67,7 @@ Object.keys(db).forEach(function (modelName) {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 db.options = options;
+db.utils = require('./utils');
 
 module.exports = db;
 

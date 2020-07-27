@@ -1,21 +1,15 @@
-const router = require("express").Router()
-const models = require("../../../models")
-const { httpErrorHandler } = require("../../../utils/http-error-handler.js")
-const ValidationError = require("../../../utils/converter/validation-error")
+const router = require('express').Router()
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams/streams-service')
+const streamsService = require('../../../services/streams-timescale')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
-const Converter = require("../../../utils/converter/converter")
-const ArrayConverter = require("../../../utils/converter/array-converter")
+const classifierService = require('../../../services/classifier/classifier-service')
+const Converter = require('../../../utils/converter/converter')
+const ArrayConverter = require('../../../utils/converter/array-converter')
+const { hasPermission } = require('../../../middleware/authorization/streams')
+const streamPermissionService = require('../../../services/streams-timescale/permission')
 
-function checkAccess (streamId, req) {
-  if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
-    return true
-  }
-  return streamsService.getStreamByGuid(streamId)
-    .then(stream => streamsService.checkUserAccessToStream(req, stream))
-}
 
 /**
  * @swagger
@@ -41,10 +35,18 @@ function checkAccess (streamId, req) {
  *         in: query
  *         required: true
  *         type: string
+ *       - name: reviews
+ *         description: Whether or not to include detection user reviews or not
+ *         in: query
+ *         type: boolean
  *       - name: classifications
  *         description: List of clasification identifiers
  *         in: query
  *         type: array
+ *       - name: min_confidence
+ *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
+ *         in: query
+ *         type: float
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -57,35 +59,42 @@ function checkAccess (streamId, req) {
  *         default: 0
  *     responses:
  *       200:
- *         description: List of detections (lite) objects
+ *         description: List of detections objects. **"reviews" attribute is included based on "reviews" query parameter**
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/DetectionLite'
+ *                 oneOf:
+ *                   - $ref: '#/components/schemas/Detection'
+ *                   - $ref: '#/components/schemas/DetectionWithReviews'
+ *                 discriminator:
+ *                   propertyName: reviews
  *       400:
  *         description: Invalid query parameters
  *       404:
  *         description: Stream not found
  */
-router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
+  const userId = req.rfcx.auth_token_info.owner_id;
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classifications').optional().toArray()
+  params.convert('min_confidence').optional().toFloat()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
+  params.convert('reviews').optional().toBoolean()
 
   return params.validate()
-    .then(() => checkAccess(streamId, req))
-    .then(() => {
-      const { start, end, classifications, limit, offset } = convertedParams
-      return detectionsService.query(start, end, streamId, classifications, limit, offset)
+    .then(async () => {
+      const { start, end, classifications, limit, offset, reviews } = convertedParams
+      const minConfidence = convertedParams.min_confidence
+      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset, userId)
+      return res.json(detections)
     })
-    .then((detections) => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })
 
@@ -94,7 +103,7 @@ router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function
  *
  * /streams/{id}/detections:
  *   post:
- *     summary: Create an annotation belonging to a stream
+ *     summary: Create a detection belonging to a stream
  *     tags:
  *       - detections
  *     parameters:
@@ -135,7 +144,7 @@ router.get("/:streamId/detections", authenticatedWithRoles('rfcxUser'), function
  *       404:
  *         description: Stream not found
  */
-router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const streamId = req.params.streamId
   const detections = Array.isArray(req.body) ? req.body : [req.body]
 
@@ -143,25 +152,40 @@ router.post("/:streamId/detections", authenticatedWithRoles('rfcxUser', 'systemU
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classification').toString()
-  params.convert('classifier').toInt()
+  params.convert('classifier').toString()
   params.convert('confidence').toFloat()
 
+  let classificationMapping
+
   return params.validate()
-    .then(() => checkAccess(streamId, req))
+    .then(() => {
+      if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
+        return true
+      }
+      return streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'W')
+    })
     .then(() => {
       const validatedDetections = params.transformedArray
       // Get all the distinct classification values
       const classificationValues = [...new Set(validatedDetections.map(d => d.classification))]
       return classificationService.getIds(classificationValues)
     })
-    .then(classificationMapping => {
+    .then(data => {
+      classificationMapping = data
+      const validatedDetections = params.transformedArray
+      // Get all the distinct classifier uuids
+      const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))]
+      return classifierService.getIds(classifierUuids)
+    })
+    .then(classifierMapping => {
       const validatedDetections = params.transformedArray
       const detections = validatedDetections.map(detection => {
         const classificationId = classificationMapping[detection.classification]
+        const classifierId = classifierMapping[detection.classifier]
         return {
           streamId,
           classificationId,
-          classifierId: detection.classifier,
+          classifierId,
           start: detection.start,
           end: detection.end,
           confidence: detection.confidence

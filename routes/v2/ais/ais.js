@@ -65,7 +65,7 @@ router.route("/create")
     params.convert('aiCollectionGuid').optional().toString();
     params.convert('aiGuid').toString();
     params.convert('labels').optional().toArray();
-    params.convert('stepSeconds').toNonNegativeInt().toFloat();
+    params.convert('stepSeconds').toFloat();
     params.convert('minWindowsCount').toInt();
     params.convert('maxWindowsCount').toInt();
     params.convert('minConfidence').toFloat();
@@ -172,7 +172,7 @@ router.route("/:guid")
     let transformedParams = {};
     let params = new Converter(req.body, transformedParams);
 
-    params.convert('stepSeconds').toNonNegativeInt().toFloat();
+    params.convert('stepSeconds').toFloat();
     params.convert('minWindowsCount').toInt();
     params.convert('maxWindowsCount').toInt();
     params.convert('minConfidence').toFloat();
