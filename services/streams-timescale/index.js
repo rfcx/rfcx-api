@@ -2,6 +2,7 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
+const crg = require('country-reverse-geocoding').country_reverse_geocoding();
 
 let streamBaseInclude = [
   {
@@ -186,6 +187,13 @@ function restore(stream) {
 
 function formatStream(stream, permissions = []) {
   const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream;
+  let country_name = null
+  if (latitude && longitude) {
+    const country = crg.get_country(latitude, longitude)
+    if (country) {
+      country_name = country.name
+    }
+  }
   return {
     id,
     name,
@@ -199,6 +207,7 @@ function formatStream(stream, permissions = []) {
     max_sample_rate,
     latitude,
     longitude,
+    country_name,
     permissions,
   };
 }
