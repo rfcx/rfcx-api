@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const DetectionReview = sequelize.define("DetectionReview", {
+  const DetectionReview = sequelize.define('DetectionReview', {
     detection_id: {
       type: DataTypes.UUID,
       allowNull: false
@@ -11,9 +11,9 @@ module.exports = function (sequelize, DataTypes) {
     positive: {
       type: DataTypes.BOOLEAN,
       allowNull: false
-    },
+    }
   }, {
-    timestamps: true,
+    timestamps: true
   })
   DetectionReview.associate = function (models) {
     DetectionReview.belongsTo(models.Detection, { as: 'detection', foreignKey: 'detection_id' })
@@ -21,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
   }
   DetectionReview.attributes = {
     full: ['detection_id', 'user_id', 'positive', 'created_at', 'updated_at'],
-    lite: ['user_id', 'positive', 'created_at'],
+    lite: ['user_id', 'positive', 'created_at']
   }
   return DetectionReview
-};
+}

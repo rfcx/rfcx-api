@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const StreamPermission = sequelize.define("StreamPermission", {
+  const StreamPermission = sequelize.define('StreamPermission', {
     stream_id: {
       type: DataTypes.STRING(12),
       allowNull: false
@@ -15,9 +15,9 @@ module.exports = function (sequelize, DataTypes) {
     type: {
       type: DataTypes.STRING(1),
       allowNull: false
-    },
+    }
   }, {
-    timestamps: true,
+    timestamps: true
   })
   StreamPermission.removeAttribute('id')
   StreamPermission.associate = function (models) {
@@ -27,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
   }
   StreamPermission.attributes = {
     full: ['stream_id', 'user_id', 'organization_id', 'type', 'created_at', 'updated_at'],
-    lite: ['stream_id', 'user_id', 'organization_id'],
+    lite: ['stream_id', 'user_id', 'organization_id']
   }
   return StreamPermission
-};
+}

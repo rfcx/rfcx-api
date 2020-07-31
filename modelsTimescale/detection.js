@@ -8,19 +8,19 @@ module.exports = (sequelize, DataTypes) => {
     },
     start: {
       // Hypertable key
-      type: DataTypes.DATE(3),
+      type: DataTypes.DATE(3)
     },
     end: {
-      type: DataTypes.DATE(3),
+      type: DataTypes.DATE(3)
     },
     stream_id: {
-      type: DataTypes.STRING(12),
+      type: DataTypes.STRING(12)
     },
     classifier_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER
     },
     classification_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.INTEGER
     },
     confidence: {
       type: DataTypes.FLOAT

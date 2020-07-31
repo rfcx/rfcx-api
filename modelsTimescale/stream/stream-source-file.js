@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const StreamSourceFile = sequelize.define("StreamSourceFile", {
+  const StreamSourceFile = sequelize.define('StreamSourceFile', {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -16,9 +16,9 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'duration should be greater than 0'
-        },
+        }
       }
     },
     sample_count: {
@@ -27,9 +27,9 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'sample_count should be greater than 0'
-        },
+        }
       }
     },
     sample_rate: {
@@ -38,9 +38,9 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'sample_rate should be greater than 0'
-        },
+        }
       }
     },
     channels_count: {
@@ -49,22 +49,22 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'channels_count should be greater than 0'
-        },
+        }
       }
     },
     bit_rate: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false
     },
     meta: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: true
     },
     sha1_checksum: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
     stream_id: {
       type: DataTypes.STRING(12),
@@ -79,7 +79,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     }
   }, {
-    timestamps: true,
+    timestamps: true
   })
   StreamSourceFile.associate = function (models) {
     StreamSourceFile.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
@@ -88,8 +88,8 @@ module.exports = function (sequelize, DataTypes) {
   }
   StreamSourceFile.attributes = {
     full: ['id', 'filename', 'duration', 'sample_count', 'channels_count', 'bit_rate', 'meta', 'sha1_checksum', 'stream_id',
-           'audio_codec_id', 'audio_file_format_id', 'sample_rate', 'created_at', 'updated_at'],
+      'audio_codec_id', 'audio_file_format_id', 'sample_rate', 'created_at', 'updated_at'],
     lite: ['id', 'filename', 'duration']
   }
   return StreamSourceFile
-};
+}

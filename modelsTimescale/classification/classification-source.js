@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const ClassificationSource = sequelize.define("ClassificationSource", {
+  const ClassificationSource = sequelize.define('ClassificationSource', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,

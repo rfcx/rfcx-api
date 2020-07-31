@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  var Language = sequelize.define("Language", {
+  var Language = sequelize.define('Language', {
     id: {
       primaryKey: true,
       type: DataTypes.STRING,

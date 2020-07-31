@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const StreamSegment = sequelize.define("StreamSegment", {
+  const StreamSegment = sequelize.define('StreamSegment', {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -10,11 +10,11 @@ module.exports = function (sequelize, DataTypes) {
       // Hypertable key
       type: DataTypes.DATE(3),
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
     end: {
       type: DataTypes.DATE(3),
-      allowNull: false,
+      allowNull: false
     },
     sample_count: {
       type: DataTypes.INTEGER,
@@ -22,9 +22,9 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'sample_count should be greater than 0'
-        },
+        }
       }
     },
     stream_id: {
@@ -40,7 +40,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     }
   }, {
-    timestamps: true,
+    timestamps: true
   })
   StreamSegment.associate = function (models) {
     StreamSegment.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
@@ -49,7 +49,7 @@ module.exports = function (sequelize, DataTypes) {
   }
   StreamSegment.attributes = {
     full: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'file_extension_id', 'created_at', 'updated_at'],
-    lite: ['id', 'start', 'end'],
+    lite: ['id', 'start', 'end']
   }
   return StreamSegment
-};
+}

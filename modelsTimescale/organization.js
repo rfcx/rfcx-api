@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const Organization = sequelize.define("Organization", {
+  const Organization = sequelize.define('Organization', {
     name: {
       type: DataTypes.STRING,
       unique: true
@@ -10,4 +10,4 @@ module.exports = function (sequelize, DataTypes) {
     lite: ['name']
   }
   return Organization
-};
+}

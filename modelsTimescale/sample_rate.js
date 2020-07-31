@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const SampleRate = sequelize.define("SampleRate", {
+  const SampleRate = sequelize.define('SampleRate', {
     value: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -7,17 +7,17 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'sample_rate should be greater than 0'
-        },
+        }
       }
-    },
+    }
   }, {
-    timestamps: false,
+    timestamps: false
   })
   SampleRate.attributes = {
     full: ['value'],
-    lite: ['value'],
+    lite: ['value']
   }
   return SampleRate
-};
+}

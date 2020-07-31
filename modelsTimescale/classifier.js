@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         isFloat: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'min_windows_count should be equal to or greater than 0'
         }
       }
@@ -37,11 +37,11 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         isFloat: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'min_windows_count should be equal to or greater than 1'
         }
       }
-    },
+    }
   })
   Classifier.associate = function (models) {
   }

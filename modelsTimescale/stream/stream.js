@@ -1,9 +1,9 @@
 module.exports = function (sequelize, DataTypes) {
-  const Stream = sequelize.define("Stream", {
+  const Stream = sequelize.define('Stream', {
     id: {
       type: DataTypes.STRING(12),
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
     name: {
       type: DataTypes.STRING,
@@ -15,16 +15,16 @@ module.exports = function (sequelize, DataTypes) {
     },
     start: {
       type: DataTypes.DATE(3),
-      allowNull: true,
+      allowNull: true
     },
     end: {
       type: DataTypes.DATE(3),
-      allowNull: true,
+      allowNull: true
     },
     is_public: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-      allowNull: false,
+      allowNull: false
     },
     latitude: {
       type: DataTypes.DOUBLE,
@@ -32,11 +32,11 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isFloat: true,
         min: {
-          args: [ -90 ],
+          args: [-90],
           msg: 'latitude should be equal to or greater than -90'
         },
         max: {
-          args: [ 90 ],
+          args: [90],
           msg: 'latitude should be equal to or less than 90'
         }
       }
@@ -47,27 +47,27 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isFloat: true,
         min: {
-          args: [ -180 ],
+          args: [-180],
           msg: 'longitude should be equal to or greater than -180'
         },
         max: {
-          args: [ 180 ],
+          args: [180],
           msg: 'longitude should be equal to or less than 180'
         }
       }
     },
     max_sample_rate: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: true
     },
     created_by_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-    },
+      allowNull: false
+    }
   }, {
     paranoid: true,
     timestamps: true,
-    deletedAt: 'deleted_at',
+    deletedAt: 'deleted_at'
   })
   Stream.associate = function (models) {
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
@@ -77,4 +77,4 @@ module.exports = function (sequelize, DataTypes) {
     lite: ['id', 'name', 'start', 'end', 'is_public']
   }
   return Stream
-};
+}

@@ -3,10 +3,10 @@ module.exports = (sequelize, DataTypes) => {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
-    },
+      unique: true
+    }
   }, {
-    timestamps: false,
+    timestamps: false
   })
   ChannelLayout.associate = function (models) {
   }

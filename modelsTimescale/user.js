@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-  const User = sequelize.define("User", {
+  const User = sequelize.define('User', {
     guid: {
       type: DataTypes.UUID,
       unique: true,
@@ -10,17 +10,17 @@ module.exports = function (sequelize, DataTypes) {
       unique: true
     },
     firstname: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING
     },
     lastname: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING
     },
     email: {
       type: DataTypes.STRING,
       unique: true
     },
     picture: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING
     }
   })
   User.attributes = {
@@ -28,4 +28,4 @@ module.exports = function (sequelize, DataTypes) {
     lite: ['firstname', 'lastname', 'email', 'picture']
   }
   return User
-};
+}
