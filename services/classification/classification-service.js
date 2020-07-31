@@ -1,6 +1,6 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
-
+const includedRelationReducer = require('../../utils/formatters/included-relations')
 
 function get (value) {
   return models.Classification
@@ -118,36 +118,22 @@ async function queryByStreamIncludeChildren (streamId, childType, limit, offset)
   const typeId = (await models.sequelize.query(sqlTypeId, { bind: { childType }, raw: true, type: models.Sequelize.QueryTypes.SELECT }))
     .map(x => x.id).shift()
 
-  return models.Classification
-    .findAll({
-      where: {
-        id: ids,
-        type_id: {
-          [models.Sequelize.Op.ne]: typeId
-        }
-      },
-      include: [
-        {
-          model: models.ClassificationType,
-          as: 'type',
-          attributes: models.ClassificationType.attributes.lite,
-          required: true
-        },
-        {
-          model: models.Classification,
-          as: 'children',
-          attributes: models.Classification.attributes.lite,
-          required: false,
-          where: {
-            'type_id': typeId
-          }
-        }
-      ],
-      attributes: models.Classification.attributes.lite,
-      offset: offset,
-      limit: limit,
-      order: ['title']
-    })
+  const columns = models.Classification.attributes.lite.map(col => `c.${col} AS ${col}`).join(', ')
+  const typeColumns = models.ClassificationType.attributes.lite.map(col => `ct.${col} AS "type.${col}"`).join(', ')
+  const childrenColumns = models.Classification.attributes.lite.map(col => `cc.${col} AS "children.${col}"`).join(', ')
+  const sql = `SELECT ${columns}, ${typeColumns}, ${childrenColumns} FROM classifications c
+      INNER JOIN classification_types ct ON c.type_id = ct.id
+      LEFT OUTER JOIN classifications cc ON c.id = cc.parent_id AND cc.type_id = $typeId
+    WHERE (c.id IN (268, 353) OR EXISTS (SELECT id FROM classifications WHERE id IN (268, 353) AND type_id = $typeId AND parent_id = c.id))
+      AND c.type_id != $typeId
+    ORDER BY c.title LIMIT $limit OFFSET $offset`
+  const options = {
+    raw: true,
+    nest: true,
+    bind: { ids, typeId, limit, offset }
+  }
+  return models.sequelize.query(sql, options)
+    .reduce(includedRelationReducer('children'), [])
 }
 
 function queryByParent (value, type) {
