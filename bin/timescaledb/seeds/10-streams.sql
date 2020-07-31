@@ -1,3 +1,6 @@
+INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('ev69cht895gc', 'Jaguar Station', '2020-01-01T00:00:00.000Z', '2020-12-31T23:59:59.999Z', false, 1, NOW(), NOW()) ON CONFLICT DO NOTHING;
+INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('lgndfyp1enmu', 'Vulture''s Rest', '2020-01-01T00:00:00.000Z', '2020-12-31T23:59:59.999Z', false, 1, NOW(), NOW()) ON CONFLICT DO NOTHING;
+
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK01', 'Stas test private', '2020-01-01T10:00:00.000Z', '2020-01-01T11:00:00.000Z', false, 13, NOW(), NOW()) ON CONFLICT DO NOTHING;
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK02', 'Stas test public', '2020-01-01T11:00:00.000Z', '2020-01-01T12:00:00.000Z', true, 13, NOW(), NOW()) ON CONFLICT DO NOTHING;
 
