@@ -118,7 +118,7 @@ async function queryByStreamIncludeChildren (streamId, childType, limit, offset)
   const sql = `SELECT ${columns}, ${typeColumns}, ${childrenColumns} FROM classifications c
       INNER JOIN classification_types ct ON c.type_id = ct.id
       LEFT OUTER JOIN classifications cc ON c.id = cc.parent_id AND cc.type_id = $typeId
-    WHERE (c.id IN (268, 353) OR EXISTS (SELECT id FROM classifications WHERE id IN (268, 353) AND type_id = $typeId AND parent_id = c.id))
+    WHERE (c.id = ANY($ids) OR EXISTS (SELECT id FROM classifications WHERE id = ANY($ids) AND type_id = $typeId AND parent_id = c.id))
       AND c.type_id != $typeId
     ORDER BY c.title LIMIT $limit OFFSET $offset`
   const options = {
