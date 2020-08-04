@@ -106,7 +106,7 @@ function onMessageCheckin(data, messageId) {
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbMetaVideo', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
       if (checkInObj && checkInObj.db && checkInObj.db.dbAudio && checkInObj.audio
-            && checkInObj.audio.meta && checkInObj.db.dbGuardian) {
+            && checkInObj.audio.meta && checkInObj.db.dbGuardian && process.env.PREDICTION_SERVICE_ENABLED === 'true') {
         let audioInfo = {
           audio_guid: checkInObj.db.dbAudio.guid,
           audio_id: checkInObj.db.dbAudio.id,
@@ -117,15 +117,7 @@ function onMessageCheckin(data, messageId) {
           audio_sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
           dbAudioObj: checkInObj.db.dbAudio,
         };
-        if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
-          return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfo, checkInObj.db.dbGuardian)
-            .then(() => {
-              return Promise.resolve(checkInObj);
-            })
-        }
-        else {
-          return Promise.resolve(checkInObj);
-        }
+        return queueForPrediction(audioInfo, checkInObj.db.dbGuardian).then(() => checkInObj)
       }
       else {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile: Cannot send SNS message. Data is invalid', {});
