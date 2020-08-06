@@ -89,7 +89,7 @@ module.exports = function (sequelize, DataTypes) {
   StreamSourceFile.attributes = {
     full: ['id', 'filename', 'duration', 'sample_count', 'channels_count', 'bit_rate', 'meta', 'sha1_checksum', 'stream_id',
       'audio_codec_id', 'audio_file_format_id', 'sample_rate', 'created_at', 'updated_at'],
-    lite: ['id', 'filename', 'duration']
+    lite: ['id', 'filename', 'duration', 'sample_rate']
   }
   return StreamSourceFile
 }
