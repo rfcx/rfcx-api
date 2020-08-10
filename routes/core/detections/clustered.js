@@ -55,6 +55,18 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
+ *       - name: streams_public
+ *         description: Limit results to public streams
+ *         in: query
+ *         type: boolean
+ *       - name: streams_created_by
+ *         description: Limit results to streams created by `me` or `collaborators`
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - me
+ *             - collaborators
  *       - name: min_confidence
  *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
  *         in: query
