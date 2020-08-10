@@ -94,6 +94,8 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('stream_id').optional().toString()
+  params.convert('streams_public').optional().toBoolean()
+  params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('id').isEqualToAny(models.Detection.attributes.full)
@@ -113,7 +115,9 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
       }
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      return detectionsService.timeAggregatedQuery(start, end, streamId, interval, aggregate, field, minConfidence, descending, limit, offset, userId)
+      const streamsOnlyCreatedBy = convertedParams.streams_created_by
+      const streamsOnlyPublic = convertedParams.streams_public
+      return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, interval, aggregate, field, minConfidence, descending, limit, offset, userId)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
