@@ -48,7 +48,7 @@ router.post('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
   params.convert('is_public').optional().toBoolean().default(false)
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSynced(req))
+    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => {
       convertedParams.id = convertedParams.id || hash.randomString(12)
       convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id
@@ -239,7 +239,7 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSynced(req))
+    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
       const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
