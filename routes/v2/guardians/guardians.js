@@ -88,7 +88,7 @@ router.route("/register")
 
       let guardianAttrs = { ...transformedParams, token };
 
-      await usersTimescaleDBService.ensureUserSynced(req)
+      await usersTimescaleDBService.ensureUserSyncedFromToken(req)
 
       // Obtain creator info
       const dbUser = await usersService.getUserFromTokenInfo(req.rfcx.auth_token_info);

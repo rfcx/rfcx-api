@@ -178,7 +178,7 @@ router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   }
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSynced(req))
+    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => annotationsService.get(annotationId))
     .then(async annotation => {
       if (!annotation) {
