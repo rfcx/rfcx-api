@@ -518,3 +518,11 @@ INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, 
 INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('26bb4803-afcc-46ea-bb64-fa583d0d38a5', 'lgndfyp1enmu', 345, 1, '2020-05-28 00:07:28', '2020-05-28 00:07:30', 0.5896489164713811);
 INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('f89c0213-e1d3-44e0-ade7-3a4c0d19c18e', 'lgndfyp1enmu', 268, 1, '2020-06-01 23:46:11', '2020-06-01 23:46:13', 0.07722723155446065);
 INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('5d815ebb-5c10-47ad-b2a8-3981695a5bf9', 'lgndfyp1enmu', 268, 1, '2020-05-31 19:19:23', '2020-05-31 19:19:25', 0.8371996529626381);
+
+INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('5d815ebb-5c10-47ad-b2a8-3981695a5000', 'LilSjZJkRK18', 296, 1, '2020-06-03 10:10:10', '2020-06-03 10:10:12', 0.999);
+INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('5d815ebb-5c10-47ad-b2a8-3981695a5001', 'LilSjZJkRK18', 296, 1, '2020-06-03 10:10:12', '2020-06-03 10:10:14', 0.999);
+INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('5d815ebb-5c10-47ad-b2a8-3981695a5002', 'LilSjZJkRK17', 296, 1, '2020-06-03 10:05:04', '2020-06-03 10:05:06', 0.999);
+INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('5d815ebb-5c10-47ad-b2a8-3981695a5003', 'LilSjZJkRK17', 296, 1, '2020-06-03 10:05:06', '2020-06-03 10:05:08', 0.999);
+
+INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('5d815ebb-5c10-47ad-b2a8-3981695a5004', 'LilSjZJkRK15', 296, 8, '2020-06-03 10:01:08', '2020-06-03 10:01:10', 0.999);
+INSERT INTO public.detections (id, stream_id, classification_id, classifier_id, start, "end", confidence) VALUES ('5d815ebb-5c10-47ad-b2a8-3981695a5005', 'LilSjZJkRK15', 296, 8, '2020-06-03 10:01:10', '2020-06-03 10:01:12', 0.999);

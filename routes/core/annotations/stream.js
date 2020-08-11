@@ -128,7 +128,7 @@ router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
   params.convert('frequency_max').toInt()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSynced(req))
+    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
       const { start, end, frequency_min, frequency_max } = convertedParams
