@@ -16,6 +16,7 @@
     "lint": "standard"
   },
   "dependencies": {
+    "@google-cloud/storage": "^5.2.0",
     "archiver": "4.0.1",
     "aws-sdk": "2.673.0",
     "bluebird": "2.11.0",

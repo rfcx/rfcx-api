@@ -2,6 +2,8 @@ exports.env = {
 
   NODE_ENV: "development",
 
+  // PLATFORM: "amazon", // "amazon" or "google"
+
   CACHE_DIRECTORY: process.cwd()+"/tmp/",
 
   FFMPEG_PATH: "/usr/bin/ffmpeg",
@@ -9,10 +11,14 @@ exports.env = {
   IMAGEMAGICK_PATH: "/usr/bin/convert",
   PNGCRUSH_PATH: "/usr/bin/pngcrush",
 
+  // if PLATFORM is set to "amazon"
   AWS_ACCESS_KEY_ID: "",
   AWS_SECRET_KEY: "",
   AWS_REGION_ID: "",
   AWS_ACCOUNT_ID: "",
+
+  // if PLATFORM is set to "google"
+  // GOOGLE_APPLICATION_CREDENTIALS: "./config/service-account.json",
 
   AWS_QUEUE_CONCURRENCY: 10,
   BUCKET_ANALYSIS: "rfcx-analysis",
