@@ -79,28 +79,25 @@ async function query(attrs, opts = {}) {
     }
   }
 
-  if (attrs.created_by === 'me') {
-    where.created_by_id = attrs.current_user_id;
-    if (attrs.is_public !== undefined) {
-      where.is_public = attrs.is_public;
-    }
+  if (attrs.is_public === true) {
+    where.is_public = true
   }
-  else if (attrs.created_by === 'collaborators') {
+
+  if (attrs.created_by === 'me') {
+    where.created_by_id = attrs.current_user_id
+  } else if (attrs.created_by === 'collaborators') {
     const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
     const streamIds = [...new Set(permissions.map(d => d.stream_id))]
     where.id = {
       [models.Sequelize.Op.in]: streamIds
     }
-  }
-  else {
-    where[models.Sequelize.Op.or] = [
-      {
-        [models.Sequelize.Op.and]: {
-          created_by_id: attrs.current_user_id,
-          ...attrs.is_public !== undefined && { is_public: attrs.is_public }
-        }
+  } else if (attrs.current_user_id !== undefined) {
+    where[models.Sequelize.Op.or] = [{
+      [models.Sequelize.Op.and]: {
+        created_by_id: attrs.current_user_id,
+        ...attrs.is_public !== undefined && { is_public: attrs.is_public }
       }
-    ]
+    }]
     if (attrs.is_public !== false) {
       where[models.Sequelize.Op.or].push(
         {
@@ -116,27 +113,27 @@ async function query(attrs, opts = {}) {
   }
 
   if (attrs.is_deleted === true) { // user can get only personal deleted streams
-    where.created_by_id = attrs.current_user_id;
+    where.created_by_id = attrs.current_user_id
     where.deleted_at = {
       [models.Sequelize.Op.ne]: null
     }
   }
 
-  let method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll'; // don't use findAndCountAll if we don't need to limit and offset
+  const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
   return models.Stream[method]({
     where,
     limit: attrs.limit,
     offset: attrs.offset,
     attributes: models.Stream.attributes.full,
-    include: opts.joinRelations? streamBaseInclude : [],
-    paranoid: attrs.is_deleted === true? false : true,
+    include: opts.joinRelations ? streamBaseInclude : [],
+    paranoid: attrs.is_deleted !== true
   })
-  .then((data) => {
-    return {
-      count: method === 'findAndCountAll' ? data.count : data.length,
-      streams: method === 'findAndCountAll' ? data.rows : data,
-    };
-  })
+    .then((data) => {
+      return {
+        count: method === 'findAndCountAll' ? data.count : data.length,
+        streams: method === 'findAndCountAll' ? data.rows : data
+      }
+    })
 }
 
 /**

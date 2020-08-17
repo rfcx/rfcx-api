@@ -24,11 +24,14 @@ function getByGuidOrEmail(guid, email) {
   return getByParams({ [models.Sequelize.Op.or]: { guid, email } });
 }
 
-async function ensureUserSynced(req) {
-
+async function ensureUserSyncedFromToken(req) {
   // get combined data from MySQL and Auth0 token
   const user = await usersService.collectUserDataForSync(req);
 
+  return ensureUserSynced(user);
+}
+
+async function ensureUserSynced(user) {
   const where = {
     guid: user.guid,
     email: user.email
@@ -57,5 +60,6 @@ module.exports = {
   getByGuid,
   getByEmail,
   getByGuidOrEmail,
+  ensureUserSyncedFromToken,
   ensureUserSynced,
 };

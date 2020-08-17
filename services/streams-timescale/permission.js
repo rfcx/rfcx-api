@@ -113,12 +113,34 @@ function remove(stream_id, user_id) {
   return models.StreamPermission.destroy({ where: { stream_id, user_id } })
 }
 
-async function getAccessibleStreamIds(user_id) {
+/**
+ * Get a list of IDs for streams marked as public
+ */
+async function getPublicStreamIds() {
+  return (await streamsService.query({
+      is_public: true
+    })).streams.map(d => d.id)
+}
+
+/**
+ * Get a list of IDs for streams which are accessible to the user
+ * @param {string} createdBy Limit to streams created by `me` (my streams) or `collaborators` (shared with me)
+ */
+async function getAccessibleStreamIds(userId, createdBy = undefined) {
+  // Only my streams or my collaborators
+  if (createdBy !== undefined) {
+    return (await streamsService.query({
+      current_user_id: userId,
+      created_by: createdBy
+    })).streams.map(d => d.id)
+  }
+
+  // Get my streams and my collaborators
   const s1 = await streamsService.query({
-    current_user_id: user_id
+    current_user_id: userId
   })
   const s2 = await streamsService.query({
-    current_user_id: user_id,
+    current_user_id: userId,
     created_by: 'collaborators'
   })
   const streamIds = [ ...new Set([
@@ -150,6 +172,7 @@ module.exports = {
   query,
   add,
   remove,
+  getPublicStreamIds,
   getAccessibleStreamIds,
   format,
   formatMultiple

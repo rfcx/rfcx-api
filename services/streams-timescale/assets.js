@@ -8,9 +8,11 @@ const moment = require('moment-timezone');
 const ValidationError = require("../../utils/converter/validation-error");
 const audioUtils = require("../../utils/rfcx-audio").audioUtils;
 const assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
-const S3Service = require("../s3/s3-service");
 const mathUtil = require('../../utils/misc/math');
 const urlsUtil = require('../../utils/misc/urls');
+const hash = require('../../utils/misc/hash').hash;
+const platform = process.env.PLATFORM || 'amazon';
+const storageService = require(`../../services/storage/${platform}`)
 
 const possibleWindowFuncs = ["dolph", "hann", "hamming", "bartlett", "rectangular", "kaiser"];
 const possibleExtensions = ['png', 'jpeg', 'wav', 'opus', 'flac', 'mp3'];
@@ -102,17 +104,17 @@ function checkAttrsValidity(req, attrs) {
   return true
 }
 
-function getFile(req, res, attrs, segments, nextTimestamp) {
+async function getFile(req, res, attrs, segments, nextTimestamp) {
   const filename = combineStandardFilename(attrs, req);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
 
   const filenameAudio = `${filename}.${extension}`;
   const filenameSpec = `${filename}.png`;
 
-  const s3AudioFilePath = `${attrs.streamId}/audio/${filenameAudio}`;
-  const s3specFilePath = `${attrs.streamId}/image/${filenameSpec}`;
+  const storageAudioFilePath = `${attrs.streamId}/audio/${filenameAudio}`;
+  const storagespecFilePath = `${attrs.streamId}/image/${filenameSpec}`;
 
-  const s3FilePath = attrs.fileType === 'spec'? s3specFilePath : s3AudioFilePath;
+  const storageFilePath = attrs.fileType === 'spec'? storagespecFilePath : storageAudioFilePath;
 
   let additionalHeaders = {
     'Access-Control-Expose-Headers': 'RFCx-Stream-Next-Timestamp, RFCx-Stream-Gaps',
@@ -122,25 +124,17 @@ function getFile(req, res, attrs, segments, nextTimestamp) {
     additionalHeaders['RFCx-Stream-Next-Timestamp'] = nextTimestamp;
   }
 
-  return S3Service.headObject(s3FilePath, process.env.STREAMS_CACHE_BUCKET, true)
-    .then((file) => {
-      if (file) {
-        res.attachment(attrs.fileType === 'spec'? filenameSpec : filenameAudio);
-        for (let key in additionalHeaders) {
-          res.setHeader(key, additionalHeaders[key]);
-        }
-        return S3Service.client
-          .getObject({
-            Bucket: process.env.STREAMS_CACHE_BUCKET,
-            Key: s3FilePath
-          })
-          .createReadStream()
-          .pipe(res);
-      }
-      else {
-        return generateFile(req, res, attrs, segments, additionalHeaders);
-      }
-    })
+  const exists = await storageService.exists(process.env.STREAMS_CACHE_BUCKET, storageFilePath)
+  if (exists) {
+    res.attachment(attrs.fileType === 'spec'? filenameSpec : filenameAudio);
+    for (let key in additionalHeaders) {
+      res.setHeader(key, additionalHeaders[key]);
+    }
+    return storageService.getReadStream(process.env.STREAMS_CACHE_BUCKET, storageFilePath).pipe(res);
+  }
+  else {
+    return generateFile(req, res, attrs, segments, additionalHeaders);
+  }
 }
 
 function getGapsForFile(attrs, segments) {
@@ -164,7 +158,7 @@ function getGapsForFile(attrs, segments) {
   return gaps;
 }
 
-function generateFile(req, res, attrs, segments, additionalHeaders) {
+async function generateFile(req, res, attrs, segments, additionalHeaders) {
   const filename = combineStandardFilename(attrs, req);
   const extension = attrs.fileType === 'spec'? 'wav' : attrs.fileType;
 
@@ -180,8 +174,8 @@ function generateFile(req, res, attrs, segments, additionalHeaders) {
   let specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`;
   let specFilePathCached = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpecCached}`;
 
-  const s3AudioFilePath = `${attrs.streamId}/audio/${filenameAudio}`;
-  const s3specFilePath = `${attrs.streamId}/image/${filenameSpec}`;
+  const storageAudioFilePath = `${attrs.streamId}/audio/${filenameAudio}`;
+  const storagespecFilePath = `${attrs.streamId}/image/${filenameSpec}`;
 
   const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
   const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf();
@@ -189,20 +183,19 @@ function generateFile(req, res, attrs, segments, additionalHeaders) {
   let proms = [];
   let sox = `${process.env.SOX_PATH} --combine concatenate `;
   // Step 1: Download all segment files
-  segments.forEach((segment) => {
+  for (let segment of segments) {
     const ts = moment.tz(segment.start, 'UTC');
     const segmentExtension = segment.file_extension && segment.file_extension.value?
       segment.file_extension.value : path.extname(segment.stream_source_file.filename);
-    const remotePath = `s3://${process.env.INGEST_BUCKET}/${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`;
+    const remotePath = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`;
+    const localPath = `${process.env.CACHE_DIRECTORY}/ffmpeg/${hash.randomString(32)}${segmentExtension}`;
 
-    let prom = audioUtils.cacheSourceAudio(remotePath)
-      .then(function (data) {
-        segment.sourceFilePath = data.sourceFilePath;
-      })
-    proms.push(prom);
-  })
+    await storageService.download(process.env.INGEST_BUCKET, remotePath, localPath)
+    segment.sourceFilePath = localPath;
+  }
   // Step 2: combine all segment files into one file
-  return Promise.all(proms)
+  // return Promise.all(proms)
+  return Promise.resolve()
     .then(() => {
       segments.forEach((segment, ind) => {
         sox += ` "|${process.env.SOX_PATH}`
@@ -328,10 +321,10 @@ function generateFile(req, res, attrs, segments, additionalHeaders) {
     .then(() => {
       // Upload files to cache S3 bucket
       let proms = [
-        S3Service.putObject(audioFilePathCached, s3AudioFilePath, process.env.STREAMS_CACHE_BUCKET)
+        storageService.upload(process.env.STREAMS_CACHE_BUCKET, storageAudioFilePath, audioFilePathCached)
       ];
       if (attrs.fileType === 'spec') {
-        proms.push(S3Service.putObject(specFilePathCached, s3specFilePath, process.env.STREAMS_CACHE_BUCKET));
+        storageService.upload(process.env.STREAMS_CACHE_BUCKET, storagespecFilePath, specFilePathCached)
       }
       return Promise.all(proms);
     })
@@ -376,26 +369,15 @@ function deleteFilesForStream(dbStream) {
           resolve('No segment files');
           return;
         }
-        let params = {
-          Bucket: process.env.INGEST_BUCKET,
-          Delete: {
-            Objects: [ ],
-            Quiet: false
-          }
-        };
+        let keys = [];
         dbSegments.forEach((segment) => {
           const ts = moment.tz(segment.start, 'UTC');
           const segmentExtension = segment.file_extension && segment.file_extension.value? segment.file_extension.value : path.extname(segment.stream_source_file.filename);
-          const Key = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`;
-          params.Delete.Objects.push({ Key });
+          const key = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`;
+          keys.push(key);
         });
-        console.log(`Deleting following files in ${process.env.INGEST_BUCKET} bucket:`, params.Delete.Objects);
-        return S3Service.client.deleteObjects(params, (err, data) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(data);
-        });
+        console.log(`Deleting following files in ${process.env.INGEST_BUCKET} bucket:`, keys.join(', '));
+        return storageService.deleteFiles(process.env.INGEST_BUCKET, keys);
       })
   })
 }
