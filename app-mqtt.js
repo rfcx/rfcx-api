@@ -67,7 +67,9 @@ const routeMiddleware = require('./middleware/route')
 //app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-software"));
 
 // Default and health check routes
+app.http.use('/docs', require('./docs/mqtt'))
 app.http.use(require('./routes/info'))
+app.http.use('/internal/rabbitmq', require('./routes/internal/rabbitmq'));
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('./middleware/error')

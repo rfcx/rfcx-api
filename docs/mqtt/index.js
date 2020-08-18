@@ -11,15 +11,11 @@ const options = {
     },
     servers: [
       {
-        url: 'https://dev-api.rfcx.org',
-        description: 'Development server'
-      },
-      {
-        url: 'https://staging-api.rfcx.org',
+        url: 'https://staging-checkins.rfcx.org',
         description: 'Staging server'
       },
       {
-        url: 'https://api.rfcx.org',
+        url: 'https://checkins.rfcx.org',
         description: 'Production server (live data - use with care)'
       },
       {
@@ -57,13 +53,8 @@ const options = {
     ]
   },
   apis: [
-    './routes/core/**/*.js',
-    './routes/internal/assets/*.js',
-    './routes/internal/console/*.js',
-    './routes/internal/cron/*.js',
-    './routes/internal/explorer/*.js',
-    './routes/internal/prediction/*.js',
-    './routes/*.js'
+    './routes/info',
+    './routes/internal/rabbitmq/*.js'
   ]
 }
 
