@@ -7,7 +7,7 @@ function queueForPrediction(audioInfo, guardian) {
   }
   if (process.env.PUBSUB_ENABLED === 'true') {
     const streamId = guardian.guid
-    const timestamp = audioInfo.
+    const timestamp = audioInfo.dbAudioObj.measured_at
     return getClassifiers(streamId)
       .then(classifiers => Promise.all(
         classifiers.map(c => publish(c, streamId, timestamp))))
