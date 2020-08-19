@@ -35,6 +35,15 @@ function exists(Bucket, Key) {
   })
 }
 
+async function listFiles(Bucket, path) {
+  const files = await s3Client.listObjects({ Bucket, Prefix: path }).promise()
+  return files.Contents
+}
+
+function getFilePath(file) {
+  return file.Key
+}
+
 function download (Bucket, remotePath, localPath) {
   return new Promise((resolve, reject) => {
     try {
@@ -85,6 +94,15 @@ function upload(Bucket, Key, localPath) {
   return s3Client.putObject(opts).promise();
 }
 
+function uploadBuffer(Bucket, Key, buffer) {
+  const opts = {
+    Bucket,
+    Key,
+    Body: buffer
+  };
+  return s3Client.upload(opts).promise();
+}
+
 function deleteFile(Bucket, Key) {
   const opts = { Bucket, Key };
   return s3Client.deleteObject(opts).promise();
@@ -111,9 +129,12 @@ function deleteFiles(Bucket, Keys) {
 module.exports = {
   getSignedUrl,
   exists,
+  listFiles,
+  getFilePath,
   download,
   getReadStream,
   upload,
+  uploadBuffer,
   deleteFile,
   deleteFiles,
 }
