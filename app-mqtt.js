@@ -63,11 +63,12 @@ app.http.use(passport.initialize());
 
 const routeMiddleware = require('./middleware/route')
 
-// Guardian Update Endpoints
-//app.http.use("/v1/guardians", require("./utils/rfcx-mqtt/http/guardians-software"));
-
+// Enable documentation
+app.http.use('/docs', require('./docs/mqtt'))
 // Default and health check routes
 app.http.use(require('./routes/info'))
+// RabbitMQ specific endpoints
+app.http.use('/internal/rabbitmq', require('./routes/internal/rabbitmq'));
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('./middleware/error')
