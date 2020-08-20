@@ -24,6 +24,15 @@ function exists(bucket, key) {
     .then(data => data[0]);
 }
 
+async function listFiles(bucket, path) {
+  const data = await storage.bucket(bucket).getFiles({ prefix: path })
+  return data[0]
+}
+
+function getFilePath(file) {
+  return file.metadata.name
+}
+
 function download (bucket, remotePath, localPath) {
   return storage.bucket(bucket).file(remotePath).download({ destination: localPath })
 }
@@ -34,6 +43,10 @@ function getReadStream(bucket, key) {
 
 function upload(bucket, key, localPath) {
   return storage.bucket(bucket).upload(localPath, { destination: key });
+}
+
+function uploadBuffer(bucket, key, buffer) {
+  return storage.bucket(bucket).file(key).save(buffer);
 }
 
 function deleteFile(bucket, key) {
@@ -50,9 +63,12 @@ async function deleteFiles(bucket, keys) {
 module.exports = {
   getSignedUrl,
   exists,
+  listFiles,
+  getFilePath,
   download,
   getReadStream,
   upload,
+  uploadBuffer,
   deleteFile,
   deleteFiles,
 }
