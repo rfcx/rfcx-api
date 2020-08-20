@@ -5,6 +5,8 @@ const indicesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
+const platform = process.env.PLATFORM || 'amazon';
+const storageService = require(`../../../services/storage/${platform}`)
 
 /**
  * @swagger
@@ -75,18 +77,21 @@ router.get('/streams/:streamId/indices/:index/heatmap', hasPermission('R'), (req
   params.convert('aggregate').default('avg').toAggregateFunction()
 
   return params.validate()
-    .then(() => {
-      const { start, end, interval, aggregate } = convertedParams
-      return indicesService.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, false, undefined, 0)
-    })
-    .then(values => {
-      const { start, end, interval, grouping } = convertedParams
-      const heatmapData = heatmapDistribute(start, end, interval, grouping, values)
-      return heatmapGenerate(heatmapData)
-    })
-    .then(buffer => {
-      res.set('Content-Type', 'image/png')
-      res.send(buffer)
+    .then(async () => {
+      const { start, end, interval, aggregate, grouping } = convertedParams
+      const storageFilePath = indicesService.getHeatmapStoragePath(streamId, start, end, interval, aggregate)
+      const exists = await storageService.exists(process.env.STREAMS_CACHE_BUCKET, storageFilePath)
+      if (exists) {
+        return storageService.getReadStream(process.env.STREAMS_CACHE_BUCKET, storageFilePath).pipe(res);
+      }
+      else {
+        const values = await indicesService.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, false, undefined, 0)
+        const heatmapData = heatmapDistribute(start, end, interval, grouping, values)
+        const buffer = await heatmapGenerate(heatmapData)
+        storageService.uploadBuffer(process.env.STREAMS_CACHE_BUCKET, storageFilePath, buffer) // it's async, but we don't wait for it
+        res.set('Content-Type', 'image/png')
+        res.send(buffer)
+      }
     })
     .catch(httpErrorHandler(req, res, 'Failed getting values'))
 })

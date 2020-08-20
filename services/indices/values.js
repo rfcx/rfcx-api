@@ -2,6 +2,8 @@ const moment = require('moment')
 const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeBucketAttribute, aggregatedValueAttribute, timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
+const platform = process.env.PLATFORM || 'amazon';
+const storageService = require(`../storage/${platform}`)
 
 function defaultQueryOptions (streamId, index, start, end, descending, limit, offset) {
   return {
@@ -58,4 +60,29 @@ function create (values) {
     })))
 }
 
-module.exports = { query, timeAggregatedQuery, create }
+function getHeatmapStoragePath (streamId, start, end, interval, aggregate) {
+  return `${streamId}/heatmap/${start.valueOf()}_${end.valueOf()}_${interval}_${aggregate}.png`
+}
+
+async function clearHeatmapCache(streamId, timestamp) {
+  const prefix = `${streamId}/heatmap/`
+  const files = await storageService.listFiles(process.env.STREAMS_CACHE_BUCKET, prefix)
+  for (let file of files) {
+    const filePath = storageService.getFilePath(file)
+    const filename = filePath.replace(prefix, '')
+    const filenameParts = filename.split('_')
+    const start = parseInt(filenameParts[0])
+    const end = parseInt(filenameParts[1])
+    if (start <= timestamp && timestamp <= end) {
+      await storageService.deleteFile(process.env.STREAMS_CACHE_BUCKET, filePath)
+    }
+  }
+}
+
+module.exports = {
+  query,
+  timeAggregatedQuery,
+  create,
+  getHeatmapStoragePath,
+  clearHeatmapCache
+}
