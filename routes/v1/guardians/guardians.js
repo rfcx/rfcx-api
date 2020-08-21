@@ -13,8 +13,9 @@ const siteService = require('../../../services/sites/sites-service');
 const usersService = require('../../../services/users/users-service');
 const guardiansService = require('../../../services/guardians/guardians-service');
 const userService = require('../../../services/users/users-service');
-const streamsService = require('../../../services/streams/streams-service');
+const streamsService = require('../../../services/streams');
 var Converter = require("../../../utils/converter/converter");
+const streams = require("../../../services/streams");
 
 router.route("/")
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
@@ -393,18 +394,16 @@ router.route("/:guid")
         .then((guardian) => {
           return guardiansService.updateGuardian(guardian, transformedParams);
         })
-        .then((guardian) => {
-          return streamsService.getStreamByGuid(guardian.guid, true)
-            .then((dbStream) => {
-              if (dbStream) {
-                dbStream.name = guardian.shortname;
-                return dbStream.save();
-              }
-              return true;
-            })
-            .then(() => {
-              return guardian;
-            });
+        .then(async (guardian) => {
+          try {
+            const stream = await streamsService.getById(guardian.guid)
+            if (stream) {
+              await streamsService.update(stream, {
+                name: guardian.shortname
+              })
+            }
+          } catch (e) { }
+          return guardian
         })
         .then((guardian) => {
           return guardiansService.formatGuardian(guardian);
