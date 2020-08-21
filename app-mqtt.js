@@ -23,10 +23,10 @@ var mqtt = require("mqtt");
 app.mqtt = mqtt.connect({
     clientId: "rfcx-api-mqtt-development" + process.env.NODE_ENV + Math.random().toString(16).substr(2, 8),
     host: process.env.MQTT_BROKER_HOST,
-    port: 1883,
+    port: process.env.MQTT_BROKER_PORT,
     protocol: "tcp",
-    // username: null,
-    // password: null,
+    username: process.env.MQTT_BROKER_USER,
+    password: process.env.MQTT_BROKER_PASSWORD,
     // keyPath: null, // .pem filepath
     // certPath: null, // .pem filepath
     // ca: [ ], // array of .pem filepaths
