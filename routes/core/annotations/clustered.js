@@ -5,7 +5,7 @@ const annotationsService = require('../../../services/annotations')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const models = require('../../../modelsTimescale')
-const streamPermissionService = require('../../../services/streams-timescale/permission')
+const streamPermissionService = require('../../../services/streams/permission')
 
 /**
  * @swagger

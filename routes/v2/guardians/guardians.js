@@ -13,7 +13,7 @@ const usersService = require('../../../services/users/users-service');
 const guardiansService = require('../../../services/guardians/guardians-service');
 const sitesService = require('../../../services/sites/sites-service');
 const streamsService = require('../../../services/streams/streams-service');
-const streamsTimescaleService = require('../../../services/streams-timescale');
+const streamsTimescaleService = require('../../../services/streams');
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 var Converter = require("../../../utils/converter/converter");
 
