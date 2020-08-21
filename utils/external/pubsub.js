@@ -1,9 +1,6 @@
 const {PubSub} = require('@google-cloud/pubsub')
 
-const client = new PubSub({
-  projectId: process.env.PUBSUB_PROJECT_ID,
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
-})
+const client = new PubSub()
 
 const ERROR_TOPIC_ALREADY_EXISTS = 6
 
