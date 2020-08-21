@@ -7,9 +7,9 @@ var zlib = require("zlib");
 var util = require("util");
 var hash = require("../../../utils/misc/hash.js").hash;
 var token = require("../../../utils/internal-rfcx/token.js").token;
-var aws = require("../../../utils/external/aws.js").aws();
 var views = require("../../../views/v1");
 var checkInHelpers = require("../../../utils/rfcx-checkin");
+const queueForPrediction = require('../../../utils/rfcx-analysis/queue-for-prediction')
 var httpError = require("../../../utils/http-errors.js");
 var passport = require("passport");
 passport.use(require("../../../middleware/passport-token").TokenStrategy);
@@ -240,12 +240,11 @@ router.route("/:guardian_id/checkins")
               // }
             })
             .then(function () {
-              if (self.dbGuardian && process.env.PREDICTION_SERVICE_ENABLED === 'true') {
-                return checkInHelpers.audio.queueForTaggingByActiveV3Models(this.audioInfoPostQueue, self.dbGuardian);
+              if (self.dbGuardian) {
+                return queueForPrediction(this.audioInfoPostQueue, self.dbGuardian)
+                  .then(() => this.audioInfoPostQueue);
               }
-              else {
-                return this.audioInfoPostQueue;
-              }
+              return this.audioInfoPostQueue;
             })
             .then(function () {
               if (process.env.INGEST_SERVICE_ENABLED === 'true') {
