@@ -240,7 +240,7 @@ router.route("/:guardian_id/checkins")
               // }
             })
             .then(function () {
-              if (self.dbGuardian && process.env.PREDICTION_SERVICE_ENABLED === 'true') {
+              if (self.dbGuardian) {
                 return queueForPrediction(this.audioInfoPostQueue, self.dbGuardian)
                   .then(() => this.audioInfoPostQueue);
               }

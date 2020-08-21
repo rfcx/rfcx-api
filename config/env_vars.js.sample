@@ -19,6 +19,8 @@ exports.env = {
 
   // if PLATFORM is set to "google"
   // GOOGLE_APPLICATION_CREDENTIALS: "./config/service-account.json",
+  // PUBSUB_ENABLED: 'true',
+  // PUBSUB_PROJECT_ID: 'rfcx-models-dev',
 
   AWS_QUEUE_CONCURRENCY: 10,
   BUCKET_ANALYSIS: "rfcx-analysis",

@@ -106,7 +106,7 @@ function onMessageCheckin(data, messageId) {
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbMetaVideo', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
       if (checkInObj && checkInObj.db && checkInObj.db.dbAudio && checkInObj.audio
-            && checkInObj.audio.meta && checkInObj.db.dbGuardian && process.env.PREDICTION_SERVICE_ENABLED === 'true') {
+            && checkInObj.audio.meta && checkInObj.db.dbGuardian) {
         let audioInfo = {
           audio_guid: checkInObj.db.dbAudio.guid,
           audio_id: checkInObj.db.dbAudio.id,

@@ -1,15 +1,25 @@
 const {PubSub} = require('@google-cloud/pubsub')
 
-const pubsub = new PubSub({
-  projectId: 'your-project-id',
-  keyFilename: '/path/to/keyfile.json'
+const client = new PubSub({
+  projectId: process.env.PUBSUB_PROJECT_ID,
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 })
+
+const ERROR_TOPIC_ALREADY_EXISTS = 6
 
 async function publish(topicName, message) {
   const data = typeof message === 'string' ? message : JSON.stringify(message)
   const dataBuffer = Buffer.from(data)
 
-  const messageId = await pubSubClient.topic(topicName).publish(dataBuffer)
+  try {
+    await client.createTopic(topicName)
+  } catch (error) {
+    if (error.code !== ERROR_TOPIC_ALREADY_EXISTS) {
+      console.log(error)
+    }
+  }
+
+  const messageId = await client.topic(topicName).publish(dataBuffer)
   console.debug(`Message ${messageId} published.`)
 }
 
