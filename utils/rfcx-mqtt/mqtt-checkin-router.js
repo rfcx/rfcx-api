@@ -6,6 +6,7 @@ var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").chec
 var mqttInstructions = require("../../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
 var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 var mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams');
+var queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction.js');
 var checkInHelpers = require("../../utils/rfcx-checkin");
 var loggers = require('../../utils/logger');
 var logDebug = loggers.debugLogger.log;
