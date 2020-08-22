@@ -47,7 +47,7 @@ module.exports = function(sequelize, DataTypes) {
         min: 0
       }
     },
-    meta_count: {  
+    meta_count: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
