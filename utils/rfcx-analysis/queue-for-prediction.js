@@ -2,16 +2,16 @@ const legacyQueueToNeo4jAndSqs = require('../rfcx-checkin/checkin-audio').audio.
 const pubsub = require('../external/pubsub')
 
 function queueForPrediction(audioInfo, guardian) {
-  // if (process.env.NEO4J_ENABLED === 'true') {
-  //   return legacyQueueToNeo4jAndSqs(audioInfo, guardian)
-  // }
-  // if (process.env.PUBSUB_ENABLED === 'true') {
-  //   const streamId = guardian.guid
-  //   const timestamp = audioInfo.dbAudioObj.measured_at
-  //   return getClassifiers(streamId)
-  //     .then(classifiers => Promise.all(
-  //       classifiers.map(c => publish(c, streamId, timestamp))))
-  // }
+  if (process.env.NEO4J_ENABLED === 'true') {
+    return legacyQueueToNeo4jAndSqs(audioInfo, guardian)
+  }
+  if (process.env.PUBSUB_ENABLED === 'true') {
+    const streamId = guardian.guid
+    const timestamp = audioInfo.dbAudioObj.measured_at
+    return getClassifiers(streamId)
+      .then(classifiers => Promise.all(
+        classifiers.map(c => publish(c, streamId, timestamp))))
+  }
   return Promise.resolve()
 }
 
