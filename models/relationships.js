@@ -100,6 +100,8 @@ function defineRelationships (models) {
   models.GuardianMetaUpdateCheckIn.belongsTo(models.GuardianSoftware, { as: "Role", foreignKey: 'role_id' });
   models.GuardianMetaVideo.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
 
+  models.GuardianMetaSentinelPower.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
+
   models.GuardianSoftwarePrefs.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
   models.GuardianSoftwareVersion.belongsTo(models.GuardianSoftware, { as: 'SoftwareRole', foreignKey: "software_role_id" });
   models.GuardianSoftware.belongsTo(models.GuardianSoftwareVersion, { as: "CurrentVersion", foreignKey: "current_version_id", constraints: false });
@@ -160,6 +162,7 @@ function defineRelationships (models) {
   models.GuardianCheckIn.hasMany(models.GuardianMetaPower, { as: "MetaPower", foreignKey: "check_in_id" });
   models.GuardianCheckIn.hasMany(models.GuardianMetaMessage, { as: "MetaMessages", foreignKey: "check_in_id" });
   models.GuardianCheckIn.hasMany(models.GuardianEvent, { as: "Event", foreignKey: "check_in_id" });
+  models.GuardianCheckIn.hasMany(models.GuardianMetaSentinelPower, { as: "GuardianMetaSentinelPower", foreignKey: "check_in_id" });
 
   models.GuardianGroup.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: "site" });
   models.GuardianGroup.belongsToMany(models.Guardian, { through: models.GuardianGroupRelation });
