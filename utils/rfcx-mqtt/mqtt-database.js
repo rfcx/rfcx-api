@@ -155,6 +155,9 @@ exports.checkInDatabase = {
 
       saveMeta.CheckInStatus(strArrToJSArr(checkInObj.json.checkins,"|","*"), guardianId, checkInObj.json.measured_at),
 
+      saveMeta.SentinelPower(strArrToJSArr(checkInObj.json.sentinel_power,"|","*"), guardianId, checkInId),
+//      saveMeta.SentinelSensor(strArrToJSArr(checkInObj.json.sentinel_sensor,"|","*"), guardianId, checkInId),
+
       saveMeta.Hardware({ hardware: checkInObj.json.hardware, phone: checkInObj.json.phone }, guardianId)
     ];
 
