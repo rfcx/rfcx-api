@@ -101,6 +101,8 @@ function defineRelationships (models) {
   models.GuardianMetaVideo.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
 
   models.GuardianMetaSentinelPower.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
+  models.GuardianMetaSentinelAccelerometer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
+  models.GuardianMetaSentinelCompass.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
 
   models.GuardianSoftwarePrefs.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' });
   models.GuardianSoftwareVersion.belongsTo(models.GuardianSoftware, { as: 'SoftwareRole', foreignKey: "software_role_id" });
@@ -163,6 +165,8 @@ function defineRelationships (models) {
   models.GuardianCheckIn.hasMany(models.GuardianMetaMessage, { as: "MetaMessages", foreignKey: "check_in_id" });
   models.GuardianCheckIn.hasMany(models.GuardianEvent, { as: "Event", foreignKey: "check_in_id" });
   models.GuardianCheckIn.hasMany(models.GuardianMetaSentinelPower, { as: "GuardianMetaSentinelPower", foreignKey: "check_in_id" });
+  models.GuardianCheckIn.hasMany(models.GuardianMetaSentinelAccelerometer, { as: "GuardianMetaSentinelAccelerometer", foreignKey: "check_in_id" });
+  models.GuardianCheckIn.hasMany(models.GuardianMetaSentinelCompass, { as: "GuardianMetaSentinelCompass", foreignKey: "check_in_id" });
 
   models.GuardianGroup.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: "site" });
   models.GuardianGroup.belongsToMany(models.Guardian, { through: models.GuardianGroupRelation });

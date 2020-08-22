@@ -282,58 +282,51 @@ exports.saveMeta = {
     return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower);
   },
 
-  // SentinelSensor: function(metaSntnlSnsr, guardianId, checkInId) {
+  SentinelSensor: function(metaSntnlSnsr, sensorTag, guardianId, checkInId) {
 
-  //   var sntnlPwrEntries = { };
-    
-  //   for (duInd in metaSntnlPwr) {
+    var dbMetaSentinelSensor = [];
 
-  //     var sysInpBatt = metaSntnlPwr[duInd][0]+"";
-  //     var timeStamp = metaSntnlPwr[duInd][1]+"";
+    for (sntInd in metaSntnlSnsr) {
 
-  //     if (sntnlPwrEntries[timeStamp] == null) {
-  //       sntnlPwrEntries[timeStamp] = { 
-  //         temperature: null,
-  //         system: { voltage: null, current: null, power: null },
-  //         input: { voltage: null, current: null, power: null },
-  //         battery: { voltage: null, current: null, power: null }
-  //       }
-  //     }
+      if (metaSntnlSnsr[sntInd][0] === sensorTag) {
 
-  //     sntnlPwrEntries[timeStamp][sysInpBatt].voltage = parseInt(metaSntnlPwr[duInd][2]);
-  //     sntnlPwrEntries[timeStamp][sysInpBatt].current = parseInt(metaSntnlPwr[duInd][3]);
-  //     sntnlPwrEntries[timeStamp][sysInpBatt].power = parseInt(metaSntnlPwr[duInd][5]);
+        if (sensorTag === "compass") {
+          
+          dbMetaSentinelSensor.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaSntnlSnsr[sntInd][1])),
+            x_mag_field: parseInt(metaSntnlSnsr[sntInd][2]),
+            y_mag_field: parseInt(metaSntnlSnsr[sntInd][3]),
+            z_mag_field: parseInt(metaSntnlSnsr[sntInd][4]),
+            sample_count: (parseInt(metaSntnlSnsr[sntInd][5]) < 1) ? 1 : parseInt(metaSntnlSnsr[sntInd][5])
+          });
+        
+        } else if (sensorTag === "accelerometer") {
+        
+          dbMetaSentinelSensor.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaSntnlSnsr[sntInd][1])),
+            x_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][2]),
+            y_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][3]),
+            z_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][4]),
+            sample_count: (parseInt(metaSntnlSnsr[sntInd][5]) < 1) ? 1 : parseInt(metaSntnlSnsr[sntInd][5])
+          });
 
-  //     if ((sysInpBatt == "system") && (parseInt(metaSntnlPwr[duInd][4]) > 0)) {
-  //       sntnlPwrEntries[timeStamp].temperature = parseInt(metaSntnlPwr[duInd][4]);
-  //     }
+        }
+        
+      }
+    }
 
-  //   }
-
-  //   var dbMetaSentinelSensor = [];
-
-  //   for (sntPwrInd in sntnlPwrEntries) {
-  //     if (parseInt(sntPwrInd) > 0) {
-  //       dbMetaSentinelSensor.push({
-  //         guardian_id: guardianId,
-  //         check_in_id: checkInId,
-  //         measured_at: new Date(parseInt(sntPwrInd)),
-  //         system_temperature: sntnlPwrEntries[sntPwrInd].temperature,
-  //         system_voltage: sntnlPwrEntries[sntPwrInd].system.voltage,
-  //         system_current: sntnlPwrEntries[sntPwrInd].system.current,
-  //         system_power: sntnlPwrEntries[sntPwrInd].system.power,
-  //         input_voltage: sntnlPwrEntries[sntPwrInd].input.voltage,
-  //         input_current: sntnlPwrEntries[sntPwrInd].input.current,
-  //         input_power: sntnlPwrEntries[sntPwrInd].input.power,
-  //         battery_voltage: sntnlPwrEntries[sntPwrInd].battery.voltage,
-  //         battery_current: sntnlPwrEntries[sntPwrInd].battery.current,
-  //         battery_power: sntnlPwrEntries[sntPwrInd].battery.power
-  //       });
-  //     }
-  //   }
-
-  //   return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower);
-  // },
+    if (sensorTag === "compass") {
+      return models.GuardianMetaSentinelCompass.bulkCreate(dbMetaSentinelSensor);
+    } else if (sensorTag === "accelerometer") {
+      return models.GuardianMetaSentinelAccelerometer.bulkCreate(dbMetaSentinelSensor);
+    } else {
+      return models.GuardianMetaSentinelAccelerometer.bulkCreate([]);
+    }
+  },
 
   CheckInStatus: function(metaCheckInStatus, guardianId, measuredAt) {
 
