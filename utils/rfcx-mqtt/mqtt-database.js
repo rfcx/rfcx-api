@@ -270,14 +270,14 @@ exports.checkInDatabase = {
         order: [ ["pref_key", "ASC"] ],
         limit: 100
       }).then((dbSoftwarePrefs) => {
-        var prefsBlob = "";
+        var prefsBlob = [];
         if (dbSoftwarePrefs.length > 0) {
           for (prefRowInd in dbSoftwarePrefs) {
-            prefsBlob += dbSoftwarePrefs[prefRowInd].pref_key + "*" + dbSoftwarePrefs[prefRowInd].pref_value;
+            prefsBlob.push(dbSoftwarePrefs[prefRowInd].pref_key + "*" + dbSoftwarePrefs[prefRowInd].pref_value);
           }
         }
 
-        prefsReturnArray.push({ checksum: hash.hashData(prefsBlob), str: prefsBlob });
+        prefsReturnArray.push({ checksum: hash.hashData(prefsBlob.join("|")), str: prefsBlob.join("|") });
 
       //   let opts = { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] };
       //   return models.GuardianSoftwareVersion
