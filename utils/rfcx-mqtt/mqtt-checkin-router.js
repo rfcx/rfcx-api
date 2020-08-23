@@ -6,6 +6,7 @@ var checkInAssets = require("../../utils/rfcx-mqtt/mqtt-checkin-assets.js").chec
 var mqttInstructions = require("../../utils/rfcx-mqtt/mqtt-instructions.js").mqttInstructions;
 var mqttPublish = require("../../utils/rfcx-mqtt/mqtt-publish.js").mqttPublish;
 var mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams');
+var queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction');
 var checkInHelpers = require("../../utils/rfcx-checkin");
 var loggers = require('../../utils/logger');
 var logDebug = loggers.debugLogger.log;
@@ -117,15 +118,7 @@ function onMessageCheckin(data, messageId) {
           audio_sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
           dbAudioObj: checkInObj.db.dbAudio,
         };
-        if (process.env.PREDICTION_SERVICE_ENABLED === 'true') {
-          return checkInHelpers.audio.queueForTaggingByActiveV3Models(audioInfo, checkInObj.db.dbGuardian)
-            .then(() => {
-              return Promise.resolve(checkInObj);
-            })
-        }
-        else {
-          return Promise.resolve(checkInObj);
-        }
+        return queueForPrediction(audioInfo, checkInObj.db.dbGuardian).then(() => checkInObj)
       }
       else {
         logDebug('mqttCheckInRouter -> onMessageCheckin -> createDbLogFile: Cannot send SNS message. Data is invalid', {});

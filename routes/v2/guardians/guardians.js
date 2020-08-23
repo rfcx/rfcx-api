@@ -1,17 +1,18 @@
-var express = require('express')
-var router = express.Router()
-var hash = require('../../../utils/misc/hash.js').hash
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
-var Promise = require('bluebird')
-var sequelize = require('sequelize')
-var ValidationError = require('../../../utils/converter/validation-error')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
-const usersService = require('../../../services/users/users-service')
-const guardiansService = require('../../../services/guardians/guardians-service')
-const sitesService = require('../../../services/sites/sites-service')
-const streamsService = require('../../../services/streams/streams-service')
-const streamsTimescaleService = require('../../../services/streams-timescale')
+var models  = require("../../../models");
+var express = require("express");
+var router = express.Router();
+var hash = require("../../../utils/misc/hash.js").hash;
+var views = require("../../../views/v1");
+var httpError = require("../../../utils/http-errors.js");
+var passport = require("passport");
+var Promise = require("bluebird");
+var sequelize = require("sequelize");
+var ValidationError = require("../../../utils/converter/validation-error");
+var hasRole = require('../../../middleware/authorization/authorization').hasRole;
+const usersService = require('../../../services/users/users-service');
+const guardiansService = require('../../../services/guardians/guardians-service');
+const sitesService = require('../../../services/sites/sites-service');
+const streamsService = require('../../../services/streams');
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 var Converter = require('../../../utils/converter/converter')
 
@@ -100,8 +101,7 @@ router.route('/register')
       // Create guardian
       const dbGuardian = await guardiansService.createGuardian(guardianAttrs)
       // Create stream
-      const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
-      await streamsTimescaleService.ensureStreamExistsForGuardian(dbGuardian)
+      await streamsService.ensureStreamExistsForGuardian(dbGuardian);
 
       res.status(200).json({
         name: dbGuardian.shortname,

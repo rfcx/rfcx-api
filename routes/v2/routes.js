@@ -8,11 +8,7 @@ module.exports = {
   guardians: [
     require('./guardians/guardians')
   ],
-  streams: [
-    require('./streams/streams'),
-    require('./streams/streams-assets')
-  ],
   tags: [
-    require('./tags/tags')
-  ]
+    require("./tags/tags"),
+  ],
 }

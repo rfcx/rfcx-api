@@ -229,45 +229,104 @@ exports.saveMeta = {
     return models.GuardianMetaDiskUsage.create(opts);
   },
 
-  // SentinelPower: function(metaSntnlPwr, guardianId, checkInId) {
+  SentinelPower: function(metaSntnlPwr, guardianId, checkInId) {
 
-  //   var sntnlPwr = { internal: {}, external: {} };
-  //   for (duInd in metaSntnlPwr) {
-  //     sntnlPwr[metaSntnlPwr[duInd][0]] = {
-  //       measured_at: new Date(parseInt(metaSntnlPwr[duInd][1])),
-  //       used: parseInt(metaSntnlPwr[duInd][2]),
-  //       available: parseInt(metaSntnlPwr[duInd][3])
-  //     };
-  //   }
+    var sntnlPwrEntries = { };
 
-  //   let opts = {
-  //     guardian_id: guardianId,
-  //     check_in_id: checkInId,
-  //     measured_at: sntnlPwr.internal.measured_at,
-  //     internal_bytes_available: sntnlPwr.internal.available,
-  //     internal_bytes_used: sntnlPwr.internal.used,
-  //     external_bytes_available: sntnlPwr.external.available,
-  //     external_bytes_used: sntnlPwr.external.used
-  //   };
+    for (duInd in metaSntnlPwr) {
 
+      var sysInpBatt = metaSntnlPwr[duInd][0]+"";
+      var timeStamp = metaSntnlPwr[duInd][1]+"";
 
-  //   var dbMetaBrokerConnection = [];
+      if (sntnlPwrEntries[timeStamp] == null) {
+        sntnlPwrEntries[timeStamp] = { 
+          temperature: null,
+          system: { voltage: null, current: null, power: null },
+          input: { voltage: null, current: null, power: null },
+          battery: { voltage: null, current: null, power: null }
+        }
+      }
 
-  //   for (brkrInd in metaBrokerConnection) {
-  //     if (metaBrokerConnection[brkrInd][3] != null) {
-  //       dbMetaBrokerConnection.push({
-  //           guardian_id: guardianId,
-  //           check_in_id: checkInId,
-  //           connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
-  //           connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
-  //           subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
-  //           broker_uri: metaBrokerConnection[brkrInd][3]
-  //       });
-  //     }
-  //   }
+      sntnlPwrEntries[timeStamp][sysInpBatt].voltage = parseInt(metaSntnlPwr[duInd][2]);
+      sntnlPwrEntries[timeStamp][sysInpBatt].current = parseInt(metaSntnlPwr[duInd][3]);
+      sntnlPwrEntries[timeStamp][sysInpBatt].power = parseInt(metaSntnlPwr[duInd][5]);
 
-  //   return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection);
-  // },
+      if ((sysInpBatt == "system") && (parseInt(metaSntnlPwr[duInd][4]) > 0)) {
+        sntnlPwrEntries[timeStamp].temperature = parseInt(metaSntnlPwr[duInd][4]);
+      }
+
+    }
+
+    var dbMetaSentinelPower = [];
+
+    for (sntPwrInd in sntnlPwrEntries) {
+      if (parseInt(sntPwrInd) > 0) {
+        dbMetaSentinelPower.push({
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(sntPwrInd)),
+          system_temperature: sntnlPwrEntries[sntPwrInd].temperature,
+          system_voltage: sntnlPwrEntries[sntPwrInd].system.voltage,
+          system_current: sntnlPwrEntries[sntPwrInd].system.current,
+          system_power: sntnlPwrEntries[sntPwrInd].system.power,
+          input_voltage: sntnlPwrEntries[sntPwrInd].input.voltage,
+          input_current: sntnlPwrEntries[sntPwrInd].input.current,
+          input_power: sntnlPwrEntries[sntPwrInd].input.power,
+          battery_voltage: sntnlPwrEntries[sntPwrInd].battery.voltage,
+          battery_current: sntnlPwrEntries[sntPwrInd].battery.current,
+          battery_power: sntnlPwrEntries[sntPwrInd].battery.power
+        });
+      }
+    }
+
+    return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower);
+  },
+
+  SentinelSensor: function(metaSntnlSnsr, sensorTag, guardianId, checkInId) {
+
+    var dbMetaSentinelSensor = [];
+
+    for (sntInd in metaSntnlSnsr) {
+
+      if (metaSntnlSnsr[sntInd][0] === sensorTag) {
+
+        if (sensorTag === "compass") {
+          
+          dbMetaSentinelSensor.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaSntnlSnsr[sntInd][1])),
+            x_mag_field: parseInt(metaSntnlSnsr[sntInd][2]),
+            y_mag_field: parseInt(metaSntnlSnsr[sntInd][3]),
+            z_mag_field: parseInt(metaSntnlSnsr[sntInd][4]),
+            sample_count: (parseInt(metaSntnlSnsr[sntInd][5]) < 1) ? 1 : parseInt(metaSntnlSnsr[sntInd][5])
+          });
+        
+        } else if (sensorTag === "accelerometer") {
+        
+          dbMetaSentinelSensor.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaSntnlSnsr[sntInd][1])),
+            x_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][2]),
+            y_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][3]),
+            z_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][4]),
+            sample_count: (parseInt(metaSntnlSnsr[sntInd][5]) < 1) ? 1 : parseInt(metaSntnlSnsr[sntInd][5])
+          });
+
+        }
+        
+      }
+    }
+
+    if (sensorTag === "compass") {
+      return models.GuardianMetaSentinelCompass.bulkCreate(dbMetaSentinelSensor);
+    } else if (sensorTag === "accelerometer") {
+      return models.GuardianMetaSentinelAccelerometer.bulkCreate(dbMetaSentinelSensor);
+    } else {
+      return models.GuardianMetaSentinelAccelerometer.bulkCreate([]);
+    }
+  },
 
   CheckInStatus: function(metaCheckInStatus, guardianId, measuredAt) {
 

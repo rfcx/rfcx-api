@@ -46,6 +46,14 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true,
         min: 0
       }
+    },
+    meta_count: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
     }
   }, {
     tableName: 'GuardianMetaCheckInStatus'
