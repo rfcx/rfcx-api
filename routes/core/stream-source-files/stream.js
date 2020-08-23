@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams-timescale')
-const streamSourceFileService = require('../../../services/streams-timescale/stream-source-file')
+const streamsService = require('../../../services/streams')
+const streamSourceFileService = require('../../../services/streams/stream-source-file')
 const Converter = require('../../../utils/converter/converter')
 
 /**

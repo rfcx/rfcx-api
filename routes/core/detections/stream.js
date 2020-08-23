@@ -1,14 +1,14 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams-timescale')
+const streamsService = require('../../../services/streams')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
 const classifierService = require('../../../services/classifier/classifier-service')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const { hasPermission } = require('../../../middleware/authorization/streams')
-const streamPermissionService = require('../../../services/streams-timescale/permission')
+const streamPermissionService = require('../../../services/streams/permission')
 
 
 /**

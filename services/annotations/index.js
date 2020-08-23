@@ -2,7 +2,7 @@ const moment = require('moment')
 const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
-const streamPermissionService = require('../streams-timescale/permission')
+const streamPermissionService = require('../streams/permission')
 
 async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, descending, limit, offset, userId) {
   const condition = {
