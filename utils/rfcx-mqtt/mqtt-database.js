@@ -261,133 +261,64 @@ exports.checkInDatabase = {
   updateDbGuardianPrefs: function(checkInObj) {
 
     var guardianId = checkInObj.db.dbGuardian.id;
-    // arrays of return values for checkin response json
-    var prefsReturnArray = [];
 
-    return models.GuardianSoftwarePrefs
-      .findAll({
-        where: { guardian_id: guardianId },
-        order: [ ["pref_key", "ASC"] ],
-        limit: 100
-      }).then((dbSoftwarePrefs) => {
-        var prefsBlob = [];
-        if (dbSoftwarePrefs.length > 0) {
-          for (prefRowInd in dbSoftwarePrefs) {
-            prefsBlob.push(dbSoftwarePrefs[prefRowInd].pref_key + "*" + dbSoftwarePrefs[prefRowInd].pref_value);
+    if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: "", cnt: 0, vals: {} }; }
+    if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = ""; }
+    if (checkInObj.json.prefs.cnt == null) { checkInObj.json.prefs.cnt = 0; }
+    if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {}; }
+    
+    var prefsRtrnArr = [], 
+        prefsJson = checkInObj.json.prefs, 
+        prefsDb = { sha1: "", blob: "", cnt: 0, vals: {} };
+
+      // retrieve, sort and take checksum of prefs rows for this guardian in the database
+      return models.GuardianSoftwarePrefs.findAll({ 
+          where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [ ["pref_key", "ASC"] ], limit: 150
+        }).then((dbPrefs) => {
+          var prefsBlobDb = [];
+          if (dbPrefs.length > 0) {
+            for (prefRow in dbPrefs) {
+              prefsBlobDb.push( [ dbPrefs[prefRow].pref_key, dbPrefs[prefRow].pref_value ].join("*") );
+              prefsDb[dbPrefs[prefRow].pref_key] = dbPrefs[prefRow].pref_value;
+            }
           }
-        }
-
-        prefsReturnArray.push({ checksum: hash.hashData(prefsBlob.join("|")), str: prefsBlob.join("|") });
-
-      //   let opts = { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] };
-      //   return models.GuardianSoftwareVersion
-      //   .findOrCreate({
-      //     where: opts,
-      //     defaults: opts
-      //   })
-      //   .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
-      //     dbSoftwareRoleVersionInsertion.updated_at = new Date();
-      //     return dbSoftwareRoleVersionInsertion.save();
-      //   });
-      // } else {
-      //   return models.GuardianMetaSoftwareVersion
-      //     .findOrCreate({
-      //       where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
-      //     })
-      //     .spread((dbMetaSoftware, wasCreated) => {
-      //       dbMetaSoftware.updated_at = new Date();
-      //       return dbMetaSoftware.save();
-      //     });
-      // }
-    })
+          prefsDb.blob = prefsBlobDb.join("|");
+          prefsDb.sha1 = hash.hashData(prefsDb.blob);
 
 
-//    let proms = [];
+          // let prefsFindOrCreatePromises = [];
+          // if (prefsDb.sha1 != prefsJson.sha1) {
+          //   for (prefKey in prefsJson.vals) {
+          //     let prom = models.GuardianSoftwarePrefs.findOrCreate({
+          //       where: {
+          //         guardian_id: checkInObj.db.dbGuardian.id,
+          //         pref_key: prefKey,
+          //         pref_value: prefsJson.vals[prefKey]
+          //       }
+          //     });
+          //     prefsFindOrCreatePromises.push(prom);
+          //   }
+          // }
 
-    // find or create prefs entries in database
-    // if ((checkInObj.json.prefs != null) && (checkInObj.json.prefs.prefs != null)) {
+          // return Promise.all(prefsFindOrCreatePromises)
+          //   .then(() => {
+          //   if (dbMetaPurgedAssets.length > 0) {
+          //     let proms = dbMetaPurgedAssets.map((item) => {
+          //       return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
+          //     });
+          //     return Promise.all(proms);
+          //   }
+          //   else {
+          //     return Promise.all(prefsFindOrCreatePromises);
+          //   }
+          // })
 
-    //   for (prefKey in checkInObj.json.prefs.prefs) {
-    //     let prom = models.GuardianSoftwarePrefs.findOrCreate({
-    //       where: {
-    //         guardian_id: guardianId,
-    //         pref_key: prefKey,
-    //         pref_value: checkInObj.json.prefs.prefs[prefKey]
-    //       }
-    //     });
-    //   //  metaReturnArray.push({ id: checkInObj.json.meta_ids[i] });
-    //     proms.push(prom);
-    //   }
-    // }
-
-    // return Promise.all(proms)
-    //   .then(() => {
-
-    //     // parse list of purged assets from guardian, delete them from database and return list
-    //     var dbMetaPurgedAssets = [], metaPurgedAssets = strArrToJSArr(checkInObj.json.assets_purged,"|","*");
-    //     for (asstInd in metaPurgedAssets) {
-    //       if (metaPurgedAssets[asstInd][1] != null) {
-    //         dbMetaPurgedAssets.push({
-    //           guardian_id: guardianId,
-    //           asset_type: metaPurgedAssets[asstInd][0],
-    //           asset_id: metaPurgedAssets[asstInd][1]
-    //         });
-    //         purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1] });
-    //       }
-    //     }
-    //     // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
-    //     let promsExchLogs = [];
-    //     if (checkInObj.json.checkins_to_verify != null) {
-    //       for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
-    //         let prom = models.GuardianMetaAssetExchangeLog.findOne({
-    //             where: {
-    //               guardian_id: guardianId,
-    //               asset_type: "audio",
-    //               asset_id: checkInObj.json.checkins_to_verify[i]
-    //             }
-    //           })
-    //           .then((dbAssetEntry) => {
-    //             if (dbAssetEntry != null) {
-    //               receivedReturnArray.push({ type: "audio", id: dbAssetEntry.asset_id });
-    //               receivedIdArray.push(dbAssetEntry.asset_id);
-    //             }
-    //           });
-    //         promsExchLogs.push(prom);
-    //       }
-    //     }
-
-    //     return Promise.all(promsExchLogs)
-    //       .then(() => {
-    //         if (dbMetaPurgedAssets.length > 0) {
-    //           let proms = dbMetaPurgedAssets.map((item) => {
-    //             return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
-    //           });
-    //           return Promise.all(proms);
-    //         }
-    //         else {
-    //           return Promise.all(promsExchLogs);
-    //         }
-    //       })
-    //   })
-      .then(() => {
-
-        // if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
-        //   for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
-        //     if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
-        //       unconfirmedReturnArray.push({ type: "audio", id: checkInObj.json.checkins_to_verify[i] });
-        //     }
-        //   }
-        // }
-
-        // add checkin response json to overall checkInObj
-        // checkInObj.rtrn.obj.meta = metaReturnArray;
-        // checkInObj.rtrn.obj.purged = purgedReturnArray;
-        // checkInObj.rtrn.obj.received = receivedReturnArray;
+        }).then(() => {
+          
+          checkInObj.rtrn.obj.prefs = prefsRtrnArr;
+          return checkInObj;
+        })
         
-        checkInObj.rtrn.obj.prefs = prefsReturnArray;
-
-        return checkInObj;
-      })
   },
 
   createDbAudio: function(checkInObj) {
