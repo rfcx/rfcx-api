@@ -277,7 +277,7 @@ exports.checkInDatabase = {
           }
         }
 
-        prefsReturnArray.push({ checksum: hash.hashData(prefsBlob) });
+        prefsReturnArray.push({ checksum: hash.hashData(prefsBlob), str: prefsBlob });
 
       //   let opts = { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] };
       //   return models.GuardianSoftwareVersion
