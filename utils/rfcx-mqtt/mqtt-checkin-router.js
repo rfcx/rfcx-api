@@ -22,7 +22,7 @@ function onMessageCheckin(data, messageId) {
     .then((checkInObj) => {
       checkInObj.rtrn = { obj: {  checkin_id: null, audio: [],
                                   screenshots: [], logs: [], messages: [], meta: [], photos: [], videos: [],
-                                  purged: [], received: [], unconfirmed: [], instructions: []
+                                  purged: [], received: [], unconfirmed: [], prefs: [], instructions: []
                               } };
       logDebug('mqttCheckInRouter -> onMessageCheckin -> parseCheckInInput', {
         messageId,
@@ -86,6 +86,10 @@ function onMessageCheckin(data, messageId) {
     })
     .then((checkInObj) => {
       logDebug('mqttCheckInRouter -> onMessageCheckin -> updateDbMetaAssetsExchangeLog', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
+      return checkInDatabase.updateDbGuardianPrefs(checkInObj);
+    })
+    .then((checkInObj) => {
+      logDebug('mqttCheckInRouter -> onMessageCheckin -> updateDbGuardianPrefs', { messageId, checkInObj: JSON.parse(JSON.stringify(checkInObj.rtrn))});
       return checkInDatabase.createDbAudio(checkInObj);
     })
     .then((checkInObj) => {

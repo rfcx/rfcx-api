@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
 
     pref_value: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: false,
       validate: {
       }
