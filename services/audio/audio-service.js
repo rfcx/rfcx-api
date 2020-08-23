@@ -3,6 +3,8 @@ const urlUtil = require('../../utils/misc/urls')
 const audioUtils = require('../../utils/rfcx-audio').audioUtils
 const models = require('../../models')
 const sqlUtils = require('../../utils/misc/sql')
+const sequelize = require('sequelize')
+const guardianGroupService = require('../guardians/guardian-group-service')
 
 const querySelect =
   'SELECT GuardianAudio.guid, GuardianAudio.measured_at, GuardianAudio.size, GuardianAudio.original_filename, ' +
@@ -32,7 +34,6 @@ const queryJoins =
 function prepareOpts (req) {
   let order, dir
   if (req.query.order) {
-    order
     dir = 'ASC'
     if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
       dir = req.query.dir.toUpperCase()
@@ -185,12 +186,12 @@ function getAudioByGuid (guid) {
     })
 }
 
-function removeBoxesForAudioFromUser (audio, user_id) {
+function removeBoxesForAudioFromUser (audio, user_id) { // eslint-disable-line camelcase
   // remove all previous labels for this file from this user
   return models.GuardianAudioBox.destroy({ where: { audio_id: audio.id, created_by: user_id } })
 }
 
-function createBoxesForAudio (audio, boxes, user_id) {
+function createBoxesForAudio (audio, boxes, user_id) { // eslint-disable-line camelcase
   const proms = []
   boxes.forEach((box) => {
     const prom = models.GuardianAudioEventValue.findOrCreate({

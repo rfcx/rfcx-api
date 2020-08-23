@@ -1,26 +1,24 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
 const streamsService = require('./index')
 
 const permissionBaseInclude = [
   {
     model: models.Stream,
     as: 'stream',
-    attributes: models.Stream.attributes.lite,
+    attributes: models.Stream.attributes.lite
   },
   {
     model: models.User,
     as: 'user',
-    attributes: models.User.attributes.lite,
+    attributes: models.User.attributes.lite
   },
   {
     model: models.Organization,
     as: 'organization',
-    attributes: models.Organization.attributes.lite,
-  },
-];
+    attributes: models.Organization.attributes.lite
+  }
+]
 
 /**
  * Returns true if the user has permission on the stream
@@ -28,7 +26,7 @@ const permissionBaseInclude = [
  * @param {string} streamOrId stream id or stream model item
  * @param {string} type
  */
-async function hasPermission(userId, streamOrId, type) {
+async function hasPermission (userId, streamOrId, type) {
   const stream = await (typeof streamOrId === 'string' ? streamsService.getById(streamOrId) : Promise.resolve(streamOrId))
   if (!stream) {
     return false
@@ -66,7 +64,7 @@ async function getPermissionsForStream (userId, streamOrId) {
     stream_id: stream.id,
     user_id: userId
   })
-  let permissions = permissionsModels.map(x => x.type)
+  const permissions = permissionsModels.map(x => x.type)
   if (stream.is_public && !permissions.includes('R')) {
     permissions.push('R')
   }
@@ -78,7 +76,7 @@ async function getPermissionsForStream (userId, streamOrId) {
  * @param {*} attrs permission attributes
  * @param {*} opts additional function params
  */
-async function query(attrs, opts = {}) {
+async function query (attrs, opts = {}) {
   return models.StreamPermission.findAll({
     where: {
       stream_id: attrs.stream_id,
@@ -86,7 +84,7 @@ async function query(attrs, opts = {}) {
       ...attrs.type && { type: attrs.type }
     },
     attributes: models.StreamPermission.attributes.full,
-    include: opts.joinRelations? permissionBaseInclude : [],
+    include: opts.joinRelations ? permissionBaseInclude : []
   })
 }
 
@@ -96,10 +94,10 @@ async function query(attrs, opts = {}) {
  * @param {*} user_id
  * @param {*} type "R" (read) or "W" (write)
  */
-async function add(stream_id, user_id, type) {
+async function add (stream_id, user_id, type) { // eslint-disable-line camelcase
   return models.sequelize.transaction(async (transaction) => {
     await models.StreamPermission.destroy({ where: { stream_id, user_id }, transaction })
-    let permission = await models.StreamPermission.create({ stream_id, user_id, type }, { transaction })
+    const permission = await models.StreamPermission.create({ stream_id, user_id, type }, { transaction })
     return permission
   })
 }
@@ -109,24 +107,24 @@ async function add(stream_id, user_id, type) {
  * @param {*} stream_id
  * @param {*} user_id
  */
-function remove(stream_id, user_id) {
+function remove (stream_id, user_id) { // eslint-disable-line camelcase
   return models.StreamPermission.destroy({ where: { stream_id, user_id } })
 }
 
 /**
  * Get a list of IDs for streams marked as public
  */
-async function getPublicStreamIds() {
+async function getPublicStreamIds () {
   return (await streamsService.query({
-      is_public: true
-    })).streams.map(d => d.id)
+    is_public: true
+  })).streams.map(d => d.id)
 }
 
 /**
  * Get a list of IDs for streams which are accessible to the user
  * @param {string} createdBy Limit to streams created by `me` (my streams) or `collaborators` (shared with me)
  */
-async function getAccessibleStreamIds(userId, createdBy = undefined) {
+async function getAccessibleStreamIds (userId, createdBy = undefined) {
   // Only my streams or my collaborators
   if (createdBy !== undefined) {
     return (await streamsService.query({
@@ -143,15 +141,15 @@ async function getAccessibleStreamIds(userId, createdBy = undefined) {
     current_user_id: userId,
     created_by: 'collaborators'
   })
-  const streamIds = [ ...new Set([
+  const streamIds = [...new Set([
     ...s1.streams.map(d => d.id),
     ...s2.streams.map(d => d.id)
-  ]) ]
+  ])]
   return streamIds
 }
 
-function format(permission) {
-  const { stream, user, organization, type, created_at, updated_at } = permission
+function format (permission) {
+  const { type, created_at, updated_at } = permission // eslint-disable-line camelcase
   return {
     stream: permission.stream || null,
     user: permission.user || null,
@@ -159,10 +157,10 @@ function format(permission) {
     type,
     created_at,
     updated_at
-  };
+  }
 }
 
-function formatMultiple(permissions) {
+function formatMultiple (permissions) {
   return permissions.map(format)
 }
 

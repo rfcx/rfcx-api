@@ -1,9 +1,6 @@
 var sequelize = require('sequelize')
 var Converter = require('../../utils/converter/converter')
-const ValidationError = require('../../utils/converter/validation-error')
 var models = require('../../models')
-var sequelize = require('sequelize')
-var Promise = require('bluebird')
 const userService = require('../users/users-service')
 
 function validateCreateParams (params) {

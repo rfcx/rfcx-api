@@ -6,7 +6,7 @@ async function isTokenCorrect (guardianOrGuid, token) {
   if (!guardian) {
     return false
   }
-  return guardian.auth_token_hash == hash.hashedCredentials(guardian.auth_token_salt, token)
+  return guardian.auth_token_hash === hash.hashedCredentials(guardian.auth_token_salt, token)
 }
 
 module.exports = {

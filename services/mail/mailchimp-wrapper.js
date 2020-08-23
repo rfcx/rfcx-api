@@ -2,12 +2,10 @@ const rp = require('request-promise')
 const ValidationError = require('../../utils/converter/validation-error')
 const Promise = require('bluebird')
 const mandrill = require('mandrill-api/mandrill')
-const mandrill_client = new mandrill.Mandrill(process.env.MANDRILL_KEY)
+const mandrillClient = new mandrill.Mandrill(process.env.MANDRILL_KEY)
 
 module.exports = {
   subsribeToList: function (listId, email) {
-    var request = require('request')
-
     var options = {
       method: 'POST',
       url: `${process.env.MAILCHIMP_API_URL}/lists/${listId}/members`,
@@ -21,13 +19,13 @@ module.exports = {
     }
 
     return rp(options).catch(body => {
-      if (body.error.title == 'Member Exists') {
+      if (body.error.title === 'Member Exists') {
         return {}
       }
       throw new ValidationError(body.error.detail)
     })
   },
-  sendMail: function (email_address, name, subject, message) {
+  sendMail: function (email, name, subject, message) {
     return new Promise(function (resolve, reject) {
       var msg = {
         text: message,
@@ -35,15 +33,15 @@ module.exports = {
         from_email: 'contact@rfcx.org',
         from_name: 'Rainforest Connection',
         to: [{
-          email: email_address,
-          name: name == '' ? null : name,
+          email: email,
+          name: name === '' ? null : name,
           type: 'to'
         }],
 
         auto_html: true
       }
 
-      mandrill_client.messages.send({ message: msg, async: true }, function () {
+      mandrillClient.messages.send({ message: msg, async: true }, function () {
         resolve({ success: true })
       }, function (e) {
         reject(new Error(`Error sending mail: ${e.name} - ${e.message}`))
@@ -70,7 +68,7 @@ module.exports = {
         auto_html: true
       }
 
-      mandrill_client.messages
+      mandrillClient.messages
         .send({
           message,
           async: true
@@ -102,7 +100,7 @@ module.exports = {
         auto_html: true
       }
 
-      mandrill_client.messages
+      mandrillClient.messages
         .send({
           message,
           async: true

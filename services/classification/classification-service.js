@@ -70,7 +70,7 @@ function queryByKeyword (keyword, types, limit, offset) {
   const columns = models.Classification.attributes.lite.map(col => `c.${col} AS ${col}`).join(', ')
   const typeColumns = models.ClassificationType.attributes.lite.map(col => `ct.${col} AS "type.${col}"`).join(', ')
   const nameColumns = models.ClassificationAlternativeName.attributes.lite.map(col => `can.${col} AS "alternative_names.${col}"`).join(', ')
-  const typeCondition = types == undefined ? '' : 'AND ct.value = ANY($types)'
+  const typeCondition = types === undefined ? '' : 'AND ct.value = ANY($types)'
   const sql = `SELECT ${columns}, ${typeColumns}, ${nameColumns}
        FROM classifications c
        INNER JOIN classification_types ct ON c.type_id = ct.id ${typeCondition}

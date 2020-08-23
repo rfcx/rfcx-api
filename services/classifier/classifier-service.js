@@ -1,7 +1,5 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
 
 /**
  * Searches for classifier with given uuid

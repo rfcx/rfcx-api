@@ -1,6 +1,5 @@
 const request = require('request')
 const Promise = require('bluebird')
-const util = require('util')
 const guid = require('../../utils/misc/guid')
 const redisClient = require('../../utils/redis')
 const generator = require('generate-password')
@@ -395,7 +394,7 @@ function getAllClients (token) {
 }
 
 function assignRolesToUser (token, userGuid, rolesGuids) {
-  rolesGuids = util.isArray(rolesGuids) ? rolesGuids : [rolesGuids]
+  rolesGuids = Array.isArray(rolesGuids) ? rolesGuids : [rolesGuids]
 
   return new Promise(function (resolve, reject) {
     request({
@@ -420,7 +419,7 @@ function assignRolesToUser (token, userGuid, rolesGuids) {
 }
 
 function deleteRolesFromUser (token, userGuid, rolesGuids) {
-  rolesGuids = util.isArray(rolesGuids) ? rolesGuids : [rolesGuids]
+  rolesGuids = Array.isArray(rolesGuids) ? rolesGuids : [rolesGuids]
 
   return new Promise(function (resolve, reject) {
     request({

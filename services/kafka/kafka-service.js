@@ -1,7 +1,6 @@
 const kafka = require('kafka-node')
 const Promise = require('bluebird')
 const loggers = require('../../utils/logger')
-const util = require('util')
 
 const Producer = kafka.Producer
 const client = new kafka.KafkaClient({
@@ -44,7 +43,7 @@ function preparePayloadItem (topic, text, key) {
 }
 
 function arePayloadsValid (payloads) {
-  if (!util.isArray(payloads)) return false
+  if (!Array.isArray(payloads)) return false
   return !payloads.some((payload) => {
     return !payload.topic || !payload.messages
   })
@@ -61,7 +60,7 @@ function send (payloads) {
       logError(msg)
       return reject(new Error(msg))
     }
-    payloads = util.isArray(payloads) ? payloads : [payloads]
+    payloads = Array.isArray(payloads) ? payloads : [payloads]
     if (!arePayloadsValid(payloads)) {
       const msg = 'Kafka Service: some of payloads have invalid format.'
       logError(msg)

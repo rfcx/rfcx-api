@@ -1,11 +1,9 @@
 var Promise = require('bluebird')
-var ValidationError = require('../../utils/converter/validation-error')
 var EmptyResultError = require('../../utils/converter/empty-result-error')
 var sqlUtils = require('../../utils/misc/sql')
 const neo4j = require('../../utils/neo4j')
 const S3Service = require('../s3/s3-service')
 const guid = require('../../utils/misc/guid')
-const audioUtils = require('../../utils/rfcx-audio').audioUtils
 const aws = require('../../utils/external/aws.js').aws()
 
 function getPublicAis (opts) {

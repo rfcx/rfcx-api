@@ -9,6 +9,6 @@ module.exports = {
     require('./guardians/guardians')
   ],
   tags: [
-    require("./tags/tags"),
-  ],
+    require('./tags/tags')
+  ]
 }

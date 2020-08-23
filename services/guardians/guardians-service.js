@@ -98,11 +98,11 @@ async function createGuardian (attrs) {
     latitude: attrs.latitude || 0,
     longitude: attrs.longitude || 0
   }
-  const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs })
+  const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs }) // eslint-disable-line no-unused-vars
 
-  const token_salt = hash.randomHash(320)
-  dbGuardian.auth_token_salt = token_salt
-  dbGuardian.auth_token_hash = hash.hashedCredentials(token_salt, attrs.token)
+  const tokenSalt = hash.randomHash(320)
+  dbGuardian.auth_token_salt = tokenSalt
+  dbGuardian.auth_token_hash = hash.hashedCredentials(tokenSalt, attrs.token)
   dbGuardian.auth_token_updated_at = new Date()
   dbGuardian.site_id = attrs.site_id || 1
   if (attrs.creator_id) {

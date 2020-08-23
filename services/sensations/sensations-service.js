@@ -3,7 +3,6 @@ var Converter = require('../../utils/converter/converter')
 var SensationsRepository = require('./sensations-repository')
 const ValidationError = require('../../utils/converter/validation-error')
 var models = require('../../models')
-const audio_data = 1
 const moment = require('moment-timezone')
 
 function createSensations (params) {
@@ -36,10 +35,10 @@ function createSensations (params) {
   })
 }
 
-function createSensationsFromGuardianAudio (audio_guid) {
+function createSensationsFromGuardianAudio (audioGuid) {
   var params = {}
 
-  return models.GuardianAudio.findOne({ where: { guid: audio_guid } }).then(guardianAudio => {
+  return models.GuardianAudio.findOne({ where: { guid: audioGuid } }).then(guardianAudio => {
     params.starting_after = moment.tz(guardianAudio.measured_at.valueOf(), 'UTC').toISOString()
     params.capture_sample_count = guardianAudio.capture_sample_count
     params.source_id = guardianAudio.guardian_id
@@ -47,9 +46,9 @@ function createSensationsFromGuardianAudio (audio_guid) {
     return models.GuardianAudioFormat.findOne({ where: { id: guardianAudio.format_id } })
   }).then(audioFormat => {
     var lengthInMs = Math.floor((params.capture_sample_count / audioFormat.sample_rate) * 1000)
-    var ending_before = moment.tz(params.starting_after, 'UTC')
-    ending_before.milliseconds(ending_before.milliseconds() + lengthInMs)
-    params.ending_before = ending_before.toISOString()
+    var endingBefore = moment.tz(params.starting_after, 'UTC')
+    endingBefore.milliseconds(endingBefore.milliseconds() + lengthInMs)
+    params.ending_before = endingBefore.toISOString()
     return models.Guardian.findOne({ where: { id: params.source_id } })
   }).then(guardian => {
     params.latitude = guardian.latitude

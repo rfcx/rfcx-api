@@ -231,12 +231,12 @@ function updateGuardianGroupEventTypesRelations (group, params) {
     })
 }
 
-function getAllGroupsForGuardianId (guardian_id) {
+function getAllGroupsForGuardianId (guardianId) {
   return models.GuardianGroup.findAll({
     include: [
       {
         model: models.Guardian,
-        where: { id: guardian_id }
+        where: { id: guardianId }
       },
       {
         model: models.GuardianAudioEventValue

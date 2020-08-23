@@ -1,7 +1,6 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
-const { propertyToFloat } = require('../../utils/formatters/object-properties')
-const { timeBucketAttribute, aggregatedValueAttribute, timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
+const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const platform = process.env.PLATFORM || 'amazon'
 const storageService = require(`../storage/${platform}`)
 

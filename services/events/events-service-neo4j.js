@@ -2,7 +2,6 @@ var Promise = require('bluebird')
 const fs = require('fs')
 const path = require('path')
 const moment = require('moment-timezone')
-var ValidationError = require('../../utils/converter/validation-error')
 var EmptyResultError = require('../../utils/converter/empty-result-error')
 var sqlUtils = require('../../utils/misc/sql')
 const neo4j = require('../../utils/neo4j')
@@ -20,7 +19,6 @@ const usersService = require('../users/users-service')
 function prepareOpts (req) {
   let order, dir
   if (req.query.order) {
-    order
     dir = 'ASC'
     if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
       dir = req.query.dir.toUpperCase()
@@ -196,7 +194,7 @@ function queryData (req) {
       query = sqlUtils.condAdd(query, true, ' OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) WITH ev, evs, ai, val, CASE WHEN COUNT(re) > 0 THEN COLLECT({firstname: user.firstname, lastname: user.lastname, guid: user.guid, email: user.email, pictureUrl: user.pictureUrl, created: re.created, unreliable: re.unreliable, confirmed: re.confirmed, latest: re.latest}) ELSE [] END as re')
       query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) WITH ev, evs, ai, val, aw, re')
       query = sqlUtils.condAdd(query, opts.includeWindows, ' OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review {latest: true}) WITH ev, evs, ai, val, re, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows')
-      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount')
+      query = sqlUtils.condAdd(query, opts.includeWindows && opts.hasNoReviewedWindows !== undefined || opts.hasConfirmedWindows !== undefined || opts.hasRejectedWindows !== undefined, ' WITH ev, evs, ai, val, windows, re, SIZE(FILTER(window IN windows WHERE window.confirmed = true)) as confirmedCount, SIZE(FILTER(window IN windows WHERE window.confirmed = false)) as rejectedCount') // eslint-disable-line no-mixed-operators
       query = sqlUtils.condAdd(query, opts.includeWindows, ' WHERE 1=1')
       query = sqlUtils.condAdd(query, opts.reviewed === true, ' AND SIZE(re) > 0')
       query = sqlUtils.condAdd(query, opts.reviewed === false, ' AND SIZE(re) = 0')
@@ -232,7 +230,7 @@ function queryData (req) {
             mp3: `${assetUrlBase}.mp3`,
             png: `${assetUrlBase}.png`,
             opus: `${assetUrlBase}.opus`
-          },
+          }
           event.value = record.get(2)
           event.label = record.get(3)
 
@@ -303,7 +301,7 @@ function getEventByGuid (guid) {
         mp3: `${assetUrlBase}.mp3`,
         png: `${assetUrlBase}.png`,
         opus: `${assetUrlBase}.opus`
-      },
+      }
       event.value = record.get(2)
       event.label = record.get(3)
       const windows = record.get(4)
@@ -490,7 +488,7 @@ function sendNotificationsForEvent (data) {
             // Send push notification to mobile devices
             firebaseService.sendToTopic(opts)
               .catch((err) => {
-                logError(`Error sending Firebase message for audio ${data.audio_guid} to ${dbGuardianGroup.shortname} topic`, { req, err })
+                logError(`Error sending Firebase message for audio ${data.audio_guid} to ${dbGuardianGroup.shortname} topic`, { err })
               })
             // Send email to subscribers
             dbGuardianGroup.getUsers()
@@ -561,7 +559,7 @@ function sendSNSForEvent (data) {
         return aws.publish(topic, msg)
       })
       .catch((err) => {
-        logError(`Error sending SNS message for audio ${data.audio_guid} to ${topic} topic`, { req, err })
+        logError(`Error sending SNS message for audio ${data.audio_guid} to ${topic} topic`, { err })
       })
   }
 }

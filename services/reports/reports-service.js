@@ -1,16 +1,9 @@
 var models = require('../../models')
 var sequelize = require('sequelize')
-var Converter = require('../../utils/converter/converter')
 var Promise = require('bluebird')
-const util = require('util')
-const request = require('request')
 const moment = require('moment-timezone')
-const hash = require('../../utils/misc/hash').hash
-const path = require('path')
 const guid = require('../../utils/misc/guid')
-const S3Service = require('../s3/s3-service')
 const sqlUtils = require('../../utils/misc/sql')
-const loggers = require('../../utils/logger')
 const attachmentService = require('../attachment/attachment-service')
 
 const reportsQueryBase =
@@ -34,7 +27,6 @@ const reportsQueryBase =
 function prepareFilterOpts (req) {
   let order, dir
   if (req.query.order) {
-    order
     dir = 'ASC'
     if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
       dir = req.query.dir.toUpperCase()

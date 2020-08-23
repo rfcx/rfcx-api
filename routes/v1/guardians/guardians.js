@@ -1,26 +1,24 @@
-var models  = require("../../../models");
-var express = require("express");
-var router = express.Router();
-var hash = require("../../../utils/misc/hash.js").hash;
-var views = require("../../../views/v1");
-var httpError = require("../../../utils/http-errors.js");
-var passport = require("passport");
-var Promise = require("bluebird");
-var sequelize = require("sequelize");
-var ValidationError = require("../../../utils/converter/validation-error");
-var hasRole = require('../../../middleware/authorization/authorization').hasRole;
-const siteService = require('../../../services/sites/sites-service');
-const usersService = require('../../../services/users/users-service');
-const guardiansService = require('../../../services/guardians/guardians-service');
-const userService = require('../../../services/users/users-service');
-const streamsService = require('../../../services/streams');
-var Converter = require("../../../utils/converter/converter");
-const streams = require("../../../services/streams");
+var models = require('../../../models')
+var express = require('express')
+var router = express.Router()
+var hash = require('../../../utils/misc/hash.js').hash
+var views = require('../../../views/v1')
+var httpError = require('../../../utils/http-errors.js')
+var passport = require('passport')
+var Promise = require('bluebird')
+var sequelize = require('sequelize')
+var ValidationError = require('../../../utils/converter/validation-error')
+var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const siteService = require('../../../services/sites/sites-service')
+const usersService = require('../../../services/users/users-service')
+const guardiansService = require('../../../services/guardians/guardians-service')
+const userService = require('../../../services/users/users-service')
+const streamsService = require('../../../services/streams')
+var Converter = require('../../../utils/converter/converter')
 
-router.route("/")
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function(req,res) {
-
-    var sitesQuery = {};
+router.route('/')
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+    var sitesQuery = {}
 
     return Promise.resolve()
       .then(() => {
@@ -366,31 +364,30 @@ router.route('/:guid')
     params.convert('is_visible').optional().toBoolean()
 
     params.validate()
-      return guardiansService.getGuardianByGuid(req.params.guid)
-        .then((guardian) => {
-          return guardiansService.updateGuardian(guardian, transformedParams);
-        })
-        .then(async (guardian) => {
-          try {
-            const stream = await streamsService.getById(guardian.guid)
-            if (stream) {
-              await streamsService.update(stream, {
-                name: guardian.shortname
-              })
-            }
-          } catch (e) { }
-          return guardian
-        })
-        .then((guardian) => {
-          return guardiansService.formatGuardian(guardian);
-        })
-        .then(function(json) {
-          res.status(200).send(json);
-        })
-        .catch(ValidationError, e => { httpError(req, res, 400, null, e.message); })
-        .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message); })
-        .catch(e => { httpError(req, res, 500, e, "Error while updating the Guardian."); });
-
-  });
+    return guardiansService.getGuardianByGuid(req.params.guid)
+      .then((guardian) => {
+        return guardiansService.updateGuardian(guardian, transformedParams)
+      })
+      .then(async (guardian) => {
+        try {
+          const stream = await streamsService.getById(guardian.guid)
+          if (stream) {
+            await streamsService.update(stream, {
+              name: guardian.shortname
+            })
+          }
+        } catch (e) { }
+        return guardian
+      })
+      .then((guardian) => {
+        return guardiansService.formatGuardian(guardian)
+      })
+      .then(function (json) {
+        res.status(200).send(json)
+      })
+      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while updating the Guardian.') })
+  })
 
 module.exports = router

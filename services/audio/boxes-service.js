@@ -1,4 +1,3 @@
-const Promise = require('bluebird')
 const moment = require('moment-timezone')
 const models = require('../../models')
 const sqlUtils = require('../../utils/misc/sql')
@@ -31,7 +30,6 @@ const queryJoins =
 function prepareOpts (req) {
   let order, dir
   if (req.query.order) {
-    order
     dir = 'ASC'
     if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
       dir = req.query.dir.toUpperCase()

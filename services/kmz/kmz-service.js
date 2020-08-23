@@ -43,7 +43,7 @@ function toGeoJSON (path, isKML) {
     } else {
       var kml = xmldom.parseFromString(fs.readFileSync(path, 'utf8'))
       if (!kml) {
-        reject(error)
+        reject() // eslint-disable-line prefer-promise-reject-errors
       } else {
         const geojson = togeojson.kml(kml)
         resolve(geojson)

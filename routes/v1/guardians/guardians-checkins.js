@@ -1,23 +1,15 @@
-var verbose_logging = (process.env.NODE_ENV !== "production");
-var models  = require("../../../models");
-var express = require("express");
-var router = express.Router();
-var fs = require("fs");
-var zlib = require("zlib");
-var util = require("util");
-var hash = require("../../../utils/misc/hash.js").hash;
-var token = require("../../../utils/internal-rfcx/token.js").token;
-var views = require("../../../views/v1");
-var checkInHelpers = require("../../../utils/rfcx-checkin");
+var models = require('../../../models')
+var express = require('express')
+var router = express.Router()
+var views = require('../../../views/v1')
+var checkInHelpers = require('../../../utils/rfcx-checkin')
 const queueForPrediction = require('../../../utils/rfcx-analysis/queue-for-prediction')
-var httpError = require("../../../utils/http-errors.js");
-var passport = require("passport");
-passport.use(require("../../../middleware/passport-token").TokenStrategy);
-var Promise = require('bluebird');
-var loggers = require('../../../utils/logger');
-var urls = require('../../../utils/misc/urls');
-var sequelize = require("sequelize");
-const moment = require("moment-timezone");
+var httpError = require('../../../utils/http-errors.js')
+var passport = require('passport')
+passport.use(require('../../../middleware/passport-token').TokenStrategy)
+var Promise = require('bluebird')
+var loggers = require('../../../utils/logger')
+var sequelize = require('sequelize')
 
 var logDebug = loggers.debugLogger.log
 
@@ -241,9 +233,9 @@ router.route('/:guardian_id/checkins')
             .then(function () {
               if (self.dbGuardian) {
                 return queueForPrediction(this.audioInfoPostQueue, self.dbGuardian)
-                  .then(() => this.audioInfoPostQueue);
+                  .then(() => this.audioInfoPostQueue)
               }
-              return this.audioInfoPostQueue;
+              return this.audioInfoPostQueue
             })
             .then(function () {
               if (process.env.INGEST_SERVICE_ENABLED === 'true') {

@@ -1,8 +1,6 @@
 var Converter = require('../../utils/converter/converter')
 var CognitionService = require('../cognitions/cognitions-service')
 var models = require('../../models')
-var views = require('../../views/v1')
-const versionName = 'v3'
 var aws = require('../../utils/external/aws').aws()
 var ValidationError = require('../../utils/converter/validation-error')
 var Promise = require('bluebird')
@@ -19,7 +17,7 @@ function uploadToS3 (localPath, s3Path) {
       if (err) {
         console.log(err)
         reject(new Error(err))
-      } else if (s3Res.statusCode == 200) {
+      } else if (s3Res.statusCode === 200) {
         resolve()
       } else {
         reject(Error('Could not upload AI to S3.'))
@@ -51,7 +49,7 @@ module.exports = {
     return params.validate().then(() => {
       return models.AudioAnalysisModel.count({ where: { [models.Sequelize.Op.or]: [{ guid: transformedParams.guid }, { shortname: transformedParams.shortname }] } })
         .then(count => {
-          return count != 0
+          return count !== 0
         })
     })
   },

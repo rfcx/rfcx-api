@@ -1,9 +1,7 @@
 var sequelize = require('sequelize')
 var Converter = require('../../utils/converter/converter')
-const ValidationError = require('../../utils/converter/validation-error')
 var models = require('../../models')
 const userService = require('../users/users-service')
-var sequelize = require('sequelize')
 var Promise = require('bluebird')
 
 function getTypeByName (name) {

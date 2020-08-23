@@ -1,8 +1,6 @@
 const fs = require('fs')
 const AWS = require('aws-sdk')
 
-const ingestBucket = process.env.INGEST_BUCKET
-
 const s3Client = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_KEY,

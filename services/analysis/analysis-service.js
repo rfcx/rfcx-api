@@ -1,10 +1,6 @@
-const sequelize = require('sequelize')
-const ValidationError = require('../../utils/converter/validation-error')
 const models = require('../../models')
-const Promise = require('bluebird')
-const logDebug = require('../../utils/logger').debugLogger.log
 
-function findEntityByParams (guardian_audio_id, audio_analysis_model_id) {
+function findEntityByParams (guardian_audio_id, audio_analysis_model_id) { // eslint-disable-line camelcase
   return models.AudioAnalysisEntry
     .findOne({
       where: {
@@ -14,7 +10,7 @@ function findEntityByParams (guardian_audio_id, audio_analysis_model_id) {
     })
 }
 
-function changeEntityState (guardian_audio_id, audio_analysis_model_id, state) {
+function changeEntityState (guardian_audio_id, audio_analysis_model_id, state) { // eslint-disable-line camelcase
   return findEntityByParams(guardian_audio_id, audio_analysis_model_id)
     .then((entity) => {
       return entity.update({
@@ -30,7 +26,7 @@ function findStateByName (name) {
     })
 }
 
-function createEntity (guardian_audio_id, audio_analysis_model_id, state) {
+function createEntity (guardian_audio_id, audio_analysis_model_id, state) { // eslint-disable-line camelcase
   return models.AudioAnalysisEntry
     .create({
       guardian_audio_id,

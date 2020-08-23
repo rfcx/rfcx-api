@@ -5,6 +5,7 @@ const moment = require('moment-timezone')
 var ValidationError = require('../../utils/converter/validation-error')
 var sqlUtils = require('../../utils/misc/sql')
 const guardianGroupService = require('../guardians/guardian-group-service')
+const views = require('../../views/v1')
 
 const eventQueryCountSelect =
   'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone '
@@ -42,7 +43,6 @@ const eventQueryJoins =
 function prepareOpts (req) {
   let order, dir
   if (req.query.order) {
-    order
     dir = 'ASC'
     if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
       dir = req.query.dir.toUpperCase()
@@ -334,7 +334,7 @@ function processStatsByDates (req, res) {
 }
 
 function getEventByGuid (guid) {
-  const sql = eventQueryBase + 'WHERE GuardianAudioEvent.guid = :guid;'
+  const sql = `${eventQuerySelect} FROM GuardianAudioEvents AS GuardianAudioEvent WHERE GuardianAudioEvent.guid = :guid;`
   return models.sequelize
     .query(sql, { replacements: { guid: guid }, type: models.sequelize.QueryTypes.SELECT })
     .then((event) => {
@@ -345,7 +345,7 @@ function getEventByGuid (guid) {
     })
 }
 
-function updateEventReview (guid, confirmed, user_id) {
+function updateEventReview (guid, confirmed, userId) {
   return models.GuardianAudioEvent
     .findOne({
       where: { guid: guid },
@@ -367,7 +367,7 @@ function updateEventReview (guid, confirmed, user_id) {
         throw new sequelize.EmptyResultError('Event with given guid not found.')
       } else {
         event.reviewer_confirmed = confirmed
-        event.reviewed_by = user_id
+        event.reviewed_by = userId
         return event.save()
       }
     })

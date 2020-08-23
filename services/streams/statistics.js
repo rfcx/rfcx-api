@@ -1,28 +1,25 @@
 const models = require('../../modelsTimescale')
-const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
 const streamsService = require('./index')
 const moment = require('moment')
 
-const MS_IN_HR = 10800000;
+const MS_IN_HR = 10800000
 
-async function getStreams(attrs) {
+async function getStreams (attrs) {
+  let streams
   if (attrs.stream_id) { // if client requested single id, request only it
     const stream = await streamsService.getById(attrs.stream_id)
-    var streams = [stream]
-  }
-  else {
+    streams = [stream]
+  } else {
     const streamsData = await streamsService.query(attrs)
-    var streams = streamsData.streams
+    streams = streamsData.streams
   }
   return streams
 }
 
-async function getUploads(attrs) {
+async function getUploads (attrs) {
   // TODO: we may want to think of caching these calculations in REDIS
   // cache will be cleared on each stream-segment creation request
-  let statistics = { // create empty final object
+  const statistics = { // create empty final object
     uploads: []
   }
   const streams = await getStreams(attrs)
@@ -34,11 +31,11 @@ async function getUploads(attrs) {
   const last3Mo = [
     [now.clone().subtract(2, 'months').startOf('month'), now.clone().subtract(2, 'months').endOf('month')],
     [now.clone().subtract(1, 'months').startOf('month'), now.clone().subtract(1, 'months').endOf('month')],
-    [now.clone().startOf('month'), now.clone().endOf('month')],
+    [now.clone().startOf('month'), now.clone().endOf('month')]
   ]
-  for (let stream of streams) {
+  for (const stream of streams) {
     // get all stream segment files for stream
-    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id }})
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_id: stream.id } })
     // calculate duration for stream
     const streamTotalMilliseconds = streamSegments.reduce((acc, segment) => {
       return acc + (segment.end - segment.start)
@@ -47,10 +44,10 @@ async function getUploads(attrs) {
     totalUploads += [...new Set(streamSegments.map(d => d.stream_source_file_id))].length
     totalMilliseconds += streamTotalMilliseconds
 
-    let recentUploads = []
+    const recentUploads = []
     // calculate uploads for last 3 months
-    for (let month of last3Mo) {
-      let filteredSegments = streamSegments.filter((segment) => {
+    for (const month of last3Mo) {
+      const filteredSegments = streamSegments.filter((segment) => {
         return segment.created_at >= month[0] && segment.created_at <= month[1]
       })
       recentUploads.push({
@@ -64,15 +61,15 @@ async function getUploads(attrs) {
       recentUploads
     })
   }
-  statistics.totalUploads = totalUploads;
-  statistics.totalHours = totalMilliseconds > MS_IN_HR ? Math.floor(totalMilliseconds/MS_IN_HR) : totalMilliseconds/MS_IN_HR
+  statistics.totalUploads = totalUploads
+  statistics.totalHours = totalMilliseconds > MS_IN_HR ? Math.floor(totalMilliseconds / MS_IN_HR) : totalMilliseconds / MS_IN_HR
   return statistics
 }
 
-async function getAnnotations(attrs) {
+async function getAnnotations (attrs) {
   // TODO: we may want to think of caching these calculations in REDIS
   // cache will be cleared on each annotation creation request
-  let statistics = {
+  const statistics = {
     frequentClassifications: []
   }
   const streams = await getStreams(attrs)
@@ -84,7 +81,7 @@ async function getAnnotations(attrs) {
       [models.Sequelize.Op.lt]: moment.utc().valueOf()
     },
     stream_id: {
-      [models.Sequelize.Op.in]: streamsIDs,
+      [models.Sequelize.Op.in]: streamsIDs
     }
   }
 
@@ -95,7 +92,7 @@ async function getAnnotations(attrs) {
       {
         as: 'classification',
         model: models.Classification,
-        attributes: ['value', 'title'],
+        attributes: ['value', 'title']
       }
     ],
     group: ['classification.id'],
@@ -132,7 +129,7 @@ async function getAnnotations(attrs) {
         [models.Sequelize.Op.lt]: moment.utc().subtract(7, 'days').valueOf()
       },
       stream_id: {
-        [models.Sequelize.Op.in]: streamsIDs,
+        [models.Sequelize.Op.in]: streamsIDs
       }
     }
   })
@@ -145,7 +142,7 @@ async function getAnnotations(attrs) {
         [models.Sequelize.Op.lt]: moment.utc().valueOf()
       },
       stream_id: {
-        [models.Sequelize.Op.in]: streamsIDs,
+        [models.Sequelize.Op.in]: streamsIDs
       }
     }
   })
@@ -156,10 +153,10 @@ async function getAnnotations(attrs) {
   return statistics
 }
 
-async function getDetections(attrs) {
+async function getDetections (attrs) {
   // TODO: we may want to think of caching these calculations in REDIS
   // cache will be cleared on each annotation creation request
-  let statistics = {}
+  const statistics = {}
   const streams = await getStreams(attrs)
   const streamsIDs = (streams || []).map(x => x.id)
 
@@ -169,7 +166,7 @@ async function getDetections(attrs) {
       [models.Sequelize.Op.lt]: moment.utc().valueOf()
     },
     stream_id: {
-      [models.Sequelize.Op.in]: streamsIDs,
+      [models.Sequelize.Op.in]: streamsIDs
     }
   }
 

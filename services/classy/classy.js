@@ -1,7 +1,7 @@
 const request = require('request')
 const Promise = require('bluebird')
 
-function requestAccessToken (client_id, client_secret) {
+function requestAccessToken (client_id, client_secret) { // eslint-disable-line camelcase
   return new Promise((resolve, reject) => {
     var options = {
       method: 'POST',
