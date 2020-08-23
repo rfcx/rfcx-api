@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var ChannelLayout = sequelize.define("ChannelLayout", {
+module.exports = function (sequelize, DataTypes) {
+  var ChannelLayout = sequelize.define('ChannelLayout', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["value"] }
+      { unique: true, fields: ['value'] }
     ],
-    tableName: "ChannelLayouts"
-  });
+    tableName: 'ChannelLayouts'
+  })
 
-  return ChannelLayout;
-};
+  return ChannelLayout
+}

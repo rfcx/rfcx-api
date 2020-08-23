@@ -5,7 +5,7 @@ const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-a
 const streamPermissionService = require('../streams-timescale/permission')
 
 async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, userId) {
-  let condition = {
+  const condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
       [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
@@ -13,54 +13,52 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
   }
   if (streamId !== undefined) {
     condition.stream_id = streamId
-  }
-  else {
-    const streamIds = streamsOnlyPublic ?
-      await streamPermissionService.getPublicStreamIds() :
-      await streamPermissionService.getAccessibleStreamIds(userId, streamsOnlyCreatedBy)
+  } else {
+    const streamIds = streamsOnlyPublic
+      ? await streamPermissionService.getPublicStreamIds()
+      : await streamPermissionService.getAccessibleStreamIds(userId, streamsOnlyCreatedBy)
     condition.stream_id = {
       [models.Sequelize.Op.in]: streamIds
     }
   }
 
-  const classificationCondition = classifications === undefined ? {} :
-    {
+  const classificationCondition = classifications === undefined ? {}
+    : {
       value: { [models.Sequelize.Op.or]: classifications }
     }
 
   if (minConfidence === undefined) {
     condition.confidence = { [models.Sequelize.Op.gte]: models.Sequelize.literal('classifier.min_confidence') }
-  }
-  else {
+  } else {
     condition.confidence = { [models.Sequelize.Op.gte]: minConfidence }
   }
 
   return {
-      where: condition,
-      include: [
-        {
-          as: 'classification',
-          model: models.Classification,
-          where: classificationCondition,
-          attributes: models.Classification.attributes.lite,
-          required: true
-        },
-        {
-          as: 'classifier',
-          model: models.Classifier,
-          attributes: [],
-          required: true
-        }
-      ],
-      attributes: models.Detection.attributes.lite,
-      offset: offset,
-      limit: limit,
-      order: [['start', descending ? 'DESC' : 'ASC']]
-    }
+    where: condition,
+    include: [
+      {
+        as: 'classification',
+        model: models.Classification,
+        where: classificationCondition,
+        attributes: models.Classification.attributes.lite,
+        required: true
+      },
+      {
+        as: 'classifier',
+        model: models.Classifier,
+        attributes: [],
+        required: true
+      }
+    ],
+    attributes: models.Detection.attributes.lite,
+    offset: offset,
+    limit: limit,
+    order: [['start', descending ? 'DESC' : 'ASC']]
+  }
 }
 
 async function query (start, end, streamId, classifications, minConfidence, reviews, limit, offset, userId) {
-  let opts = await defaultQueryOptions(start, end, streamId, undefined, false, classifications, minConfidence, false, limit, offset, userId)
+  const opts = await defaultQueryOptions(start, end, streamId, undefined, false, classifications, minConfidence, false, limit, offset, userId)
   if (reviews) {
     opts.include.push({
       as: 'reviews',
@@ -84,13 +82,13 @@ async function timeAggregatedQuery (start, end, streamId, streamsOnlyCreatedBy, 
   const queryOptions = {
     ...(await defaultQueryOptions(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, undefined, minConfidence, descending, limit, offset, userId)),
     attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Detection', 'start', timeBucketAttribute, aggregatedValueAttribute),
-      order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
-      group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
-      raw: true,
-      nest: true
+    order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
+    group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
+    raw: true,
+    nest: true
   }
   return models.Detection.findAll(queryOptions)
-  .then(detections => detections.map(propertyToFloat(aggregatedValueAttribute)))
+    .then(detections => detections.map(propertyToFloat(aggregatedValueAttribute)))
 }
 
 function create (detections) {

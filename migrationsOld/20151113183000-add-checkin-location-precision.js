@@ -1,32 +1,26 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-  migration.addColumn(
-    "GuardianCheckIns",
-    "location_precision",
-    {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        isFloat: true,
-        min: 0
+  up: function (migration, DataTypes, done) {
+    migration.addColumn(
+      'GuardianCheckIns',
+      'location_precision',
+      {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        validate: {
+          isFloat: true,
+          min: 0
+        }
       }
-    }
-  );
+    )
 
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'location_precision')
 
-  migration.removeColumn("GuardianCheckIns", "location_precision");
-
-  done();
-
+    done()
   }
-};
-
-
+}

@@ -1,4 +1,4 @@
-var verbose_logging = (process.env.NODE_ENV !== "production");
+var verboseLogging = (process.env.NODE_ENV !== "production");
 var zlib = require("zlib");
 var Promise = require('bluebird');
 var loggers = require('../../utils/logger');
@@ -25,7 +25,7 @@ exports.mqttPingProcess = {
           }
 
           try {
-            
+
             pingObj.json = JSON.parse(jsonBuffer.toString("utf8"));
             resolve(pingObj);
 

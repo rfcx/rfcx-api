@@ -1,24 +1,24 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var ContactMessage = sequelize.define("ContactMessage", {
+module.exports = function (sequelize, DataTypes) {
+  var ContactMessage = sequelize.define('ContactMessage', {
     email: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
+      unique: false
     },
     subject: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
+      unique: false
     },
     message: {
       type: DataTypes.TEXT('long'),
       allowNull: true
-    },
+    }
   }, {
-    tableName: "ContactMessages"
-  });
+    tableName: 'ContactMessages'
+  })
 
-  return ContactMessage;
-};
+  return ContactMessage
+}

@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Codec = sequelize.define("Codec", {
+module.exports = function (sequelize, DataTypes) {
+  var Codec = sequelize.define('Codec', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["value"] }
+      { unique: true, fields: ['value'] }
     ],
-    tableName: "Codecs"
-  });
+    tableName: 'Codecs'
+  })
 
-  return Codec;
-};
+  return Codec
+}

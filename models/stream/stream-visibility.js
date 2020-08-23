@@ -1,19 +1,18 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var StreamVisibility = sequelize.define("StreamVisibility", {
+module.exports = function (sequelize, DataTypes) {
+  var StreamVisibility = sequelize.define('StreamVisibility', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["value"] }
+      { unique: true, fields: ['value'] }
     ],
-    tableName: "StreamVisibilities"
-  });
+    tableName: 'StreamVisibilities'
+  })
 
-  return StreamVisibility;
-};
-
+  return StreamVisibility
+}

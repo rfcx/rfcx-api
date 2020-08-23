@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Message = sequelize.define("Message", {
+module.exports = function (sequelize, DataTypes) {
+  var Message = sequelize.define('Message', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "time for Message should have type Date" }
+        isDate: { msg: 'time for Message should have type Date' }
       }
     },
     latitude: {
@@ -38,10 +38,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "Messages"
-  });
+    tableName: 'Messages'
+  })
 
-  return Message;
-};
+  return Message
+}

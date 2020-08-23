@@ -1,4 +1,4 @@
-var verbose_logging = (process.env.NODE_ENV !== "production");
+var verboseLogging = (process.env.NODE_ENV !== "production");
 var models  = require("../../models");
 var fs = require("fs");
 var sequelize = require("sequelize");

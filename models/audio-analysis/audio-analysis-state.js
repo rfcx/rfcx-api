@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var AudioAnalysisState = sequelize.define("AudioAnalysisState", {
+module.exports = function (sequelize, DataTypes) {
+  var AudioAnalysisState = sequelize.define('AudioAnalysisState', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -13,13 +13,13 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       unique: false,
       validate: { }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["name"] }
+      { unique: true, fields: ['name'] }
     ],
-    tableName: "AudioAnalysisStates"
-  });
+    tableName: 'AudioAnalysisStates'
+  })
 
-  return AudioAnalysisState;
-};
+  return AudioAnalysisState
+}

@@ -1,8 +1,8 @@
 
-exports.config = function(processEnv){
+exports.config = function (processEnv) {
   return {
 
-    dest: process.env.CACHE_DIRECTORY+"uploads/"
-  
-  };
+    dest: process.env.CACHE_DIRECTORY + 'uploads/'
+
+  }
 }

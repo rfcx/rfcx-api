@@ -20,7 +20,7 @@ function getByUuid (uuid, opts = {}) {
         throw new EmptyResultError('Classifier with given uuid not found.')
       }
       return item
-    });
+    })
 }
 
 function getId (uuid) {
@@ -55,5 +55,5 @@ function getIds (uuids) {
 
 module.exports = {
   getByUuid,
-  getIds,
+  getIds
 }

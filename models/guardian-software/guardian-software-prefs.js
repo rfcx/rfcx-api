@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianSoftwarePrefs = sequelize.define("GuardianSoftwarePrefs", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianSoftwarePrefs = sequelize.define('GuardianSoftwarePrefs', {
 
     install_battery_cutoff: {
       type: DataTypes.INTEGER,
@@ -74,8 +74,8 @@ module.exports = function(sequelize, DataTypes) {
     }
 
   }, {
-    tableName: "GuardianSoftwarePrefs"
-  });
+    tableName: 'GuardianSoftwarePrefs'
+  })
 
-  return GuardianSoftwarePrefs;
-};
+  return GuardianSoftwarePrefs
+}

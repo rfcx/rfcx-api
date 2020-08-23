@@ -23,7 +23,7 @@ function get (value) {
           as: 'reference_annotations',
           attributes: models.Annotation.attributes.lite,
           through: { attributes: [] }
-        },
+        }
       ],
       attributes: models.Classification.attributes.full
     })
@@ -146,7 +146,7 @@ function queryByParent (value, type) {
           as: 'type',
           where: typeCondition,
           attributes: []
-        },
+        }
       ],
       attributes: models.Classification.attributes.lite
     })
@@ -159,5 +159,5 @@ module.exports = {
   queryByKeyword,
   queryByStream,
   queryByStreamIncludeChildren,
-  queryByParent,
+  queryByParent
 }

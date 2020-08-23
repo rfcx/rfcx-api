@@ -1,12 +1,12 @@
-var Promise = require("bluebird");
-var ValidationError = require('../../utils/converter/validation-error');
-var EmptyResultError = require('../../utils/converter/empty-result-error');
+var Promise = require('bluebird')
+var ValidationError = require('../../utils/converter/validation-error')
+var EmptyResultError = require('../../utils/converter/empty-result-error')
 
-function getAiModelByGuid(guid, ignoreMissing) {
+function getAiModelByGuid (guid, ignoreMissing) {
   // TODO: replace with commented code when DB part will be ready;
   return Promise.resolve({
     guid: 'test'
-  });
+  })
   // return models.AiModel
   //   .findOne({
   //     where: { guid },
@@ -19,5 +19,5 @@ function getAiModelByGuid(guid, ignoreMissing) {
 }
 
 module.exports = {
-  getAiModelByGuid,
-};
+  getAiModelByGuid
+}

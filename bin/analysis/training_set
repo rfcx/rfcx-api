@@ -1,155 +1,134 @@
 #!/usr/bin/env node
-var args = process.argv.slice(2);
+var args = process.argv.slice(2)
 
-var exec = require('child_process').exec;
-var fs = require("fs");
+var exec = require('child_process').exec
+var fs = require('fs')
 
-if (fs.existsSync(__dirname+"/../../config/env_vars.js")) {
-  var env = require(__dirname+"/../../config/env_vars.js").env;
-  for (i in env) { process.env[i] = env[i]; }
+if (fs.existsSync(__dirname + '/../../config/env_vars.js')) {
+  var env = require(__dirname + '/../../config/env_vars.js').env
+  for (i in env) { process.env[i] = env[i] }
 }
 
-process.env.NODE_ENV = "production"; // could also be staging...
+process.env.NODE_ENV = 'production' // could also be staging...
 
-var models  = require(__dirname+"/../../models");
-var token = require(__dirname+"/../../utils/internal-rfcx/token.js").token;
-var aws = require(__dirname+"/../../utils/external/aws.js").aws();
+var models = require(__dirname + '/../../models')
+var token = require(__dirname + '/../../utils/internal-rfcx/token.js').token
+var aws = require(__dirname + '/../../utils/external/aws.js').aws()
 
 if (args[0] == null) {
-  
-  console.log("You must provide a mode (tsv/open) as arguments.");
-
+  console.log('You must provide a mode (tsv/open) as arguments.')
 } else {
+  var query_limit = 5000
 
-var query_limit = 5000;
+  var minimum_duration = 1500
 
-var minimum_duration = 1500;
+  var used_audio = []
 
-var used_audio = [];
-
-var classifications = {
-  "invalidated": "no_alert",
-  "chainsaw": "chainsaw",
-  "car": "car",
-  "wind": "no_alert",
-  "truck": "truck",
-  "motorcycle": "motorcycle"
-};
-
-
-if (args[0] == "tsv") {
-    console.log(""
-            +"classification"
-      +"\t" +"start_sample"
-      +"\t" +"end_sample"
-      +"\t" +"audio_filename"
-      +"\t" +"event_guid"
-      +"\t" +"review_url"
-      );
-}
-
-    models.GuardianEvent
-      .findAll({ 
-        where: { classification_reviewer: args[1].toLowerCase() }, 
-        include: [ { all: true } ], 
-        order: [ ["guid", "DESC"] ],//[ ["begins_at_analysis", "DESC"] ],
-        limit: query_limit
-      }).then(function(dbEvents){
-
-    //    dbEvents = shuffle(dbEvents);
-
-        for (dbEvntInd in dbEvents) {
-
-          if (dbEvents[dbEvntInd].Audio != null) {
-
-            var begins_at = 
-                    (dbEvents[dbEvntInd].begins_at_reviewer == null) ? dbEvents[dbEvntInd].begins_at_analysis : dbEvents[dbEvntInd].begins_at_reviewer,
-                begins_orig = 
-                    (begins_at.valueOf()-dbEvents[dbEvntInd].Audio.measured_at.valueOf()),
-                begins_full = 
-                    begins_orig,
-                begins_sample = 
-                    Math.round(begins_orig*dbEvents[dbEvntInd].Audio.capture_sample_rate/1000),
-                duration_full = 
-                    (dbEvents[dbEvntInd].duration_reviewer == null) ? dbEvents[dbEvntInd].duration_analysis : dbEvents[dbEvntInd].duration_reviewer,
-                ends_sample = 
-                    Math.round((begins_full+duration_full)*dbEvents[dbEvntInd].Audio.capture_sample_rate/1000)
-                
-                ;
-
-
-            if ((begins_full <= 75000) && (begins_full > 1) && (duration_full >= minimum_duration)) {
-
-              if (used_audio.indexOf(dbEvents[dbEvntInd].Audio.guid) == -1) {
-
-                  if (args[0] == "open") {
-                    console.log(
-                      "open "+"https://console.rfcx.org/#/detection/"+dbEvents[dbEvntInd].guid+";"
-                    );
-                  } else if (args[0] == "tsv") {
-                    console.log(""
-                      +""   +classifications[dbEvents[dbEvntInd].classification_reviewer]
-                      +"\t" +begins_sample
-                      +"\t" +ends_sample
-                      +"\t" +dbEvents[dbEvntInd].Audio.guid+".wav"
-                      +"\t" +dbEvents[dbEvntInd].guid
-                      +"\t" +"https://console.rfcx.org/#/detection/"+dbEvents[dbEvntInd].guid
-                    ); 
-                  } else if (args[0] == "get") {
-                     console.log(""
-                      
-                      +" rm -f ~/Desktop/tsv/m4a/"+dbEvents[dbEvntInd].Audio.guid+".m4a ~/Desktop/tsv/wav/"+dbEvents[dbEvntInd].Audio.guid+".wav;"
-
-                      +" wget "
-                        +" -O ~/Desktop/tsv/m4a/"+dbEvents[dbEvntInd].Audio.guid+".m4a"
-                        +" https://ark.rfcx.org/audio/"+dbEvents[dbEvntInd].Audio.guid+".m4a"
-                        +";"
-
-                      +" ffmpeg"
-                        // +" -ss "+
-                        // +" -t "+Math.round()
-                        +" -i ~/Desktop/tsv/m4a/"+dbEvents[dbEvntInd].Audio.guid+".m4a"
-                        +" -flags +bitexact"
-                        +" ~/Desktop/tsv/wav/"+dbEvents[dbEvntInd].Audio.guid+".wav"
-                        +";"
-
-                  //    +" rm -f ~/Desktop/tsv/m4a/"+dbEvents[dbEvntInd].Audio.guid+".m4a;"
-                    );
-                  }
-
-                used_audio.push(dbEvents[dbEvntInd].Audio.guid);
-
-              }
-
-            }
-
-          }
-
-
-        }
-
-    }).catch(function(err){
-      console.log("failed to return audio | "+err);
-    });
-
-}
-
-
-function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
+  var classifications = {
+    invalidated: 'no_alert',
+    chainsaw: 'chainsaw',
+    car: 'car',
+    wind: 'no_alert',
+    truck: 'truck',
+    motorcycle: 'motorcycle'
   }
 
-  return array;
+  if (args[0] == 'tsv') {
+    console.log('' +
+            'classification' +
+      '\t' + 'start_sample' +
+      '\t' + 'end_sample' +
+      '\t' + 'audio_filename' +
+      '\t' + 'event_guid' +
+      '\t' + 'review_url'
+    )
+  }
+
+  models.GuardianEvent
+    .findAll({
+      where: { classification_reviewer: args[1].toLowerCase() },
+      include: [{ all: true }],
+      order: [['guid', 'DESC']], // [ ["begins_at_analysis", "DESC"] ],
+      limit: query_limit
+    }).then(function (dbEvents) {
+    //    dbEvents = shuffle(dbEvents);
+
+      for (dbEvntInd in dbEvents) {
+        if (dbEvents[dbEvntInd].Audio != null) {
+          var begins_at =
+                    (dbEvents[dbEvntInd].begins_at_reviewer == null) ? dbEvents[dbEvntInd].begins_at_analysis : dbEvents[dbEvntInd].begins_at_reviewer
+          var begins_orig =
+                    (begins_at.valueOf() - dbEvents[dbEvntInd].Audio.measured_at.valueOf())
+          var begins_full =
+                    begins_orig
+          var begins_sample =
+                    Math.round(begins_orig * dbEvents[dbEvntInd].Audio.capture_sample_rate / 1000)
+          var duration_full =
+                    (dbEvents[dbEvntInd].duration_reviewer == null) ? dbEvents[dbEvntInd].duration_analysis : dbEvents[dbEvntInd].duration_reviewer
+          var ends_sample =
+                    Math.round((begins_full + duration_full) * dbEvents[dbEvntInd].Audio.capture_sample_rate / 1000)
+
+          if ((begins_full <= 75000) && (begins_full > 1) && (duration_full >= minimum_duration)) {
+            if (used_audio.indexOf(dbEvents[dbEvntInd].Audio.guid) == -1) {
+              if (args[0] == 'open') {
+                console.log(
+                  'open ' + 'https://console.rfcx.org/#/detection/' + dbEvents[dbEvntInd].guid + ';'
+                )
+              } else if (args[0] == 'tsv') {
+                console.log('' +
+                      '' + classifications[dbEvents[dbEvntInd].classification_reviewer] +
+                      '\t' + begins_sample +
+                      '\t' + ends_sample +
+                      '\t' + dbEvents[dbEvntInd].Audio.guid + '.wav' +
+                      '\t' + dbEvents[dbEvntInd].guid +
+                      '\t' + 'https://console.rfcx.org/#/detection/' + dbEvents[dbEvntInd].guid
+                )
+              } else if (args[0] == 'get') {
+                console.log('' +
+
+                      ' rm -f ~/Desktop/tsv/m4a/' + dbEvents[dbEvntInd].Audio.guid + '.m4a ~/Desktop/tsv/wav/' + dbEvents[dbEvntInd].Audio.guid + '.wav;' +
+
+                      ' wget ' +
+                        ' -O ~/Desktop/tsv/m4a/' + dbEvents[dbEvntInd].Audio.guid + '.m4a' +
+                        ' https://ark.rfcx.org/audio/' + dbEvents[dbEvntInd].Audio.guid + '.m4a' +
+                        ';' +
+
+                      ' ffmpeg' +
+                        // +" -ss "+
+                        // +" -t "+Math.round()
+                        ' -i ~/Desktop/tsv/m4a/' + dbEvents[dbEvntInd].Audio.guid + '.m4a' +
+                        ' -flags +bitexact' +
+                        ' ~/Desktop/tsv/wav/' + dbEvents[dbEvntInd].Audio.guid + '.wav' +
+                        ';'
+
+                  //    +" rm -f ~/Desktop/tsv/m4a/"+dbEvents[dbEvntInd].Audio.guid+".m4a;"
+                )
+              }
+
+              used_audio.push(dbEvents[dbEvntInd].Audio.guid)
+            }
+          }
+        }
+      }
+    }).catch(function (err) {
+      console.log('failed to return audio | ' + err)
+    })
+}
+
+function shuffle (array) {
+  var currentIndex = array.length; var temporaryValue; var randomIndex
+
+  // While there remain elements to shuffle...
+  while (currentIndex !== 0) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex)
+    currentIndex -= 1
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex]
+    array[currentIndex] = array[randomIndex]
+    array[randomIndex] = temporaryValue
+  }
+
+  return array
 }

@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var AnonymousToken = sequelize.define("AnonymousToken", {
+module.exports = function (sequelize, DataTypes) {
+  var AnonymousToken = sequelize.define('AnonymousToken', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -43,15 +43,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "auth_token_expires_at for AnonymousToken should have type Date" }
+        isDate: { msg: 'auth_token_expires_at for AnonymousToken should have type Date' }
       }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
     tableName: 'AnonymousTokens'
-  });
+  })
 
-  return AnonymousToken;
-};
+  return AnonymousToken
+}

@@ -1,9 +1,8 @@
-const Promise = require("bluebird");
-const urlUtil = require("../../utils/misc/urls");
-const audioUtils = require("../../utils/rfcx-audio").audioUtils;
-const models = require("../../models");
-const sqlUtils = require("../../utils/misc/sql");
-
+const Promise = require('bluebird')
+const urlUtil = require('../../utils/misc/urls')
+const audioUtils = require('../../utils/rfcx-audio').audioUtils
+const models = require('../../models')
+const sqlUtils = require('../../utils/misc/sql')
 
 const querySelect =
   'SELECT GuardianAudio.guid, GuardianAudio.measured_at, GuardianAudio.size, GuardianAudio.original_filename, ' +
@@ -14,53 +13,52 @@ const querySelect =
     'Guardian.latitude AS latitude, Guardian.longitude AS longitude, ' +
     'Format.codec as codec, Format.mime as mime, Format.file_extension as file_extension, Format.sample_rate as sample_rate, ' +
     'Format.is_vbr as vbr, Format.target_bit_rate as target_bit_rate, ' +
-    'COUNT(DISTINCT GuardianAudioBox.id) as audio_box_count ';
+    'COUNT(DISTINCT GuardianAudioBox.id) as audio_box_count '
 
 const countSelect =
-  'SELECT COUNT(*) as total ';
+  'SELECT COUNT(*) as total '
 
 const queryJoins =
   'LEFT JOIN Guardians AS Guardian ON GuardianAudio.guardian_id = Guardian.id ' +
   'LEFT JOIN GuardianSites AS Site ON GuardianAudio.site_id = Site.id ' +
   'LEFT JOIN GuardianAudioFormats AS Format ON GuardianAudio.format_id = Format.id ' +
-  'LEFT JOIN GuardianAudioBoxes AS GuardianAudioBox ON GuardianAudio.id = GuardianAudioBox.audio_id ';
+  'LEFT JOIN GuardianAudioBoxes AS GuardianAudioBox ON GuardianAudio.id = GuardianAudioBox.audio_id '
 
 /**
  * weekdays[] is an array with numbers [0, 1, 2, 3, 4, 5, 6]
  * 0 - Monday, 6 is Sunday
  */
 
-function prepareOpts(req) {
-
-  let order, dir;
+function prepareOpts (req) {
+  let order, dir
   if (req.query.order) {
-    order;
-    dir = 'ASC';
+    order
+    dir = 'ASC'
     if (req.query.dir && ['ASC', 'DESC'].indexOf(req.query.dir.toUpperCase()) !== -1) {
-      dir = req.query.dir.toUpperCase();
+      dir = req.query.dir.toUpperCase()
     }
     switch (req.query.order) {
       case 'audio_guid':
-        order = 'GuardianAudio.audio_guid';
-        break;
+        order = 'GuardianAudio.audio_guid'
+        break
       case 'site':
-        order = 'Site.name';
-        break;
+        order = 'Site.name'
+        break
       case 'guardian':
-        order = 'Guardian.shortname';
-        break;
+        order = 'Guardian.shortname'
+        break
       case 'measured_at':
-        order = 'GuardianAudio.measured_at';
-        break;
+        order = 'GuardianAudio.measured_at'
+        break
       default:
-        order = 'GuardianAudio.measured_at';
-        break;
+        order = 'GuardianAudio.measured_at'
+        break
     }
   }
 
-  let opts = {
-    limit: req.query.limit && Math.abs(parseInt(req.query.limit))? Math.abs(parseInt(req.query.limit)) : 10000,
-    offset: req.query.offset && Math.abs(parseInt(req.query.offset))? Math.abs(parseInt(req.query.offset)) : 0,
+  const opts = {
+    limit: req.query.limit && Math.abs(parseInt(req.query.limit)) ? Math.abs(parseInt(req.query.limit)) : 10000,
+    offset: req.query.offset && Math.abs(parseInt(req.query.offset)) ? Math.abs(parseInt(req.query.offset)) : 0,
     updatedAfter: req.query.updated_after,
     updatedBefore: req.query.updated_before,
     createdAfter: req.query.created_after,
@@ -71,156 +69,153 @@ function prepareOpts(req) {
     startingBeforeLocal: req.query.starting_before_local,
     dayTimeLocalAfter: req.query.daytime_local_after,
     dayTimeLocalBefore: req.query.daytime_local_before,
-    sites: req.query.sites? (Array.isArray(req.query.sites)? req.query.sites : [req.query.sites]) : undefined,
-    guardians: req.query.guardians? (Array.isArray(req.query.guardians)? req.query.guardians : [req.query.guardians]) : undefined,
-    guardianGroups: req.query.guardian_groups? (Array.isArray(req.query.guardian_groups)? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
-    excludedGuardians: req.query.excluded_guardians? (Array.isArray(req.query.excluded_guardians)? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
-    weekdays: req.query.weekdays !== undefined? (Array.isArray(req.query.weekdays)? req.query.weekdays : [req.query.weekdays]) : undefined,
-    annotated: req.query.annotated !== undefined? (req.query.annotated === 'true') : undefined,
-    order: order? order : 'GuardianAudio.measured_at',
-    dir: dir? dir : 'ASC',
-  };
+    sites: req.query.sites ? (Array.isArray(req.query.sites) ? req.query.sites : [req.query.sites]) : undefined,
+    guardians: req.query.guardians ? (Array.isArray(req.query.guardians) ? req.query.guardians : [req.query.guardians]) : undefined,
+    guardianGroups: req.query.guardian_groups ? (Array.isArray(req.query.guardian_groups) ? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
+    excludedGuardians: req.query.excluded_guardians ? (Array.isArray(req.query.excluded_guardians) ? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
+    weekdays: req.query.weekdays !== undefined ? (Array.isArray(req.query.weekdays) ? req.query.weekdays : [req.query.weekdays]) : undefined,
+    annotated: req.query.annotated !== undefined ? (req.query.annotated === 'true') : undefined,
+    order: order || 'GuardianAudio.measured_at',
+    dir: dir || 'ASC'
+  }
 
   if (opts.guardianGroups) {
     return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
       .then((groups) => {
-        let guardians = [];
+        const guardians = []
         groups.forEach((group) => {
           (group.Guardians || []).forEach((guardian) => {
             if (!guardians.includes(guardian.guid)) {
-              guardians.push(guardian.guid);
+              guardians.push(guardian.guid)
             }
-          });
-        });
-        opts.guardians = guardians;
-        return opts;
-      });
-  }
-  else {
-    return Promise.resolve(opts);
+          })
+        })
+        opts.guardians = guardians
+        return opts
+      })
+  } else {
+    return Promise.resolve(opts)
   }
 }
 
-function addGetQueryParams(sql, opts) {
-  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudio.measured_at > :startingAfter');
-  sql = sqlUtils.condAdd(sql, opts.startingBefore, ' AND GuardianAudio.measured_at < :startingBefore');
-  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudio.measured_at_local > :startingAfterLocal');
-  sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND GuardianAudio.measured_at_local < :startingBeforeLocal');
-  sql = sqlUtils.condAdd(sql, opts.weekdays, ' AND WEEKDAY(GuardianAudio.measured_at_local) IN (:weekdays)');
+function addGetQueryParams (sql, opts) {
+  sql = sqlUtils.condAdd(sql, opts.startingAfter, ' AND GuardianAudio.measured_at > :startingAfter')
+  sql = sqlUtils.condAdd(sql, opts.startingBefore, ' AND GuardianAudio.measured_at < :startingBefore')
+  sql = sqlUtils.condAdd(sql, opts.startingAfterLocal, ' AND GuardianAudio.measured_at_local > :startingAfterLocal')
+  sql = sqlUtils.condAdd(sql, opts.startingBeforeLocal, ' AND GuardianAudio.measured_at_local < :startingBeforeLocal')
+  sql = sqlUtils.condAdd(sql, opts.weekdays, ' AND WEEKDAY(GuardianAudio.measured_at_local) IN (:weekdays)')
   sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalBefore > opts.dayTimeLocalAfter),
     ' AND TIME(GuardianAudio.measured_at_local) > :dayTimeLocalAfter' +
-    ' AND TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore');
+    ' AND TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore')
   sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && opts.dayTimeLocalBefore && opts.dayTimeLocalAfter > opts.dayTimeLocalBefore),
     ' AND (TIME(GuardianAudio.measured_at_local) > :dayTimeLocalAfter' +
-    ' OR TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore)');
-  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore), ' AND TIME(GuardianAudio.measured_at_local) > :dayTimeLocalAfter');
-  sql = sqlUtils.condAdd(sql, (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore), ' AND TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore');
-  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)');
-  sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)');
-  sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)');
-  sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudio.updated_at > :updatedAfter');
-  sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudio.updated_at < :updatedBefore');
-  sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudio.created_at > :createdAfter');
-  sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudio.created_at < :createdBefore');
-  sql = sqlUtils.condAdd(sql, opts.annotated === true, ' AND GuardianAudioBox.audio_id IN (SELECT GuardianAudio.id FROM GuardianAudio WHERE GuardianAudioBox.audio_id = GuardianAudio.id)');
-  sql = sqlUtils.condAdd(sql, opts.annotated === false, ' AND GuardianAudio.id NOT IN (SELECT GuardianAudioBox.audio_id FROM GuardianAudioBoxes WHERE GuardianAudio.id = GuardianAudioBox.audio_id)');
-  return sql;
+    ' OR TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore)')
+  sql = sqlUtils.condAdd(sql, (opts.dayTimeLocalAfter && !opts.dayTimeLocalBefore), ' AND TIME(GuardianAudio.measured_at_local) > :dayTimeLocalAfter')
+  sql = sqlUtils.condAdd(sql, (!opts.dayTimeLocalAfter && opts.dayTimeLocalBefore), ' AND TIME(GuardianAudio.measured_at_local) < :dayTimeLocalBefore')
+  sql = sqlUtils.condAdd(sql, opts.guardians, ' AND Guardian.guid IN (:guardians)')
+  sql = sqlUtils.condAdd(sql, opts.excludedGuardians, ' AND Guardian.guid NOT IN (:excludedGuardians)')
+  sql = sqlUtils.condAdd(sql, opts.sites, ' AND Site.guid IN (:sites)')
+  sql = sqlUtils.condAdd(sql, opts.updatedAfter, ' AND GuardianAudio.updated_at > :updatedAfter')
+  sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudio.updated_at < :updatedBefore')
+  sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudio.created_at > :createdAfter')
+  sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudio.created_at < :createdBefore')
+  sql = sqlUtils.condAdd(sql, opts.annotated === true, ' AND GuardianAudioBox.audio_id IN (SELECT GuardianAudio.id FROM GuardianAudio WHERE GuardianAudioBox.audio_id = GuardianAudio.id)')
+  sql = sqlUtils.condAdd(sql, opts.annotated === false, ' AND GuardianAudio.id NOT IN (SELECT GuardianAudioBox.audio_id FROM GuardianAudioBoxes WHERE GuardianAudio.id = GuardianAudioBox.audio_id)')
+  return sql
 }
 
-function queryData(req) {
-
+function queryData (req) {
   return prepareOpts(req)
     .bind({})
     .then((opts) => {
-      let queryParams = addGetQueryParams('', opts);
+      const queryParams = addGetQueryParams('', opts)
 
-      let sqlCount = `${countSelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams}`;
+      const sqlCount = `${countSelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams}`
 
-      let sqlQuery = `${querySelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams} GROUP BY GuardianAudio.id`;
-      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir);
-      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.limit, ' LIMIT ' + opts.limit);
-      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' OFFSET ' + opts.offset);
+      let sqlQuery = `${querySelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams} GROUP BY GuardianAudio.id`
+      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir)
+      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.limit, ' LIMIT ' + opts.limit)
+      sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' OFFSET ' + opts.offset)
 
-      let response = {};
+      const response = {}
 
       return models.sequelize
         .query(sqlCount, { replacements: opts, type: models.sequelize.QueryTypes.SELECT })
         .then((data) => {
-          response.total = data[0].total;
+          response.total = data[0].total
           return models.sequelize.query(sqlQuery, { replacements: opts, type: models.sequelize.QueryTypes.SELECT })
         })
         .then((audios) => {
-          response.audios = audios;
-          return response;
-        });
-    });
-
+          response.audios = audios
+          return response
+        })
+    })
 }
 
-function getGuidsFromDbAudios(dbAudios) {
+function getGuidsFromDbAudios (dbAudios) {
   return dbAudios.map((audio) => {
-    return audio.guid;
-  });
+    return audio.guid
+  })
 }
 
-function combineAssetsUrls(req, guids, extension) {
+function combineAssetsUrls (req, guids, extension) {
   return guids.map((guid) => {
-    return urlUtil.getAudioAssetsUrl(req, guid, extension);
-  });
+    return urlUtil.getAudioAssetsUrl(req, guid, extension)
+  })
 }
 
-function serveAudioFromS3(res, filename, s3Bucket, s3Path, inline) {
-  var audioStorageUrl = `s3://${s3Bucket}/${s3Path}/${filename}`;
+function serveAudioFromS3 (res, filename, s3Bucket, s3Path, inline) {
+  var audioStorageUrl = `s3://${s3Bucket}/${s3Path}/${filename}`
 
   return audioUtils.cacheSourceAudio(audioStorageUrl)
     .then(({ sourceFilePath, headers }) => {
-      audioUtils.serveAudioFromFile(res, sourceFilePath, filename, (headers? headers['content-type'] : null), inline)
-    });
+      audioUtils.serveAudioFromFile(res, sourceFilePath, filename, (headers ? headers['content-type'] : null), inline)
+    })
 }
 
-function getAudioByGuid(guid) {
+function getAudioByGuid (guid) {
   return models.GuardianAudio
     .findOne({
       where: { guid },
       include: [{ all: true }]
     })
     .then((item) => {
-      if (!item) { throw new sequelize.EmptyResultError('Audio with given guid not found.'); }
-      return item;
-    });
+      if (!item) { throw new sequelize.EmptyResultError('Audio with given guid not found.') }
+      return item
+    })
 }
 
-function removeBoxesForAudioFromUser(audio, user_id) {
+function removeBoxesForAudioFromUser (audio, user_id) {
   // remove all previous labels for this file from this user
-  return models.GuardianAudioBox.destroy({ where: { audio_id: audio.id, created_by: user_id } });
+  return models.GuardianAudioBox.destroy({ where: { audio_id: audio.id, created_by: user_id } })
 }
 
-function createBoxesForAudio(audio, boxes, user_id) {
-  let proms = [];
+function createBoxesForAudio (audio, boxes, user_id) {
+  const proms = []
   boxes.forEach((box) => {
-    let prom = models.GuardianAudioEventValue.findOrCreate({
-      where: { [models.Sequelize.Op.or]: { value: box.label, id: box.label }},
+    const prom = models.GuardianAudioEventValue.findOrCreate({
+      where: { [models.Sequelize.Op.or]: { value: box.label, id: box.label } },
       defaults: { value: box.label }
     })
-    .spread((eventValue, created) => {
-      return models.GuardianAudioBox.create({
-        confidence: box.confidence || 1,
-        freq_min: box.freq_min,
-        freq_max: box.freq_max,
-        begins_at: box.begins_at,
-        ends_at: box.ends_at,
-        audio_guid: audio.guid,
-        audio_id: audio.id,
-        created_by: user_id,
-        value: eventValue.id,
-      });
-    });
-    proms.push(prom);
-  });
-  return Promise.all(proms);
+      .spread((eventValue, created) => {
+        return models.GuardianAudioBox.create({
+          confidence: box.confidence || 1,
+          freq_min: box.freq_min,
+          freq_max: box.freq_max,
+          begins_at: box.begins_at,
+          ends_at: box.ends_at,
+          audio_guid: audio.guid,
+          audio_id: audio.id,
+          created_by: user_id,
+          value: eventValue.id
+        })
+      })
+    proms.push(prom)
+  })
+  return Promise.all(proms)
 }
 
-function formatAudioForSNSMessage(audio) {
+function formatAudioForSNSMessage (audio) {
   return {
     guid: audio.guid,
     guardian_guid: audio.guardian_guid,
@@ -232,8 +227,8 @@ function formatAudioForSNSMessage(audio) {
     capture_sample_count: audio.capture_sample_count,
     sample_rate: audio.sample_rate,
     latitude: audio.latitude,
-    longitude: audio.longitude,
-  };
+    longitude: audio.longitude
+  }
 }
 
 module.exports = {
@@ -244,5 +239,5 @@ module.exports = {
   getAudioByGuid,
   removeBoxesForAudioFromUser,
   createBoxesForAudio,
-  formatAudioForSNSMessage,
-};
+  formatAudioForSNSMessage
+}

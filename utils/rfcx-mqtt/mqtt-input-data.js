@@ -1,4 +1,4 @@
-var verbose_logging = (process.env.NODE_ENV !== "production");
+var verboseLogging = (process.env.NODE_ENV !== "production");
 var fs = require("fs");
 var zlib = require("zlib");
 var hash = require("../../utils/misc/hash.js").hash;

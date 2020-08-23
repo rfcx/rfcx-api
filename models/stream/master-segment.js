@@ -1,8 +1,8 @@
 
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var MasterSegment = sequelize.define("MasterSegment", {
+module.exports = function (sequelize, DataTypes) {
+  var MasterSegment = sequelize.define('MasterSegment', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -20,9 +20,9 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'duration should be equal to or greater than 1'
-        },
+        }
       }
     },
     sample_count: {
@@ -30,9 +30,9 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'sample_count should be equal to or greater than 1'
-        },
+        }
       }
     },
     channels_count: {
@@ -40,9 +40,9 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'channels_count should be equal to or greater than 1'
-        },
+        }
       }
     },
     bit_rate: {
@@ -50,14 +50,14 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'bit_rate should be equal to or greater than 0'
-        },
+        }
       }
     },
     meta: {
       type: DataTypes.TEXT('long'),
-      allowNull: true,
+      allowNull: true
     },
     sha1_checksum: {
       type: DataTypes.STRING,
@@ -65,14 +65,13 @@ module.exports = function(sequelize, DataTypes) {
       unique: false, // it will be unique only at stream level
       validate: {
       }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "MasterSegments"
-  });
+    tableName: 'MasterSegments'
+  })
 
-  return MasterSegment;
-};
-
+  return MasterSegment
+}

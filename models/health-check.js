@@ -1,10 +1,10 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var HealthCheck = sequelize.define("HealthCheck", {
+module.exports = function (sequelize, DataTypes) {
+  var HealthCheck = sequelize.define('HealthCheck', {
   }, {
-    tableName: "HealthCheck"
-  });
+    tableName: 'HealthCheck'
+  })
 
-  return HealthCheck;
-};
+  return HealthCheck
+}

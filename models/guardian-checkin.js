@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianCheckIn = sequelize.define("GuardianCheckIn", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianCheckIn = sequelize.define('GuardianCheckIn', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "measured_at for GuardianCheckIn should have type Date"
+          msg: 'measured_at for GuardianCheckIn should have type Date'
         }
       }
     },
@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "queued_at for GuardianCheckIn should have type Date"
+          msg: 'queued_at for GuardianCheckIn should have type Date'
         }
       }
     },
@@ -82,10 +82,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
     tableName: 'GuardianCheckIns'
-  });
+  })
 
-  return GuardianCheckIn;
-};
+  return GuardianCheckIn
+}

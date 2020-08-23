@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(t => {
@@ -7,7 +7,7 @@ module.exports = {
           type: Sequelize.INTEGER
         }, { transaction: t }),
         queryInterface.addColumn('classifications', 'frequency_max', {
-          type: Sequelize.INTEGER,
+          type: Sequelize.INTEGER
         }, { transaction: t })
       ])
     })

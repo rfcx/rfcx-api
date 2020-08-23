@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var AudioAnalysisLog = sequelize.define("AudioAnalysisLog", {
+module.exports = function (sequelize, DataTypes) {
+  var AudioAnalysisLog = sequelize.define('AudioAnalysisLog', {
 
     guid: {
       type: DataTypes.UUID,
@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: { msg: "queued_at for AudioAnalysisLog should have type Date" }
+        isDate: { msg: 'queued_at for AudioAnalysisLog should have type Date' }
       }
     },
 
@@ -21,7 +21,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: { msg: "launched_at for AudioAnalysisLog should have type Date" }
+        isDate: { msg: 'launched_at for AudioAnalysisLog should have type Date' }
       }
     },
 
@@ -45,10 +45,10 @@ module.exports = function(sequelize, DataTypes) {
 
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "AudioAnalysisLogs"
-  });
+    tableName: 'AudioAnalysisLogs'
+  })
 
-  return AudioAnalysisLog;
-};
+  return AudioAnalysisLog
+}

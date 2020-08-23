@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'Users',
       'subscription_email',
@@ -14,13 +13,10 @@ module.exports = {
           isEmail: true
         }
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('Users', 'subscription_email');
-
+    return queryInterface.removeColumn('Users', 'subscription_email')
   }
-};
+}

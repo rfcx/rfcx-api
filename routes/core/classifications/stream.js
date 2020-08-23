@@ -1,5 +1,4 @@
 const router = require('express').Router()
-const models = require('../../../models')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams/streams-service')

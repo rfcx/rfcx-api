@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianAudio',
       'analysis_aws_queue_id',
@@ -13,16 +12,14 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    migration.removeColumn('GuardianAudio', 'analysis_sqs_msg_id');
+    migration.removeColumn('GuardianAudio', 'analysis_sqs_msg_id')
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianAudio',
       'analysis_sqs_msg_id',
@@ -32,13 +29,10 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    migration.removeColumn('GuardianAudio', 'analysis_aws_queue_id');
+    migration.removeColumn('GuardianAudio', 'analysis_aws_queue_id')
 
-    done();
-
+    done()
   }
-};
-
-
+}

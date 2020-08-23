@@ -1,15 +1,15 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var AttachmentType = sequelize.define("AttachmentType", {
+module.exports = function (sequelize, DataTypes) {
+  var AttachmentType = sequelize.define('AttachmentType', {
     type: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
-    },
+      unique: true
+    }
   }, {
-    tableName: "AttachmentTypes"
-  });
+    tableName: 'AttachmentTypes'
+  })
 
-  return AttachmentType;
-};
+  return AttachmentType
+}

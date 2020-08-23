@@ -1,6 +1,5 @@
 const models = require('../../modelsTimescale')
 
-
 function query (limit, offset) {
   return models.Index
     .findAll({
@@ -15,7 +14,7 @@ function query (limit, offset) {
       attributes: models.Index.attributes.lite,
       offset: offset,
       limit: limit,
-      order: ['name'],
+      order: ['name']
     })
 }
 
@@ -31,6 +30,5 @@ function getId (code) {
       return item.id
     })
 }
-
 
 module.exports = { query, getId }

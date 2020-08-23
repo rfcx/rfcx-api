@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'Streams',
       'marked_as_deleted_at',
@@ -14,13 +13,10 @@ module.exports = {
           isDate: true
         }
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('Streams', 'marked_as_deleted_at');
-
+    return queryInterface.removeColumn('Streams', 'marked_as_deleted_at')
   }
-};
+}

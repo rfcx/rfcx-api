@@ -1,56 +1,52 @@
-const fs = require('fs');
-const unzip = require('node-unzip-2');
-const xmldom = new (require('xmldom').DOMParser)();
-const togeojson = require('togeojson');
-const Promise = require('bluebird');
+const fs = require('fs')
+const unzip = require('node-unzip-2')
+const xmldom = new (require('xmldom').DOMParser)()
+const togeojson = require('togeojson')
+const Promise = require('bluebird')
 
-function toKML(path, callback) {
-
+function toKML (path, callback) {
   fs.createReadStream(path)
     .pipe(unzip.Parse())
     .on('entry', function (entry) {
-      var fileName = entry.path;
+      var fileName = entry.path
       if (fileName.indexOf('.kml') === -1) {
-        entry.autodrain();
-        return;
+        entry.autodrain()
+        return
       }
 
-      var data = '';
-      entry.on('error', function(err) {
-        callback(err);
-      });
+      var data = ''
+      entry.on('error', function (err) {
+        callback(err)
+      })
 
-      entry.on('data', function(chunk) {
-        data += chunk;
-      });
-      entry.on('end', function() {
-        callback(null, data);
-      });
+      entry.on('data', function (chunk) {
+        data += chunk
+      })
+      entry.on('end', function () {
+        callback(null, data)
+      })
     })
-    .on('error', callback);
+    .on('error', callback)
 };
 
-function toGeoJSON(path, isKML) {
+function toGeoJSON (path, isKML) {
   return new Promise((resolve, reject) => {
     if (!isKML) {
       toKML(path, (error, kml) => {
         if (error) {
-          reject(error);
+          reject(error)
+        } else {
+          const geojson = togeojson.kml(xmldom.parseFromString(kml))
+          resolve(geojson)
         }
-        else {
-          let geojson = togeojson.kml(xmldom.parseFromString(kml));
-          resolve(geojson);
-        }
-      });
-    }
-    else {
-      var kml = xmldom.parseFromString(fs.readFileSync(path, 'utf8'));
+      })
+    } else {
+      var kml = xmldom.parseFromString(fs.readFileSync(path, 'utf8'))
       if (!kml) {
-        reject(error);
-      }
-      else {
-        let geojson = togeojson.kml(kml);
-        resolve(geojson);
+        reject(error)
+      } else {
+        const geojson = togeojson.kml(kml)
+        resolve(geojson)
       }
     }
   })
@@ -58,5 +54,5 @@ function toGeoJSON(path, isKML) {
 
 module.exports = {
   toKML,
-  toGeoJSON,
-};
+  toGeoJSON
+}

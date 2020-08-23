@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface
@@ -7,13 +7,13 @@ module.exports = {
           type: Sequelize.INTEGER,
           autoIncrement: true,
           allowNull: false,
-          primaryKey: true,
+          primaryKey: true
         },
         value: {
           type: Sequelize.STRING,
           allowNull: false,
-          unique: true,
-        },
+          unique: true
+        }
       })
   },
   down: (queryInterface, Sequelize) => {

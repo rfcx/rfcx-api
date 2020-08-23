@@ -1,26 +1,26 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioEventValueHighLevelKey = sequelize.define("GuardianAudioEventValueHighLevelKey", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioEventValueHighLevelKey = sequelize.define('GuardianAudioEventValueHighLevelKey', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     },
     image: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     description: {
       type: DataTypes.TEXT('long'),
-      allowNull: false,
+      allowNull: false
     }
   }, {
     indexes: [
-      { unique: true, fields: ["value"] }
+      { unique: true, fields: ['value'] }
     ],
-    tableName: "GuardianAudioEventValueHighLevelKeys"
-  });
+    tableName: 'GuardianAudioEventValueHighLevelKeys'
+  })
 
-  return GuardianAudioEventValueHighLevelKey;
-};
+  return GuardianAudioEventValueHighLevelKey
+}

@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioTag = sequelize.define("GuardianAudioTag", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioTag = sequelize.define('GuardianAudioTag', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -11,14 +11,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: { msg: "begins_at for GuardianAudioTag should have type Date" }
+        isDate: { msg: 'begins_at for GuardianAudioTag should have type Date' }
       }
     },
     ends_at: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: { msg: "ends_at for GuardianAudioTag should have type Date" }
+        isDate: { msg: 'ends_at for GuardianAudioTag should have type Date' }
       }
     },
     begins_at_offset: {
@@ -73,10 +73,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "GuardianAudioTags"
-  });
+    tableName: 'GuardianAudioTags'
+  })
 
-  return GuardianAudioTag;
-};
+  return GuardianAudioTag
+}

@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-
     migration.createTable('GuardianAudioEventTypes', {
 
       id: {
@@ -17,7 +16,7 @@ module.exports = {
         unique: true
       }
 
-    });
+    })
 
     migration.createTable('GuardianAudioEventValues', {
 
@@ -33,7 +32,7 @@ module.exports = {
         unique: true
       }
 
-    });
+    })
 
     migration.createTable('GuardianAudioEvents', {
 
@@ -83,17 +82,16 @@ module.exports = {
         allowNull: false
       }
 
-    });
+    })
 
-    done();
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.dropTable('GuardianAudioEventTypes')
+    migration.dropTable('GuardianAudioEventValues')
+    migration.dropTable('GuardianAudioEvents')
 
-    migration.dropTable('GuardianAudioEventTypes');
-    migration.dropTable('GuardianAudioEventValues');
-    migration.dropTable('GuardianAudioEvents');
-
-    done();
+    done()
   }
-};
+}

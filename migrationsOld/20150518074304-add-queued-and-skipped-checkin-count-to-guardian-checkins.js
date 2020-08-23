@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianCheckIns',
       'guardian_queued_checkins',
@@ -14,7 +13,7 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianCheckIns',
@@ -27,16 +26,15 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'guardian_queued_checkins')
+    migration.removeColumn('GuardianCheckIns', 'guardian_skipped_checkins')
 
-    migration.removeColumn('GuardianCheckIns', 'guardian_queued_checkins');
-    migration.removeColumn('GuardianCheckIns', 'guardian_skipped_checkins');
-
-    done();
+    done()
   }
-};
+}

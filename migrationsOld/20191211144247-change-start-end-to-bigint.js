@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return Promise.all([
       queryInterface.changeColumn(
         'Segments',
@@ -12,11 +11,11 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'starts should be equal to or greater than 0'
             },
             max: {
-              args: [ 32503669200000 ],
+              args: [32503669200000],
               msg: 'starts should be equal to or less than 32503669200000'
             }
           }
@@ -30,11 +29,11 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'ends should be equal to or greater than 0'
             },
             max: {
-              args: [ 32503669200000 ],
+              args: [32503669200000],
               msg: 'ends should be equal to or less than 32503669200000'
             }
           }
@@ -48,11 +47,11 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'starts should be equal to or greater than 0'
             },
             max: {
-              args: [ 32503669200000 ],
+              args: [32503669200000],
               msg: 'starts should be equal to or less than 32503669200000'
             }
           }
@@ -66,23 +65,21 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'ends should be equal to or greater than 0'
             },
             max: {
-              args: [ 32503669200000 ],
+              args: [32503669200000],
               msg: 'ends should be equal to or less than 32503669200000'
             }
           }
         }
-      ),
+      )
 
-    ]);
-
+    ])
   },
 
   down: function (queryInterface, Sequelize) {
-
     return Promise.all([
       queryInterface.changeColumn(
         'Segments',
@@ -92,11 +89,11 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'starts should be equal to or greater than 0'
             },
             max: {
-              args: [ 4294967295 ],
+              args: [4294967295],
               msg: 'starts should be equal to or less than 4294967295'
             }
           }
@@ -110,11 +107,11 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'ends should be equal to or greater than 0'
             },
             max: {
-              args: [ 4294967295 ],
+              args: [4294967295],
               msg: 'ends should be equal to or less than 4294967295'
             }
           }
@@ -128,11 +125,11 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'starts should be equal to or greater than 0'
             },
             max: {
-              args: [ 4294967295 ],
+              args: [4294967295],
               msg: 'starts should be equal to or less than 4294967295'
             }
           }
@@ -146,19 +143,17 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 0 ],
+              args: [0],
               msg: 'ends should be equal to or greater than 0'
             },
             max: {
-              args: [ 4294967295 ],
+              args: [4294967295],
               msg: 'ends should be equal to or less than 4294967295'
             }
           }
         }
-      ),
-    ]);
-
+      )
+    ])
   }
 
-};
-
+}

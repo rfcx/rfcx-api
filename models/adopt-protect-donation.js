@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var AdoptProtectDonation = sequelize.define("AdoptProtectDonation", {
+module.exports = function (sequelize, DataTypes) {
+  var AdoptProtectDonation = sequelize.define('AdoptProtectDonation', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -27,7 +27,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "donated_at for AdoptProtectDonation should have type Date" }
+        isDate: { msg: 'donated_at for AdoptProtectDonation should have type Date' }
       }
     },
     donation_amount: {
@@ -70,10 +70,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "AdoptProtectDonations"
-  });
+    tableName: 'AdoptProtectDonations'
+  })
 
-  return AdoptProtectDonation;
-};
+  return AdoptProtectDonation
+}

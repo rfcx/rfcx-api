@@ -23,7 +23,7 @@ function hasPermission (permission) {
         next()
       })
       .catch(httpErrorHandler(req, res, 'Unable to process request.'))
-    })
+  })
 }
 
 module.exports = {

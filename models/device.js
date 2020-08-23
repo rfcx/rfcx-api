@@ -1,20 +1,20 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Device = sequelize.define("Device", {
+module.exports = function (sequelize, DataTypes) {
+  var Device = sequelize.define('Device', {
     firebaseToken: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     },
     os: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
+      unique: false
     }
   }, {
-    tableName: "Devices"
-  });
+    tableName: 'Devices'
+  })
 
-  return Device;
-};
+  return Device
+}

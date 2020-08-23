@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Stream = sequelize.define("Stream", {
+module.exports = function (sequelize, DataTypes) {
+  var Stream = sequelize.define('Stream', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -23,11 +23,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'starts should be equal to or greater than 0'
         },
         max: {
-          args: [ 32503669200000 ],
+          args: [32503669200000],
           msg: 'starts should be equal to or less than 32503669200000'
         }
       }
@@ -37,11 +37,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'ends should be equal to or greater than 0'
         },
         max: {
-          args: [ 32503669200000 ],
+          args: [32503669200000],
           msg: 'ends should be equal to or less than 32503669200000'
         }
       }
@@ -51,16 +51,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: null,
       validate: {
-        isDate: { msg: "marked_as_deleted_at for Stream should have type Date" }
+        isDate: { msg: 'marked_as_deleted_at for Stream should have type Date' }
       }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "Streams"
-  });
+    tableName: 'Streams'
+  })
 
-  return Stream;
-};
-
+  return Stream
+}

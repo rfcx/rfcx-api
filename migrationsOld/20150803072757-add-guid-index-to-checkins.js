@@ -1,27 +1,21 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addIndex(
       'GuardianCheckIns',
       ['guid'],
       {
         indicesType: 'UNIQUE'
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeIndex('GuardianCheckIns', ['guid'])
 
-    migration.removeIndex('GuardianCheckIns', ['guid']);
-
-    done();
-
+    done()
   }
-};
-
-
+}

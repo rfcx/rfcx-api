@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'AudioAnalysisModels',
       'is_active',
@@ -12,7 +11,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'AudioAnalysisModels',
@@ -24,7 +23,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'AudioAnalysisModels',
@@ -36,7 +35,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'AudioAnalysisModels',
@@ -48,18 +47,17 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('AudioAnalysisModels', 'is_active')
+    migration.removeColumn('AudioAnalysisModels', 'ffmpeg_preprocess_options')
+    migration.removeColumn('AudioAnalysisModels', 'sox_preprocess_options')
+    migration.removeColumn('AudioAnalysisModels', 'imagemagick_preprocess_options')
 
-    migration.removeColumn('AudioAnalysisModels', 'is_active');
-    migration.removeColumn('AudioAnalysisModels', 'ffmpeg_preprocess_options');
-    migration.removeColumn('AudioAnalysisModels', 'sox_preprocess_options');
-    migration.removeColumn('AudioAnalysisModels', 'imagemagick_preprocess_options');
-
-    done();
+    done()
   }
-};
+}

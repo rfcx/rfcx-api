@@ -1,7 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams/streams-service')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
 const Converter = require('../../../utils/converter/converter')
@@ -131,7 +129,7 @@ router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
     .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
-      const { start, end, frequency_min, frequency_max } = convertedParams
+      const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase
       const annotation = {
         streamId,
         classificationId,

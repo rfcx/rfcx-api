@@ -1,8 +1,8 @@
 
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Segment = sequelize.define("Segment", {
+module.exports = function (sequelize, DataTypes) {
+  var Segment = sequelize.define('Segment', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -14,11 +14,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'starts should be equal to or greater than 0'
         },
         max: {
-          args: [ 32503669200000 ],
+          args: [32503669200000],
           msg: 'starts should be equal to or less than 32503669200000'
         }
       }
@@ -28,11 +28,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'ends should be equal to or greater than 0'
         },
         max: {
-          args: [ 32503669200000 ],
+          args: [32503669200000],
           msg: 'ends should be equal to or less than 32503669200000'
         }
       }
@@ -42,18 +42,17 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'sample_count should be equal to or greater than 1'
-        },
+        }
       }
-    },
+    }
   }, {
-      indexes: [
+    indexes: [
       { unique: true, fields: ['guid'] }
     ],
-    tableName: "Segments"
-  });
+    tableName: 'Segments'
+  })
 
-  return Segment;
-};
-
+  return Segment
+}

@@ -1,23 +1,23 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var SampleRate = sequelize.define("SampleRate", {
+module.exports = function (sequelize, DataTypes) {
+  var SampleRate = sequelize.define('SampleRate', {
     value: {
       type: DataTypes.INTEGER.UNSIGNED,
       validate: {
         isInt: true,
         min: {
-          args: [ 1 ],
+          args: [1],
           msg: 'sample_rate should be equal to or greater than 1'
-        },
+        }
       }
     }
   }, {
     indexes: [
-      { unique: true, fields: ["value"] }
+      { unique: true, fields: ['value'] }
     ],
-    tableName: "SampleRates"
-  });
+    tableName: 'SampleRates'
+  })
 
-  return SampleRate;
-};
+  return SampleRate
+}

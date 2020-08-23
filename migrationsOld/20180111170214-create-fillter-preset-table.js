@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.createTable('FilterPresets', {
       guid: {
         type: Sequelize.UUID,
@@ -27,13 +26,10 @@ module.exports = {
         validate: {
         }
       }
-    });
-
+    })
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.dropTable('FilterPresets');
-
+    return queryInterface.dropTable('FilterPresets')
   }
-};
+}

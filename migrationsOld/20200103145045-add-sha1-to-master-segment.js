@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'MasterSegments',
       'sha1_checksum',
@@ -13,13 +12,10 @@ module.exports = {
         validate: {
         }
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('MasterSegments', 'sha1_checksum');
-
+    return queryInterface.removeColumn('MasterSegments', 'sha1_checksum')
   }
-};
+}

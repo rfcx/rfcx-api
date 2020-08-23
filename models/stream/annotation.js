@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Annotation = sequelize.define("Annotation", {
+module.exports = function (sequelize, DataTypes) {
+  var Annotation = sequelize.define('Annotation', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -36,11 +36,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'starts should be equal to or greater than 0'
         },
         max: {
-          args: [ 32503669200000 ],
+          args: [32503669200000],
           msg: 'starts should be equal to or less than 32503669200000'
         }
       }
@@ -50,21 +50,21 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isInt: true,
         min: {
-          args: [ 0 ],
+          args: [0],
           msg: 'ends should be equal to or greater than 0'
         },
         max: {
-          args: [ 32503669200000 ],
+          args: [32503669200000],
           msg: 'ends should be equal to or less than 32503669200000'
         }
       }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "Annotations"
-  });
+    tableName: 'Annotations'
+  })
 
-  return Annotation;
-};
+  return Annotation
+}

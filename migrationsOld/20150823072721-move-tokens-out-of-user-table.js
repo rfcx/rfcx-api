@@ -1,19 +1,16 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('Users', 'auth_token_salt')
+    migration.removeColumn('Users', 'auth_token_hash')
+    migration.removeColumn('Users', 'auth_token_updated_at')
+    migration.removeColumn('Users', 'auth_token_expires_at')
 
-    migration.removeColumn("Users", 'auth_token_salt');
-    migration.removeColumn("Users", 'auth_token_hash');
-    migration.removeColumn("Users", 'auth_token_updated_at');
-    migration.removeColumn("Users", 'auth_token_expires_at');
-
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'Users',
       'auth_token_salt',
@@ -24,7 +21,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -36,7 +33,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -48,7 +45,7 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -60,11 +57,8 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   }
-};
-
-
+}

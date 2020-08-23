@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var FileExtension = sequelize.define("FileExtension", {
+module.exports = function (sequelize, DataTypes) {
+  var FileExtension = sequelize.define('FileExtension', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -11,8 +11,8 @@ module.exports = function(sequelize, DataTypes) {
     indexes: [
       { unique: true, fields: ['value'] }
     ],
-    tableName: "FileExtensions"
-  });
+    tableName: 'FileExtensions'
+  })
 
-  return FileExtension;
-};
+  return FileExtension
+}

@@ -5,7 +5,7 @@ const indicesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
-const platform = process.env.PLATFORM || 'amazon';
+const platform = process.env.PLATFORM || 'amazon'
 const storageService = require(`../../../services/storage/${platform}`)
 
 /**
@@ -82,9 +82,8 @@ router.get('/streams/:streamId/indices/:index/heatmap', hasPermission('R'), (req
       const storageFilePath = indicesService.getHeatmapStoragePath(streamId, start, end, interval, aggregate)
       const exists = await storageService.exists(process.env.STREAMS_CACHE_BUCKET, storageFilePath)
       if (exists) {
-        return storageService.getReadStream(process.env.STREAMS_CACHE_BUCKET, storageFilePath).pipe(res);
-      }
-      else {
+        return storageService.getReadStream(process.env.STREAMS_CACHE_BUCKET, storageFilePath).pipe(res)
+      } else {
         const values = await indicesService.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, false, undefined, 0)
         const heatmapData = heatmapDistribute(start, end, interval, grouping, values)
         const buffer = await heatmapGenerate(heatmapData)

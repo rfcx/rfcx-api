@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.changeColumn(
       'Streams',
       'guid',
@@ -13,22 +12,19 @@ module.exports = {
         validate: {
         }
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
     return queryInterface.changeColumn(
       'Streams',
       'guid',
       {
         type: Sequelize.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        defaultValue: Sequelize.UUIDV4,
         allowNull: false,
         unique: true
       }
-    );
-
+    )
   }
-};
+}

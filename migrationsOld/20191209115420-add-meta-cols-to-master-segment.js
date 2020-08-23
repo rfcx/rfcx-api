@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return Promise.all([
       queryInterface.addColumn(
         'MasterSegments',
@@ -12,9 +11,9 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 1 ],
+              args: [1],
               msg: 'duration should be equal to or greater than 1'
-            },
+            }
           }
         }
       ),
@@ -26,9 +25,9 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 1 ],
+              args: [1],
               msg: 'sample_count should be equal to or greater than 1'
-            },
+            }
           }
         }
       ),
@@ -40,9 +39,9 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 1 ],
+              args: [1],
               msg: 'channels_count should be equal to or greater than 1'
-            },
+            }
           }
         }
       ),
@@ -54,26 +53,22 @@ module.exports = {
           validate: {
             isInt: true,
             min: {
-              args: [ 1 ],
+              args: [1],
               msg: 'bit_rate should be equal to or greater than 1'
-            },
+            }
           }
         }
-      ),
-    ]);
-
+      )
+    ])
   },
 
   down: function (queryInterface, Sequelize) {
-
     return Promise.all([
       queryInterface.removeColumn('MasterSegments', 'duration'),
       queryInterface.removeColumn('MasterSegments', 'sample_count'),
       queryInterface.removeColumn('MasterSegments', 'channels_count'),
-      queryInterface.removeColumn('MasterSegments', 'bit_rate'),
-    ]);
-
+      queryInterface.removeColumn('MasterSegments', 'bit_rate')
+    ])
   }
 
-};
-
+}

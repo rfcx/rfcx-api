@@ -1,43 +1,37 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('Guardians', 'software_versions')
 
-  migration.removeColumn('Guardians', 'software_versions');
+    migration.removeColumn('GuardianCheckIns', 'software_versions')
 
-  migration.removeColumn('GuardianCheckIns', 'software_versions');
-
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
-  migration.addColumn(
-    "GuardianCheckIns",
-    "software_versions",
-    {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
+  down: function (migration, DataTypes, done) {
+    migration.addColumn(
+      'GuardianCheckIns',
+      'software_versions',
+      {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+        }
       }
-    }
-  );
+    )
 
-  migration.addColumn(
-    "Guardians",
-    "software_versions",
-    {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
+    migration.addColumn(
+      'Guardians',
+      'software_versions',
+      {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+        }
       }
-    }
-  );
+    )
 
-  done();
-
+    done()
   }
-};
-
-
+}

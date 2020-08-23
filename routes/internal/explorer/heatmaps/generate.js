@@ -19,7 +19,7 @@ function generate (values, paletteId = 0) {
   )
 
   return new Promise((resolve, reject) => {
-    const _ = new Jimp(imageData[0].length, imageData.length, function (err, image) {
+    new Jimp(imageData[0].length, imageData.length, function (err, image) { // eslint-disable-line no-new
       if (err) {
         reject(err)
         return
