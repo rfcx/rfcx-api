@@ -114,26 +114,6 @@ function defineRelationships (models) {
 
   models.Organization.hasMany(models.GuardianSite, { as: "Site", foreignKey: "organization" });
 
-  models.Annotation.belongsTo(models.Stream, { as: 'Stream', foreignKey: "stream" });
-  models.Annotation.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: "value" });
-  models.Annotation.belongsTo(models.User, { as: "User", foreignKey: "created_by" });
-
-  models.MasterSegment.belongsTo(models.Stream, { as: 'Stream', foreignKey: "stream" });
-  models.MasterSegment.belongsTo(models.Codec, { as: 'Codec', foreignKey: "codec" });
-  models.MasterSegment.belongsTo(models.Format, { as: 'Format', foreignKey: "format" });
-  models.MasterSegment.belongsTo(models.SampleRate, { as: 'SampleRate', foreignKey: "sample_rate" });
-  models.MasterSegment.belongsTo(models.ChannelLayout, { as: 'ChannelLayout', foreignKey: "channel_layout" });
-
-  models.Segment.belongsTo(models.Stream, { as: 'Stream', foreignKey: "stream" });
-  models.Segment.belongsTo(models.MasterSegment, { as: "MasterSegment", foreignKey: "master_segment" });
-  models.Segment.belongsTo(models.FileExtension, { as: 'FileExtension', foreignKey: "file_extension" });
-
-  models.Stream.belongsTo(models.StreamVisibility, { as: 'Visibility', foreignKey: "visibility" });
-  models.Stream.belongsTo(models.User, { as: "User", foreignKey: "created_by" });
-  models.Stream.belongsTo(models.Location, { as: 'Location', foreignKey: "location" });
-  models.Stream.belongsTo(models.SampleRate, { as: 'SampleRate', foreignKey: "max_sample_rate" });
-  models.Stream.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: "site" });
-
   models.ResetPasswordToken.belongsTo(models.User, { as: 'User', foreignKey: "user_id" });
 
   models.UserLocation.belongsTo(models.User, { as: 'Location', foreignKey: 'user_id' });

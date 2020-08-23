@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams-timescale')
-const streamSegmentService = require('../../../services/streams-timescale/stream-segment')
+const streamsService = require('../../../services/streams')
+const streamSegmentService = require('../../../services/streams/stream-segment')
 
 /**
  * @swagger
