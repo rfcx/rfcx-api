@@ -1,8 +1,7 @@
-"use strict";
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianAudio',
       'analysis_sqs_msg_id',
@@ -11,16 +10,14 @@ module.exports = {
         allowNull: true,
         unique: true
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudio', 'analysis_sqs_msg_id')
 
-    migration.removeColumn('GuardianAudio', 'analysis_sqs_msg_id');
-
-    done();
+    done()
   }
-};
-
+}

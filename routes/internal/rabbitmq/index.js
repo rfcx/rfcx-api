@@ -1,5 +1,4 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const Converter = require('../../../utils/converter/converter')
 const guardianAuthService = require('../../../services/guardians/authentication')
 
@@ -43,7 +42,7 @@ router.post('/authenticate', (req, res) => {
   return params.validate()
     .then(async () => {
       const isTokenCorrect = await guardianAuthService.isTokenCorrect(convertedParams.guid, convertedParams.password)
-      return res.send(isTokenCorrect? 'allow' : 'deny')
+      return res.send(isTokenCorrect ? 'allow' : 'deny')
     })
     .catch(() => res.send('deny'))
 })

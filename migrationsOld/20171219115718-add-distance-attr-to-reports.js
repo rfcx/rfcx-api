@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'Reports',
       'distance',
@@ -15,13 +14,10 @@ module.exports = {
         },
         allowNull: true
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('Reports', 'distance');
-
+    return queryInterface.removeColumn('Reports', 'distance')
   }
-};
+}

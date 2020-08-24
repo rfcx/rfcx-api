@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('classification_alternative_names', {
@@ -15,7 +15,7 @@ module.exports = {
       rank: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0,
+        defaultValue: 0
       },
       classification_id: {
         type: Sequelize.INTEGER,

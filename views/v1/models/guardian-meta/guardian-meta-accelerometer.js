@@ -1,27 +1,21 @@
-var util = require("util");
-
 exports.models = {
 
-  guardianMetaAccelerometer: function(req,res,dbAccelerometer,modelInfo) {
+  guardianMetaAccelerometer: function (req, res, dbAccelerometer, modelInfo) {
+    if (!Array.isArray(dbAccelerometer)) { dbAccelerometer = [dbAccelerometer] }
 
-    if (!util.isArray(dbAccelerometer)) { dbAccelerometer = [dbAccelerometer]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbAccelerometer) {
-
-      var dbRow = dbAccelerometer[i];
+    for (const i in dbAccelerometer) {
+      var dbRow = dbAccelerometer[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,
         x: dbRow.x,
         y: dbRow.y,
         z: dbRow.z
-      });
+      })
     }
-    return jsonArray;
-  
+    return jsonArray
   }
 
-};
-
+}

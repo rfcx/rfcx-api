@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize, done) {
-
     queryInterface.addColumn(
       'GuardianSites',
       'map_image_url',
@@ -11,7 +10,7 @@ module.exports = {
         allowNull: true,
         validate: { }
       }
-    );
+    )
 
     queryInterface.addColumn(
       'GuardianSites',
@@ -21,7 +20,7 @@ module.exports = {
         allowNull: true,
         validate: { }
       }
-    );
+    )
 
     queryInterface.addColumn(
       'GuardianSites',
@@ -31,7 +30,7 @@ module.exports = {
         allowNull: true,
         validate: { }
       }
-    );
+    )
 
     queryInterface.addColumn(
       'GuardianSites',
@@ -43,7 +42,7 @@ module.exports = {
           isInt: true
         }
       }
-    );
+    )
 
     queryInterface.addColumn(
       'GuardianSites',
@@ -52,21 +51,18 @@ module.exports = {
         type: Sequelize.TEXT('long'),
         allowNull: true
       }
-    );
+    )
 
-    done();
-
+    done()
   },
 
   down: function (queryInterface, Sequelize, done) {
+    queryInterface.removeColumn('GuardianSites', 'map_image_url')
+    queryInterface.removeColumn('GuardianSites', 'globe_icon_url')
+    queryInterface.removeColumn('GuardianSites', 'classy_campaign_id')
+    queryInterface.removeColumn('GuardianSites', 'protected_area')
+    queryInterface.removeColumn('GuardianSites', 'backstory')
 
-    queryInterface.removeColumn('GuardianSites', 'map_image_url');
-    queryInterface.removeColumn('GuardianSites', 'globe_icon_url');
-    queryInterface.removeColumn('GuardianSites', 'classy_campaign_id');
-    queryInterface.removeColumn('GuardianSites', 'protected_area');
-    queryInterface.removeColumn('GuardianSites', 'backstory');
-
-    done();
-
+    done()
   }
-};
+}

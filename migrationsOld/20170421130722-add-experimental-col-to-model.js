@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'AudioAnalysisModels',
       'experimental',
@@ -10,13 +9,10 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: true
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('AudioAnalysisModels', 'experimental');
-
+    return queryInterface.removeColumn('AudioAnalysisModels', 'experimental')
   }
-};
+}

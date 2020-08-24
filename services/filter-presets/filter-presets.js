@@ -1,66 +1,63 @@
-var sequelize = require("sequelize");
-var Converter = require("../../utils/converter/converter");
-const ValidationError = require("../../utils/converter/validation-error");
-var models  = require("../../models");
-var sequelize = require("sequelize");
-var Promise = require("bluebird");
-const userService = require('../users/users-service');
+var sequelize = require('sequelize')
+var Converter = require('../../utils/converter/converter')
+var models = require('../../models')
+const userService = require('../users/users-service')
 
-function validateCreateParams(params) {
-  params = new Converter(params);
+function validateCreateParams (params) {
+  params = new Converter(params)
 
-  params.convert('name').toString();
-  params.convert('type').optional().toString();
-  params.convert('json').objToString();
-  params.convert('created_by').toNonNegativeInt();
-  params.convert('updated_by').toNonNegativeInt();
+  params.convert('name').toString()
+  params.convert('type').optional().toString()
+  params.convert('json').objToString()
+  params.convert('created_by').toNonNegativeInt()
+  params.convert('updated_by').toNonNegativeInt()
 
-  return params.validate();
+  return params.validate()
 }
 
-function validateUpdateParams(params) {
-  params = new Converter(params);
+function validateUpdateParams (params) {
+  params = new Converter(params)
 
-  params.convert('json').objToString();
-  params.convert('updated_by').toNonNegativeInt();
+  params.convert('json').objToString()
+  params.convert('updated_by').toNonNegativeInt()
 
-  return params.validate();
+  return params.validate()
 }
 
-function formatFilterPreset(filterPreset) {
+function formatFilterPreset (filterPreset) {
   return {
     guid: filterPreset.guid,
     name: filterPreset.name,
     type: filterPreset.type,
     json: JSON.parse(filterPreset.json),
     userCreated: userService.formatUser(filterPreset.UserCreated, true),
-    userUpdated: userService.formatUser(filterPreset.UserUpdated, true),
-  };
+    userUpdated: userService.formatUser(filterPreset.UserUpdated, true)
+  }
 }
 
-function createFilterPreset(params) {
+function createFilterPreset (params) {
   return validateCreateParams(params)
     .then(data => {
-      return models.FilterPreset.create(data);
+      return models.FilterPreset.create(data)
     })
     .then((filterPreset) => {
       return filterPreset.reload({
         include: [{ all: true }]
-      });
-    });
+      })
+    })
 }
 
-function doesNameExist(name) {
+function doesNameExist (name) {
   return models.FilterPreset
     .findOne({
       where: { name: name }
     })
     .then((filterPreset) => {
-      return !!filterPreset;
-    });
+      return !!filterPreset
+    })
 }
 
-function getFilterPresetByGuid(guid) {
+function getFilterPresetByGuid (guid) {
   return models.FilterPreset
     .findOne({
       where: { guid: guid },
@@ -68,36 +65,36 @@ function getFilterPresetByGuid(guid) {
     })
     .then((filterPreset) => {
       if (!filterPreset) {
-        throw new sequelize.EmptyResultError('Filter Preset with given guid not found.');
+        throw new sequelize.EmptyResultError('Filter Preset with given guid not found.')
       }
-      return filterPreset;
-    });
+      return filterPreset
+    })
 }
 
-function getFilterPresets(params) {
-  let opts = {};
+function getFilterPresets (params) {
+  const opts = {}
   if (params.types) {
     opts.type = {
       [models.Sequelize.Op.in]: params.types
-    };
+    }
   }
   return models.FilterPreset
     .findAll({
       where: opts,
       include: [{ all: true }]
-    });
+    })
 }
 
-function updateFilterPreset(filterPreset, params) {
+function updateFilterPreset (filterPreset, params) {
   return validateUpdateParams(params)
     .then(data => {
-      return filterPreset.update(data);
+      return filterPreset.update(data)
     })
     .then(() => {
       return filterPreset.reload({
         include: [{ all: true }]
-      });
-    });
+      })
+    })
 }
 
 module.exports = {
@@ -106,5 +103,5 @@ module.exports = {
   getFilterPresetByGuid,
   getFilterPresets,
   updateFilterPreset,
-  doesNameExist,
+  doesNameExist
 }

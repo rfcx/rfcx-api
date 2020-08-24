@@ -1,9 +1,8 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-    migration.removeColumn('Users', 'last_check_in');
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('Users', 'last_check_in')
 
     migration.addColumn(
       'Users',
@@ -15,7 +14,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -27,7 +26,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -39,7 +38,7 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -51,7 +50,7 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -63,7 +62,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -75,7 +74,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -87,14 +86,12 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'Users',
       'last_check_in',
@@ -105,18 +102,17 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    migration.removeColumn('Users', 'auth_token_salt');
-    migration.removeColumn('Users', 'auth_token_hash');
-    migration.removeColumn('Users', 'auth_token_updated_at');
-    migration.removeColumn('Users', 'auth_token_expires_at');
+    migration.removeColumn('Users', 'auth_token_salt')
+    migration.removeColumn('Users', 'auth_token_hash')
+    migration.removeColumn('Users', 'auth_token_updated_at')
+    migration.removeColumn('Users', 'auth_token_expires_at')
 
-    migration.removeColumn('Users', 'auth_password_salt');
-    migration.removeColumn('Users', 'auth_password_hash');
-    migration.removeColumn('Users', 'auth_password_updated_at');
+    migration.removeColumn('Users', 'auth_password_salt')
+    migration.removeColumn('Users', 'auth_password_hash')
+    migration.removeColumn('Users', 'auth_password_updated_at')
 
-    done();
-
+    done()
   }
-};
+}

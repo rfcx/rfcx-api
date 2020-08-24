@@ -1,57 +1,57 @@
-var crypto = require("crypto");
-var Promise = require("bluebird");
-var csprng = require("csprng");
-var sha = require("sha.js");
-var fs = require("fs");
-var pfs = Promise.promisifyAll(require("fs"));
+var crypto = require('crypto')
+var Promise = require('bluebird')
+var csprng = require('csprng')
+var sha = require('sha.js')
+var fs = require('fs')
+var pfs = Promise.promisifyAll(require('fs'))
 
 exports.hash = {
 
   /**
-	 * return a hash of the provided data
-	 *
-	 * @param {String} data
-	 * @return {String} hash
-	 * @api private
-	 */
-  hashData: function(data) {
+  * return a hash of the provided data
+  *
+  * @param {String} data
+  * @return {String} hash
+  * @api private
+  */
+  hashData: function (data) {
     return crypto
-      .createHash("sha1")
+      .createHash('sha1')
       .update(data)
-      .digest("hex");
+      .digest('hex')
   },
-  
+
   /**
-	 * return a hash of the file at filePath
-	 *
-	 * @param {String} filePath
-	 * @return {String} hash
-	 * @api public
-	 */
-  fileSha1: function(filePath) {
-    return this.hashData(fs.readFileSync(filePath));
+  * return a hash of the file at filePath
+  *
+  * @param {String} filePath
+  * @return {String} hash
+  * @api public
+  */
+  fileSha1: function (filePath) {
+    return this.hashData(fs.readFileSync(filePath))
   },
-  
+
   /**
-	 * return a promise to create a hash of the file at filePath
-	 *
-	 * @param {String} filePath
-	 * @return {Promise} with hash entity
-	 * @api public
-	 */
+  * return a promise to create a hash of the file at filePath
+  *
+  * @param {String} filePath
+  * @return {Promise} with hash entity
+  * @api public
+  */
   fileSha1Async: function (filePath) {
-    //if no file path given, return a promise that resolves to null
+    // if no file path given, return a promise that resolves to null
     if (!filePath) {
-      return new Promise(function(resolve) {
-          resolve(null);
-      });  
+      return new Promise(function (resolve) {
+        resolve(null)
+      })
     }
-    var self = this;
-    //else return a promise that resolves to a hash of the file
+    var self = this
+    // else return a promise that resolves to a hash of the file
     return pfs.readFileAsync(filePath)
-    .then(function (data) {
-      return self.hashData(data);
-    });
+      .then(function (data) {
+        return self.hashData(data)
+      })
   },
 
   /**
@@ -61,8 +61,8 @@ exports.hash = {
    * @return {String} hash
    * @api private
    */
-  randomHash: function(bits) {
-    return csprng(bits,36);
+  randomHash: function (bits) {
+    return csprng(bits, 36)
   },
 
   /**
@@ -72,8 +72,8 @@ exports.hash = {
    * @return {String} token
    * @api private
    */
-  randomString: function(length) {
-    return this.randomHash(320).substr(0,length);
+  randomString: function (length) {
+    return this.randomHash(320).substr(0, length)
   },
 
   /**
@@ -84,12 +84,9 @@ exports.hash = {
    * @return {String} hash
    * @api private
    */
-  hashedCredentials: function(salt,secret) {
-    var sha256 = sha("sha256");
-    return sha256.update(salt+secret,"utf8").digest("hex");
-  },
+  hashedCredentials: function (salt, secret) {
+    var sha256 = sha('sha256')
+    return sha256.update(salt + secret, 'utf8').digest('hex')
+  }
 
-  
-
-};
-
+}

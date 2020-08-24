@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var SourceType = sequelize.define("SourceType", {
+module.exports = function (sequelize, DataTypes) {
+  var SourceType = sequelize.define('SourceType', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["name"] }
+      { unique: true, fields: ['name'] }
     ],
-    tableName: "SourceTypes"
-  });
+    tableName: 'SourceTypes'
+  })
 
-  return SourceType;
-};
+  return SourceType
+}

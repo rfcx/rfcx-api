@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'GuardianAudio',
       'original_filename',
@@ -11,15 +10,11 @@ module.exports = {
         allowNull: true,
         validate: {}
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('GuardianAudio', 'original_filename');
-
+    return queryInterface.removeColumn('GuardianAudio', 'original_filename')
   }
 
-};
-
+}

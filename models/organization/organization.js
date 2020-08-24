@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Organization = sequelize.define("Organization", {
+module.exports = function (sequelize, DataTypes) {
+  var Organization = sequelize.define('Organization', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -13,13 +13,13 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       unique: true,
       validate: { }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "Organizations"
-  });
+    tableName: 'Organizations'
+  })
 
-  return Organization;
-};
+  return Organization
+}

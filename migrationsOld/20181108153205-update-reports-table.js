@@ -1,30 +1,29 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize, done) {
-
-    var sqlAddColumnModel = "ALTER TABLE `Reports`" +
-    " ADD COLUMN `value` INTEGER DEFAULT NULL" +
-    ", ADD FOREIGN KEY (`value`) REFERENCES `GuardianAudioEventValues`(`id`)" +
-    " ON UPDATE CASCADE ON DELETE RESTRICT;";
+    var sqlAddColumnModel = 'ALTER TABLE `Reports`' +
+    ' ADD COLUMN `value` INTEGER DEFAULT NULL' +
+    ', ADD FOREIGN KEY (`value`) REFERENCES `GuardianAudioEventValues`(`id`)' +
+    ' ON UPDATE CASCADE ON DELETE RESTRICT;'
 
     queryInterface.sequelize.query(sqlAddColumnModel, {
       type: queryInterface.sequelize.QueryTypes.RAW
-    });
+    })
 
     queryInterface.changeColumn(
       'Reports',
       'guid',
       {
-        type:Sequelize.UUID,
+        type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
         unique: true
       }
-    );
+    )
 
-    queryInterface.removeColumn('Reports', 'start_time');
-    queryInterface.removeColumn('Reports', 'end_time');
+    queryInterface.removeColumn('Reports', 'start_time')
+    queryInterface.removeColumn('Reports', 'end_time')
 
     queryInterface.addColumn(
       'Reports',
@@ -36,9 +35,9 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    queryInterface.removeColumn('Reports', 'type');
+    queryInterface.removeColumn('Reports', 'type')
 
     queryInterface.addColumn(
       'Reports',
@@ -55,9 +54,9 @@ module.exports = {
             args: 30,
             msg: 'age_estimate should be equal or less than 30'
           }
-        },
+        }
       }
-    );
+    )
 
     queryInterface.changeColumn(
       'Reports',
@@ -71,7 +70,7 @@ module.exports = {
           max: 90
         }
       }
-    );
+    )
 
     queryInterface.changeColumn(
       'Reports',
@@ -85,7 +84,7 @@ module.exports = {
           max: 180
         }
       }
-    );
+    )
 
     queryInterface.addColumn(
       'Reports',
@@ -96,25 +95,23 @@ module.exports = {
         unique: false,
         validate: { }
       }
-    );
+    )
 
-    done();
-
+    done()
   },
 
   down: function (queryInterface, Sequelize, done) {
-
-    queryInterface.removeColumn('Reports', 'value');
+    queryInterface.removeColumn('Reports', 'value')
 
     queryInterface.changeColumn(
       'Reports',
       'guid',
       {
-        type:Sequelize.UUID,
+        type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         unique: true
       }
-    );
+    )
 
     queryInterface.addColumn(
       'Reports',
@@ -122,7 +119,7 @@ module.exports = {
       {
         type: Sequelize.DATE
       }
-    );
+    )
 
     queryInterface.addColumn(
       'Reports',
@@ -130,9 +127,9 @@ module.exports = {
       {
         type: Sequelize.DATE
       }
-    );
+    )
 
-    queryInterface.removeColumn('Reports', 'reported_at');
+    queryInterface.removeColumn('Reports', 'reported_at')
 
     queryInterface.addColumn(
       'Reports',
@@ -140,29 +137,28 @@ module.exports = {
       {
         type: Sequelize.STRING
       }
-    );
+    )
 
-    queryInterface.removeColumn('Reports', 'age_estimate');
+    queryInterface.removeColumn('Reports', 'age_estimate')
 
     queryInterface.changeColumn(
       'Reports',
       'lat',
       {
-        type: Sequelize.REAL,
+        type: Sequelize.REAL
       }
-    );
+    )
 
     queryInterface.changeColumn(
       'Reports',
       'long',
       {
-        type: Sequelize.REAL,
+        type: Sequelize.REAL
       }
-    );
+    )
 
-    queryInterface.removeColumn('Reports', 'audio');
+    queryInterface.removeColumn('Reports', 'audio')
 
-    done();
-
+    done()
   }
-};
+}

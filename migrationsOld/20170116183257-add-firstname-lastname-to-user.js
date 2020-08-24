@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'Users',
       'firstname',
@@ -13,7 +12,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Users',
@@ -25,16 +24,15 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('Users', 'firstname')
+    migration.removeColumn('Users', 'lastname')
 
-    migration.removeColumn('Users', 'firstname');
-    migration.removeColumn('Users', 'lastname');
-
-    done();
+    done()
   }
-};
+}

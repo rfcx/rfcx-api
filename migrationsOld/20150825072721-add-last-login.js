@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'Users',
       'last_login_at',
@@ -13,19 +12,14 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('Users', 'last_login_at')
 
-    migration.removeColumn("Users", 'last_login_at');
-
-    done();
-
+    done()
   }
-};
-
-
+}

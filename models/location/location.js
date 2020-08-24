@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Location = sequelize.define("Location", {
+module.exports = function (sequelize, DataTypes) {
+  var Location = sequelize.define('Location', {
     guid: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -20,11 +20,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isFloat: true,
         min: {
-          args: [ -90 ],
+          args: [-90],
           msg: 'latitude should be equal to or greater than -90'
         },
         max: {
-          args: [ 90 ],
+          args: [90],
           msg: 'latitude should be equal to or less than 90'
         }
       }
@@ -35,11 +35,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isFloat: true,
         min: {
-          args: [ -180 ],
+          args: [-180],
           msg: 'longitude should be equal to or greater than -180'
         },
         max: {
-          args: [ 180 ],
+          args: [180],
           msg: 'longitude should be equal to or less than 180'
         }
       }
@@ -50,11 +50,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "Locations"
-  });
+    tableName: 'Locations'
+  })
 
-  return Location;
-};
-
+  return Location
+}

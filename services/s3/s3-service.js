@@ -1,15 +1,15 @@
-var Promise = require('bluebird');
-var fs = require('fs');
-var AWS = require("aws-sdk");
-var aws = require('../../utils/external/aws').aws();
-const loggers  = require('../../utils/logger');
-const logError = loggers.errorLogger.log;
+var Promise = require('bluebird')
+var fs = require('fs')
+var AWS = require('aws-sdk')
+var aws = require('../../utils/external/aws').aws()
+const loggers = require('../../utils/logger')
+const logError = loggers.errorLogger.log
 
 const client = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_KEY,
   region: process.env.AWS_REGION_ID
-});
+})
 
 /**
  * Uploads file to S3 storage
@@ -17,23 +17,22 @@ const client = new AWS.S3({
  * @param {string} filename - file name which will be used in S3
  * @param {string} bucket - S3 Bucket name
  */
-function putObject(localPath, filename, bucket, acl) {
+function putObject (localPath, filename, bucket, acl) {
   return new Promise((resolve, reject) => {
-      if (acl) {
-        aws.s3(bucket).putFile(localPath, filename, { 'x-amz-acl': 'public-read' }, (err, res) => {
-          res.resume();
-          if (err) { return reject(err); }
-          return resolve();
-        });
-      }
-      else {
-        aws.s3(bucket).putFile(localPath, filename, (err, res) => {
-          if (res) res.resume();
-          if (err) { return reject(err); }
-          return resolve();
-        });
-      }
-  });
+    if (acl) {
+      aws.s3(bucket).putFile(localPath, filename, { 'x-amz-acl': 'public-read' }, (err, res) => {
+        res.resume()
+        if (err) { return reject(err) }
+        return resolve()
+      })
+    } else {
+      aws.s3(bucket).putFile(localPath, filename, (err, res) => {
+        if (res) res.resume()
+        if (err) { return reject(err) }
+        return resolve()
+      })
+    }
+  })
 }
 
 /**
@@ -42,91 +41,84 @@ function putObject(localPath, filename, bucket, acl) {
  * @param {string} destinationBucket - destination bucket name
  * @param {string} destinationPath - path to copy to
  */
-function copyObject(sourceBucket, sourcePath, destinationBucket, destinationPath) {
+function copyObject (sourceBucket, sourcePath, destinationBucket, destinationPath) {
   return new Promise((resolve, reject) => {
     aws.s3(sourceBucket).copyTo(sourcePath, destinationBucket, destinationPath)
-      .on('error', function(err) {
-        reject(err);
+      .on('error', function (err) {
+        reject(err)
       })
-      .on('response', function(res) {
-        resolve();
+      .on('response', function (res) {
+        resolve()
       })
-      .end();
-  });
+      .end()
+  })
 }
 
-function deleteObject(bucket, fullPath) {
+function deleteObject (bucket, fullPath) {
   return new Promise((resolve, reject) => {
-      aws.s3(bucket).deleteFile(fullPath, (err, res) => {
-        res.resume();
-        if (err) { return reject(err); }
-        return resolve();
-      });
-  });
+    aws.s3(bucket).deleteFile(fullPath, (err, res) => {
+      res.resume()
+      if (err) { return reject(err) }
+      return resolve()
+    })
+  })
 }
 
-function headObject(s3Path, bucket, dontRejectIfEmpty) {
+function headObject (s3Path, bucket, dontRejectIfEmpty) {
   return new Promise((resolve, reject) => {
-      aws.s3(bucket).headFile(s3Path, (err, data) => {
-        if (err) { return reject(err); }
-        else if (data && data.statusCode === 200) {
-          return resolve(data);
+    aws.s3(bucket).headFile(s3Path, (err, data) => {
+      if (err) { return reject(err) } else if (data && data.statusCode === 200) {
+        return resolve(data)
+      } else {
+        if (dontRejectIfEmpty) {
+          return resolve(null)
+        } else {
+          reject(new Error(`Failed to get object from S3. Status code: ${data.statusCode}`))
         }
-        else {
-          if (dontRejectIfEmpty) {
-            return resolve(null)
-          }
-          else {
-            reject(new Error(`Failed to get object from S3. Status code: ${data.statusCode}`));
-          }
-        }
-      });
-  });
+      }
+    })
+  })
 }
 
-function getObject(localPath, filename, bucket) {
+function getObject (localPath, filename, bucket) {
   return new Promise((resolve, reject) => {
     try {
-      var s3Path = filename;
-      var sourceFilePath = `${localPath}/${filename}`;
+      var s3Path = filename
+      var sourceFilePath = `${localPath}/${filename}`
       // First of all, check that file exists
       aws.s3(bucket)
         .headFile(s3Path, (err, data) => {
           if (err) {
-            reject(err);
-          }
-          else if (data && data.statusCode === 200) {
+            reject(err)
+          } else if (data && data.statusCode === 200) {
             aws.s3(bucket)
               .get(s3Path)
               .on('response', (s3Res) => {
-                let tempWriteStream = fs.createWriteStream(sourceFilePath);
-                tempWriteStream.on('error', (errTempWriteStream) => { reject(errTempWriteStream); });
-                s3Res.on('data', (data) => { tempWriteStream.write(data); });
-                s3Res.on('end', () => { tempWriteStream.end(); });
-                s3Res.on('error', (errS3Res) => { reject(errS3Res) });
+                const tempWriteStream = fs.createWriteStream(sourceFilePath)
+                tempWriteStream.on('error', (errTempWriteStream) => { reject(errTempWriteStream) })
+                s3Res.on('data', (data) => { tempWriteStream.write(data) })
+                s3Res.on('end', () => { tempWriteStream.end() })
+                s3Res.on('error', (errS3Res) => { reject(errS3Res) })
                 tempWriteStream.on('finish', () => {
                   fs.stat(sourceFilePath, (statErr, fileStat) => {
                     if (statErr) {
-                      reject(statErr);
+                      reject(statErr)
+                    } else {
+                      resolve({ sourceFilePath, headers: s3Res.headers })
                     }
-                    else {
-                      resolve({ sourceFilePath, headers: s3Res.headers });
-                    }
-                  });
-                });
+                  })
+                })
               })
-              .end();
+              .end()
+          } else {
+            reject(new Error(`Failed to get object from S3. Status code: ${data.statusCode}`))
           }
-          else {
-            reject(new Error(`Failed to get object from S3. Status code: ${data.statusCode}`));
-          }
-      });
+        })
+    } catch (err) {
+      logError('Failed to get object from S3', err)
+      reject(new Error(err))
     }
-    catch(err) {
-      logError('Failed to get object from S3', err);
-      reject(new Error(err));
-    }
-  });
+  })
 }
 
 module.exports = {
@@ -135,5 +127,5 @@ module.exports = {
   headObject,
   getObject,
   deleteObject,
-  client,
-};
+  client
+}

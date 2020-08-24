@@ -1,9 +1,9 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var UserGuardianGroupSubscription = sequelize.define("UserGuardianGroupSubscription", {}, {
-    tableName: "UserGuardianGroupSubscriptions"
-  });
+module.exports = function (sequelize, DataTypes) {
+  var UserGuardianGroupSubscription = sequelize.define('UserGuardianGroupSubscription', {}, {
+    tableName: 'UserGuardianGroupSubscriptions'
+  })
 
-  return UserGuardianGroupSubscription;
-};
+  return UserGuardianGroupSubscription
+}

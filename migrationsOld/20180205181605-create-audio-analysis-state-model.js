@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.createTable('AudioAnalysisStates', {
       name: {
         type: Sequelize.STRING,
@@ -17,14 +16,11 @@ module.exports = {
         unique: false,
         validate: {
         }
-      },
-    });
-
+      }
+    })
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.dropTable('AudioAnalysisStates');
-
+    return queryInterface.dropTable('AudioAnalysisStates')
   }
-};
+}

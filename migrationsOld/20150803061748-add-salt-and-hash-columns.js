@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'Guardians',
       'auth_salt',
@@ -13,17 +12,14 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('Guardians', 'auth_salt')
 
-    migration.removeColumn('Guardians', 'auth_salt');
-
-    done();
-
+    done()
   }
-};
+}

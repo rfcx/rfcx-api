@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('streams', {
@@ -17,28 +17,28 @@ module.exports = {
       },
       start: {
         type: Sequelize.DATE(3),
-        allowNull: true,
+        allowNull: true
       },
       end: {
         type: Sequelize.DATE(3),
-        allowNull: true,
+        allowNull: true
       },
       is_public: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
-        allowNull: false,
+        allowNull: false
       },
       latitude: {
         type: Sequelize.DOUBLE,
-        allowNull: true,
+        allowNull: true
       },
       longitude: {
         type: Sequelize.DOUBLE,
-        allowNull: true,
+        allowNull: true
       },
       max_sample_rate: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: true
       },
       created_by_id: {
         type: Sequelize.INTEGER,
@@ -48,7 +48,7 @@ module.exports = {
             tableName: 'users'
           },
           key: 'id'
-        },
+        }
       },
       created_at: {
         type: Sequelize.DATE,
@@ -61,45 +61,45 @@ module.exports = {
       deleted_at: {
         type: Sequelize.DATE,
         allowNull: true
-      },
+      }
     })
-    .then(() => {
-      return Promise.all([
-        queryInterface.addConstraint('streams', {
-          type: 'CHECK',
-          fields: ['latitude'],
-          where: {
-            latitude: {
-              [Sequelize.Op.and]: {
-                [Sequelize.Op.gte]: -90,
-                [Sequelize.Op.lte]: 90,
+      .then(() => {
+        return Promise.all([
+          queryInterface.addConstraint('streams', {
+            type: 'CHECK',
+            fields: ['latitude'],
+            where: {
+              latitude: {
+                [Sequelize.Op.and]: {
+                  [Sequelize.Op.gte]: -90,
+                  [Sequelize.Op.lte]: 90
+                }
               }
             }
-          }
-        }),
-        queryInterface.addConstraint('streams', {
-          type: 'CHECK',
-          fields: ['longitude'],
-          where: {
-            longitude: {
-              [Sequelize.Op.and]: {
-                [Sequelize.Op.gte]: -180,
-                [Sequelize.Op.lte]: 180,
+          }),
+          queryInterface.addConstraint('streams', {
+            type: 'CHECK',
+            fields: ['longitude'],
+            where: {
+              longitude: {
+                [Sequelize.Op.and]: {
+                  [Sequelize.Op.gte]: -180,
+                  [Sequelize.Op.lte]: 180
+                }
               }
             }
-          }
-        }),
-        queryInterface.addConstraint('streams', {
-          type: 'CHECK',
-          fields: ['max_sample_rate'],
-          where: {
-            max_sample_rate: {
-              [Sequelize.Op.gt]: 0
+          }),
+          queryInterface.addConstraint('streams', {
+            type: 'CHECK',
+            fields: ['max_sample_rate'],
+            where: {
+              max_sample_rate: {
+                [Sequelize.Op.gt]: 0
+              }
             }
-          }
-        })
-      ])
-    })
+          })
+        ])
+      })
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('streams')

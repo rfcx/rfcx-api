@@ -1,16 +1,12 @@
-var util = require("util");
-
 exports.models = {
 
-  guardianMetaDiskUsage: function(req,res,dbDiskUsage,modelInfo) {
+  guardianMetaDiskUsage: function (req, res, dbDiskUsage, modelInfo) {
+    if (!Array.isArray(dbDiskUsage)) { dbDiskUsage = [dbDiskUsage] }
 
-    if (!util.isArray(dbDiskUsage)) { dbDiskUsage = [dbDiskUsage]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbDiskUsage) {
-
-      var dbRow = dbDiskUsage[i];
+    for (const i in dbDiskUsage) {
+      var dbRow = dbDiskUsage[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,
@@ -18,11 +14,9 @@ exports.models = {
         internal_bytes_used: dbRow.internal_bytes_used,
         external_bytes_available: dbRow.external_bytes_available,
         external_bytes_used: dbRow.external_bytes_used
-      });
+      })
     }
-    return jsonArray;
-  
+    return jsonArray
   }
 
-};
-
+}

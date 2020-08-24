@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianCheckIns',
       'guardian_stashed_checkins',
@@ -14,15 +13,14 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'guardian_stashed_checkins')
 
-    migration.removeColumn('GuardianCheckIns', 'guardian_stashed_checkins');
-
-    done();
+    done()
   }
-};
+}

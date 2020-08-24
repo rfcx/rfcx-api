@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Classification = sequelize.define("Classification", {
+module.exports = function (sequelize, DataTypes) {
+  var Classification = sequelize.define('Classification', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -14,27 +14,27 @@ module.exports = function(sequelize, DataTypes) {
     },
     description: {
       type: DataTypes.TEXT('long'),
-      allowNull: true,
+      allowNull: true
     },
     image: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
     reference_audio: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
     reference_spectrogram: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
     source_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-    },
+      allowNull: true
+    }
   }, {
-    tableName: "Classifications"
-  });
+    tableName: 'Classifications'
+  })
 
-  return Classification;
-};
+  return Classification
+}

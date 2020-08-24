@@ -1,386 +1,386 @@
 [
   {
-    "value": "american_dipper",
-    "label": "American Dipper [AMDI]"
+    value: 'american_dipper',
+    label: 'American Dipper [AMDI]'
   },
   {
-    "value": "american_kestrel",
-    "label": "American Kestrel [AMKE]"
+    value: 'american_kestrel',
+    label: 'American Kestrel [AMKE]'
   },
   {
-    "value": "american_pipit",
-    "label": "American Pipit [AMPI]"
+    value: 'american_pipit',
+    label: 'American Pipit [AMPI]'
   },
   {
-    "value": "american_robin",
-    "label": "American Robin [AMRO]"
+    value: 'american_robin',
+    label: 'American Robin [AMRO]'
   },
   {
-    "value": "annas_hummingbird",
-    "label": "Anna's Hummingbird [ANHU]"
+    value: 'annas_hummingbird',
+    label: "Anna's Hummingbird [ANHU]"
   },
   {
-    "value": "audubons_yellow_rumped_warbler",
-    "label": "Audubon's (Yellow-rumped) Warbler [AUWA]"
+    value: 'audubons_yellow_rumped_warbler',
+    label: "Audubon's (Yellow-rumped) Warbler [AUWA]"
   },
   {
-    "value": "black_backed_woodpecker",
-    "label": "Black-backed Woodpecker [BBWO]"
+    value: 'black_backed_woodpecker',
+    label: 'Black-backed Woodpecker [BBWO]'
   },
   {
-    "value": "belted_kingfisher",
-    "label": "Belted Kingfisher [BEKI]"
+    value: 'belted_kingfisher',
+    label: 'Belted Kingfisher [BEKI]'
   },
   {
-    "value": "black_headed_grosbeak",
-    "label": "Black-headed Grosbeak [BHGR]"
+    value: 'black_headed_grosbeak',
+    label: 'Black-headed Grosbeak [BHGR]'
   },
   {
-    "value": "black_phoebe",
-    "label": "Black Phoebe [BLPH]"
+    value: 'black_phoebe',
+    label: 'Black Phoebe [BLPH]'
   },
   {
-    "value": "brewers_blackbird",
-    "label": "Brewer's Blackbird [BRBL]"
+    value: 'brewers_blackbird',
+    label: "Brewer's Blackbird [BRBL]"
   },
   {
-    "value": "brown_creeper",
-    "label": "Brown Creeper [BRCR]"
+    value: 'brown_creeper',
+    label: 'Brown Creeper [BRCR]'
   },
   {
-    "value": "band_tailed_pigeon",
-    "label": "Band-tailed Pigeon [BTPI]"
+    value: 'band_tailed_pigeon',
+    label: 'Band-tailed Pigeon [BTPI]'
   },
   {
-    "value": "black_throated_gray_warbler",
-    "label": "Black-throated Gray Warbler [BTYW]"
+    value: 'black_throated_gray_warbler',
+    label: 'Black-throated Gray Warbler [BTYW]'
   },
   {
-    "value": "bufflehead",
-    "label": "Bufflehead [BUFF]"
+    value: 'bufflehead',
+    label: 'Bufflehead [BUFF]'
   },
   {
-    "value": "bushtit",
-    "label": "Bushtit [BUSH]"
+    value: 'bushtit',
+    label: 'Bushtit [BUSH]'
   },
   {
-    "value": "cassins_finch",
-    "label": "Cassin's Finch [CAFI]"
+    value: 'cassins_finch',
+    label: "Cassin's Finch [CAFI]"
   },
   {
-    "value": "calliope_hummingbird",
-    "label": "Calliope Hummingbird [CAHU]"
+    value: 'calliope_hummingbird',
+    label: 'Calliope Hummingbird [CAHU]'
   },
   {
-    "value": "canada_goose",
-    "label": "Canada Goose [CANG]"
+    value: 'canada_goose',
+    label: 'Canada Goose [CANG]'
   },
   {
-    "value": "california_scrub_jay",
-    "label": "California Scrub-Jay [CASJ]"
+    value: 'california_scrub_jay',
+    label: 'California Scrub-Jay [CASJ]'
   },
   {
-    "value": "cassins_vireo",
-    "label": "Cassin's Vireo [CAVI]"
+    value: 'cassins_vireo',
+    label: "Cassin's Vireo [CAVI]"
   },
   {
-    "value": "chipping_sparrow",
-    "label": "Chipping Sparrow [CHSP]"
+    value: 'chipping_sparrow',
+    label: 'Chipping Sparrow [CHSP]'
   },
   {
-    "value": "clarks_nutcracker",
-    "label": "Clark's Nutcracker [CLNU]"
+    value: 'clarks_nutcracker',
+    label: "Clark's Nutcracker [CLNU]"
   },
   {
-    "value": "common_nighthawk",
-    "label": "Common Nighthawk [CONI]"
+    value: 'common_nighthawk',
+    label: 'Common Nighthawk [CONI]'
   },
   {
-    "value": "common_raven",
-    "label": "Common Raven [CORA]"
+    value: 'common_raven',
+    label: 'Common Raven [CORA]'
   },
   {
-    "value": "dark_eyed_junco",
-    "label": "Dark-eyed Junco [DEJU]"
+    value: 'dark_eyed_junco',
+    label: 'Dark-eyed Junco [DEJU]'
   },
   {
-    "value": "dusky_flycatcher",
-    "label": "Dusky Flycatcher [DUFL]"
+    value: 'dusky_flycatcher',
+    label: 'Dusky Flycatcher [DUFL]'
   },
   {
-    "value": "evening_grosbeak",
-    "label": "Evening Grosbeak [EVGR]"
+    value: 'evening_grosbeak',
+    label: 'Evening Grosbeak [EVGR]'
   },
   {
-    "value": "flammulated_owl",
-    "label": "Flammulated Owl [FLOW]"
+    value: 'flammulated_owl',
+    label: 'Flammulated Owl [FLOW]'
   },
   {
-    "value": "fox_sparrow_thick_billed",
-    "label": "Fox Sparrow (Thick-billed) [FOSP]"
+    value: 'fox_sparrow_thick_billed',
+    label: 'Fox Sparrow (Thick-billed) [FOSP]'
   },
   {
-    "value": "gadwall",
-    "label": "Gadwall [GADW]"
+    value: 'gadwall',
+    label: 'Gadwall [GADW]'
   },
   {
-    "value": "golden_crowned_kinglet",
-    "label": "Golden-crowned Kinglet [GCKI]"
+    value: 'golden_crowned_kinglet',
+    label: 'Golden-crowned Kinglet [GCKI]'
   },
   {
-    "value": "gray_crowned_rosy_finch",
-    "label": "Gray-crowned Rosy Finch [GCRF]"
+    value: 'gray_crowned_rosy_finch',
+    label: 'Gray-crowned Rosy Finch [GCRF]'
   },
   {
-    "value": "great_horned_owl",
-    "label": "Great Horned Owl [GHOW]"
+    value: 'great_horned_owl',
+    label: 'Great Horned Owl [GHOW]'
   },
   {
-    "value": "green_tailed_towhee",
-    "label": "Green-tailed Towhee [GTTO]"
+    value: 'green_tailed_towhee',
+    label: 'Green-tailed Towhee [GTTO]'
   },
   {
-    "value": "hammonds_flycatcher",
-    "label": "Hammond's Flycatcher [HAFL]"
+    value: 'hammonds_flycatcher',
+    label: "Hammond's Flycatcher [HAFL]"
   },
   {
-    "value": "hairy_woodpecker",
-    "label": "Hairy Woodpecker [HAWO]"
+    value: 'hairy_woodpecker',
+    label: 'Hairy Woodpecker [HAWO]'
   },
   {
-    "value": "hermit_thrush",
-    "label": "Hermit Thrush [HETH]"
+    value: 'hermit_thrush',
+    label: 'Hermit Thrush [HETH]'
   },
   {
-    "value": "hermit_warbler",
-    "label": "Hermit Warbler [HEWA]"
+    value: 'hermit_warbler',
+    label: 'Hermit Warbler [HEWA]'
   },
   {
-    "value": "house_wren",
-    "label": "House Wren [HOWR]"
+    value: 'house_wren',
+    label: 'House Wren [HOWR]'
   },
   {
-    "value": "lazuli_bunting",
-    "label": "Lazuli Bunting [LAZB]"
+    value: 'lazuli_bunting',
+    label: 'Lazuli Bunting [LAZB]'
   },
   {
-    "value": "lesser_goldfinch",
-    "label": "Lesser Goldfinch [LEGO]"
+    value: 'lesser_goldfinch',
+    label: 'Lesser Goldfinch [LEGO]'
   },
   {
-    "value": "lincolns_sparrow",
-    "label": "Lincoln's Sparrow [LISP]"
+    value: 'lincolns_sparrow',
+    label: "Lincoln's Sparrow [LISP]"
   },
   {
-    "value": "macgillivrays_warbler",
-    "label": "MacGillivray's Warbler [MGWA]"
+    value: 'macgillivrays_warbler',
+    label: "MacGillivray's Warbler [MGWA]"
   },
   {
-    "value": "mountain_bluebird",
-    "label": "Mountain Bluebird [MOBL]"
+    value: 'mountain_bluebird',
+    label: 'Mountain Bluebird [MOBL]'
   },
   {
-    "value": "mountain_chickadee",
-    "label": "Mountain Chickadee [MOCH]"
+    value: 'mountain_chickadee',
+    label: 'Mountain Chickadee [MOCH]'
   },
   {
-    "value": "mountain_quail",
-    "label": "Mountain Quail [MOUQ]"
+    value: 'mountain_quail',
+    label: 'Mountain Quail [MOUQ]'
   },
   {
-    "value": "nashville_warbler_western",
-    "label": "Nashville Warbler (Western) [NAWA]"
+    value: 'nashville_warbler_western',
+    label: 'Nashville Warbler (Western) [NAWA]'
   },
   {
-    "value": "northern_flicker",
-    "label": "Northern Flicker [NOFL]"
+    value: 'northern_flicker',
+    label: 'Northern Flicker [NOFL]'
   },
   {
-    "value": "northern_goshawk",
-    "label": "Northern Goshawk [NOGO]"
+    value: 'northern_goshawk',
+    label: 'Northern Goshawk [NOGO]'
   },
   {
-    "value": "northern_pygmy_owl",
-    "label": "Northern Pygmy-Owl [NOPY]"
+    value: 'northern_pygmy_owl',
+    label: 'Northern Pygmy-Owl [NOPY]'
   },
   {
-    "value": "northern_saw_whet_owl",
-    "label": "Northern Saw-whet Owl [NSOW]"
+    value: 'northern_saw_whet_owl',
+    label: 'Northern Saw-whet Owl [NSOW]'
   },
   {
-    "value": "orange_crowned_warbler",
-    "label": "Orange-crowned Warbler [OCWA]"
+    value: 'orange_crowned_warbler',
+    label: 'Orange-crowned Warbler [OCWA]'
   },
   {
-    "value": "oregon_dark_eyed_junco",
-    "label": "Oregon (Dark-eyed) Junco [ORJU]"
+    value: 'oregon_dark_eyed_junco',
+    label: 'Oregon (Dark-eyed) Junco [ORJU]'
   },
   {
-    "value": "olive_sided_flycatcher",
-    "label": "Olive-sided Flycatcher [OSFL]"
+    value: 'olive_sided_flycatcher',
+    label: 'Olive-sided Flycatcher [OSFL]'
   },
   {
-    "value": "pacific_wren",
-    "label": "Pacific Wren [PAWR]"
+    value: 'pacific_wren',
+    label: 'Pacific Wren [PAWR]'
   },
   {
-    "value": "pine_siskin",
-    "label": "Pine Siskin [PISI]"
+    value: 'pine_siskin',
+    label: 'Pine Siskin [PISI]'
   },
   {
-    "value": "pileated_woodpecker_western",
-    "label": "Pileated Woodpecker (Western) [PIWO]"
+    value: 'pileated_woodpecker_western',
+    label: 'Pileated Woodpecker (Western) [PIWO]'
   },
   {
-    "value": "pacific_slope_flycatcher",
-    "label": "Pacific-slope Flycatcher [PSFL]"
+    value: 'pacific_slope_flycatcher',
+    label: 'Pacific-slope Flycatcher [PSFL]'
   },
   {
-    "value": "purple_finch",
-    "label": "Purple Finch [PUFI]"
+    value: 'purple_finch',
+    label: 'Purple Finch [PUFI]'
   },
   {
-    "value": "red_breasted_nuthatch",
-    "label": "Red-breasted Nuthatch [RBNU]"
+    value: 'red_breasted_nuthatch',
+    label: 'Red-breasted Nuthatch [RBNU]'
   },
   {
-    "value": "red_breasted_sapsucker",
-    "label": "Red-breasted Sapsucker [RBSA]"
+    value: 'red_breasted_sapsucker',
+    label: 'Red-breasted Sapsucker [RBSA]'
   },
   {
-    "value": "ruby_crowned_kinglet",
-    "label": "Ruby-crowned Kinglet [RCKI]"
+    value: 'ruby_crowned_kinglet',
+    label: 'Ruby-crowned Kinglet [RCKI]'
   },
   {
-    "value": "red_crossbill",
-    "label": "Red Crossbill [RECR]"
+    value: 'red_crossbill',
+    label: 'Red Crossbill [RECR]'
   },
   {
-    "value": "rock_wren",
-    "label": "Rock Wren [ROWR]"
+    value: 'rock_wren',
+    label: 'Rock Wren [ROWR]'
   },
   {
-    "value": "red_shafted_northern_flicker",
-    "label": "Red-shafted (Northern) Flicker [RSFL]"
+    value: 'red_shafted_northern_flicker',
+    label: 'Red-shafted (Northern) Flicker [RSFL]'
   },
   {
-    "value": "red_tailed_hawk",
-    "label": "Red-tailed Hawk [RTHA]"
+    value: 'red_tailed_hawk',
+    label: 'Red-tailed Hawk [RTHA]'
   },
   {
-    "value": "rufous_hummingbird",
-    "label": "Rufous Hummingbird [RUHU]"
+    value: 'rufous_hummingbird',
+    label: 'Rufous Hummingbird [RUHU]'
   },
   {
-    "value": "sooty_grouse",
-    "label": "Sooty Grouse [SOGR]"
+    value: 'sooty_grouse',
+    label: 'Sooty Grouse [SOGR]'
   },
   {
-    "value": "song_sparrow",
-    "label": "Song Sparrow [SOSP]"
+    value: 'song_sparrow',
+    label: 'Song Sparrow [SOSP]'
   },
   {
-    "value": "williamsons__red_breasted_sapsucker",
-    "label": "Williamson's / Red-breasted Sapsucker [SPHY]"
+    value: 'williamsons__red_breasted_sapsucker',
+    label: "Williamson's / Red-breasted Sapsucker [SPHY]"
   },
   {
-    "value": "spotted_owl_california",
-    "label": "Spotted Owl (California) [SPOW]"
+    value: 'spotted_owl_california',
+    label: 'Spotted Owl (California) [SPOW]'
   },
   {
-    "value": "spotted_sandpiper",
-    "label": "Spotted Sandpiper [SPSA]"
+    value: 'spotted_sandpiper',
+    label: 'Spotted Sandpiper [SPSA]'
   },
   {
-    "value": "spotted_towhee",
-    "label": "Spotted Towhee [SPTO]"
+    value: 'spotted_towhee',
+    label: 'Spotted Towhee [SPTO]'
   },
   {
-    "value": "sharp_shinned_hawk",
-    "label": "Sharp-shinned Hawk [SSHA]"
+    value: 'sharp_shinned_hawk',
+    label: 'Sharp-shinned Hawk [SSHA]'
   },
   {
-    "value": "stellers_jay",
-    "label": "Steller's Jay [STJA]"
+    value: 'stellers_jay',
+    label: "Steller's Jay [STJA]"
   },
   {
-    "value": "swainsons_thrush",
-    "label": "Swainson's Thrush [SWTH]"
+    value: 'swainsons_thrush',
+    label: "Swainson's Thrush [SWTH]"
   },
   {
-    "value": "townsends_solitaire",
-    "label": "Townsend's Solitaire [TOSO]"
+    value: 'townsends_solitaire',
+    label: "Townsend's Solitaire [TOSO]"
   },
   {
-    "value": "tree_swallow",
-    "label": "Tree Swallow [TRSW]"
+    value: 'tree_swallow',
+    label: 'Tree Swallow [TRSW]'
   },
   {
-    "value": "turkey_vulture",
-    "label": "Turkey Vulture [TUVU]"
+    value: 'turkey_vulture',
+    label: 'Turkey Vulture [TUVU]'
   },
   {
-    "value": "unknown__uncertain",
-    "label": "Unknown / Uncertain [UNKN]"
+    value: 'unknown__uncertain',
+    label: 'Unknown / Uncertain [UNKN]'
   },
   {
-    "value": "violet_green_swallow",
-    "label": "Violet-green Swallow [VGSW]"
+    value: 'violet_green_swallow',
+    label: 'Violet-green Swallow [VGSW]'
   },
   {
-    "value": "warbling_vireo_western",
-    "label": "Warbling Vireo (Western) [WAVI]"
+    value: 'warbling_vireo_western',
+    label: 'Warbling Vireo (Western) [WAVI]'
   },
   {
-    "value": "white_breasted_nuthatch_great_basin",
-    "label": "White-breasted Nuthatch (Great Basin) [WBNU]"
+    value: 'white_breasted_nuthatch_great_basin',
+    label: 'White-breasted Nuthatch (Great Basin) [WBNU]'
   },
   {
-    "value": "white_crowned_sparrow",
-    "label": "White-crowned Sparrow [WCSP]"
+    value: 'white_crowned_sparrow',
+    label: 'White-crowned Sparrow [WCSP]'
   },
   {
-    "value": "western_tanager",
-    "label": "Western Tanager [WETA]"
+    value: 'western_tanager',
+    label: 'Western Tanager [WETA]'
   },
   {
-    "value": "western_wood_pewee",
-    "label": "Western Wood-Pewee [WEWP]"
+    value: 'western_wood_pewee',
+    label: 'Western Wood-Pewee [WEWP]'
   },
   {
-    "value": "white_headed_woodpecker",
-    "label": "White-headed Woodpecker [WHWO]"
+    value: 'white_headed_woodpecker',
+    label: 'White-headed Woodpecker [WHWO]'
   },
   {
-    "value": "williamsons_sapsucker",
-    "label": "Williamson's Sapsucker [WISA]"
+    value: 'williamsons_sapsucker',
+    label: "Williamson's Sapsucker [WISA]"
   },
   {
-    "value": "wilsons_warbler_western",
-    "label": "Wilson's Warbler (Western) [WIWA]"
+    value: 'wilsons_warbler_western',
+    label: "Wilson's Warbler (Western) [WIWA]"
   },
   {
-    "value": "white_tailed_ptarmigan",
-    "label": "White-tailed Ptarmigan [WTPT]"
+    value: 'white_tailed_ptarmigan',
+    label: 'White-tailed Ptarmigan [WTPT]'
   },
   {
-    "value": "white_throated_swift",
-    "label": "White-throated Swift [WTSW]"
+    value: 'white_throated_swift',
+    label: 'White-throated Swift [WTSW]'
   },
   {
-    "value": "yellow_rumped_warbler",
-    "label": "Yellow-Rumped Warbler [YRWA]"
+    value: 'yellow_rumped_warbler',
+    label: 'Yellow-Rumped Warbler [YRWA]'
   },
   {
-    "value": "american_pika_mammal",
-    "label": "American Pika (mammal)"
+    value: 'american_pika_mammal',
+    label: 'American Pika (mammal)'
   },
   {
-    "value": "yellow_bellied_marmot_mammal",
-    "label": "Yellow-bellied Marmot (mammal)"
+    value: 'yellow_bellied_marmot_mammal',
+    label: 'Yellow-bellied Marmot (mammal)'
   },
   {
-    "value": "coyote_mammal",
-    "label": "Coyote (mammal)"
+    value: 'coyote_mammal',
+    label: 'Coyote (mammal)'
   }
 ]

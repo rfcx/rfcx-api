@@ -1,19 +1,13 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.addIndex('GuardianAudio', ['measured_at'], { indicesType: 'BTREE' })
 
-  migration.addIndex( "GuardianAudio", ["measured_at"], { indicesType: "BTREE" } );
-
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
-  done();
-
+  down: function (migration, DataTypes, done) {
+    done()
   }
-};
-
-
+}

@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'GuardianSites',
       'is_private',
@@ -12,14 +11,11 @@ module.exports = {
         allowNull: true,
         validate: {}
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('GuardianSites', 'is_private');
-
+    return queryInterface.removeColumn('GuardianSites', 'is_private')
   }
 
-};
+}

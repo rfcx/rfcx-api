@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var User = sequelize.define("User", {
+module.exports = function (sequelize, DataTypes) {
+  var User = sequelize.define('User', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -60,7 +60,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "last_login_at for Users should have type Date" }
+        isDate: { msg: 'last_login_at for Users should have type Date' }
       }
     },
     auth_password_salt: {
@@ -81,7 +81,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "auth_password_updated_at for Users should have type Date" }
+        isDate: { msg: 'auth_password_updated_at for Users should have type Date' }
       }
     },
     rfcx_system: {
@@ -94,14 +94,13 @@ module.exports = function(sequelize, DataTypes) {
     picture: {
       type: DataTypes.STRING,
       allowNull: true
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "Users"
-  });
+    tableName: 'Users'
+  })
 
-  return User;
-};
-
+  return User
+}

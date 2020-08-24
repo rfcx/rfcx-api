@@ -1,34 +1,34 @@
-var AWS = require("aws-sdk");
-var logger = require('../../utils/logger').debugLogger;
-var instanceId = null;
+var AWS = require('aws-sdk')
+var logger = require('../../utils/logger').debugLogger
+var instanceId = null
 
-function getInstanceId(cb) {
+function getInstanceId (cb) {
   var awsMetadataService = new AWS.MetadataService({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_KEY,
     region: process.env.AWS_REGION_ID
-  });
-  awsMetadataService.request("/latest/meta-data/instance-id", function(err, id) {
-    logger.log('getInstanceId', { id: id, error: err });
+  })
+  awsMetadataService.request('/latest/meta-data/instance-id', function (err, id) {
+    logger.log('getInstanceId', { id: id, error: err })
     if (err) {
-      cb(null);
-      return;
+      cb(null)
+      return
     }
-    cb(id);
-  });
+    cb(id)
+  })
 }
 
-getInstanceId(function(id) {
-  instanceId = id;
-});
+getInstanceId(function (id) {
+  instanceId = id
+})
 
-function addInstanceId(req, res, next) {
+function addInstanceId (req, res, next) {
   if (instanceId) {
-    req.instance = instanceId;
+    req.instance = instanceId
   }
-  next();
+  next()
 }
 
 module.exports = {
-    addInstanceId: addInstanceId
-};
+  addInstanceId: addInstanceId
+}

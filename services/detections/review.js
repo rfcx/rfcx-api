@@ -6,10 +6,10 @@ const models = require('../../modelsTimescale')
  * @param {*} user_id
  * @param {*} positive
  */
-async function create(detection_id, user_id, positive) {
+async function create (detection_id, user_id, positive) { // eslint-disable-line camelcase
   return models.sequelize.transaction(async (transaction) => {
     await models.DetectionReview.destroy({ where: { detection_id, user_id }, transaction })
-    if (typeof(positive) !== 'boolean') {
+    if (typeof (positive) !== 'boolean') {
       return null
     }
     const detectionReview = await models.DetectionReview.create({ detection_id, user_id, positive }, transaction)

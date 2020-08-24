@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaMessage = sequelize.define("GuardianMetaMessage", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianMetaMessage = sequelize.define('GuardianMetaMessage', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4
@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "received_at for GuardianMetaMessage should have type Date"
+          msg: 'received_at for GuardianMetaMessage should have type Date'
         }
       }
     },
@@ -20,7 +20,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "sent_at for GuardianMetaMessage should have type Date"
+          msg: 'sent_at for GuardianMetaMessage should have type Date'
         }
       }
     },
@@ -46,10 +46,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
     tableName: 'GuardianMetaMessages'
-  });
+  })
 
-  return GuardianMetaMessage;
-};
+  return GuardianMetaMessage
+}

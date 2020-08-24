@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianGroup = sequelize.define("GuardianGroup", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianGroup = sequelize.define('GuardianGroup', {
     shortname: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
         notContains: {
           args: ' ',
           msg: 'shortname should not contain spaces'
-        },
+        }
       }
     },
     name: {
@@ -30,14 +30,14 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
       validate: {
       }
-    },
+    }
 
   }, {
     indexes: [
-      { unique: true, fields: ["shortname"] }
+      { unique: true, fields: ['shortname'] }
     ],
-    tableName: "GuardianGroups"
-  });
+    tableName: 'GuardianGroups'
+  })
 
-  return GuardianGroup;
-};
+  return GuardianGroup
+}

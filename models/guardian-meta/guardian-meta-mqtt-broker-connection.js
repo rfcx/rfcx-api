@@ -1,11 +1,11 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaMqttBrokerConnection = sequelize.define('GuardianMetaMqttBrokerConnection', {
     connected_at: {
       type: DataTypes.DATE(3),
       validate: {
         isDate: {
-          msg: "connected_at for GuardianMetaMqttBrokerConnection should have type Date"
+          msg: 'connected_at for GuardianMetaMqttBrokerConnection should have type Date'
         }
       }
     },
@@ -31,8 +31,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: "GuardianMetaMqttBrokerConnections"
-  });
+    tableName: 'GuardianMetaMqttBrokerConnections'
+  })
 
-  return GuardianMetaMqttBrokerConnection;
-};
+  return GuardianMetaMqttBrokerConnection
+}

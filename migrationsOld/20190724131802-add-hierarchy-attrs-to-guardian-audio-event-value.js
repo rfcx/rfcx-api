@@ -1,16 +1,15 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize, done) {
-
-    var sqlAddColumnModel = "ALTER TABLE `GuardianAudioEventValues`" +
-      " ADD COLUMN `high_level_key` INTEGER DEFAULT NULL" +
-      ", ADD FOREIGN KEY (`high_level_key`) REFERENCES `GuardianAudioEventValueHighLevelKeys`(`id`)" +
-      " ON UPDATE CASCADE ON DELETE RESTRICT";
+    var sqlAddColumnModel = 'ALTER TABLE `GuardianAudioEventValues`' +
+      ' ADD COLUMN `high_level_key` INTEGER DEFAULT NULL' +
+      ', ADD FOREIGN KEY (`high_level_key`) REFERENCES `GuardianAudioEventValueHighLevelKeys`(`id`)' +
+      ' ON UPDATE CASCADE ON DELETE RESTRICT'
 
     queryInterface.sequelize.query(sqlAddColumnModel, {
       type: queryInterface.sequelize.QueryTypes.RAW
-    });
+    })
 
     queryInterface.addColumn(
       'GuardianAudioEventValues',
@@ -18,21 +17,18 @@ module.exports = {
       {
         type: Sequelize.STRING,
         allowNull: true,
-        unique: false,
+        unique: false
       }
-    );
+    )
 
-    done();
-
+    done()
   },
 
   down: function (queryInterface, Sequelize, done) {
+    queryInterface.removeColumn('GuardianAudioEventValues', 'high_level_key')
+    queryInterface.removeColumn('GuardianAudioEventValues', 'low_level_key')
 
-    queryInterface.removeColumn('GuardianAudioEventValues', 'high_level_key');
-    queryInterface.removeColumn('GuardianAudioEventValues', 'low_level_key');
-
-    done();
-
+    done()
   }
 
-};
+}

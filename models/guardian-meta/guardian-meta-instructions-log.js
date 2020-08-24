@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaInstructionsLog = sequelize.define("GuardianMetaInstructionsLog", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianMetaInstructionsLog = sequelize.define('GuardianMetaInstructionsLog', {
     instr_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -15,7 +15,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "queued_at for GuardianMetaInstructionsLog should have type Date"
+          msg: 'queued_at for GuardianMetaInstructionsLog should have type Date'
         }
       }
     },
@@ -24,7 +24,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "executed_at for GuardianMetaInstructionsLog should have type Date"
+          msg: 'executed_at for GuardianMetaInstructionsLog should have type Date'
         }
       }
     },
@@ -73,15 +73,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "received_at for GuardianMetaInstructionsLog should have type Date"
+          msg: 'received_at for GuardianMetaInstructionsLog should have type Date'
         }
       }
     }
   }, {
     indexes: [
     ],
-    tableName: "GuardianMetaInstructionsLog"
-  });
+    tableName: 'GuardianMetaInstructionsLog'
+  })
 
-  return GuardianMetaInstructionsLog;
-};
+  return GuardianMetaInstructionsLog
+}

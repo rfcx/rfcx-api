@@ -1,25 +1,24 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
+    var sqlAddColumnType = 'ALTER TABLE `AudioAnalysisModels`' +
+      ' ADD COLUMN `event_type` INTEGER DEFAULT NULL' +
+      ', ADD FOREIGN KEY (`event_type`) REFERENCES `GuardianAudioEventTypes`(`id`)' +
+      ' ON UPDATE CASCADE ON DELETE RESTRICT'
 
-    var sqlAddColumnType = "ALTER TABLE `AudioAnalysisModels`" +
-      " ADD COLUMN `event_type` INTEGER DEFAULT NULL" +
-      ", ADD FOREIGN KEY (`event_type`) REFERENCES `GuardianAudioEventTypes`(`id`)" +
-      " ON UPDATE CASCADE ON DELETE RESTRICT";
-
-    var sqlAddColumnValue = "ALTER TABLE `AudioAnalysisModels`" +
-      " ADD COLUMN `event_value` INTEGER DEFAULT NULL" +
-      ", ADD FOREIGN KEY (`event_value`) REFERENCES `GuardianAudioEventValues`(`id`)" +
-      " ON UPDATE CASCADE ON DELETE RESTRICT";
+    var sqlAddColumnValue = 'ALTER TABLE `AudioAnalysisModels`' +
+      ' ADD COLUMN `event_value` INTEGER DEFAULT NULL' +
+      ', ADD FOREIGN KEY (`event_value`) REFERENCES `GuardianAudioEventValues`(`id`)' +
+      ' ON UPDATE CASCADE ON DELETE RESTRICT'
 
     migration.sequelize.query(sqlAddColumnType, {
       type: migration.sequelize.QueryTypes.RAW
-    });
+    })
 
     migration.sequelize.query(sqlAddColumnValue, {
       type: migration.sequelize.QueryTypes.RAW
-    });
+    })
 
     migration.addColumn(
       'AudioAnalysisModels',
@@ -31,7 +30,7 @@ module.exports = {
           isFloat: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'AudioAnalysisModels',
@@ -44,7 +43,7 @@ module.exports = {
           min: 1
         }
       }
-    );
+    )
 
     migration.addColumn(
       'AudioAnalysisModels',
@@ -55,20 +54,18 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.removeColumn('AudioAnalysisModels', 'minimal_detection_confidence')
+    migration.removeColumn('AudioAnalysisModels', 'minimal_detected_windows')
+    migration.removeColumn('AudioAnalysisModels', 'generate_event')
+    migration.removeColumn('AudioAnalysisModels', 'event_type')
+    migration.removeColumn('AudioAnalysisModels', 'event_value')
 
-    migration.removeColumn('AudioAnalysisModels', 'minimal_detection_confidence');
-    migration.removeColumn('AudioAnalysisModels', 'minimal_detected_windows');
-    migration.removeColumn('AudioAnalysisModels', 'generate_event');
-    migration.removeColumn('AudioAnalysisModels', 'event_type');
-    migration.removeColumn('AudioAnalysisModels', 'event_value');
-
-    done();
-
+    done()
   }
-};
+}

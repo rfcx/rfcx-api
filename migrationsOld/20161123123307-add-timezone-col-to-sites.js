@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianSites',
       'timezone',
@@ -13,15 +12,14 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianSites', 'timezone')
 
-    migration.removeColumn('GuardianSites', 'timezone');
-
-    done();
+    done()
   }
-};
+}

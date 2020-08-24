@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'Reports',
       'notes',
@@ -12,14 +11,11 @@ module.exports = {
         defaultValue: null,
         validate: {}
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('Reports', 'notes');
-
+    return queryInterface.removeColumn('Reports', 'notes')
   }
 
-};
+}

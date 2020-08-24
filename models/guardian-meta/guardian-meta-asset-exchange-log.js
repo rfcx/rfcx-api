@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaAssetExchangeLog = sequelize.define("GuardianMetaAssetExchangeLog", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianMetaAssetExchangeLog = sequelize.define('GuardianMetaAssetExchangeLog', {
     asset_type: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     indexes: [],
     tableName: 'GuardianMetaAssetExchangeLogs'
-  });
+  })
 
-  return GuardianMetaAssetExchangeLog;
-};
+  return GuardianMetaAssetExchangeLog
+}

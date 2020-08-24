@@ -1,8 +1,7 @@
-"use strict";
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianEvents',
       'guid',
@@ -11,7 +10,7 @@ module.exports = {
         defaultValue: DataTypes.UUIDV4,
         unique: true
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianEvents',
@@ -20,7 +19,7 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: true
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianEvents',
@@ -32,7 +31,7 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianEvents',
@@ -46,7 +45,7 @@ module.exports = {
           max: 90
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianEvents',
@@ -60,19 +59,18 @@ module.exports = {
           max: 180
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianEvents', 'guid')
+    migration.removeColumn('GuardianEvents', 'classification')
+    migration.removeColumn('GuardianEvents', 'measured_at')
+    migration.removeColumn('GuardianEvents', 'latitude')
+    migration.removeColumn('GuardianEvents', 'longitude')
 
-    migration.removeColumn('GuardianEvents', 'guid');
-    migration.removeColumn('GuardianEvents', 'classification');
-    migration.removeColumn('GuardianEvents', 'measured_at');
-    migration.removeColumn('GuardianEvents', 'latitude');
-    migration.removeColumn('GuardianEvents', 'longitude');
-
-    done();
+    done()
   }
-};
+}

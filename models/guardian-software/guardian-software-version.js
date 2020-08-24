@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianSoftwareVersion = sequelize.define("GuardianSoftwareVersion", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianSoftwareVersion = sequelize.define('GuardianSoftwareVersion', {
     version: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -12,7 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "release_date for GuardianSoftwareVersion should have type Date" }
+        isDate: { msg: 'release_date for GuardianSoftwareVersion should have type Date' }
       }
     },
     is_available: {
@@ -35,8 +35,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: "GuardianSoftwareVersions"
-  });
+    tableName: 'GuardianSoftwareVersions'
+  })
 
-  return GuardianSoftwareVersion;
-};
+  return GuardianSoftwareVersion
+}

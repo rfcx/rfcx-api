@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('stream_source_files', {
@@ -14,31 +14,31 @@ module.exports = {
       },
       duration: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       sample_count: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       sample_rate: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       channels_count: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       bit_rate: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       meta: {
         type: Sequelize.TEXT,
-        allowNull: true,
+        allowNull: true
       },
       sha1_checksum: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       stream_id: {
         type: Sequelize.STRING(12),
@@ -48,7 +48,7 @@ module.exports = {
             tableName: 'streams'
           },
           key: 'id'
-        },
+        }
       },
       audio_codec_id: {
         type: Sequelize.INTEGER,
@@ -58,7 +58,7 @@ module.exports = {
             tableName: 'audio_codecs'
           },
           key: 'id'
-        },
+        }
       },
       audio_file_format_id: {
         type: Sequelize.INTEGER,
@@ -68,7 +68,7 @@ module.exports = {
             tableName: 'audio_file_formats'
           },
           key: 'id'
-        },
+        }
       },
       created_at: {
         type: Sequelize.DATE,
@@ -77,48 +77,48 @@ module.exports = {
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false
-      },
+      }
     })
-    .then(() => {
-      return Promise.all([
-        queryInterface.addConstraint('stream_source_files', {
-          type: 'CHECK',
-          fields: ['duration'],
-          where: {
-            duration: {
-              [Sequelize.Op.gt]: 0
+      .then(() => {
+        return Promise.all([
+          queryInterface.addConstraint('stream_source_files', {
+            type: 'CHECK',
+            fields: ['duration'],
+            where: {
+              duration: {
+                [Sequelize.Op.gt]: 0
+              }
             }
-          }
-        }),
-        queryInterface.addConstraint('stream_source_files', {
-          type: 'CHECK',
-          fields: ['sample_count'],
-          where: {
-            sample_count: {
-              [Sequelize.Op.gt]: 0
+          }),
+          queryInterface.addConstraint('stream_source_files', {
+            type: 'CHECK',
+            fields: ['sample_count'],
+            where: {
+              sample_count: {
+                [Sequelize.Op.gt]: 0
+              }
             }
-          }
-        }),
-        queryInterface.addConstraint('stream_source_files', {
-          type: 'CHECK',
-          fields: ['channels_count'],
-          where: {
-            channels_count: {
-              [Sequelize.Op.gt]: 0
+          }),
+          queryInterface.addConstraint('stream_source_files', {
+            type: 'CHECK',
+            fields: ['channels_count'],
+            where: {
+              channels_count: {
+                [Sequelize.Op.gt]: 0
+              }
             }
-          }
-        }),
-        queryInterface.addConstraint('stream_source_files', {
-          type: 'CHECK',
-          fields: ['sample_rate'],
-          where: {
-            sample_rate: {
-              [Sequelize.Op.gt]: 0
+          }),
+          queryInterface.addConstraint('stream_source_files', {
+            type: 'CHECK',
+            fields: ['sample_rate'],
+            where: {
+              sample_rate: {
+                [Sequelize.Op.gt]: 0
+              }
             }
-          }
-        })
-      ])
-    })
+          })
+        ])
+      })
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('stream_source_files')

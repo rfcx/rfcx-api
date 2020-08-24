@@ -1,18 +1,18 @@
-const rp = require("request-promise");
-const auth0Service = require('../auth0/auth0-service');
-const ValidationError = require('../../utils/converter/validation-error').ValidationError;
+const rp = require('request-promise')
+const auth0Service = require('../auth0/auth0-service')
+const ValidationError = require('../../utils/converter/validation-error').ValidationError
 
-function requestUpload(data) {
-  let missingAttrs = ['filename', 'timestamp', 'stream', 'checksum'].filter(x => data[x] === undefined);
+function requestUpload (data) {
+  const missingAttrs = ['filename', 'timestamp', 'stream', 'checksum'].filter(x => data[x] === undefined)
   if (missingAttrs.length) {
-    throw new ValidationError(`The following attrs are required for requestUpload function call: ${missingAttrs.join(', ')}`);
+    throw new ValidationError(`The following attrs are required for requestUpload function call: ${missingAttrs.join(', ')}`)
   }
-  let body = {
+  const body = {
     filename: data.filename,
     timestamp: data.timestamp,
     stream: data.stream,
-    checksum: data.checksum,
-  };
+    checksum: data.checksum
+  }
   if (data.sampleRate) { body.sampleRate = data.sampleRate }
   if (data.targetBitrate) { body.targetBitrate = data.targetBitrate }
 
@@ -22,15 +22,15 @@ function requestUpload(data) {
     headers: {},
     body,
     json: true
-  };
+  }
 
   return auth0Service.getClientToken()
     .then((token) => {
-      options.headers.authorization = `Bearer ${token}`;
-      return rp(options);
+      options.headers.authorization = `Bearer ${token}`
+      return rp(options)
     })
 }
 
 module.exports = {
-  requestUpload,
+  requestUpload
 }

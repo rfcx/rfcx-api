@@ -1,11 +1,11 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaPower = sequelize.define('GuardianMetaPower', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
         isDate: {
-          msg: "measured_at for GuardianMetaPower should have type Date"
+          msg: 'measured_at for GuardianMetaPower should have type Date'
         }
       }
     },
@@ -14,10 +14,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     is_charged: {
       type: DataTypes.BOOLEAN
-    },
+    }
   }, {
-    tableName: "GuardianMetaPower"
-  });
+    tableName: 'GuardianMetaPower'
+  })
 
-  return GuardianMetaPower;
-};
+  return GuardianMetaPower
+}

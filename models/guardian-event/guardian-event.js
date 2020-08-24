@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianEvent = sequelize.define("GuardianEvent", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianEvent = sequelize.define('GuardianEvent', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -26,7 +26,7 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
-        isDate: { msg: "begins_at_analysis for GuardianEvent should have type Date" }
+        isDate: { msg: 'begins_at_analysis for GuardianEvent should have type Date' }
       }
     },
     begins_at_reviewer: {
@@ -34,23 +34,23 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       allowNull: true,
       validate: {
-        isDate: { msg: "begins_at_reviewer for GuardianEvent should have type Date" }
+        isDate: { msg: 'begins_at_reviewer for GuardianEvent should have type Date' }
       }
     },
     duration_analysis: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
-          isInt: true,
-          min: 1
+        isInt: true,
+        min: 1
       }
     },
     duration_reviewer: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
-          isInt: true,
-          min: 1
+        isInt: true,
+        min: 1
       }
     },
     invalidated_analysis: {
@@ -69,7 +69,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: { msg: "reviewed_at for GuardianEvent should have type Date" }
+        isDate: { msg: 'reviewed_at for GuardianEvent should have type Date' }
       }
     },
     fingerprint: {
@@ -99,10 +99,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "GuardianEvents"
-  });
+    tableName: 'GuardianEvents'
+  })
 
-  return GuardianEvent;
-};
+  return GuardianEvent
+}

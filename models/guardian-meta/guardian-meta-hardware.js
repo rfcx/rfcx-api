@@ -1,5 +1,5 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaHardware = sequelize.define('GuardianMetaHardware', {
 
     phone_imei: {
@@ -80,8 +80,8 @@ module.exports = function(sequelize, DataTypes) {
     }
 
   }, {
-    tableName: "GuardianMetaHardware"
-  });
+    tableName: 'GuardianMetaHardware'
+  })
 
-  return GuardianMetaHardware;
-};
+  return GuardianMetaHardware
+}

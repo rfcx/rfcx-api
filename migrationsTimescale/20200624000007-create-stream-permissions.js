@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('stream_permissions', {
@@ -10,7 +10,7 @@ module.exports = {
             tableName: 'streams'
           },
           key: 'id'
-        },
+        }
       },
       user_id: {
         type: Sequelize.INTEGER,
@@ -43,19 +43,19 @@ module.exports = {
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false
-      },
+      }
     })
-    .then(() => {
-      return queryInterface.addConstraint('stream_permissions', {
-        type: 'CHECK',
-        fields: ['type'],
-        where: {
-          type: {
-            [Sequelize.Op.in]: ['R', 'W']
+      .then(() => {
+        return queryInterface.addConstraint('stream_permissions', {
+          type: 'CHECK',
+          fields: ['type'],
+          where: {
+            type: {
+              [Sequelize.Op.in]: ['R', 'W']
+            }
           }
-        }
+        })
       })
-    })
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('stream_permissions')

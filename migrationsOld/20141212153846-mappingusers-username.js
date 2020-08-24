@@ -1,13 +1,13 @@
-"use strict";
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-    migration.renameColumn('MappingUsers','username','name');
-    done();
+  up: function (migration, DataTypes, done) {
+    migration.renameColumn('MappingUsers', 'username', 'name')
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-    migration.renameColumn('MappingUsers','name','username');
-    done();
+  down: function (migration, DataTypes, done) {
+    migration.renameColumn('MappingUsers', 'name', 'username')
+    done()
   }
-};
+}

@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'GuardianAudioHighlights',
       'flickr_photoset_id',
@@ -13,13 +12,10 @@ module.exports = {
         validate: {
         }
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('GuardianAudioHighlights', 'flickr_photoset_id');
-
+    return queryInterface.removeColumn('GuardianAudioHighlights', 'flickr_photoset_id')
   }
-};
+}

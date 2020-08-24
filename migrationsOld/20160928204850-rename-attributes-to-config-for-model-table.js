@@ -1,19 +1,15 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
+    migration.renameColumn('AudioAnalysisModels', 'attrs', 'config')
 
-    migration.renameColumn('AudioAnalysisModels','attrs','config');
-
-    done();
-
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.renameColumn('AudioAnalysisModels', 'config', 'attrs')
 
-    migration.renameColumn('AudioAnalysisModels','config','attrs');
-
-    done();
-
+    done()
   }
-};
+}

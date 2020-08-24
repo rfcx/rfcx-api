@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianSoftware',
       'is_updatable',
@@ -12,24 +11,19 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    migration.removeColumn('GuardianSoftware', 'number');
-    migration.removeColumn('GuardianSoftware', 'sha1_checksum');
-    migration.removeColumn('GuardianSoftware', 'url');
-    migration.removeColumn('GuardianSoftware', 'release_date');
+    migration.removeColumn('GuardianSoftware', 'number')
+    migration.removeColumn('GuardianSoftware', 'sha1_checksum')
+    migration.removeColumn('GuardianSoftware', 'url')
+    migration.removeColumn('GuardianSoftware', 'release_date')
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudio', 'analysis_aws_queue_id')
 
-    migration.removeColumn('GuardianAudio', 'analysis_aws_queue_id');
-
-    done();
-
+    done()
   }
-};
-
-
+}

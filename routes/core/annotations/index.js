@@ -112,7 +112,6 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
  */
 router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
   const annotationId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
 
   if (!isUuid(annotationId)) {
     return res.sendStatus(404)
@@ -194,7 +193,7 @@ router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
         })
     })
     .then(classificationId => {
-      const { start, end, frequency_min, frequency_max } = convertedParams
+      const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase
       return annotationsService.update(annotationId, start, end, classificationId, frequency_min, frequency_max, userId)
     })
     .then(annotation => res.json(annotation)) // TODO: the annotation is not any of our valid schemas

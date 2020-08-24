@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var RegistrationToken = sequelize.define("RegistrationToken", {
+module.exports = function (sequelize, DataTypes) {
+  var RegistrationToken = sequelize.define('RegistrationToken', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -69,15 +69,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "auth_token_expires_at for RegistrationToken should have type Date" }
+        isDate: { msg: 'auth_token_expires_at for RegistrationToken should have type Date' }
       }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
     tableName: 'RegistrationTokens'
-  });
+  })
 
-  return RegistrationToken;
-};
+  return RegistrationToken
+}

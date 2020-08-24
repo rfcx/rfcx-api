@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 console.log('----------------------------------\nRFCX | ./bin/sync_sql started')
-var exec = require('child_process').exec;
-var fs = require("fs");
-var argv = require('minimist')(process.argv.slice(2));
+var exec = require('child_process').exec
+var fs = require('fs')
+var argv = require('minimist')(process.argv.slice(2))
 
 // MySQL by default
-var databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql';
+var databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql'
 
 // Explanation:
 // 1. Load the environment variables from env_vars.js (if exists)
@@ -13,13 +13,13 @@ var databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql';
 // 3. Run model sync (mysql only)
 // 4. Run migrations
 
-if (fs.existsSync(__dirname + "/../config/env_vars.js")) {
-  var env = require(__dirname + "/../config/env_vars.js").env;
-  for (i in env) { process.env[i] = env[i]; }
+if (fs.existsSync(__dirname + '/../config/env_vars.js')) {
+  var env = require(__dirname + '/../config/env_vars.js').env
+  for (i in env) { process.env[i] = env[i] }
 }
 
-console.log(`RFCX | Initializing sequelize for ${databaseType}`);
-initializeSequelize();
+console.log(`RFCX | Initializing sequelize for ${databaseType}`)
+initializeSequelize()
 
 function initializeSequelize () {
   const migrationsPath = databaseType === 'timescale' ? 'migrationsTimescale' : 'migrations'
@@ -27,21 +27,23 @@ function initializeSequelize () {
   const models = require('../' + modelsPath)
 
   console.log('RFCX | Creating config params: started')
-  var configJsonFile = __dirname + "/../config/config.json";
+  var configJsonFile = __dirname + '/../config/config.json'
 
-  var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false;
+  var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
 
-  let dbUsername = databaseType === 'timescale' ? process.env.POSTGRES_USER : process.env.DB_USERNAME;
-  let dbPassword = databaseType === 'timescale' ? process.env.POSTGRES_PASSWORD : process.env.DB_PASSWORD;
-  let dbName = databaseType === 'timescale' ? process.env.POSTGRES_DB : process.env.DB_NAME;
+  const dbUsername = databaseType === 'timescale' ? process.env.POSTGRES_USER : process.env.DB_USERNAME
+  const dbPassword = databaseType === 'timescale' ? process.env.POSTGRES_PASSWORD : process.env.DB_PASSWORD
+  const dbName = databaseType === 'timescale' ? process.env.POSTGRES_DB : process.env.DB_NAME
 
   const config = {
     ...models.options,
-    username: dbUsername, password: dbPassword, database: dbName,
+    username: dbUsername,
+    password: dbPassword,
+    database: dbName,
     logging: sequelizeVerbose
   }
   const configJsonContent = JSON.stringify({ development: config, test: config, staging: config, production: config })
-  console.log('RFCX | Creating config params: ended');
+  console.log('RFCX | Creating config params: ended')
 
   // TODO: use promises to increase readability
   fs.unlink(configJsonFile, function (e) {
@@ -55,10 +57,10 @@ function initializeSequelize () {
           const command = `npx sequelize db:migrate --models-path ./${modelsPath} --migrations-path ./${migrationsPath}`
           exec(command, function (err, sOut, sErr) {
             console.log(sOut)
-            if (err) { return reject(err); }
-            if (sErr) { return reject(sErr); }
-            return resolve();
-          });
+            if (err) { return reject(err) }
+            if (sErr) { return reject(sErr) }
+            return resolve()
+          })
         })
       }
 
@@ -68,17 +70,16 @@ function initializeSequelize () {
         migrate()
           .then(() => console.log('RFCX | Migrations complete\n'))
           .catch(err => console.error(err))
-      }
-      else {
+      } else {
         // We use the sync command to create new tables or new columns only.
         // Migrations are for altering/dropping tables or columns.
-        console.log('RFCX | Syncing MySQL models\n');
+        console.log('RFCX | Syncing MySQL models\n')
         models.sequelize.sync({ logging: console.log })
           .then(() => console.log('RFCX | Running migrations\n'))
           .then(migrate)
           .then(() => console.log('RFCX | Syncing and migrations complete\n'))
-          .catch(err => console.error(err));
+          .catch(err => console.error(err))
       }
-    });
-  });
+    })
+  })
 }

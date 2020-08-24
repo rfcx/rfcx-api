@@ -9,7 +9,6 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { hasPermission } = require('../../../middleware/authorization/streams')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const usersService = require('../../../services/users/users-service')
 
 /**
  * @swagger
@@ -81,11 +80,10 @@ router.put('/:streamId/users', authenticatedWithRoles('rfcxUser'), function (req
       }
       try {
         var user = await userService.getByEmail(convertedParams.email)
-      }
-      catch (e) {
+      } catch (e) {
         if (e instanceof EmptyResultError) {
           // if user was not found in TimescaleDB, try to find it in MySQL
-          var user = await userServiceMySQL.getUserByEmail(convertedParams.email, true)
+          user = await userServiceMySQL.getUserByEmail(convertedParams.email, true)
           if (!user) {
             // if there is no such user in MySQL too, then finally throw error
             throw new EmptyResultError('User with given parameters not found.')

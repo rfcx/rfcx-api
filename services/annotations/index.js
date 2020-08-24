@@ -21,25 +21,25 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
       [models.Sequelize.Op.in]: streamIds
     }
   }
-  const classificationCondition = classifications === undefined ? {} :
-  {
-    value: { [models.Sequelize.Op.or]: classifications }
-  }
+  const classificationCondition = classifications === undefined ? {}
+    : {
+      value: { [models.Sequelize.Op.or]: classifications }
+    }
   return {
-      where: condition,
-      include: [
-        {
-          as: 'classification',
-          model: models.Classification,
-          where: classificationCondition,
-          attributes: models.Classification.attributes.lite,
-          required: true
-        }
-      ],
-      attributes: models.Annotation.attributes.lite,
-      offset: offset,
-      limit: limit,
-      order: [['start', descending ? 'DESC' : 'ASC']]
+    where: condition,
+    include: [
+      {
+        as: 'classification',
+        model: models.Classification,
+        where: classificationCondition,
+        attributes: models.Classification.attributes.lite,
+        required: true
+      }
+    ],
+    attributes: models.Annotation.attributes.lite,
+    offset: offset,
+    limit: limit,
+    order: [['start', descending ? 'DESC' : 'ASC']]
   }
 }
 
@@ -74,7 +74,8 @@ async function timeAggregatedQuery (start, end, streamId, streamsOnlyCreatedBy, 
 function create (annotation) {
   const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId } = annotation
   return models.Annotation.create({
-    start, end,
+    start,
+    end,
     stream_id: streamId,
     classification_id: classificationId,
     frequency_min: frequencyMin,
@@ -115,9 +116,14 @@ function update (annotationId, start, end, classificationId, frequencyMin, frequ
     return models.sequelize.transaction(transaction => {
       return annotation.destroy({ transaction }).then(() => {
         return models.Annotation.create({
-          ...annotation.toJSON(), classification_id: classificationId,
-          start, end, frequency_min: frequencyMin, frequency_max: frequencyMax,
-          updated_by_id: userId, updated_at: new Date
+          ...annotation.toJSON(),
+          classification_id: classificationId,
+          start,
+          end,
+          frequency_min: frequencyMin,
+          frequency_max: frequencyMax,
+          updated_by_id: userId,
+          updated_at: new Date()
         }, { transaction, silent: true })
       })
     })

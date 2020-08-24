@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
 const classifierService = require('../../../services/classifier/classifier-service')
@@ -9,7 +8,6 @@ const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const { hasPermission } = require('../../../middleware/authorization/streams')
 const streamPermissionService = require('../../../services/streams/permission')
-
 
 /**
  * @swagger
@@ -76,7 +74,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *         description: Stream not found
  */
 router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
-  const userId = req.rfcx.auth_token_info.owner_id;
+  const userId = req.rfcx.auth_token_info.owner_id
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.addColumn(
       'Messages',
       'text',
@@ -10,13 +9,10 @@ module.exports = {
         type: Sequelize.TEXT('long'),
         allowNull: true
       }
-    );
-
+    )
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.removeColumn('Messages', 'text');
-
+    return queryInterface.removeColumn('Messages', 'text')
   }
-};
+}

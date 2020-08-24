@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Guardian = sequelize.define("Guardian", {
+module.exports = function (sequelize, DataTypes) {
+  var Guardian = sequelize.define('Guardian', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -59,11 +59,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isFloat: true,
         min: {
-          args: [ -90 ],
+          args: [-90],
           msg: 'latitude should be equal to or greater than -90'
         },
         max: {
-          args: [ 90 ],
+          args: [90],
           msg: 'latitude should be equal to or less than 90'
         }
       }
@@ -74,11 +74,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isFloat: true,
         min: {
-          args: [ -180 ],
+          args: [-180],
           msg: 'longitude should be equal to or greater than -180'
         },
         max: {
-          args: [ 180 ],
+          args: [180],
           msg: 'longitude should be equal to or less than 180'
         }
       }
@@ -94,7 +94,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "last_check_in for Guardian should have type Date" }
+        isDate: { msg: 'last_check_in for Guardian should have type Date' }
       }
     },
     check_in_count: {
@@ -109,7 +109,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "last_update_check_in for Guardian should have type Date" }
+        isDate: { msg: 'last_update_check_in for Guardian should have type Date' }
       }
     },
     update_check_in_count: {
@@ -138,14 +138,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "auth_token_updated_at for Guardian should have type Date" }
+        isDate: { msg: 'auth_token_updated_at for Guardian should have type Date' }
       }
     },
     auth_token_expires_at: {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "auth_token_expires_at for Guardian should have type Date" }
+        isDate: { msg: 'auth_token_expires_at for Guardian should have type Date' }
       }
     },
     prefs_audio_capture_interval: {
@@ -175,13 +175,13 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: false,
       allowNull: true,
       validate: { }
-    },
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
     tableName: 'Guardians'
-  });
+  })
 
-  return Guardian;
-};
+  return Guardian
+}

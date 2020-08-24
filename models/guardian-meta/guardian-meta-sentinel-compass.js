@@ -1,10 +1,10 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaSentinelCompass = sequelize.define('GuardianMetaSentinelCompass', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: "measured_at for GuardianMetaSentinelCompass should have type Date" }
+        isDate: { msg: 'measured_at for GuardianMetaSentinelCompass should have type Date' }
       }
     },
     x_mag_field: {
@@ -37,8 +37,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: "GuardianMetaSentinelCompass"
-  });
+    tableName: 'GuardianMetaSentinelCompass'
+  })
 
-  return GuardianMetaSentinelCompass;
-};
+  return GuardianMetaSentinelCompass
+}
