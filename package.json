@@ -78,6 +78,7 @@
   },
   "devDependencies": {
     "faux-knox": "0.1.16",
+    "husky": "^4.2.5",
     "jest": "^26.0.1",
     "minimist": "1.2.5",
     "s3": "4.4.0",
@@ -89,6 +90,13 @@
     "js-beautify": "1.6.14"
   },
   "standard": {
-    "env": [ "jest" ]
+    "env": [
+      "jest"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
   }
 }
