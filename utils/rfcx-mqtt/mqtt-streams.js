@@ -1,10 +1,10 @@
-const streamsUploadService = require('../../services/streams/streams-uploads-service');
-const streamsTimescaleService = require('../../services/streams');
-const S3Service = require('../../services/s3/s3-service');
-const moment = require('moment-timezone');
-const path = require('path');
+const streamsUploadService = require('../../services/streams/streams-uploads-service')
+const streamsTimescaleService = require('../../services/streams')
+const S3Service = require('../../services/s3/s3-service')
+const moment = require('moment-timezone')
+const path = require('path')
 
-function ingestGuardianAudio(checkInObj) {
+function ingestGuardianAudio (checkInObj) {
   return streamsTimescaleService.ensureStreamExistsForGuardian(checkInObj.db.dbGuardian)
     .then(() => {
       const uploadData = {
@@ -15,16 +15,16 @@ function ingestGuardianAudio(checkInObj) {
         targetBitrate: checkInObj.audio.meta.bitRate,
         sampleRate: checkInObj.audio.meta.sampleRate
       }
-      return streamsUploadService.requestUpload(uploadData);
+      return streamsUploadService.requestUpload(uploadData)
     })
     .then((data) => {
-      return S3Service.copyObject(process.env.ASSET_BUCKET_AUDIO, checkInObj.audio.meta.s3Path, data.bucket, data.path);
+      return S3Service.copyObject(process.env.ASSET_BUCKET_AUDIO, checkInObj.audio.meta.s3Path, data.bucket, data.path)
     })
     .then(() => {
-      return checkInObj;
+      return checkInObj
     })
 }
 
 module.exports = {
-  ingestGuardianAudio,
+  ingestGuardianAudio
 }

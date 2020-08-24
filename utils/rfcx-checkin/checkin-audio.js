@@ -1,51 +1,45 @@
-var util = require("util");
-var Promise = require("bluebird");
-var models  = require("../../models");
-var fs = require("fs");
-var zlib = require("zlib");
-var hash = require("../../utils/misc/hash.js").hash;
-var token = require("../../utils/internal-rfcx/token.js").token;
-var aws = require("../../utils/external/aws.js").aws();
-var exec = require("child_process").exec;
-var audioUtils = require("../../utils/rfcx-audio").audioUtils;
-var assetUtils = require("../../utils/internal-rfcx/asset-utils.js").assetUtils;
-var analysisUtils = require("../../utils/rfcx-analysis/analysis-queue.js").analysisUtils;
+var Promise = require('bluebird')
+var models = require('../../models')
+var fs = require('fs')
+var zlib = require('zlib')
+var hash = require('../../utils/misc/hash.js').hash
+var aws = require('../../utils/external/aws.js').aws()
+var exec = require('child_process').exec
+var audioUtils = require('../../utils/rfcx-audio').audioUtils
+var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
+var analysisUtils = require('../../utils/rfcx-analysis/analysis-queue.js').analysisUtils
 
-var cachedFiles = require("../../utils/internal-rfcx/cached-files.js").cachedFiles;
-var SensationsService = require("../../services/sensations/sensations-service");
-const analysisService = require('../../services/analysis/analysis-service');
-const aiService = require('../../services/ai/ai-service');
+var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
+var SensationsService = require('../../services/sensations/sensations-service')
+const analysisService = require('../../services/analysis/analysis-service')
+const aiService = require('../../services/ai/ai-service')
 
-const moment = require("moment-timezone");
-var urls = require('../../utils/misc/urls');
+const moment = require('moment-timezone')
+var urls = require('../../utils/misc/urls')
 
-var loggers = require('../../utils/logger');
-var logDebug = loggers.debugLogger.log;
-var logError = loggers.errorLogger.log;
+var loggers = require('../../utils/logger')
+var logDebug = loggers.debugLogger.log
+var logError = loggers.errorLogger.log
 
 exports.audio = {
 
-  info: function(audioFiles, apiUrlDomain, audioMeta, dbGuardian, dbCheckIn) {
-
+  info: function (audioFiles, apiUrlDomain, audioMeta, dbGuardian, dbCheckIn) {
     // REMOVE LATER
     // cached file garbage collection...
-    if (Math.random() < 0.01 ? true : false) { // only do garbage collection ~1% of the time it's allowed
-      cachedFiles.cacheDirectoryGarbageCollection();
+    if (Math.random() < 0.01) { // only do garbage collection ~1% of the time it's allowed
+      cachedFiles.cacheDirectoryGarbageCollection()
     }
 
-    var audioInfo = {};
+    var audioInfo = {}
 
-    if (!!audioFiles) {
-
+    if (audioFiles) {
       // make sure the screenshot files is an array
-      if (!util.isArray(audioFiles)) { audioFiles = [audioFiles]; }
+      if (!Array.isArray(audioFiles)) { audioFiles = [audioFiles] }
 
-      if (audioMeta.length == audioFiles.length) {
-
-        for (i in audioFiles) {
-
-          var timeStamp = audioMeta[i][1];
-          var timeStampDateObj = new Date(parseInt(timeStamp));
+      if (audioMeta.length === audioFiles.length) {
+        for (const i in audioFiles) {
+          var timeStamp = audioMeta[i][1]
+          var timeStampDateObj = new Date(parseInt(timeStamp))
 
           audioInfo[timeStamp] = {
 
@@ -57,8 +51,8 @@ exports.audio = {
 
             originalFilename: audioFiles[i].originalname,
             uploadLocalPath: audioFiles[i].path,
-            unzipLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+"."+audioMeta[i][2],
-            wavAudioLocalPath: audioFiles[i].path.substr(0,audioFiles[i].path.lastIndexOf("."))+".wav",
+            unzipLocalPath: audioFiles[i].path.substr(0, audioFiles[i].path.lastIndexOf('.')) + '.' + audioMeta[i][2],
+            wavAudioLocalPath: audioFiles[i].path.substr(0, audioFiles[i].path.lastIndexOf('.')) + '.wav',
 
             guardianSha1Hash: audioMeta[i][3],
             sha1Hash: null, // to be calculated following the uncompression
@@ -75,7 +69,7 @@ exports.audio = {
             capture_encode_duration: (audioMeta[i][8] != null) ? parseInt(audioMeta[i][8]) : null,
             capture_file_extension: audioMeta[i][2],
             capture_codec: audioMeta[i][6],
-            capture_is_vbr: (audioMeta[i][7].toLowerCase() === "vbr"),
+            capture_is_vbr: (audioMeta[i][7].toLowerCase() === 'vbr'),
 
             timeStamp: timeStamp,
             measured_at: timeStampDateObj,
@@ -85,104 +79,98 @@ exports.audio = {
             api_url: null,
             api_url_domain: apiUrlDomain,
             isSaved: { db: false, s3: false, sqs: false },
-            s3Path: assetUtils.getGuardianAssetStoragePath("audio",timeStampDateObj,dbGuardian.guid,audioMeta[i][2])
-          };
-
+            s3Path: assetUtils.getGuardianAssetStoragePath('audio', timeStampDateObj, dbGuardian.guid, audioMeta[i][2])
+          }
         }
-
       } else {
-        console.log("couldn't match audio meta to uploaded content | "+audioMeta);
+        console.log("couldn't match audio meta to uploaded content | " + audioMeta)
       }
-
     }
-    return audioInfo;
+    return audioInfo
   },
 
-  processUpload: function(audioInfo) {
-    return new Promise(function(resolve, reject) {
-        try {
-          // unzip uploaded audio file into upload directory
-          audioInfo.unZipStream = fs.createWriteStream(audioInfo.unzipLocalPath);
-          fs.createReadStream(audioInfo.uploadLocalPath)
-            .pipe(zlib.createGunzip())
-            .pipe(audioInfo.unZipStream);
-          // when the output stream closes, proceed asynchronously...
-          audioInfo.unZipStream.on("close", function(){
-            // calculate checksum of unzipped file
-            audioInfo.sha1Hash = hash.fileSha1(audioInfo.unzipLocalPath);
-            // compare to checksum received from guardian
-            if (audioInfo.sha1Hash === audioInfo.guardianSha1Hash) {
-              resolve(audioInfo);
-            } else {
-              console.log("checksum mismatch on uploaded (and unzipped) audio file | "+audioInfo.sha1Hash + " - " + audioInfo.guardianSha1Hash);
-              reject(new Error());
-            }
-
-          });
-
-        } catch(err) {
-            console.log(err);
-            reject(new Error(err));
-        }
-    }.bind(this));
-  },
-
-  extractAudioFileMeta: function(audioInfo) {
-    return new Promise(function(resolve, reject) {
+  processUpload: function (audioInfo) {
+    return new Promise(function (resolve, reject) {
       try {
-        fs.stat(audioInfo.unzipLocalPath, function(statErr, fileStat) {
-          if (!!statErr) { reject(statErr); }
-          audioInfo.size = fileStat.size;
-          audioInfo.dbAudioObj.size = audioInfo.size;
+        // unzip uploaded audio file into upload directory
+        audioInfo.unZipStream = fs.createWriteStream(audioInfo.unzipLocalPath)
+        fs.createReadStream(audioInfo.uploadLocalPath)
+          .pipe(zlib.createGunzip())
+          .pipe(audioInfo.unZipStream)
+          // when the output stream closes, proceed asynchronously...
+        audioInfo.unZipStream.on('close', function () {
+          // calculate checksum of unzipped file
+          audioInfo.sha1Hash = hash.fileSha1(audioInfo.unzipLocalPath)
+          // compare to checksum received from guardian
+          if (audioInfo.sha1Hash === audioInfo.guardianSha1Hash) {
+            resolve(audioInfo)
+          } else {
+            console.log('checksum mismatch on uploaded (and unzipped) audio file | ' + audioInfo.sha1Hash + ' - ' + audioInfo.guardianSha1Hash)
+            reject(new Error())
+          }
+        })
+      } catch (err) {
+        console.log(err)
+        reject(new Error(err))
+      }
+    })
+  },
+
+  extractAudioFileMeta: function (audioInfo) {
+    return new Promise(function (resolve, reject) {
+      try {
+        fs.stat(audioInfo.unzipLocalPath, function (statErr, fileStat) {
+          if (statErr) { reject(statErr) }
+          audioInfo.size = fileStat.size
+          audioInfo.dbAudioObj.size = audioInfo.size
           audioInfo.dbAudioObj.save()
             .then(() => {
-              return audioUtils.transcodeToFile( "wav", {
+              return audioUtils.transcodeToFile('wav', {
                 sourceFilePath: audioInfo.unzipLocalPath,
                 sampleRate: audioInfo.capture_sample_rate
-              });
+              })
             })
-            .then(function(wavFilePath) {
-              fs.stat(wavFilePath, function(wavStatErr, wavFileStat) {
-                if (wavStatErr !== null) { reject(wavStatErr); }
-                audioInfo.wavAudioLocalPath = wavFilePath;
-                exec(process.env.SOX_PATH+"i -s "+audioInfo.wavAudioLocalPath, function(err, stdout, stderr) {
-                  if (stderr.trim().length > 0) { console.log(stderr); }
-                  if (!!err) { console.log(err); reject(err) }
+            .then(function (wavFilePath) {
+              fs.stat(wavFilePath, function (wavStatErr, wavFileStat) {
+                if (wavStatErr !== null) { reject(wavStatErr) }
+                audioInfo.wavAudioLocalPath = wavFilePath
+                exec(process.env.SOX_PATH + 'i -s ' + audioInfo.wavAudioLocalPath, function (err, stdout, stderr) {
+                  if (stderr.trim().length > 0) { console.log(stderr) }
+                  if (err) { console.log(err); reject(err) }
 
-                  audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim());
+                  audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim())
 
                   audioInfo.dbAudioObj.save()
                     .then(() => {
                       return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
                     })
                     .then(() => {
-                      resolve();
+                      resolve()
                     })
                     .catch((err) => {
-                      logError('ExtractAudioFileMeta: createSensationsFromGuardianAudio error', { err: err });
-                      resolve();
-                    });
-                  cleanupCheckInFiles(audioInfo);
-                });
-              });
+                      logError('ExtractAudioFileMeta: createSensationsFromGuardianAudio error', { err: err })
+                      resolve()
+                    })
+                  cleanupCheckInFiles(audioInfo)
+                })
+              })
             })
-            .catch(function(err){
-              logError('ExtractAudioFileMeta: audioInfo error', { err: err });
-              cleanupCheckInFiles(audioInfo);
-              reject(err);
-            });
-        });
-      } catch(err) {
-        logError('ExtractAudioFileMeta: common error', { err: err });
-        cleanupCheckInFiles(audioInfo);
-        reject();
+            .catch(function (err) {
+              logError('ExtractAudioFileMeta: audioInfo error', { err: err })
+              cleanupCheckInFiles(audioInfo)
+              reject(err)
+            })
+        })
+      } catch (err) {
+        logError('ExtractAudioFileMeta: common error', { err: err })
+        cleanupCheckInFiles(audioInfo)
+        reject() // eslint-disable-line prefer-promise-reject-errors
       }
     })
   },
 
-  saveToDb: function(audioInfo) {
-
-    let dbAudioLocal;
+  saveToDb: function (audioInfo) {
+    let dbAudioLocal
 
     return models.GuardianAudio
       .findOrCreate({
@@ -194,16 +182,16 @@ exports.audio = {
           site_id: audioInfo.site_id,
           check_in_id: audioInfo.checkin_id,
           sha1_checksum: audioInfo.sha1Hash,
-          url: null,//"s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
+          url: null, // "s3://"+process.env.ASSET_BUCKET_AUDIO+audioInfo.s3Path,
           original_filename: audioInfo.originalFilename,
           capture_bitrate: audioInfo.capture_bitrate,
           encode_duration: audioInfo.capture_encode_duration,
           measured_at: audioInfo.measured_at,
-          measured_at_local: moment.tz(audioInfo.measured_at, (audioInfo.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),
+          measured_at_local: moment.tz(audioInfo.measured_at, (audioInfo.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS')
         }
       })
-      .spread(function(dbAudio, wasCreated){
-        dbAudioLocal = dbAudio;
+      .spread(function (dbAudio, wasCreated) {
+        dbAudioLocal = dbAudio
         return models.GuardianAudioFormat
           .findOrCreate({
             where: {
@@ -216,114 +204,106 @@ exports.audio = {
             }
           })
       })
-      .spread(function(dbAudioFormat, wasCreated){
-        dbAudioLocal.format_id = dbAudioFormat.id;
-        return dbAudioLocal.save();
+      .spread(function (dbAudioFormat, wasCreated) {
+        dbAudioLocal.format_id = dbAudioFormat.id
+        return dbAudioLocal.save()
       })
-      .then(function(dbAudio) {
-        return dbAudio.reload({include: [{ all: true } ]});
+      .then(function (dbAudio) {
+        return dbAudio.reload({ include: [{ all: true }] })
       })
-      .then(function(dbAudio) {
-        audioInfo.isSaved.db = true;
-        audioInfo.dbAudioObj = dbAudio;
-        audioInfo.audio_id = dbAudio.id;
-        audioInfo.audio_guid = dbAudio.guid;
-        return audioInfo;
-      });
-
+      .then(function (dbAudio) {
+        audioInfo.isSaved.db = true
+        audioInfo.dbAudioObj = dbAudio
+        audioInfo.audio_id = dbAudio.id
+        audioInfo.audio_guid = dbAudio.guid
+        return audioInfo
+      })
   },
 
-  saveToS3: function(audioInfo) {
-    return new Promise(function(resolve, reject) {
-
+  saveToS3: function (audioInfo) {
+    return new Promise(function (resolve, reject) {
       aws.s3(process.env.ASSET_BUCKET_AUDIO)
         .putFile(
           audioInfo.unzipLocalPath,
           audioInfo.s3Path,
-          function(err, s3Res){
-            try { s3Res.resume(); } catch (resumeErr) { console.log(resumeErr); }
-            if (!!err) {
-              console.log(err);
-              reject(new Error(err));
-            } else if ((200 == s3Res.statusCode) && aws.s3ConfirmSave(s3Res,audioInfo.s3Path)) {
+          function (err, s3Res) {
+            try { s3Res.resume() } catch (resumeErr) { console.log(resumeErr) }
+            if (err) {
+              console.log(err)
+              reject(new Error(err))
+            } else if ((s3Res.statusCode === 200) && aws.s3ConfirmSave(s3Res, audioInfo.s3Path)) {
+              audioInfo.isSaved.s3 = true
 
-              audioInfo.isSaved.s3 = true;
-
-              resolve(audioInfo);
-
+              resolve(audioInfo)
             } else {
-              reject(new Error("audio file could not be successfully saved"));
+              reject(new Error('audio file could not be successfully saved'))
             }
-      });
-
-    }.bind(this));
+          })
+    })
   },
 
-  queueForTaggingByActiveModels: function(audioInfo) {
-
+  queueForTaggingByActiveModels: function (audioInfo) {
     return models.AudioAnalysisModel
       .findAll({
         where: { is_active: true }
       })
       .bind({})
-      .then(function(dbModels) {
-        logDebug('queueForTaggingByActiveModels: models', { length: dbModels.length });
-        this.dbModels = dbModels;
-        return dbModels.map(function(model) {
-          return model.guid;
-        });
+      .then(function (dbModels) {
+        logDebug('queueForTaggingByActiveModels: models', { length: dbModels.length })
+        this.dbModels = dbModels
+        return dbModels.map(function (model) {
+          return model.guid
+        })
       })
-      .then(function(modelGuids) {
-        logDebug('queueForTaggingByActiveModels: models guids', { guids: modelGuids });
-        var promises = [];
-        for (i in modelGuids) {
-          var prom = analysisUtils.queueAudioForAnalysis("rfcx-analysis", modelGuids[i], {
+      .then(function (modelGuids) {
+        logDebug('queueForTaggingByActiveModels: models guids', { guids: modelGuids })
+        var promises = []
+        for (const i in modelGuids) {
+          var prom = analysisUtils.queueAudioForAnalysis('rfcx-analysis', modelGuids[i], {
             audio_guid: audioInfo.audio_guid,
             api_url_domain: audioInfo.api_url_domain,
             audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
             audio_s3_path: audioInfo.s3Path,
-            audio_sha1_checksum: audioInfo.sha1Hash,
-          });
-          promises.push(prom);
+            audio_sha1_checksum: audioInfo.sha1Hash
+          })
+          promises.push(prom)
         }
-        return Promise.all(promises);
+        return Promise.all(promises)
       })
-      .then(function() {
-        logDebug('queueForTaggingByActiveModels: after queueAudioForAnalysis');
+      .then(function () {
+        logDebug('queueForTaggingByActiveModels: after queueAudioForAnalysis')
         analysisService.findStateByName('perc_queued')
           .then((state) => {
-            logDebug('queueForTaggingByActiveModels: state', { state: state.id });
-            let proms = this.dbModels.map((model) => {
-              return analysisService.createEntity(audioInfo.audio_id, model.id, state.id);
-            });
-            return Promise.all(proms);
+            logDebug('queueForTaggingByActiveModels: state', { state: state.id })
+            const proms = this.dbModels.map((model) => {
+              return analysisService.createEntity(audioInfo.audio_id, model.id, state.id)
+            })
+            return Promise.all(proms)
           })
           .catch((err) => {
-            logError('queueForTaggingByActiveModels: analysis entries error', { error: err });
-          });
+            logError('queueForTaggingByActiveModels: analysis entries error', { error: err })
+          })
 
-        audioInfo.isSaved? audioInfo.isSaved.sqs = true : audioInfo.isSaved = { sqs: true };
+        audioInfo.isSaved ? audioInfo.isSaved.sqs = true : audioInfo.isSaved = { sqs: true }
         // logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
-        return audioInfo;
-      });
-
+        return audioInfo
+      })
   },
 
-  queueForTaggingByActiveV3Models: function(audioInfo, dbGuardian) {
-
-    console.log('\n\nqueueForTaggingByActiveV3Models', audioInfo.audio_guid, dbGuardian.guid, '\n\n');
+  queueForTaggingByActiveV3Models: function (audioInfo, dbGuardian) {
+    console.log('\n\nqueueForTaggingByActiveV3Models', audioInfo.audio_guid, dbGuardian.guid, '\n\n')
 
     return aiService.getPublicAis({ isActive: true })
       .then((ais) => {
         return ais.filter((ai) => {
-          return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid);
-        });
+          return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid)
+        })
       })
       .then((ais) => {
-        console.log('\n\nais length', audioInfo.audio_guid, dbGuardian.guid, ais.length, '\n\n');
-        let promises = [];
+        console.log('\n\nais length', audioInfo.audio_guid, dbGuardian.guid, ais.length, '\n\n')
+        const promises = []
         ais.forEach((ai) => {
-          const name = aiService.combineTopicQueueNameForGuid(ai.guid);
+          const name = aiService.combineTopicQueueNameForGuid(ai.guid)
           const message = {
             guid: audioInfo.audio_guid,
             guardian_guid: dbGuardian.guid,
@@ -335,39 +315,36 @@ exports.audio = {
             capture_sample_count: audioInfo.dbAudioObj.capture_sample_count,
             sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
             latitude: dbGuardian.latitude,
-            longitude: dbGuardian.longitude,
-          };
-          let prom = aws.publish(name, message)
+            longitude: dbGuardian.longitude
+          }
+          const prom = aws.publish(name, message)
             .then((data) => {
-              return data;
+              return data
             })
-          promises.push(prom);
-        });
-        return Promise.all(promises);
-      });
-
+          promises.push(prom)
+        })
+        return Promise.all(promises)
+      })
   },
 
+  rollBackCheckIn: function (audioInfo) {
+    models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo.sha1Hash } }).then(function (dbAudio) { dbAudio.destroy().then(function () { console.log('deleted incomplete audio entry') }) }).catch(function (err) { console.log('failed to delete incomplete audio entry | ' + err) })
 
-  rollBackCheckIn: function(audioInfo) {
+    models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function (dbCheckIn) { dbCheckIn.destroy().then(function () { console.log('deleted checkin entry') }) }).catch(function (err) { console.log('failed to delete checkin entry | ' + err) })
 
-    models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo.sha1Hash } }).then(function(dbAudio){ dbAudio.destroy().then(function(){ console.log("deleted incomplete audio entry"); }); }).catch(function(err){ console.log("failed to delete incomplete audio entry | "+err); });
-
-    models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function(dbCheckIn){ dbCheckIn.destroy().then(function(){ console.log("deleted checkin entry"); }); }).catch(function(err){ console.log("failed to delete checkin entry | "+err); });
-
-    cleanupCheckInFiles(audioInfo);
+    cleanupCheckInFiles(audioInfo)
   },
 
-  prepareWsObject: function(req, itemAudioInfo, dbGuardian, dbAudio) {
-    let dbAudioObj = itemAudioInfo.dbAudioObj,
-        timezone   = dbGuardian.Site.timezone;
+  prepareWsObject: function (req, itemAudioInfo, dbGuardian, dbAudio) {
+    const dbAudioObj = itemAudioInfo.dbAudioObj
+    const timezone = dbGuardian.Site.timezone
     return {
       recordTime: {
         UTC: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
         localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
         timeZone: timezone
       },
-      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
+      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format ? dbAudio.Format.file_extension : 'mp3'),
       location: {
         latitude: dbGuardian.latitude,
         longitude: dbGuardian.longitude,
@@ -375,32 +352,32 @@ exports.audio = {
       },
       length: {
         samples: dbAudioObj.capture_sample_count,
-        timeInMs: dbAudio.Format?
-          Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
+        timeInMs: dbAudio.Format
+          ? Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
       },
       format: {
-        fileType: dbAudio.Format? dbAudio.Format.mime : null,
-        sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
+        fileType: dbAudio.Format ? dbAudio.Format.mime : null,
+        sampleRate: dbAudio.Format ? dbAudio.Format.sample_rate : null,
         bitDepth: itemAudioInfo.capture_bitrate
       },
       guardianGuid: dbGuardian.guid,
-      audioGuid: dbAudio.guid,
-    };
+      audioGuid: dbAudio.guid
+    }
   },
 
   prepareKafkaObject: (req, itemAudioInfo, dbGuardian, dbAudio) => {
-    let dbAudioObj = itemAudioInfo.dbAudioObj,
-        timezone   = dbGuardian.Site.timezone;
+    const dbAudioObj = itemAudioInfo.dbAudioObj
+    const timezone = dbGuardian.Site.timezone
     return {
-      fileType: dbAudio.Format? dbAudio.Format.mime : null,
-      sampleRate: dbAudio.Format? dbAudio.Format.sample_rate: null,
+      fileType: dbAudio.Format ? dbAudio.Format.mime : null,
+      sampleRate: dbAudio.Format ? dbAudio.Format.sample_rate : null,
       bitDepth: itemAudioInfo.capture_bitrate,
-      timeInMs: dbAudio.Format? Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null,
+      timeInMs: dbAudio.Format ? Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null,
       samples: dbAudioObj.capture_sample_count,
       utc: moment.tz(dbAudioObj.measured_at, timezone).toISOString(),
       localTime: moment.tz(dbAudioObj.measured_at, timezone).format(),
       timeZone: timezone,
-      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format? dbAudio.Format.file_extension : 'mp3'),
+      audioUrl: urls.getAudioAssetsUrl(req, dbAudioObj.guid, dbAudio.Format ? dbAudio.Format.file_extension : 'mp3'),
       lat: dbGuardian.latitude,
       long: dbGuardian.longitude,
       guardianGuid: dbGuardian.guid,
@@ -408,43 +385,36 @@ exports.audio = {
       site: dbAudio.Site.name,
       spectrogramUrl: urls.getSpectrogramAssetsUrl(req, dbAudio.guid),
       s3bucket: process.env.ASSET_BUCKET_AUDIO,
-      s3path: itemAudioInfo.s3Path,
-    };
-  },
-
-};
-
-
-
-var cleanupCheckInFiles = function(audioInfo) {
-
-    fs.stat( audioInfo.uploadLocalPath, function(err, stat) {
-      if (err == null) { fs.unlink( audioInfo.uploadLocalPath, function(e) { if (e) { console.log(e); } } ); }
-    });
-
-    fs.stat( audioInfo.unzipLocalPath, function(err, stat) {
-      if (err == null) { fs.unlink( audioInfo.unzipLocalPath, function(e) { if (e) { console.log(e); } } ); }
-    });
-
-    fs.stat( audioInfo.wavAudioLocalPath, function(err, stat) {
-      if (err == null) { fs.unlink( audioInfo.wavAudioLocalPath, function(e) { if (e) { console.log(e); } } ); }
-    });
-
-};
-
-var mimeTypeFromAudioCodec = function(audioCodec) {
-
-  if (audioCodec.toLowerCase() == "aac") {
-    return "audio/mp4";
-  } else if (audioCodec.toLowerCase() == "opus") {
-    return "audio/ogg";
-  } else if (audioCodec.toLowerCase() == "flac") {
-    return "audio/flac";
-  } else if (audioCodec.toLowerCase() == "mp3") {
-    return "audio/mpeg";
-  } else {
-    return null;
+      s3path: itemAudioInfo.s3Path
+    }
   }
 
-};
+}
 
+var cleanupCheckInFiles = function (audioInfo) {
+  fs.stat(audioInfo.uploadLocalPath, function (err, stat) {
+    if (err == null) { fs.unlink(audioInfo.uploadLocalPath, function (e) { if (e) { console.log(e) } }) }
+  })
+
+  fs.stat(audioInfo.unzipLocalPath, function (err, stat) {
+    if (err == null) { fs.unlink(audioInfo.unzipLocalPath, function (e) { if (e) { console.log(e) } }) }
+  })
+
+  fs.stat(audioInfo.wavAudioLocalPath, function (err, stat) {
+    if (err == null) { fs.unlink(audioInfo.wavAudioLocalPath, function (e) { if (e) { console.log(e) } }) }
+  })
+}
+
+var mimeTypeFromAudioCodec = function (audioCodec) {
+  if (audioCodec.toLowerCase() === 'aac') {
+    return 'audio/mp4'
+  } else if (audioCodec.toLowerCase() === 'opus') {
+    return 'audio/ogg'
+  } else if (audioCodec.toLowerCase() === 'flac') {
+    return 'audio/flac'
+  } else if (audioCodec.toLowerCase() === 'mp3') {
+    return 'audio/mpeg'
+  } else {
+    return null
+  }
+}

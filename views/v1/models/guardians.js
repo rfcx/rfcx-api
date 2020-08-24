@@ -1,16 +1,12 @@
-var util = require("util");
-
 exports.models = {
 
-  guardian: function(req,res,dbGuardian) {
+  guardian: function (req, res, dbGuardian) {
+    if (!Array.isArray(dbGuardian)) { dbGuardian = [dbGuardian] }
 
-    if (!util.isArray(dbGuardian)) { dbGuardian = [dbGuardian]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbGuardian) {
-
-      var dbRow = dbGuardian[i];
+    for (const i in dbGuardian) {
+      var dbRow = dbGuardian[i]
 
       var guardian = {
         guid: dbRow.guid,
@@ -37,46 +33,40 @@ exports.models = {
             last_checkin_at: dbRow.last_update_check_in
           }
         },
-        last_sync: dbRow.last_sync? dbRow.last_sync : null,
-        battery_percent: dbRow.battery_percent? dbRow.battery_percent : null,
-        site: dbRow.Site? {
+        last_sync: dbRow.last_sync ? dbRow.last_sync : null,
+        battery_percent: dbRow.battery_percent ? dbRow.battery_percent : null,
+        site: dbRow.Site ? {
           guid: dbRow.Site.guid,
           name: dbRow.Site.name
         } : null,
-        last_audio: dbRow.last_audio? dbRow.last_audio : null,
-        notes: dbRow.notes || null,
-      };
+        last_audio: dbRow.last_audio ? dbRow.last_audio : null,
+        notes: dbRow.notes || null
+      }
 
-      jsonArray.push(guardian);
+      jsonArray.push(guardian)
     }
-    return jsonArray;
-
+    return jsonArray
   },
 
-  guardianPublicInfo: function(dbGuardian) {
+  guardianPublicInfo: function (dbGuardian) {
+    if (!Array.isArray(dbGuardian)) { dbGuardian = [dbGuardian] }
 
-    if (!util.isArray(dbGuardian)) { dbGuardian = [dbGuardian]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbGuardian) {
-
-      var dbRow = dbGuardian[i];
+    for (const i in dbGuardian) {
+      var dbRow = dbGuardian[i]
 
       var guardian = {
         guid: dbRow.guid,
         shortname: dbRow.shortname,
         site_name: dbRow.Site.name,
         site_description: dbRow.Site.description,
-        timezone: dbRow.Site.timezone,
-      };
+        timezone: dbRow.Site.timezone
+      }
 
-      jsonArray.push(guardian);
+      jsonArray.push(guardian)
     }
-    return jsonArray;
-
+    return jsonArray
   }
 
-
-};
-
+}
