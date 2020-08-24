@@ -2,9 +2,13 @@
 
 module.exports = function(sequelize, DataTypes) {
   var GuardianMetaInstructionsLog = sequelize.define("GuardianMetaInstructionsLog", {
-    guid: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4
+    instr_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        isInt: true,
+        min: 0
+      }
     },
     queued_at: {
       type: DataTypes.DATE(3),

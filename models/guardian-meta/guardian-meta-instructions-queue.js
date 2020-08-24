@@ -2,10 +2,6 @@
 
 module.exports = function(sequelize, DataTypes) {
   var GuardianMetaInstructionsQueue = sequelize.define("GuardianMetaInstructionsQueue", {
-    guid: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4
-    },
     queued_at: {
       type: DataTypes.DATE(3),
       allowNull: true,

@@ -258,32 +258,29 @@ exports.checkInDatabase = {
       })
   },
 
-  updateDbGuardianPrefs: function(checkInObj) {
-
-    var guardianId = checkInObj.db.dbGuardian.id;
+  syncGuardianPrefs: function(checkInObj) {
 
     if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: "", cnt: 0, vals: {} }; }
     if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = ""; }
     if (checkInObj.json.prefs.cnt == null) { checkInObj.json.prefs.cnt = 0; }
     if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {}; }
     
-    var prefsRtrnArr = [], 
-        prefsJson = checkInObj.json.prefs, 
-        prefsDb = { sha1: "", blob: "", cnt: 0, vals: {} };
+    var prefsJson = checkInObj.json.prefs, 
+        prefsDb = { blobForSha1: "", sha1: "", cnt: 0, vals: {} };
 
       // retrieve, sort and take checksum of prefs rows for this guardian in the database
       return models.GuardianSoftwarePrefs.findAll({ 
           where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [ ["pref_key", "ASC"] ], limit: 150
         }).then((dbPrefs) => {
-          var prefsBlobDb = [];
+          var prefsBlobArr = [];
           if (dbPrefs.length > 0) {
             for (prefRow in dbPrefs) {
-              prefsBlobDb.push( [ dbPrefs[prefRow].pref_key, dbPrefs[prefRow].pref_value ].join("*") );
+              prefsBlobArr.push( [ dbPrefs[prefRow].pref_key, dbPrefs[prefRow].pref_value ].join("*") );
               prefsDb[dbPrefs[prefRow].pref_key] = dbPrefs[prefRow].pref_value;
             }
           }
-          prefsDb.blob = prefsBlobDb.join("|");
-          prefsDb.sha1 = hash.hashData(prefsDb.blob);
+          prefsDb.blobForSha1 = prefsBlobArr.join("|");
+          prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1);
 
 
           // let prefsFindOrCreatePromises = [];
@@ -315,7 +312,6 @@ exports.checkInDatabase = {
 
         }).then(() => {
           
-          checkInObj.rtrn.obj.prefs = prefsRtrnArr;
           return checkInObj;
         })
         

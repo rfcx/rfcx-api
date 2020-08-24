@@ -14,22 +14,22 @@ exports.mqttInstructions = {
             resolve(checkInObj);
           } else {
             for (var i = 0; i < checkInObj.json.instructions.received.length; i++) {
-              if (checkInObj.json.instructions.received[i].guid != null) {
+              if (checkInObj.json.instructions.received[i].id != null) {
 
                 // cache instruction info
-                var recGuid = checkInObj.json.instructions.received[i].guid;
-                if (checkInObj.instructions[recGuid] == null) { checkInObj.instructions[recGuid] = {}; };
-                checkInObj.instructions[recGuid].received_at = new Date(parseInt(checkInObj.json.instructions.received[i].received_at));
+                var recId = checkInObj.json.instructions.received[i].id;
+                if (checkInObj.instructions[recId] == null) { checkInObj.instructions[recId] = {}; };
+                checkInObj.instructions[recId].received_at = new Date(parseInt(checkInObj.json.instructions.received[i].received_at));
 
                 models.GuardianMetaInstructionsQueue.findOne({
                   where: {
-                    guid: recGuid,
+                    id: recId,
                     guardian_id: checkInObj.db.dbGuardian.id,
                     received_at: null
                   }
                 }).then(function(dbQueued){
                   if (dbQueued != null) {
-                    dbQueued.received_at = checkInObj.instructions[dbQueued.guid].received_at;
+                    dbQueued.received_at = checkInObj.instructions[dbQueued.id].received_at;
                     dbQueued.save();
                     resolve(checkInObj);
                   } else {
@@ -57,32 +57,32 @@ exports.mqttInstructions = {
             resolve(checkInObj);
           } else {
             for (var i = 0; i < checkInObj.json.instructions.executed.length; i++) {
-              if (checkInObj.json.instructions.executed[i].guid != null) {
+              if (checkInObj.json.instructions.executed[i].id != null) {
 
                 // cache instruction info
-                var execGuid = checkInObj.json.instructions.executed[i].guid;
-                if (checkInObj.instructions[execGuid] == null) { checkInObj.instructions[execGuid] = {}; };
-                checkInObj.instructions[execGuid].executed_at = new Date(parseInt(checkInObj.json.instructions.executed[i].executed_at));
-                checkInObj.instructions[execGuid].received_at = new Date(parseInt(checkInObj.json.instructions.executed[i].received_at));
-                checkInObj.instructions[execGuid].response = checkInObj.json.instructions.executed[i].response;
-                checkInObj.instructions[execGuid].execution_attempts = parseInt(checkInObj.json.instructions.executed[i].attempts);
+                var execId = checkInObj.json.instructions.executed[i].id;
+                if (checkInObj.instructions[execId] == null) { checkInObj.instructions[execId] = {}; };
+                checkInObj.instructions[execId].executed_at = new Date(parseInt(checkInObj.json.instructions.executed[i].executed_at));
+                checkInObj.instructions[execId].received_at = new Date(parseInt(checkInObj.json.instructions.executed[i].received_at));
+                checkInObj.instructions[execId].response = checkInObj.json.instructions.executed[i].response;
+                checkInObj.instructions[execId].execution_attempts = parseInt(checkInObj.json.instructions.executed[i].attempts);
             
                 models.GuardianMetaInstructionsLog.findOrCreate({
                   where: {
-                    guid: execGuid,
-                    executed_at: checkInObj.instructions[execGuid].executed_at,
-                    received_at: checkInObj.instructions[execGuid].received_at,
-                    response_json: checkInObj.instructions[execGuid].response,
-                    execution_attempts: checkInObj.instructions[execGuid].execution_attempts,
+                    instr_id: execId,
+                    executed_at: checkInObj.instructions[execId].executed_at,
+                    received_at: checkInObj.instructions[execId].received_at,
+                    response_json: checkInObj.instructions[execId].response,
+                    execution_attempts: checkInObj.instructions[execId].execution_attempts,
                     guardian_id: checkInObj.db.dbGuardian.id
                   }
                 }).spread(function(dbExecuted, wasCreated){
 
-                  checkInObj.rtrn.obj.received.push({ type: "instruction", id: dbExecuted.guid });
+                  checkInObj.rtrn.obj.received.push({ type: "instruction", id: dbExecuted.instr_id });
 
                   models.GuardianMetaInstructionsQueue.findOne({
                     where: {
-                      guid: dbExecuted.guid,
+                      id: dbExecuted.instr_id,
                       guardian_id: checkInObj.db.dbGuardian.id
                     }
                   }).then(function(dbQueued){
@@ -129,13 +129,13 @@ exports.mqttInstructions = {
         if (checkInObj.json.instructions != null) {
           if ((checkInObj.json.instructions.received != null) && (checkInObj.json.instructions.received.length > 0)) {
             for (var i = 0; i < checkInObj.json.instructions.received.length; i++) {
-              if (checkInObj.json.instructions.received[i].guid != null) {
-                blockedInstructions.push(checkInObj.json.instructions.received[i].guid);
+              if (checkInObj.json.instructions.received[i].id != null) {
+                blockedInstructions.push(checkInObj.json.instructions.received[i].id);
           } } }
           if ((checkInObj.json.instructions.executed != null) && (checkInObj.json.instructions.executed.length > 0)) {
             for (var i = 0; i < checkInObj.json.instructions.executed.length; i++) {
-              if (checkInObj.json.instructions.executed[i].guid != null) {
-                blockedInstructions.push(checkInObj.json.instructions.executed[i].guid);
+              if (checkInObj.json.instructions.executed[i].id != null) {
+                blockedInstructions.push(checkInObj.json.instructions.executed[i].id);
           } } }
         }
         
@@ -147,10 +147,10 @@ exports.mqttInstructions = {
 
             if (dbQueued != null) {
               for (dbQuInd in dbQueued) {
-                if ((dbQueued[dbQuInd].guid != null) && (blockedInstructions.indexOf(dbQueued[dbQuInd].guid) < 0)) {
+                if ((dbQueued[dbQuInd].id != null) && (blockedInstructions.indexOf(dbQueued[dbQuInd].id) < 0)) {
 
                   rtrnInstructions.push({
-                    guid: dbQueued[dbQuInd].guid,
+                    id: dbQueued[dbQuInd].id,
                     type: dbQueued[dbQuInd].type,
                     cmd: dbQueued[dbQuInd].command,
                     meta: ""+((dbQueued[dbQuInd].meta_json == null) ? "" : dbQueued[dbQuInd].meta_json),
