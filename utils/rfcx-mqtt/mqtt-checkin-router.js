@@ -31,6 +31,7 @@ function onMessageCheckin (data, messageId) {
           purged: [],
           received: [],
           unconfirmed: [],
+          prefs: [],
           instructions: []
         }
       }

@@ -22,6 +22,7 @@ function onMessagePing (data, messageId) {
           purged: [],
           received: [],
           unconfirmed: [],
+          prefs: [],
           instructions: []
         }
       }

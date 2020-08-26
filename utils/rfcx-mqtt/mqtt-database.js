@@ -246,7 +246,7 @@ exports.checkInDatabase = {
     if (checkInObj.json.prefs.cnt == null) { checkInObj.json.prefs.cnt = 0 }
     if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {} }
 
-    // var prefsJson = checkInObj.json.prefs
+    var prefsReturnArray = []; 
     var prefsDb = { blobForSha1: '', sha1: '', cnt: 0, vals: {} }
 
     // retrieve, sort and take checksum of prefs rows for this guardian in the database
@@ -262,6 +262,7 @@ exports.checkInDatabase = {
       }
       prefsDb.blobForSha1 = prefsBlobArr.join('|')
       prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
+      prefsReturnArray.push({ sha1: prefsDb.sha1 });
 
       // let prefsFindOrCreatePromises = [];
       // if (prefsDb.sha1 != prefsJson.sha1) {
@@ -290,6 +291,7 @@ exports.checkInDatabase = {
       //   }
       // })
     }).then(() => {
+      checkInObj.rtrn.obj.prefs = prefsReturnArray;
       return checkInObj
     })
   },
