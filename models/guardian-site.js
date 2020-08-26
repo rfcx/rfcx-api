@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianSite = sequelize.define("GuardianSite", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianSite = sequelize.define('GuardianSite', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -103,10 +103,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
     tableName: 'GuardianSites'
-  });
+  })
 
-  return GuardianSite;
-};
+  return GuardianSite
+}

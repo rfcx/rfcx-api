@@ -1,5 +1,5 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaSoftwareVersion = sequelize.define('GuardianMetaSoftwareVersion', {
 
     last_checkin_at: {
@@ -8,14 +8,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "last_checkin_at for GuardianMetaSoftwareVersion should have type Date"
+          msg: 'last_checkin_at for GuardianMetaSoftwareVersion should have type Date'
         }
       }
     }
 
   }, {
-    tableName: "GuardianMetaSoftwareVersions"
-  });
+    tableName: 'GuardianMetaSoftwareVersions'
+  })
 
-  return GuardianMetaSoftwareVersion;
-};
+  return GuardianMetaSoftwareVersion
+}

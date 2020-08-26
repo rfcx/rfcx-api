@@ -1,8 +1,7 @@
-"use strict";
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianAudio',
       'sha1_checksum',
@@ -10,15 +9,14 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: true
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudio', 'sha1_checksum')
 
-    migration.removeColumn('GuardianAudio', 'sha1_checksum');
-
-    done();
+    done()
   }
-};
+}

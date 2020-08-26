@@ -1,25 +1,22 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-
-    var sqlAddColumnModel = "ALTER TABLE `Users`" +
-      " ADD COLUMN `default_site` INTEGER DEFAULT NULL" +
-      ", ADD FOREIGN KEY (`default_site`) REFERENCES `GuardianSites`(`id`)" +
-      " ON UPDATE CASCADE ON DELETE RESTRICT";
+    var sqlAddColumnModel = 'ALTER TABLE `Users`' +
+      ' ADD COLUMN `default_site` INTEGER DEFAULT NULL' +
+      ', ADD FOREIGN KEY (`default_site`) REFERENCES `GuardianSites`(`id`)' +
+      ' ON UPDATE CASCADE ON DELETE RESTRICT'
 
     migration.sequelize.query(sqlAddColumnModel, {
       type: migration.sequelize.QueryTypes.RAW
-    });
+    })
 
-    done();
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.removeColumn('Users', 'default_site')
 
-    migration.removeColumn('Users', 'default_site');
-
-    done();
-
+    done()
   }
-};
+}

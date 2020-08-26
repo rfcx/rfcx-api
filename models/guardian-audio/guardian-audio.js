@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudio = sequelize.define("GuardianAudio", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudio = sequelize.define('GuardianAudio', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -11,26 +11,26 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "measured_at for GuardianAudio should have type Date" }
+        isDate: { msg: 'measured_at for GuardianAudio should have type Date' }
       }
     },
     measured_at_local: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
-        isDate: { msg: "measured_at_local for GuardianAudio should have type Date" }
+        isDate: { msg: 'measured_at_local for GuardianAudio should have type Date' }
       }
     },
     analyzed_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: "analyzed_at for GuardianAudio should have type Date" }
+        isDate: { msg: 'analyzed_at for GuardianAudio should have type Date' }
       }
     },
     analysis_queued_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: "analysis_queued_at for GuardianAudio should have type Date" }
+        isDate: { msg: 'analysis_queued_at for GuardianAudio should have type Date' }
       }
     },
     size: {
@@ -78,10 +78,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"], name: 'guid' }
+      { unique: true, fields: ['guid'], name: 'guid' }
     ],
-    tableName: "GuardianAudio"
-  });
+    tableName: 'GuardianAudio'
+  })
 
-  return GuardianAudio;
-};
+  return GuardianAudio
+}

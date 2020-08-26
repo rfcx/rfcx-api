@@ -1,7 +1,7 @@
 // TODO: setup test framework
 // 1. npm i jest --save-dev
 // 2. update npm run test in package.json to call "jest"
-// 3. remove old tests that do not work 
+// 3. remove old tests that do not work
 
 const ArrayConverter = require('./array-converter')
 const ValidationError = require('./validation-error')

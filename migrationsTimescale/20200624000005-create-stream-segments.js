@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('stream_segments', {
@@ -12,15 +12,15 @@ module.exports = {
         // Hypertable key
         type: Sequelize.DATE(3),
         allowNull: false,
-        primaryKey: true,
+        primaryKey: true
       },
       end: {
         type: Sequelize.DATE(3),
-        allowNull: false,
+        allowNull: false
       },
       sample_count: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       stream_id: {
         type: Sequelize.STRING(12),
@@ -30,7 +30,7 @@ module.exports = {
             tableName: 'streams'
           },
           key: 'id'
-        },
+        }
       },
       stream_source_file_id: {
         type: Sequelize.UUID,
@@ -40,7 +40,7 @@ module.exports = {
             tableName: 'stream_source_files'
           },
           key: 'id'
-        },
+        }
       },
       file_extension_id: {
         type: Sequelize.INTEGER,
@@ -50,7 +50,7 @@ module.exports = {
             tableName: 'file_extensions'
           },
           key: 'id'
-        },
+        }
       },
       created_at: {
         type: Sequelize.DATE,
@@ -59,24 +59,24 @@ module.exports = {
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false
-      },
+      }
     })
-    .then(() => {
-      return queryInterface.addConstraint('stream_segments', {
-        type: 'CHECK',
-        fields: ['sample_count'],
-        where: {
-          sample_count: {
-            [Sequelize.Op.gt]: 0
+      .then(() => {
+        return queryInterface.addConstraint('stream_segments', {
+          type: 'CHECK',
+          fields: ['sample_count'],
+          where: {
+            sample_count: {
+              [Sequelize.Op.gt]: 0
+            }
           }
-        }
+        })
       })
-    })
-    .then(() => {
-      return queryInterface.sequelize.query('SELECT create_hypertable(\'stream_segments\', \'start\')', {
-        type: queryInterface.sequelize.QueryTypes.RAW
+      .then(() => {
+        return queryInterface.sequelize.query('SELECT create_hypertable(\'stream_segments\', \'start\')', {
+          type: queryInterface.sequelize.QueryTypes.RAW
+        })
       })
-    })
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('stream_segments')

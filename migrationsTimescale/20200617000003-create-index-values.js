@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('index_values', {
@@ -29,8 +29,8 @@ module.exports = {
       },
       value: {
         type: Sequelize.FLOAT,
-        allowNull: false,
-      },
+        allowNull: false
+      }
     }).then(() => {
       return queryInterface.sequelize.query('SELECT create_hypertable(\'index_values\', \'time\')', {
         type: queryInterface.sequelize.QueryTypes.RAW

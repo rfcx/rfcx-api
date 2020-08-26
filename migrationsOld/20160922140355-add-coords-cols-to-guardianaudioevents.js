@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-
     migration.addColumn(
       'GuardianAudioEvents',
       'shadow_latitude',
@@ -15,7 +14,7 @@ module.exports = {
           max: 90
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianAudioEvents',
@@ -29,17 +28,15 @@ module.exports = {
           max: 180
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudioEvents', 'shadow_latitude')
+    migration.removeColumn('GuardianAudioEvents', 'shadow_longitude')
 
-    migration.removeColumn('GuardianAudioEvents', 'shadow_latitude');
-    migration.removeColumn('GuardianAudioEvents', 'shadow_longitude');
-
-    done();
-
+    done()
   }
-};
+}

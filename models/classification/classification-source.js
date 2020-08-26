@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var ClassificationSource = sequelize.define("ClassificationSource", {
+module.exports = function (sequelize, DataTypes) {
+  var ClassificationSource = sequelize.define('ClassificationSource', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["value"] }
+      { unique: true, fields: ['value'] }
     ],
-    tableName: "ClassificationSources"
-  });
+    tableName: 'ClassificationSources'
+  })
 
-  return ClassificationSource;
-};
+  return ClassificationSource
+}

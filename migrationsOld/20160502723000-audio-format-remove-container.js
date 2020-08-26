@@ -1,19 +1,16 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudioFormats', 'container')
 
-    migration.removeColumn('GuardianAudioFormats', 'container');
-
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
-      "GuardianAudioFormats",
-      "container",
+      'GuardianAudioFormats',
+      'container',
       {
         type: DataTypes.STRING,
         allowNull: false,
@@ -21,9 +18,8 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-  done();
-
+    done()
   }
-};
+}

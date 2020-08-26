@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('detections', {
@@ -12,11 +12,11 @@ module.exports = {
         // Hypertable key
         type: Sequelize.DATE(3),
         allowNull: false,
-        primaryKey: true,
+        primaryKey: true
       },
       end: {
         type: Sequelize.DATE(3),
-        allowNull: false,
+        allowNull: false
       },
       stream_id: {
         type: Sequelize.STRING(12),
@@ -50,8 +50,8 @@ module.exports = {
       },
       confidence: {
         type: Sequelize.FLOAT,
-        allowNull: false,
-      },
+        allowNull: false
+      }
     }).then(() => {
       return queryInterface.sequelize.query('SELECT create_hypertable(\'detections\', \'start\')', {
         type: queryInterface.sequelize.QueryTypes.RAW

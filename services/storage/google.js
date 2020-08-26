@@ -10,38 +10,51 @@ function getSignedUrl (bucket, key, contentType, expires = 86400) {
   const config = {
     action: 'write',
     expires: expiresAtMs,
-    contentType,
+    contentType
   }
   return file
     .getSignedUrl(config)
     .then(data => data[0])
 }
 
-function exists(bucket, key) {
+function exists (bucket, key) {
   const file = storage.bucket(bucket).file(key)
   return file
     .exists()
-    .then(data => data[0]);
+    .then(data => data[0])
+}
+
+async function listFiles (bucket, path) {
+  const data = await storage.bucket(bucket).getFiles({ prefix: path })
+  return data[0]
+}
+
+function getFilePath (file) {
+  return file.metadata.name
 }
 
 function download (bucket, remotePath, localPath) {
   return storage.bucket(bucket).file(remotePath).download({ destination: localPath })
 }
 
-function getReadStream(bucket, key) {
+function getReadStream (bucket, key) {
   return storage.bucket(bucket).file(key).createReadStream()
 }
 
-function upload(bucket, key, localPath) {
-  return storage.bucket(bucket).upload(localPath, { destination: key });
+function upload (bucket, key, localPath) {
+  return storage.bucket(bucket).upload(localPath, { destination: key })
 }
 
-function deleteFile(bucket, key) {
-  return storage.bucket(bucket).file(key).delete();
+function uploadBuffer (bucket, key, buffer) {
+  return storage.bucket(bucket).file(key).save(buffer)
 }
 
-async function deleteFiles(bucket, keys) {
-  for (let key of keys) {
+function deleteFile (bucket, key) {
+  return storage.bucket(bucket).file(key).delete()
+}
+
+async function deleteFiles (bucket, keys) {
+  for (const key of keys) {
     await deleteFile(bucket, key)
   }
   return true
@@ -50,9 +63,12 @@ async function deleteFiles(bucket, keys) {
 module.exports = {
   getSignedUrl,
   exists,
+  listFiles,
+  getFilePath,
   download,
   getReadStream,
   upload,
+  uploadBuffer,
   deleteFile,
-  deleteFiles,
+  deleteFiles
 }

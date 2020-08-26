@@ -1,9 +1,9 @@
-'use strict';
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   var Report = sequelize.define('Report', {
     guid: {
-      type:DataTypes.UUID,
+      type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       unique: true
@@ -12,7 +12,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       validate: {
-        isDate: { msg: "reported_at for Report should have type Date" }
+        isDate: { msg: 'reported_at for Report should have type Date' }
       }
     },
     lat: {
@@ -58,7 +58,7 @@ module.exports = function(sequelize, DataTypes) {
           args: [100],
           msg: 'distance should be equal or less than 100'
         }
-      },
+      }
     },
     age_estimate: { // 0 = happening now, 10 = in the last 24 hours, 20 = in the last week, 30 = in the last month
       type: DataTypes.INTEGER,
@@ -73,7 +73,7 @@ module.exports = function(sequelize, DataTypes) {
           args: [30],
           msg: 'age_estimate should be equal or less than 30'
         }
-      },
+      }
     },
     audio: {
       type: DataTypes.STRING,
@@ -89,7 +89,7 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     tableName: 'Reports'
-  });
+  })
 
-  return Report;
-};
+  return Report
+}

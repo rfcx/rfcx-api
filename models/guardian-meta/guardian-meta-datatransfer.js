@@ -1,16 +1,16 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaDataTransfer = sequelize.define('GuardianMetaDataTransfer', {
     started_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: "started_at for GuardianMetaDataTransfer should have type Date" }
+        isDate: { msg: 'started_at for GuardianMetaDataTransfer should have type Date' }
       }
     },
     ended_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: "ended_at for GuardianMetaDataTransfer should have type Date" }
+        isDate: { msg: 'ended_at for GuardianMetaDataTransfer should have type Date' }
       }
     },
     bytes_received: {
@@ -46,8 +46,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: "GuardianMetaDataTransfer"
-  });
+    tableName: 'GuardianMetaDataTransfer'
+  })
 
-  return GuardianMetaDataTransfer;
-};
+  return GuardianMetaDataTransfer
+}

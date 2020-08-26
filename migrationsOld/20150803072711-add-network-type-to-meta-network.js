@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianMetaNetwork',
       'network_type',
@@ -12,19 +11,14 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianMetaNetwork', 'network_type')
 
-    migration.removeColumn('GuardianMetaNetwork', 'network_type');
-
-    done();
-
+    done()
   }
-};
-
-
+}

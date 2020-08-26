@@ -1,9 +1,8 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-    migration.removeColumn('Guardians', 'auth_salt');
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('Guardians', 'auth_salt')
 
     migration.addColumn(
       'Guardians',
@@ -15,7 +14,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Guardians',
@@ -27,7 +26,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Guardians',
@@ -39,7 +38,7 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Guardians',
@@ -51,14 +50,12 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'Guardians',
       'auth_salt',
@@ -69,14 +66,13 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    migration.removeColumn('Guardians', 'auth_token_salt');
-    migration.removeColumn('Guardians', 'auth_token_hash');
-    migration.removeColumn('Guardians', 'auth_token_updated_at');
-    migration.removeColumn('Guardians', 'auth_token_expires_at');
+    migration.removeColumn('Guardians', 'auth_token_salt')
+    migration.removeColumn('Guardians', 'auth_token_hash')
+    migration.removeColumn('Guardians', 'auth_token_updated_at')
+    migration.removeColumn('Guardians', 'auth_token_expires_at')
 
-    done();
-
+    done()
   }
-};
+}

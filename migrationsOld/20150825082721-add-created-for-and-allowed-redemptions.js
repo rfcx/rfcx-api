@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'RegistrationTokens',
       'allowed_redemptions',
@@ -15,7 +14,7 @@ module.exports = {
           min: 1
         }
       }
-    );
+    )
 
     migration.addColumn(
       'RegistrationTokens',
@@ -26,20 +25,15 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('RegistrationTokens', 'created_for')
+    migration.removeColumn('RegistrationTokens', 'allowed_redemptions')
 
-    migration.removeColumn("RegistrationTokens", 'created_for');
-    migration.removeColumn("RegistrationTokens", 'allowed_redemptions');
-
-    done();
-
+    done()
   }
-};
-
-
+}

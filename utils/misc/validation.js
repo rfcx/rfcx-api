@@ -1,27 +1,26 @@
-function findMissingAttributes(obj, attributes){
-  var missing = [];
+function findMissingAttributes (obj, attributes) {
+  var missing = []
 
-  for(var i=0; i<attributes.length; i++){
-    var attr = attributes[i];
-    if(! Object.prototype.hasOwnProperty.call(obj, attr)) {
-      missing.push(attr);
+  for (var i = 0; i < attributes.length; i++) {
+    var attr = attributes[i]
+    if (!Object.prototype.hasOwnProperty.call(obj, attr)) {
+      missing.push(attr)
     }
   }
-  return missing;
+  return missing
 }
-
 
 var validation = {
 
-    assertAttributesExist: function (obj, attributes) {
-      var missing = findMissingAttributes(obj, attributes);
+  assertAttributesExist: function (obj, attributes) {
+    var missing = findMissingAttributes(obj, attributes)
 
-      if(missing.length > 0){
-        var msg = "Please provide the following attributes: ";
-        msg += missing.join(", ");
-        throw new Error(msg);
-      }
+    if (missing.length > 0) {
+      var msg = 'Please provide the following attributes: '
+      msg += missing.join(', ')
+      throw new Error(msg)
     }
-};
+  }
+}
 
-module.exports = validation;
+module.exports = validation

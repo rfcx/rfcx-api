@@ -1,5 +1,5 @@
 const models = require('../../modelsTimescale')
-
+const EmptyResultError = require('../../utils/converter/empty-result-error')
 
 function query (limit, offset) {
   return models.Index
@@ -15,7 +15,7 @@ function query (limit, offset) {
       attributes: models.Index.attributes.lite,
       offset: offset,
       limit: limit,
-      order: ['name'],
+      order: ['name']
     })
 }
 
@@ -31,6 +31,5 @@ function getId (code) {
       return item.id
     })
 }
-
 
 module.exports = { query, getId }

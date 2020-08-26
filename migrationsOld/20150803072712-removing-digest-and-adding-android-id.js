@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianMessages',
       'android_id',
@@ -14,17 +13,15 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    migration.removeColumn('GuardianMessages', 'digest');
+    migration.removeColumn('GuardianMessages', 'digest')
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
-    migration.removeColumn('GuardianMessages', 'android_id');
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianMessages', 'android_id')
 
     migration.addColumn(
       'GuardianMessages',
@@ -35,11 +32,8 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   }
-};
-
-
+}

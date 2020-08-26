@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize, done) {
-
     queryInterface.addColumn(
       'GuardianAudioFormats',
       'sample_size',
@@ -17,7 +16,7 @@ module.exports = {
           max: 64
         }
       }
-    );
+    )
 
     queryInterface.addColumn(
       'GuardianAudioFormats',
@@ -33,18 +32,15 @@ module.exports = {
           max: 16
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   },
 
   down: function (queryInterface, Sequelize, done) {
-
-    queryInterface.removeColumn('GuardianAudioFormats', 'sample_size');
-    queryInterface.removeColumn('GuardianAudioFormats', 'channel_count');
-    done();
-
+    queryInterface.removeColumn('GuardianAudioFormats', 'sample_size')
+    queryInterface.removeColumn('GuardianAudioFormats', 'channel_count')
+    done()
   }
 
-};
+}

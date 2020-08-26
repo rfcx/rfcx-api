@@ -1,30 +1,24 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-  migration.addColumn(
-    "Guardians",
-    "is_updatable",
-    {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-      validate: {
+  up: function (migration, DataTypes, done) {
+    migration.addColumn(
+      'Guardians',
+      'is_updatable',
+      {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        validate: {
+        }
       }
-    }
-  );
+    )
 
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('Guardians', 'is_updatable')
 
-  migration.removeColumn("Guardians", "is_updatable");
-
-  done();
-
+    done()
   }
-};
-
-
+}

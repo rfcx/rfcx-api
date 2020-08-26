@@ -1,5 +1,5 @@
 const { authenticatedWithRoles } = require('./authorization')
-const streamPermissionService = require('../../services/streams-timescale/permission')
+const streamPermissionService = require('../../services/streams/permission')
 const httpError = require('../../utils/http-errors')
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 
@@ -23,7 +23,7 @@ function hasPermission (permission) {
         next()
       })
       .catch(httpErrorHandler(req, res, 'Unable to process request.'))
-    })
+  })
 }
 
 module.exports = {

@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'Guardians',
       'prefs_audio_capture_interval',
@@ -14,7 +13,7 @@ module.exports = {
           min: 1
         }
       }
-    );
+    )
 
     migration.addColumn(
       'Guardians',
@@ -27,18 +26,15 @@ module.exports = {
           min: 1
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('Guardians', 'prefs_audio_capture_interval')
+    migration.removeColumn('Guardians', 'prefs_service_monitor_interval')
 
-    migration.removeColumn('Guardians', 'prefs_audio_capture_interval');
-    migration.removeColumn('Guardians', 'prefs_service_monitor_interval');
-
-    done();
-
+    done()
   }
-};
+}

@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianCheckIns',
       'location_latitude',
@@ -15,7 +14,7 @@ module.exports = {
           max: 90
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianCheckIns',
@@ -29,16 +28,15 @@ module.exports = {
           max: 180
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'location_latitude')
+    migration.removeColumn('GuardianCheckIns', 'location_longitude')
 
-    migration.removeColumn('GuardianCheckIns', 'location_latitude');
-    migration.removeColumn('GuardianCheckIns', 'location_longitude');
-
-    done();
+    done()
   }
-};
+}

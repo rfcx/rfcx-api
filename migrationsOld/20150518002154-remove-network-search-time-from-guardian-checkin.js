@@ -1,17 +1,13 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'network_search_time')
 
-    migration.removeColumn('GuardianCheckIns', 'network_search_time');
-
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianCheckIns',
       'network_search_time',
@@ -23,9 +19,8 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   }
-};
+}

@@ -1,29 +1,22 @@
-var util = require("util");
-
 exports.models = {
 
-  audioAnalysisMethods: function(req,res,dbAnalysisMethods) {
+  audioAnalysisMethods: function (req, res, dbAnalysisMethods) {
+    if (!Array.isArray(dbAnalysisMethods)) { dbAnalysisMethods = [dbAnalysisMethods] }
 
-    if (!util.isArray(dbAnalysisMethods)) { dbAnalysisMethods = [dbAnalysisMethods]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-    
-    for (i in dbAnalysisMethods) {
+    for (const i in dbAnalysisMethods) {
+      var dbRow = dbAnalysisMethods[i]
 
-      var dbRow = dbAnalysisMethods[i];
-        
       var jsonRow = {
-          name: dbRow.name,
-          download_url: dbRow.download_url,
-          start_command: dbRow.start_command
-        };
+        name: dbRow.name,
+        download_url: dbRow.download_url,
+        start_command: dbRow.start_command
+      }
 
-      jsonArray.push(jsonRow);
-
+      jsonArray.push(jsonRow)
     }
-    return jsonArray;
-  
+    return jsonArray
   }
 
-};
-
+}

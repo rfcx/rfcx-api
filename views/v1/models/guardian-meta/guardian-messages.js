@@ -1,16 +1,12 @@
-var util = require("util");
-
 exports.models = {
 
-  guardianMetaMessages: function(req,res,dbMessages,modelInfo) {
+  guardianMetaMessages: function (req, res, dbMessages, modelInfo) {
+    if (!Array.isArray(dbMessages)) { dbMessages = [dbMessages] }
 
-    if (!util.isArray(dbMessages)) { dbMessages = [dbMessages]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-    
-    for (i in dbMessages) {
-
-      var dbRow = dbMessages[i];
+    for (const i in dbMessages) {
+      var dbRow = dbMessages[i]
 
       jsonArray.push({
         guid: dbRow.guid,
@@ -18,11 +14,9 @@ exports.models = {
         sent_at: dbRow.sent_at,
         address: dbRow.address,
         body: dbRow.body
-      });
+      })
     }
-    return jsonArray;
-  
+    return jsonArray
   }
 
-};
-
+}

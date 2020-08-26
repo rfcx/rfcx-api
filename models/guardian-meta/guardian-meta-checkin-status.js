@@ -1,10 +1,10 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaCheckInStatus = sequelize.define('GuardianMetaCheckInStatus', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: "measured_at for GuardianMetaCheckInStatus should have type Date" }
+        isDate: { msg: 'measured_at for GuardianMetaCheckInStatus should have type Date' }
       }
     },
     queued_count: {
@@ -46,10 +46,18 @@ module.exports = function(sequelize, DataTypes) {
         isInt: true,
         min: 0
       }
+    },
+    meta_count: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
     }
   }, {
-    tableName: "GuardianMetaCheckInStatus"
-  });
+    tableName: 'GuardianMetaCheckInStatus'
+  })
 
-  return GuardianMetaCheckInStatus;
-};
+  return GuardianMetaCheckInStatus
+}

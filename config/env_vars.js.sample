@@ -19,6 +19,7 @@ exports.env = {
 
   // if PLATFORM is set to "google"
   // GOOGLE_APPLICATION_CREDENTIALS: "./config/service-account.json",
+  // PUBSUB_ENABLED: 'true',
 
   AWS_QUEUE_CONCURRENCY: 10,
   BUCKET_ANALYSIS: "rfcx-analysis",
@@ -42,7 +43,7 @@ exports.env = {
   /// Neo4j database is required for endpoints related to legacy AIs, events, tags, sensations.
   /// When `NEO4J_ENABLED` is set to true then URL, user and password are required.
   // NEO4J_ENABLED: "true",
-  // NEO4J_URL: "",
+  // NEO4J_URL: "bolt://neo4j.tools.rfcx.org:7688",
   // NEO4J_USER: "",
   // NEO4J_PASSWORD: "",
 

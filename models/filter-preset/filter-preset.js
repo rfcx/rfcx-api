@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var FilterPreset = sequelize.define("FilterPreset", {
+module.exports = function (sequelize, DataTypes) {
+  var FilterPreset = sequelize.define('FilterPreset', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -27,10 +27,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "FilterPresets"
-  });
+    tableName: 'FilterPresets'
+  })
 
-  return FilterPreset;
-};
+  return FilterPreset
+}

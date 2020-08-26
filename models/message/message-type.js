@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var MessageType = sequelize.define("MessageType", {
+module.exports = function (sequelize, DataTypes) {
+  var MessageType = sequelize.define('MessageType', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["name"] }
+      { unique: true, fields: ['name'] }
     ],
-    tableName: "MessageTypes"
-  });
+    tableName: 'MessageTypes'
+  })
 
-  return MessageType;
-};
+  return MessageType
+}

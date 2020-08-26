@@ -1,9 +1,9 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianGroupGuardianAudioEventValueRelation = sequelize.define("GuardianGroupGuardianAudioEventValueRelation", {}, {
-    tableName: "GuardianGroupGuardianAudioEventValueRelations"
-  });
+module.exports = function (sequelize, DataTypes) {
+  var GuardianGroupGuardianAudioEventValueRelation = sequelize.define('GuardianGroupGuardianAudioEventValueRelation', {}, {
+    tableName: 'GuardianGroupGuardianAudioEventValueRelations'
+  })
 
-  return GuardianGroupGuardianAudioEventValueRelation;
-};
+  return GuardianGroupGuardianAudioEventValueRelation
+}

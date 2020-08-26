@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var AudioAnalysisModel = sequelize.define("AudioAnalysisModel", {
+module.exports = function (sequelize, DataTypes) {
+  var AudioAnalysisModel = sequelize.define('AudioAnalysisModel', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -104,10 +104,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "AudioAnalysisModels"
-  });
+    tableName: 'AudioAnalysisModels'
+  })
 
-  return AudioAnalysisModel;
-};
+  return AudioAnalysisModel
+}

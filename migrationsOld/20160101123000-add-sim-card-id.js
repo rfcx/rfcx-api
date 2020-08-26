@@ -1,29 +1,24 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-  migration.addColumn(
-    "Guardians",
-    "sim_card_id",
-    {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
+  up: function (migration, DataTypes, done) {
+    migration.addColumn(
+      'Guardians',
+      'sim_card_id',
+      {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+        }
       }
-    }
-  );
+    )
 
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('Guardians', 'sim_card_id')
 
-  migration.removeColumn('Guardians', 'sim_card_id');
-  
-  done();
-
+    done()
   }
-};
-
+}

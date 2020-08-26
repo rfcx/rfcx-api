@@ -1,6 +1,6 @@
 
 function toSnakeCase (str) {
-  return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase()
+  return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
 }
 
 function isObject (o) {
@@ -15,4 +15,8 @@ function toSnakeObject (obj) {
     }), {})
 }
 
-module.exports = { toSnakeCase, toSnakeObject }
+module.exports = {
+  toSnakeCase,
+  isObject,
+  toSnakeObject
+}

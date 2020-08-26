@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-
     migration.addColumn(
       'GuardianAudioEvents',
       'begins_at',
@@ -13,7 +12,7 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianAudioEvents',
@@ -25,17 +24,15 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudioEvents', 'begins_at')
+    migration.removeColumn('GuardianAudioEvents', 'ends_at')
 
-    migration.removeColumn('GuardianAudioEvents', 'begins_at');
-    migration.removeColumn('GuardianAudioEvents', 'ends_at');
-
-    done();
-
+    done()
   }
-};
+}

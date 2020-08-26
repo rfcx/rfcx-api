@@ -1,10 +1,10 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaBattery = sequelize.define('GuardianMetaBattery', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: "measured_at for GuardianMetaBattery should have type Date" }
+        isDate: { msg: 'measured_at for GuardianMetaBattery should have type Date' }
       }
     },
     battery_percent: {
@@ -38,8 +38,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: "GuardianMetaBattery"
-  });
+    tableName: 'GuardianMetaBattery'
+  })
 
-  return GuardianMetaBattery;
-};
+  return GuardianMetaBattery
+}

@@ -48,6 +48,7 @@ router.post('/index-values', authenticatedWithRoles('systemUser'), function (req
         const offsetTime = time.clone().add(i * step, 's')
         return { streamId, indexId, time: offsetTime, value }
       })
+      indexValuesService.clearHeatmapCache(streamId, time.valueOf()) // it's async, but we don't need to wait for it
       return indexValuesService.create(objects)
     })
     .then(detections => res.sendStatus(201))

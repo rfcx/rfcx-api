@@ -1,76 +1,63 @@
-var models  = require("../../../models");
-var express = require("express");
-var router = express.Router();
-var hash = require("../../../utils/misc/hash.js").hash;
-var views = require("../../../views/v1");
-var httpError = require("../../../utils/http-errors.js");
-var passport = require("passport");
-var Promise = require("bluebird");
-passport.use(require("../../../middleware/passport-token").TokenStrategy);
-var hasRole = require('../../../middleware/authorization/authorization').hasRole;
-var Converter = require("../../../utils/converter/converter");
-const stripe = require('../../../utils/stripe/stripe');
-const classyService = require('../../../services/classy/classy');
-const ValidationError = require("../../../utils/converter/validation-error");
+var models = require('../../../models')
+var express = require('express')
+var router = express.Router()
+var views = require('../../../views/v1')
+var httpError = require('../../../utils/http-errors.js')
+var passport = require('passport')
+passport.use(require('../../../middleware/passport-token').TokenStrategy)
+var hasRole = require('../../../middleware/authorization/authorization').hasRole
+var Converter = require('../../../utils/converter/converter')
+const stripe = require('../../../utils/stripe/stripe')
+const classyService = require('../../../services/classy/classy')
+const ValidationError = require('../../../utils/converter/validation-error')
 
-router.route("/donations/:donation_id")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
-
+router.route('/donations/:donation_id')
+  .get(passport.authenticate('token', { session: false }), function (req, res) {
     models.AdoptProtectDonation
       .findAll({
         where: { guid: req.params.donation_id },
-        include: [ { all: true } ],
+        include: [{ all: true }],
         limit: 1
-      }).then(function(dbAdoptProtectDonation){
-
+      }).then(function (dbAdoptProtectDonation) {
         if (dbAdoptProtectDonation.length < 1) {
-          httpError(req, res, 404, "database");
+          httpError(req, res, 404, 'database')
         } else {
-          res.status(200).json(views.models.adoptProtectDonations(req,res,dbAdoptProtectDonation));
+          res.status(200).json(views.models.adoptProtectDonations(req, res, dbAdoptProtectDonation))
         }
-
-      }).catch(function(err){
-        console.log("failed to return adopt protect donation | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to return adopt protect donation"}); }
-      });
-
+      }).catch(function (err) {
+        console.log('failed to return adopt protect donation | ' + err)
+        if (err) { res.status(500).json({ msg: 'failed to return adopt protect donation' }) }
+      })
   })
-;
 
-router.route("/donations")
-  .get(passport.authenticate("token",{session:false}), function(req,res) {
-
+router.route('/donations')
+  .get(passport.authenticate('token', { session: false }), function (req, res) {
     models.AdoptProtectDonation
       .findAll({
         where: { donor_email: req.query.donor_email.toLowerCase() },
-        include: [ { all: true } ],
+        include: [{ all: true }],
         limit: 1
-      }).then(function(dbAdoptProtectDonation){
-
+      }).then(function (dbAdoptProtectDonation) {
         if (dbAdoptProtectDonation.length < 1) {
-          httpError(req, res, 404, "database");
+          httpError(req, res, 404, 'database')
         } else {
-          res.status(200).json(views.models.adoptProtectDonations(req,res,dbAdoptProtectDonation));
+          res.status(200).json(views.models.adoptProtectDonations(req, res, dbAdoptProtectDonation))
         }
-
-      }).catch(function(err){
-        console.log("failed to return adopt protect donation | "+err);
-        if (!!err) { res.status(500).json({msg:"failed to return adopt protect donation"}); }
-      });
-
+      }).catch(function (err) {
+        console.log('failed to return adopt protect donation | ' + err)
+        if (err) { res.status(500).json({ msg: 'failed to return adopt protect donation' }) }
+      })
   })
-;
 
 router.route('/stripe/charge')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+    const transformedParams = {}
+    const params = new Converter(req.body, transformedParams)
 
-    let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
-
-    params.convert('token').toString();
-    params.convert('amount').toFloat();
-    params.convert('currency').toString();
-    params.convert('description').toString();
+    params.convert('token').toString()
+    params.convert('amount').toFloat()
+    params.convert('currency').toString()
+    params.convert('description').toString()
 
     params.validate()
       .then(() => {
@@ -78,43 +65,39 @@ router.route('/stripe/charge')
           amount: transformedParams.amount,
           currency: transformedParams.currency,
           description: transformedParams.description,
-          source: transformedParams.token,
-        });
+          source: transformedParams.token
+        })
       })
       .then((data) => {
-        res.status(200).json(data);
+        res.status(200).json(data)
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Error while running charge on Stripe.'));
-
-});
+      .catch(e => httpError(req, res, 500, e, e.message || 'Error while running charge on Stripe.'))
+  })
 
 router.route('/classy/access-token')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), (req, res) => {
-
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
     return classyService.requestAccessToken(process.env.CLASSY_CLIENT_ID, process.env.CLASSY_CLIENT_SECRET)
       .then((data) => {
-        res.status(200).json(data);
+        res.status(200).json(data)
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => {console.log('errrr', e);  httpError(req, res, 500, e, e.message || 'Error while getting Classy access token.')});
-
-});
+      .catch(e => { console.log('errrr', e); httpError(req, res, 500, e, e.message || 'Error while getting Classy access token.') })
+  })
 
 router.route('/classy/save-stripe-donation')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+    const transformedParams = {}
+    const params = new Converter(req.body, transformedParams)
 
-    let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
-
-    params.convert('campaign_id').toString();
-    params.convert('member_email_address').toString();
-    params.convert('billing_first_name').optional().toString();
-    params.convert('billing_last_name').optional().toString();
-    params.convert('check_number').toString();
-    params.convert('price').toFloat();
-    params.convert('description').optional().toString();
-    params.convert('token').toString();
+    params.convert('campaign_id').toString()
+    params.convert('member_email_address').toString()
+    params.convert('billing_first_name').optional().toString()
+    params.convert('billing_last_name').optional().toString()
+    params.convert('check_number').toString()
+    params.convert('price').toFloat()
+    params.convert('description').optional().toString()
+    params.convert('token').toString()
 
     params.validate()
       .then(() => {
@@ -123,7 +106,7 @@ router.route('/classy/save-stripe-donation')
           {
             member_email_address: transformedParams.member_email_address,
             billing_first_name: transformedParams.billing_first_name,
-            billing_last_name: transformedParams.billing_last_name,
+            billing_last_name: transformedParams.billing_last_name
           },
           [{
             price: transformedParams.price,
@@ -136,32 +119,30 @@ router.route('/classy/save-stripe-donation')
             payment_type: 'other',
             sync_third_party: true
           },
-          transformedParams.token);
+          transformedParams.token)
       })
       .then((data) => {
-        res.status(200).json(data);
+        res.status(200).json(data)
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Error while running saving Stripe donation in Classy.'));
-
-});
+      .catch(e => httpError(req, res, 500, e, e.message || 'Error while running saving Stripe donation in Classy.'))
+  })
 
 router.route('/stripe/classy')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], {session: false}), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+    const transformedParams = {}
+    const params = new Converter(req.body, transformedParams)
 
-    let transformedParams = {};
-    let params = new Converter(req.body, transformedParams);
+    params.convert('token').toString()
+    params.convert('amount').toFloat() // in dollars
+    params.convert('currency').toString()
+    params.convert('description').toString()
 
-    params.convert('token').toString();
-    params.convert('amount').toFloat(); // in dollars
-    params.convert('currency').toString();
-    params.convert('description').toString();
-
-    params.convert('campaign_id').toString();
-    params.convert('member_email_address').toString();
-    params.convert('billing_first_name').optional().toString();
-    params.convert('billing_last_name').optional().toString();
-    params.convert('is_anonymous').optional().toBoolean();
+    params.convert('campaign_id').toString()
+    params.convert('member_email_address').toString()
+    params.convert('billing_first_name').optional().toString()
+    params.convert('billing_last_name').optional().toString()
+    params.convert('is_anonymous').optional().toBoolean()
 
     params.validate()
       .bind({})
@@ -170,15 +151,15 @@ router.route('/stripe/classy')
           amount: transformedParams.amount * 100, // Stripe expects that this value is in cents
           currency: transformedParams.currency,
           description: transformedParams.description,
-          source: transformedParams.token,
-        });
+          source: transformedParams.token
+        })
       })
       .then((stripeData) => {
         if (stripeData.status !== 'succeeded') {
-          throw new ValidationError(stripeData.failure_message || 'Error creating Stripe charge.');
+          throw new ValidationError(stripeData.failure_message || 'Error creating Stripe charge.')
         }
-        this.stripeData = stripeData;
-        return classyService.requestAccessToken(process.env.CLASSY_CLIENT_ID, process.env.CLASSY_CLIENT_SECRET);
+        this.stripeData = stripeData
+        return classyService.requestAccessToken(process.env.CLASSY_CLIENT_ID, process.env.CLASSY_CLIENT_SECRET)
       })
       .then((classyTokenData) => {
         return classyService.saveCampaignTransaction(
@@ -187,7 +168,7 @@ router.route('/stripe/classy')
             member_email_address: transformedParams.member_email_address,
             billing_first_name: transformedParams.billing_first_name,
             billing_last_name: transformedParams.billing_last_name,
-            is_anonymous: transformedParams.is_anonymous,
+            is_anonymous: transformedParams.is_anonymous
           },
           [{
             price: transformedParams.amount,
@@ -199,17 +180,16 @@ router.route('/stripe/classy')
             payment_type: 'other',
             sync_third_party: true
           },
-          classyTokenData.access_token);
+          classyTokenData.access_token)
       })
       .then((classyData) => {
         res.status(200).json({
           stripe: this.stripeData,
           classy: classyData
-        });
+        })
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Error while processing the donation.'));
+      .catch(e => httpError(req, res, 500, e, e.message || 'Error while processing the donation.'))
+  })
 
-  });
-
-module.exports = router;
+module.exports = router

@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianCheckIns',
       'software_versions',
@@ -12,21 +11,16 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    migration.removeColumn('GuardianCheckIns', 'version_id');
+    migration.removeColumn('GuardianCheckIns', 'version_id')
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'software_versions')
 
-    migration.removeColumn('GuardianCheckIns', 'software_versions');
-
-    done();
-
+    done()
   }
-};
-
-
+}

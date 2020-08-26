@@ -1,18 +1,18 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var UserLocation = sequelize.define("UserLocation", {
+module.exports = function (sequelize, DataTypes) {
+  var UserLocation = sequelize.define('UserLocation', {
     latitude: {
       type: DataTypes.DOUBLE,
       allowNull: false,
       validate: {
         isFloat: true,
         min: {
-          args: [ -90 ],
+          args: [-90],
           msg: 'latitude should be equal to or greater than -90'
         },
         max: {
-          args: [ 90 ],
+          args: [90],
           msg: 'latitude should be equal to or less than 90'
         }
       }
@@ -23,11 +23,11 @@ module.exports = function(sequelize, DataTypes) {
       validate: {
         isFloat: true,
         min: {
-          args: [ -180 ],
+          args: [-180],
           msg: 'longitude should be equal to or greater than -180'
         },
         max: {
-          args: [ 180 ],
+          args: [180],
           msg: 'longitude should be equal to or less than 180'
         }
       }
@@ -36,13 +36,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: false,
       validate: {
-        isDate: { msg: "time for UserLocations should have type Date" }
-      },
-    },
+        isDate: { msg: 'time for UserLocations should have type Date' }
+      }
+    }
   }, {
-    tableName: "UserLocations"
-  });
+    tableName: 'UserLocations'
+  })
 
-  return UserLocation;
-};
-
+  return UserLocation
+}

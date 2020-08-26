@@ -1,8 +1,8 @@
 class EmptyResultError extends Error {
-  constructor(message){
-    super(message);
-    this.message = message;
-    this.name = "EmptyResultError";
+  constructor (message) {
+    super(message)
+    this.message = message
+    this.name = 'EmptyResultError'
   }
 }
-module.exports = EmptyResultError;
+module.exports = EmptyResultError

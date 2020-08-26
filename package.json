@@ -16,6 +16,7 @@
     "lint": "standard"
   },
   "dependencies": {
+    "@google-cloud/pubsub": "^2.5.0",
     "@google-cloud/storage": "^5.2.0",
     "archiver": "4.0.1",
     "aws-sdk": "2.673.0",
@@ -77,6 +78,7 @@
   },
   "devDependencies": {
     "faux-knox": "0.1.16",
+    "husky": "^4.2.5",
     "jest": "^26.0.1",
     "minimist": "1.2.5",
     "s3": "4.4.0",
@@ -88,21 +90,13 @@
     "js-beautify": "1.6.14"
   },
   "standard": {
-    "ignore": [
-      "bin/**",
-      "build/**",
-      "config/**",
-      "hooks/**",
-      "middleware/**",
-      "migrationsOld/**",
-      "models/**",
-      "routes/v1/**",
-      "routes/v2/**",
-      "services/**",
-      "utils/**",
-      "views/**",
-      "app.js",
-      "app-mqtt.js"
+    "env": [
+      "jest"
     ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
   }
 }

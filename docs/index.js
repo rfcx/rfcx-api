@@ -56,7 +56,15 @@ const options = {
       }
     ]
   },
-  apis: ['./routes/core/**/*.js', './routes/internal/**/*.js', './routes/*.js']
+  apis: [
+    './routes/core/**/*.js',
+    './routes/internal/assets/*.js',
+    './routes/internal/console/*.js',
+    './routes/internal/cron/*.js',
+    './routes/internal/explorer/*.js',
+    './routes/internal/prediction/*.js',
+    './routes/*.js'
+  ]
 }
 
 const swaggerSpec = swaggerJSDoc(options)

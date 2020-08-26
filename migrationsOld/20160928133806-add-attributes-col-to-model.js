@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-
     migration.addColumn(
       'AudioAnalysisModels',
       'attrs',
@@ -12,16 +11,14 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.removeColumn('AudioAnalysisModels', 'attrs')
 
-    migration.removeColumn('AudioAnalysisModels', 'attrs');
-
-    done();
-
+    done()
   }
-};
+}

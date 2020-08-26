@@ -1,19 +1,12 @@
-var util = require("util");
-function getAllViews() { return require("../../../views/v1"); }
-
 exports.models = {
 
-  adoptProtectDonations: function(req,res,dbAdoptProtectDonations) {
+  adoptProtectDonations: function (req, res, dbAdoptProtectDonations) {
+    if (!Array.isArray(dbAdoptProtectDonations)) { dbAdoptProtectDonations = [dbAdoptProtectDonations] }
 
-    var views = getAllViews();
+    var jsonArray = []
 
-    if (!util.isArray(dbAdoptProtectDonations)) { dbAdoptProtectDonations = [dbAdoptProtectDonations]; }
-
-    var jsonArray = [];
-
-    for (i in dbAdoptProtectDonations) {
-
-      var dbRow = dbAdoptProtectDonations[i];
+    for (const i in dbAdoptProtectDonations) {
+      var dbRow = dbAdoptProtectDonations[i]
 
       var adoptProtectDonation = {
         guid: dbRow.guid,
@@ -32,19 +25,15 @@ exports.models = {
           timezone: dbRow.AreaSite.timezone
         },
         area_stream: {
-           urls: {
-             audio: "/v1/guardians/96a9956ef249/audio.json?order=ascending&limit=3"
-           }
+          urls: {
+            audio: '/v1/guardians/96a9956ef249/audio.json?order=ascending&limit=3'
+          }
         }
-      };
+      }
 
-  
-      jsonArray.push(adoptProtectDonation);
+      jsonArray.push(adoptProtectDonation)
     }
-    return jsonArray;
-
+    return jsonArray
   }
 
-
-};
-
+}
