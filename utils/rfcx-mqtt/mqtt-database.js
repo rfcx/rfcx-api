@@ -267,7 +267,7 @@ exports.checkInDatabase = {
       prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
       
       let prefsFindOrCreatePromises = [];
-      if (prefsJson.sha1 !== prefsDb.sha1) {
+      if ((prefsJson.sha1 !== prefsDb.sha1) && (prefsJson.sha1 !== '')) {
         prefsReturnArray = [{ sha1: prefsDb.sha1 }];
 
         if (prefsJson.cnt > 0) {
