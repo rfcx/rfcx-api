@@ -241,14 +241,16 @@ exports.checkInDatabase = {
   },
 
   syncGuardianPrefs: function (checkInObj) {
-    if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: '', cnt: 0, vals: {} } }
-    if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = '' }
-    if (checkInObj.json.prefs.cnt == null) { checkInObj.json.prefs.cnt = 0 }
-    if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {} }
 
     var prefsReturnArray = []; 
-    var prefsJson = checkInObj.json.prefs
-    var prefsDb = { blobForSha1: '', sha1: '', cnt: 0, vals: {} }
+
+    if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: '', vals: {} } }
+    if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = '' }
+    if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {} }
+
+    var prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' };
+    var prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }; ; 
+    for (prefKey in prefsJson.vals) { prefsJson.cnt++; }
 
     // retrieve, sort and take checksum of prefs rows for this guardian in the database
     return models.GuardianSoftwarePrefs.findAll({
@@ -287,7 +289,7 @@ exports.checkInDatabase = {
               return Promise.all(prefsFindOrCreatePromises)
               .then(() => {
 
-                models.GuardianSoftwarePrefs.findAll({
+                return models.GuardianSoftwarePrefs.findAll({
                   where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
                 }).then((dbPrefs) => {
                   var prefsBlobArr = []
@@ -299,15 +301,11 @@ exports.checkInDatabase = {
                   }
                   prefsDb.blobForSha1 = prefsBlobArr.join('|')
                   prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
-                  if (prefsJson.sha1 !== prefsDb.sha1) {
-                    prefsReturnArray = [{ sha1: prefsDb.sha1 }];
-                  } else {
-                    prefsReturnArray = [];
-                  }
+                  prefsReturnArray = [{ sha1: prefsDb.sha1 }];
                 }).then(() => {
                   return Promise.all(prefsFindOrCreatePromises);
                 });
-                
+
               });
           });
         }
