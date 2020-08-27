@@ -39,6 +39,10 @@ function onMessagePing (data, messageId) {
     })
     .then((pingObj) => {
       logDebug('mqttPingRouter -> onMessagePing -> createDbSaveMeta', { messageId, guardian: pingObj.db.dbGuardian.guid, pingObjJson: JSON.parse(JSON.stringify(pingObj.json)) })
+      return checkInDatabase.syncGuardianPrefs(pingObj)
+    })
+    .then((pingObj) => {
+      logDebug('mqttPingRouter -> onMessagePing -> syncGuardianPrefs', { messageId, guardian: pingObj.db.dbGuardian.guid, pingObjJson: JSON.parse(JSON.stringify(pingObj.json)) })
       return mqttInstructions.updateReceivedGuardianInstructions(pingObj)
     })
     .then((pingObj) => {
