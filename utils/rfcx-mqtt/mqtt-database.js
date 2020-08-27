@@ -310,6 +310,7 @@ exports.checkInDatabase = {
           });
         }
       } else if (prefsJson.cnt > 0) {
+        
         prefsReturnArray = [{ sha1: prefsDb.sha1 }];
       }
 
