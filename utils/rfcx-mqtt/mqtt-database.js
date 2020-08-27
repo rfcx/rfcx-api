@@ -265,39 +265,57 @@ exports.checkInDatabase = {
       prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
       
       if (prefsJson.sha1 !== prefsDb.sha1) {
-      
-        prefsReturnArray.push({ sha1: prefsDb.sha1 });
 
-      // let prefsFindOrCreatePromises = [];
-      // if (prefsDb.sha1 != prefsJson.sha1) {
-      //   for (prefKey in prefsJson.vals) {
-      //     let prom = models.GuardianSoftwarePrefs.findOrCreate({
-      //       where: {
-      //         guardian_id: checkInObj.db.dbGuardian.id,
-      //         pref_key: prefKey,
-      //         pref_value: prefsJson.vals[prefKey]
-      //       }
-      //     });
-      //     prefsFindOrCreatePromises.push(prom);
-      //   }
-      // }
+        prefsReturnArray = [{ sha1: prefsDb.sha1 }];
 
-      // return Promise.all(prefsFindOrCreatePromises)
-      //   .then(() => {
-      //   if (dbMetaPurgedAssets.length > 0) {
-      //     let proms = dbMetaPurgedAssets.map((item) => {
-      //       return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
-      //     });
-      //     return Promise.all(proms);
-      //   }
-      //   else {
-      //     return Promise.all(prefsFindOrCreatePromises);
-      //   }
-      // })
+        if (prefsJson.cnt > 0) {
 
+          return models.GuardianSoftwarePrefs.destroy({
+            where: { guardian_id: checkInObj.db.dbGuardian.id }
+            }).then(() => {
+
+              let prefsFindOrCreatePromises = [];              
+              for (prefKey in prefsJson.vals) {
+                let prom = models.GuardianSoftwarePrefs.findOrCreate({
+                  where: {
+                    guardian_id: checkInObj.db.dbGuardian.id,
+                    pref_key: prefKey,
+                    pref_value: prefsJson.vals[prefKey]
+                  }
+                });
+                prefsFindOrCreatePromises.push(prom);
+              }
+
+              return Promise.all(prefsFindOrCreatePromises)
+              .then(() => {
+                return Promise.all(prefsFindOrCreatePromises);
+             });
+          });
+        }
+        
       }
 
     }).then(() => {
+
+      models.GuardianSoftwarePrefs.findAll({
+        where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
+      }).then((dbPrefs) => {
+        var prefsBlobArr = []
+        if (dbPrefs.length > 0) {
+          for (const prefRow in dbPrefs) {
+            prefsBlobArr.push([dbPrefs[prefRow].pref_key, dbPrefs[prefRow].pref_value].join('*'))
+            prefsDb[dbPrefs[prefRow].pref_key] = dbPrefs[prefRow].pref_value
+          }
+        }
+        prefsDb.blobForSha1 = prefsBlobArr.join('|')
+        prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
+        if (prefsJson.sha1 !== prefsDb.sha1) {
+          prefsReturnArray = [{ sha1: prefsDb.sha1 }];
+        } else {
+          prefsReturnArray = [];
+        }
+      });
+
       checkInObj.rtrn.obj.prefs = prefsReturnArray;
       return checkInObj
     })
