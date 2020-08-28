@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return Promise.all([
       queryInterface.addColumn(
         'GuardianMetaBattery',
@@ -10,7 +9,7 @@ module.exports = {
         {
           type: Sequelize.BOOLEAN,
           defaultValue: false,
-          allowNull: true,
+          allowNull: true
         }
       ),
       queryInterface.addColumn(
@@ -19,17 +18,16 @@ module.exports = {
         {
           type: Sequelize.BOOLEAN,
           defaultValue: false,
-          allowNull: true,
+          allowNull: true
         }
       )
     ])
   },
 
   down: function (queryInterface, Sequelize) {
-
     return Promise.all([
       queryInterface.removeColumn('GuardianMetaBattery', 'is_charging'),
       queryInterface.removeColumn('GuardianMetaBattery', 'is_fully_charged')
     ])
   }
-};
+}

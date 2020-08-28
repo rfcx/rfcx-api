@@ -1,94 +1,94 @@
-const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
-const jwksRsa = require('jwks-rsa-passport-edition');
-const userService = require('../../services/users/users-service');
-const guid = require('../../utils/misc/guid');
-const sequelize = require("sequelize");
+const JwtStrategy = require('passport-jwt').Strategy
+const ExtractJwt = require('passport-jwt').ExtractJwt
+const jwksRsa = require('jwks-rsa-passport-edition')
+const userService = require('../../services/users/users-service')
+const guid = require('../../utils/misc/guid')
+const sequelize = require('sequelize')
 
-const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken();
+const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()
 
 const cert = jwksRsa.passportJwtSecret({
   cache: true,
   rateLimit: true,
   jwksRequestsPerMinute: 5,
   jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
-});
+})
 
 const baseOpts = {
   jwtFromRequest: jwtExtractor,
   secretOrKeyProvider: cert,
   issuer: `https://${process.env.AUTH0_DOMAIN}/`,
   algorithms: ['RS256'],
-  passReqToCallback: true,
-};
+  passReqToCallback: true
+}
 
-const opts       = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_DOMAIN}/` });
-const optsCustom = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_CUSTOM_DOMAIN}/` });
+const opts = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_DOMAIN}/` })
+const optsCustom = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_CUSTOM_DOMAIN}/` })
 
-function combineUserData(jwtPayload, user) {
+function combineUserData (jwtPayload, user) {
   return Object.assign({}, jwtPayload, {
     guid: user.guid,
     type: 'user',
     owner_id: user.id,
-    owner_guid: user.guid,
-  });
+    owner_guid: user.guid
+  })
 }
 
-function checkDBUser(req, jwtPayload, done) {
-  let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
-  let tokenUserGuid = jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : undefined);
+function checkDBUser (req, jwtPayload, done) {
+  const rfcxAppMetaUrl = 'https://rfcx.org/app_metadata'
+  const tokenUserGuid = jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : undefined)
 
   // if request was sent from userless account (like GAIA), then use static user
   if (!jwtPayload.email && !tokenUserGuid) {
-    jwtPayload.email = 'userless@rfcx.org';
-    jwtPayload.given_name = 'userless';
-    jwtPayload.family_name = 'rfcx';
-    jwtPayload.guid = guid.generate();
+    jwtPayload.email = 'userless@rfcx.org'
+    jwtPayload.given_name = 'userless'
+    jwtPayload.family_name = 'rfcx'
+    jwtPayload.guid = guid.generate()
   }
 
   // if request was sent from account which doesn't have email (like Facebook, created with a phone number)
   if (!jwtPayload.email && tokenUserGuid) {
-    jwtPayload.email = `${jwtPayload.guid}@rfcx.org`;
+    jwtPayload.email = `${jwtPayload.guid}@rfcx.org`
   }
 
   userService.findOrCreateUser(
     {
       [sequelize.Op.or]: {
-        guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : ''),
-        email: jwtPayload.email,
+        guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
+        email: jwtPayload.email
       }
     },
     {
-      guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl]? jwtPayload[rfcxAppMetaUrl].guid : ''),
+      guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
       email: jwtPayload.email,
-      firstname: jwtPayload.given_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.given_name : ''),
-      lastname: jwtPayload.family_name || (jwtPayload.user_metadata? jwtPayload.user_metadata.family_name : ''),
-      rfcx_system: false,
+      firstname: jwtPayload.given_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.given_name : ''),
+      lastname: jwtPayload.family_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.family_name : ''),
+      rfcx_system: false
     }
   )
-  .spread((user, created) => {
-    if (!created) {
-      userService.refreshLastLogin(user);
-    }
-    let info = combineUserData(jwtPayload, user);
-    req.rfcx.auth_token_info = info;
-    done(null, req.rfcx.auth_token_info);
-    return true;
-  })
-  .catch(e => {
-    done(e);
-  });
+    .spread((user, created) => {
+      if (!created) {
+        userService.refreshLastLogin(user)
+      }
+      const info = combineUserData(jwtPayload, user)
+      req.rfcx.auth_token_info = info
+      done(null, req.rfcx.auth_token_info)
+      return true
+    })
+    .catch(e => {
+      done(e)
+    })
 }
 
-function jwtCallback(req, jwtPayload, done) {
-  jwtPayload.userType = 'auth0';
-  checkDBUser(req, jwtPayload, done);
+function jwtCallback (req, jwtPayload, done) {
+  jwtPayload.userType = 'auth0'
+  checkDBUser(req, jwtPayload, done)
 }
 
-let jwtStrategy       = new JwtStrategy(opts,       jwtCallback);
-let jwtStrategyCustom = new JwtStrategy(optsCustom, jwtCallback);
+const jwtStrategy = new JwtStrategy(opts, jwtCallback)
+const jwtStrategyCustom = new JwtStrategy(optsCustom, jwtCallback)
 
 module.exports = {
   JwtStrategy: jwtStrategy,
-  JwtStrategyCustom: jwtStrategyCustom,
+  JwtStrategyCustom: jwtStrategyCustom
 }

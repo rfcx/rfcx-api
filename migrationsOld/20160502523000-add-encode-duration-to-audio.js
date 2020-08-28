@@ -1,12 +1,10 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
-      "GuardianAudio",
-      "encode_duration",
+      'GuardianAudio',
+      'encode_duration',
       {
         type: DataTypes.INTEGER,
         allowNull: true,
@@ -15,17 +13,14 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudio', 'encode_duration')
 
-    migration.removeColumn('GuardianAudio', 'encode_duration');
-
-  done();
-
+    done()
   }
-};
+}

@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioCollection = sequelize.define("GuardianAudioCollection", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioCollection = sequelize.define('GuardianAudioCollection', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -9,10 +9,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "GuardianAudioCollections"
-  });
+    tableName: 'GuardianAudioCollections'
+  })
 
-  return GuardianAudioCollection;
-};
+  return GuardianAudioCollection
+}

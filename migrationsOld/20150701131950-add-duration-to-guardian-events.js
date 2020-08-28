@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianEvents',
       'duration',
@@ -14,17 +13,14 @@ module.exports = {
           min: 1
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianEvents', 'duration')
 
-    migration.removeColumn('GuardianEvents', 'duration');
-
-    done();
-
+    done()
   }
-};
+}

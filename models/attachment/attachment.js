@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Attachment = sequelize.define("Attachment", {
+module.exports = function (sequelize, DataTypes) {
+  var Attachment = sequelize.define('Attachment', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -12,20 +12,20 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       validate: {
-        isDate: { msg: "reported_at for Attachment should have type Date" }
+        isDate: { msg: 'reported_at for Attachment should have type Date' }
       }
     },
     url: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
-    },
+      unique: true
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "Attachments"
-  });
+    tableName: 'Attachments'
+  })
 
-  return Attachment;
-};
+  return Attachment
+}

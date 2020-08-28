@@ -1,17 +1,21 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaInstructionsLog = sequelize.define("GuardianMetaInstructionsLog", {
-    guid: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4
+module.exports = function (sequelize, DataTypes) {
+  var GuardianMetaInstructionsLog = sequelize.define('GuardianMetaInstructionsLog', {
+    instr_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        isInt: true,
+        min: 0
+      }
     },
     queued_at: {
       type: DataTypes.DATE(3),
       allowNull: true,
       validate: {
         isDate: {
-          msg: "queued_at for GuardianMetaInstructionsLog should have type Date"
+          msg: 'queued_at for GuardianMetaInstructionsLog should have type Date'
         }
       }
     },
@@ -20,7 +24,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "executed_at for GuardianMetaInstructionsLog should have type Date"
+          msg: 'executed_at for GuardianMetaInstructionsLog should have type Date'
         }
       }
     },
@@ -69,16 +73,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "received_at for GuardianMetaInstructionsLog should have type Date"
+          msg: 'received_at for GuardianMetaInstructionsLog should have type Date'
         }
       }
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
     ],
-    tableName: "GuardianMetaInstructionsLog"
-  });
+    tableName: 'GuardianMetaInstructionsLog'
+  })
 
-  return GuardianMetaInstructionsLog;
-};
+  return GuardianMetaInstructionsLog
+}

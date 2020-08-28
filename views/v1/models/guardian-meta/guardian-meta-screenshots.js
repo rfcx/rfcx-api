@@ -1,58 +1,52 @@
-var util = require("util");
-var aws = require("../../../../utils/external/aws.js").aws();
-var assetUtils = require("../../../../utils/internal-rfcx/asset-utils.js").assetUtils;
+var aws = require('../../../../utils/external/aws.js').aws()
+var assetUtils = require('../../../../utils/internal-rfcx/asset-utils.js').assetUtils
 
 exports.models = {
 
-  guardianMetaScreenshots: function(req,res,dbScreenshots) {
+  guardianMetaScreenshots: function (req, res, dbScreenshots) {
+    if (!Array.isArray(dbScreenshots)) { dbScreenshots = [dbScreenshots] }
 
-    if (!util.isArray(dbScreenshots)) { dbScreenshots = [dbScreenshots]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbScreenshots) {
-
-      var dbRow = dbScreenshots[i];
+    for (const i in dbScreenshots) {
+      var dbRow = dbScreenshots[i]
 
       jsonArray.push({
         guid: dbRow.guid,
         captured_at: dbRow.captured_at,
         size: dbRow.size,
         sha1_checksum: dbRow.sha1_checksum,
-        url: process.env.ASSET_URLBASE+"/screenshots/"+dbRow.guid+".png"
-      });
+        url: process.env.ASSET_URLBASE + '/screenshots/' + dbRow.guid + '.png'
+      })
     }
-    return jsonArray;
-  
+    return jsonArray
   },
 
-  guardianMetaScreenshotFile: function(req,res,dbRows) {
-    var dbRow = dbRows;
+  guardianMetaScreenshotFile: function (req, res, dbRows) {
+    var dbRow = dbRows
 
     // auto-generate the asset filepath if it's not stored in the url column
     var metaStoragePath = (dbRow.url == null)
-                      ? assetUtils.getGuardianAssetStoragePath("screenshots",dbRow.captured_at,dbRow.Guardian.guid,"png")
-                      : dbRow.url.substr(dbRow.url.indexOf("://")+3+process.env.ASSET_BUCKET_AUDIO.length);
+      ? assetUtils.getGuardianAssetStoragePath('screenshots', dbRow.captured_at, dbRow.Guardian.guid, 'png')
+      : dbRow.url.substr(dbRow.url.indexOf('://') + 3 + process.env.ASSET_BUCKET_AUDIO.length)
 
+    aws.s3(process.env.ASSET_BUCKET_META).getFile(metaStoragePath, function (err, result) {
+      if (err) { throw err }
 
-      aws.s3(process.env.ASSET_BUCKET_META).getFile(metaStoragePath, function(err, result){
-        if(err) { return next(err); }
+      // this next line may not be necessary
+      result.resume()
 
-        // this next line may not be necessary
-        result.resume();
-        
-        var contentLength = parseInt(result.headers["content-length"]);
-        
-        res.writeHead(  200, {
-          "Content-Length": contentLength,
-          "Accept-Ranges": "bytes 0-"+(contentLength-1)+"/"+contentLength,
-          "Content-Type": result.headers["content-type"],
-          "Content-Disposition": "filename="+dbRow.guid+".png"
-        });
+      var contentLength = parseInt(result.headers['content-length'])
 
-        result.pipe(res);      
-      });
+      res.writeHead(200, {
+        'Content-Length': contentLength,
+        'Accept-Ranges': 'bytes 0-' + (contentLength - 1) + '/' + contentLength,
+        'Content-Type': result.headers['content-type'],
+        'Content-Disposition': 'filename=' + dbRow.guid + '.png'
+      })
+
+      result.pipe(res)
+    })
   }
 
-};
-
+}

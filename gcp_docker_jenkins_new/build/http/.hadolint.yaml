@@ -1,0 +1,6 @@
+ignored:
+  - DL3027
+  - DL4006
+
+trustedRegistries:
+  - gcr.io

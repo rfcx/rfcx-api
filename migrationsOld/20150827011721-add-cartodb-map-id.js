@@ -1,31 +1,25 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-  migration.addColumn(
-    "GuardianSites",
-    "cartodb_map_id",
-    {
-      type: DataTypes.UUID,
-      unique: false,
-      allowNull: true,
-      validate: {
+  up: function (migration, DataTypes, done) {
+    migration.addColumn(
+      'GuardianSites',
+      'cartodb_map_id',
+      {
+        type: DataTypes.UUID,
+        unique: false,
+        allowNull: true,
+        validate: {
+        }
       }
-    }
-  );
+    )
 
-  done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianSites', 'cartodb_map_id')
 
-  migration.removeColumn("GuardianSites", "cartodb_map_id");
-
-  done();
-
+    done()
   }
-};
-
-
+}

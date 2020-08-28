@@ -5,7 +5,7 @@ const annotationsService = require('../../../services/annotations')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const models = require('../../../modelsTimescale')
-const streamPermissionService = require('../../../services/streams-timescale/permission')
+const streamPermissionService = require('../../../services/streams/permission')
 
 /**
  * @swagger
@@ -55,6 +55,18 @@ const streamPermissionService = require('../../../services/streams-timescale/per
  *         description: Limit results to a selected stream
  *         in: query
  *         type: string
+ *       - name: streams_public
+ *         description: Limit results to public streams
+ *         in: query
+ *         type: boolean
+ *       - name: streams_created_by
+ *         description: Limit results to streams created by `me` or `collaborators`
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - me
+ *             - collaborators
  *       - name: created_by
  *         description: Limit results to only those created by a user (e.g. `me` or username)
  *         in: query
@@ -94,6 +106,8 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('stream_id').optional().toString()
+  params.convert('streams_public').optional().toBoolean()
+  params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('created_by').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
@@ -116,7 +130,9 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
         }
       }
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
-      return annotationsService.timeAggregatedQuery(start, end, streamId, createdBy, interval, aggregate, field, descending, limit, offset, userId)
+      const streamsOnlyCreatedBy = convertedParams.streams_created_by
+      const streamsOnlyPublic = convertedParams.streams_public
+      return annotationsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, createdBy, interval, aggregate, field, descending, limit, offset, userId)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

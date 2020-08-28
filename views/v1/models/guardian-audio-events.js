@@ -1,37 +1,32 @@
-const util    = require("util");
-const Promise = require("bluebird");
-const moment = require("moment-timezone");
+const Promise = require('bluebird')
+const moment = require('moment-timezone')
 
-function extractLabelValues(dbAudioEvents) {
+function extractLabelValues (dbAudioEvents) {
+  var arr = []
 
-  var arr = [];
-
-  dbAudioEvents.forEach(function(item) {
-    var value = item.Value.value;
+  dbAudioEvents.forEach(function (item) {
+    var value = item.Value.value
     if (arr.indexOf(value) === -1) {
-      arr.push(value);
+      arr.push(value)
     }
-  });
+  })
 
-  return arr;
-
+  return arr
 }
 
-function countEventsByGuardians(dbAudioEvents) {
-
+function countEventsByGuardians (dbAudioEvents) {
   var json = {
     guardians: {}
-  };
+  }
 
   for (var i = 0; i < dbAudioEvents.length; i++) {
-
-    var dbRow = dbAudioEvents[i];
+    var dbRow = dbAudioEvents[i]
 
     if (!dbRow.audio_guid || !dbRow.guardian_guid) {
-      continue;
+      continue
     }
 
-    var dbGuardianGuid = dbRow.guardian_guid;
+    var dbGuardianGuid = dbRow.guardian_guid
 
     if (!json.guardians[dbGuardianGuid]) {
       json.guardians[dbGuardianGuid] = {
@@ -42,90 +37,84 @@ function countEventsByGuardians(dbAudioEvents) {
           lon: dbRow.shadow_longitude
         },
         events: {}
-      };
+      }
     }
 
-    var guardian = json.guardians[dbGuardianGuid],
-        value = dbRow.event_value;
+    var guardian = json.guardians[dbGuardianGuid]
+    var value = dbRow.event_value
 
     if (!guardian.events[value]) {
-      guardian.events[value] = 0;
+      guardian.events[value] = 0
     }
-    guardian.events[value]++;
-
+    guardian.events[value]++
   }
 
-  return Object.keys(json.guardians).map(function(key) {
-    return json.guardians[key];
-  });
+  return Object.keys(json.guardians).map(function (key) {
+    return json.guardians[key]
+  })
 }
 
-function countEventsByDates(dbAudioEvents) {
+function countEventsByDates (dbAudioEvents) {
   var json = {
     dates: {}
-  };
+  }
 
-  dbAudioEvents = dbAudioEvents.sort(function(a,b) {
-    return new Date(a.begins_at).getTime() > new Date(b.begins_at).getTime();
-  });
+  dbAudioEvents = dbAudioEvents.sort(function (a, b) {
+    return new Date(a.begins_at).getTime() > new Date(b.begins_at).getTime()
+  })
 
-  dbAudioEvents.forEach(function(event) {
-    var dateStr = moment.tz(event.begins_at, event.site_timezone).format('MM/DD/YYYY');
+  dbAudioEvents.forEach(function (event) {
+    var dateStr = moment.tz(event.begins_at, event.site_timezone).format('MM/DD/YYYY')
 
     if (!json.dates[dateStr]) {
-      json.dates[dateStr] = {};
+      json.dates[dateStr] = {}
     }
 
-    var value = event.event_value;
-    var dateObj = json.dates[dateStr];
+    var value = event.event_value
+    var dateObj = json.dates[dateStr]
 
     if (!dateObj[value]) {
-      dateObj[value] = 0;
+      dateObj[value] = 0
     }
 
-    dateObj[value]++;
+    dateObj[value]++
+  })
 
-  });
-
-  return json.dates;
+  return json.dates
 }
 
-function combineEventViewerUrl(dbRow) {
-  let query =
+function combineEventViewerUrl (dbRow) {
+  const query =
     `guid=${dbRow.guid}&site=${encodeURIComponent(dbRow.site_guid)}&guardian=${encodeURIComponent(dbRow.guardian_shortname)}` +
     `&timestamp=${new Date(dbRow.begins_at).valueOf()}&timezone=${encodeURIComponent(dbRow.site_timezone)}` +
     `&coords=${encodeURIComponent(dbRow.shadow_latitude)},${encodeURIComponent(dbRow.shadow_longitude)}` +
     `&audioGuid=${dbRow.audio_guid}&value=${encodeURIComponent(dbRow.event_value)}` +
-    `${dbRow.reviewer_confirmed !== null? (dbRow.reviewer_confirmed? '&verification=Confirmed' : '&verification=Denied') : ''}`;
-  return `${process.env.DASHBOARD_BASE_URL}event?${query}`;
+    `${dbRow.reviewer_confirmed !== null ? (dbRow.reviewer_confirmed ? '&verification=Confirmed' : '&verification=Denied') : ''}`
+  return `${process.env.DASHBOARD_BASE_URL}event?${query}`
 }
 
 exports.models = {
 
-  guardianAudioEventsJson: function(req,res,dbAudioEvents) {
-
-    return new Promise(function(resolve,reject) {
-
+  guardianAudioEventsJson: function (req, res, dbAudioEvents) {
+    return new Promise(function (resolve, reject) {
       try {
-
-        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
+        if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
         var json = {
           events: []
-        };
+        }
 
         for (var i = 0; i < dbAudioEvents.length; i++) {
-
-          var dbRow = dbAudioEvents[i];
+          var dbRow = dbAudioEvents[i]
 
           json.events.push({
             event_guid: dbRow.guid,
             audio_guid: dbRow.audio_guid,
-            meta_url: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.json',
+            meta_url: process.env.ASSET_URLBASE + '/audio/' + dbRow.audio_guid + '.json',
             audio: {
-              mp3: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.mp3',
-              png: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.png',
-              opus: process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.opus'
+              mp3: process.env.ASSET_URLBASE + '/audio/' + dbRow.audio_guid + '.mp3',
+              png: process.env.ASSET_URLBASE + '/audio/' + dbRow.audio_guid + '.png',
+              opus: process.env.ASSET_URLBASE + '/audio/' + dbRow.audio_guid + '.opus'
             },
             latitude: dbRow.shadow_latitude,
             longitude: dbRow.shadow_longitude,
@@ -140,208 +129,164 @@ exports.models = {
             guardian_shortname: dbRow.guardian_shortname,
             site: dbRow.site_guid,
             timezone: dbRow.site_timezone,
-            reviewer_confirmed: dbRow.reviewer_confirmed !== null? !!dbRow.reviewer_confirmed : null,
+            reviewer_confirmed: dbRow.reviewer_confirmed !== null ? !!dbRow.reviewer_confirmed : null,
             reviewer_guid: dbRow.user_guid,
             ai_guid: dbRow.model_guid,
             ai_shortname: dbRow.model_shortname,
             ai_min_conf: dbRow.model_minimal_detection_confidence,
             reason_for_creation: dbRow.reason_for_creation,
             eventViewerUrl: combineEventViewerUrl(dbRow),
-            comment: dbRow.comment,
-          });
-
+            comment: dbRow.comment
+          })
         }
 
-        resolve(json);
-
+        resolve(json)
+      } catch (err) {
+        reject(err)
       }
-      catch (err) {
-        reject(err);
-      }
-
     })
-
   },
 
-  guardianAudioEventsByGuardianJson: function(req,res,dbAudioEvents) {
-
-    return new Promise(function(resolve,reject) {
-
+  guardianAudioEventsByGuardianJson: function (req, res, dbAudioEvents) {
+    return new Promise(function (resolve, reject) {
       try {
+        if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
-
-        resolve(countEventsByGuardians(dbAudioEvents));
-
+        resolve(countEventsByGuardians(dbAudioEvents))
+      } catch (err) {
+        reject(err)
       }
-      catch (err) {
-        reject(err);
-      }
-
     })
-
   },
 
-  guardianAudioEventsByDatesJson: function(req,res,dbAudioEvents) {
-
-    return new Promise(function(resolve,reject) {
-
+  guardianAudioEventsByDatesJson: function (req, res, dbAudioEvents) {
+    return new Promise(function (resolve, reject) {
       try {
+        if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
-
-        resolve(countEventsByDates(dbAudioEvents));
-
+        resolve(countEventsByDates(dbAudioEvents))
+      } catch (err) {
+        reject(err)
       }
-      catch (err) {
-        reject(err);
-      }
-
     })
-
   },
 
-  guardianAudioEventsCSV: function(req,res,dbAudioEvents) {
-
-    return new Promise(function(resolve,reject) {
-
+  guardianAudioEventsCSV: function (req, res, dbAudioEvents) {
+    return new Promise(function (resolve, reject) {
       try {
-
-        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
+        if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
         var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence,guardian_guid,guardian_shortname,' +
-                   'site,reviewer_confirmed,reviewer_guid\r\n';
+                   'site,reviewer_confirmed,reviewer_guid\r\n'
 
         for (var i = 0; i < dbAudioEvents.length; i++) {
+          var dbRow = dbAudioEvents[i]
 
-          var dbRow = dbAudioEvents[i];
-
-          csv += dbRow.guid + ',';
-          csv += dbRow.audio_guid + ',';
-          csv += process.env.ASSET_URLBASE + "/audio/" + dbRow.audio_guid + '.json,';
-          csv += dbRow.shadow_latitude + ',';
-          csv += dbRow.shadow_longitude + ',';
-          csv += dbRow.begins_at.toISOString() + ',';
-          csv += dbRow.ends_at.toISOString() + ',';
-          csv += dbRow.event_type + ',';
-          csv += dbRow.event_value + ',';
-          csv += dbRow.confidence + ',';
-          csv += dbRow.guardian_guid + ',';
-          csv += dbRow.guardian_shortname + ',';
-          csv += dbRow.site_guid + ',';
-          csv += dbRow.reviewer_confirmed + ',';
-          csv += dbRow.user_guid + '\r\n';
+          csv += dbRow.guid + ','
+          csv += dbRow.audio_guid + ','
+          csv += process.env.ASSET_URLBASE + '/audio/' + dbRow.audio_guid + '.json,'
+          csv += dbRow.shadow_latitude + ','
+          csv += dbRow.shadow_longitude + ','
+          csv += dbRow.begins_at.toISOString() + ','
+          csv += dbRow.ends_at.toISOString() + ','
+          csv += dbRow.event_type + ','
+          csv += dbRow.event_value + ','
+          csv += dbRow.confidence + ','
+          csv += dbRow.guardian_guid + ','
+          csv += dbRow.guardian_shortname + ','
+          csv += dbRow.site_guid + ','
+          csv += dbRow.reviewer_confirmed + ','
+          csv += dbRow.user_guid + '\r\n'
         }
 
-        resolve(csv);
-
+        resolve(csv)
+      } catch (err) {
+        reject(err)
       }
-      catch (err) {
-        reject(err);
-      }
-
-    });
-
+    })
   },
 
-  guardianAudioEventsByGuardianCSV: function(req,res,dbAudioEvents) {
-
-    return new Promise(function(resolve,reject) {
-
+  guardianAudioEventsByGuardianCSV: function (req, res, dbAudioEvents) {
+    return new Promise(function (resolve, reject) {
       try {
+        if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
+        var csv = 'guardian_guid,shortname,latitude,longitude,'
 
-        var csv = 'guardian_guid,shortname,latitude,longitude,';
+        var labelValues = extractLabelValues(dbAudioEvents)
 
-        var labelValues = extractLabelValues(dbAudioEvents);
+        labelValues.forEach(function (value) {
+          csv += value + ','
+        })
 
-        labelValues.forEach(function(value) {
-          csv += value + ',';
-        });
+        csv = csv.slice(0, -1)
+        csv += '\r\n'
 
-        csv = csv.slice(0, -1);
-        csv += '\r\n';
+        var arr = countEventsByGuardians(dbAudioEvents)
 
-        var arr = countEventsByGuardians(dbAudioEvents);
+        arr.forEach(function (item) {
+          csv += item.guid + ','
+          csv += item.shortname + ','
+          csv += item.coords.lat + ','
+          csv += item.coords.lon + ','
 
-        arr.forEach(function(item) {
-          csv += item.guid + ',';
-          csv += item.shortname + ',';
-          csv += item.coords.lat + ',';
-          csv += item.coords.lon + ',';
-
-          labelValues.forEach(function(value) {
-            csv += (item.events[value] !== undefined? item.events[value] : 0) + ',';
-          });
+          labelValues.forEach(function (value) {
+            csv += (item.events[value] !== undefined ? item.events[value] : 0) + ','
+          })
 
           if (labelValues.length) {
-            csv = csv.slice(0, -1);
+            csv = csv.slice(0, -1)
           }
-          csv += '\r\n';
-        });
+          csv += '\r\n'
+        })
 
-        resolve(csv);
-
+        resolve(csv)
+      } catch (err) {
+        reject(err)
       }
-      catch (err) {
-        reject(err);
-      }
-
-    });
-
+    })
   },
 
-  guardianAudioEventsByDatesCSV: function(req,res,dbAudioEvents) {
-
-    return new Promise(function(resolve,reject) {
-
+  guardianAudioEventsByDatesCSV: function (req, res, dbAudioEvents) {
+    return new Promise(function (resolve, reject) {
       try {
+        if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        if (!util.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents]; }
+        var csv = 'date,'
 
-        var csv = 'date,';
+        var labelValues = extractLabelValues(dbAudioEvents)
 
-        var labelValues = extractLabelValues(dbAudioEvents);
+        labelValues.forEach(function (value) {
+          csv += value + ','
+        })
 
-        labelValues.forEach(function(value) {
-          csv += value + ',';
-        });
+        csv = csv.slice(0, -1)
+        csv += '\r\n'
 
-        csv = csv.slice(0, -1);
-        csv += '\r\n';
-
-        var json = countEventsByDates(dbAudioEvents);
+        var json = countEventsByDates(dbAudioEvents)
 
         for (var key in json) {
-          if (json.hasOwnProperty(key)) {
+          if (json.hasOwnProperty(key)) { // eslint-disable-line no-prototype-builtins
+            var item = json[key]
 
-            var item = json[key];
+            csv += key + ','
 
-            csv += key + ',';
-
-            labelValues.forEach(function(value) {
-              csv += (item[value] !== undefined? item[value] : 0) + ',';
-            });
+            labelValues.forEach(function (value) {
+              csv += (item[value] !== undefined ? item[value] : 0) + ','
+            })
 
             if (labelValues.length) {
-              csv = csv.slice(0, -1);
+              csv = csv.slice(0, -1)
             }
-            csv += '\r\n';
-
+            csv += '\r\n'
           }
         }
 
-        resolve(csv);
-
+        resolve(csv)
+      } catch (err) {
+        reject(err)
       }
-      catch (err) {
-        reject(err);
-      }
-
-    });
-
+    })
   }
 
-};
-
+}

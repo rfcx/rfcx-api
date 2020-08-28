@@ -1,16 +1,12 @@
-var util = require("util");
-
 exports.models = {
 
-  users: function(req,res,dbUser) {
+  users: function (req, res, dbUser) {
+    if (!Array.isArray(dbUser)) { dbUser = [dbUser] }
 
-    if (!util.isArray(dbUser)) { dbUser = [dbUser]; }
-    
-    var jsonArray = [];
+    var jsonArray = []
 
-    for (i in dbUser) {
-
-      var dbRow = dbUser[i];
+    for (const i in dbUser) {
+      var dbRow = dbUser[i]
 
       var user = {
         guid: dbRow.guid,
@@ -22,38 +18,32 @@ exports.models = {
         is_email_validated: dbRow.is_email_validated,
         last_login_at: dbRow.last_login_at,
         tokens: []
-      };
+      }
 
-      if (dbRow.VisibleToken != null) { user.tokens = [dbRow.VisibleToken]; }
+      if (dbRow.VisibleToken != null) { user.tokens = [dbRow.VisibleToken] }
 
-      jsonArray.push(user);
+      jsonArray.push(user)
     }
-    return jsonArray;
-
+    return jsonArray
   },
 
-  usersPublic: function(req,res,dbUser) {
+  usersPublic: function (req, res, dbUser) {
+    if (!Array.isArray(dbUser)) { dbUser = [dbUser] }
 
-    if (!util.isArray(dbUser)) { dbUser = [dbUser]; }
-    
-    var jsonArray = [];
+    var jsonArray = []
 
-    for (i in dbUser) {
-
-      var dbRow = dbUser[i];
+    for (const i in dbUser) {
+      var dbRow = dbUser[i]
 
       var user = {
         guid: dbRow.guid,
         username: dbRow.username,
         email: dbRow.email
-      };
+      }
 
-      jsonArray.push(user);
+      jsonArray.push(user)
     }
-    return jsonArray;
-
+    return jsonArray
   }
 
-
-};
-
+}

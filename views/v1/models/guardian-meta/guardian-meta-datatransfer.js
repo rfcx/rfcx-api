@@ -1,16 +1,12 @@
-var util = require("util");
-
 exports.models = {
 
-  guardianMetaDataTransfer: function(req,res,dbDataTransfer,modelInfo) {
+  guardianMetaDataTransfer: function (req, res, dbDataTransfer, modelInfo) {
+    if (!Array.isArray(dbDataTransfer)) { dbDataTransfer = [dbDataTransfer] }
 
-    if (!util.isArray(dbDataTransfer)) { dbDataTransfer = [dbDataTransfer]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbDataTransfer) {
-
-      var dbRow = dbDataTransfer[i];
+    for (const i in dbDataTransfer) {
+      var dbRow = dbDataTransfer[i]
 
       jsonArray.push({
         started_at: dbRow.started_at,
@@ -19,11 +15,9 @@ exports.models = {
         bytes_sent: dbRow.bytes_sent,
         total_bytes_received: dbRow.total_bytes_received,
         total_bytes_sent: dbRow.total_bytes_sent
-      });
+      })
     }
-    return jsonArray;
-  
+    return jsonArray
   }
 
-};
-
+}

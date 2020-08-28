@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioEventReasonForCreation = sequelize.define("GuardianAudioEventReasonForCreation", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioEventReasonForCreation = sequelize.define('GuardianAudioEventReasonForCreation', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -11,8 +11,8 @@ module.exports = function(sequelize, DataTypes) {
     indexes: [
       { unique: true, fields: ['name'] }
     ],
-    tableName: "GuardianAudioEventReasonsForCreation"
-  });
+    tableName: 'GuardianAudioEventReasonsForCreation'
+  })
 
-  return GuardianAudioEventReasonForCreation;
-};
+  return GuardianAudioEventReasonForCreation
+}

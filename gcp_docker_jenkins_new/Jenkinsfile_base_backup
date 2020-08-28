@@ -1,0 +1,48 @@
+pipeline {
+    agent {
+        kubernetes {
+            defaultContainer 'kaniko'
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                  name: kaniko
+                spec:
+                  serviceAccountName: kaniko-gcr
+                  automountServiceAccountToken: false
+                  containers:
+                  - name: kaniko
+                    image: gcr.io/kaniko-project/executor:debug
+                    imagePullPolicy: Always
+                    command:
+                    - /busybox/cat
+                    tty: true
+              """
+        }
+    }
+    environment {
+        IMAGE_PUSH_DESTINATION="gcr.io/prj-p-gke-01-59b8/rfcx_base:1.0"
+    }
+    stages {
+        stage('Build with Kaniko') {
+            steps {
+                checkout scm
+                container(name: 'kaniko', shell: '/busybox/sh') {
+                    withEnv(['PATH=/usr/local/bin:/kaniko:/busybox']) {
+                      sh  """
+                        #!/busybox/sh
+                          /kaniko/docker-credential-gcr config --token-source='gcloud'
+                          /kaniko/docker-credential-gcr config --token-source="env, store"
+                          echo "https://gcr.io" | /kaniko/docker-credential-gcr get
+                          /kaniko/docker-credential-gcr configure-docker
+                          /kaniko/executor \
+                            --dockerfile ${pwd()}/Dockerfile_base \
+                            --context ${pwd()} \
+                            --destination ${IMAGE_PUSH_DESTINATION}
+                          """
+                    }
+                }
+            }
+        }
+    }
+}

@@ -15,19 +15,19 @@
   You can log messages using .log method on each of types (e.g. debugLogger.log('text', { req: req, foo: bar }))
 */
 
-var winston = require('winston');
-var cloudWatchTransport = require('winston-aws-cloudwatch')
+var winston = require('winston')
+var CloudWatchTransport = require('winston-aws-cloudwatch')
 
-var logLevel = determineLogLevel(),
-    groupName = process.env.CLOUDWATCH_LOGS_GROUP_NAME || 'rfcx-api',
-    // process.env.CLOUDWATCH_ENABLED has string type
-    cloudWatchEnabled = process.env.CLOUDWATCH_ENABLED? process.env.CLOUDWATCH_ENABLED.toString() === 'true' : false;
+var logLevel = determineLogLevel()
+var groupName = process.env.CLOUDWATCH_LOGS_GROUP_NAME || 'rfcx-api'
+// process.env.CLOUDWATCH_ENABLED has string type
+var cloudWatchEnabled = process.env.CLOUDWATCH_ENABLED ? process.env.CLOUDWATCH_ENABLED.toString() === 'true' : false
 
-winston.emitErrs = true;
-winston.level = logLevel;
+winston.emitErrs = true
+winston.level = logLevel
 
 // winston ignores error objects (WTF?!), so we need to reformat them to stay tuned
-function errorAsJSON(e) {
+function errorAsJSON (e) {
   return {
     message: e.message,
     stack: e.stack
@@ -38,9 +38,9 @@ function errorAsJSON(e) {
  * Creates Winston CloudWatchLogs transport with given logGroupName and logStreamName
  * @param {String} logGroupName
  * @param {String} logStreamName
- * @returns {Object} cloudWatchTransport
+ * @returns {Object} CloudWatchTransport
  */
-function createCloudWatchTransport(logGroupName, logStreamName) {
+function createCloudWatchTransport (logGroupName, logStreamName) {
   var cloudwatchBaseOpts = {
     createLogGroup: true,
     createLogStream: true,
@@ -48,12 +48,12 @@ function createCloudWatchTransport(logGroupName, logStreamName) {
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_KEY,
       region: process.env.AWS_REGION_ID
-    },
+    }
   }
-  return new cloudWatchTransport(Object.assign({}, cloudwatchBaseOpts, {
+  return new CloudWatchTransport(Object.assign({}, cloudwatchBaseOpts, {
     logGroupName: logGroupName,
-    logStreamName: logStreamName,
-  }));
+    logStreamName: logStreamName
+  }))
 }
 
 /**
@@ -64,7 +64,7 @@ function createCloudWatchTransport(logGroupName, logStreamName) {
  * @param {String} type - logger's internal type
  * @returns {Object} - custom logger object with only one `log` method
  */
-function createLoggerWrapper(winstonLogger, type) {
+function createLoggerWrapper (winstonLogger, type) {
   var logger = {
     /**
      * Function which takes a message and additional info like req object
@@ -72,59 +72,59 @@ function createLoggerWrapper(winstonLogger, type) {
      * @param {Object} [opts] - Optional object which can contain req and other meta-data. Just set like this { req: req, foo: bar } and
      * it will obtain request guid automatically and save other metadata
      */
-    log: function(message, opts) {
-      var meta = opts || {};
+    log: function (message, opts) {
+      var meta = opts || {}
       if (meta.req) {
-        meta.reqGuid = meta.req.guid;
-        meta.instance = meta.req.instance;
-        delete meta.req;
+        meta.reqGuid = meta.req.guid
+        meta.instance = meta.req.instance
+        delete meta.req
       }
       // err, error, e - whatever user would like to send. all error names will be parsed
       if (meta.err) {
-        meta.err = errorAsJSON(meta.err);
+        meta.err = errorAsJSON(meta.err)
       }
       if (meta.error) {
-        meta.error = errorAsJSON(meta.error);
+        meta.error = errorAsJSON(meta.error)
       }
       if (meta.e) {
-        meta.e = errorAsJSON(meta.e);
+        meta.e = errorAsJSON(meta.e)
       }
       switch (type) {
         case 'debug':
-          winstonLogger.debug(message, meta);
-          break;
+          winstonLogger.debug(message, meta)
+          break
         case 'warn':
-          winstonLogger.warn(message, meta);
-          break;
+          winstonLogger.warn(message, meta)
+          break
         case 'error':
-          winstonLogger.error(message, meta);
-          break;
+          winstonLogger.error(message, meta)
+          break
         case 'info':
         default:
-          winstonLogger.info(message, meta);
-          break;
+          winstonLogger.info(message, meta)
+          break
       }
     }
-  };
-  return logger;
+  }
+  return logger
 }
 
 /**
  * Creates new Winston looger with Console and CloudWatchLogs transports.
  * @param {String} type - logger's internal type; also stream name for CloudWatch Logs transport
  */
-function createLogger(type) {
+function createLogger (type) {
   var transports = [
     new winston.transports.Console({
       json: false,
       colorize: process.env.NODE_ENV === 'development'
-    }),
-  ];
-  var exceptionHandlers = [];
+    })
+  ]
+  var exceptionHandlers = []
   if (cloudWatchEnabled) {
-    transports.push(createCloudWatchTransport(groupName, type));
+    transports.push(createCloudWatchTransport(groupName, type))
     if (type === 'requests') {
-      exceptionHandlers.push(createCloudWatchTransport(groupName, 'unhandled-errors'));
+      exceptionHandlers.push(createCloudWatchTransport(groupName, 'unhandled-errors'))
     }
   }
   var opts = {
@@ -133,49 +133,47 @@ function createLogger(type) {
     exitOnError: false
   }
   if (type === 'requests') {
-    opts.exceptionHandlers = exceptionHandlers;
-    return new winston.Logger(opts);
-  }
-  else {
-    var winstonLogger = new winston.Logger(opts);
-    return createLoggerWrapper(winstonLogger, type);
+    opts.exceptionHandlers = exceptionHandlers
+    return new winston.Logger(opts)
+  } else {
+    var winstonLogger = new winston.Logger(opts)
+    return createLoggerWrapper(winstonLogger, type)
   }
 }
 
 // create our loggers
-var debugLogger = createLogger('debug'),
-    infoLogger = createLogger('info'),
-    warnLogger = createLogger('warn'),
-    errorLogger = createLogger('error'),
-    // used only for http requests and unhandled exceptions
-    expressLogger = createLogger('requests', true);
+var debugLogger = createLogger('debug')
+var infoLogger = createLogger('info')
+var warnLogger = createLogger('warn')
+var errorLogger = createLogger('error')
+// used only for http requests and unhandled exceptions
+var expressLogger = createLogger('requests', true)
 
 /**
  * Function which gets log level from process.env.NODE_LOG_LEVEL or returns proper based on some conditions.
  * Prints error to error stream if env variable is invalid.
  * @returns {String} log level
  */
-function determineLogLevel() {
-  var levels = ['error', 'warn', 'info', 'debug'],
-      envLevel = process.env.NODE_LOG_LEVEL? process.env.NODE_LOG_LEVEL.trim().toLowerCase() : undefined;
+function determineLogLevel () {
+  var levels = ['error', 'warn', 'info', 'debug']
+  var envLevel = process.env.NODE_LOG_LEVEL ? process.env.NODE_LOG_LEVEL.trim().toLowerCase() : undefined
   if (!!envLevel && levels.indexOf(envLevel) !== -1) {
-    return envLevel;
-  }
-  else {
-    errorLogger.error('Log level "' + process.env.NODE_LOG_LEVEL + '" is invalid. Choose one of: ' + levels.join(', '));
+    return envLevel
+  } else {
+    errorLogger.error('Log level "' + process.env.NODE_LOG_LEVEL + '" is invalid. Choose one of: ' + levels.join(', '))
     if (process.env.NODE_ENV !== 'production') {
-      return 'debug';
+      return 'debug'
     }
-    return 'info';
+    return 'info'
   }
 }
 
 // stream for handling routes
 var stream = {
-  write: function(message){
-    expressLogger.info(message);
+  write: function (message) {
+    expressLogger.info(message)
   }
-};
+}
 
 module.exports = {
   expressLogger: expressLogger,
@@ -183,5 +181,5 @@ module.exports = {
   warnLogger: warnLogger,
   infoLogger: infoLogger,
   errorLogger: errorLogger,
-  stream: stream,
-};
+  stream: stream
+}

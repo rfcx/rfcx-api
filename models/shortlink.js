@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var ShortLink = sequelize.define("ShortLink", {
+module.exports = function (sequelize, DataTypes) {
+  var ShortLink = sequelize.define('ShortLink', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -26,10 +26,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "ShortLinks"
-  });
+    tableName: 'ShortLinks'
+  })
 
-  return ShortLink;
-};
+  return ShortLink
+}

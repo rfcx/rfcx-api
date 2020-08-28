@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioCollectionsRelations = sequelize.define("GuardianAudioCollectionsRelation", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioCollectionsRelations = sequelize.define('GuardianAudioCollectionsRelation', {
     note: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -13,8 +13,8 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER
     }
   }, {
-    tableName: "GuardianAudioCollectionsRelations"
-  });
+    tableName: 'GuardianAudioCollectionsRelations'
+  })
 
-  return GuardianAudioCollectionsRelations;
-};
+  return GuardianAudioCollectionsRelations
+}

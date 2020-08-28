@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianSoftware = sequelize.define("GuardianSoftware", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianSoftware = sequelize.define('GuardianSoftware', {
     role: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -27,8 +27,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: "GuardianSoftware"
-  });
+    tableName: 'GuardianSoftware'
+  })
 
-  return GuardianSoftware;
-};
+  return GuardianSoftware
+}

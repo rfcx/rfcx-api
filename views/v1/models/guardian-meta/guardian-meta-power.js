@@ -1,26 +1,20 @@
-var util = require("util");
-
 exports.models = {
 
-  guardianMetaPower: function(req,res,dbPower,modelInfo) {
+  guardianMetaPower: function (req, res, dbPower, modelInfo) {
+    if (!Array.isArray(dbPower)) { dbPower = [dbPower] }
 
-    if (!util.isArray(dbPower)) { dbPower = [dbPower]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbPower) {
-
-      var dbRow = dbPower[i];
+    for (const i in dbPower) {
+      var dbRow = dbPower[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,
         is_powered: dbRow.is_powered,
         is_charged: dbRow.is_charged
-      });
+      })
     }
-    return jsonArray;
-  
+    return jsonArray
   }
 
-};
-
+}

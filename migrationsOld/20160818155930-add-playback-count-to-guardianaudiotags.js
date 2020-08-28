@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianAudioTags',
       'playback_count',
@@ -14,15 +13,14 @@ module.exports = {
           min: 1
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudioTags', 'playback_count')
 
-    migration.removeColumn('GuardianAudioTags', 'playback_count');
-
-    done();
+    done()
   }
-};
+}

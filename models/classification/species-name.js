@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var SpeciesName = sequelize.define("SpeciesName", {
+module.exports = function (sequelize, DataTypes) {
+  var SpeciesName = sequelize.define('SpeciesName', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -10,14 +10,14 @@ module.exports = function(sequelize, DataTypes) {
     rank: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0,
+      defaultValue: 0
     }
   }, {
     indexes: [
-      { unique: true, fields: ["name"] }
+      { unique: true, fields: ['name'] }
     ],
-    tableName: "SpeciesNames"
-  });
+    tableName: 'SpeciesNames'
+  })
 
-  return SpeciesName;
-};
+  return SpeciesName
+}

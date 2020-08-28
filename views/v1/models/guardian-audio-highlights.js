@@ -1,19 +1,12 @@
-var util = require("util");
-function getAllViews() { return require("../../../views/v1"); }
-
 exports.models = {
 
-  guardianAudioHighlights: function(req,res,dbAudioHighlights) {
+  guardianAudioHighlights: function (req, res, dbAudioHighlights) {
+    if (!Array.isArray(dbAudioHighlights)) { dbAudioHighlights = [dbAudioHighlights] }
 
-    var views = getAllViews();
+    var jsonArray = []
 
-    if (!util.isArray(dbAudioHighlights)) { dbAudioHighlights = [dbAudioHighlights]; }
-
-    var jsonArray = [];
-
-    for (i in dbAudioHighlights) {
-
-      var dbRow = dbAudioHighlights[i];
+    for (const i in dbAudioHighlights) {
+      var dbRow = dbAudioHighlights[i]
 
       var guardianAudioHighlight = {
         guid: dbRow.guid,
@@ -25,32 +18,28 @@ exports.models = {
         timezone: 'UTC',
         timezone_offset: 0,
         description: dbRow.description,
-        flickr_photoset_id:  dbRow.flickr_photoset_id || (dbRow.Site? dbRow.Site.flickr_photoset_id : null),
+        flickr_photoset_id: dbRow.flickr_photoset_id || (dbRow.Site ? dbRow.Site.flickr_photoset_id : null),
         urls: { audio: null },
         order: dbRow.order,
-        video360_url: dbRow.video360_url,
-      };
+        video360_url: dbRow.video360_url
+      }
 
       if (dbRow.Guardian != null) {
-        guardianAudioHighlight.urls.audio = "/v1/guardians/"+dbRow.Guardian.guid+"/audio.json";
+        guardianAudioHighlight.urls.audio = '/v1/guardians/' + dbRow.Guardian.guid + '/audio.json'
 
         if (dbRow.begins_at != null) {
-          guardianAudioHighlight.urls.audio += "?starting_after="+dbRow.begins_at.toISOString()+"&order=ascending"+"&limit=3";
+          guardianAudioHighlight.urls.audio += '?starting_after=' + dbRow.begins_at.toISOString() + '&order=ascending' + '&limit=3'
         }
-
       }
       if (dbRow.Site != null) {
-        guardianAudioHighlight.timezone_offset = dbRow.Site.timezone_offset;
-        guardianAudioHighlight.timezone = dbRow.Site.timezone;
-        guardianAudioHighlight.location = dbRow.Site.description;
+        guardianAudioHighlight.timezone_offset = dbRow.Site.timezone_offset
+        guardianAudioHighlight.timezone = dbRow.Site.timezone
+        guardianAudioHighlight.location = dbRow.Site.description
       }
 
-      jsonArray.push(guardianAudioHighlight);
+      jsonArray.push(guardianAudioHighlight)
     }
-    return jsonArray;
-
+    return jsonArray
   }
 
-
-};
-
+}

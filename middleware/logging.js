@@ -9,16 +9,16 @@ module.exports = expressWinston.logger({
   requestFilter: function (req, propName) {
     if (propName === 'headers') {
       // remove user token from logging for security reasons
-      delete req.headers['x-auth-token'];
+      delete req.headers['x-auth-token']
     }
     if (propName === 'body') {
       // delete password from login body
-      delete req.body.password;
+      delete req.body.password
     }
-    return req[propName];
+    return req[propName]
   },
   ignoreRoute: function (req) {
-    if (req.url === '/health_check') return true;
-    return false;
-  },
+    if (req.url === '/health_check') return true
+    return false
+  }
 })

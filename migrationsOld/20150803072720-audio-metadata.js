@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianAudio',
       'capture_format',
@@ -13,7 +12,7 @@ module.exports = {
         validate: {
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianAudio',
@@ -26,7 +25,7 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianAudio',
@@ -39,7 +38,7 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianAudio',
@@ -52,20 +51,18 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    migration.removeColumn('GuardianAudio', 'length');
+    migration.removeColumn('GuardianAudio', 'length')
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
-    migration.removeColumn('GuardianAudio', 'capture_format');
-    migration.removeColumn('GuardianAudio', 'capture_bitrate');
-    migration.removeColumn('GuardianAudio', 'capture_sample_rate');
-    migration.removeColumn('GuardianAudio', 'duration');
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudio', 'capture_format')
+    migration.removeColumn('GuardianAudio', 'capture_bitrate')
+    migration.removeColumn('GuardianAudio', 'capture_sample_rate')
+    migration.removeColumn('GuardianAudio', 'duration')
 
     migration.addColumn(
       'GuardianAudio',
@@ -78,11 +75,8 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   }
-};
-
-
+}

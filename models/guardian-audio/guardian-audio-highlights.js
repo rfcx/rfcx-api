@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioHighlight = sequelize.define("GuardianAudioHighlight", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioHighlight = sequelize.define('GuardianAudioHighlight', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -34,7 +34,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "begins_at for GuardianAudioHighlight should have type Date" }
+        isDate: { msg: 'begins_at for GuardianAudioHighlight should have type Date' }
       }
     },
     label: {
@@ -81,14 +81,14 @@ module.exports = function(sequelize, DataTypes) {
     video360_url: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-    },
+      unique: false
+    }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "GuardianAudioHighlights"
-  });
+    tableName: 'GuardianAudioHighlights'
+  })
 
-  return GuardianAudioHighlight;
-};
+  return GuardianAudioHighlight
+}

@@ -1,51 +1,50 @@
-const request = require('request');
-const Promise = require('bluebird');
-const util    = require('util');
-const guid    = require('../../utils/misc/guid');
-const redisClient = require('../../utils/redis');
-const generator = require('generate-password');
+const request = require('request')
+const Promise = require('bluebird')
+const guid = require('../../utils/misc/guid')
+const redisClient = require('../../utils/redis')
+const generator = require('generate-password')
 
 // get token for standard Auth0 API
-function getToken() {
-  let tokenName = `auth0_token_${process.env.NODE_ENV}`;
-  return findOrCreateToken(tokenName, getNewToken);
+function getToken () {
+  const tokenName = `auth0_token_${process.env.NODE_ENV}`
+  return findOrCreateToken(tokenName, getNewToken)
 }
 
 // get token for Auth0 Authentication API
-function getAuthToken() {
-  let tokenName = `auth0_auth_token_${process.env.NODE_ENV}`;
-  return findOrCreateToken(tokenName, getNewAuthToken);
+function getAuthToken () {
+  const tokenName = `auth0_auth_token_${process.env.NODE_ENV}`
+  return findOrCreateToken(tokenName, getNewAuthToken)
 }
 
 // get token for internal machine-to-machine authentication
-function getClientToken() {
-  let tokenName = `auth0_client_token_${process.env.NODE_ENV}`;
-  return findOrCreateToken(tokenName, getNewClientToken);
+function getClientToken () {
+  const tokenName = `auth0_client_token_${process.env.NODE_ENV}`
+  return findOrCreateToken(tokenName, getNewClientToken)
 }
 
-function findOrCreateToken(tokenName, func) {
+function findOrCreateToken (tokenName, func) {
   return getTokenFromRedis(tokenName)
     .then((token) => {
       if (!token) {
         return func()
           .then((tokenData) => {
-            saveTokenToRedis(tokenName, tokenData);
-            return tokenData.access_token;
-          });
+            saveTokenToRedis(tokenName, tokenData)
+            return tokenData.access_token
+          })
       }
-      return token;
-    });
+      return token
+    })
 }
 
-function saveTokenToRedis(tokenName, tokenData) {
-  return redisClient.set(tokenName, tokenData.access_token, 'EX', tokenData.expires_in);
+function saveTokenToRedis (tokenName, tokenData) {
+  return redisClient.set(tokenName, tokenData.access_token, 'EX', tokenData.expires_in)
 }
 
-function getTokenFromRedis(tokenType) {
-  return redisClient.getAsync(tokenType);
+function getTokenFromRedis (tokenType) {
+  return redisClient.getAsync(tokenType)
 }
 
-function requestTokenFromAuth0(audience) {
+function requestTokenFromAuth0 (audience) {
   return new Promise((resolve, reject) => {
     var options = {
       method: 'POST',
@@ -58,51 +57,49 @@ function requestTokenFromAuth0(audience) {
         audience: audience,
         grant_type: 'client_credentials'
       }
-    };
+    }
     request(options, (error, response, body) => {
       if (error) {
-        reject(error);
+        reject(error)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
+    })
+  })
 }
 
-function getNewToken() {
-  return requestTokenFromAuth0(`https://${process.env.AUTH0_DOMAIN}/api/v2/`);
+function getNewToken () {
+  return requestTokenFromAuth0(`https://${process.env.AUTH0_DOMAIN}/api/v2/`)
 }
 
-function getNewAuthToken() {
-  return requestTokenFromAuth0(process.env.AUTH0_AUTHZ_AUDIENCE);
+function getNewAuthToken () {
+  return requestTokenFromAuth0(process.env.AUTH0_AUTHZ_AUDIENCE)
 }
 
-function getNewClientToken() {
-  return requestTokenFromAuth0(process.env.AUTH0_CLOUD_AUDIENCE);
+function getNewClientToken () {
+  return requestTokenFromAuth0(process.env.AUTH0_CLOUD_AUDIENCE)
 }
 
-function createAuth0User(token, opts) {
+function createAuth0User (token, opts) {
   if (!opts.password) {
     opts.password = generator.generate({
       length: 20,
       numbers: true,
       symbols: true,
       uppercase: true,
-      excludeSimilarCharacters: true,
-    });
+      excludeSimilarCharacters: true
+    })
   }
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'POST',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
+        'Content-type': 'application/json'
       },
       body: {
         user_id: opts.guid || guid.generate(),
@@ -115,56 +112,48 @@ function createAuth0User(token, opts) {
         user_metadata: {
           given_name: opts.firstname,
           family_name: opts.lastname,
-          name: `${opts.firstname} ${opts.lastname}`,
+          name: `${opts.firstname} ${opts.lastname}`
         },
         email_verified: false,
         verify_email: false,
         app_metadata: {}
-      },
+      }
     }, (err, response, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function deleteAuth0User(token, guid) {
-
-  return new Promise(function(resolve, reject) {
+function deleteAuth0User (token, guid) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'DELETE',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${guid}`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
-      },
+        'Content-type': 'application/json'
+      }
     }, (err, response, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function updateAuth0User(token, opts) {
-
-  let body = {};
+function updateAuth0User (token, opts) {
+  const body = {}
   if (opts) {
     ['given_name', 'family_name', 'name', 'nickname', 'picture', 'subscription_email',
       'username', 'accessibleSites', 'defaultSite', 'user_metadata']
@@ -172,99 +161,91 @@ function updateAuth0User(token, opts) {
         if (opts[param] !== undefined) {
           if (param === 'accessibleSites' || param === 'defaultSite' || param === 'subscription_email') {
             if (!body.app_metadata) {
-              body.app_metadata = {};
+              body.app_metadata = {}
             }
           }
           if (param === 'accessibleSites') {
-            body.app_metadata.accessibleSites = opts.accessibleSites;
-            return;
+            body.app_metadata.accessibleSites = opts.accessibleSites
+            return
           }
           if (param === 'defaultSite') {
-            body.app_metadata.defaultSite = opts.defaultSite;
-            return;
+            body.app_metadata.defaultSite = opts.defaultSite
+            return
           }
           if (param === 'subscription_email') {
-            body.app_metadata.subscription_email = opts.subscription_email;
-            return;
+            body.app_metadata.subscription_email = opts.subscription_email
+            return
           }
           if (param === 'user_metadata') {
             if (!body.user_metadata) {
-              body.user_metadata = {};
+              body.user_metadata = {}
             }
-            body.user_metadata = opts.user_metadata;
-            return;
+            body.user_metadata = opts.user_metadata
+            return
           }
-          body[param] = opts[param];
+          body[param] = opts[param]
         }
-      });
+      })
   }
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'PATCH',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.user_id}`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
+        'Content-type': 'application/json'
       },
-      body: body,
+      body: body
     }, (err, response, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function updateAuth0UserPassword(token, opts, password) {
-
-  return new Promise(function(resolve, reject) {
+function updateAuth0UserPassword (token, opts, password) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'PATCH',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${opts.user_id}`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
+        'Content-type': 'application/json'
       },
       body: {
-        password: password,
-      },
+        password: password
+      }
     }, (err, response, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function getUsers(token, params) {
-
-  return new Promise(function(resolve, reject) {
-    let qs = {
-      search_engine: 'v3',
-    };
+function getUsers (token, params) {
+  return new Promise(function (resolve, reject) {
+    const qs = {
+      search_engine: 'v3'
+    }
     if (params) {
       ['per_page', 'page', 'include_totals', 'sort', 'fields', 'include_fields', 'q'].forEach((param) => {
         if (params[param] !== undefined) {
-          qs[param] = params[param];
+          qs[param] = params[param]
         }
-      });
+      })
     }
 
     request({
@@ -272,252 +253,218 @@ function getUsers(token, params) {
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
       json: true,
       headers: {
-        authorization: `Bearer ${token}`,
+        authorization: `Bearer ${token}`
       },
       qs
     }, (err, response, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function getAllUsersForExports(token, params) {
-
-  let body = {};
-  body.format = 'csv';
+function getAllUsersForExports (token, params) {
+  const body = {}
+  body.format = 'csv'
   if (params.connection_id) {
-    body.connection_id = params.connection_id;
-  }
-  else {
-    body.connection_id = 'con_PV871DvLknTaowmO'; // Username-Password-Authentication
-    //body.connection_id = 'con_9XwwIr4rydpwOEzu'; // google-oauth2
-    //body.connection_id = 'con_zBEnq4j2I4mYsiGl'; // facebook
-    //body.connection_id = 'con_SGFRavnGTD5AUj8K'; // email
-    //body.connection_id = 'con_hwSaot9tNENSNtAz'; // sms
+    body.connection_id = params.connection_id
+  } else {
+    body.connection_id = 'con_PV871DvLknTaowmO' // Username-Password-Authentication
+    // body.connection_id = 'con_9XwwIr4rydpwOEzu'; // google-oauth2
+    // body.connection_id = 'con_zBEnq4j2I4mYsiGl'; // facebook
+    // body.connection_id = 'con_SGFRavnGTD5AUj8K'; // email
+    // body.connection_id = 'con_hwSaot9tNENSNtAz'; // sms
   }
   if (params.limit) {
-    body.limit = params.limit;
+    body.limit = params.limit
   }
-  body.fields = [];
+  body.fields = []
   if (params.fields) {
     params.fields.forEach((field) => {
-      body.fields.push({name: params.fields[field]})
-    });
-  }
-  else {
-    body.fields.push({name: 'email'}, {name: 'user_id'}, {name: 'name'}, {name: 'given_name'}, {name: 'family_name'},
-      {name: 'identities[0].connection', export_as: 'provider'}, {name: 'user_metadata.given_name'}, {name: 'user_metadata.family_name'},
-      {name: 'user_metadata.name'});
+      body.fields.push({ name: params.fields[field] })
+    })
+  } else {
+    body.fields.push({ name: 'email' }, { name: 'user_id' }, { name: 'name' }, { name: 'given_name' }, { name: 'family_name' },
+      { name: 'identities[0].connection', export_as: 'provider' }, { name: 'user_metadata.given_name' }, { name: 'user_metadata.family_name' },
+      { name: 'user_metadata.name' })
   }
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'POST',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/users-exports`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
+        'Content-type': 'application/json'
       },
-      body: body,
+      body: body
     }, (err, response, body) => {
       if (err) {
-        console.log('err', err);
-        reject(err);
+        console.log('err', err)
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function getAjob(token, opts) {
-
-  return new Promise(function(resolve, reject) {
+function getAjob (token, opts) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'GET',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/${opts.id}`,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
-      },
+        'Content-type': 'application/json'
+      }
     }, (err, response, body) => {
       if (err) {
-        console.log('err', err);
-        reject(err);
+        console.log('err', err)
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function getAllRoles(token) {
-
-  return new Promise(function(resolve, reject) {
+function getAllRoles (token) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'GET',
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/roles`,
       json: true,
       headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${token}`
+      }
     }, (err, res, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
+    })
+  })
 }
 
-function getAllRolesByLabels(token, names) {
-
+function getAllRolesByLabels (token, names) {
   return getAllRoles(token)
     .then((data) => {
       return data.roles.filter((role) => {
-        return names.includes(role.name);
-      });
-    });
-
+        return names.includes(role.name)
+      })
+    })
 }
 
-function getAllClients(token) {
-
-  return new Promise(function(resolve, reject) {
+function getAllClients (token) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'GET',
       uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/clients`,
       json: true,
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`
       },
       qs: {
         fields: 'name,description,client_id,app_type,logo_uri'
       }
     }, (err, res, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function assignRolesToUser(token, userGuid, rolesGuids) {
+function assignRolesToUser (token, userGuid, rolesGuids) {
+  rolesGuids = Array.isArray(rolesGuids) ? rolesGuids : [rolesGuids]
 
-  rolesGuids = util.isArray(rolesGuids)? rolesGuids : [ rolesGuids ];
-
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'PATCH',
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
+        'Content-type': 'application/json'
       },
-      body: rolesGuids,
+      body: rolesGuids
     }, (err, res, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function deleteRolesFromUser(token, userGuid, rolesGuids) {
+function deleteRolesFromUser (token, userGuid, rolesGuids) {
+  rolesGuids = Array.isArray(rolesGuids) ? rolesGuids : [rolesGuids]
 
-  rolesGuids = util.isArray(rolesGuids)? rolesGuids : [ rolesGuids ];
-
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'DELETE',
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
       json: true,
       headers: {
         authorization: `Bearer ${token}`,
-        'Content-type': 'application/json',
+        'Content-type': 'application/json'
       },
-      body: rolesGuids,
+      body: rolesGuids
     }, (err, res, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function getUserRoles(token, userGuid) {
-
-  return new Promise(function(resolve, reject) {
+function getUserRoles (token, userGuid) {
+  return new Promise(function (resolve, reject) {
     request({
       method: 'GET',
       uri: `https://${process.env.AUTH0_EXTENSION_URL}/users/${userGuid}/roles`,
       json: true,
       headers: {
-        authorization: `Bearer ${token}`,
-      },
+        authorization: `Bearer ${token}`
+      }
     }, (err, res, body) => {
       if (err) {
-        reject(err);
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
-
+    })
+  })
 }
 
-function sendChangePasswordEmail(token, email) {
+function sendChangePasswordEmail (token, email) {
   return new Promise((resolve, reject) => {
     var options = {
       method: 'POST',
@@ -529,47 +476,43 @@ function sendChangePasswordEmail(token, email) {
         connection: `${process.env.AUTH0_DEFAULT_DB_CONNECTION}`,
         email
       }
-    };
+    }
     request(options, (error, response, body) => {
       if (error) {
-        reject(error);
+        reject(error)
+      } else if (!!body && !!body.error) {
+        reject(body)
+      } else {
+        resolve(body)
       }
-      else if (!!body && !!body.error) {
-        reject(body);
-      }
-      else {
-        resolve(body);
-      }
-    });
-  });
+    })
+  })
 }
 
-function getUserRolesFromToken(token) {
-  if (token.roles) { return token.roles; }
-  let rfcxAppMetaUrl = 'https://rfcx.org/app_metadata';
+function getUserRolesFromToken (token) {
+  if (token.roles) { return token.roles }
+  const rfcxAppMetaUrl = 'https://rfcx.org/app_metadata'
   if (token[rfcxAppMetaUrl] && token[rfcxAppMetaUrl].authorization && token[rfcxAppMetaUrl].authorization.roles) {
     return token[rfcxAppMetaUrl].authorization.roles
   }
   if (token.scope) {
     if (typeof token.scope === 'string') {
       try {
-        let parsedScrope = JSON.parse(token.scope);
-        if (parsedScrope.roles) { return parsedScrope.roles; }
-      }
-      catch (e) { }
-    }
-    else {
-      if (token.scope.roles) { return token.scope.roles; }
+        const parsedScrope = JSON.parse(token.scope)
+        if (parsedScrope.roles) { return parsedScrope.roles }
+      } catch (e) { }
+    } else {
+      if (token.scope.roles) { return token.scope.roles }
     }
   }
-  return [];
+  return []
 }
 
-function hasAnyRoleFromArray(expectedRoles, roles) {
+function hasAnyRoleFromArray (expectedRoles, roles) {
   if (roles && roles.length > 0 && expectedRoles.some(r => roles.includes(r))) {
-    return true;
+    return true
   }
-  return false;
+  return false
 }
 
 module.exports = {
@@ -591,5 +534,5 @@ module.exports = {
   getAllUsersForExports,
   getAjob,
   getUserRolesFromToken,
-  hasAnyRoleFromArray,
-};
+  hasAnyRoleFromArray
+}

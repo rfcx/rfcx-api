@@ -1,17 +1,13 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'internal_luminosity')
 
-    migration.removeColumn('GuardianCheckIns', 'internal_luminosity');
-
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianCheckIns',
       'internal_luminosity',
@@ -24,9 +20,8 @@ module.exports = {
           max: 65536
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   }
-};
+}

@@ -3,10 +3,10 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 
-const streamsService = require('../../../services/streams-timescale')
-const streamSegmentService = require('../../../services/streams-timescale/stream-segment')
-const streamsAssetsService = require('../../../services/streams-timescale/assets')
-const streamPermissionService = require('../../../services/streams-timescale/permission')
+const streamsService = require('../../../services/streams')
+const streamSegmentService = require('../../../services/streams/stream-segment')
+const streamsAssetsService = require('../../../services/streams/assets')
+const streamPermissionService = require('../../../services/streams/permission')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**

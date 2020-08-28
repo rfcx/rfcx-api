@@ -1,9 +1,8 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
-    migration.removeColumn('GuardianMessages', 'received_at');
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianMessages', 'received_at')
 
     migration.addColumn(
       'GuardianMessages',
@@ -15,7 +14,7 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianMessages',
@@ -27,18 +26,16 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    done();
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianMessages', 'sent_at')
 
-    migration.removeColumn('GuardianMessages', 'sent_at');
-
-
-    migration.removeColumn('GuardianMessages', 'received_at');
-        migration.addColumn(
+    migration.removeColumn('GuardianMessages', 'received_at')
+    migration.addColumn(
       'GuardianMessages',
       'received_at',
       {
@@ -48,8 +45,8 @@ module.exports = {
           isDate: true
         }
       }
-    );
+    )
 
-    done();
+    done()
   }
-};
+}

@@ -1,42 +1,40 @@
 #!/usr/bin/env node
 console.log('----------------------------------\nRFCX | ./bin/setup started')
-var exec = require('child_process').exec;
-var fs = require("fs");
+var exec = require('child_process').exec
+var fs = require('fs')
 
-if (fs.existsSync(__dirname+"/../config/env_vars.js")) {
-  var env = require(__dirname+"/../config/env_vars.js").env;
-  for (i in env) { process.env[i] = env[i]; }
+if (fs.existsSync(__dirname + '/../config/env_vars.js')) {
+  var env = require(__dirname + '/../config/env_vars.js').env
+  for (i in env) { process.env[i] = env[i] }
 }
 
 // run the setup script(s)
-console.log('RFCX | Setting up tmp directory');
-setupTmpDirectory();
-console.log('RFCX | Initializing sequelize');
-initializeSequelize();
+console.log('RFCX | Setting up tmp directory')
+setupTmpDirectory()
+console.log('RFCX | Initializing sequelize')
+initializeSequelize()
 
-function initializeSequelize() {
-
+function initializeSequelize () {
   console.log('RFCX | Creating config params: started')
-  var configJsonFile = __dirname+"/../config/config.json";
+  var configJsonFile = __dirname + '/../config/config.json'
 
-  var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false;
+  var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
 
-  var configCustom = '"username": "'+process.env.DB_USERNAME+'", "password": "'+process.env.DB_PASSWORD+'", "database": "'+process.env.DB_NAME+'", "host": "'+process.env.DB_HOSTNAME+'"';
-  var configGeneric = '"dialect": "mysql", "logging": '+sequelizeVerbose+', "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }';
+  var configCustom = '"username": "' + process.env.DB_USERNAME + '", "password": "' + process.env.DB_PASSWORD + '", "database": "' + process.env.DB_NAME + '", "host": "' + process.env.DB_HOSTNAME + '"'
+  var configGeneric = '"dialect": "mysql", "logging": ' + sequelizeVerbose + ', "define": { "underscored": true, "charset": "utf8", "collate": "utf8_general_ci", "timestamps": true }'
 
-  var configJsonContent = '{ '
-    +'\n"development": { '+configCustom+', '+configGeneric+' }, '
-    +'\n"test": { '+configCustom+', '+configGeneric+' }, '
-    +'\n"staging": { '+configCustom+', '+configGeneric+' }, '
-    +'\n"production": { '+configCustom+', '+configGeneric+' } '
-  +'\n}';
+  var configJsonContent = '{ ' +
+    '\n"development": { ' + configCustom + ', ' + configGeneric + ' }, ' +
+    '\n"test": { ' + configCustom + ', ' + configGeneric + ' }, ' +
+    '\n"staging": { ' + configCustom + ', ' + configGeneric + ' }, ' +
+    '\n"production": { ' + configCustom + ', ' + configGeneric + ' } ' +
+  '\n}'
 
-  console.log('RFCX | Creating config params: ended');
+  console.log('RFCX | Creating config params: ended')
 
-  fs.unlink(configJsonFile,function(e){
-    fs.writeFile(configJsonFile, configJsonContent, function(e){
+  fs.unlink(configJsonFile, function (e) {
+    fs.writeFile(configJsonFile, configJsonContent, function (e) {
       if (!e) {
-
         console.log('RFCX | sequelize config.json has been [re]generated')
         // console.log('RFCX | Getting models')
         // var models = require("../models");
@@ -60,86 +58,83 @@ function initializeSequelize() {
         //     console.log('RFCX | Error in syncing models:', err);
         //   });
       }
-    });
-  });
+    })
+  })
 }
 
-function setupTmpDirectory() {
-
-  var tmpDir = process.env.CACHE_DIRECTORY;
-  if (!fs.existsSync(tmpDir)) { fs.mkdirSync(tmpDir); }
+function setupTmpDirectory () {
+  var tmpDir = process.env.CACHE_DIRECTORY
+  if (!fs.existsSync(tmpDir)) { fs.mkdirSync(tmpDir) }
 
   try {
-    if (fs.existsSync(tmpDir+"/uploads")) {
-      fs.readdir(tmpDir+"/uploads", function (err, dirName) {
+    if (fs.existsSync(tmpDir + '/uploads')) {
+      fs.readdir(tmpDir + '/uploads', function (err, dirName) {
         dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir+"/uploads/"+innerFileName,function(err){ if (err) console.log(err); });
-        });
-      });
-    } else { fs.mkdirSync(tmpDir+"/uploads"); }
-  } catch(err) {
-    console.error(err);
+          fs.unlink(tmpDir + '/uploads/' + innerFileName, function (err) { if (err) console.log(err) })
+        })
+      })
+    } else { fs.mkdirSync(tmpDir + '/uploads') }
+  } catch (err) {
+    console.error(err)
   }
 
   try {
-    if (fs.existsSync(tmpDir+"/test-assets")) {
-      fs.readdir(tmpDir+"/test-assets", function (err, dirName) {
+    if (fs.existsSync(tmpDir + '/test-assets')) {
+      fs.readdir(tmpDir + '/test-assets', function (err, dirName) {
         dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir+"/test-assets/"+innerFileName,function(err){ if (err) console.log(err); });
-        });
-      });
-    } else { fs.mkdirSync(tmpDir+"/test-assets"); }
-  } catch(err) {
-    console.error(err);
+          fs.unlink(tmpDir + '/test-assets/' + innerFileName, function (err) { if (err) console.log(err) })
+        })
+      })
+    } else { fs.mkdirSync(tmpDir + '/test-assets') }
+  } catch (err) {
+    console.error(err)
   }
 
   try {
-    if (fs.existsSync(tmpDir+"/faux-knox")) {
-      fs.readdir(tmpDir+"/faux-knox/", function (err, dirName) {
+    if (fs.existsSync(tmpDir + '/faux-knox')) {
+      fs.readdir(tmpDir + '/faux-knox/', function (err, dirName) {
         dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir+"/faux-knox/"+innerFileName,function(err){ if (err) console.log(err); });
-        });
-      });
-    } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
-  } catch(err) {
-    console.error(err);
+          fs.unlink(tmpDir + '/faux-knox/' + innerFileName, function (err) { if (err) console.log(err) })
+        })
+      })
+    } else { fs.mkdirSync(tmpDir + '/faux-knox') }
+  } catch (err) {
+    console.error(err)
   }
 
   try {
-    if (fs.existsSync(tmpDir+"/ffmpeg")) {
-      fs.readdir(tmpDir+"/ffmpeg/", function (err, dirName) {
+    if (fs.existsSync(tmpDir + '/ffmpeg')) {
+      fs.readdir(tmpDir + '/ffmpeg/', function (err, dirName) {
         dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir+"/ffmpeg/"+innerFileName,function(err){ if (err) console.log(err); });
-        });
-      });
-    } else { fs.mkdirSync(tmpDir+"/ffmpeg"); }
-  } catch(err) {
-    console.error(err);
+          fs.unlink(tmpDir + '/ffmpeg/' + innerFileName, function (err) { if (err) console.log(err) })
+        })
+      })
+    } else { fs.mkdirSync(tmpDir + '/ffmpeg') }
+  } catch (err) {
+    console.error(err)
   }
 
   try {
-    if (fs.existsSync(tmpDir+"/faux-knox")) {
-      fs.readdir(tmpDir+"/faux-knox/", function (err, dirName) {
+    if (fs.existsSync(tmpDir + '/faux-knox')) {
+      fs.readdir(tmpDir + '/faux-knox/', function (err, dirName) {
         dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir+"/faux-knox/"+innerFileName,function(err){ if (err) console.log(err); });
-        });
-      });
-    } else { fs.mkdirSync(tmpDir+"/faux-knox"); }
-  } catch(err) {
-    console.error(err);
+          fs.unlink(tmpDir + '/faux-knox/' + innerFileName, function (err) { if (err) console.log(err) })
+        })
+      })
+    } else { fs.mkdirSync(tmpDir + '/faux-knox') }
+  } catch (err) {
+    console.error(err)
   }
 
   try {
-    if (fs.existsSync(tmpDir+"/zip")) {
-      fs.readdir(tmpDir+"/zip/", function (err, dirName) {
+    if (fs.existsSync(tmpDir + '/zip')) {
+      fs.readdir(tmpDir + '/zip/', function (err, dirName) {
         dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir+"/zip/"+innerFileName,function(err){ if (err) console.log(err); });
-        });
-      });
-    } else { fs.mkdirSync(tmpDir+"/zip"); }
-  } catch(err) {
-    console.error(err);
+          fs.unlink(tmpDir + '/zip/' + innerFileName, function (err) { if (err) console.log(err) })
+        })
+      })
+    } else { fs.mkdirSync(tmpDir + '/zip') }
+  } catch (err) {
+    console.error(err)
   }
-
 }
-

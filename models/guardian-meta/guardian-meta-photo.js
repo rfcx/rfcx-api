@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianMetaPhoto = sequelize.define("GuardianMetaPhoto", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianMetaPhoto = sequelize.define('GuardianMetaPhoto', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4
@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       validate: {
         isDate: {
-          msg: "captured_at for GuardianMetaPhoto should have type Date"
+          msg: 'captured_at for GuardianMetaPhoto should have type Date'
         }
       }
     },
@@ -65,10 +65,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
     tableName: 'GuardianMetaPhotos'
-  });
+  })
 
-  return GuardianMetaPhoto;
-};
+  return GuardianMetaPhoto
+}

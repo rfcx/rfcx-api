@@ -1,74 +1,71 @@
-var verbose_logging = (process.env.NODE_ENV !== "production");
-var express = require("express");
-var router = express.Router();
-var views = require("../../../views/v1");
-var passport = require("passport");
-passport.use(require("../../../middleware/passport-token").TokenStrategy);
-var ApiConverter = require("../../../utils/api-converter");
-var requireUser = require("../../../middleware/authorization/authorization").requireTokenType("user");
-var models = require('../../../models');
-var flipCoin = require("../../../utils/misc/rand.js").flipCoin;
-var sqlUtils = require("../../../utils/misc/sql");
-var csvUtils = require("../../../utils/misc/csv");
-var datafiltersService = require('../../../services/datafilters/datafilters-service');
+var express = require('express')
+var router = express.Router()
+var views = require('../../../views/v1')
+var passport = require('passport')
+passport.use(require('../../../middleware/passport-token').TokenStrategy)
+var ApiConverter = require('../../../utils/api-converter')
+var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+var models = require('../../../models')
+var flipCoin = require('../../../utils/misc/rand.js').flipCoin
+var sqlUtils = require('../../../utils/misc/sql')
+var csvUtils = require('../../../utils/misc/csv')
+var datafiltersService = require('../../../services/datafilters/datafilters-service')
 
-var condAdd = sqlUtils.condAdd;
+var condAdd = sqlUtils.condAdd
 
-function filter(filterOpts) {
-    // the WHERE 1=1 allows us to add new conditions always with AND otherwise we have to make sure that a previous
-    // condition was met that inserted the WHERE clause
+function filter (filterOpts) {
+  // the WHERE 1=1 allows us to add new conditions always with AND otherwise we have to make sure that a previous
+  // condition was met that inserted the WHERE clause
   var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
-         ' INNER JOIN GuardianSites s ON a.site_id=s.id where 1=1';
+         ' INNER JOIN GuardianSites s ON a.site_id=s.id where 1=1'
 
-    // filter out files annotated by user
-    if (filterOpts.annotator) {
-      if (filterOpts.ignoreCorrupted) {
-        sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning" OR (sq.tagged_by_user=:annotator and sq.type="label"))'
-      }
-      else {
-        sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.tagged_by_user=:annotator and sq.type="label")'
-      }
+  // filter out files annotated by user
+  if (filterOpts.annotator) {
+    if (filterOpts.ignoreCorrupted) {
+      sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning" OR (sq.tagged_by_user=:annotator and sq.type="label"))'
     } else {
-      if (filterOpts.ignoreCorrupted) {
-        // filter out corrupted files - TODO: we need to improve the index scan otherwise this is inefficient
-        sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning")'
-      }
+      sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.tagged_by_user=:annotator and sq.type="label")'
     }
+  } else {
+    if (filterOpts.ignoreCorrupted) {
+      // filter out corrupted files - TODO: we need to improve the index scan otherwise this is inefficient
+      sql += ' and a.id not in (SELECT DISTINCT sq.audio_id FROM GuardianAudioTags sq where sq.type="warning")'
+    }
+  }
 
-
-  sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start');
-  sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end');
-  sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart');
-  sql = condAdd(sql, filterOpts.todEnd, ' and TIME(a.measured_at) < :todEnd');
-  sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)');
-  sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType');
-  sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)');
-  sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5');
-  sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5');
-  sql = condAdd(sql, filterOpts.audioGuids, ' and a.guid in (:audioGuids)');
-  sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) >= 1');
-  sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()');
-  sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit');
+  sql = condAdd(sql, filterOpts.start, ' and a.measured_at >= :start')
+  sql = condAdd(sql, filterOpts.end, ' and a.measured_at < :end')
+  sql = condAdd(sql, filterOpts.todStart, ' and TIME(a.measured_at) >= :todStart')
+  sql = condAdd(sql, filterOpts.todEnd, ' and TIME(a.measured_at) < :todEnd')
+  sql = condAdd(sql, filterOpts.sites, ' and s.guid in (:sites)')
+  sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType')
+  sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)')
+  sql = condAdd(sql, filterOpts.lowConfidence, ' and t.confidence <= 0.5')
+  sql = condAdd(sql, filterOpts.highConfidence, ' and t.confidence > 0.5')
+  sql = condAdd(sql, filterOpts.audioGuids, ' and a.guid in (:audioGuids)')
+  sql = condAdd(sql, filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) >= 1')
+  sql = condAdd(sql, !filterOpts.hasLabels, ' group by a.guid having count(DISTINCT t.tagged_by_user) < 3 order by count(DISTINCT t.tagged_by_user) DESC, RAND()')
+  sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit')
 
   return models.sequelize.query(sql,
     { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
-  );
+  )
 }
 
-function processResults(promise, req, res) {
-	return promise.then(function(data) {
-		return processSuccess(data, req, res);
-	}).catch(function (err) {
-		processError(err, req, res);
-	});
+function processResults (promise, req, res) {
+  return promise.then(function (data) {
+    return processSuccess(data, req, res)
+  }).catch(function (err) {
+    processError(err, req, res)
+  })
 }
 
-function extractAudioGuids(data) {
-  var arr = [];
+function extractAudioGuids (data) {
+  var arr = []
   for (var i = 0; i < data.length; i++) {
-    arr.push(data[i].guid);
+    arr.push(data[i].guid)
   }
-  return arr;
+  return arr
 }
 
 // function getLabelsData(filterOpts) {
@@ -87,157 +84,151 @@ function extractAudioGuids(data) {
 //   );
 // }
 
-function processSuccess(data, req, res) {
+function processSuccess (data, req, res) {
   return views.models.DataFilterAudioGuidToJson(req, res, data).then(function (result) {
-    res.status(200).json(result);
-  });
+    res.status(200).json(result)
+  })
 }
 
-function processError(err, req, res) {
-  if(!!err){
-    console.log('err', err);
-    res.status(500).json({msg: err});
+function processError (err, req, res) {
+  if (err) {
+    console.log('err', err)
+    res.status(500).json({ msg: err })
   }
 }
 
-function combineFilterOpts(req) {
-  var body = req.body;
+function combineFilterOpts (req) {
+  var body = req.body
 
   var filterOpts = {
     limit: parseInt(body.limit) || 1,
     hasLabels: body.hasLabels || false
-  };
+  }
 
   if (body.ignoreCorrupted) {
-    filterOpts.ignoreCorrupted = Boolean(body.ignoreCorrupted);
+    filterOpts.ignoreCorrupted = Boolean(body.ignoreCorrupted)
   }
   if (!body.ignoreAnnotator) {
-    filterOpts.annotator = req.rfcx.auth_token_info.owner_id;
+    filterOpts.annotator = req.rfcx.auth_token_info.owner_id
   }
   if (body.site) {
-    filterOpts.sites = [body.site];
+    filterOpts.sites = [body.site]
   }
   if (body.guardian) {
-    filterOpts.guardians = [body.guardian];
+    filterOpts.guardians = [body.guardian]
   }
 
   if (body.start) {
-    filterOpts.start = body.start;
+    filterOpts.start = body.start
   }
 
   if (body.end) {
-    filterOpts.end = body.end;
+    filterOpts.end = body.end
   }
 
   if (body.tagType) {
-    filterOpts.tagType = body.tagType;
+    filterOpts.tagType = body.tagType
   }
 
   if (body.highConfidence) {
-    filterOpts.highConfidence = Boolean(body.highConfidence);
+    filterOpts.highConfidence = Boolean(body.highConfidence)
   }
 
   if (body.lowConfidence) {
-    filterOpts.lowConfidence = Boolean(body.lowConfidence);
+    filterOpts.lowConfidence = Boolean(body.lowConfidence)
   }
 
   if (body.audioGuids) {
-    filterOpts.audioGuids = body.audioGuids.split(',');
+    filterOpts.audioGuids = body.audioGuids.split(',')
   }
 
   // if tag was specified, then flip coin
   if (req.params.tagValue) {
     // if true then search for audios tagged with specified tag
-      // Todo: for now we need more of the files for tags, so we'll always search for tags - we need to remove true soon
-    if (body.noRandomValues || flipCoin() || true) {
-      filterOpts.tagValues = req.params.tagValue;
+    // Todo: for now we need more of the files for tags, so we'll always search for tags - we need to remove true soon
+    if (body.noRandomValues || flipCoin() || true) { // eslint-disable-line no-constant-condition
+      filterOpts.tagValues = req.params.tagValue
     }
   }
 
-  return filterOpts;
+  return filterOpts
 }
 
-router.route("/csv/:tagValue")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
-
-    var filterOpts = combineFilterOpts(req);
+router.route('/csv/:tagValue')
+  .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
+    var filterOpts = combineFilterOpts(req)
 
     filter(filterOpts)
       .bind({})
-      .then(function(data) {
-        this.guids = data;
-        filterOpts.audioGuids = extractAudioGuids(data);
-        return datafiltersService.getLabelsData(filterOpts);
+      .then(function (data) {
+        this.guids = data
+        filterOpts.audioGuids = extractAudioGuids(data)
+        return datafiltersService.getLabelsData(filterOpts)
       })
-      .then(function(labels) {
+      .then(function (labels) {
         return views.models.DataFilterAudioGuidToJson(req, res, {
           guids: this.guids,
           labels: labels
         })
       })
-      .then(function(dataObj) {
-        return csvUtils.generateCSV(dataObj.data.attributes.labels, req.params.tagValue);
+      .then(function (dataObj) {
+        return csvUtils.generateCSV(dataObj.data.attributes.labels, req.params.tagValue)
       })
-      .then(function(csv) {
-        res.contentType('text/csv');
-        res.attachment('event.csv');
-        res.status(200).send(csv);
-      });
+      .then(function (csv) {
+        res.contentType('text/csv')
+        res.attachment('event.csv')
+        res.status(200).send(csv)
+      })
+  })
 
-  });
+router.route('/labelling/:tagValue?')
+  .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
+    var body = req.body
 
-router.route("/labelling/:tagValue?")
-  .post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
-
-    var body = req.body;
-
-    var filterOpts = combineFilterOpts(req);
+    var filterOpts = combineFilterOpts(req)
 
     filter(filterOpts).bind({})
-      .then(function(guids) {
+      .then(function (guids) {
         // if we found result then act like always...
         if (guids.length || body.noRandomValues) {
-          return guids;
-        }
-        // if we not found any guids then go another way
-        else {
+          return guids
+        } else { // if we not found any guids then go another way
           // search random guids without tagging by model property
-          delete filterOpts.tagType;
-          delete filterOpts.tagValues;
-          delete filterOpts.highConfidence;
-          delete filterOpts.lowConfidence;
-          filterOpts.hasLabels = false;
+          delete filterOpts.tagType
+          delete filterOpts.tagValues
+          delete filterOpts.highConfidence
+          delete filterOpts.lowConfidence
+          filterOpts.hasLabels = false
           // then return result whatever it will be - founded guids or empty array
-          return filter(filterOpts);
+          return filter(filterOpts)
         }
       })
-      .then(function(data) {
-        this.guids = data;
+      .then(function (data) {
+        this.guids = data
         if (body.withCSV && data.length) {
           // simplify tags query - search only in received guids
-          filterOpts.audioGuids = extractAudioGuids(data);
-          return datafiltersService.getLabelsData(filterOpts);
-        }
-        else {
-          return null;
+          filterOpts.audioGuids = extractAudioGuids(data)
+          return datafiltersService.getLabelsData(filterOpts)
+        } else {
+          return null
         }
       })
-      .then(function(labels) {
+      .then(function (labels) {
         return processSuccess({
           guids: this.guids,
           labels: labels
-        }, req, res);
+        }, req, res)
       })
       .catch(function (err) {
-        processError(err, req, res);
-      });
-	});
+        processError(err, req, res)
+      })
+  })
 
-router.route("/")
-	.post(passport.authenticate("token", {session: false}), requireUser, function (req, res) {
-		var converter = new ApiConverter("datafilter", req);
-		var filterOpts = converter.mapApiToPojo(req.body);
-		var promise = filter(filterOpts);
-		processResults(promise, req, res);
-	});
-module.exports = router;
+router.route('/')
+  .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
+    var converter = new ApiConverter('datafilter', req)
+    var filterOpts = converter.mapApiToPojo(req.body)
+    var promise = filter(filterOpts)
+    processResults(promise, req, res)
+  })
+module.exports = router

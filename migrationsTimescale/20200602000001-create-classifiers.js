@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('classifiers', {
@@ -24,35 +24,35 @@ module.exports = {
       },
       min_confidence: {
         type: Sequelize.FLOAT,
-        allowNull: false,
+        allowNull: false
       },
       min_windows_count: {
         type: Sequelize.INTEGER,
-        allowNull: false,
-      },
+        allowNull: false
+      }
     })
-    .then(() => {
-      return Promise.all([
-        queryInterface.addConstraint('classifiers', {
-          type: 'CHECK',
-          fields: ['min_confidence'],
-          where: {
-            min_confidence: {
-              [Sequelize.Op.gte]: 0
+      .then(() => {
+        return Promise.all([
+          queryInterface.addConstraint('classifiers', {
+            type: 'CHECK',
+            fields: ['min_confidence'],
+            where: {
+              min_confidence: {
+                [Sequelize.Op.gte]: 0
+              }
             }
-          }
-        }),
-        queryInterface.addConstraint('classifiers', {
-          type: 'CHECK',
-          fields: ['min_windows_count'],
-          where: {
-            min_windows_count: {
-              [Sequelize.Op.gt]: 0
+          }),
+          queryInterface.addConstraint('classifiers', {
+            type: 'CHECK',
+            fields: ['min_windows_count'],
+            where: {
+              min_windows_count: {
+                [Sequelize.Op.gt]: 0
+              }
             }
-          }
-        }),
-      ])
-    });
+          })
+        ])
+      })
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('classifiers')

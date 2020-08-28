@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioUpload = sequelize.define("GuardianAudioUpload", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioUpload = sequelize.define('GuardianAudioUpload', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -11,7 +11,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "measured_at for GuardianAudioUpload should have type Date" }
+        isDate: { msg: 'measured_at for GuardianAudioUpload should have type Date' }
       }
     },
     url: {
@@ -23,10 +23,10 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "GuardianAudioUploads"
-  });
+    tableName: 'GuardianAudioUploads'
+  })
 
-  return GuardianAudioUpload;
-};
+  return GuardianAudioUpload
+}

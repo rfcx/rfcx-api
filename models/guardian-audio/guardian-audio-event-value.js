@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var GuardianAudioEventValue = sequelize.define("GuardianAudioEventValue", {
+module.exports = function (sequelize, DataTypes) {
+  var GuardianAudioEventValue = sequelize.define('GuardianAudioEventValue', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -10,19 +10,19 @@ module.exports = function(sequelize, DataTypes) {
     low_level_key: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
+      unique: false
     },
     reference_audio: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     reference_spectrogram: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     }
   }, {
-    tableName: "GuardianAudioEventValues"
-  });
+    tableName: 'GuardianAudioEventValues'
+  })
 
-  return GuardianAudioEventValue;
-};
+  return GuardianAudioEventValue
+}

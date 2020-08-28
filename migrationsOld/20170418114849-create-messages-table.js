@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-
     return queryInterface.createTable('Messages', {
       guid: {
         type: Sequelize.UUID,
@@ -34,13 +33,10 @@ module.exports = {
           max: 180
         }
       }
-    });
-
+    })
   },
 
   down: function (queryInterface, Sequelize) {
-
-    return queryInterface.dropTable('Messages');
-
+    return queryInterface.dropTable('Messages')
   }
-};
+}

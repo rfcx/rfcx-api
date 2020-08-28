@@ -1,23 +1,12 @@
-var util = require("util");
-
 exports.models = {
 
-  guardianSoftwareVersions: function(req,res,dbSoftwareVersion) {
+  guardianSoftwareVersions: function (req, res, dbSoftwareVersion) {
+    if (!Array.isArray(dbSoftwareVersion)) { dbSoftwareVersion = [dbSoftwareVersion] }
 
-    if (!util.isArray(dbSoftwareVersion)) { dbSoftwareVersion = [dbSoftwareVersion]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-
-    for (i in dbSoftwareVersion) {
-
-      var dbRow = dbSoftwareVersion[i];
-
-      // jsonArray.push({
-      // });
-    }
-    return jsonArray;
-  
+    // TODO: do we still need this function?
+    return jsonArray
   }
 
-};
-
+}

@@ -1,20 +1,17 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianCheckIns', 'cpu_percent')
+    migration.removeColumn('GuardianCheckIns', 'cpu_clock')
+    migration.removeColumn('GuardianCheckIns', 'battery_percent')
+    migration.removeColumn('GuardianCheckIns', 'battery_temperature')
+    migration.removeColumn('GuardianCheckIns', 'network_transmit_time')
 
-    migration.removeColumn('GuardianCheckIns', 'cpu_percent');
-    migration.removeColumn('GuardianCheckIns', 'cpu_clock');
-    migration.removeColumn('GuardianCheckIns', 'battery_percent');
-    migration.removeColumn('GuardianCheckIns', 'battery_temperature');
-    migration.removeColumn('GuardianCheckIns', 'network_transmit_time');
-
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'GuardianCheckIns',
       'cpu_percent',
@@ -27,7 +24,7 @@ module.exports = {
           max: 100
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianCheckIns',
@@ -41,7 +38,7 @@ module.exports = {
           max: 800
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianCheckIns',
@@ -55,7 +52,7 @@ module.exports = {
           max: 100
         }
       }
-    );
+    )
 
     migration.addColumn(
       'GuardianCheckIns',
@@ -69,9 +66,9 @@ module.exports = {
           max: 99
         }
       }
-    );
+    )
 
-      migration.addColumn(
+    migration.addColumn(
       'GuardianCheckIns',
       'network_transmit_time',
       {
@@ -82,9 +79,8 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   }
-};
+}

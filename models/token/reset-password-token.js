@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var ResetPasswordToken = sequelize.define("ResetPasswordToken", {
+module.exports = function (sequelize, DataTypes) {
+  var ResetPasswordToken = sequelize.define('ResetPasswordToken', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -11,15 +11,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       defaultValue: DataTypes.NOW,
       validate: {
-        isDate: { msg: "expires_at for ResetPasswordToken should have type Date" }
+        isDate: { msg: 'expires_at for ResetPasswordToken should have type Date' }
       }
     }
   }, {
     indexes: [
-      { unique: true, fields: ["guid"] }
+      { unique: true, fields: ['guid'] }
     ],
-    tableName: "ResetPasswordTokens"
-  });
+    tableName: 'ResetPasswordTokens'
+  })
 
-  return ResetPasswordToken;
-};
+  return ResetPasswordToken
+}

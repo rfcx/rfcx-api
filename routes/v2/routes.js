@@ -1,18 +1,14 @@
 module.exports = {
   ais: [
-    require("./ais/ais"),
+    require('./ais/ais')
   ],
   events: [
-    require("./events/events"),
+    require('./events/events')
   ],
   guardians: [
-    require("./guardians/guardians"),
-  ],
-  streams: [
-    require("./streams/streams"),
-    require("./streams/streams-assets"),
+    require('./guardians/guardians')
   ],
   tags: [
-    require("./tags/tags"),
-  ],
+    require('./tags/tags')
+  ]
 }

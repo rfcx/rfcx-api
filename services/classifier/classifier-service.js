@@ -1,7 +1,5 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
 
 /**
  * Searches for classifier with given uuid
@@ -20,7 +18,7 @@ function getByUuid (uuid, opts = {}) {
         throw new EmptyResultError('Classifier with given uuid not found.')
       }
       return item
-    });
+    })
 }
 
 function getId (uuid) {
@@ -55,5 +53,5 @@ function getIds (uuids) {
 
 module.exports = {
   getByUuid,
-  getIds,
+  getIds
 }

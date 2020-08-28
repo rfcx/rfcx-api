@@ -1,11 +1,11 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var AudioAnalysisEntry = sequelize.define("AudioAnalysisEntry", { }, {
+module.exports = function (sequelize, DataTypes) {
+  var AudioAnalysisEntry = sequelize.define('AudioAnalysisEntry', { }, {
     indexes: [
     ],
-    tableName: "AudioAnalysisEntry"
-  });
+    tableName: 'AudioAnalysisEntry'
+  })
 
-  return AudioAnalysisEntry;
-};
+  return AudioAnalysisEntry
+}

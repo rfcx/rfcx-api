@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var Language = sequelize.define("Language", {
+module.exports = function (sequelize, DataTypes) {
+  var Language = sequelize.define('Language', {
     id: {
       primaryKey: true,
       type: DataTypes.STRING,
@@ -16,11 +16,11 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     timestamps: false,
     indexes: [
-      { unique: true, fields: ["id"] },
-      { unique: true, fields: ["value"] }
+      { unique: true, fields: ['id'] },
+      { unique: true, fields: ['value'] }
     ],
-    tableName: "Languages"
-  });
+    tableName: 'Languages'
+  })
 
-  return Language;
-};
+  return Language
+}

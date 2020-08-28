@@ -1,16 +1,12 @@
-var util = require("util");
-
 exports.models = {
 
-  guardianSoftware: function(req,res,dbSoftware) {
+  guardianSoftware: function (req, res, dbSoftware) {
+    if (!Array.isArray(dbSoftware)) { dbSoftware = [dbSoftware] }
 
-    if (!util.isArray(dbSoftware)) { dbSoftware = [dbSoftware]; }
+    var jsonArray = []
 
-    var jsonArray = [];
-    
-    for (i in dbSoftware) {
-
-      var dbRow = dbSoftware[i];
+    for (const i in dbSoftware) {
+      var dbRow = dbSoftware[i]
 
       if (dbRow.CurrentVersion != null) {
         jsonArray.push({
@@ -19,13 +15,10 @@ exports.models = {
           released: dbRow.CurrentVersion.release_date.toISOString(),
           sha1: dbRow.CurrentVersion.sha1_checksum,
           url: dbRow.CurrentVersion.url
-        });
+        })
       }
-
     }
-    return jsonArray;
-  
+    return jsonArray
   }
 
-};
-
+}

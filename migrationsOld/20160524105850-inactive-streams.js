@@ -1,29 +1,25 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-
     migration.addColumn(
-      "GuardianAudioHighlights",
-      "is_active",
+      'GuardianAudioHighlights',
+      'is_active',
       {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true,
         validate: {}
       }
-    );
+    )
 
-    done();
-
+    done()
   },
 
   down: function (migration, DataTypes, done) {
+    migration.removeColumn('GuardianAudioHighlights', 'is_active')
 
-    migration.removeColumn('GuardianAudioHighlights', 'is_active');
-
-    done();
-
+    done()
   }
 
-};
+}

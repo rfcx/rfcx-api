@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('classification_references', {
@@ -21,7 +21,7 @@ module.exports = {
       annotation_start: {
         type: Sequelize.DATE(3),
         allowNull: false
-      },
+      }
     })
   },
   down: (queryInterface, Sequelize) => {

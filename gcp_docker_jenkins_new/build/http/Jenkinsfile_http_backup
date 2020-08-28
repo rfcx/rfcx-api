@@ -1,0 +1,150 @@
+#!/usr/bin/env groovy
+
+
+env.DOCKER_REGISTRY = 'gcr.io'
+env.DOCKER_REGISTRY_PROJECT = 'prj-p-gke-01-59b8'
+env.DOCKER_IMAGE_NAME = 'rfcx_api_http_image'
+env.APP_VERSION = '1.0.0'
+
+
+
+//****************************************//
+//             PIPELINE BEGINS            //
+//****************************************//
+podTemplate(yaml: """
+kind: Pod
+metadata:
+  annotations:
+    com.cloudbees.sidecar-injector/inject: no
+spec:
+  serviceAccountName: kaniko-googleregistry
+  containers:
+  - name: hadolint
+    image: hadolint/hadolint:latest-debian
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+  - name: shellcheck
+    image: koalaman/shellcheck-alpine
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    command:
+    - /busybox/cat
+    tty: true
+"""
+  ) {
+
+  node(POD_LABEL) {
+    ansiColor('xterm') {
+      stage('Source Checkout') {
+        checkout scm
+
+        gitCommit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
+        shortCommit = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+        //branchName = sh(returnStdout: true, script: "git rev-parse --abbrev-ref HEAD").trim()
+        gitBranchPath=sh(returnStdout: true, script: "git name-rev --name-only HEAD").trim()
+        gitBranchName=gitBranchPath.split('remotes/origin/')[1]
+        commitChangeset = sh(returnStdout: true, script: 'git diff-tree --no-commit-id --name-status -r HEAD').trim()
+        commitMessage = sh(returnStdout: true, script: "git show ${gitCommit} --format=%B --name-status").trim()
+        //appVersion = readFile("${env.WORKSPACE}/VERSION").trim()
+        nonIgnoredChangeset = sh(returnStdout: true, script: "echo ${commitChangeset} | grep -v \'VERSION\\|Jenkinsfile\' || true").trim()
+        userIdCause = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')
+
+        env.GIT_COMMIT = "${gitCommit}"
+        env.GIT_COMMIT_SHORT = "${shortCommit}"
+        env.GIT_BRANCH_PATH ="${gitBranchPath}"
+        env.GIT_BRANCH = "${gitBranchName}"
+        //env.APP_VERSION = "${appVersion}"
+
+        echo "\u27A1 GIT_BRANCH PATH: ${env.GIT_BRANCH_PATH}"
+        echo "\u27A1 GIT_BRANCH: ${env.GIT_BRANCH}"
+        echo "\u27A1 GIT_COMMIT: ${env.GIT_COMMIT}"
+        echo "\u27A1 GIT_COMMIT_SHORT: ${env.GIT_COMMIT_SHORT}"
+        echo "\u27A1 APP_VERSION: ${env.APP_VERSION}"
+        echo "\u27A1 nonIgnoredChangeset: ${nonIgnoredChangeset}"
+      }
+
+
+      // If only ignored files are changed, end pipeline early
+      echo "userIdCause: ${userIdCause}"
+      if("${nonIgnoredChangeset}" == "" && userIdCause.size() == 0) {
+        currentBuild.result = 'ABORTED'
+        echo 'Aborting build: commits only contains changes to ignored files'
+        return
+      }
+
+      stage('Pre-Build Analysis') {
+        try {
+          container('hadolint') {
+            sh 'cd build/http/'
+            sh 'hadolint Dockerfile --config .hadolint.yaml --format checkstyle > checkstyle-hadolint.xml'
+          }
+          container('shellcheck') {
+            sh 'cd build/http/'
+            sh 'find ${pwd()}/build/http/ -type f -name "*.sh" | xargs -r shellcheck --format checkstyle >> checkstyle-shellcheck.xml'
+          }
+        } finally {
+          sh 'cd build/http/'
+          recordIssues enabledForFailure: true, aggregatingResults: true, tool: checkStyle(pattern: 'checkstyle-*.xml')
+        }
+      }
+
+
+      stage('Build & Push Image to Registry') {
+
+        if (env.GIT_BRANCH == "master" || env.GIT_BRANCH == "develop") {
+
+          // Sample Image URL: "gcr.io/prj-p-gke-01-59b8/rfcx_api_http_image:v1.0.0"
+          env.DOCKER_IMAGE_TAG = "v${env.APP_VERSION}-${env.GIT_COMMIT_SHORT}"
+          //env.DOCKER_IMAGE_URL = "${env.DOCKER_REGISTRY}/${env.DOCKER_REGISTRY_PROJECT}/${env.DOCKER_IMAGE_NAME}:v${env.APP_VERSION}"
+          env.DOCKER_IMAGE_URL = "${env.DOCKER_REGISTRY}/${env.DOCKER_REGISTRY_PROJECT}/${env.DOCKER_IMAGE_NAME}:env.DOCKER_IMAGE_TAG"
+          //echo "\u27A1 Image URL: ${env.DOCKER_IMAGE_URL}"
+
+          container('kaniko') {
+              sh """
+              #!/busybox/sh
+                /kaniko/docker-credential-gcr config --token-source='gcloud'
+                /kaniko/docker-credential-gcr config --token-source="env, store"
+                echo "https://gcr.io" | /kaniko/docker-credential-gcr get
+                /kaniko/docker-credential-gcr configure-docker
+                /kaniko/executor \
+                  --dockerfile ${pwd()}/build/http/Dockerfile \
+                  --context ${pwd()}/build/http \
+                  --destination ${env.DOCKER_IMAGE_URL}
+                """
+          }
+          echo "\u27A1 Built & pushed image: ${env.DOCKER_IMAGE_URL}"
+
+        }
+        else {
+           echo "\u27A1 Error: Docker image can be build on master or develop branches only "
+        }
+
+        def info = [:]
+        info.version = appVersion
+        info.branch = "${env.GIT_BRANCH}"
+        info.buildNumber = "${env.BUILD_NUMBER}"
+        info.commit = "${env.GIT_COMMIT}"
+        info.commitShort = "${env.GIT_COMMIT_SHORT}"
+        info.dockerTag = "v${env.APP_VERSION}"
+        info.dockerImage = "${env.DOCKER_IMAGE_NAME}"
+        //info.buildUrl = "${env.BUILD_URL}"
+        // Spinnaker default template for docker artifacts
+        info.messageFormat = "DOCKER"
+        info.image = "${env.DOCKER_IMAGE_URL}"
+
+        info = readJSON text: groovy.json.JsonOutput.toJson(info)
+        writeJSON file: 'metadata.json', pretty: 4, json: info
+        archiveArtifacts 'metadata.json'
+
+        sh 'cat ./metadata.json'
+      }
+    }
+  }
+}

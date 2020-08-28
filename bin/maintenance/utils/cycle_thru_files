@@ -1,34 +1,33 @@
 #!/usr/bin/env node
-var args = process.argv.slice(2);
+var args = process.argv.slice(2)
 
-var fs = require("fs");
-var syncExec = require("sync-exec");
+var fs = require('fs')
+var syncExec = require('sync-exec')
 
-if (fs.existsSync(__dirname+"/../../../config/env_vars.js")) {
-  var env = require(__dirname+"/../../../config/env_vars.js").env;
-  for (i in env) { process.env[i] = env[i]; }
+if (fs.existsSync(__dirname + '/../../../config/env_vars.js')) {
+  var env = require(__dirname + '/../../../config/env_vars.js').env
+  for (i in env) { process.env[i] = env[i] }
 }
 
-var ENV = ((args[args.indexOf("--env")] === ("--env")) ? args[args.indexOf("--env")+1] : process.env.NODE_ENV);
-var JSON_FILE = ((args[args.indexOf("--json")] === ("--json")) ? args[args.indexOf("--json")+1] : null);
+var ENV = ((args[args.indexOf('--env')] === ('--env')) ? args[args.indexOf('--env') + 1] : process.env.NODE_ENV)
+var JSON_FILE = ((args[args.indexOf('--json')] === ('--json')) ? args[args.indexOf('--json') + 1] : null)
 
-var allS3Keys = JSON.parse(fs.readFileSync(JSON_FILE));
+var allS3Keys = JSON.parse(fs.readFileSync(JSON_FILE))
 
-console.log("number of files: "+parseInt(allS3Keys.length));
+console.log('number of files: ' + parseInt(allS3Keys.length))
 
 for (i in allS3Keys) {
-    var count = (parseInt(i)+1),
-        query_cmd = __dirname+"/../utils/check_database_entry s3://"+process.env.ASSET_BUCKET_AUDIO+"/"+allS3Keys[i],
-        query_result = syncExec(query_cmd).stdout.split("*"),
-        query_count = parseInt(query_result[0].trim()),
-        query_guid = query_result[1].trim();
-    if (query_count === 1) {
-      console.log(count+") GOOD: "+allS3Keys[i]);
-    } else {
-      process.stdout.write(count+") NOT FOUND... DELETING...  ");
-      var delete_cmd = __dirname+"/../utils/delete_s3_object --bucket "+process.env.ASSET_BUCKET_AUDIO+" --key "+allS3Keys[i],
-          delete_result = syncExec(delete_cmd);
-      console.log("DELETED: "+delete_result.stdout);
-    }
+  var count = (parseInt(i) + 1)
+  var query_cmd = __dirname + '/../utils/check_database_entry s3://' + process.env.ASSET_BUCKET_AUDIO + '/' + allS3Keys[i]
+  var query_result = syncExec(query_cmd).stdout.split('*')
+  var query_count = parseInt(query_result[0].trim())
+  var query_guid = query_result[1].trim()
+  if (query_count === 1) {
+    console.log(count + ') GOOD: ' + allS3Keys[i])
+  } else {
+    process.stdout.write(count + ') NOT FOUND... DELETING...  ')
+    var delete_cmd = __dirname + '/../utils/delete_s3_object --bucket ' + process.env.ASSET_BUCKET_AUDIO + ' --key ' + allS3Keys[i]
+    var delete_result = syncExec(delete_cmd)
+    console.log('DELETED: ' + delete_result.stdout)
+  }
 }
-

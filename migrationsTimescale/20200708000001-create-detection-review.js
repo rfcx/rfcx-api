@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('detection_reviews', {
@@ -6,7 +6,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         primaryKey: true,
         allowNull: false,
-        autoIncrement: true,
+        autoIncrement: true
       },
       detection_id: {
         type: Sequelize.UUID,
@@ -33,7 +33,7 @@ module.exports = {
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false
-      },
+      }
     })
   },
   down: (queryInterface, Sequelize) => {

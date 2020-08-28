@@ -1,17 +1,14 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
+  up: function (migration, DataTypes, done) {
+    migration.removeColumn('AnonymousTokens', 'remaining_uses')
+    migration.removeColumn('AnonymousTokens', 'max_uses')
 
-    migration.removeColumn("AnonymousTokens", 'remaining_uses');
-    migration.removeColumn("AnonymousTokens", 'max_uses');
-
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
-
+  down: function (migration, DataTypes, done) {
     migration.addColumn(
       'AnonymousTokens',
       'remaining_uses',
@@ -23,7 +20,7 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
     migration.addColumn(
       'AnonymousTokens',
@@ -36,11 +33,8 @@ module.exports = {
           min: 1
         }
       }
-    );
+    )
 
-    done();
-
+    done()
   }
-};
-
-
+}

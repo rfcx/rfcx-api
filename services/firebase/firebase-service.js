@@ -1,4 +1,4 @@
-const firebase = require('../../utils/firebase/firebase');
+const firebase = require('../../utils/firebase/firebase')
 
 /**
  * Sends a Firebase message to individual device
@@ -9,10 +9,10 @@ const firebase = require('../../utils/firebase/firebase');
  * @property {string} title Push notification title
  * @property {string} body Push notification body
  */
-function sendToIndividualDevice(opts) {
-  let defaultMes = createPlatformSpecificFields(opts.title, opts.body);
-  let message = Object.assign(defaultMes, { data: opts.data || {}, token: opts.token });
-  return sendMessage(opts.app, message);
+function sendToIndividualDevice (opts) {
+  const defaultMes = createPlatformSpecificFields(opts.title, opts.body)
+  const message = Object.assign(defaultMes, { data: opts.data || {}, token: opts.token })
+  return sendMessage(opts.app, message)
 }
 
 /**
@@ -24,19 +24,19 @@ function sendToIndividualDevice(opts) {
  * @property {string} title Push notification title
  * @property {string} body Push notification body
  */
-function sendToTopic(opts) {
-  let defaultMes = createPlatformSpecificFields(opts.title, opts.body);
-  let message = Object.assign(defaultMes, { data: opts.data || {}, topic: opts.topic });
-  return sendMessage(opts.app, message);
+function sendToTopic (opts) {
+  const defaultMes = createPlatformSpecificFields(opts.title, opts.body)
+  const message = Object.assign(defaultMes, { data: opts.data || {}, topic: opts.topic })
+  return sendMessage(opts.app, message)
 }
 
-function sendMessage(app, message) {
+function sendMessage (app, message) {
   return firebase[app]
     .messaging()
-    .send(message);
+    .send(message)
 }
 
-function createPlatformSpecificFields(title, body) {
+function createPlatformSpecificFields (title, body) {
   return {
     android: {
       ttl: 3600 * 1000, // 1 hour in milliseconds
@@ -44,7 +44,7 @@ function createPlatformSpecificFields(title, body) {
       notification: {
         title,
         body,
-        sound: 'default',
+        sound: 'default'
       }
     },
     apns: {
@@ -55,8 +55,8 @@ function createPlatformSpecificFields(title, body) {
         aps: {
           alert: {
             title,
-            body,
-          },
+            body
+          }
         }
       }
     },
@@ -66,11 +66,11 @@ function createPlatformSpecificFields(title, body) {
         body,
         icon: 'https://dashboard.rfcx.org/assets/img/logo-square-192.png'
       }
-    },
+    }
   }
 }
 
 module.exports = {
   sendToIndividualDevice,
   sendToTopic
-};
+}

@@ -1,11 +1,11 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
-const { timeBucketAttribute, aggregatedValueAttribute, timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
-const streamPermissionService = require('../streams-timescale/permission')
+const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
+const streamPermissionService = require('../streams/permission')
 
-async function defaultQueryOptions (start, end, streamId, classifications, descending, limit, offset, userId) {
-  let condition = {
+async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, descending, limit, offset, userId) {
+  const condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
       [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
@@ -13,32 +13,33 @@ async function defaultQueryOptions (start, end, streamId, classifications, desce
   }
   if (streamId !== undefined) {
     condition.stream_id = streamId
-  }
-  else {
-    const streamIds = await streamPermissionService.getAccessibleStreamIds(userId)
+  } else {
+    const streamIds = streamsOnlyPublic
+      ? await streamPermissionService.getPublicStreamIds()
+      : await streamPermissionService.getAccessibleStreamIds(userId, streamsOnlyCreatedBy)
     condition.stream_id = {
       [models.Sequelize.Op.in]: streamIds
     }
   }
-  const classificationCondition = classifications === undefined ? {} :
-  {
-    value: { [models.Sequelize.Op.or]: classifications }
-  }
+  const classificationCondition = classifications === undefined ? {}
+    : {
+      value: { [models.Sequelize.Op.or]: classifications }
+    }
   return {
-      where: condition,
-      include: [
-        {
-          as: 'classification',
-          model: models.Classification,
-          where: classificationCondition,
-          attributes: models.Classification.attributes.lite,
-          required: true
-        }
-      ],
-      attributes: models.Annotation.attributes.lite,
-      offset: offset,
-      limit: limit,
-      order: [['start', descending ? 'DESC' : 'ASC']]
+    where: condition,
+    include: [
+      {
+        as: 'classification',
+        model: models.Classification,
+        where: classificationCondition,
+        attributes: models.Classification.attributes.lite,
+        required: true
+      }
+    ],
+    attributes: models.Annotation.attributes.lite,
+    offset: offset,
+    limit: limit,
+    order: [['start', descending ? 'DESC' : 'ASC']]
   }
 }
 
@@ -50,12 +51,12 @@ function formatFull (annotation) {
 }
 
 async function query (start, end, streamId, classifications, limit, offset, userId) {
-  const queryOptions = await defaultQueryOptions(start, end, streamId, classifications, false, limit, offset, userId)
+  const queryOptions = await defaultQueryOptions(start, end, streamId, undefined, false, classifications, false, limit, offset, userId)
   return models.Annotation.findAll(queryOptions)
 }
 
-async function timeAggregatedQuery (start, end, streamId, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset, userId) {
-  let queryOptions = await defaultQueryOptions(start, end, streamId, undefined, descending, limit, offset, userId)
+async function timeAggregatedQuery (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset, userId) {
+  const queryOptions = await defaultQueryOptions(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, undefined, descending, limit, offset, userId)
   if (createdById !== undefined) {
     queryOptions.where.created_by_id = createdById
   }
@@ -73,7 +74,8 @@ async function timeAggregatedQuery (start, end, streamId, createdById, timeInter
 function create (annotation) {
   const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId } = annotation
   return models.Annotation.create({
-    start, end,
+    start,
+    end,
     stream_id: streamId,
     classification_id: classificationId,
     frequency_min: frequencyMin,
@@ -114,9 +116,14 @@ function update (annotationId, start, end, classificationId, frequencyMin, frequ
     return models.sequelize.transaction(transaction => {
       return annotation.destroy({ transaction }).then(() => {
         return models.Annotation.create({
-          ...annotation.toJSON(), classification_id: classificationId,
-          start, end, frequency_min: frequencyMin, frequency_max: frequencyMax,
-          updated_by_id: userId, updated_at: new Date
+          ...annotation.toJSON(),
+          classification_id: classificationId,
+          start,
+          end,
+          frequency_min: frequencyMin,
+          frequency_max: frequencyMax,
+          updated_by_id: userId,
+          updated_at: new Date()
         }, { transaction, silent: true })
       })
     })

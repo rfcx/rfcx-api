@@ -1,8 +1,8 @@
-var Conversion = require("./conversion")
-var ValidationError = require("./validation-error")
+var Conversion = require('./conversion')
+var ValidationError = require('./validation-error')
 
 module.exports = class ArrayConverter {
-  constructor(sourceArray) {
+  constructor (sourceArray) {
     this.sourceArray = sourceArray
     this.transformedArray = []
     this.conversions = []
@@ -16,16 +16,15 @@ module.exports = class ArrayConverter {
 
   validate () {
     return new Promise((resolve, reject) => {
-      let exceptions = []
+      const exceptions = []
       for (const item of this.sourceArray) {
-        let target = item
+        const target = item
         for (const conversion of this.conversions) {
           conversion.src = target
           conversion.target = target
           try {
             conversion.execute()
-          }
-          catch (e) {
+          } catch (e) {
             if (!exceptions.includes(e.message)) {
               exceptions.push(e.message)
             }
@@ -35,9 +34,8 @@ module.exports = class ArrayConverter {
       }
       if (exceptions.length === 0) {
         resolve(this.transformedArray)
-      }
-      else {
-        reject(new ValidationError(`Validation errors: ${exceptions.join("; ")}.`))
+      } else {
+        reject(new ValidationError(`Validation errors: ${exceptions.join('; ')}.`))
       }
     })
   }

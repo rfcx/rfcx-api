@@ -1,9 +1,9 @@
-"use strict";
+'use strict'
 
-module.exports = function(sequelize, DataTypes) {
-  var UserSiteRelation = sequelize.define("UserSiteRelation", {}, {
-    tableName: "UserSiteRelations"
-  });
+module.exports = function (sequelize, DataTypes) {
+  var UserSiteRelation = sequelize.define('UserSiteRelation', {}, {
+    tableName: 'UserSiteRelations'
+  })
 
-  return UserSiteRelation;
-};
+  return UserSiteRelation
+}

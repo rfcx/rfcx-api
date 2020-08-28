@@ -1,8 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = {
-  up: function(migration, DataTypes, done) {
-
+  up: function (migration, DataTypes, done) {
     migration.addColumn(
       'RegistrationTokens',
       'total_redemptions',
@@ -15,19 +14,14 @@ module.exports = {
           min: 0
         }
       }
-    );
+    )
 
-    done();
-    
+    done()
   },
 
-  down: function(migration, DataTypes, done) {
+  down: function (migration, DataTypes, done) {
+    migration.removeColumn('RegistrationTokens', 'total_redemptions')
 
-    migration.removeColumn("RegistrationTokens", 'total_redemptions');
-
-    done();
-
+    done()
   }
-};
-
-
+}

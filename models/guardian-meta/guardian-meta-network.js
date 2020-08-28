@@ -1,11 +1,11 @@
-'use strict';
-module.exports = function(sequelize, DataTypes) {
+'use strict'
+module.exports = function (sequelize, DataTypes) {
   var GuardianMetaNetwork = sequelize.define('GuardianMetaNetwork', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
         isDate: {
-          msg: "measured_at for GuardianMetaNetwork should have type Date"
+          msg: 'measured_at for GuardianMetaNetwork should have type Date'
         }
       }
     },
@@ -29,8 +29,8 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: "GuardianMetaNetwork"
-  });
+    tableName: 'GuardianMetaNetwork'
+  })
 
-  return GuardianMetaNetwork;
-};
+  return GuardianMetaNetwork
+}

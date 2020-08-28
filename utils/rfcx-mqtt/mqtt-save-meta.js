@@ -1,48 +1,45 @@
-var models  = require("../../models");
+var models = require('../../models')
 
 exports.saveMeta = {
 
-  CPU: function(metaCPU, guardianId, checkInId) {
+  CPU: function (metaCPU, guardianId, checkInId) {
+    var dbMetaCPU = []
 
-    var dbMetaCPU = [];
-
-    for (cpuInd in metaCPU) {
+    for (const cpuInd in metaCPU) {
       dbMetaCPU.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
         measured_at: new Date(parseInt(metaCPU[cpuInd][0])),
         cpu_percent: parseInt(metaCPU[cpuInd][1]),
         cpu_clock: parseInt(metaCPU[cpuInd][2])
-      });
+      })
     }
 
-    return models.GuardianMetaCPU.bulkCreate(dbMetaCPU);
+    return models.GuardianMetaCPU.bulkCreate(dbMetaCPU)
   },
 
-  Battery: function(metaBattery, guardianId, checkInId) {
+  Battery: function (metaBattery, guardianId, checkInId) {
+    var dbMetaBattery = []
 
-    var dbMetaBattery = [];
-
-    for (battInd in metaBattery) {
+    for (const battInd in metaBattery) {
       dbMetaBattery.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
         measured_at: new Date(parseInt(metaBattery[battInd][0])),
         battery_percent: parseInt(metaBattery[battInd][1]),
         battery_temperature: parseInt(metaBattery[battInd][2]),
-        is_charging: (metaBattery[battInd][3] === "1") ? true : ( (metaBattery[battInd][3] === "0") ? false : null ),
-        is_fully_charged: (metaBattery[battInd][4] === "1") ? true : ( (metaBattery[battInd][4] === "0") ? false : null )
-      });
+        is_charging: (metaBattery[battInd][3] === '1') ? true : ((metaBattery[battInd][3] === '0') ? false : null),
+        is_fully_charged: (metaBattery[battInd][4] === '1') ? true : ((metaBattery[battInd][4] === '0') ? false : null)
+      })
     }
 
-    return models.GuardianMetaBattery.bulkCreate(dbMetaBattery);
+    return models.GuardianMetaBattery.bulkCreate(dbMetaBattery)
   },
 
-  Network: function(metaNetwork, guardianId, checkInId) {
+  Network: function (metaNetwork, guardianId, checkInId) {
+    var dbMetaNetwork = []
 
-    var dbMetaNetwork = [];
-
-    for (ntwkInd in metaNetwork) {
+    for (const ntwkInd in metaNetwork) {
       dbMetaNetwork.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
@@ -50,17 +47,16 @@ exports.saveMeta = {
         signal_strength: parseInt(metaNetwork[ntwkInd][1]),
         network_type: metaNetwork[ntwkInd][2],
         carrier_name: metaNetwork[ntwkInd][3]
-      });
+      })
     }
 
-    return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork);
+    return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork)
   },
 
-  DataTransfer: function(metaDataTransfer, guardianId, checkInId) {
+  DataTransfer: function (metaDataTransfer, guardianId, checkInId) {
+    var dbMetaDataTransfer = []
 
-    var dbMetaDataTransfer = [];
-
-    for (dtInd in metaDataTransfer) {
+    for (const dtInd in metaDataTransfer) {
       dbMetaDataTransfer.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
@@ -70,34 +66,32 @@ exports.saveMeta = {
         bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
         total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
         total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
-      });
+      })
     }
 
-    return models.GuardianMetaDataTransfer.bulkCreate(dbMetaDataTransfer);
+    return models.GuardianMetaDataTransfer.bulkCreate(dbMetaDataTransfer)
   },
 
-  LightMeter: function(metaLightMeter, guardianId, checkInId) {
+  LightMeter: function (metaLightMeter, guardianId, checkInId) {
+    var dbMetaLightMeter = []
 
-    var dbMetaLightMeter = [];
-
-    for (lmInd in metaLightMeter) {
+    for (const lmInd in metaLightMeter) {
       dbMetaLightMeter.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
         measured_at: new Date(parseInt(metaLightMeter[lmInd][0])),
         luminosity: parseInt(metaLightMeter[lmInd][1])
-      });
+      })
     }
 
-    return models.GuardianMetaLightMeter.bulkCreate(dbMetaLightMeter);
+    return models.GuardianMetaLightMeter.bulkCreate(dbMetaLightMeter)
   },
 
-  Accelerometer: function(metaAccelerometer, guardianId, checkInId) {
+  Accelerometer: function (metaAccelerometer, guardianId, checkInId) {
+    var dbMetaAccelerometer = []
 
-    var dbMetaAccelerometer = [];
-
-    for (acInd in metaAccelerometer) {
-      var xyzVals = metaAccelerometer[acInd][1].split(",");
+    for (const acInd in metaAccelerometer) {
+      var xyzVals = metaAccelerometer[acInd][1].split(',')
       dbMetaAccelerometer.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
@@ -106,117 +100,109 @@ exports.saveMeta = {
         y: parseFloat(xyzVals[1]),
         z: parseFloat(xyzVals[2]),
         sample_count: parseInt(metaAccelerometer[acInd][2])
-      });
+      })
     }
 
-    return models.GuardianMetaAccelerometer.bulkCreate(dbMetaAccelerometer);
+    return models.GuardianMetaAccelerometer.bulkCreate(dbMetaAccelerometer)
   },
 
-  GeoPosition: function(metaPosition, guardianId, checkInId) {
+  GeoPosition: function (metaPosition, guardianId, checkInId) {
+    var dbMetaGeoPosition = []
 
-    var dbMetaGeoPosition = [];
-
-    for (locInd in metaPosition) {
+    for (const locInd in metaPosition) {
       if (metaPosition[locInd][1] != null) {
-        var latLng = metaPosition[locInd][1].split(",");
-        var accAlt = metaPosition[locInd][2].split(",");
+        var latLng = metaPosition[locInd][1].split(',')
+        var accAlt = metaPosition[locInd][2].split(',')
         dbMetaGeoPosition.push({
-            guardian_id: guardianId,
-            check_in_id: checkInId,
-            measured_at: new Date(parseInt(metaPosition[locInd][0])),
-            latitude: parseFloat(latLng[0]),
-            longitude: parseFloat(latLng[1]),
-            accuracy: parseInt(accAlt[0]),
-            altitude: parseInt(accAlt[1])
-        });
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(metaPosition[locInd][0])),
+          latitude: parseFloat(latLng[0]),
+          longitude: parseFloat(latLng[1]),
+          accuracy: parseInt(accAlt[0]),
+          altitude: parseInt(accAlt[1])
+        })
       }
     }
 
-    return models.GuardianMetaGeoPosition.bulkCreate(dbMetaGeoPosition);
+    return models.GuardianMetaGeoPosition.bulkCreate(dbMetaGeoPosition)
   },
 
-  Hardware: function(metaHardware, guardianId) {
+  Hardware: function (metaHardware, guardianId) {
+    return models.GuardianMetaHardware
+      .findOrCreate({
+        where: { guardian_id: guardianId }
+      })
+      .spread((dbMetaHardware, wasCreated) => {
+        if (metaHardware.hardware != null) {
+          dbMetaHardware.manufacturer = metaHardware.hardware.manufacturer
+          dbMetaHardware.model = metaHardware.hardware.model
+          dbMetaHardware.brand = metaHardware.hardware.brand
+          dbMetaHardware.product = metaHardware.hardware.product
+          dbMetaHardware.android_version = metaHardware.hardware.android
+        }
 
-      return models.GuardianMetaHardware
-        .findOrCreate({
-          where: { guardian_id: guardianId }
-        })
-        .spread((dbMetaHardware, wasCreated) => {
+        if (metaHardware.phone != null) {
+          dbMetaHardware.phone_imsi = (metaHardware.phone.imsi != null) ? metaHardware.phone.imsi : null
+          dbMetaHardware.phone_imei = (metaHardware.phone.imei != null) ? metaHardware.phone.imei : null
+          dbMetaHardware.phone_sim_serial = (metaHardware.phone.sim != null) ? metaHardware.phone.sim : null
+          dbMetaHardware.phone_sim_number = (metaHardware.phone.number != null) ? metaHardware.phone.number : null
+          dbMetaHardware.phone_sim_carrier = (metaHardware.phone.carrier != null) ? metaHardware.phone.carrier : null
+        }
 
-          if (metaHardware.hardware != null) {
-            dbMetaHardware.manufacturer = metaHardware.hardware.manufacturer;
-            dbMetaHardware.model = metaHardware.hardware.model;
-            dbMetaHardware.brand = metaHardware.hardware.brand;
-            dbMetaHardware.product = metaHardware.hardware.product;
-            dbMetaHardware.android_version = metaHardware.hardware.android;
-          }
-
-          if (metaHardware.phone != null) {
-            dbMetaHardware.phone_imsi = (metaHardware.phone.imsi != null) ? metaHardware.phone.imsi : null;
-            dbMetaHardware.phone_imei = (metaHardware.phone.imei != null) ? metaHardware.phone.imei : null;
-            dbMetaHardware.phone_sim_serial = (metaHardware.phone.sim != null) ? metaHardware.phone.sim : null;
-            dbMetaHardware.phone_sim_number = (metaHardware.phone.number != null) ? metaHardware.phone.number : null;
-            dbMetaHardware.phone_sim_carrier = (metaHardware.phone.carrier != null) ? metaHardware.phone.carrier : null;
-          }
-
-          dbMetaHardware.updated_at = new Date();
-          return dbMetaHardware.save();
-
-        });
-
+        dbMetaHardware.updated_at = new Date()
+        return dbMetaHardware.save()
+      })
   },
 
-  DateTimeOffset: function(metaDateTimeOffset, guardianId, checkInId) {
+  DateTimeOffset: function (metaDateTimeOffset, guardianId, checkInId) {
+    var dbMetaDateTimeOffset = []
 
-    var dbMetaDateTimeOffset = [];
-
-    for (dtoInd in metaDateTimeOffset) {
+    for (const dtoInd in metaDateTimeOffset) {
       if (metaDateTimeOffset[dtoInd][2] != null) {
         dbMetaDateTimeOffset.push({
-            guardian_id: guardianId,
-            check_in_id: checkInId,
-            measured_at: new Date(parseInt(metaDateTimeOffset[dtoInd][0])),
-            source: metaDateTimeOffset[dtoInd][1],
-            system_clock_offset: parseInt(metaDateTimeOffset[dtoInd][2])
-        });
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(metaDateTimeOffset[dtoInd][0])),
+          source: metaDateTimeOffset[dtoInd][1],
+          system_clock_offset: parseInt(metaDateTimeOffset[dtoInd][2])
+        })
       }
     }
 
-    return models.GuardianMetaDateTimeOffset.bulkCreate(dbMetaDateTimeOffset);
+    return models.GuardianMetaDateTimeOffset.bulkCreate(dbMetaDateTimeOffset)
   },
 
-  MqttBrokerConnection: function(metaBrokerConnection, guardianId, checkInId) {
+  MqttBrokerConnection: function (metaBrokerConnection, guardianId, checkInId) {
+    var dbMetaBrokerConnection = []
 
-    var dbMetaBrokerConnection = [];
-
-    for (brkrInd in metaBrokerConnection) {
+    for (const brkrInd in metaBrokerConnection) {
       if (metaBrokerConnection[brkrInd][3] != null) {
         dbMetaBrokerConnection.push({
-            guardian_id: guardianId,
-            check_in_id: checkInId,
-            connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
-            connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
-            subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
-            broker_uri: metaBrokerConnection[brkrInd][3]
-        });
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
+          connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
+          subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
+          broker_uri: metaBrokerConnection[brkrInd][3]
+        })
       }
     }
 
-    return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection);
+    return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection)
   },
 
-  DiskUsage: function(metaDiskUsage, guardianId, checkInId) {
-
-    var diskUsage = { internal: {}, external: {} };
-    for (duInd in metaDiskUsage) {
+  DiskUsage: function (metaDiskUsage, guardianId, checkInId) {
+    var diskUsage = { internal: {}, external: {} }
+    for (const duInd in metaDiskUsage) {
       diskUsage[metaDiskUsage[duInd][0]] = {
         measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
         used: parseInt(metaDiskUsage[duInd][2]),
         available: parseInt(metaDiskUsage[duInd][3])
-      };
+      }
     }
 
-    let opts = {
+    const opts = {
       guardian_id: guardianId,
       check_in_id: checkInId,
       measured_at: diskUsage.internal.measured_at,
@@ -224,142 +210,187 @@ exports.saveMeta = {
       internal_bytes_used: diskUsage.internal.used,
       external_bytes_available: diskUsage.external.available,
       external_bytes_used: diskUsage.external.used
-    };
-
-    return models.GuardianMetaDiskUsage.create(opts);
-  },
-
-  // SentinelPower: function(metaSntnlPwr, guardianId, checkInId) {
-
-  //   var sntnlPwr = { internal: {}, external: {} };
-  //   for (duInd in metaSntnlPwr) {
-  //     sntnlPwr[metaSntnlPwr[duInd][0]] = {
-  //       measured_at: new Date(parseInt(metaSntnlPwr[duInd][1])),
-  //       used: parseInt(metaSntnlPwr[duInd][2]),
-  //       available: parseInt(metaSntnlPwr[duInd][3])
-  //     };
-  //   }
-
-  //   let opts = {
-  //     guardian_id: guardianId,
-  //     check_in_id: checkInId,
-  //     measured_at: sntnlPwr.internal.measured_at,
-  //     internal_bytes_available: sntnlPwr.internal.available,
-  //     internal_bytes_used: sntnlPwr.internal.used,
-  //     external_bytes_available: sntnlPwr.external.available,
-  //     external_bytes_used: sntnlPwr.external.used
-  //   };
-
-
-  //   var dbMetaBrokerConnection = [];
-
-  //   for (brkrInd in metaBrokerConnection) {
-  //     if (metaBrokerConnection[brkrInd][3] != null) {
-  //       dbMetaBrokerConnection.push({
-  //           guardian_id: guardianId,
-  //           check_in_id: checkInId,
-  //           connected_at: new Date(parseInt(metaBrokerConnection[brkrInd][0])),
-  //           connection_latency: parseInt(metaBrokerConnection[brkrInd][1]),
-  //           subscription_latency: parseInt(metaBrokerConnection[brkrInd][2]),
-  //           broker_uri: metaBrokerConnection[brkrInd][3]
-  //       });
-  //     }
-  //   }
-
-  //   return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection);
-  // },
-
-  CheckInStatus: function(metaCheckInStatus, guardianId, measuredAt) {
-
-    var dbMetaCheckInStatus = [],
-        dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) };
-
-    for (vInd in metaCheckInStatus) {
-      dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0]+"_count"] = parseInt(metaCheckInStatus[vInd][1]);
     }
-    dbMetaCheckInStatus.push(dbMetaCheckInStatusObj);
 
-    return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus);
+    return models.GuardianMetaDiskUsage.create(opts)
   },
 
-  PreviousCheckIns: function(previousCheckIns) {
-    for (prvChkInInd in previousCheckIns) {
+  SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
+    var sntnlPwrEntries = { }
+
+    for (const duInd in metaSntnlPwr) {
+      var sysInpBatt = metaSntnlPwr[duInd][0] + ''
+      var timeStamp = metaSntnlPwr[duInd][1] + ''
+
+      if (sntnlPwrEntries[timeStamp] == null) {
+        sntnlPwrEntries[timeStamp] = {
+          temperature: null,
+          system: { voltage: null, current: null, power: null },
+          input: { voltage: null, current: null, power: null },
+          battery: { voltage: null, current: null, power: null }
+        }
+      }
+
+      sntnlPwrEntries[timeStamp][sysInpBatt].voltage = parseInt(metaSntnlPwr[duInd][2])
+      sntnlPwrEntries[timeStamp][sysInpBatt].current = parseInt(metaSntnlPwr[duInd][3])
+      sntnlPwrEntries[timeStamp][sysInpBatt].power = parseInt(metaSntnlPwr[duInd][5])
+
+      if ((sysInpBatt === 'system') && (parseInt(metaSntnlPwr[duInd][4]) > 0)) {
+        sntnlPwrEntries[timeStamp].temperature = parseInt(metaSntnlPwr[duInd][4])
+      }
+    }
+
+    var dbMetaSentinelPower = []
+
+    for (const sntPwrInd in sntnlPwrEntries) {
+      if (parseInt(sntPwrInd) > 0) {
+        dbMetaSentinelPower.push({
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(sntPwrInd)),
+          system_temperature: sntnlPwrEntries[sntPwrInd].temperature,
+          system_voltage: sntnlPwrEntries[sntPwrInd].system.voltage,
+          system_current: sntnlPwrEntries[sntPwrInd].system.current,
+          system_power: sntnlPwrEntries[sntPwrInd].system.power,
+          input_voltage: sntnlPwrEntries[sntPwrInd].input.voltage,
+          input_current: sntnlPwrEntries[sntPwrInd].input.current,
+          input_power: sntnlPwrEntries[sntPwrInd].input.power,
+          battery_voltage: sntnlPwrEntries[sntPwrInd].battery.voltage,
+          battery_current: sntnlPwrEntries[sntPwrInd].battery.current,
+          battery_power: sntnlPwrEntries[sntPwrInd].battery.power
+        })
+      }
+    }
+
+    return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower)
+  },
+
+  SentinelSensor: function (metaSntnlSnsr, sensorTag, guardianId, checkInId) {
+    var dbMetaSentinelSensor = []
+
+    for (const sntInd in metaSntnlSnsr) {
+      if (metaSntnlSnsr[sntInd][0] === sensorTag) {
+        if (sensorTag === 'compass') {
+          dbMetaSentinelSensor.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaSntnlSnsr[sntInd][1])),
+            x_mag_field: parseInt(metaSntnlSnsr[sntInd][2]),
+            y_mag_field: parseInt(metaSntnlSnsr[sntInd][3]),
+            z_mag_field: parseInt(metaSntnlSnsr[sntInd][4]),
+            sample_count: (parseInt(metaSntnlSnsr[sntInd][5]) < 1) ? 1 : parseInt(metaSntnlSnsr[sntInd][5])
+          })
+        } else if (sensorTag === 'accelerometer') {
+          dbMetaSentinelSensor.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: new Date(parseInt(metaSntnlSnsr[sntInd][1])),
+            x_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][2]),
+            y_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][3]),
+            z_milli_g_force_accel: parseInt(metaSntnlSnsr[sntInd][4]),
+            sample_count: (parseInt(metaSntnlSnsr[sntInd][5]) < 1) ? 1 : parseInt(metaSntnlSnsr[sntInd][5])
+          })
+        }
+      }
+    }
+
+    if (sensorTag === 'compass') {
+      return models.GuardianMetaSentinelCompass.bulkCreate(dbMetaSentinelSensor)
+    } else if (sensorTag === 'accelerometer') {
+      return models.GuardianMetaSentinelAccelerometer.bulkCreate(dbMetaSentinelSensor)
+    } else {
+      return models.GuardianMetaSentinelAccelerometer.bulkCreate([])
+    }
+  },
+
+  CheckInStatus: function (metaCheckInStatus, guardianId, measuredAt) {
+    var dbMetaCheckInStatus = []
+    var dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) }
+
+    for (const vInd in metaCheckInStatus) {
+      dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_count'] = parseInt(metaCheckInStatus[vInd][1])
+    }
+    dbMetaCheckInStatus.push(dbMetaCheckInStatusObj)
+
+    return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus)
+  },
+
+  PreviousCheckIns: function (previousCheckIns) {
+    for (const prvChkInInd in previousCheckIns) {
       models.GuardianCheckIn
         .findOne({
           where: { guid: previousCheckIns[prvChkInInd][0] }
         })
         .then((dbPreviousCheckIn) => {
           if (!dbPreviousCheckIn) {
-            return Promise.reject(`Couldn't find previous checkin with guid "${previousCheckIns[prvChkInInd][0]}".`)
+            return Promise.reject(`Couldn't find previous checkin with guid "${previousCheckIns[prvChkInInd][0]}".`) // eslint-disable-line prefer-promise-reject-errors
           }
-          dbPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1];
-          return dbPreviousCheckIn.save();
-        });
+          dbPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1]
+          return dbPreviousCheckIn.save()
+        })
     }
   },
 
-  RebootEvents: function(rebootEvents, guardianId, checkInId) {
+  RebootEvents: function (rebootEvents, guardianId, checkInId) {
+    var dbMetaRebootEvents = []
 
-    var dbMetaRebootEvents = [];
-
-    for (rebootEvntInd in rebootEvents) {
+    for (const rebootEvntInd in rebootEvents) {
       dbMetaRebootEvents.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
         completed_at: new Date(parseInt(rebootEvents[rebootEvntInd][0]))
-      });
+      })
     }
 
-    return models.GuardianMetaReboot.bulkCreate(dbMetaRebootEvents);
+    return models.GuardianMetaReboot.bulkCreate(dbMetaRebootEvents)
   },
 
-  SoftwareRoleVersion: function(roleArr, guardianId) {
-    var roleVersions = {};
-    let proms = [];
-    for (vInd in roleArr) {
-      roleVersions[roleArr[vInd][0]] = roleArr[vInd][1];
-      let prom = models.GuardianSoftware
+  SoftwareRoleVersion: function (roleArr, guardianId) {
+    var roleVersions = {}
+    const proms = []
+    for (const vInd in roleArr) {
+      roleVersions[roleArr[vInd][0]] = roleArr[vInd][1]
+      const prom = models.GuardianSoftware
         .findOne({
           where: { role: roleArr[vInd][0] }
         })
         .then((dbSoftwareRole) => {
           if (!dbSoftwareRole) {
-            return Promise.reject(`Role "${roleArr[vInd][0]}" was not found.`);
+            return Promise.reject(`Role "${roleArr[vInd][0]}" was not found.`) // eslint-disable-line prefer-promise-reject-errors
           }
           return models.GuardianSoftwareVersion
             .findAll({
               where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] },
-              order: [ ["created_at", "DESC"] ],
+              order: [['created_at', 'DESC']],
               limit: 1
-          })
-          .then((dbSoftwareRoleVersion) => {
-            if (dbSoftwareRoleVersion.length < 1) {
-              let opts = { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] };
-              return models.GuardianSoftwareVersion
-              .findOrCreate({
-                where: opts,
-                defaults: opts
-              })
-              .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
-                dbSoftwareRoleVersionInsertion.updated_at = new Date();
-                return dbSoftwareRoleVersionInsertion.save();
-              });
-            } else {
-              return models.GuardianMetaSoftwareVersion
-                .findOrCreate({
-                  where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
-                })
-                .spread((dbMetaSoftware, wasCreated) => {
-                  dbMetaSoftware.updated_at = new Date();
-                  return dbMetaSoftware.save();
-                });
-            }
-          })
+            })
+            .then((dbSoftwareRoleVersion) => {
+              if (dbSoftwareRoleVersion.length < 1) {
+                const opts = { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] }
+                return models.GuardianSoftwareVersion
+                  .findOrCreate({
+                    where: opts,
+                    defaults: opts
+                  })
+                  .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
+                    dbSoftwareRoleVersionInsertion.updated_at = new Date()
+                    return dbSoftwareRoleVersionInsertion.save()
+                  })
+              } else {
+                return models.GuardianMetaSoftwareVersion
+                  .findOrCreate({
+                    where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
+                  })
+                  .spread((dbMetaSoftware, wasCreated) => {
+                    dbMetaSoftware.updated_at = new Date()
+                    return dbMetaSoftware.save()
+                  })
+              }
+            })
         })
-        proms.push(prom);
+      proms.push(prom)
     }
-    return Promise.all(proms);
+    return Promise.all(proms)
   }
 
-};
-
+}
