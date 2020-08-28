@@ -16,14 +16,9 @@
 */
 
 var winston = require('winston')
-var CloudWatchTransport = require('winston-aws-cloudwatch')
-
 var logLevel = determineLogLevel()
-var groupName = process.env.CLOUDWATCH_LOGS_GROUP_NAME || 'rfcx-api'
-// process.env.CLOUDWATCH_ENABLED has string type
-var cloudWatchEnabled = process.env.CLOUDWATCH_ENABLED ? process.env.CLOUDWATCH_ENABLED.toString() === 'true' : false
 
-winston.emitErrs = true
+// winston.emitErrs = true
 winston.level = logLevel
 
 // winston ignores error objects (WTF?!), so we need to reformat them to stay tuned
@@ -32,28 +27,6 @@ function errorAsJSON (e) {
     message: e.message,
     stack: e.stack
   }
-}
-
-/**
- * Creates Winston CloudWatchLogs transport with given logGroupName and logStreamName
- * @param {String} logGroupName
- * @param {String} logStreamName
- * @returns {Object} CloudWatchTransport
- */
-function createCloudWatchTransport (logGroupName, logStreamName) {
-  var cloudwatchBaseOpts = {
-    createLogGroup: true,
-    createLogStream: true,
-    awsConfig: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_KEY,
-      region: process.env.AWS_REGION_ID
-    }
-  }
-  return new CloudWatchTransport(Object.assign({}, cloudwatchBaseOpts, {
-    logGroupName: logGroupName,
-    logStreamName: logStreamName
-  }))
 }
 
 /**
@@ -110,8 +83,8 @@ function createLoggerWrapper (winstonLogger, type) {
 }
 
 /**
- * Creates new Winston looger with Console and CloudWatchLogs transports.
- * @param {String} type - logger's internal type; also stream name for CloudWatch Logs transport
+ * Creates new Winston looger with Console transport.
+ * @param {String} type - logger's internal type
  */
 function createLogger (type) {
   var transports = [
@@ -121,12 +94,6 @@ function createLogger (type) {
     })
   ]
   var exceptionHandlers = []
-  if (cloudWatchEnabled) {
-    transports.push(createCloudWatchTransport(groupName, type))
-    if (type === 'requests') {
-      exceptionHandlers.push(createCloudWatchTransport(groupName, 'unhandled-errors'))
-    }
-  }
   var opts = {
     level: logLevel,
     transports: transports,
@@ -134,9 +101,9 @@ function createLogger (type) {
   }
   if (type === 'requests') {
     opts.exceptionHandlers = exceptionHandlers
-    return new winston.Logger(opts)
+    return winston.createLogger(opts)
   } else {
-    var winstonLogger = new winston.Logger(opts)
+    var winstonLogger = winston.createLogger(opts)
     return createLoggerWrapper(winstonLogger, type)
   }
 }
