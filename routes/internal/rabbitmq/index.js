@@ -17,7 +17,7 @@ const guardianAuthService = require('../../../services/guardians/authentication'
  *           schema:
  *             type: object
  *             properties:
- *               guid:
+ *               username:
  *                 type: string
  *               password:
  *                 type: string
@@ -36,12 +36,12 @@ const guardianAuthService = require('../../../services/guardians/authentication'
 router.post('/authenticate', (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
-  params.convert('guid').toString()
+  params.convert('username').toString()
   params.convert('password').toString()
 
   return params.validate()
     .then(async () => {
-      const isTokenCorrect = await guardianAuthService.isTokenCorrect(convertedParams.guid, convertedParams.password)
+      const isTokenCorrect = await guardianAuthService.isTokenCorrect(convertedParams.username, convertedParams.password)
       return res.send(isTokenCorrect ? 'allow' : 'deny')
     })
     .catch(() => res.send('deny'))
