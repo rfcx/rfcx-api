@@ -241,16 +241,15 @@ exports.checkInDatabase = {
   },
 
   syncGuardianPrefs: function (checkInObj) {
-
-    var prefsReturnArray = []; 
+    var prefsReturnArray = []
 
     if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: '', vals: {} } }
     if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = '' }
     if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {} }
 
-    var prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' };
-    var prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }; ; 
-    for (prefKey in prefsJson.vals) { prefsJson.cnt++; }
+    var prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' }
+    var prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }
+    for (const prefKey in prefsJson.vals) { prefsJson.cnt++ } // eslint-disable-line no-unused-vars
 
     // retrieve, sort and take checksum of prefs rows for this guardian in the database
     return models.GuardianSoftwarePrefs.findAll({
@@ -265,30 +264,28 @@ exports.checkInDatabase = {
       }
       prefsDb.blobForSha1 = prefsBlobArr.join('|')
       prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
-      
-      let prefsFindOrCreatePromises = [];
+
+      const prefsFindOrCreatePromises = []
       if ((prefsJson.sha1 !== prefsDb.sha1) && (prefsJson.sha1 !== '')) {
-        prefsReturnArray = [{ sha1: prefsDb.sha1 }];
+        prefsReturnArray = [{ sha1: prefsDb.sha1 }]
 
         if (prefsJson.cnt > 0) {
-
           return models.GuardianSoftwarePrefs.destroy({
             where: { guardian_id: checkInObj.db.dbGuardian.id }
-            }).then(() => {
-              for (prefKey in prefsJson.vals) {
-                let prom = models.GuardianSoftwarePrefs.findOrCreate({
-                  where: {
-                    guardian_id: checkInObj.db.dbGuardian.id,
-                    pref_key: prefKey,
-                    pref_value: prefsJson.vals[prefKey]
-                  }
-                });
-                prefsFindOrCreatePromises.push(prom);
-              }
+          }).then(() => {
+            for (const prefKey in prefsJson.vals) {
+              const prom = models.GuardianSoftwarePrefs.findOrCreate({
+                where: {
+                  guardian_id: checkInObj.db.dbGuardian.id,
+                  pref_key: prefKey,
+                  pref_value: prefsJson.vals[prefKey]
+                }
+              })
+              prefsFindOrCreatePromises.push(prom)
+            }
 
-              return Promise.all(prefsFindOrCreatePromises)
+            return Promise.all(prefsFindOrCreatePromises)
               .then(() => {
-
                 return models.GuardianSoftwarePrefs.findAll({
                   where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
                 }).then((dbPrefs) => {
@@ -301,21 +298,18 @@ exports.checkInDatabase = {
                   }
                   prefsDb.blobForSha1 = prefsBlobArr.join('|')
                   prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
-                  prefsReturnArray = [{ sha1: prefsDb.sha1 }];
+                  prefsReturnArray = [{ sha1: prefsDb.sha1 }]
                 }).then(() => {
-                  return Promise.all(prefsFindOrCreatePromises);
-                });
-
-              });
-          });
+                  return Promise.all(prefsFindOrCreatePromises)
+                })
+              })
+          })
         }
       } else if (prefsJson.cnt > 0) {
-        prefsReturnArray = [{ sha1: prefsDb.sha1 }];
+        prefsReturnArray = [{ sha1: prefsDb.sha1 }]
       }
-
     }).then(() => {
-
-      checkInObj.rtrn.obj.prefs = prefsReturnArray;
+      checkInObj.rtrn.obj.prefs = prefsReturnArray
       return checkInObj
     })
   },
