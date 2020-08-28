@@ -47,4 +47,16 @@ router.post('/authenticate', (req, res) => {
     .catch(() => res.send('deny'))
 })
 
+router.post('/vhost_path', (req, res) => {
+  return res.send('allow')
+})
+
+router.post('/resource_path', (req, res) => {
+  return res.send('allow')
+})
+
+router.post('/topic_path', (req, res) => {
+  return res.send('allow')
+})
+
 module.exports = router
