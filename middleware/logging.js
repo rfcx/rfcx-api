@@ -1,3 +1,4 @@
+const winston = require('winston')
 const expressWinston = require('express-winston')
 const loggers = require('../utils/logger')
 
@@ -6,6 +7,10 @@ module.exports = expressWinston.logger({
   expressFormat: true,
   level: 'info',
   requestWhitelist: ['guid', 'instance', 'url', 'headers', 'method', 'httpVersion', 'originalUrl', 'query', 'body', 'files'],
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.json()
+  ),
   requestFilter: function (req, propName) {
     if (propName === 'headers') {
       // remove user token from logging for security reasons
