@@ -77,11 +77,7 @@ exports.checkInDatabase = {
         guardian_id: checkInObj.db.dbGuardian.id,
         site_id: checkInObj.db.dbGuardian.site_id,
         measured_at: new Date(parseInt(checkInObj.json.measured_at)),
-        queued_at: new Date(parseInt(checkInObj.json.queued_at)),
-        guardian_queued_checkins: parseInt(checkInObj.json.queued_checkins),
-        guardian_skipped_checkins: parseInt(checkInObj.json.skipped_checkins),
-        guardian_stashed_checkins: parseInt(checkInObj.json.stashed_checkins),
-        is_certified: checkInObj.db.dbGuardian.is_certified
+        queued_at: new Date(parseInt(checkInObj.json.queued_at))
       }
     } catch (e) {
       return Promise.reject(e)
@@ -310,7 +306,7 @@ exports.checkInDatabase = {
           });
         }
       } else if (prefsJson.cnt > 0) {
-        
+
         prefsReturnArray = [{ sha1: prefsDb.sha1 }];
       }
 
