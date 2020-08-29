@@ -43,11 +43,12 @@ module.exports = function (sequelize, DataTypes) {
         min: 0
       }
     },
-    timezone_offset_minutes: {
+    request_size: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
-        isInt: true
+        isInt: true,
+        min: 0
       }
     }
   }, {
