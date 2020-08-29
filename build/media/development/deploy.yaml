@@ -67,8 +67,6 @@ spec:
               value: "http://localhost:5555/#/"
             - name: NODE_LOG_LEVEL
               value: "info"
-            - name: CLOUDWATCH_ENABLED
-              value: "false"
             - name: NEW_RELIC_KEY
               value: ""
             - name: MANDRILL_KEY
@@ -80,8 +78,6 @@ spec:
             - name: MAILCHIMP_APP_WAITING_LIST
               value: ""
             - name: MEDIA_API_BASE_URL
-              value: ""
-            - name: CLOUDWATCH_LOGS_GROUP_NAME
               value: ""
             - name: MQTT_BROKER_HOST
               value: ""

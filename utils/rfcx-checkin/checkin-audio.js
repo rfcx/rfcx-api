@@ -291,8 +291,6 @@ exports.audio = {
   },
 
   queueForTaggingByActiveV3Models: function (audioInfo, dbGuardian) {
-    console.log('\n\nqueueForTaggingByActiveV3Models', audioInfo.audio_guid, dbGuardian.guid, '\n\n')
-
     return aiService.getPublicAis({ isActive: true })
       .then((ais) => {
         return ais.filter((ai) => {
@@ -300,7 +298,6 @@ exports.audio = {
         })
       })
       .then((ais) => {
-        console.log('\n\nais length', audioInfo.audio_guid, dbGuardian.guid, ais.length, '\n\n')
         const promises = []
         ais.forEach((ai) => {
           const name = aiService.combineTopicQueueNameForGuid(ai.guid)
