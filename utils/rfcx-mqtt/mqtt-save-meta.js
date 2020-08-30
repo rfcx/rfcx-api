@@ -265,7 +265,7 @@ exports.saveMeta = {
     return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower)
   },
 
-  SentinelSensor: function (metaSntnlSnsr, sensorTag, guardianId, checkInId) {
+  SentinelSensor: function (sensorTag, metaSntnlSnsr, guardianId, checkInId) {
     var dbMetaSentinelSensor = []
 
     for (const sntInd in metaSntnlSnsr) {
