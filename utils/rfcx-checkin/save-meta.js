@@ -244,23 +244,25 @@ exports.saveMeta = {
         .findOne({
           where: { role: roleArr[vInd][0] }
         }).then(function (dbSoftwareRole) {
-          models.GuardianSoftwareVersion
+          if (!dbSoftwareRole) {
+            return true
+          }
+          return models.GuardianSoftwareVersion
             .findAll({
               where: { software_role_id: dbSoftwareRole.id, version: roleVersions[dbSoftwareRole.role] },
               order: [['created_at', 'DESC']],
               limit: 1
             }).then(function (dbSoftwareRoleVersion) {
               if (dbSoftwareRoleVersion.length < 1) {
-                //    console.log("software role "+dbSoftwareRole.role+", version "+roleVersions[dbSoftwareRole.role]+" is not [yet] in the database.");
-              } else {
-                models.GuardianMetaSoftwareVersion
-                  .findOrCreate({
-                    where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
-                  }).spread(function (dbMetaSoftware, wasCreated) {
-                    dbMetaSoftware.updated_at = new Date()
-                    dbMetaSoftware.save()
-                  }).catch(function (err) { console.log(err) })
+                return true
               }
+              return models.GuardianMetaSoftwareVersion
+                .findOrCreate({
+                  where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
+                }).spread(function (dbMetaSoftware, wasCreated) {
+                  dbMetaSoftware.updated_at = new Date()
+                  dbMetaSoftware.save()
+                }).catch(function (err) { console.log(err) })
             }).catch(function (err) { console.log(err) })
         }).catch(function (err) { console.log(err) })
     }
