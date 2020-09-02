@@ -384,6 +384,24 @@ exports.audio = {
       s3bucket: process.env.ASSET_BUCKET_AUDIO,
       s3path: itemAudioInfo.s3Path
     }
+  },
+
+  strArrToJSArr: (str, delimA, delimB) => {
+    if ((str == null) || (str.length === 0)) { return [] }
+    try {
+      var rtrnArr = []; var arr = str.split(delimA)
+      if (arr.length > 0) {
+        for (const i in arr) {
+          rtrnArr.push(arr[i].split(delimB))
+        }
+        return rtrnArr
+      } else {
+        return []
+      }
+    } catch (e) {
+      console.log(e)
+      return []
+    }
   }
 
 }
