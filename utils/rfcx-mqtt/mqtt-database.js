@@ -302,8 +302,7 @@ exports.checkInDatabase = {
           })
         }
       } else if (prefsJson.cnt > 0) {
-
-        prefsReturnArray = [{ sha1: prefsDb.sha1 }];
+        prefsReturnArray = [{ sha1: prefsDb.sha1 }]
       }
     }).then(() => {
       checkInObj.rtrn.obj.prefs = prefsReturnArray
