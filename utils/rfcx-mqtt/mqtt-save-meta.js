@@ -265,7 +265,7 @@ exports.saveMeta = {
     return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower)
   },
 
-  SentinelSensor: function (metaSntnlSnsr, sensorTag, guardianId, checkInId) {
+  SentinelSensor: function (sensorTag, metaSntnlSnsr, guardianId, checkInId) {
     var dbMetaSentinelSensor = []
 
     for (const sntInd in metaSntnlSnsr) {
@@ -325,7 +325,8 @@ exports.saveMeta = {
           if (!dbPreviousCheckIn) {
             return Promise.reject(`Couldn't find previous checkin with guid "${previousCheckIns[prvChkInInd][0]}".`) // eslint-disable-line prefer-promise-reject-errors
           }
-          dbPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1]
+          dbPreviousCheckIn.request_latency_guardian = parseInt(previousCheckIns[prvChkInInd][1]);
+          dbPreviousCheckIn.request_size = parseInt(previousCheckIns[prvChkInInd][2]);
           return dbPreviousCheckIn.save()
         })
     }

@@ -835,7 +835,6 @@ router.route('/reset-user-password')
       .then((token) => {
         this.token = token
         this.password = hash.randomString(50)
-        console.log('\n\nthis.password', this.password, '\n\n')
         return usersService.updateMySQLUserPassword(this.password, transformedParams.email, transformedParams.guid)
       })
       .then(() => {

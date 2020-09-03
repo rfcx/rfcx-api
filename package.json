@@ -29,7 +29,7 @@
     "express": "4.17.1",
     "express-prom-bundle": "^6.0.0",
     "express-request-id": "1.4.1",
-    "express-winston": "2.4.0",
+    "express-winston": "4.0.5",
     "firebase-admin": "6.1.0",
     "fluent-ffmpeg": "2.1.2",
     "generate-password": "1.4.2",
@@ -73,8 +73,7 @@
     "swagger-jsdoc": "^4.0.0",
     "swagger-ui-express": "^4.1.4",
     "toobusy-js": "0.5.1",
-    "winston": "2.3.1",
-    "winston-aws-cloudwatch": "1.5.0"
+    "winston": "3.3.3"
   },
   "devDependencies": {
     "faux-knox": "0.1.16",

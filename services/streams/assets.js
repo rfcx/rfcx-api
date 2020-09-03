@@ -248,7 +248,6 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
       //   sox += ` -r ${attrs.sampleRate}`;
       // }
       sox += ` -c 1 ${audioFilePath}`
-      console.log('\n\n', sox, '\n\n')
       return runExec(sox)
     })
     .then(() => {

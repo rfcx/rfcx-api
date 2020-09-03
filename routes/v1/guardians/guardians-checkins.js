@@ -10,6 +10,8 @@ passport.use(require('../../../middleware/passport-token').TokenStrategy)
 var Promise = require('bluebird')
 var loggers = require('../../../utils/logger')
 var sequelize = require('sequelize')
+const ValidationError = require('../../../utils/converter/validation-error')
+const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
 
 var logDebug = loggers.debugLogger.log
 
@@ -30,6 +32,7 @@ router.route('/:guardian_id/checkins')
     checkInHelpers.gzip.unZipJson(req.body.meta)
       .bind({})
       .then(function (json) {
+        checkInHelpers.validator.isMetaValid(json)
         this.json = json
         logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json })
         // retrieve the guardian from the database
@@ -66,11 +69,7 @@ router.route('/:guardian_id/checkins')
             guardian_id: dbGuardian.id,
             site_id: dbGuardian.site_id,
             measured_at: timeStampToDate(this.json.measured_at, this.json.timezone_offset),
-            queued_at: timeStampToDate(this.json.queued_at, this.json.timezone_offset),
-            guardian_queued_checkins: parseInt(this.json.queued_checkins),
-            guardian_skipped_checkins: parseInt(this.json.skipped_checkins),
-            guardian_stashed_checkins: parseInt(this.json.stashed_checkins),
-            is_certified: dbGuardian.is_certified
+            queued_at: timeStampToDate(this.json.queued_at, this.json.timezone_offset)
           })
       })
       .then(function (dbCheckIn) {
@@ -252,6 +251,9 @@ router.route('/:guardian_id/checkins')
         logDebug('Guardian checkins endpoint: return json', { req: req, json: returnJson })
         return res.status(200).json(returnJson)
       })
+      .catch(ValidationError, function (err) {
+        httpError(req, res, 400, null, err.message)
+      })
       .catch(sequelize.EmptyResultError, function (err) {
         loggers.errorLogger.log('Failed to save checkin', { req: req, err: err })
         httpError(req, res, 404, null, err.message)
@@ -311,24 +313,4 @@ function timeStampToDate (timeStamp, legacytimeZoneOffset) {
     asDate = new Date(parseInt(timeStamp))
   }
   return asDate
-}
-
-// Special Functions
-
-function strArrToJSArr (str, delimA, delimB) {
-  if ((str == null) || (str.length === 0)) { return [] }
-  try {
-    var rtrnArr = []; var arr = str.split(delimA)
-    if (arr.length > 0) {
-      for (const i in arr) {
-        rtrnArr.push(arr[i].split(delimB))
-      }
-      return rtrnArr
-    } else {
-      return []
-    }
-  } catch (e) {
-    console.log(e)
-    return []
-  }
 }

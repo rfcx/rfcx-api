@@ -98,8 +98,8 @@ app.mqtt.on('message', (topic, data) => {
         if (typeof (err) === 'string') {
           err = { message: err }
         }
-        logDebug('mqtt message return object [cloudwatch]', { err })
-        logError('mqtt message error [cloudwatch]', { err })
+        logDebug('mqtt message return object', { err })
+        logError('mqtt message error', { err })
       })
   } else if (topic === 'guardians/pings') {
     return mqttPingRouter.onMessagePing(data, messageId)
@@ -117,8 +117,8 @@ app.mqtt.on('message', (topic, data) => {
         if (typeof (err) === 'string') {
           err = { message: err }
         }
-        logDebug('mqtt message return object [cloudwatch]', { err })
-        logError('mqtt message error [cloudwatch]', { err })
+        logDebug('mqtt message return object', { err })
+        logError('mqtt message error', { err })
       })
   }
 })
