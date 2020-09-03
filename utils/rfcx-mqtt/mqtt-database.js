@@ -141,7 +141,7 @@ exports.checkInDatabase = {
       saveMeta.SentinelSensor('accelerometer', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
       saveMeta.SentinelSensor('compass', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
 
-      saveMeta.Hardware({ hardware: checkInObj.json.hardware, phone: checkInObj.json.phone }, guardianId)
+      saveMeta.Device( (checkInObj.json.device == null) ? {} : checkInObj.json.device , guardianId)
     ]
 
     return Promise.all(proms)
