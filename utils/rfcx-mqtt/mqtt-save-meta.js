@@ -152,7 +152,6 @@ exports.saveMeta = {
           dbMetaHardware.phone_sim_carrier = (metaDevice.phone.carrier != null) ? metaDevice.phone.carrier : null
         }
 
-        dbMetaHardware.updated_at = new Date()
         return dbMetaHardware.save()
       })
   },
