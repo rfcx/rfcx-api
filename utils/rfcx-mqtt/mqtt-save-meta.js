@@ -128,29 +128,30 @@ exports.saveMeta = {
     return models.GuardianMetaGeoPosition.bulkCreate(dbMetaGeoPosition)
   },
 
-  Hardware: function (metaHardware, guardianId) {
+  Device: function (metaDevice, guardianId) {
     return models.GuardianMetaHardware
       .findOrCreate({
         where: { guardian_id: guardianId }
       })
       .spread((dbMetaHardware, wasCreated) => {
-        if (metaHardware.hardware != null) {
-          dbMetaHardware.manufacturer = metaHardware.hardware.manufacturer
-          dbMetaHardware.model = metaHardware.hardware.model
-          dbMetaHardware.brand = metaHardware.hardware.brand
-          dbMetaHardware.product = metaHardware.hardware.product
-          dbMetaHardware.android_version = metaHardware.hardware.android
+
+        if (metaDevice.android != null) {
+          dbMetaHardware.manufacturer = metaDevice.android.manufacturer
+          dbMetaHardware.brand = metaDevice.android.brand
+          dbMetaHardware.model = metaDevice.android.model
+          dbMetaHardware.product = metaDevice.android.product
+          dbMetaHardware.android_version = metaDevice.android.android
+          dbMetaHardware.android_build = metaDevice.android.build
         }
 
-        if (metaHardware.phone != null) {
-          dbMetaHardware.phone_imsi = (metaHardware.phone.imsi != null) ? metaHardware.phone.imsi : null
-          dbMetaHardware.phone_imei = (metaHardware.phone.imei != null) ? metaHardware.phone.imei : null
-          dbMetaHardware.phone_sim_serial = (metaHardware.phone.sim != null) ? metaHardware.phone.sim : null
-          dbMetaHardware.phone_sim_number = (metaHardware.phone.number != null) ? metaHardware.phone.number : null
-          dbMetaHardware.phone_sim_carrier = (metaHardware.phone.carrier != null) ? metaHardware.phone.carrier : null
+        if (metaDevice.phone != null) {
+          dbMetaHardware.phone_imsi = (metaDevice.phone.imsi != null) ? metaDevice.phone.imsi : null
+          dbMetaHardware.phone_imei = (metaDevice.phone.imei != null) ? metaDevice.phone.imei : null
+          dbMetaHardware.phone_sim_serial = (metaDevice.phone.sim != null) ? metaDevice.phone.sim : null
+          dbMetaHardware.phone_sim_number = (metaDevice.phone.number != null) ? metaDevice.phone.number : null
+          dbMetaHardware.phone_sim_carrier = (metaDevice.phone.carrier != null) ? metaDevice.phone.carrier : null
         }
 
-        dbMetaHardware.updated_at = new Date()
         return dbMetaHardware.save()
       })
   },
