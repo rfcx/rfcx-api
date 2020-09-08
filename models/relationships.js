@@ -108,10 +108,6 @@ function defineRelationships (models) {
   models.GuardianSoftwareVersion.belongsTo(models.GuardianSoftware, { as: 'SoftwareRole', foreignKey: 'software_role_id' })
   models.GuardianSoftware.belongsTo(models.GuardianSoftwareVersion, { as: 'CurrentVersion', foreignKey: 'current_version_id', constraints: false })
 
-  models.Message.belongsTo(models.MessageType, { as: 'Type', foreignKey: 'type' })
-  models.Message.belongsTo(models.User, { as: 'UserFrom', foreignKey: 'from_user' })
-  models.Message.belongsTo(models.User, { as: 'UserTo', foreignKey: 'to_user' })
-
   models.Organization.hasMany(models.GuardianSite, { as: 'Site', foreignKey: 'organization' })
 
   models.ResetPasswordToken.belongsTo(models.User, { as: 'User', foreignKey: 'user_id' })
