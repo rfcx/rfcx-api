@@ -134,7 +134,6 @@ exports.saveMeta = {
         where: { guardian_id: guardianId }
       })
       .spread((dbMetaHardware, wasCreated) => {
-
         if (metaDevice.android != null) {
           dbMetaHardware.manufacturer = metaDevice.android.manufacturer
           dbMetaHardware.brand = metaDevice.android.brand
@@ -326,8 +325,8 @@ exports.saveMeta = {
           if (!dbPreviousCheckIn) {
             return Promise.reject(`Couldn't find previous checkin with guid "${previousCheckIns[prvChkInInd][0]}".`) // eslint-disable-line prefer-promise-reject-errors
           }
-          dbPreviousCheckIn.request_latency_guardian = parseInt(previousCheckIns[prvChkInInd][1]);
-          dbPreviousCheckIn.request_size = parseInt(previousCheckIns[prvChkInInd][2]);
+          dbPreviousCheckIn.request_latency_guardian = parseInt(previousCheckIns[prvChkInInd][1])
+          dbPreviousCheckIn.request_size = parseInt(previousCheckIns[prvChkInInd][2])
           return dbPreviousCheckIn.save()
         })
     }
