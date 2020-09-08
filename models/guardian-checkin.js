@@ -27,12 +27,6 @@ module.exports = function (sequelize, DataTypes) {
         }
       }
     },
-    is_certified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      validate: {
-      }
-    },
     request_latency_api: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -49,35 +43,12 @@ module.exports = function (sequelize, DataTypes) {
         min: 0
       }
     },
-    guardian_skipped_checkins: {
+    request_size: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
         isInt: true,
         min: 0
-      }
-    },
-    guardian_queued_checkins: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
-    guardian_stashed_checkins: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 0
-      }
-    },
-    timezone_offset_minutes: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true
       }
     }
   }, {
