@@ -166,7 +166,8 @@ exports.saveMeta = {
           check_in_id: checkInId,
           measured_at: new Date(parseInt(metaDateTimeOffset[dtoInd][0])),
           source: metaDateTimeOffset[dtoInd][1],
-          system_clock_offset: parseInt(metaDateTimeOffset[dtoInd][2])
+          system_clock_offset: parseInt(metaDateTimeOffset[dtoInd][2]),
+          system_clock_timezone: metaDateTimeOffset[dtoInd][3]
         })
       }
     }
