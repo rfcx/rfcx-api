@@ -7,7 +7,6 @@ module.exports = expressWinston.logger({
   expressFormat: true,
   level: 'info',
   requestWhitelist: ['guid', 'instance', 'url', 'headers', 'method', 'httpVersion', 'originalUrl', 'query', 'body', 'files'],
-  responseWhitelist: ['body'],
   format: winston.format.combine(
     winston.format.colorize(),
     winston.format.json()
