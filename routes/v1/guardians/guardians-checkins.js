@@ -32,7 +32,7 @@ router.route('/:guardian_id/checkins')
     checkInHelpers.gzip.unZipJson(req.body.meta)
       .bind({})
       .then(function (json) {
-        checkInHelpers.validator.isMetaValid(json)
+        // checkInHelpers.validator.isMetaValid(json)
         this.json = json
         logDebug('Guardian checkins endpoint: unzipped json', { req: req, json: json })
         // retrieve the guardian from the database
