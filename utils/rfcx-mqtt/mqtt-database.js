@@ -173,8 +173,8 @@ exports.checkInDatabase = {
     return Promise.all(proms)
       .then(() => {
         // parse list of purged assets from guardian, delete them from database and return list
-        var dbMetaPurgedAssets = []; 
-        var metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*');
+        var dbMetaPurgedAssets = []
+        var metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
         for (const asstInd in metaPurgedAssets) {
           if (metaPurgedAssets[asstInd][1] != null) {
             dbMetaPurgedAssets.push({

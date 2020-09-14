@@ -28,7 +28,7 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Not found
  */
-router.get('/:value', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:value', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   return classificationService.get(req.params.value)
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classification'))
@@ -77,7 +77,7 @@ router.get('/:value', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.query, transformedParams)
 
@@ -121,7 +121,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/:value/characteristics', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/:value/characteristics', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   return classificationService.queryByParent(req.params.value, 'characteristic')
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting characteristics'))
