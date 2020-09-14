@@ -35,7 +35,7 @@ const Converter = require('../../../utils/converter/converter')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const params = new Converter(req.query)
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()

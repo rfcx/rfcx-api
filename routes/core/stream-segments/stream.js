@@ -36,7 +36,7 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *         description: Invalid query parameters
  */
 
-router.post('/:streamId/stream-segments', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/stream-segments', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
