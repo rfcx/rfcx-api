@@ -141,7 +141,7 @@ exports.checkInDatabase = {
       saveMeta.SentinelSensor('accelerometer', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
       saveMeta.SentinelSensor('compass', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
 
-      saveMeta.Hardware({ hardware: checkInObj.json.hardware, phone: checkInObj.json.phone }, guardianId)
+      saveMeta.Device((checkInObj.json.device == null) ? {} : checkInObj.json.device, guardianId)
     ]
 
     return Promise.all(proms)
@@ -173,7 +173,8 @@ exports.checkInDatabase = {
     return Promise.all(proms)
       .then(() => {
         // parse list of purged assets from guardian, delete them from database and return list
-        var dbMetaPurgedAssets = []; var metaPurgedAssets = strArrToJSArr(checkInObj.json.assets_purged, '|', '*')
+        var dbMetaPurgedAssets = []
+        var metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
         for (const asstInd in metaPurgedAssets) {
           if (metaPurgedAssets[asstInd][1] != null) {
             dbMetaPurgedAssets.push({

@@ -20,6 +20,13 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
         isInt: true
       }
+    },
+    system_clock_timezone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
     }
   }, {
     tableName: 'GuardianMetaDateTimeOffsets'

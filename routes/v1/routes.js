@@ -60,9 +60,6 @@ module.exports = {
   perceptions: [
     require('./perceptions/perceptions-ai')
   ],
-  messages: [
-    require('./messages/messages')
-  ],
   'filter-presets': [
     require('./filter-presets/filter-presets')
   ],

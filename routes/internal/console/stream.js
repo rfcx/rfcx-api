@@ -34,7 +34,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/uploads', authenticatedWithRoles('rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/uploads', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -84,7 +84,7 @@ router.get('/streams/statistics/uploads', authenticatedWithRoles('rfcxUser'), as
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/annotations', authenticatedWithRoles('rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/annotations', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -134,7 +134,7 @@ router.get('/streams/statistics/annotations', authenticatedWithRoles('rfcxUser')
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/detections', authenticatedWithRoles('rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/detections', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()

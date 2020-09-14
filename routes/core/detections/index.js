@@ -66,7 +66,7 @@ router.get('/', (req, res) => {
  *         description: Detection not found
  */
 
-router.put('/:id/review', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.put('/:id/review', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const detectionId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}

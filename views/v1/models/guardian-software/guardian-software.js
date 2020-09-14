@@ -14,6 +14,7 @@ exports.models = {
           version: dbRow.CurrentVersion.version,
           released: dbRow.CurrentVersion.release_date.toISOString(),
           sha1: dbRow.CurrentVersion.sha1_checksum,
+          size: dbRow.CurrentVersion.size,
           url: dbRow.CurrentVersion.url
         })
       }

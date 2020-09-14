@@ -34,7 +34,7 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Invalid query parameters
  */
 
-router.post('/:streamId/stream-source-files', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/stream-source-files', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

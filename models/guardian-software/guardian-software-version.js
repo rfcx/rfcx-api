@@ -27,6 +27,14 @@ module.exports = function (sequelize, DataTypes) {
       validate: {
       }
     },
+    size: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     url: {
       type: DataTypes.STRING,
       allowNull: true,

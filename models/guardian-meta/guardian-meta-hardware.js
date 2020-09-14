@@ -23,6 +23,13 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
 
+    android_build: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+
     manufacturer: {
       type: DataTypes.STRING,
       allowNull: true,
