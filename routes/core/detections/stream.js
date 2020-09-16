@@ -142,7 +142,7 @@ router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
  *       404:
  *         description: Stream not found
  */
-router.post('/:streamId/detections', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/detections', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), function (req, res) {
   const streamId = req.params.streamId
   const detections = Array.isArray(req.body) ? req.body : [req.body]
 

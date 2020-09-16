@@ -99,7 +99,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

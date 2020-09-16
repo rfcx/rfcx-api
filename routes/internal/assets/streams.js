@@ -65,7 +65,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         description: Insufficient privileges
  */
 
-router.get('/streams/:attrs', authenticatedWithRoles('rfcxUser'), async function (req, res) {
+router.get('/streams/:attrs', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
   try {
     const attrs = await streamsAssetsService.parseFileNameAttrs(req)
     await streamsAssetsService.checkAttrsValidity(req, attrs)

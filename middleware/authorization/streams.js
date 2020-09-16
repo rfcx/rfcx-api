@@ -12,7 +12,7 @@ const { httpErrorHandler } = require('../../utils/http-error-handler.js')
  * @param {Permission} permission
  */
 function hasPermission (permission) {
-  return authenticatedWithRoles('rfcxUser').concat((req, res, next) => {
+  return authenticatedWithRoles('appUser', 'rfcxUser').concat((req, res, next) => {
     const streamId = req.params.streamId || req.params.id
     const userId = req.rfcx.auth_token_info.owner_id
     return streamPermissionService.hasPermission(userId, streamId, permission)

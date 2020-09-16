@@ -64,7 +64,7 @@ router.get('/:streamId/users', hasPermission('W'), async function (req, res) {
  *         description: Created
  */
 
-router.put('/:streamId/users', authenticatedWithRoles('rfcxUser'), function (req, res) {
+router.put('/:streamId/users', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

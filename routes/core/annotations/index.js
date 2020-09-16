@@ -64,7 +64,7 @@ function isUuid (str) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -110,7 +110,7 @@ router.get('/', authenticatedWithRoles('rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   const annotationId = req.params.id
 
   if (!isUuid(annotationId)) {
@@ -161,7 +161,7 @@ router.get('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   const annotationId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
@@ -222,7 +222,7 @@ router.put('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.delete('/:id', authenticatedWithRoles('rfcxUser'), (req, res) => {
+router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   const annotationId = req.params.id
 
   if (!isUuid(annotationId)) {
