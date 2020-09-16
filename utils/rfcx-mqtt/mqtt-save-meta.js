@@ -206,7 +206,7 @@ exports.saveMeta = {
     }
     
     var dbMetaDiskUsage = [];
-    if (metaDiskUsage.length > 0) {
+    if ((metaDiskUsage.length > 0) && (diskUsage.internal.measured_at != null)) {
       dbMetaDiskUsage.push({
         guardian_id: guardianId,
         measured_at: diskUsage.internal.measured_at,
@@ -233,7 +233,7 @@ exports.saveMeta = {
       }
     }
     var dbMetaMemory = [];
-    if (metaMemory.length > 0) {
+    if ((metaMemory.length > 0) && (memory.system.measured_at != null)) {
       dbMetaMemory.push({
         guardian_id: guardianId,
         measured_at: memory.system.measured_at,
