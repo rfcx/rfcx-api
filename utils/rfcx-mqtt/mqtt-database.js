@@ -323,7 +323,6 @@ exports.checkInDatabase = {
         check_in_id: checkInObj.db.dbCheckIn.id,
         sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
         url: null,
-        capture_bitrate: checkInObj.audio.meta.bitRate,
         encode_duration: checkInObj.audio.meta.encodeDuration,
         measured_at: checkInObj.audio.meta.measuredAt,
         measured_at_local: moment.tz(checkInObj.audio.meta.measuredAt, (checkInObj.db.dbSite.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),
