@@ -76,6 +76,7 @@ function defineRelationships (models) {
   models.GuardianMetaDataTransfer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaDateTimeOffset.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaDiskUsage.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  models.GuardianMetaMemory.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaGeoLocation.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaGeoPosition.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaHardware.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })

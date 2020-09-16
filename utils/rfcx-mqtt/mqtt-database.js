@@ -127,7 +127,7 @@ exports.checkInDatabase = {
       saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
       saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
       saveMeta.DiskUsage(strArrToJSArr(checkInObj.json.storage, '|', '*'), guardianId, checkInId),
- //     saveMeta.Memory(strArrToJSArr(checkInObj.json.memory, '|', '*'), guardianId, checkInId),
+      saveMeta.Memory(strArrToJSArr(checkInObj.json.memory, '|', '*'), guardianId, checkInId),
       saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition, '|', '*'), guardianId, checkInId),
       saveMeta.DateTimeOffset(strArrToJSArr(checkInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
       saveMeta.MqttBrokerConnection(strArrToJSArr(checkInObj.json.broker_connections, '|', '*'), guardianId, checkInId),

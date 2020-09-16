@@ -194,7 +194,9 @@ exports.saveMeta = {
   },
 
   DiskUsage: function (metaDiskUsage, guardianId, checkInId) {
+
     var diskUsage = { internal: {}, external: {} }
+    
     for (const duInd in metaDiskUsage) {
       diskUsage[metaDiskUsage[duInd][0]] = {
         measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
@@ -202,18 +204,48 @@ exports.saveMeta = {
         available: parseInt(metaDiskUsage[duInd][3])
       }
     }
-
-    const opts = {
-      guardian_id: guardianId,
-      check_in_id: checkInId,
-      measured_at: diskUsage.internal.measured_at,
-      internal_bytes_available: diskUsage.internal.available,
-      internal_bytes_used: diskUsage.internal.used,
-      external_bytes_available: diskUsage.external.available,
-      external_bytes_used: diskUsage.external.used
+    
+    var dbMetaDiskUsage = [];
+    if (metaDiskUsage.length > 0) {
+      dbMetaDiskUsage.push({
+        guardian_id: guardianId,
+        measured_at: diskUsage.internal.measured_at,
+        internal_bytes_available: diskUsage.internal.available,
+        internal_bytes_used: diskUsage.internal.used,
+        external_bytes_available: diskUsage.external.available,
+        external_bytes_used: diskUsage.external.used
+      });
     }
 
-    return models.GuardianMetaDiskUsage.create(opts)
+    return models.GuardianMetaDiskUsage.bulkCreate(dbMetaDiskUsage)
+  },
+
+  Memory: function (metaMemory, guardianId, checkInId) {
+    
+    var memory = { system: {} }
+
+    for (const mInd in metaMemory) {
+      memory[metaMemory[mInd][0]] = {
+        measured_at: new Date(parseInt(metaMemory[mInd][1])),
+        used: parseInt(metaMemory[mInd][2]),
+        available: parseInt(metaMemory[mInd][3]),
+        minimum: parseInt(metaMemory[mInd][4])
+      }
+    }
+    var dbMetaMemory = [];
+    if (metaMemory.length > 0) {
+      dbMetaMemory.push({
+        guardian_id: guardianId,
+        measured_at: memory.system.measured_at,
+        system_bytes_available: memory.system.available,
+        system_bytes_used: memory.system.used,
+        system_bytes_minimum: memory.system.minimum/*,
+        external_bytes_available: memory.external.available,
+        external_bytes_used: memory.external.used*/
+      });
+    }
+
+    return models.GuardianMetaMemory.bulkCreate(dbMetaMemory)
   },
 
   SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
