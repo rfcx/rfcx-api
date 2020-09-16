@@ -193,7 +193,7 @@ exports.saveMeta = {
     return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection)
   },
 
-  DiskUsage: function (metaDiskUsage, guardianId, checkInId) {
+  Storage: function (metaDiskUsage, guardianId, checkInId) {
 
     var diskUsage = { internal: {}, external: {} }
     
