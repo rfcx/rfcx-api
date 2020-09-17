@@ -268,11 +268,10 @@ exports.saveMeta = {
       sntnlPwrEntries[timeStamp][sysInpBatt].current = parseInt(metaSntnlPwr[duInd][3])
       sntnlPwrEntries[timeStamp][sysInpBatt].power = parseInt(metaSntnlPwr[duInd][5])
 
-      sntnlPwrEntries[timeStamp].temperature = null;
       if ((sysInpBatt === 'system') && (parseInt(metaSntnlPwr[duInd][4]) > 0)) {
         sntnlPwrEntries[timeStamp].temperature = parseInt(metaSntnlPwr[duInd][4]);
       }
-      sntnlPwrEntries[timeStamp].state_of_charge = null;
+      
       if ((sysInpBatt === 'battery') && (metaSntnlPwr[duInd][4].length > 0)) {
         sntnlPwrEntries[timeStamp].state_of_charge = parseFloat(metaSntnlPwr[duInd][4]);
         if ((sntnlPwrEntries[timeStamp].state_of_charge > 100) || (sntnlPwrEntries[timeStamp].state_of_charge < 0)) {
