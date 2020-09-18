@@ -6,13 +6,19 @@ exports.saveMeta = {
     var dbMetaCPU = []
 
     for (const cpuInd in metaCPU) {
-      dbMetaCPU.push({
-        guardian_id: guardianId,
-        check_in_id: checkInId,
-        measured_at: new Date(parseInt(metaCPU[cpuInd][0])),
-        cpu_percent: parseInt(metaCPU[cpuInd][1]),
-        cpu_clock: parseInt(metaCPU[cpuInd][2])
-      })
+
+      var cpuPct = parseInt(metaCPU[cpuInd][1]);
+      var cpuClk = parseInt(metaCPU[cpuInd][2]);
+
+      if ((cpuPct <= 100) && (cpuPct >= 0) && (cpuClk <= 5000) && (cpuClk >= 0)) {
+        dbMetaCPU.push({
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(metaCPU[cpuInd][0])),
+          cpu_percent: cpuPct,
+          cpu_clock: cpuClk
+        })
+      }
     }
 
     return models.GuardianMetaCPU.bulkCreate(dbMetaCPU)
