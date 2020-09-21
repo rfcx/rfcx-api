@@ -49,7 +49,7 @@ async function redisConnected () {
 
 async function check (req, res) {
   var rtrnJson = {
-    healthy: false,
+    status: false,
     mysql: false,
     timescaledb: false,
     redis: false
@@ -61,7 +61,7 @@ async function check (req, res) {
       rtrnJson.mysql = data[0]
       rtrnJson.timescaledb = data[1]
       rtrnJson.redis = data[2]
-      rtrnJson.healthy = !data.includes(false)
+      rtrnJson.status = !data.includes(false)
       res.json(rtrnJson)
     })
     .catch(() => {
