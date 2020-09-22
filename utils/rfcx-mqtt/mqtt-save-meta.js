@@ -355,7 +355,7 @@ exports.saveMeta = {
 
     for (const vInd in metaCheckInStatus) {
       dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_count'] = parseInt(metaCheckInStatus[vInd][1])
-      if ((metaCheckInStatus[vInd][0] != 'sent') && (metaCheckInStatus[vInd][2] != null)) {
+      if (metaCheckInStatus[vInd][2] != null) {
         dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_size_bytes'] = parseInt(metaCheckInStatus[vInd][2])
       }
     }
