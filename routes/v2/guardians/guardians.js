@@ -106,7 +106,7 @@ router.route('/register')
         guid: dbGuardian.guid,
         stream: dbStream.guid,
         token: token,
-        broker_hostname: process.env.GUARDIAN_BROKER_HOSTNAME,
+        broker_hostname: process.env.GUARDIAN_BROKER_HOSTNAME, 
         keystore_passphrase: process.env.GUARDIAN_KEYSTORE_PASSPHRASE
       })
     } catch (e) {
