@@ -102,6 +102,7 @@ exports.env = {
 
   RECAPTCHA_V3_SECRET_KEY: "",
 
+  GUARDIAN_BROKER_HOSTNAME: "", // environment mqtt hostname for checkins/pings
   GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used for guardian registration
 
   /// Enabling ingest service features will push guardian audio to the ingest service
