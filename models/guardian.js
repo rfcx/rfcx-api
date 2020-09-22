@@ -55,7 +55,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     latitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false,
+      allowNull: true,
       validate: {
         isFloat: true,
         min: {
@@ -70,7 +70,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     longitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false,
+      allowNull: true,
       validate: {
         isFloat: true,
         min: {
