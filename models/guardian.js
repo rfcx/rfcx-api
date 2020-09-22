@@ -148,22 +148,6 @@ module.exports = function (sequelize, DataTypes) {
         isDate: { msg: 'auth_token_expires_at for Guardian should have type Date' }
       }
     },
-    prefs_audio_capture_interval: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 1
-      }
-    },
-    prefs_service_monitor_interval: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 1
-      }
-    },
     notes: {
       type: DataTypes.STRING,
       allowNull: true,
