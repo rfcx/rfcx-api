@@ -55,7 +55,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     latitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false,
+      allowNull: true,
       validate: {
         isFloat: true,
         min: {
@@ -70,7 +70,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     longitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false,
+      allowNull: true,
       validate: {
         isFloat: true,
         min: {
@@ -146,22 +146,6 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue: DataTypes.NOW,
       validate: {
         isDate: { msg: 'auth_token_expires_at for Guardian should have type Date' }
-      }
-    },
-    prefs_audio_capture_interval: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 1
-      }
-    },
-    prefs_service_monitor_interval: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        isInt: true,
-        min: 1
       }
     },
     notes: {
