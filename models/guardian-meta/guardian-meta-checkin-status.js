@@ -15,8 +15,24 @@ module.exports = function (sequelize, DataTypes) {
         min: 0
       }
     },
+    queued_size_bytes: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     skipped_count: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    skipped_size_bytes: {
+      type: DataTypes.BIGINT,
       allowNull: true,
       validate: {
         isInt: true,
@@ -31,8 +47,24 @@ module.exports = function (sequelize, DataTypes) {
         min: 0
       }
     },
+    stashed_size_bytes: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     sent_count: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    sent_size_bytes: {
+      type: DataTypes.BIGINT,
       allowNull: true,
       validate: {
         isInt: true,
@@ -47,8 +79,24 @@ module.exports = function (sequelize, DataTypes) {
         min: 0
       }
     },
+    archived_size_bytes: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
     meta_count: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    meta_size_bytes: {
+      type: DataTypes.BIGINT,
       allowNull: true,
       validate: {
         isInt: true,
