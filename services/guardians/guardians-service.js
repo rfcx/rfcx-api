@@ -93,13 +93,12 @@ function updateGuardian (guardian, attrs) {
 
 async function createGuardian (attrs) {
   const guardianAttrs = {
-    guid: attrs.guid,
-    shortname: attrs.shortname ? attrs.shortname : `RFCx Guardian (${attrs.guid.substr(0, 6).toUpperCase()})`,
-    latitude: attrs.latitude || 0,
-    longitude: attrs.longitude || 0
+    guid: attrs.guid
   }
   const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs }) // eslint-disable-line no-unused-vars
 
+  dbGuardian.shortname = attrs.shortname ? attrs.shortname : `RFCx Guardian (${attrs.guid.substr(0, 6).toUpperCase()})`
+  
   const tokenSalt = hash.randomHash(320)
   dbGuardian.auth_token_salt = tokenSalt
   dbGuardian.auth_token_hash = hash.hashedCredentials(tokenSalt, attrs.token)
