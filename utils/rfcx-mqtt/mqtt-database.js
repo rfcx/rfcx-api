@@ -66,8 +66,8 @@ exports.checkInDatabase = {
       checkInObj.json.checkins_to_verify = []
       for (const vInd in checkInStatArray) {
         checkInObj.json[checkInStatArray[vInd][0] + '_checkins'] = checkInStatArray[vInd][1]
-        if ((checkInStatArray[vInd][0] == "sent") && (checkInStatArray[vInd].length > 2)) {
-          for (let i = 2; i < checkInStatArray[vInd].length; i++) {
+        if (checkInStatArray[vInd].length > 3) {
+          for (let i = 3; i < checkInStatArray[vInd].length; i++) {
             checkInObj.json.checkins_to_verify.push(checkInStatArray[vInd][i])
           }
         }
