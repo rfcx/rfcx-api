@@ -2,7 +2,7 @@ const router = require('express').Router()
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-
+const auth0Service = require('../../../services/auth0/auth0-service')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/stream-segment')
 const streamsAssetsService = require('../../../services/streams/assets')
@@ -65,13 +65,19 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         description: Insufficient privileges
  */
 
-router.get('/streams/:attrs', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
+router.get('/streams/:attrs', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), async function (req, res) {
   try {
     const attrs = await streamsAssetsService.parseFileNameAttrs(req)
     await streamsAssetsService.checkAttrsValidity(req, attrs)
     const stream = await streamsService.getById(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
-    const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+    const roles = auth0Service.getUserRolesFromToken(req.user)
+    var allowed
+    if ((roles || []).includes('systemUser')) {
+      allowed = true
+    } else {
+      allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+    }
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to access this stream.')
     }
