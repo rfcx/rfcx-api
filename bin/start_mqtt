@@ -20,6 +20,10 @@ var httpServer = app.http.listen(app.http.get('port'), function () {
   console.log('http: ' + app.http.get('title') + ' (port ' + app.http.get('port') + ') (' + process.env.NODE_ENV + ')')
 })
 
+const subscriptionOptions = {
+  qos: 1
+}
+
 app.mqtt.on('connect', function () {
   console.log('mqtt: ' + appId + ' (' + app.mqtt.options.protocol + '://' + app.mqtt.options.host + ':' + app.mqtt.options.port + ') (' + process.env.NODE_ENV + ')')
   app.mqtt.unsubscribe('guardians/checkins', (err) => {
@@ -28,7 +32,7 @@ app.mqtt.on('connect', function () {
       return
     }
     console.log('mqtt: unsubscribed from topic "guardians/checkins"')
-    app.mqtt.subscribe('guardians/checkins', (err, granted) => {
+    app.mqtt.subscribe('guardians/checkins', subscriptionOptions, (err, granted) => {
       if (err) {
         console.log('mqtt: could not subscribe to topic "guardians/checkins"', err)
         return
@@ -42,7 +46,7 @@ app.mqtt.on('connect', function () {
       return
     }
     console.log('mqtt: unsubscribed from topic "guardians/pings"')
-    app.mqtt.subscribe('guardians/pings', (err, granted) => {
+    app.mqtt.subscribe('guardians/pings', subscriptionOptions, (err, granted) => {
       if (err) {
         console.log('mqtt: could not subscribe to topic "guardians/pings"', err)
         return
