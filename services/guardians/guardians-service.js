@@ -93,7 +93,8 @@ function updateGuardian (guardian, attrs) {
 
 async function createGuardian (attrs) {
   const guardianAttrs = {
-    guid: attrs.guid
+    guid: attrs.guid,
+    creator: (attrs.creator_id != null) ? attrs.creator_id : null
   }
   const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs }) // eslint-disable-line no-unused-vars
 
@@ -104,9 +105,6 @@ async function createGuardian (attrs) {
   dbGuardian.auth_token_hash = hash.hashedCredentials(tokenSalt, attrs.token)
   dbGuardian.auth_token_updated_at = new Date()
   dbGuardian.site_id = attrs.site_id || 1
-  if (attrs.creator_id) {
-    dbGuardian.creator = attrs.creator_id
-  }
   if (attrs.is_private !== undefined) {
     dbGuardian.is_private = attrs.is_private
   }
