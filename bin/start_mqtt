@@ -84,9 +84,11 @@ app.mqtt.on('message', (topic, data) => {
         })
 
         app.mqtt.publish(`${result.guardian_guid}/cmd`, result.gzip)
-        // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
-        // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THIS LINE SHOULD BE REMOVED
+      
+      // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
+      // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE BELOW SHOULD BE REMOVED
         app.mqtt.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip)
+      // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE ABOVE SHOULD BE REMOVED
 
         console.log('mqtt message processed', topic, messageId)
         messageId = null
@@ -94,7 +96,6 @@ app.mqtt.on('message', (topic, data) => {
         return true
       })
       .catch((err) => {
-        // TODO: We need to send a report back to guardian with error information here
         if (typeof (err) === 'string') {
           err = { message: err }
         }
