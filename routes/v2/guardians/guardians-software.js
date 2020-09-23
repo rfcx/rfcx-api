@@ -6,7 +6,6 @@ var httpError = require('../../../utils/http-errors.js')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 var loggers = require('../../../utils/logger')
 var sequelize = require('sequelize')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
 
 var logDebug = loggers.debugLogger.log
 
@@ -132,9 +131,7 @@ router.route('/:guardian_id/software/:software_role')
 
 module.exports = router
 
-
-
-function viewSoftwareJson(dbSoftware) {
+function viewSoftwareJson (dbSoftware) {
   if (!Array.isArray(dbSoftware)) { dbSoftware = [dbSoftware] }
 
   var jsonArray = []
@@ -155,4 +152,3 @@ function viewSoftwareJson(dbSoftware) {
   }
   return jsonArray
 }
-
