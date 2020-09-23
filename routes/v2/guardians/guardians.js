@@ -106,7 +106,8 @@ router.route('/register')
         guid: dbGuardian.guid,
         stream: dbStream.guid,
         token: token,
-        broker_hostname: process.env.GUARDIAN_BROKER_HOSTNAME,
+        api_mqtt_host: process.env.GUARDIAN_BROKER_HOSTNAME,  
+        api_sms_address: process.env.GUARDIAN_API_SMS_ADDRESS,
         keystore_passphrase: process.env.GUARDIAN_KEYSTORE_PASSPHRASE
       })
     } catch (e) {

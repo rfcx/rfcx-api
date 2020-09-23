@@ -12,7 +12,7 @@ var logDebug = loggers.debugLogger.log
 var SensationsService = require('../../services/sensations/sensations-service')
 
 function onMessageCheckin (data, messageId) {
-  logDebug('mqttCheckInRouter => onMessageCheckin', data)
+  logDebug('mqttCheckInRouter => onMessageCheckin')
   // cached file garbage collection... only do garbage collection ~1% of the time
   if (Math.random() < 0.01) { cachedFiles.cacheDirectoryGarbageCollection() }
 
