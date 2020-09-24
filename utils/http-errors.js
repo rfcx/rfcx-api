@@ -17,6 +17,10 @@ var options = {
     parse: 'Failed to parse input'
   },
 
+  501: {
+    default: 'Not Implemented'
+  },
+
   403: {
     default: 'Not authorized to access this resource',
     user: 'Only users are authorized to access this resource'
