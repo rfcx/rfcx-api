@@ -39,6 +39,7 @@ router.route('/:shortlink_id')
     }
   })
 
+// This route is used to share long page urls converted into something like https://rf.cx/s/esyA7ho
 router.route('/s/:hash')
   .get(function (req, res) {
     const hash = req.params.hash
@@ -57,6 +58,7 @@ router.route('/')
     res.redirect(301, 'https://rfcx.org/')
   })
 
+// This route is used in the Dashboard to share long page urls. Also could be used manually by team members to create short urls like https://rf.cx/s/esyA7ho
 router.route('/')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
