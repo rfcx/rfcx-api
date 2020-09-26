@@ -21,7 +21,7 @@ var httpServer = app.http.listen(app.http.get('port'), function () {
 })
 
 const subscriptionOptions = {
-  qos: 1
+  qos: 2
 }
 
 const checkinsTopicName = 'guardians/+/checkins'
