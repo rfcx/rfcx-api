@@ -30,7 +30,7 @@ app.mqtt = mqtt.connect({
   password: process.env.MQTT_BROKER_PASSWORD,
   protocolId: 'MQIsdp',
   protocolVersion: 3,
-  qos: 1,
+  qos: 2,
   connectTimeout: 2000,
   debug: true
 })
