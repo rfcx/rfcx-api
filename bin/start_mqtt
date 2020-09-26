@@ -82,7 +82,7 @@ app.mqtt.on('message', (topic, data) => {
   logDebug('new mqtt message', { topic })
   console.log('new mqtt message', topic, messageId)
 
-  if (topic === 'guardians/checkins') {
+  if (/guardians\/.+\/checkins/.test(topic)) {
     return mqttCheckInRouter.onMessageCheckin(data, messageId)
       .then((result) => {
         logDebug('mqtt message return object', {
@@ -109,7 +109,7 @@ app.mqtt.on('message', (topic, data) => {
         logDebug('mqtt message return object', { err })
         logError('mqtt message error', { err })
       })
-  } else if (topic === 'guardians/pings') {
+  } else if (/guardians\/.+\/pings/.test(topic)) {
     return mqttPingRouter.onMessagePing(data, messageId)
       .then((result) => {
         if (Object.keys(result.obj).length > 0) {
