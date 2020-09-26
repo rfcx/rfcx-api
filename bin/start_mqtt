@@ -24,34 +24,37 @@ const subscriptionOptions = {
   qos: 1
 }
 
+const checkinsTopicName = 'guardians/+/checkins'
+const pingsTopicName = 'guardians/+/pings'
+
 app.mqtt.on('connect', function () {
   console.log('mqtt: ' + appId + ' (' + app.mqtt.options.protocol + '://' + app.mqtt.options.host + ':' + app.mqtt.options.port + ') (' + process.env.NODE_ENV + ')')
-  app.mqtt.unsubscribe('guardians/checkins', (err) => {
+  app.mqtt.unsubscribe(checkinsTopicName, (err) => {
     if (err) {
-      console.log('mqtt: could not unsubscribe from topic "guardians/checkins"', err)
+      console.log(`mqtt: could not unsubscribe from topic "${checkinsTopicName}"`, err)
       return
     }
-    console.log('mqtt: unsubscribed from topic "guardians/checkins"')
-    app.mqtt.subscribe('guardians/checkins', subscriptionOptions, (err, granted) => {
+    console.log(`mqtt: unsubscribed from topic "${checkinsTopicName}"`)
+    app.mqtt.subscribe(checkinsTopicName, subscriptionOptions, (err, granted) => {
       if (err) {
-        console.log('mqtt: could not subscribe to topic "guardians/checkins"', err)
+        console.log(`mqtt: could not subscribe to topic "${checkinsTopicName}"`, err)
         return
       }
-      console.log('mqtt: subscribed to topic "guardians/checkins"', granted)
+      console.log(`mqtt: subscribed to topic "${checkinsTopicName}"`, granted)
     })
   })
-  app.mqtt.unsubscribe('guardians/pings', (err) => {
+  app.mqtt.unsubscribe(pingsTopicName, (err) => {
     if (err) {
-      console.log('mqtt: could not unsubscribe from topic "guardians/pings"', err)
+      console.log(`mqtt: could not unsubscribe from topic "${pingsTopicName}"`, err)
       return
     }
-    console.log('mqtt: unsubscribed from topic "guardians/pings"')
-    app.mqtt.subscribe('guardians/pings', subscriptionOptions, (err, granted) => {
+    console.log(`mqtt: unsubscribed from topic "${pingsTopicName}"`)
+    app.mqtt.subscribe(pingsTopicName, subscriptionOptions, (err, granted) => {
       if (err) {
-        console.log('mqtt: could not subscribe to topic "guardians/pings"', err)
+        console.log(`mqtt: could not subscribe to topic "${pingsTopicName}"`, err)
         return
       }
-      console.log('mqtt: subscribed to topic "guardians/pings"', granted)
+      console.log(`mqtt: subscribed to topic "${pingsTopicName}"`, granted)
     })
   })
 })
