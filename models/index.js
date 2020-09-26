@@ -24,7 +24,7 @@ const options = {
       console.log('Connected to MySQL')
     },
     afterDisconnect: () => {
-      console.log('Disonnect from MySQL')
+      console.log('Disonnected from MySQL')
     }
   }
 }
