@@ -18,6 +18,14 @@ const options = {
     dialectOptions: {
       collate: 'utf8_general_ci'
     }
+  },
+  hooks: {
+    afterConnect: () => {
+      console.log('Connected to MySQL')
+    },
+    afterDisconnect: () => {
+      console.log('Disonnect from MySQL')
+    }
   }
 }
 if (env === 'development') {
@@ -29,14 +37,7 @@ if (env === 'development') {
 var sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, options)
 var db = {}
 
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connected to MySQL.')
-  })
-  .catch(err => {
-    console.error('Unable to connect to MySQL:', err)
-  })
+sequelize.authenticate() // check connection
 
 // get file listing in 'models' directory, filtered by those we know to ignore...
 fs.readdirSync(__dirname).filter(function (file) {
