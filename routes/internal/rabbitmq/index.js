@@ -205,8 +205,8 @@ router.post('/topic_path', (req, res) => {
       const username = convertedParams.username
       const guardian = await guardiansService.getGuardianByGuid(username, true)
       if (!guardian ||
-          (convertedParams.permission === 'read' && convertedParams.routing_key !== `${convertedParams.username}.cmd`) ||
-          (convertedParams.permission === 'write' && ![`guardians.${username}.checkins`, `guardians.${username}.pings`].includes(convertedParams.routing_key))) {
+          (convertedParams.permission === 'read' && convertedParams.routing_key !== `grd.${convertedParams.username}.cmd`) ||
+          (convertedParams.permission === 'write' && ![`grd.${username}.chk`, `grd.${username}.png`].includes(convertedParams.routing_key))) {
         allow = false
       }
       return res.send(allow ? 'allow' : 'deny')

@@ -24,8 +24,8 @@ const subscriptionOptions = {
   qos: 2
 }
 
-const checkinsTopicName = 'guardians/+/checkins'
-const pingsTopicName = 'guardians/+/pings'
+const checkinsTopicName = 'grd/+/chk'
+const pingsTopicName = 'grd/+/png'
 
 app.mqtt.on('connect', function () {
   console.log('mqtt: ' + appId + ' (' + app.mqtt.options.protocol + '://' + app.mqtt.options.host + ':' + app.mqtt.options.port + ') (' + process.env.NODE_ENV + ')')
@@ -82,7 +82,7 @@ app.mqtt.on('message', (topic, data) => {
   logDebug('new mqtt message', { topic })
   console.log('new mqtt message', topic, messageId)
 
-  if (/guardians\/.+\/checkins/.test(topic)) {
+  if (/grd\/.+\/chk/.test(topic)) {
     return mqttCheckInRouter.onMessageCheckin(data, messageId)
       .then((result) => {
         logDebug('mqtt message return object', {
@@ -90,7 +90,7 @@ app.mqtt.on('message', (topic, data) => {
           gzip: result.gzip
         })
 
-        app.mqtt.publish(`${result.guardian_guid}/cmd`, result.gzip)
+        app.mqtt.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
 
       // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
       // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE BELOW SHOULD BE REMOVED
@@ -109,11 +109,11 @@ app.mqtt.on('message', (topic, data) => {
         logDebug('mqtt message return object', { err })
         logError('mqtt message error', { err })
       })
-  } else if (/guardians\/.+\/pings/.test(topic)) {
+  } else if (/grd\/.+\/png/.test(topic)) {
     return mqttPingRouter.onMessagePing(data, messageId)
       .then((result) => {
         if (Object.keys(result.obj).length > 0) {
-          app.mqtt.publish(`${result.guardian_guid}/cmd`, result.gzip)
+          app.mqtt.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
         }
 
         console.log('mqtt message processed', topic, messageId)
