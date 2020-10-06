@@ -5,7 +5,10 @@ var httpError = require('../../../utils/http-errors.js')
 var Converter = require('../../../utils/converter/converter')
 var hasRole = require('../../../middleware/authorization/authorization').hasRole
 const generator = require('generate-password')
-const redis = require('../../../utils/redis')
+const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
+if (redisEnabled) {
+  var redis = require('../../../utils/redis')
+}
 const ValidationError = require('../../../utils/converter/validation-error')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
@@ -39,8 +42,14 @@ router.route('/:shortlink_id')
     }
   })
 
+// This route is used to share long page urls converted into something like https://rf.cx/s/esyA7ho
 router.route('/s/:hash')
   .get(function (req, res) {
+    if (!redisEnabled) {
+      console.error('Someone is trying to open hashed shortlink while Redis is disabled')
+      httpError(req, res, 501, null, 'This functionality is not available in the API.')
+      return
+    }
     const hash = req.params.hash
     redis.getAsync(hash)
       .then((url) => {
@@ -57,8 +66,14 @@ router.route('/')
     res.redirect(301, 'https://rfcx.org/')
   })
 
+// This route is used in the Dashboard to share long page urls. Also could be used manually by team members to create short urls like https://rf.cx/s/esyA7ho
 router.route('/')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+    if (!redisEnabled) {
+      console.error('Someone is trying to open hashed shortlink while Redis is disabled')
+      httpError(req, res, 501, null, 'This functionality is not available in the API.')
+      return
+    }
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -105,7 +120,7 @@ router.route('/')
                 redis.set(hash, transformedParams.url, 'PX', transformedParams.expires)
                 return hash
               }
-              throw new Error('Error while getting the short link.')
+              throw new Error('Error while creating the short link.')
             })
         }
       })
@@ -115,7 +130,7 @@ router.route('/')
         res.status(200).send(url)
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while getting the short link.'); console.log(e) })
+      .catch(e => { httpError(req, res, 500, e, 'Error while creating the short link.'); console.log(e) })
   })
 
 module.exports = router

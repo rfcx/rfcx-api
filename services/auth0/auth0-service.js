@@ -1,47 +1,39 @@
 const request = require('request')
 const Promise = require('bluebird')
 const guid = require('../../utils/misc/guid')
-const redisClient = require('../../utils/redis')
 const generator = require('generate-password')
 
+// a local storage for tokens
+var tokens = {
+  standard: null,
+  auth: null,
+  client: null
+}
+
 // get token for standard Auth0 API
-function getToken () {
-  const tokenName = `auth0_token_${process.env.NODE_ENV}`
-  return findOrCreateToken(tokenName, getNewToken)
+async function getToken () {
+  await checkToken('standard', getNewToken)
+  return tokens.standard.access_token
 }
 
 // get token for Auth0 Authentication API
-function getAuthToken () {
-  const tokenName = `auth0_auth_token_${process.env.NODE_ENV}`
-  return findOrCreateToken(tokenName, getNewAuthToken)
+async function getAuthToken () {
+  await checkToken('auth', getNewAuthToken)
+  return tokens.auth.access_token
 }
 
 // get token for internal machine-to-machine authentication
-function getClientToken () {
-  const tokenName = `auth0_client_token_${process.env.NODE_ENV}`
-  return findOrCreateToken(tokenName, getNewClientToken)
+async function getClientToken () {
+  await checkToken('client', getNewClientToken)
+  return tokens.client.access_token
 }
 
-function findOrCreateToken (tokenName, func) {
-  return getTokenFromRedis(tokenName)
-    .then((token) => {
-      if (!token) {
-        return func()
-          .then((tokenData) => {
-            saveTokenToRedis(tokenName, tokenData)
-            return tokenData.access_token
-          })
-      }
-      return token
-    })
-}
-
-function saveTokenToRedis (tokenName, tokenData) {
-  return redisClient.set(tokenName, tokenData.access_token, 'EX', tokenData.expires_in)
-}
-
-function getTokenFromRedis (tokenType) {
-  return redisClient.getAsync(tokenType)
+async function checkToken (type, requestFunc) {
+  if (!tokens[type] || tokens[type].expires_at - Date.now() < 5000) { // it token is not defined or expires in next 5 seconds, request new one
+    const token = await requestFunc()
+    token.expires_at = Date.now() + token.expires_in
+    tokens[type] = { ...token }
+  }
 }
 
 function requestTokenFromAuth0 (audience) {

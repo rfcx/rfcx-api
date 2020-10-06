@@ -1,6 +1,9 @@
 const models = require('../../models')
 const modelsTimescale = require('../../modelsTimescale')
-const redis = require('../../utils/redis')
+const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
+if (redisEnabled) {
+  var redis = require('../../utils/redis')
+}
 
 function calcStatus (status, start) {
   return {
@@ -52,15 +55,20 @@ async function check (req, res) {
     status: false,
     mysql: false,
     timescaledb: false,
-    redis: false
+    ...redisEnabled && { redis: false }
   }
   if (req.query.headers === '1') { rtrnJson.http_headers = {}; for (const i in req.headers) { rtrnJson.http_headers[i] = req.headers[i] } }
-  const proms = [mySQLConnected(), timescaleDBConnected(), redisConnected()]
+  const proms = [mySQLConnected(), timescaleDBConnected()]
+  if (redisEnabled) {
+    proms.push(redisConnected())
+  }
   return Promise.all(proms)
     .then((data) => {
       rtrnJson.mysql = data[0]
       rtrnJson.timescaledb = data[1]
-      rtrnJson.redis = data[2]
+      if (redisEnabled) {
+        rtrnJson.redis = data[2]
+      }
       rtrnJson.status = !data.includes(false)
       res.json(rtrnJson)
     })
