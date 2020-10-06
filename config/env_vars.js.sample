@@ -112,4 +112,8 @@ exports.env = {
   // INGEST_SERVICE_ENABLED: 'false',
   // INGEST_SERVICE_BASE_URL: 'https://ingest.rfcx.org/',
 
+  /// When `ARBIMON_ENABLED` is set to `true` then the other env vars are required.
+  // ARBIMON_ENABLED: 'false'
+  // ARBIMON_BASE_URL: 'https://arbimon.rfcx.org/',
+
 }
