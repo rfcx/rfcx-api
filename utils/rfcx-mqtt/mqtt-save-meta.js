@@ -6,13 +6,17 @@ exports.saveMeta = {
     var dbMetaCPU = []
 
     for (const cpuInd in metaCPU) {
-      dbMetaCPU.push({
-        guardian_id: guardianId,
-        check_in_id: checkInId,
-        measured_at: new Date(parseInt(metaCPU[cpuInd][0])),
-        cpu_percent: parseInt(metaCPU[cpuInd][1]),
-        cpu_clock: parseInt(metaCPU[cpuInd][2])
-      })
+      if ((parseInt(metaCPU[cpuInd][1]) <= 100) && (parseInt(metaCPU[cpuInd][1]) >= 0) &&
+          (parseInt(metaCPU[cpuInd][2]) <= 5000) && (parseInt(metaCPU[cpuInd][2]) >= 0)
+      ) {
+        dbMetaCPU.push({
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(metaCPU[cpuInd][0])),
+          cpu_percent: parseInt(metaCPU[cpuInd][1]),
+          cpu_clock: parseInt(metaCPU[cpuInd][2])
+        })
+      }
     }
 
     return models.GuardianMetaCPU.bulkCreate(dbMetaCPU)
@@ -193,8 +197,9 @@ exports.saveMeta = {
     return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection)
   },
 
-  DiskUsage: function (metaDiskUsage, guardianId, checkInId) {
+  Storage: function (metaDiskUsage, guardianId, checkInId) {
     var diskUsage = { internal: {}, external: {} }
+
     for (const duInd in metaDiskUsage) {
       diskUsage[metaDiskUsage[duInd][0]] = {
         measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
@@ -203,17 +208,46 @@ exports.saveMeta = {
       }
     }
 
-    const opts = {
-      guardian_id: guardianId,
-      check_in_id: checkInId,
-      measured_at: diskUsage.internal.measured_at,
-      internal_bytes_available: diskUsage.internal.available,
-      internal_bytes_used: diskUsage.internal.used,
-      external_bytes_available: diskUsage.external.available,
-      external_bytes_used: diskUsage.external.used
+    var dbMetaDiskUsage = []
+    if ((metaDiskUsage.length > 0) && (diskUsage.internal.measured_at != null)) {
+      dbMetaDiskUsage.push({
+        guardian_id: guardianId,
+        measured_at: diskUsage.internal.measured_at,
+        internal_bytes_available: diskUsage.internal.available,
+        internal_bytes_used: diskUsage.internal.used,
+        external_bytes_available: diskUsage.external.available,
+        external_bytes_used: diskUsage.external.used
+      })
     }
 
-    return models.GuardianMetaDiskUsage.create(opts)
+    return models.GuardianMetaDiskUsage.bulkCreate(dbMetaDiskUsage)
+  },
+
+  Memory: function (metaMemory, guardianId, checkInId) {
+    var memory = { system: {} }
+
+    for (const mInd in metaMemory) {
+      memory[metaMemory[mInd][0]] = {
+        measured_at: new Date(parseInt(metaMemory[mInd][1])),
+        used: parseInt(metaMemory[mInd][2]),
+        available: parseInt(metaMemory[mInd][3]),
+        minimum: parseInt(metaMemory[mInd][4])
+      }
+    }
+    var dbMetaMemory = []
+    if ((metaMemory.length > 0) && (memory.system.measured_at != null)) {
+      dbMetaMemory.push({
+        guardian_id: guardianId,
+        measured_at: memory.system.measured_at,
+        system_bytes_available: memory.system.available,
+        system_bytes_used: memory.system.used,
+        system_bytes_minimum: memory.system.minimum/*,
+        external_bytes_available: memory.external.available,
+        external_bytes_used: memory.external.used */
+      })
+    }
+
+    return models.GuardianMetaMemory.bulkCreate(dbMetaMemory)
   },
 
   SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
@@ -239,6 +273,13 @@ exports.saveMeta = {
       if ((sysInpBatt === 'system') && (parseInt(metaSntnlPwr[duInd][4]) > 0)) {
         sntnlPwrEntries[timeStamp].temperature = parseInt(metaSntnlPwr[duInd][4])
       }
+
+      if ((sysInpBatt === 'battery') && (metaSntnlPwr[duInd][4].length > 0)) {
+        sntnlPwrEntries[timeStamp].state_of_charge = parseFloat(metaSntnlPwr[duInd][4])
+        if ((sntnlPwrEntries[timeStamp].state_of_charge > 150) || (sntnlPwrEntries[timeStamp].state_of_charge < -50)) {
+          sntnlPwrEntries[timeStamp].state_of_charge = null
+        }
+      }
     }
 
     var dbMetaSentinelPower = []
@@ -256,6 +297,7 @@ exports.saveMeta = {
           input_voltage: sntnlPwrEntries[sntPwrInd].input.voltage,
           input_current: sntnlPwrEntries[sntPwrInd].input.current,
           input_power: sntnlPwrEntries[sntPwrInd].input.power,
+          battery_state_of_charge: sntnlPwrEntries[sntPwrInd].state_of_charge,
           battery_voltage: sntnlPwrEntries[sntPwrInd].battery.voltage,
           battery_current: sntnlPwrEntries[sntPwrInd].battery.current,
           battery_power: sntnlPwrEntries[sntPwrInd].battery.power
@@ -310,6 +352,9 @@ exports.saveMeta = {
 
     for (const vInd in metaCheckInStatus) {
       dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_count'] = parseInt(metaCheckInStatus[vInd][1])
+      if (metaCheckInStatus[vInd][2] != null) {
+        dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_size_bytes'] = parseInt(metaCheckInStatus[vInd][2])
+      }
     }
     dbMetaCheckInStatus.push(dbMetaCheckInStatusObj)
 

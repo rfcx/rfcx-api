@@ -44,7 +44,7 @@
     "mandrill-api": "1.0.45",
     "moment": "2.25.3",
     "moment-timezone": "0.5.28",
-    "mqtt": "2.18.8",
+    "mqtt": "^4.2.1",
     "multer": "0.1.8",
     "mysql2": "2.1.0",
     "neo4j-driver": "1.7.3",

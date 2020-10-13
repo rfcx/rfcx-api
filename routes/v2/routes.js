@@ -6,7 +6,8 @@ module.exports = {
     require('./events/events')
   ],
   guardians: [
-    require('./guardians/guardians')
+    require('./guardians/guardians'),
+    require('./guardians/guardians-software')
   ],
   tags: [
     require('./tags/tags')

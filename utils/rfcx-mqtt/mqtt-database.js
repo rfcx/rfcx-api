@@ -66,8 +66,8 @@ exports.checkInDatabase = {
       checkInObj.json.checkins_to_verify = []
       for (const vInd in checkInStatArray) {
         checkInObj.json[checkInStatArray[vInd][0] + '_checkins'] = checkInStatArray[vInd][1]
-        if (checkInStatArray[vInd].length > 2) {
-          for (let i = 2; i < checkInStatArray[vInd].length; i++) {
+        if (checkInStatArray[vInd].length > 3) {
+          for (let i = 3; i < checkInStatArray[vInd].length; i++) {
             checkInObj.json.checkins_to_verify.push(checkInStatArray[vInd][i])
           }
         }
@@ -126,7 +126,8 @@ exports.checkInDatabase = {
       saveMeta.Network(strArrToJSArr(checkInObj.json.network, '|', '*'), guardianId, checkInId),
       saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
       saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
-      saveMeta.DiskUsage(strArrToJSArr(checkInObj.json.disk_usage, '|', '*'), guardianId, checkInId),
+      saveMeta.Storage(strArrToJSArr(checkInObj.json.storage, '|', '*'), guardianId, checkInId),
+      saveMeta.Memory(strArrToJSArr(checkInObj.json.memory, '|', '*'), guardianId, checkInId),
       saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition, '|', '*'), guardianId, checkInId),
       saveMeta.DateTimeOffset(strArrToJSArr(checkInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
       saveMeta.MqttBrokerConnection(strArrToJSArr(checkInObj.json.broker_connections, '|', '*'), guardianId, checkInId),
@@ -322,7 +323,6 @@ exports.checkInDatabase = {
         check_in_id: checkInObj.db.dbCheckIn.id,
         sha1_checksum: checkInObj.audio.meta.sha1CheckSum,
         url: null,
-        capture_bitrate: checkInObj.audio.meta.bitRate,
         encode_duration: checkInObj.audio.meta.encodeDuration,
         measured_at: checkInObj.audio.meta.measuredAt,
         measured_at_local: moment.tz(checkInObj.audio.meta.measuredAt, (checkInObj.db.dbSite.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),

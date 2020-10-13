@@ -13,6 +13,10 @@ const sitesService = require('../../../services/sites/sites-service')
 const streamsService = require('../../../services/streams')
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 var Converter = require('../../../utils/converter/converter')
+const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
+if (ARBIMON_ENABLED) {
+  var arbimonService = require('../../../services/arbimon')
+}
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -101,11 +105,27 @@ router.route('/register')
       // Create stream
       const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
 
+      if (ARBIMON_ENABLED) {
+        const idToken = req.headers.authorization
+        const userProject = await arbimonService.userProject(idToken)
+        const arbimonSiteData = {
+          project_id: userProject.project_id,
+          name: dbGuardian.shortname,
+          external_id: dbGuardian.guid,
+          lat: dbGuardian.latitude || 0,
+          lon: dbGuardian.longitude || 0,
+          alt: dbGuardian.altitude || 0
+        }
+        await arbimonService.createSite(arbimonSiteData, idToken)
+      }
+
       res.status(200).json({
         name: dbGuardian.shortname,
         guid: dbGuardian.guid,
         stream: dbStream.guid,
         token: token,
+        api_mqtt_host: process.env.GUARDIAN_BROKER_HOSTNAME,
+        api_sms_address: process.env.GUARDIAN_API_SMS_ADDRESS,
         keystore_passphrase: process.env.GUARDIAN_KEYSTORE_PASSPHRASE
       })
     } catch (e) {

@@ -56,6 +56,21 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true
       }
     },
+    battery_state_of_charge: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+      validate: {
+        isFloat: true,
+        min: {
+          args: [0],
+          msg: 'state of charge should be equal to or greater than 0'
+        },
+        max: {
+          args: [100],
+          msg: 'state of charge should be equal to or less than 100'
+        }
+      }
+    },
     battery_voltage: {
       type: DataTypes.INTEGER,
       allowNull: true,

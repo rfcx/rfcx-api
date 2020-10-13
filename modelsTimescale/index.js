@@ -24,7 +24,15 @@ const options = {
     updatedAt: 'updated_at' // force sequelize to respect snake_case for updated_at
   },
   migrationStorageTableName: 'migrations',
-  migrationStorageTableSchema: 'sequelize'
+  migrationStorageTableSchema: 'sequelize',
+  hooks: {
+    afterConnect: () => {
+      console.log('Connected to MySQL')
+    },
+    afterDisconnect: () => {
+      console.log('Disonnected from MySQL')
+    }
+  }
 }
 
 if (env === 'development') {
@@ -35,14 +43,7 @@ if (env === 'development') {
 var sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options)
 var db = {}
 
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connected to TimescaleDB.')
-  })
-  .catch(err => {
-    console.error('Unable to connect to TimescaleDB:', err)
-  })
+sequelize.authenticate() // check connection
 
 // get file listing in 'models' directory, filtered by those we know to ignore...
 fs.readdirSync(__dirname).filter(function (file) {

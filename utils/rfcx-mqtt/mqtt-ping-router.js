@@ -6,7 +6,7 @@ var loggers = require('../logger')
 var logDebug = loggers.debugLogger.log
 
 function onMessagePing (data, messageId) {
-  logDebug('mqttPingRouter => onMessagePing', data)
+  logDebug('mqttPingRouter => onMessagePing')
 
   return mqttPingProcess.parsePingInput(data)
     .then((pingObj) => {
