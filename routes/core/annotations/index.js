@@ -7,7 +7,6 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
 const streamPermissionService = require('../../../services/streams/permission')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 const Converter = require('../../../utils/converter/converter')
 
 function isUuid (str) {
@@ -65,7 +64,7 @@ function isUuid (str) {
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -79,7 +78,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
     .then(async () => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, streamId, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
@@ -119,7 +118,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
 
   return annotationsService.get(annotationId)
     .then(async (annotation) => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'R')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, annotation.stream_id, 'R')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
@@ -163,7 +162,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  */
 router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   const annotationId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMomentUtc()
@@ -177,13 +176,12 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
   }
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => annotationsService.get(annotationId))
     .then(async annotation => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, annotation.stream_id, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission for this operation.')
       }
@@ -234,7 +232,7 @@ router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) 
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, annotation.stream_id, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission for this operation.')
       }

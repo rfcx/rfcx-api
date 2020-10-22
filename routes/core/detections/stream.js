@@ -74,7 +74,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *         description: Stream not found
  */
 router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -160,7 +160,7 @@ router.post('/:streamId/detections', authenticatedWithRoles('appUser', 'rfcxUser
       if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
         return true
       }
-      return streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'W')
+      return streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, streamId, 'W')
     })
     .then(() => {
       const validatedDetections = params.transformedArray

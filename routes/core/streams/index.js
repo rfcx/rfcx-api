@@ -4,7 +4,6 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams')
 const streamPermissionService = require('../../../services/streams/permission')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 
@@ -48,10 +47,9 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
   params.convert('is_public').optional().toBoolean().default(false)
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => {
       convertedParams.id = convertedParams.id || hash.randomString(12)
-      convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id_timescaledb
       return streamsService.create(convertedParams, { joinRelations: true })
     })
     .then(streamsService.formatStream)
@@ -137,7 +135,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
 
   return params.validate()
     .then(async () => {
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id_timescaledb
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
       const streams = await Promise.all(streamsData.streams.map(async (stream) => {
         const permissions = await streamPermissionService.getPermissionsForStream(convertedParams.current_user_id, stream)
@@ -179,7 +177,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
 router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      const userId = req.rfcx.auth_token_info.owner_id
+      const userId = req.rfcx.auth_token_info.owner_id_timescaledb
       const allowed = await streamPermissionService.hasPermission(userId, stream, 'R')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
@@ -239,10 +237,9 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) =
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, stream, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to write to this stream.')
       }
@@ -281,7 +278,7 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) =
 router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      if (stream.created_by_id !== req.rfcx.auth_token_info.owner_id) {
+      if (stream.created_by_id !== req.rfcx.auth_token_info.owner_id_timescaledb) {
         throw new ForbiddenError('You do not have permission to delete this stream.')
       }
       return streamsService.softDelete(stream)

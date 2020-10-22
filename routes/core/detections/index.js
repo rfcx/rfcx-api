@@ -68,7 +68,7 @@ router.get('/', (req, res) => {
 
 router.put('/:id/review', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const detectionId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('positive').optional().toBoolean()

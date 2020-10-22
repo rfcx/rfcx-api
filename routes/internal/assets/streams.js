@@ -76,7 +76,7 @@ router.get('/streams/:attrs', authenticatedWithRoles('appUser', 'rfcxUser', 'sys
     if ((roles || []).includes('systemUser')) {
       allowed = true
     } else {
-      allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'R')
+      allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, stream, 'R')
     }
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to access this stream.')

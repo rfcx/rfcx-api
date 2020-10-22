@@ -3,7 +3,6 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
 const Converter = require('../../../utils/converter/converter')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
@@ -59,7 +58,7 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *         description: Stream not found
  */
 router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -116,7 +115,7 @@ router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
  */
 router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
   const streamId = req.params.streamId
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMomentUtc()
@@ -126,7 +125,6 @@ router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
   params.convert('frequency_max').toInt()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
       const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase

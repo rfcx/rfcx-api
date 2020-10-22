@@ -44,12 +44,12 @@ router.get('/streams/statistics/uploads', authenticatedWithRoles('appUser', 'rfc
   return params.validate()
     .then(async () => {
       if (convertedParams.stream_id) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, convertedParams.stream_id, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, convertedParams.stream_id, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id_timescaledb
       const data = await streamsStatisticsService.getUploads(convertedParams)
       return res.json(data)
     })
@@ -94,12 +94,12 @@ router.get('/streams/statistics/annotations', authenticatedWithRoles('appUser', 
   return params.validate()
     .then(async () => {
       if (convertedParams.stream_id) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, convertedParams.stream_id, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, convertedParams.stream_id, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id_timescaledb
       const data = await streamsStatisticsService.getAnnotations(convertedParams)
       return res.json(data)
     })
@@ -144,12 +144,12 @@ router.get('/streams/statistics/detections', authenticatedWithRoles('appUser', '
   return params.validate()
     .then(async () => {
       if (convertedParams.stream_id) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, convertedParams.stream_id, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, convertedParams.stream_id, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id_timescaledb
       const data = await streamsStatisticsService.getDetections(convertedParams)
       return res.json(data)
     })

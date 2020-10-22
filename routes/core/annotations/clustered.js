@@ -100,7 +100,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -119,12 +119,12 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   return params.validate()
     .then(() => {
       // TODO: handler username or guid case
-      return convertedParams.created_by === 'me' ? req.rfcx.auth_token_info.owner_id : undefined
+      return convertedParams.created_by === 'me' ? req.rfcx.auth_token_info.owner_id_timescaledb : undefined
     })
     .then(async (createdBy) => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, streamId, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }

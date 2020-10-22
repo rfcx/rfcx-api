@@ -74,7 +74,7 @@ router.put('/:streamId/users', authenticatedWithRoles('appUser', 'rfcxUser'), fu
   return params.validate()
     .then(async () => {
       const stream = await streamsService.getById(streamId, { joinRelations: true })
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id_timescaledb, stream, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }

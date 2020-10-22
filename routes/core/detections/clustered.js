@@ -100,7 +100,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.owner_id_timescaledb
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()

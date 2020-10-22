@@ -1,6 +1,7 @@
-var httpError = require('../../utils/http-errors')
-var auth0Service = require('../../services/auth0/auth0-service')
-var passport = require('passport')
+const httpError = require('../../utils/http-errors')
+const auth0Service = require('../../services/auth0/auth0-service')
+const usersTimescaleDBService = require('../../services/users/users-service-timescaledb')
+const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
 passport.use('jwt', require('../passport-jwt').JwtStrategy)
 passport.use('jwt-custom', require('../passport-jwt').JwtStrategyCustom)
@@ -45,7 +46,7 @@ function hasRole (expectedRoles) {
  * @param  {...String} roles
  */
 function authenticatedWithRoles (...roles) {
-  return [passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(roles)]
+  return [passport.authenticate(['jwt', 'jwt-custom'], { session: false }), syncTimescaleDBUser(), hasRole(roles)]
 }
 
 /**
@@ -58,6 +59,19 @@ function isRFCxUser () {
     // if (expectedRoles.length === 0 || req.user.userType !== 'auth0'){ return next(); }
     if (!req.user || req.user.rfcx_system === false) { return res.sendStatus(403) }
     return next()
+  }
+}
+
+function syncTimescaleDBUser () {
+  return function (req, res, next) {
+    usersTimescaleDBService.ensureUserSyncedFromToken(req)
+      .then((user) => {
+        req.rfcx.auth_token_info.owner_id_timescaledb = user.id
+        next()
+      })
+      .catch(() => {
+        next()
+      })
   }
 }
 
