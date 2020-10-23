@@ -75,13 +75,15 @@ function remove (streamSourceFile) {
  * @param {*} sha1_checksum
  * @returns {boolean} returns false if no duplicates, throws ValidationError if exists
  */
-function checkForDuplicates (stream_id, sha1_checksum) { // eslint-disable-line camelcase
+function checkForDuplicates (stream_id, sha1_checksum, filename) { // eslint-disable-line camelcase
   // check for duplicate source file files in this stream
   return models.StreamSourceFile
     .findAll({ where: { stream_id, sha1_checksum } }) // eslint-disable-line camelcase
-    .then((existingStreamSourceFile) => {
-      if (existingStreamSourceFile && existingStreamSourceFile.length) {
-        throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
+    .then((existingStreamSourceFiles) => {
+      if (existingStreamSourceFiles && existingStreamSourceFiles.length) {
+        const sameFile = existingStreamSourceFiles.find(x => x.filename === filename)
+        const message = sameFile ? 'This file was already ingested.' : 'Duplicate file. Matching sha1 signature already ingested.'
+        throw new ValidationError(message)
       }
       return false
     })
