@@ -1,6 +1,6 @@
 const rp = require('request-promise')
-const baseUrl = process.env.EARTH_RANGERS_BASE_URL
-const token = process.env.EARTH_RANGERS_ACCESS_TOKEN
+const baseUrl = process.env.EARTHRANGER_BASE_URL
+const token = process.env.EARTHRANGER_ACCESS_TOKEN
 
 function createEvent (body) {
   const options = {

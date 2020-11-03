@@ -116,9 +116,9 @@ exports.env = {
   // ARBIMON_ENABLED: 'false'
   // ARBIMON_BASE_URL: 'https://arbimon.rfcx.org/',
 
-  /// When `EARTH_RANGERS_ENABLED` is set to `true` then the other env vars are required.
-  // EARTH_RANGERS_ENABLED: 'false'
-  // EARTH_RANGERS_BASE_URL: 'https://sandbox.pamdas.org/',
-  // EARTH_RANGERS_ACCESS_TOKEN: '',
+  /// When `EARTHRANGER_ENABLED` is set to `true` then the other env vars are required.
+  // EARTHRANGER_ENABLED: 'false'
+  // EARTHRANGER_BASE_URL: 'https://sandbox.pamdas.org/',
+  // EARTHRANGER_ACCESS_TOKEN: '',
 
 }

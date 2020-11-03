@@ -16,10 +16,10 @@ const guardiansService = require('../../../services/guardians/guardians-service'
 const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 const sequelize = require('sequelize')
-const earthRangersEnabled = `${process.env.EARTH_RANGERS_ENABLED}` === 'true'
+const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'
 const moment = require('moment')
-if (earthRangersEnabled) {
-  var earthRangersService = require('../../../services/earth-rangers')
+if (earthRangerEnabled) {
+  var earthRangerService = require('../../../services/earthranger')
 }
 
 router.route('/')
@@ -134,9 +134,9 @@ router.route('/:guid/trigger')
         res.status(200).send({ success: true })
       })
       .then(async () => {
-        if (earthRangersEnabled) {
+        if (earthRangerEnabled) {
           try {
-            await earthRangersService.createEvent({
+            await earthRangerService.createEvent({
               event_type: 'acoustic_detection',
               time: moment.utc(eventData.event.audioMeasuredAt).toISOString(),
               location: {
