@@ -7,7 +7,6 @@ var analysisUtils = require('../../../utils/rfcx-analysis/analysis-queue.js').an
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 var loggers = require('../../../utils/logger')
 var sequelize = require('sequelize')
-const analysisService = require('../../../services/analysis/analysis-service')
 
 var logDebug = loggers.debugLogger.log
 
@@ -139,11 +138,6 @@ router.route('/:audio_id/tags')
           req: req,
           tagsJson: tagsJson
         })
-
-        analysisService.findStateByName('perc_done')
-          .then((state) => {
-            analysisService.changeEntityState(this.dbAudio.id, this.dbModel.id, state.id)
-          })
 
         if (this.dbModel.generate_event === 0) {
           logDebug('Audio tags endpoint: model not generating events, finishing', { req: req })

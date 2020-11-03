@@ -11,14 +11,12 @@ var analysisUtils = require('../../utils/rfcx-analysis/analysis-queue.js').analy
 
 var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
 var SensationsService = require('../../services/sensations/sensations-service')
-const analysisService = require('../../services/analysis/analysis-service')
 const aiService = require('../../services/ai/ai-service')
 
 const moment = require('moment-timezone')
 var urls = require('../../utils/misc/urls')
 
 var loggers = require('../../utils/logger')
-var logDebug = loggers.debugLogger.log
 var logError = loggers.errorLogger.log
 
 exports.audio = {
@@ -240,54 +238,6 @@ exports.audio = {
             }
           })
     })
-  },
-
-  queueForTaggingByActiveModels: function (audioInfo) {
-    return models.AudioAnalysisModel
-      .findAll({
-        where: { is_active: true }
-      })
-      .bind({})
-      .then(function (dbModels) {
-        logDebug('queueForTaggingByActiveModels: models', { length: dbModels.length })
-        this.dbModels = dbModels
-        return dbModels.map(function (model) {
-          return model.guid
-        })
-      })
-      .then(function (modelGuids) {
-        logDebug('queueForTaggingByActiveModels: models guids', { guids: modelGuids })
-        var promises = []
-        for (const i in modelGuids) {
-          var prom = analysisUtils.queueAudioForAnalysis('rfcx-analysis', modelGuids[i], {
-            audio_guid: audioInfo.audio_guid,
-            api_url_domain: audioInfo.api_url_domain,
-            audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-            audio_s3_path: audioInfo.s3Path,
-            audio_sha1_checksum: audioInfo.sha1Hash
-          })
-          promises.push(prom)
-        }
-        return Promise.all(promises)
-      })
-      .then(function () {
-        logDebug('queueForTaggingByActiveModels: after queueAudioForAnalysis')
-        analysisService.findStateByName('perc_queued')
-          .then((state) => {
-            logDebug('queueForTaggingByActiveModels: state', { state: state.id })
-            const proms = this.dbModels.map((model) => {
-              return analysisService.createEntity(audioInfo.audio_id, model.id, state.id)
-            })
-            return Promise.all(proms)
-          })
-          .catch((err) => {
-            logError('queueForTaggingByActiveModels: analysis entries error', { error: err })
-          })
-
-        audioInfo.isSaved ? audioInfo.isSaved.sqs = true : audioInfo.isSaved = { sqs: true }
-        // logDebug('queueForTaggingByActiveModels: audioInfo', { audioInfo });
-        return audioInfo
-      })
   },
 
   queueForTaggingByActiveV3Models: function (audioInfo, dbGuardian) {

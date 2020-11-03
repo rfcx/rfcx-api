@@ -222,12 +222,7 @@ router.route('/:guardian_id/checkins')
                 self: self,
                 dbGuardian: self.dbGuardian
               })
-              // if (!self.dbGuardian || !self.dbGuardian.Site || (self.dbGuardian.Site && self.dbGuardian.Site.is_analyzable)) {
-              //   return checkInHelpers.audio.queueForTaggingByActiveModels(this.audioInfoPostQueue)
-              // }
-              // else {
               return this.audioInfoPostQueue
-              // }
             })
             .then(function () {
               if (self.dbGuardian) {
