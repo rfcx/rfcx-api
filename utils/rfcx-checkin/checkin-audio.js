@@ -7,7 +7,6 @@ var aws = require('../../utils/external/aws.js').aws()
 var exec = require('child_process').exec
 var audioUtils = require('../../utils/rfcx-audio').audioUtils
 var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
-var analysisUtils = require('../../utils/rfcx-analysis/analysis-queue.js').analysisUtils
 
 var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
 var SensationsService = require('../../services/legacy/sensations/sensations-service')
