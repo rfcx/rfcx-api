@@ -52,7 +52,11 @@ function getIds (uuids) {
 }
 
 function query (attrs, opts = {}) {
-
+  return models.Classifier.findAll({
+    limit: attrs.limit,
+    offset: attrs.offset,
+    attributes: models.Classifier.attributes.lite
+  })
 }
 
 module.exports = {

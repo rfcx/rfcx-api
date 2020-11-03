@@ -37,24 +37,12 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req,
 /**
  * @swagger
  *
- * /classifications:
+ * /classifiers:
  *   get:
- *     summary: Get list of classifications matching search criteria
+ *     summary: Get list of classifiers (models) matching search criteria
  *     tags:
- *       - classfications
+ *       - classfiers
  *     parameters:
- *       - name: keyword
- *         description: Match classifications with title or alternative name (if keyword matches an alternative name then it will be included in the response)
- *         in: query
- *         type: string
- *         example: owl
- *       - name: levels
- *         description: Limit the results to classifications from specific levels in the hierarchy (meaning, different classification types)
- *         in: query
- *         type: array
- *         items:
- *           type: string
- *           example: species
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -67,30 +55,30 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req,
  *         default: 0
  *     responses:
  *       200:
- *         description: List of classification objects
+ *         description: List of classifier objects
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/ClassificationLite'
+ *                 $ref: '#/components/schemas/ClassifierLite'
  *       400:
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.query, transformedParams)
-
-  params.convert('keyword').optional().toString()
-  params.convert('levels').optional().toArray()
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
 
   params.validate()
     .then(() => {
-      const { keyword, levels, limit, offset } = transformedParams
-      return classificationService.queryByKeyword(keyword, levels, limit, offset)
+      const { limit, offset } = transformedParams
+      const attributes = { limit, offset }
+      return service.query(attributes)
     })
     .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))
+    .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
+
+module.exports = router

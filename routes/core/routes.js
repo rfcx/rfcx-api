@@ -5,6 +5,9 @@ module.exports = {
   classifications: [
     require('./classifications')
   ],
+  classifiers: [
+    require('./classifiers')
+  ],
   detections: [
     require('./detections')
   ],
