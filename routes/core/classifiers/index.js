@@ -1,37 +1,37 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const classificationService = require('../../../services/classifications')
+const service = require('../../../services/classifiers')
 const Converter = require('../../../utils/converter/converter')
 
 /**
  * @swagger
  *
- * /classifications/{value}:
+ * /classifiers/{id}:
  *   get:
- *     summary: Get a classfication
+ *     summary: Get a classifier (model)
  *     tags:
- *       - classfications
+ *       - classifiers
  *     parameters:
- *       - name: value
- *         description: Classification identifier
+ *       - name: id
+ *         description: Classifier identifier
  *         in: path
  *         type: string
  *         example: gibbon
  *     responses:
  *       200:
- *         description: A classification
+ *         description: A classifier
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Classification'
+ *               $ref: '#/components/schemas/Classifier'
  *       404:
  *         description: Not found
  */
-router.get('/:value', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
-  return classificationService.get(req.params.value)
+router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+  return service.get(req.params.id)
     .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res, 'Failed getting classification'))
+    .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
 })
 
 /**
@@ -94,37 +94,3 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))
 })
-
-/**
- * @swagger
- *
- * /classifications/{value}/characteristics:
- *   get:
- *     summary: Get the characteristics belonging to a classification
- *     tags:
- *       - classfications
- *     parameters:
- *       - name: value
- *         description: Classification identifier
- *         in: path
- *         type: string
- *         example: attenuata
- *     responses:
- *       200:
- *         description: List of classification objects
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/ClassificationLite'
- *       400:
- *         description: Invalid query parameters
- */
-router.get('/:value/characteristics', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
-  return classificationService.queryByParent(req.params.value, 'characteristic')
-    .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res, 'Failed getting characteristics'))
-})
-
-module.exports = router

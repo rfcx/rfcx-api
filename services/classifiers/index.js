@@ -51,7 +51,12 @@ function getIds (uuids) {
     })
 }
 
+function query (attrs, opts = {}) {
+
+}
+
 module.exports = {
   getByUuid,
-  getIds
+  getIds,
+  query
 }

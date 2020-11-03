@@ -6,7 +6,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamPermissionService = require('../../../services/streams/permission')
 const annotationsService = require('../../../services/annotations')
-const classificationService = require('../../../services/classification/classification-service')
+const classificationService = require('../../../services/classifications')
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 const Converter = require('../../../utils/converter/converter')
 
