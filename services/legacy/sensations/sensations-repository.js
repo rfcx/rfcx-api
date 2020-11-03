@@ -1,5 +1,5 @@
-var sequelize = require('../../models/index').sequelize
-var timeUtils = require('../../utils/misc/time')
+var sequelize = require('../../../models/index').sequelize
+var timeUtils = require('../../../utils/misc/time')
 module.exports = class SensationsRepository {
   create (params) {
     params.starting_after = timeUtils.momentToMysqlString(params.starting_after)

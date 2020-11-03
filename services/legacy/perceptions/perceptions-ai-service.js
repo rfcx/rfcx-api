@@ -1,8 +1,8 @@
-var Converter = require('../../utils/converter/converter')
+var Converter = require('../../../utils/converter/converter')
 var CognitionService = require('../cognitions/cognitions-service')
-var models = require('../../models')
-var aws = require('../../utils/external/aws').aws()
-var ValidationError = require('../../utils/converter/validation-error')
+var models = require('../../../models')
+var aws = require('../../../utils/external/aws').aws()
+var ValidationError = require('../../../utils/converter/validation-error')
 var Promise = require('bluebird')
 var sequelize = require('sequelize')
 

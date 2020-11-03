@@ -1,8 +1,10 @@
+// TODO: replace with services/storage/amazon
+
 var Promise = require('bluebird')
 var fs = require('fs')
 var AWS = require('aws-sdk')
-var aws = require('../../utils/external/aws').aws()
-const loggers = require('../../utils/logger')
+var aws = require('../../../utils/external/aws').aws()
+const loggers = require('../../../utils/logger')
 const logError = loggers.errorLogger.log
 
 const client = new AWS.S3({

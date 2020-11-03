@@ -10,8 +10,8 @@ var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 var analysisUtils = require('../../utils/rfcx-analysis/analysis-queue.js').analysisUtils
 
 var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
-var SensationsService = require('../../services/sensations/sensations-service')
-const aiService = require('../../services/ai/ai-service')
+var SensationsService = require('../../services/legacy/sensations/sensations-service')
+const aiService = require('../../services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')
 var urls = require('../../utils/misc/urls')

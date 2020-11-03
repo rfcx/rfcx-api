@@ -1,6 +1,6 @@
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
-const S3Service = require('../s3/s3-service')
+const S3Service = require('../legacy/s3/s3-service')
 const models = require('../../models')
 const sequelize = require('sequelize')
 

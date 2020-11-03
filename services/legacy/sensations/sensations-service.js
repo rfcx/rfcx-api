@@ -1,8 +1,8 @@
 var sequelize = require('sequelize')
-var Converter = require('../../utils/converter/converter')
+var Converter = require('../../../utils/converter/converter')
 var SensationsRepository = require('./sensations-repository')
-const ValidationError = require('../../utils/converter/validation-error')
-var models = require('../../models')
+const ValidationError = require('../../../utils/converter/validation-error')
+var models = require('../../../models')
 const moment = require('moment-timezone')
 
 function createSensations (params) {

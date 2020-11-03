@@ -9,7 +9,7 @@ var mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
 var queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
 var loggers = require('../../utils/logger')
 var logDebug = loggers.debugLogger.log
-var SensationsService = require('../../services/sensations/sensations-service')
+var SensationsService = require('../../services/legacy/sensations/sensations-service')
 
 function onMessageCheckin (data, messageId) {
   logDebug('mqttCheckInRouter => onMessageCheckin')
