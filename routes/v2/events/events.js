@@ -16,6 +16,11 @@ const guardiansService = require('../../../services/guardians/guardians-service'
 const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 const sequelize = require('sequelize')
+const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'
+const moment = require('moment')
+if (earthRangerEnabled) {
+  var earthRangerService = require('../../../services/earthranger')
+}
 
 router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
@@ -98,7 +103,6 @@ router.route('/:guid/windows')
 router.route('/:guid/trigger')
   .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['systemUser']), function (req, res) {
     let eventData, guardian
-
     return eventsServiceNeo4j.getEventInfoByGuid(req.params.guid)
       .bind({})
       .then((data) => {
@@ -127,13 +131,37 @@ router.route('/:guid/trigger')
         return eventsServiceNeo4j.sendNotificationsForEvent(notificationData)
       })
       .then(() => {
-        eventData = null
-        guardian = null
         res.status(200).send({ success: true })
+      })
+      .then(async () => {
+        if (earthRangerEnabled) {
+          try {
+            await earthRangerService.createEvent({
+              event_type: 'acoustic_detection',
+              time: moment.utc(eventData.event.audioMeasuredAt).toISOString(),
+              location: {
+                latitude: guardian.latitude,
+                longitude: guardian.longitude
+              },
+              event_details: {
+                acoustic_detection_classification: eventData.label.label,
+                acoustic_detection_device: guardian.shortname,
+                acoustic_detection_audio_url: `${process.env.ASSET_URLBASE}/audio/${eventData.event.audioGuid}.mp3`
+              },
+              priority: 100
+            })
+          } catch (e) {
+            console.error('Cannot send event to EarthRanger service', e.message)
+          }
+        }
       })
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => { httpError(req, res, 500, e, 'Error while triggering event notification.'); console.log(e) })
+      .finally(() => {
+        eventData = null
+        guardian = null
+      })
   })
 
 router.route('/:guid/review')
