@@ -95,21 +95,26 @@ exports.audioUtils = {
             }
             for (const i in preOutputOpts) { ffmpegOutputOptions.push(preOutputOpts[i]) }
 
-            new ffmpeg(inputParams.sourceFilePath) // eslint-disable-line new-cap
+            let cmd = new ffmpeg(inputParams.sourceFilePath) // eslint-disable-line new-cap
               .input(inputParams.sourceFilePath)
               .inputOptions(ffmpegInputOptions)
               .outputOptions(ffmpegOutputOptions)
               .outputFormat(audioFormatSettings[audioFormat].outputFormat)
               .audioCodec((copyCodecInsteadOfTranscode) ? 'copy' : audioFormatSettings[audioFormat].codec)
-              .audioFrequency(inputParams.sampleRate)
               .audioChannels((inputParams.enhanced) ? 2 : 1)
-            //       .audioBitrate(inputParams.bitRate)
-              .save(transcodedFilePath)
+
+            if (inputParams.sampleRate) {
+              cmd = cmd.audioFrequency(inputParams.sampleRate)
+            }
+            cmd.save(transcodedFilePath)
               .on('error', function (err, stdout, stderr) {
                 console.log('an error occurred: ' + err.message + ', stdout: ' + stdout + ', stderr: ' + stderr)
+                reject(err)
               })
               .on('end', function () {
-                fs.unlink(inputParams.sourceFilePath, function (e) { if (e) { console.log(e) } })
+                if (!inputParams.keepFile) {
+                  fs.unlink(inputParams.sourceFilePath, function (e) { if (e) { console.log(e) } })
+                }
                 resolve(transcodedFilePath)
               })
           } else {
