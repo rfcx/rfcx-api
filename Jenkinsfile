@@ -51,17 +51,16 @@ pipeline {
         }
         stage('Deploy') {
             when {
-                 expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
+                 expression { BRANCH_NAME ==~ /(develop|staging)/ }
             }
             steps {
                 sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
                 sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl set image deployment ${APIMEDIA} ${APIMEDIA}=${ECR}/${APIMEDIA}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
             }
         }
         stage('Verifying') {
             when {
-                 expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
+                 expression { BRANCH_NAME ==~ /(develop|staging)/ }
             }
             steps {
             catchError {
@@ -70,6 +69,30 @@ pipeline {
             sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
 	        sh "docker system prune -af"
             slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*API MQTT*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+            }
+            }
+        }
+
+        stage('Deploy Production') {
+            when {
+                 expression { BRANCH_NAME ==~ /(master)/ }
+            }
+            steps {
+                sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
+                sh "kubectl set image deployment ${APIMEDIA} ${APIMEDIA}=${ECR}/${APIMEDIA}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
+            }
+        }
+        stage('Verify Production') {
+            when {
+                 expression { BRANCH_NAME ==~ /(master)/ }
+            }
+            steps {
+            catchError {
+            sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
+            slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+            sh "kubectl rollout status deployment ${APIMEDIA} --namespace ${PHASE}"
+	        sh "docker system prune -af"
+            slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*API Media*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             }
             }
         }
