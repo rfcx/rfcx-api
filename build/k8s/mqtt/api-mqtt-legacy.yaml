@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-mqtt-legacy
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: api-mqtt-legacy
+  template:
+    metadata:
+      labels:
+        app: api-mqtt-legacy
+    spec:
+      containers:
+        - name: api-mqtt-legacy
+          image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-mqtt_production:192
+          envFrom:
+            - secretRef:
+                name: api-secrets
+          resources:
+          ports:
+            - containerPort: 3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-mqtt-legacy-service
+  namespace: production
+spec:
+  selector:
+    app: api-mqtt-legacy
+  type: ClusterIP
+  ports:
+    - name: node
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/backend-protocol: "http"
+    nginx.ingress.kubernetes.io/enable-cors: "false"
+  name: api-mqtt-legacy-ingress
+  namespace: production
+  labels:
+    app: "api-mqtt-legacy"
+spec:
+  rules:
+    - host: api-mqtt-legacy
+      http:
+        paths:
+          - backend:
+              serviceName: api-mqtt-legacy-service
+              servicePort: 3000
