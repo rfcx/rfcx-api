@@ -23,6 +23,11 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING
     }
   })
+  User.associate = function (models) {
+    User.belongsToMany(models.Role, { as: 'streams_roles', through: models.UserStreamRole })
+    User.belongsToMany(models.Role, { as: 'projects_roles', through: models.UserProjectRole })
+    User.belongsToMany(models.Role, { as: 'organizations_roles', through: models.UserOrganizationRole })
+  }
   User.attributes = {
     full: ['firstname', 'lastname', 'picture', 'username', 'email', 'guid'],
     lite: ['firstname', 'lastname', 'email', 'picture']
