@@ -711,7 +711,8 @@ router.route('/auth0/update-user/public')
       })
       .then((body) => {
         this.body = body
-        return usersService.getUserByEmail(body.email, true)
+        const email = body.email || req.user.email
+        return usersService.getUserByEmail(email, true)
       })
       .then((user) => {
         if (user) {
@@ -737,6 +738,7 @@ router.route('/auth0/update-user/public')
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch((err) => {
+        console.error('/auth0/update-user/public error', err)
         res.status(500).json({ err })
       })
   })

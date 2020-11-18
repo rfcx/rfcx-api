@@ -37,7 +37,6 @@ function combineUserData (jwtPayload, user) {
 function checkDBUser (req, jwtPayload, done) {
   const rfcxAppMetaUrl = 'https://rfcx.org/app_metadata'
   const tokenUserGuid = jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : undefined)
-
   // if request was sent from userless account (like GAIA), then use static user
   if (!jwtPayload.email && !tokenUserGuid) {
     jwtPayload.email = 'userless@rfcx.org'
@@ -48,7 +47,7 @@ function checkDBUser (req, jwtPayload, done) {
 
   // if request was sent from account which doesn't have email (like Facebook, created with a phone number)
   if (!jwtPayload.email && tokenUserGuid) {
-    jwtPayload.email = `${jwtPayload.guid}@rfcx.org`
+    jwtPayload.email = `${tokenUserGuid}@rfcx.org`
   }
 
   userService.findOrCreateUser(
