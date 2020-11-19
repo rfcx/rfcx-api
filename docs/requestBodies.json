@@ -347,5 +347,43 @@
       "sample_count",
       "file_extension"
     ]
+  },
+  "Project": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "A project id",
+        "example": "xu82jDgX49"
+      },
+      "name": {
+        "type": "string",
+        "description": "A project name",
+        "example": "My Project 1"
+      },
+      "description": {
+        "type": "string",
+        "description": "A project description",
+        "example": "Project 1 description"
+      },
+      "is_public": {
+        "type": "boolean",
+        "description": "Whether project is public (default false)",
+        "default": "false"
+      },
+      "prganization_id": {
+        "type": "string",
+        "description": "An organization id",
+        "example": "mwiojDg54a"
+      },
+      "external_id": {
+        "type": "integer",
+        "description": "A project id in the external platrofm (e.g. Arbimon)",
+        "example": 1905
+      }
+    },
+    "required": [
+      "name"
+    ]
   }
 }
