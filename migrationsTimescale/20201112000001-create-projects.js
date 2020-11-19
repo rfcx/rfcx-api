@@ -15,6 +15,11 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true
       },
+      is_public: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+      },
       organization_id: {
         type: Sequelize.STRING(12),
         allowNull: true,
@@ -35,6 +40,10 @@ module.exports = {
           key: 'id'
         }
       },
+      external_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false
@@ -42,6 +51,10 @@ module.exports = {
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false
+      },
+      deleted_at: {
+        type: Sequelize.DATE,
+        allowNull: true
       }
     })
   },

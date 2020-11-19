@@ -11,6 +11,11 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true
       },
+      is_public: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+      },
       created_by_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -28,6 +33,10 @@ module.exports = {
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false
+      },
+      deleted_at: {
+        type: Sequelize.DATE,
+        allowNull: true
       }
     })
   },
