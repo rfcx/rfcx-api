@@ -32,6 +32,87 @@
       "frequencyMax"
     ]
   },
+  "ClassifierBase": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "A classifier id",
+        "example": "oH82Jp43"
+      },
+      "name": {
+        "type": "string",
+        "description": "The name of the classifier",
+        "example": "dogback"
+      },
+      "version": {
+        "type": "integer",
+        "description": "The version of the classifier",
+        "example": "9"
+      },
+      "supported_classification_values": {
+        "type": "array",
+        "description": "IDs of the classifications that this classifier supports",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "version",
+      "supported_classification_values"
+    ]
+  },
+  "ClassifierWithFile": {
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/ClassifierBase"
+      },
+      {
+        "properties": {
+          "file": {
+            "type": "file",
+            "description": "A `.tar.gz` of the model"
+          }
+        }
+      }
+    ]
+  },
+  "Classifier": {
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/ClassifierBase"
+      },
+      {
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
+          },
+          "enabled_projects": {
+            "type": "array",
+            "description": "List of identifiers of projects to enable for this classifier",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled_streams": {
+            "type": "array",
+            "description": "List of identifiers of individual streams to enable for this classifier",
+            "items": {
+              "type": "string"
+            }
+          },
+          "event_strategy": {
+            "type": "string",
+            "description": "Identifies the strategy for sending events"
+          }
+        }
+      }
+    ]
+  },
   "Detection": {
     "type": "object",
     "properties": {

@@ -41,7 +41,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req,
  *   get:
  *     summary: Get list of classifiers (models) matching search criteria
  *     tags:
- *       - classfiers
+ *       - classifiers
  *     parameters:
  *       - name: limit
  *         description: Maximum number of results to return
@@ -76,6 +76,52 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
       const { limit, offset } = transformedParams
       const attributes = { limit, offset }
       return service.query(attributes)
+    })
+    .then(data => res.json(data))
+    .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
+})
+
+/**
+ * @swagger
+ *
+ * /classifiers:
+ *   post:
+ *     summary: Create a classifier
+ *     tags:
+ *       - classifiers
+ *     requestBody:
+ *       description: Classifier object
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/requestBodies/Classifier'
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: '#/components/requestBodies/Classifier'
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/requestBodies/ClassifierWithFile'
+ *     responses:
+ *       201:
+ *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Classifier'
+ *       400:
+ *         description: Invalid query parameters
+ */
+router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+  const transformedParams = {}
+  const params = new Converter(req.body, transformedParams)
+
+  params.validate()
+    .then(() => {
+      const { limit, offset } = transformedParams
+      const createdById = req.rfcx.auth_token_info.owner_id
+      const attributes = { limit, offset, createdById }
+      return service.create(attributes)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))

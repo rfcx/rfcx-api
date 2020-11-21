@@ -154,6 +154,76 @@
       }
     ]
   },
+  "ClassifierLite": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "2p49i4XH"
+      },
+      "name": {
+        "type": "string",
+        "example": "chainsaw"
+      },
+      "version": {
+        "type": "integer",
+        "example": "8"
+      },
+      "status": {
+        "type": "string",
+        "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "version"
+    ]
+  },
+  "Classifier": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassifierLite"
+      },
+      {
+        "properties": {
+          "supported_classifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassificationLite"
+            }
+          },
+          "enabled_projects": {
+            "type": "array",
+            "description": "Projects that are enabled for this classifier",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled_streams": {
+            "type": "array",
+            "description": "Individual streams that are enabled for this classifier",
+            "items": {
+              "$ref": "#/components/schemas/StreamLite"
+            }
+          },
+          "created_at": {
+            "type": "date"
+          },
+          "created_by": {
+            "type": "integer",
+            "description": "The user who created the classifier"
+          },
+          "updated_at": {
+            "type": "date"
+          },
+          "updated_by": {
+            "type": "integer",
+            "description": "The user who last updated the classifier"
+          }
+        }
+      }
+    ]
+  },
   "Cluster": {
     "type": "object",
     "properties": {
@@ -629,5 +699,35 @@
         "totalVerified": 20
       }
     }
-  }
+  },
+  "EventStrategy": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for event strategies",
+        "example": "15"
+      },
+      "name": {
+        "type": "string",
+        "description": "Human-readable name of the strategy",
+        "example": "Min 4 detections over 90 seconds"
+      },
+      "description": {
+        "type": "string",
+        "description": "Description of the strategy",
+        "example": "Raise an event when 4 or more detections are found within a 90 second period."
+      },
+      "type": {
+        "type": "string",
+        "description": "Type of strategy (one of 'window' or ...)",
+        "example": "window"
+      },
+      "parameters": {
+        "type": "string",
+        "description": "Parameters to be applied to algorithm",
+        "example": "minimum-windows=4 period-seconds=90"
+      }
+    }
+  },
 }
