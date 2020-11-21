@@ -371,14 +371,14 @@
         "description": "Whether project is public (default false)",
         "default": "false"
       },
-      "prganization_id": {
+      "organization_id": {
         "type": "string",
         "description": "An organization id",
         "example": "mwiojDg54a"
       },
       "external_id": {
         "type": "integer",
-        "description": "A project id in the external platrofm (e.g. Arbimon)",
+        "description": "A project id in the external platform (e.g. Arbimon)",
         "example": 1905
       }
     },
