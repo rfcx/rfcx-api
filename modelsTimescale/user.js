@@ -24,9 +24,9 @@ module.exports = function (sequelize, DataTypes) {
     }
   })
   User.associate = function (models) {
-    User.belongsToMany(models.Role, { as: 'streams_roles', through: models.UserStreamRole })
-    User.belongsToMany(models.Role, { as: 'projects_roles', through: models.UserProjectRole })
-    User.belongsToMany(models.Role, { as: 'organizations_roles', through: models.UserOrganizationRole })
+    User.belongsToMany(models.Role, { as: 'stream_roles', through: models.UserStreamRole })
+    User.belongsToMany(models.Role, { as: 'project_roles', through: models.UserProjectRole })
+    User.belongsToMany(models.Role, { as: 'organization_roles', through: models.UserOrganizationRole })
   }
   User.attributes = {
     full: ['firstname', 'lastname', 'picture', 'username', 'email', 'guid'],
