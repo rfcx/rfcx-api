@@ -10,27 +10,27 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    active: {
+    active: { // true when this is the active (current) deployment for a given classifier
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
     },
-    status: {
+    status: { // 10 staging, 20 production, 90 retired
       type: DataTypes.INTEGER,
       defaultValue: 0
     },
-    start: {
+    start: { // when this deployment should start
       type: DataTypes.DATE(3),
       allowNull: false
     },
-    end: {
+    end: { // when this deployment should end
       type: DataTypes.DATE(3)
     },
-    created_by_id: {
+    created_by_id: { // who initiated the deployment
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    deployment_parameters: {
+    deployment_parameters: { // prediction service parameters specific to the deployment (e.g. step seconds)
       type: DataTypes.STRING
     }
   })

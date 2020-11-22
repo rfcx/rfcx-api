@@ -14,11 +14,19 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    external_reference: {
+    external_id: {
       type: DataTypes.STRING
     },
     created_by_id: {
       type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    model_runner: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    model_url: {
+      type: DataTypes.STRING,
       allowNull: false
     },
     last_executed_at: {
