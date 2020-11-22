@@ -44,8 +44,8 @@ module.exports = (sequelize, DataTypes) => {
     // Classifier.belongsToMany(models.Project, { as: 'active_projects', through: 'classifier_active_projects' })
   }
   Classifier.attributes = {
-    full: ['name', 'version', 'status', 'external_reference', 'last_executed_at'],
-    lite: ['name', 'version', 'status']
+    full: ['name', 'version', 'external_id', 'model_runner', 'model_url', 'last_executed_at'],
+    lite: ['name', 'version', 'last_executed_at']
   }
   return Classifier
 }
