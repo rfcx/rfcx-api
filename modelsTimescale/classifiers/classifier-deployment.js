@@ -39,8 +39,8 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierDeployment.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   ClassifierDeployment.attributes = {
-    full: ['name', 'version', 'status', 'external_reference', 'prediction_parameters'],
-    lite: ['name', 'version', 'status', 'external_reference']
+    full: ['id', 'active', 'status', 'start', 'end', 'deployment_parameters'],
+    lite: ['id', 'active', 'status', 'start', 'end']
   }
   return ClassifierDeployment
 }

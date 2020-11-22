@@ -40,12 +40,12 @@ module.exports = (sequelize, DataTypes) => {
     Classifier.hasMany(models.ClassifierDeployment, { as: 'deployments', foreignKey: 'classifier_id' })
     Classifier.hasMany(models.ClassifierOutput, { as: 'outputs', foreignKey: 'classifier_id' })
     Classifier.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
-    Classifier.belongsToMany(models.Stream, { as: 'active_streams', through: 'classifier_active_streams' })
+    Classifier.belongsToMany(models.Stream, { as: 'active_streams', through: 'classifier_active_streams', timestamps: false })
     // Classifier.belongsToMany(models.Project, { as: 'active_projects', through: 'classifier_active_projects' })
   }
   Classifier.attributes = {
-    full: ['name', 'version', 'external_id', 'model_runner', 'model_url', 'last_executed_at'],
-    lite: ['name', 'version', 'last_executed_at']
+    full: ['id', 'name', 'version', 'external_id', 'model_runner', 'model_url', 'last_executed_at'],
+    lite: ['id', 'name', 'version', 'last_executed_at']
   }
   return Classifier
 }

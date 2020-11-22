@@ -29,7 +29,7 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Not found
  */
 router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
-  return service.get(req.params.id)
+  return service.get(req.params.id, { joinRelations: true })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
 })

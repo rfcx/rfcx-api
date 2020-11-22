@@ -31,8 +31,8 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierEventStrategy.belongsTo(models.EventStrategy, { as: 'event_strategy', foreignKey: 'event_strategy_id' })
   }
   ClassifierEventStrategy.attributes = {
-    full: ['parameters'],
-    lite: ['parameters']
+    full: ['event_strategy_id', 'active', 'parameters', 'last_executed_at'],
+    lite: ['event_strategy_id', 'active']
   }
   return ClassifierEventStrategy
 }

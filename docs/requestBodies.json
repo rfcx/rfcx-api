@@ -73,7 +73,8 @@
       {
         "properties": {
           "file": {
-            "type": "file",
+            "type": "string",
+            "format": "binary",
             "description": "A `.tar.gz` of the model"
           }
         }

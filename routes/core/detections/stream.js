@@ -173,7 +173,7 @@ router.post('/:streamId/detections', authenticatedWithRoles('appUser', 'rfcxUser
       const validatedDetections = params.transformedArray
       // Get all the distinct classifier uuids
       const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))]
-      return classifierService.getIds(classifierUuids)
+      return classifierService.getIdsByExternalIds(classifierUuids)
     })
     .then(classifierMapping => {
       const validatedDetections = params.transformedArray

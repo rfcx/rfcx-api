@@ -29,8 +29,8 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierOutput.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   ClassifierOutput.attributes = {
-    full: ['name', 'version', 'status', 'external_reference', 'prediction_parameters'],
-    lite: ['name', 'version', 'status', 'external_reference']
+    full: ['classification_id', 'output_class_name', 'ignore'],
+    lite: ['classification_id', 'output_class_name', 'ignore']
   }
   return ClassifierOutput
 }
