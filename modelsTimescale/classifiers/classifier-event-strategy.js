@@ -16,11 +16,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     active: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true,
-      allowNull: false
+      allowNull: false,
+      defaultValue: true
     },
     parameters: {
       type: DataTypes.STRING
+    },
+    last_executed_at: {
+      type: DataTypes.DATE(3)
     }
   })
   ClassifierEventStrategy.associate = function (models) {
