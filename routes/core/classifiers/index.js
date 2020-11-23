@@ -7,9 +7,6 @@ const Converter = require('../../../utils/converter/converter')
 const storageService = process.env.PLATFORM === 'google' ? require('../../../services/storage/google') : require('../../../services/storage/amazon')
 const { hash } = require('../../../utils/misc/hash')
 
-// const multer = require('multer')
-// const multipartFormDataMiddleware = multer({ storage: multer.memoryStorage() })
-
 /**
  * @swagger
  *
@@ -133,7 +130,6 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
     .then(async () => {
       let modelUrl = ''
       if (req.files && req.files.file) {
-        console.log(req.files.file)
         const file = req.files.file
         if (!file.originalname.endsWith('.tar.gz')) {
           throw new ValidationError('File must be .tar.gz')
