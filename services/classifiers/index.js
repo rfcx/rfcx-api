@@ -84,8 +84,21 @@ function query (attrs, opts = {}) {
   })
 }
 
+function create (attrs) {
+  const classifier = {
+    name: attrs.name,
+    version: attrs.version,
+    external_id: attrs.external_id,
+    model_url: attrs.model_url || '',
+    model_runner: attrs.model_runner || 'tf2',
+    created_by_id: attrs.createdById
+  }
+  return models.Classifier.create(classifier)
+}
+
 module.exports = {
   get,
   getIdsByExternalIds,
-  query
+  query,
+  create
 }

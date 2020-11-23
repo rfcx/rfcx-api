@@ -19,7 +19,9 @@ module.exports = {
         }, { transaction: t }),
         queryInterface.addColumn('classifiers', 'model_runner', { type: Sequelize.STRING, allowNull: false, defaultValue: '' }, { transaction: t }),
         queryInterface.addColumn('classifiers', 'model_url', { type: Sequelize.STRING, allowNull: false, defaultValue: '' }, { transaction: t }),
-        queryInterface.addColumn('classifiers', 'last_executed_at', { type: Sequelize.DATE(3) }, { transaction: t })
+        queryInterface.addColumn('classifiers', 'last_executed_at', { type: Sequelize.DATE(3) }, { transaction: t },
+        queryInterface.addColumn('classifiers', 'created_at', { type: Sequelize.DATE(3), allowNull: false }, { transaction: t },
+        queryInterface.addColumn('classifiers', 'updated_at', { type: Sequelize.DATE(3), allowNull: false }, { transaction: t }
       ]).then(() => {
         return queryInterface.sequelize.query('UPDATE classifiers SET external_id = uuid', { transaction: t })
       }).then(() => {
@@ -30,6 +32,8 @@ module.exports = {
   down: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(t => {
       return Promise.all([
+        queryInterface.removeColumn('classifiers', 'updated_at', { transaction: t }),
+        queryInterface.removeColumn('classifiers', 'created_at', { transaction: t }),
         queryInterface.removeColumn('classifiers', 'last_executed_at', { transaction: t }),
         queryInterface.removeColumn('classifiers', 'model_url', { transaction: t }),
         queryInterface.removeColumn('classifiers', 'model_runner', { transaction: t }),

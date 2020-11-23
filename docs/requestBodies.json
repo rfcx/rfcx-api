@@ -88,18 +88,14 @@
       },
       {
         "properties": {
-          "status": {
-            "type": "string",
-            "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
-          },
-          "enabled_projects": {
+          "active_projects": {
             "type": "array",
             "description": "List of identifiers of projects to enable for this classifier",
             "items": {
               "type": "string"
             }
           },
-          "enabled_streams": {
+          "active_streams": {
             "type": "array",
             "description": "List of identifiers of individual streams to enable for this classifier",
             "items": {

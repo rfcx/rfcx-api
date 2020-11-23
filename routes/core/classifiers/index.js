@@ -1,8 +1,14 @@
 const router = require('express').Router()
+const ValidationError = require('../../../utils/converter/validation-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const service = require('../../../services/classifiers')
 const Converter = require('../../../utils/converter/converter')
+const storageService = process.env.PLATFORM === 'google' ? require('../../../services/storage/google') : require('../../../services/storage/amazon')
+const { hash } = require('../../../utils/misc/hash')
+
+// const multer = require('multer')
+// const multipartFormDataMiddleware = multer({ storage: multer.memoryStorage() })
 
 /**
  * @swagger
@@ -112,16 +118,46 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
  *       400:
  *         description: Invalid query parameters
  */
+// multipartFormDataMiddleware.single('file')
 router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.body, transformedParams)
+  params.convert('name').toString()
+  params.convert('version').toInt()
+  params.convert('external_id').toString()
+  params.convert('supported_classification_values').optional().toArray()
+  params.convert('active_projects').optional().toArray()
+  params.convert('active_streams').optional().toArray()
 
   params.validate()
-    .then(() => {
-      const { limit, offset } = transformedParams
+    .then(async () => {
+      let modelUrl = ''
+      if (req.files && req.files.file) {
+        console.log(req.files.file)
+        const file = req.files.file
+        if (!file.originalname.endsWith('.tar.gz')) {
+          throw new ValidationError('File must be .tar.gz')
+        }
+        // Perform upload
+        const storageBucket = process.env.ASSET_BUCKET_AI
+        const storagePath = `classifiers/${hash.randomString(8)}.tar.gz`
+        await storageService.upload(storageBucket, storagePath, file.path)
+        modelUrl = `${process.env.PLATFORM === 'google' ? 'gs' : 's3'}://${storageBucket}/${storagePath}`
+      }
+
       const createdById = req.rfcx.auth_token_info.owner_id
-      const attributes = { limit, offset, createdById }
-      return service.create(attributes)
+      const classifier = {
+        name: transformedParams.name,
+        version: transformedParams.version,
+        external_id: transformedParams.external_id,
+        model_url: modelUrl,
+        active_streams: transformedParams.active_streams,
+        createdById
+      }
+      return service.create(classifier)
+    })
+    .then(classifier => {
+      // TODO create outputs and streams/projects
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
