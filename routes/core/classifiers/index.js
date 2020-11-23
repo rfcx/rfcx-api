@@ -151,8 +151,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
         version: transformedParams.version,
         external_id: transformedParams.external_id,
         model_url: modelUrl,
-        active_streams: transformedParams.active_streams,
-        createdById
+        created_by_id: createdById
       }
       return service.create(classifier)
     })
