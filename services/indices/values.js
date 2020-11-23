@@ -1,8 +1,7 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
-const platform = process.env.PLATFORM || 'amazon'
-const storageService = require(`../storage/${platform}`)
+const storageService = process.env.PLATFORM === 'google' ? require('../storage/google') : require('../storage/amazon')
 
 function defaultQueryOptions (streamId, index, start, end, descending, limit, offset) {
   return {

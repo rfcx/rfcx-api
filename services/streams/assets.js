@@ -8,8 +8,7 @@ const audioUtils = require('../../utils/rfcx-audio').audioUtils
 const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 const mathUtil = require('../../utils/misc/math')
 const hash = require('../../utils/misc/hash').hash
-const platform = process.env.PLATFORM || 'amazon'
-const storageService = require(`../../services/storage/${platform}`)
+const storageService = process.env.PLATFORM === 'google' ? require('../../services/storage/google') : require('../../services/storage/amazon')
 
 const possibleWindowFuncs = ['dolph', 'hann', 'hamming', 'bartlett', 'rectangular', 'kaiser']
 const possibleExtensions = ['png', 'jpeg', 'wav', 'opus', 'flac', 'mp3']
