@@ -8,3 +8,5 @@ INSERT INTO public.classifier_deployments (id, classifier_id, active, status, st
 INSERT INTO public.classifier_deployments (id, classifier_id, active, status, start, "end", created_by_id, deployment_parameters) VALUES (8, 77, true, 90, '2020-08-04 17:02:09', NULL, 8, NULL);
 INSERT INTO public.classifier_deployments (id, classifier_id, active, status, start, "end", created_by_id, deployment_parameters) VALUES (9, 78, false, 10, '2020-07-03 18:16:14', '2020-08-04 17:02:09', 8, 'step_seconds=0.48');
 INSERT INTO public.classifier_deployments (id, classifier_id, active, status, start, "end", created_by_id, deployment_parameters) VALUES (10, 78, true, 20, '2020-08-04 17:02:09', NULL, 8, 'step_seconds=0.48');
+
+ALTER SEQUENCE classifier_deployments_id_seq RESTART WITH 11;

@@ -20,3 +20,5 @@ INSERT INTO public.classifiers (id, external_id, name, version, created_by_id, m
 INSERT INTO public.classifiers (id, external_id, name, version, created_by_id, model_runner, model_url) VALUES (74, '8d5976d0-0863-b2ec-30de-42014879e813', 'dogbark', 12, 8, 'tf2', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_by_id, model_runner, model_url) VALUES (79, 'f6701043-2cdb-3891-d2a6-67671f2def70', 'vehicle', 4, 8, 'tf2', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_by_id, model_runner, model_url) VALUES (78, 'a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d', 'gunshot', 4, 8, 'tf2', '');
+
+ALTER SEQUENCE classifiers_id_seq RESTART WITH 80;
