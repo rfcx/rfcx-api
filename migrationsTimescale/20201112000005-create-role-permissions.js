@@ -12,15 +12,9 @@ module.exports = {
           key: 'id'
         }
       },
-      permission_id: {
+      permission: {
         type: Sequelize.STRING(1),
-        allowNull: false,
-        references: {
-          model: {
-            tableName: 'permissions'
-          },
-          key: 'id'
-        }
+        allowNull: false
       }
     })
   },

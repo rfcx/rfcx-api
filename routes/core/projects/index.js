@@ -7,6 +7,12 @@ const projectsService = require('../../../services/projects')
 const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
+const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
+const rolesService = require('../../../services/roles')
+
+function hasPermission (p) {
+  return hasPermissionMW(p, 'Project')
+}
 
 /**
  * @swagger
@@ -38,6 +44,7 @@ const Converter = require('../../../utils/converter/converter')
  */
 
 router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('id').optional().toString()
@@ -52,6 +59,10 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
     .then(async () => {
       if (convertedParams.organization_id) {
         await organizationsService.getById(convertedParams.organization_id)
+        const allowed = await rolesService.hasPermission('C', userId, convertedParams.organization_id, 'Organization')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to create project in this organization.')
+        }
       }
       convertedParams.id = convertedParams.id || hash.randomString(12)
       convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id
@@ -165,7 +176,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
  *       404:
  *         description: Project not found
  */
-router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/:id', hasPermission('R'), (req, res) => {
   return projectsService.getById(req.params.id, { joinRelations: true })
     .then(projectsService.formatProject)
     .then(json => res.json(json))
@@ -208,7 +219,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  *       404:
  *         description: Project not found
  */
-router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.patch('/:id', hasPermission('U'), (req, res) => {
   const projectId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -258,14 +269,9 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) =
  *       404:
  *         description: Project not found
  */
-router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.delete('/:id', hasPermission('D'), (req, res) => {
   return projectsService.getById(req.params.id, { joinRelations: true })
-    .then(async project => {
-      if (project.created_by_id !== req.rfcx.auth_token_info.owner_id) {
-        throw new ForbiddenError('You do not have permission to delete this project.')
-      }
-      return projectsService.softDelete(project)
-    })
+    .then(projectsService.softDelete)
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting project'))
 })
