@@ -10,8 +10,6 @@ const guardianGroupService = require('../guardians/guardian-group-service')
 const userService = require('../users/users-service')
 const textGridService = require('../textgrid/textgrid-service')
 const mailService = require('../mail/mail-service')
-const loggers = require('../../utils/logger')
-const logError = loggers.errorLogger.log
 const aws = require('../../utils/external/aws.js').aws()
 const hash = require('../../utils/misc/hash.js').hash
 const usersService = require('../users/users-service')
@@ -488,7 +486,7 @@ function sendNotificationsForEvent (data) {
             // Send push notification to mobile devices
             firebaseService.sendToTopic(opts)
               .catch((err) => {
-                logError(`Error sending Firebase message for audio ${data.audio_guid} to ${dbGuardianGroup.shortname} topic`, { err })
+                console.error(`Error sending Firebase message for audio ${data.audio_guid} to ${dbGuardianGroup.shortname} topic`, err)
               })
             // Send email to subscribers
             dbGuardianGroup.getUsers()
@@ -559,7 +557,7 @@ function sendSNSForEvent (data) {
         return aws.publish(topic, msg)
       })
       .catch((err) => {
-        logError(`Error sending SNS message for audio ${data.audio_guid} to ${topic} topic`, { err })
+        console.error(`Error sending SNS message for audio ${data.audio_guid} to ${topic} topic`, err)
       })
   }
 }

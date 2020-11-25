@@ -83,8 +83,6 @@ exports.env = {
 
   MQTT_BROKER_HOST: "mqtt.rfcx.org",
 
-  KAFKA_HOST: "",
-
   /// When `REDIS_ENABLED` is set to `true` then the other Redis env vars are required.
   // REDIS_ENABLED: "true"
   // REDIS_HOST: "127.0.0.1",
