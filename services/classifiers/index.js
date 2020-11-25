@@ -96,9 +96,15 @@ function create (attrs) {
   return models.Classifier.create(classifier)
 }
 
+function update (attrs) {
+  get()
+  return models.Classifier.update()
+}
+
 module.exports = {
   get,
   getIdsByExternalIds,
   query,
-  create
+  create,
+  update
 }

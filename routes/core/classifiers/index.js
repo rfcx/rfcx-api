@@ -158,4 +158,52 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
 
+router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+  const transformedParams = {}
+  const id = req.query.id
+  const params = new Converter(req.body, transformedParams)
+  params.convert('status').optional.toString()
+  params.convert('active_streams').optional().toArray()
+  params.convert('active_projects').optional().toArray()
+
+  params.validate()
+    .then(async () => {
+
+      const updateObj = {
+        id:id,
+        status:transformedParams.status,
+        active_streams:transformedParams.active_streams,
+        active_projects:transformedParams.active_projects
+      }
+
+      return service.update(updateObj)
+    })
+    .then(data => res.json(data))
+    .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))
+})
+
+router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+  const transformedParams = {}
+  const id = req.query.id
+  const params = new Converter(req.body, transformedParams)
+  params.convert('status').optional.toString()
+  params.convert('active_streams').optional().toArray()
+  params.convert('active_projects').optional().toArray()
+
+  params.validate()
+    .then(async () => {
+
+      const updateObj = {
+        id:id,
+        status:transformedParams.status,
+        active_streams:transformedParams.active_streams,
+        active_projects:transformedParams.active_projects
+      }
+
+      return service.update(updateObj)
+    })
+    .then(data => res.json(data))
+    .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))
+})
+
 module.exports = router
