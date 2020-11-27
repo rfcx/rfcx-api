@@ -10,9 +10,8 @@ var sequelize = require('sequelize')
 var ValidationError = require('../../../utils/converter/validation-error')
 var hasRole = require('../../../middleware/authorization/authorization').hasRole
 const siteService = require('../../../services/sites/sites-service')
-const usersService = require('../../../services/users/users-service')
+const userService = require('../../../services/users/users-service-legacy')
 const guardiansService = require('../../../services/guardians/guardians-service')
-const userService = require('../../../services/users/users-service')
 const streamsService = require('../../../services/streams')
 var Converter = require('../../../utils/converter/converter')
 
@@ -195,7 +194,7 @@ router.route('/admin')
 
 router.route('/my')
   .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
       .then((user) => {
         return models.Guardian
           .findAll({
@@ -300,7 +299,7 @@ router.route('/register')
             })
             .then((dbGuardian) => {
               if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
-                return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
+                return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
                   .then((user) => {
                     dbGuardian.creator = user.id
                     dbGuardian.is_private = true

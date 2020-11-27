@@ -4,7 +4,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams')
 const streamPermissionService = require('../../../services/streams/permission')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 
@@ -48,7 +48,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
   params.convert('is_public').optional().toBoolean().default(false)
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => {
       convertedParams.id = convertedParams.id || hash.randomString(12)
       convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id
@@ -239,7 +239,7 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) =
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
       const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')

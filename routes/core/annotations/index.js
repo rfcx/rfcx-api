@@ -7,7 +7,7 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
 const streamPermissionService = require('../../../services/streams/permission')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 
 function isUuid (str) {
@@ -177,7 +177,7 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
   }
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => annotationsService.get(annotationId))
     .then(async annotation => {
       if (!annotation) {

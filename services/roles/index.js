@@ -2,7 +2,7 @@ const models = require('../../modelsTimescale')
 const organizationsService = require('../organizations')
 const projectsService = require('../projects')
 const streamsService = require('../streams')
-const userService = require('../users/users-service-timescaledb')
+const usersFusedService = require('../users/fused')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
 const roleBaseInclude = [
@@ -59,7 +59,7 @@ async function hasPermission (type, userId, itemOrId, itemModelName) {
   if (!item) {
     throw new EmptyResultError(`${itemModelName} with given id doesn't exist.`)
   }
-  const user = await userService.getByParams({ id: userId })
+  const user = await usersFusedService.getByParams({ id: userId })
   if (user.is_super || item.created_by_id === userId || (item.is_public && type === 'R')) {
     return true
   }

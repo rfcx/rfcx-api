@@ -4,7 +4,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const organizationsService = require('../../../services/organizations')
 const projectsService = require('../../../services/projects')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
@@ -55,7 +55,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
   params.convert('external_id').optional().toInt()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(async () => {
       if (convertedParams.organization_id) {
         await organizationsService.getById(convertedParams.organization_id)
@@ -231,7 +231,7 @@ router.patch('/:id', hasPermission('U'), (req, res) => {
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => projectsService.getById(projectId, { includeDeleted: convertedParams.restore === true }))
     .then(async project => {
       if (convertedParams.organization_id) {
