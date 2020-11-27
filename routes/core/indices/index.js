@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const indicesService = require('../../../services/indices')
 const Converter = require('../../../utils/converter/converter')
 
@@ -35,7 +34,7 @@ const Converter = require('../../../utils/converter/converter')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.get('/', function (req, res) {
   const params = new Converter(req.query)
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()

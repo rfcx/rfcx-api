@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const organizationsService = require('../../../services/organizations')
 const projectsService = require('../../../services/projects')
 const usersFusedService = require('../../../services/users/fused')
@@ -43,7 +42,7 @@ function hasPermission (p) {
  *         description: Invalid query parameters
  */
 
-router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.post('/', function (req, res) {
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -128,7 +127,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/', (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()

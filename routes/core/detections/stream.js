@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
 const classifierService = require('../../../services/classifier/classifier-service')
@@ -142,7 +141,7 @@ router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
  *       404:
  *         description: Stream not found
  */
-router.post('/:streamId/detections', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/detections', function (req, res) {
   const streamId = req.params.streamId
   const detections = Array.isArray(req.body) ? req.body : [req.body]
 

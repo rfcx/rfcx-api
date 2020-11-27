@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/stream-segment')
 
@@ -26,7 +25,7 @@ const streamSegmentService = require('../../../services/streams/stream-segment')
  *       404:
  *         description: Stream not found
  */
-router.delete('/:uuid', authenticatedWithRoles('systemUser'), (req, res) => {
+router.delete('/:uuid', (req, res) => {
   return streamSegmentService.getById(req.params.uuid)
     .then(async (streamSegment) => {
       const stream = await streamsService.getById(streamSegment.stream_id)

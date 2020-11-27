@@ -1,4 +1,3 @@
-const { authenticatedWithRoles } = require('./authorization')
 const rolesService = require('../../services/roles')
 const httpError = require('../../utils/http-errors')
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
@@ -12,7 +11,7 @@ const { httpErrorHandler } = require('../../utils/http-error-handler.js')
  * @param {Permission} permission
  */
 function hasPermission (permission, modelName) {
-  return authenticatedWithRoles('appUser', 'rfcxUser').concat((req, res, next) => {
+  return (req, res, next) => {
     const subjectId = req.params.id
     const userId = req.rfcx.auth_token_info.owner_id
     return rolesService.hasPermission(permission, userId, subjectId, modelName)
@@ -23,7 +22,7 @@ function hasPermission (permission, modelName) {
         next()
       })
       .catch(httpErrorHandler(req, res, 'Unable to process request.'))
-  })
+  }
 }
 
 module.exports = {

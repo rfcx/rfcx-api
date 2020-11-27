@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const auth0Service = require('../../../services/auth0/auth0-service')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/stream-segment')
@@ -65,7 +64,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         description: Insufficient privileges
  */
 
-router.get('/streams/:attrs', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), async function (req, res) {
+router.get('/streams/:attrs', async function (req, res) {
   try {
     const attrs = await streamsAssetsService.parseFileNameAttrs(req)
     await streamsAssetsService.checkAttrsValidity(req, attrs)

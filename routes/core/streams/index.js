@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams')
 const streamPermissionService = require('../../../services/streams/permission')
 const usersFusedService = require('../../../services/users/fused')
@@ -37,7 +36,7 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Invalid query parameters
  */
 
-router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.post('/', function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('id').optional().toString()
@@ -123,7 +122,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/', (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -176,7 +175,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/:id', (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
       const userId = req.rfcx.auth_token_info.owner_id
@@ -227,7 +226,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  *       404:
  *         description: Stream not found
  */
-router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.patch('/:id', (req, res) => {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -278,7 +277,7 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) =
  *       404:
  *         description: Stream not found
  */
-router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.delete('/:id', (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
       if (stream.created_by_id !== req.rfcx.auth_token_info.owner_id) {

@@ -6,7 +6,6 @@ const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { hasPermission } = require('../../../middleware/authorization/streams')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -62,7 +61,7 @@ router.get('/:streamId/users', hasPermission('W'), async function (req, res) {
  *         description: Created
  */
 
-router.put('/:streamId/users', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.put('/:streamId/users', function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
