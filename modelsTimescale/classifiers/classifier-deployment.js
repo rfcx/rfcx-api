@@ -33,6 +33,8 @@ module.exports = (sequelize, DataTypes) => {
     deployment_parameters: { // prediction service parameters specific to the deployment (e.g. step seconds)
       type: DataTypes.STRING
     }
+  }, {
+    timestamps: false
   })
   ClassifierDeployment.associate = function (models) {
     ClassifierDeployment.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })

@@ -160,23 +160,25 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
 
 router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const transformedParams = {}
-  const id = req.query.id
+  const id = req.params.id
   const params = new Converter(req.body, transformedParams)
-  params.convert('status').optional.toString()
+  params.convert('name').optional.toString()
+  params.convert('status').toInt()
+  params.convert('version').toInt()
+  // params.convert('external_id').optional.toString()
+  params.convert('model_runner').optional.toString()
+  // params.convert('model_url').optional.toString()
+  // params.convert('last_executed_at').toMoment()
+  params.convert('deployments').optional().toArray()
   params.convert('active_streams').optional().toArray()
   params.convert('active_projects').optional().toArray()
 
+  const createdById = req.rfcx.auth_token_info.owner_id
+  console.log(createdById)
+
   params.validate()
     .then(async () => {
-
-      const updateObj = {
-        id:id,
-        status:transformedParams.status,
-        active_streams:transformedParams.active_streams,
-        active_projects:transformedParams.active_projects
-      }
-
-      return service.update(updateObj)
+      return service.update(id, createdById, transformedParams)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))
@@ -184,23 +186,23 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req,
 
 router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const transformedParams = {}
-  const id = req.query.id
+  const id = req.params.id
   const params = new Converter(req.body, transformedParams)
-  params.convert('status').optional.toString()
+  params.convert('name').optional.toString()
+  params.convert('status').toInt()
+  params.convert('version').toInt()
+  // params.convert('external_id').optional.toString()
+  params.convert('model_runner').optional.toString()
+  // params.convert('model_url').optional.toString()
+  // params.convert('last_executed_at').toMoment()
+  params.convert('deployments').optional().toArray()
   params.convert('active_streams').optional().toArray()
   params.convert('active_projects').optional().toArray()
 
+  const createdById = req.rfcx.auth_token_info.owner_id
   params.validate()
     .then(async () => {
-
-      const updateObj = {
-        id:id,
-        status:transformedParams.status,
-        active_streams:transformedParams.active_streams,
-        active_projects:transformedParams.active_projects
-      }
-
-      return service.update(updateObj)
+      return service.update(id, createdById, transformedParams)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))

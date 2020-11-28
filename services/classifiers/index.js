@@ -96,9 +96,64 @@ function create (attrs) {
   return models.Classifier.create(classifier)
 }
 
-function update (attrs) {
-  get()
-  return models.Classifier.update()
+function update (id, createdBy, attrs, opts = {}) {
+  models.Classifier
+    .findOne({
+      where: { id },
+      attributes: models.Classifier.attributes.full,
+      include: opts && opts.joinRelations ? baseInclude : []
+    })
+    .then(item => {
+      if (!item) {
+        throw new EmptyResultError('Classifier with given uuid not found.')
+      }
+
+      if (attrs.status) {
+        const update = {
+          id: id,
+          created_by: createdBy,
+          status: attrs.status
+        }
+        updateStatus(update)
+      }
+
+      return item.update(attrs)
+    })
+}
+
+function updateStatus(update) {
+  const classifierDeployment = {
+    classifier_id: update.id,
+    active: true,
+    status: update.status,
+    start: Date(),
+    end: null,
+    created_by_id: update.created_by,
+    deployment_parameters: null
+  }
+
+  models.ClassifierDeployment.findOne({
+    where: { 
+      classifier_id: update.id,
+      active: true
+      },
+    attributes: models.ClassifierDeployment.attributes.full
+  })
+  .then(itemDeployment => {
+    if (!itemDeployment) {
+      models.ClassifierDeployment.create(classifierDeployment)
+    } else {
+      if (itemDeployment.status !== update.status) {
+        models.ClassifierDeployment.create(classifierDeployment)
+        const updateDeployment = {
+          active: false,
+          end: Date(),
+          deployments_parameters: "step_seconds=0.48"
+        }
+        itemDeployment.update(updateDeployment)
+      }
+    }
+  })
 }
 
 module.exports = {
