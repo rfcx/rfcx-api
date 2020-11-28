@@ -1,3 +1,4 @@
+const { Converter } = require('aws-sdk/clients/dynamodb')
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
@@ -116,6 +117,14 @@ function update (id, createdBy, attrs, opts = {}) {
         }
         updateStatus(update)
       }
+      // Update classifier-active-streams if there is active_streams in update body.
+      if (attrs.active_streams) {
+        const update = {
+          id: id,
+          active_streams: attrs.active_streams
+        }
+        updateActiveStreams(update)
+      }
 
       return item.update(attrs)
     })
@@ -157,6 +166,27 @@ function updateStatus(update) {
       }
     }
   })
+}
+
+function updateActiveStreams(update) {
+  const activeStreams = update.active_streams
+  activeStreams.forEach(streamId => {
+    const activeStreams = {
+      classifier_id: update.id,
+      stream_id: streamId
+    }
+    // Search for specific classifier_id and stream_id if it's existed
+    models.ClassifierActiveStreams.findOne({
+      where: activeStreams,
+      attributes: models.ClassifierActiveStreams.attributes.full
+    })
+    .then(itemActiveStreams => {
+      // If not existed then create new one
+      if (!itemActiveStreams) {
+        models.ClassifierActiveStreams.create(activeStreams)
+      }
+    })
+  });
 }
 
 module.exports = {
