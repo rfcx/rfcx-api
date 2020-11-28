@@ -107,7 +107,7 @@ function update (id, createdBy, attrs, opts = {}) {
       if (!item) {
         throw new EmptyResultError('Classifier with given uuid not found.')
       }
-
+      // Update classifier-deployment if there is status in update body.
       if (attrs.status) {
         const update = {
           id: id,
@@ -131,7 +131,7 @@ function updateStatus(update) {
     created_by_id: update.created_by,
     deployment_parameters: null
   }
-
+  // Search for last active of classifier id
   models.ClassifierDeployment.findOne({
     where: { 
       classifier_id: update.id,
@@ -141,15 +141,18 @@ function updateStatus(update) {
   })
   .then(itemDeployment => {
     if (!itemDeployment) {
+      // Create if there is not last active
       models.ClassifierDeployment.create(classifierDeployment)
     } else {
       if (itemDeployment.status !== update.status) {
+        // Create if the new one
         models.ClassifierDeployment.create(classifierDeployment)
         const updateDeployment = {
           active: false,
           end: Date(),
-          deployments_parameters: "step_seconds=0.48"
+          deployment_parameters: "step_seconds=0.48"
         }
+        // Update the old one with active false and end
         itemDeployment.update(updateDeployment)
       }
     }
