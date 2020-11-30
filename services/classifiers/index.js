@@ -113,7 +113,8 @@ function update (id, createdBy, attrs, opts = {}) {
         const update = {
           id: id,
           created_by: createdBy,
-          status: attrs.status
+          status: attrs.status,
+          deployment_parameters: attrs.deployment_parameters || null
         }
         updateStatus(update)
       }
@@ -125,11 +126,11 @@ function update (id, createdBy, attrs, opts = {}) {
         }
         updateActiveStreams(update)
       }
-
+      // Update classifier-deployment if there is deployment_parameters in update body.
       if (attrs.deployment_parameters) {
         const update = {
           id: id,
-          active_streams: attrs.deployment_parameters
+          parameters: attrs.deployment_parameters
         }
         updateDeploymentParameters(update)
       }
@@ -138,7 +139,7 @@ function update (id, createdBy, attrs, opts = {}) {
     })
 }
 
-function updateStatus(update) {
+function updateStatus (update) {
   const classifierDeployment = {
     classifier_id: update.id,
     active: true,
@@ -146,36 +147,36 @@ function updateStatus(update) {
     start: Date(),
     end: null,
     created_by_id: update.created_by,
-    deployment_parameters: null
+    deployment_parameters: update.deployment_parameters
   }
   // Search for last active of classifier id
   models.ClassifierDeployment.findOne({
-    where: { 
+    where: {
       classifier_id: update.id,
       active: true
-      },
+    },
     attributes: models.ClassifierDeployment.attributes.full
   })
-  .then(itemDeployment => {
-    if (!itemDeployment) {
+    .then(itemDeployment => {
+      if (!itemDeployment) {
       // Create if there is not last active
-      models.ClassifierDeployment.create(classifierDeployment)
-    } else {
-      if (itemDeployment.status !== update.status) {
-        // Create if the new one
         models.ClassifierDeployment.create(classifierDeployment)
-        const updateDeployment = {
-          active: false,
-          end: Date()
+      } else {
+        if (itemDeployment.status !== update.status) {
+        // Create if the new one
+          const updateDeployment = {
+            active: false,
+            end: Date()
+          }
+          // Update the old one with active false and end
+          itemDeployment.update(updateDeployment)
+          models.ClassifierDeployment.create(classifierDeployment)
         }
-        // Update the old one with active false and end
-        itemDeployment.update(updateDeployment)
       }
-    }
-  })
+    })
 }
 
-function updateActiveStreams(update) {
+function updateActiveStreams (update) {
   const activeStreams = update.active_streams
   activeStreams.forEach(streamId => {
     const activeStreams = {
@@ -187,33 +188,33 @@ function updateActiveStreams(update) {
       where: activeStreams,
       attributes: models.ClassifierActiveStreams.attributes.full
     })
-    .then(itemActiveStreams => {
+      .then(itemActiveStreams => {
       // If not existed then create new one
-      if (!itemActiveStreams) {
-        models.ClassifierActiveStreams.create(activeStreams)
-      }
-    })
-  });
+        if (!itemActiveStreams) {
+          models.ClassifierActiveStreams.create(activeStreams)
+        }
+      })
+  })
 }
 
-function updateDeploymentParameters(update) {
+function updateDeploymentParameters (update) {
   // Search for last active of classifier id
   models.ClassifierDeployment.findOne({
-    where: { 
+    where: {
       classifier_id: update.id,
       active: true
-      },
+    },
     attributes: models.ClassifierDeployment.attributes.full
   })
-  .then(itemDeployment => {
-    if (!itemDeployment) {
+    .then(itemDeployment => {
+      if (itemDeployment) {
       // Update deployment-parameters
-      const update = {
-        deployment_parameters: update.deployment_parameters
+        const updateDeployment = {
+          deployment_parameters: update.parameters
+        }
+        itemDeployment.update(updateDeployment)
       }
-      itemDeployment.update(updateDeployment)
-    }
-  })
+    })
 }
 
 module.exports = {

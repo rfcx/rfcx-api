@@ -162,13 +162,11 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req,
   const transformedParams = {}
   const id = req.params.id
   const params = new Converter(req.body, transformedParams)
-  // params.convert('status').optional.toInt()
+  params.convert('status').toInt()
   params.convert('deployment_parameters').optional.toString()
   params.convert('active_streams').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.owner_id
-
-  console.log(transformedParams.active_streams)
   params.validate()
     .then(async () => {
       return service.update(id, createdById, transformedParams)
@@ -181,7 +179,7 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (re
   const transformedParams = {}
   const id = req.params.id
   const params = new Converter(req.body, transformedParams)
-  // params.convert('status').optional.toInt()
+  params.convert('status').toInt()
   params.convert('deployment_parameters').optional.toString()
   params.convert('active_streams').optional().toArray()
 
