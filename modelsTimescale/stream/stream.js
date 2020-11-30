@@ -60,6 +60,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    project_id: {
+      type: DataTypes.STRING(12),
+      allowNull: true
+    },
     created_by_id: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -70,10 +74,11 @@ module.exports = function (sequelize, DataTypes) {
     deletedAt: 'deleted_at'
   })
   Stream.associate = function (models) {
+    Stream.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'max_sample_rate', 'created_by_id', 'created_at', 'updated_at'],
+    full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'max_sample_rate', 'project_id', 'created_by_id', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'start', 'end', 'is_public']
   }
   return Stream

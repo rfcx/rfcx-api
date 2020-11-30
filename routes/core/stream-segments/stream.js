@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams')
 const streamSourceFileService = require('../../../services/streams/stream-source-file')
 const streamSegmentService = require('../../../services/streams/stream-segment')
@@ -36,7 +35,7 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *         description: Invalid query parameters
  */
 
-router.post('/:streamId/stream-segments', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/stream-segments', function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

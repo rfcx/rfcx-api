@@ -22,16 +22,6 @@ module.exports = {
           key: 'id'
         }
       },
-      organization_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: {
-            tableName: 'organizations'
-          },
-          key: 'id'
-        }
-      },
       type: {
         type: Sequelize.STRING(1),
         allowNull: false
