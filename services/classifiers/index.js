@@ -126,6 +126,14 @@ function update (id, createdBy, attrs, opts = {}) {
         updateActiveStreams(update)
       }
 
+      if (attrs.deployment_parameters) {
+        const update = {
+          id: id,
+          active_streams: attrs.deployment_parameters
+        }
+        updateDeploymentParameters(update)
+      }
+
       return item.update(attrs)
     })
 }
@@ -158,8 +166,7 @@ function updateStatus(update) {
         models.ClassifierDeployment.create(classifierDeployment)
         const updateDeployment = {
           active: false,
-          end: Date(),
-          deployment_parameters: "step_seconds=0.48"
+          end: Date()
         }
         // Update the old one with active false and end
         itemDeployment.update(updateDeployment)
@@ -187,6 +194,26 @@ function updateActiveStreams(update) {
       }
     })
   });
+}
+
+function updateDeploymentParameters(update) {
+  // Search for last active of classifier id
+  models.ClassifierDeployment.findOne({
+    where: { 
+      classifier_id: update.id,
+      active: true
+      },
+    attributes: models.ClassifierDeployment.attributes.full
+  })
+  .then(itemDeployment => {
+    if (!itemDeployment) {
+      // Update deployment-parameters
+      const update = {
+        deployment_parameters: update.deployment_parameters
+      }
+      itemDeployment.update(updateDeployment)
+    }
+  })
 }
 
 module.exports = {

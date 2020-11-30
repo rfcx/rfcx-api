@@ -162,16 +162,9 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req,
   const transformedParams = {}
   const id = req.params.id
   const params = new Converter(req.body, transformedParams)
-  params.convert('name').optional.toString()
   // params.convert('status').optional.toInt()
-  // params.convert('version').optional.toInt()
-  // params.convert('external_id').optional.toString()
-  // params.convert('model_runner').optional.toString()
-  // params.convert('model_url').optional.toString()
-  // params.convert('last_executed_at').optional.toMoment()
-  // params.convert('deployments').optional().toArray()
-  params.convert('active_streams').toArray()
-  // params.convert('active_projects').optional().toArray()
+  params.convert('deployment_parameters').optional.toString()
+  params.convert('active_streams').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.owner_id
 
@@ -188,16 +181,9 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (re
   const transformedParams = {}
   const id = req.params.id
   const params = new Converter(req.body, transformedParams)
-  params.convert('name').optional.toString()
   // params.convert('status').optional.toInt()
-  // params.convert('version').optional.toInt()
-  // params.convert('external_id').optional.toString()
-  // params.convert('model_runner').optional.toString()
-  // params.convert('model_url').optional.toString()
-  // params.convert('last_executed_at').optional.toMoment()
-  // params.convert('deployments').optional().toArray()
+  params.convert('deployment_parameters').optional.toString()
   params.convert('active_streams').optional().toArray()
-  // params.convert('active_projects').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.owner_id
   params.validate()
