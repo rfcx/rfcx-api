@@ -109,7 +109,7 @@ async function query (attrs, opts = {}) {
     where,
     limit: attrs.limit,
     offset: attrs.offset,
-    attributes: models.Project.attributes.full,
+    attributes: models.Project.attributes.lite,
     include: opts.joinRelations ? baseInclude : [],
     paranoid: attrs.is_deleted !== true
   })
