@@ -78,7 +78,7 @@ router.put('/:id/review', function (req, res) {
       if (!detection) {
         throw new EmptyResultError('Detection with given id not found.')
       }
-      const allowed = await streamPermissionService.hasPermission(userId, detection.stream_id, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, detection.stream_id, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }

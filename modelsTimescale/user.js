@@ -21,6 +21,10 @@ module.exports = function (sequelize, DataTypes) {
     },
     picture: {
       type: DataTypes.STRING
+    },
+    is_super: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
     }
   })
   User.associate = function (models) {
@@ -29,7 +33,7 @@ module.exports = function (sequelize, DataTypes) {
     User.belongsToMany(models.Role, { as: 'organization_roles', through: models.UserOrganizationRole })
   }
   User.attributes = {
-    full: ['firstname', 'lastname', 'picture', 'username', 'email', 'guid'],
+    full: ['firstname', 'lastname', 'picture', 'username', 'email', 'guid', 'is_super'],
     lite: ['firstname', 'lastname', 'email', 'picture']
   }
   return User

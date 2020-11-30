@@ -13,8 +13,7 @@ const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 function hasPermission (permission) {
   return (req, res, next) => {
     const streamId = req.params.streamId || req.params.id
-    const userId = req.rfcx.auth_token_info.owner_id
-    return streamPermissionService.hasPermission(userId, streamId, permission)
+    return streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, permission)
       .then(allowed => {
         if (!allowed) {
           return httpError(req, res, 403, null, 'You do not have permission to access this stream.')

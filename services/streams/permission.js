@@ -1,6 +1,7 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const streamsService = require('./index')
+const usersFusedService = require('../users/fused')
 
 const permissionBaseInclude = [
   {
@@ -22,12 +23,14 @@ const permissionBaseInclude = [
 
 /**
  * Returns true if the user has permission on the stream
- * @param {number} userId
+ * @param {number} userOrId
  * @param {string} streamOrId stream id or stream model item
  * @param {string} type
  */
-async function hasPermission (userId, streamOrId, type) {
+async function hasPermission (userOrId, streamOrId, type) {
   const stream = await (typeof streamOrId === 'string' ? streamsService.getById(streamOrId) : Promise.resolve(streamOrId))
+  const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
+  const userId = userIsPrimitive ? userOrId : userOrId.owner_id
   if (!stream) {
     return false
   }
@@ -35,6 +38,10 @@ async function hasPermission (userId, streamOrId, type) {
     return true
   }
   if (stream.is_public && type === 'R') {
+    return true
+  }
+  const user = await (userIsPrimitive ? usersFusedService.getByParams({ id: userId }) : Promise.resolve(userOrId))
+  if (user.is_super) {
     return true
   }
   const permission = (await query({ stream_id: stream.id, user_id: userId }))[0]

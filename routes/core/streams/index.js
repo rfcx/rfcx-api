@@ -137,6 +137,7 @@ router.get('/', (req, res) => {
   return params.validate()
     .then(async () => {
       convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_is_super = req.rfcx.auth_token_info.is_super
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
       const streams = await Promise.all(streamsData.streams.map(async (stream) => {
         const permissions = await streamPermissionService.getPermissionsForStream(convertedParams.current_user_id, stream)
@@ -179,7 +180,7 @@ router.get('/:id', (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
       const userId = req.rfcx.auth_token_info.owner_id
-      const allowed = await streamPermissionService.hasPermission(userId, stream, 'R')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'R')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
@@ -241,7 +242,7 @@ router.patch('/:id', (req, res) => {
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to write to this stream.')
       }
