@@ -31,7 +31,8 @@ function combineUserData (jwtPayload, user) {
     guid: user.guid,
     type: 'user',
     owner_id: user.id,
-    owner_guid: user.guid
+    owner_guid: user.guid,
+    is_super: !!user.is_super
   })
 }
 

@@ -159,7 +159,7 @@ router.post('/:streamId/detections', function (req, res) {
       if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
         return true
       }
-      return streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'W')
+      return streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, 'W')
     })
     .then(() => {
       const validatedDetections = params.transformedArray

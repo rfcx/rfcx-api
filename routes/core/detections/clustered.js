@@ -119,7 +119,7 @@ router.get('/', (req, res) => {
     .then(async () => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(userId, streamId, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
