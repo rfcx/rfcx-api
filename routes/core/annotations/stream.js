@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const usersFusedService = require('../../../services/users/fused')
 const { hasPermission } = require('../../../middleware/authorization/streams')
 
 /**
@@ -126,7 +126,7 @@ router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
   params.convert('frequency_max').toInt()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
       const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase

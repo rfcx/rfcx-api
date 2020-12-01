@@ -4,19 +4,16 @@ var fs = require('fs')
 var zlib = require('zlib')
 var hash = require('../../utils/misc/hash.js').hash
 var aws = require('../../utils/external/aws.js').aws()
-var exec = require('child_process').exec
+const util = require('util')
+const exec = util.promisify(require('child_process').exec)
 var audioUtils = require('../../utils/rfcx-audio').audioUtils
 var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 
 var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
-var SensationsService = require('../../services/legacy/sensations/sensations-service')
 const aiService = require('../../services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')
 var urls = require('../../utils/misc/urls')
-
-var loggers = require('../../utils/logger')
-var logError = loggers.errorLogger.log
 
 exports.audio = {
 
@@ -61,7 +58,7 @@ exports.audio = {
 
             capture_format: null,
             capture_bitrate: (audioMeta[i][5] != null) ? parseInt(audioMeta[i][5]) : null,
-            capture_sample_rate: (audioMeta[i][4] != null) ? parseInt(audioMeta[i][4]) : null,
+            capture_sample_rate: (audioMeta[i][4] != null && audioMeta[i][4] !== '') ? parseInt(audioMeta[i][4]) : null,
             capture_sample_count: null,
             capture_encode_duration: (audioMeta[i][8] != null) ? parseInt(audioMeta[i][8]) : null,
             capture_file_extension: audioMeta[i][2],
@@ -119,49 +116,33 @@ exports.audio = {
         fs.stat(audioInfo.unzipLocalPath, function (statErr, fileStat) {
           if (statErr) { reject(statErr) }
           audioInfo.size = fileStat.size
-          audioInfo.dbAudioObj.size = audioInfo.size
-          audioInfo.dbAudioObj.save()
-            .then(() => {
-              return audioUtils.transcodeToFile('wav', {
-                sourceFilePath: audioInfo.unzipLocalPath,
-                sampleRate: audioInfo.capture_sample_rate
-              })
-            })
+          audioUtils.transcodeToFile('wav', {
+            sourceFilePath: audioInfo.unzipLocalPath,
+            sampleRate: audioInfo.capture_sample_rate,
+            keepFile: true
+          })
             .then(function (wavFilePath) {
-              fs.stat(wavFilePath, function (wavStatErr, wavFileStat) {
+              fs.stat(wavFilePath, async function (wavStatErr, wavFileStat) {
                 if (wavStatErr !== null) { reject(wavStatErr) }
                 audioInfo.wavAudioLocalPath = wavFilePath
-                exec(process.env.SOX_PATH + 'i -s ' + audioInfo.wavAudioLocalPath, function (err, stdout, stderr) {
-                  if (stderr.trim().length > 0) { console.log(stderr) }
-                  if (err) { console.log(err); reject(err) }
-
-                  audioInfo.dbAudioObj.capture_sample_count = parseInt(stdout.trim())
-
-                  audioInfo.dbAudioObj.save()
-                    .then(() => {
-                      return SensationsService.createSensationsFromGuardianAudio(audioInfo.dbAudioObj.guid)
-                    })
-                    .then(() => {
-                      resolve()
-                    })
-                    .catch((err) => {
-                      logError('ExtractAudioFileMeta: createSensationsFromGuardianAudio error', { err: err })
-                      resolve()
-                    })
-                  cleanupCheckInFiles(audioInfo)
-                })
+                const { stdout, stderr } = await exec(`${process.env.SOX_PATH}i -s ${audioInfo.wavAudioLocalPath}`) // get sample count
+                if (stderr) {
+                  reject(stderr)
+                }
+                audioInfo.capture_sample_count = parseInt(stdout.trim())
+                if (!audioInfo.capture_sample_rate) {
+                  const { stdout, stderr } = await exec(`${process.env.SOX_PATH}i -r ${audioInfo.wavAudioLocalPath}`) // get sample rate
+                  if (stderr) {
+                    reject(stderr)
+                  }
+                  audioInfo.capture_sample_rate = parseInt(stdout.trim())
+                }
+                resolve()
               })
-            })
-            .catch(function (err) {
-              logError('ExtractAudioFileMeta: audioInfo error', { err: err })
-              cleanupCheckInFiles(audioInfo)
-              reject(err)
             })
         })
       } catch (err) {
-        logError('ExtractAudioFileMeta: common error', { err: err })
-        cleanupCheckInFiles(audioInfo)
-        reject() // eslint-disable-line prefer-promise-reject-errors
+        reject(err)
       }
     })
   },
@@ -184,7 +165,9 @@ exports.audio = {
           capture_bitrate: audioInfo.capture_bitrate,
           encode_duration: audioInfo.capture_encode_duration,
           measured_at: audioInfo.measured_at,
-          measured_at_local: moment.tz(audioInfo.measured_at, (audioInfo.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS')
+          measured_at_local: moment.tz(audioInfo.measured_at, (audioInfo.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),
+          size: audioInfo.size,
+          capture_sample_count: audioInfo.capture_sample_count
         }
       })
       .spread(function (dbAudio, wasCreated) {
@@ -278,7 +261,7 @@ exports.audio = {
 
     models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function (dbCheckIn) { dbCheckIn.destroy().then(function () { console.log('deleted checkin entry') }) }).catch(function (err) { console.log('failed to delete checkin entry | ' + err) })
 
-    cleanupCheckInFiles(audioInfo)
+    this.cleanupCheckInFiles(audioInfo)
   },
 
   prepareWsObject: function (req, itemAudioInfo, dbGuardian, dbAudio) {
@@ -351,22 +334,20 @@ exports.audio = {
       console.log(e)
       return []
     }
+  },
+
+  cleanupCheckInFiles: function (audioInfo) {
+    fs.stat(audioInfo.uploadLocalPath, function (err, stat) {
+      if (err == null) { fs.unlink(audioInfo.uploadLocalPath, function (e) { if (e) { console.log(e) } }) }
+    })
+    fs.stat(audioInfo.unzipLocalPath, function (err, stat) {
+      if (err == null) { fs.unlink(audioInfo.unzipLocalPath, function (e) { if (e) { console.log(e) } }) }
+    })
+    fs.stat(audioInfo.wavAudioLocalPath, function (err, stat) {
+      if (err == null) { fs.unlink(audioInfo.wavAudioLocalPath, function (e) { if (e) { console.log(e) } }) }
+    })
   }
 
-}
-
-var cleanupCheckInFiles = function (audioInfo) {
-  fs.stat(audioInfo.uploadLocalPath, function (err, stat) {
-    if (err == null) { fs.unlink(audioInfo.uploadLocalPath, function (e) { if (e) { console.log(e) } }) }
-  })
-
-  fs.stat(audioInfo.unzipLocalPath, function (err, stat) {
-    if (err == null) { fs.unlink(audioInfo.unzipLocalPath, function (e) { if (e) { console.log(e) } }) }
-  })
-
-  fs.stat(audioInfo.wavAudioLocalPath, function (err, stat) {
-    if (err == null) { fs.unlink(audioInfo.wavAudioLocalPath, function (e) { if (e) { console.log(e) } }) }
-  })
 }
 
 var mimeTypeFromAudioCodec = function (audioCodec) {

@@ -17,6 +17,9 @@ module.exports = {
   'stream-segments': [
     require('./stream-segments')
   ],
+  projects: [
+    require('./projects')
+  ],
   streams: [
     require('./streams'),
     require('./annotations/stream'),

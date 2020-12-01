@@ -12,6 +12,7 @@ var loggers = require('../../../utils/logger')
 var sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
+const SensationsService = require('../../../services/legacy/sensations/sensations-service')
 
 var logDebug = loggers.debugLogger.log
 
@@ -116,18 +117,9 @@ router.route('/:guardian_id/checkins')
         logDebug('Guardian checkins endpoint: messageInfo', { req: req, messageInfo: messageInfo })
         var proms = []
         for (const msgInfoInd in messageInfo) {
-          // logDebug('Guardian checkins endpoint: started processing message ' + msgInfoInd, {
-          //   req: req,
-          //   msgInfoInd: msgInfoInd
-          // });
           var prom = checkInHelpers.messages
             .save(messageInfo[msgInfoInd])
             .then(function (rtrnMessageInfo) {
-              // logDebug('Guardian checkins endpoint: message save finished', {
-              //   req: req,
-              //   msgInfoInd: msgInfoInd,
-              //   rtrnMessageInfo: rtrnMessageInfo,
-              // });
               return returnJson.messages.push({ id: rtrnMessageInfo.android_id, guid: rtrnMessageInfo.guid })
             })
           proms.push(prom)
@@ -149,11 +141,6 @@ router.route('/:guardian_id/checkins')
           var prom = checkInHelpers.screenshots
             .save(screenShotInfo[screenShotInfoInd])
             .then(function (rtrnScreenShotInfo) {
-              // logDebug('Guardian checkins endpoint: screenshot save finished', {
-              //   req: req,
-              //   screenShotInfoInd: screenShotInfoInd,
-              //   rtrnScreenShotInfo: rtrnScreenShotInfo,
-              // });
               return returnJson.screenshots.push({ id: rtrnScreenShotInfo.origin_id, guid: rtrnScreenShotInfo.screenshot_id })
             })
           proms.push(prom)
@@ -164,78 +151,47 @@ router.route('/:guardian_id/checkins')
         logDebug('Guardian checkins endpoint: screenshots processed', { req: req })
         var self = this
         // parse, review and save audio
-        var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio, '|', '*'),
-          this.dbGuardian, this.dbCheckIn)
-        // logDebug('Guardian checkins endpoint: audioInfo', { req: req, audioInfo: audioInfo });
+        var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio, '|', '*'), this.dbGuardian, this.dbCheckIn)
         var proms = []
         for (const audioInfoInd in audioInfo) {
-          // logDebug('Guardian checkins endpoint: started processing audio ' + audioInfoInd, {
-          //   req: req,
-          //   audioInfoInd: audioInfoInd
-          // });
+          const info = audioInfo[audioInfoInd]
           var prom = checkInHelpers.audio
-            .processUpload(audioInfo[audioInfoInd])
+            .processUpload(info)
             .bind({})
-            .then(function (audioInfoPostUpload) {
-              // logDebug('Guardian checkins endpoint: processUpload finished', {
-              //   req: req,
-              //   audioInfoInd: audioInfoInd,
-              //   audioInfoPostUpload: audioInfoPostUpload,
-              // });
-              this.audioInfoCurrent = audioInfo[audioInfoInd]
-              return checkInHelpers.audio.saveToS3(audioInfoPostUpload)
+            .then(function () {
+              return checkInHelpers.audio.extractAudioFileMeta(info)
             })
-            .then(function (audioInfoPostS3Save) {
-              // logDebug('Guardian checkins endpoint: saveToS3 finished', {
-              //   req: req,
-              //   audioInfoInd: audioInfoInd,
-              //   audioInfoPostS3Save: audioInfoPostS3Save,
-              // });
-              audioInfoPostS3Save.timezone = self.dbGuardian.Site ? self.dbGuardian.Site.timezone : 'UTC'
-              return checkInHelpers.audio.saveToDb(audioInfoPostS3Save)
+            .then(function () {
+              return checkInHelpers.audio.saveToS3(info)
             })
-            .then(function (audioInfoPostQueue) {
-              // logDebug('Guardian checkins endpoint: queueForTaggingByActiveModels finished', {
-              //   req: req,
-              //   audioInfoInd: audioInfoInd,
-              //   audioInfoPostQueue: audioInfoPostQueue,
-              // });
-              this.audioInfoPostQueue = audioInfoPostQueue
-              returnJson.audio.push({ id: audioInfoPostQueue.timeStamp, guid: audioInfoPostQueue.audio_guid })
+            .then(function () {
+              info.timezone = self.dbGuardian.Site ? self.dbGuardian.Site.timezone : 'UTC'
+              return checkInHelpers.audio.saveToDb(info)
+            })
+            .then(function () {
+              // this.audioInfoPostQueue = audioInfoPostQueue
+              returnJson.audio.push({ id: info.timeStamp, guid: info.audio_guid })
               self.dbCheckIn.request_latency_api = (new Date()).valueOf() - req.rfcx.request_start_time
               return self.dbCheckIn.save()
             })
             .then(function () {
-              // logDebug('Guardian checkins endpoint: request_latency_api updated', {
-              //   req: req,
-              //   audioInfoInd: audioInfoInd,
-              // });
-              return checkInHelpers.audio.extractAudioFileMeta(this.audioInfoPostQueue)
+              return SensationsService.createSensationsFromGuardianAudio(info.dbAudioObj.guid)
             })
             .then(function () {
-              // logDebug('Guardian checkins endpoint: saveToDb finished', {
-              //   req: req,
-              //   audioInfoInd: audioInfoInd,
-              //   audioInfoPostQueue: audioInfoPostQueue,
-              // });
-              logDebug('[TEMP] Checking site data', {
-                self: self,
-                dbGuardian: self.dbGuardian
-              })
-              return this.audioInfoPostQueue
+              return checkInHelpers.audio.cleanupCheckInFiles(info)
             })
             .then(function () {
               if (self.dbGuardian) {
-                return queueForPrediction(this.audioInfoPostQueue, self.dbGuardian)
-                  .then(() => this.audioInfoPostQueue)
+                return queueForPrediction(info, self.dbGuardian)
               }
-              return this.audioInfoPostQueue
             })
             .then(function () {
               if (process.env.INGEST_SERVICE_ENABLED === 'true') {
-                return checkInHelpers.streams.ingestGuardianAudio(this.audioInfoPostQueue, self.dbGuardian)
+                return checkInHelpers.streams.ingestGuardianAudio(info, self.dbGuardian)
               }
-              return Promise.resolve()
+            })
+            .catch(() => {
+              checkInHelpers.audio.cleanupCheckInFiles(info)
             })
           proms.push(prom)
         }

@@ -553,11 +553,92 @@
   },
   "OrganizationLite": {
     "properties": {
+      "id": {
+        "type": "string",
+        "example": "128hqwgX49"
+      },
       "name": {
         "type": "string",
-        "example": "RFCx"
+        "example": "Rainforest Connection"
+      },
+      "is_public": {
+        "type": "boolean",
+        "example": false
       }
     }
+  },
+  "Organization": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/OrganizationLite"
+      },
+      {
+        "properties": {
+          "created_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          }
+        }
+      }
+    ]
+  },
+  "ProjectLite": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "name": {
+        "type": "string",
+        "example": "My Project 1"
+      },
+      "is_public": {
+        "type": "boolean",
+        "example": false
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "Project": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ProjectLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Project 1 description"
+          },
+          "created_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "organization": {
+            "$ref": "#/components/schemas/OrganizationLite"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    ]
   },
   "Permission": {
     "properties": {

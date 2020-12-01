@@ -3,11 +3,10 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const ValidationError = require('../../../utils/converter/validation-error')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamPermissionService = require('../../../services/streams/permission')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classifications')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 
 function isUuid (str) {
@@ -64,7 +63,7 @@ function isUuid (str) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/', (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -110,7 +109,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/:id', (req, res) => {
   const annotationId = req.params.id
 
   if (!isUuid(annotationId)) {
@@ -161,7 +160,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  *       404:
  *         description: Annotation not found
  */
-router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.put('/:id', (req, res) => {
   const annotationId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
@@ -177,7 +176,7 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
   }
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => annotationsService.get(annotationId))
     .then(async annotation => {
       if (!annotation) {
@@ -222,7 +221,7 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  *       404:
  *         description: Annotation not found
  */
-router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.delete('/:id', (req, res) => {
   const annotationId = req.params.id
 
   if (!isUuid(annotationId)) {

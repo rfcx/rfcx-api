@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const detectionsService = require('../../../services/detections')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
@@ -99,7 +98,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/', (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

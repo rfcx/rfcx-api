@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsStatisticsService = require('../../../services/streams/statistics')
 const streamPermissionService = require('../../../services/streams/permission')
 const Converter = require('../../../utils/converter/converter')
@@ -34,7 +33,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/uploads', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/uploads', async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -84,7 +83,7 @@ router.get('/streams/statistics/uploads', authenticatedWithRoles('appUser', 'rfc
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/annotations', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/annotations', async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -134,7 +133,7 @@ router.get('/streams/statistics/annotations', authenticatedWithRoles('appUser', 
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/detections', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/detections', async function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()

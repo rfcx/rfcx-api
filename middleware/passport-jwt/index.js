@@ -1,7 +1,8 @@
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const jwksRsa = require('jwks-rsa-passport-edition')
-const userService = require('../../services/users/users-service')
+const userService = require('../../services/users/users-service-legacy')
+const usersFusedService = require('../../services/users/fused')
 const guid = require('../../utils/misc/guid')
 const sequelize = require('sequelize')
 
@@ -37,7 +38,6 @@ function combineUserData (jwtPayload, user) {
 function checkDBUser (req, jwtPayload, done) {
   const rfcxAppMetaUrl = 'https://rfcx.org/app_metadata'
   const tokenUserGuid = jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : undefined)
-
   // if request was sent from userless account (like GAIA), then use static user
   if (!jwtPayload.email && !tokenUserGuid) {
     jwtPayload.email = 'userless@rfcx.org'
@@ -48,7 +48,7 @@ function checkDBUser (req, jwtPayload, done) {
 
   // if request was sent from account which doesn't have email (like Facebook, created with a phone number)
   if (!jwtPayload.email && tokenUserGuid) {
-    jwtPayload.email = `${jwtPayload.guid}@rfcx.org`
+    jwtPayload.email = `${tokenUserGuid}@rfcx.org`
   }
 
   userService.findOrCreateUser(
@@ -66,9 +66,11 @@ function checkDBUser (req, jwtPayload, done) {
       rfcx_system: false
     }
   )
-    .spread((user, created) => {
+    .spread(async (user, created) => {
       if (!created) {
         userService.refreshLastLogin(user)
+      } else {
+        await usersFusedService.ensureUserSyncedFromToken(req)
       }
       const info = combineUserData(jwtPayload, user)
       req.rfcx.auth_token_info = info
