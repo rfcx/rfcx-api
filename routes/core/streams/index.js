@@ -1,10 +1,9 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams')
 const streamPermissionService = require('../../../services/streams/permission')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 
@@ -37,7 +36,7 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Invalid query parameters
  */
 
-router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.post('/', function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('id').optional().toString()
@@ -48,7 +47,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
   params.convert('is_public').optional().toBoolean().default(false)
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => {
       convertedParams.id = convertedParams.id || hash.randomString(12)
       convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id
@@ -123,7 +122,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/', (req, res) => {
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -138,6 +137,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
   return params.validate()
     .then(async () => {
       convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_is_super = req.rfcx.auth_token_info.is_super
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
       const streams = await Promise.all(streamsData.streams.map(async (stream) => {
         const permissions = await streamPermissionService.getPermissionsForStream(convertedParams.current_user_id, stream)
@@ -176,11 +176,11 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/:id', (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
       const userId = req.rfcx.auth_token_info.owner_id
-      const allowed = await streamPermissionService.hasPermission(userId, stream, 'R')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'R')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
@@ -227,7 +227,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  *       404:
  *         description: Stream not found
  */
-router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.patch('/:id', (req, res) => {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -239,10 +239,10 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) =
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to write to this stream.')
       }
@@ -278,7 +278,7 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) =
  *       404:
  *         description: Stream not found
  */
-router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.delete('/:id', (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
       if (stream.created_by_id !== req.rfcx.auth_token_info.owner_id) {

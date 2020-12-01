@@ -2,13 +2,10 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const streamPermissionService = require('../../../services/streams/permission')
-const userService = require('../../../services/users/users-service-timescaledb')
-const userServiceMySQL = require('../../../services/users/users-service')
+const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { hasPermission } = require('../../../middleware/authorization/streams')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
 
 /**
  * @swagger
@@ -64,7 +61,7 @@ router.get('/:streamId/users', hasPermission('W'), async function (req, res) {
  *         description: Created
  */
 
-router.put('/:streamId/users', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.put('/:streamId/users', function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -74,24 +71,12 @@ router.put('/:streamId/users', authenticatedWithRoles('appUser', 'rfcxUser'), fu
   return params.validate()
     .then(async () => {
       const stream = await streamsService.getById(streamId, { joinRelations: true })
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, stream, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
-      try {
-        var user = await userService.getByEmail(convertedParams.email)
-      } catch (e) {
-        if (e instanceof EmptyResultError) {
-          // if user was not found in TimescaleDB, try to find it in MySQL
-          user = await userServiceMySQL.getUserByEmail(convertedParams.email, true)
-          if (!user) {
-            // if there is no such user in MySQL too, then finally throw error
-            throw new EmptyResultError('User with given parameters not found.')
-          }
-          // if user was found in MySQL, sync it between TimescaleDB and MySQL
-          await userService.ensureUserSynced(user)
-        }
-      }
+      const user = await usersFusedService.getByEmail(convertedParams.email)
+      await usersFusedService.ensureUserSynced(user)
       if (stream.created_by_id === user.id) {
         throw new ForbiddenError('You can not assign permission to stream owner.')
       }
@@ -129,7 +114,7 @@ router.delete('/:streamId/users', hasPermission('W'), function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const user = await userService.getByEmail(convertedParams.email)
+      const user = await usersFusedService.getByEmail(convertedParams.email)
       await streamPermissionService.remove(streamId, user.id)
       return res.sendStatus(200)
     })

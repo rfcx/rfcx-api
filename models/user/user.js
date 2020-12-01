@@ -94,6 +94,11 @@ module.exports = function (sequelize, DataTypes) {
     picture: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    is_super: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     indexes: [

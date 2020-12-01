@@ -2,7 +2,6 @@ const router = require('express').Router()
 const detectionsService = require('../../../services/detections')
 const detectionReviewService = require('../../../services/detections/review')
 const streamPermissionService = require('../../../services/streams/permission')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
@@ -66,7 +65,7 @@ router.get('/', (req, res) => {
  *         description: Detection not found
  */
 
-router.put('/:id/review', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.put('/:id/review', function (req, res) {
   const detectionId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
@@ -79,7 +78,7 @@ router.put('/:id/review', authenticatedWithRoles('appUser', 'rfcxUser'), functio
       if (!detection) {
         throw new EmptyResultError('Detection with given id not found.')
       }
-      const allowed = await streamPermissionService.hasPermission(userId, detection.stream_id, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, detection.stream_id, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }

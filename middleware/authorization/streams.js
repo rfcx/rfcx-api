@@ -1,4 +1,3 @@
-const { authenticatedWithRoles } = require('./authorization')
 const streamPermissionService = require('../../services/streams/permission')
 const httpError = require('../../utils/http-errors')
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
@@ -12,10 +11,9 @@ const { httpErrorHandler } = require('../../utils/http-error-handler.js')
  * @param {Permission} permission
  */
 function hasPermission (permission) {
-  return authenticatedWithRoles('appUser', 'rfcxUser').concat((req, res, next) => {
+  return (req, res, next) => {
     const streamId = req.params.streamId || req.params.id
-    const userId = req.rfcx.auth_token_info.owner_id
-    return streamPermissionService.hasPermission(userId, streamId, permission)
+    return streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, permission)
       .then(allowed => {
         if (!allowed) {
           return httpError(req, res, 403, null, 'You do not have permission to access this stream.')
@@ -23,7 +21,7 @@ function hasPermission (permission) {
         next()
       })
       .catch(httpErrorHandler(req, res, 'Unable to process request.'))
-  })
+  }
 }
 
 module.exports = {

@@ -11,7 +11,7 @@ var Promise = require('bluebird')
 var sequelize = require('sequelize')
 var logError = loggers.errorLogger.log
 var ForbiddenError = require('../../../utils/converter/forbidden-error')
-const userService = require('../../../services/users/users-service')
+const userService = require('../../../services/users/users-service-legacy')
 
 router.route('/:site_id/guardians')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {

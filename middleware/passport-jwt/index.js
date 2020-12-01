@@ -1,7 +1,8 @@
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const jwksRsa = require('jwks-rsa-passport-edition')
-const userService = require('../../services/users/users-service')
+const userService = require('../../services/users/users-service-legacy')
+const usersFusedService = require('../../services/users/fused')
 const guid = require('../../utils/misc/guid')
 const sequelize = require('sequelize')
 
@@ -30,7 +31,8 @@ function combineUserData (jwtPayload, user) {
     guid: user.guid,
     type: 'user',
     owner_id: user.id,
-    owner_guid: user.guid
+    owner_guid: user.guid,
+    is_super: !!user.is_super
   })
 }
 
@@ -65,9 +67,11 @@ function checkDBUser (req, jwtPayload, done) {
       rfcx_system: false
     }
   )
-    .spread((user, created) => {
+    .spread(async (user, created) => {
       if (!created) {
         userService.refreshLastLogin(user)
+      } else {
+        await usersFusedService.ensureUserSyncedFromToken(req)
       }
       const info = combineUserData(jwtPayload, user)
       req.rfcx.auth_token_info = info

@@ -7,11 +7,11 @@ var Promise = require('bluebird')
 var sequelize = require('sequelize')
 var ValidationError = require('../../../utils/converter/validation-error')
 var hasRole = require('../../../middleware/authorization/authorization').hasRole
-const usersService = require('../../../services/users/users-service')
+const usersService = require('../../../services/users/users-service-legacy')
+const usersFusedService = require('../../../services/users/fused')
 const guardiansService = require('../../../services/guardians/guardians-service')
 const sitesService = require('../../../services/sites/sites-service')
 const streamsService = require('../../../services/streams')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
 var Converter = require('../../../utils/converter/converter')
 const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
 if (ARBIMON_ENABLED) {
@@ -83,7 +83,7 @@ router.route('/register')
 
       const guardianAttrs = { ...transformedParams, token }
 
-      await usersTimescaleDBService.ensureUserSyncedFromToken(req)
+      await usersFusedService.ensureUserSyncedFromToken(req)
 
       // Obtain creator info
       const dbUser = await usersService.getUserFromTokenInfo(req.rfcx.auth_token_info)

@@ -84,10 +84,12 @@ async function query (attrs, opts = {}) {
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
-    const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
-    const streamIds = [...new Set(permissions.map(d => d.stream_id))]
-    where.id = {
-      [models.Sequelize.Op.in]: streamIds
+    if (!attrs.current_user_is_super) {
+      const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
+      const streamIds = [...new Set(permissions.map(d => d.stream_id))]
+      where.id = {
+        [models.Sequelize.Op.in]: streamIds
+      }
     }
   } else if (attrs.current_user_id !== undefined) {
     where[models.Sequelize.Op.or] = [{

@@ -7,14 +7,13 @@ var sqlUtils = require('../../utils/misc/sql')
 const neo4j = require('../../utils/neo4j')
 const firebaseService = require('../firebase/firebase-service')
 const guardianGroupService = require('../guardians/guardian-group-service')
-const userService = require('../users/users-service')
+const userService = require('../users/users-service-legacy')
 const textGridService = require('../textgrid/textgrid-service')
 const mailService = require('../mail/mail-service')
 const loggers = require('../../utils/logger')
 const logError = loggers.errorLogger.log
 const aws = require('../../utils/external/aws.js').aws()
 const hash = require('../../utils/misc/hash.js').hash
-const usersService = require('../users/users-service')
 
 function prepareOpts (req) {
   let order, dir
@@ -526,7 +525,7 @@ function sendNotificationsForEvent (data) {
                           vars: [
                             {
                               name: 'unsubscribe_url',
-                              content: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}/v1/guardians/groups/unsubscribe/public?groups[]=${dbGuardianGroup.shortname}&email=${email}&token=${hash.hashedCredentials(usersService.unsubscriptionSalt, email)}`
+                              content: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}/v1/guardians/groups/unsubscribe/public?groups[]=${dbGuardianGroup.shortname}&email=${email}&token=${hash.hashedCredentials(userService.unsubscriptionSalt, email)}`
                             }
                           ]
                         }
