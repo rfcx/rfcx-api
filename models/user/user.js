@@ -97,7 +97,8 @@ module.exports = function (sequelize, DataTypes) {
     },
     is_super: {
       type: DataTypes.BOOLEAN,
-      allowNull: true
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     indexes: [

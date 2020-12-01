@@ -7,7 +7,8 @@ module.exports = {
       'is_super',
       {
         type: Sequelize.BOOLEAN,
-        allowNull: true
+        allowNull: false,
+        defaultValue: false
       }
     )
   },
