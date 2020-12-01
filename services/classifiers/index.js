@@ -98,13 +98,13 @@ function create (attrs) {
 }
 
 function update (id, createdBy, attrs, opts = {}) {
-  models.Classifier
+  return models.Classifier
     .findOne({
       where: { id },
       attributes: models.Classifier.attributes.full,
       include: opts && opts.joinRelations ? baseInclude : []
     })
-    .then(item => {
+    .then(async (item) => {
       if (!item) {
         throw new EmptyResultError('Classifier with given uuid not found.')
       }
@@ -116,23 +116,25 @@ function update (id, createdBy, attrs, opts = {}) {
           status: attrs.status,
           deployment_parameters: attrs.deployment_parameters || null
         }
-        updateStatus(update)
+        await updateStatus(update)
       }
-      // Update classifier-active-streams if there is active_streams in update body.
-      if (attrs.active_streams) {
-        const update = {
-          id: id,
-          active_streams: attrs.active_streams
-        }
-        updateActiveStreams(update)
-      }
+
       // Update classifier-deployment if there is deployment_parameters in update body.
       if (attrs.deployment_parameters) {
         const update = {
           id: id,
           parameters: attrs.deployment_parameters
         }
-        updateDeploymentParameters(update)
+        await updateDeploymentParameters(update)
+      }
+
+      // Update classifier-active-streams if there is active_streams in update body.
+      if (attrs.active_streams) {
+        const update = {
+          id: id,
+          active_streams: attrs.active_streams
+        }
+        await updateActiveStreams(update)
       }
 
       return item.update(attrs)
@@ -142,7 +144,6 @@ function update (id, createdBy, attrs, opts = {}) {
 function updateStatus (update) {
   const classifierDeployment = {
     classifier_id: update.id,
-    active: true,
     status: update.status,
     start: Date(),
     end: null,
@@ -150,7 +151,7 @@ function updateStatus (update) {
     deployment_parameters: update.deployment_parameters
   }
   // Search for last active of classifier id
-  models.ClassifierDeployment.findOne({
+  return models.ClassifierDeployment.findOne({
     where: {
       classifier_id: update.id,
       active: true
@@ -159,18 +160,25 @@ function updateStatus (update) {
   })
     .then(itemDeployment => {
       if (!itemDeployment) {
-      // Create if there is not last active
-        models.ClassifierDeployment.create(classifierDeployment)
+        // Create if there is not last active
+        const active = {
+          active:true
+        }
+        const classifierObj = {...classifierDeployment, ...active}
+        return models.ClassifierDeployment.create(classifierObj)
       } else {
         if (itemDeployment.status !== update.status) {
-        // Create if the new one
           const updateDeployment = {
-            active: false,
             end: Date()
           }
-          // Update the old one with active false and end
+          // Update the old one with end
           itemDeployment.update(updateDeployment)
-          models.ClassifierDeployment.create(classifierDeployment)
+          // Create if the new one
+          const active = {
+            active:false
+          }
+          const classifierObj = {...classifierDeployment, ...active}
+          return models.ClassifierDeployment.create(classifierObj)
         }
       }
     })
@@ -199,7 +207,7 @@ function updateActiveStreams (update) {
 
 function updateDeploymentParameters (update) {
   // Search for last active of classifier id
-  models.ClassifierDeployment.findOne({
+  return models.ClassifierDeployment.findOne({
     where: {
       classifier_id: update.id,
       active: true
@@ -207,12 +215,12 @@ function updateDeploymentParameters (update) {
     attributes: models.ClassifierDeployment.attributes.full
   })
     .then(itemDeployment => {
-      if (itemDeployment) {
+      if (itemDeployment && !itemDeployment.end) {
       // Update deployment-parameters
         const updateDeployment = {
           deployment_parameters: update.parameters
         }
-        itemDeployment.update(updateDeployment)
+        return itemDeployment.update(updateDeployment)
       }
     })
 }

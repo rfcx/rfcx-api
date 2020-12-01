@@ -110,6 +110,27 @@
       }
     ]
   },
+  "ClassifierUpdate": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "integer",
+        "description": "Status of classifier deployments",
+        "example": 20
+      },
+      "active_streams": {
+        "type": "array",
+        "description": "List of stream ids",
+        "items": {
+          "type": "string"
+        }
+      },
+      "deployment_parameters": {
+        "type": "string",
+        "description": "deployment parameters"
+      }
+    }
+  },
   "Detection": {
     "type": "object",
     "properties": {

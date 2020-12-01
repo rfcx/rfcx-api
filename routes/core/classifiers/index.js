@@ -158,34 +158,45 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
 
-router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
-  const transformedParams = {}
-  const id = req.params.id
-  const params = new Converter(req.body, transformedParams)
-  params.convert('status').toInt()
-  params.convert('deployment_parameters').optional.toString()
-  params.convert('active_streams').optional().toArray()
-
-  const createdById = req.rfcx.auth_token_info.owner_id
-  params.validate()
-    .then(async () => {
-      return service.update(id, createdById, transformedParams)
-    })
-    .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))
-})
-
+/**
+ * @swagger
+ *
+ * /classifiers/{id}:
+ *   patch:
+ *     summary: Update a classifier
+ *     tags:
+ *       - classifiers
+ *     requestBody:
+ *       description: Classifier object
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/requestBodies/ClassifierUpdate'
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: '#/components/requestBodies/ClassifierUpdate'
+ *     responses:
+ *       200:
+ *         description: Updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Classifier'
+ *       400:
+ *         description: Invalid query parameters
+ */
 router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const transformedParams = {}
   const id = req.params.id
   const params = new Converter(req.body, transformedParams)
-  params.convert('status').toInt()
-  params.convert('deployment_parameters').optional.toString()
+  params.convert('status').optional().toInt()
+  params.convert('deployment_parameters').optional().toString()
   params.convert('active_streams').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.owner_id
   params.validate()
-    .then(async () => {
+    .then(() => {
       return service.update(id, createdById, transformedParams)
     })
     .then(data => res.json(data))
