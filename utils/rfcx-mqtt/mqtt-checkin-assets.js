@@ -4,9 +4,6 @@ var exec = require('child_process').exec
 var audioUtils = require('../../utils/rfcx-audio').audioUtils
 var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 
-var loggers = require('../../utils/logger')
-var logError = loggers.errorLogger.log
-
 exports.checkInAssets = {
 
   extractAudioFileMeta: function (checkInObj) {
@@ -49,7 +46,7 @@ exports.checkInAssets = {
             })
         })
       } catch (err) {
-        logError('ExtractAudioFileMeta: common error', { err: err })
+        console.error('ExtractAudioFileMeta: common error', err)
         reject(err)
       }
     })

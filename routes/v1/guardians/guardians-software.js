@@ -5,11 +5,8 @@ var passport = require('passport')
 var views = require('../../../views/v1')
 var httpError = require('../../../utils/http-errors.js')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var loggers = require('../../../utils/logger')
 var sequelize = require('sequelize')
 var hasRole = require('../../../middleware/authorization/authorization').hasRole
-
-var logDebug = loggers.debugLogger.log
 
 router.route('/:guid/software')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
@@ -65,13 +62,9 @@ router.route('/:guardian_id/software/:software_role')
       .bind({})
       .then(function (dbGuardian) {
         if (!dbGuardian) {
-          loggers.errorLogger.log('Guardian with given guid not found', { req: req })
+          console.error('Guardian with given guid not found', { req: req.guid })
           throw new sequelize.EmptyResultError('Guardian with given guid not found.')
         }
-        logDebug('Guardian software endpoint: dbGuardian founded', {
-          req: req,
-          guardian: Object.assign({}, dbGuardian.toJSON())
-        })
         this.dbGuardian = dbGuardian
         return models.GuardianSoftware.findOne({
           where: { role: req.query.role }
@@ -79,13 +72,9 @@ router.route('/:guardian_id/software/:software_role')
       })
       .then(function (dbSoftware) {
         if (!dbSoftware) {
-          loggers.errorLogger.log('Software with given guid not found', { req: req })
+          console.error('Software with given guid not found', { req: req.guid })
           throw new sequelize.EmptyResultError('Software with given guid not found.')
         }
-        logDebug('Guardian software endpoint: dbSoftware founded', {
-          req: req,
-          software: Object.assign({}, dbSoftware.toJSON())
-        })
         this.dbSoftware = dbSoftware
         return models.GuardianSoftwareVersion.findOne({
           where: {
@@ -96,13 +85,9 @@ router.route('/:guardian_id/software/:software_role')
       })
       .then(function (dbSoftwareVersion) {
         if (!dbSoftwareVersion) {
-          loggers.errorLogger.log('SoftwareVersion with given guid not found', { req: req })
+          console.error('SoftwareVersion with given guid not found', { req: req.guid })
           throw new sequelize.EmptyResultError('SoftwareVersion with given guid not found.')
         }
-        logDebug('Guardian software endpoint: dbSoftwareVersion founded', {
-          req: req,
-          softwareVersion: Object.assign({}, dbSoftwareVersion.toJSON())
-        })
         return models.GuardianMetaUpdateCheckIn.create({
           guardian_id: this.dbGuardian.id,
           version_id: dbSoftwareVersion.id,
@@ -110,10 +95,6 @@ router.route('/:guardian_id/software/:software_role')
         })
       })
       .then(function (dbGuardianMetaUpdateCheckIn) {
-        logDebug('Guardian software endpoint: dbGuardianMetaUpdateCheckIn created', {
-          req: req,
-          checkin: Object.assign({}, dbGuardianMetaUpdateCheckIn.toJSON())
-        })
         return models.GuardianMetaBattery.create({
           guardian_id: this.dbGuardian.id,
           check_in_id: null,
@@ -123,10 +104,6 @@ router.route('/:guardian_id/software/:software_role')
         })
       })
       .then(function (dbGuardianMetaBattery) {
-        logDebug('Guardian software endpoint: dbGuardianMetaBattery created', {
-          req: req,
-          batteryMeta: Object.assign({}, dbGuardianMetaBattery.toJSON())
-        })
         var dbQuery = {
           is_available: true
         }
@@ -144,13 +121,6 @@ router.route('/:guardian_id/software/:software_role')
         })
       })
       .then(function (dSoftware) {
-        var jsons = dSoftware.map(function (item) {
-          return item.toJSON()
-        })
-        logDebug('Guardian software endpoint: dSoftware founded', {
-          req: req,
-          softwares: jsons
-        })
         res.status(200).json(
           (this.dbGuardian.is_updatable) ? views.models.guardianSoftware(req, res, dSoftware) : []
         )
@@ -162,11 +132,5 @@ router.route('/:guardian_id/software/:software_role')
         httpError(req, res, 500, err, 'Failed to get latest software versions')
       })
   })
-
-// router.route("/software/:software_role")
-//   .post(passport.authenticate("token",{session:false}), function(req,res) {
-
-//   })
-// ;
 
 module.exports = router

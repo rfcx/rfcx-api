@@ -81,8 +81,6 @@ spec:
               value: ""
             - name: MQTT_BROKER_HOST
               value: ""
-            - name: KAFKA_HOST
-              value: ""
             - name: FIREBASE_PRIVATE_KEY_RANGER_APP
               value: ""
             - name: FIREBASE_CLIENT_EMAIL_RANGER_APP
