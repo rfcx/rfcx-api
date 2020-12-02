@@ -105,6 +105,10 @@ function create (attrs) {
       output_class_name: output.className
     }))
     await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction: t })))
+
+    // Create the active projects and streams
+    // TODO - Frongs
+
     return classifier
   })
 }
@@ -120,6 +124,9 @@ function update (id, createdBy, attrs, opts = {}) {
       if (!item) {
         throw new EmptyResultError('Classifier with given uuid not found.')
       }
+
+      // TODO - Frongs - all updates in a single transaction - if 1 fails, they all fail
+
       // Update classifier-deployment if there is status in update body.
       if (attrs.status) {
         const update = {
@@ -148,6 +155,8 @@ function update (id, createdBy, attrs, opts = {}) {
         }
         await updateActiveStreams(update)
       }
+
+      // TODO - Frongs - update active projects
 
       return item.update(attrs)
     })
