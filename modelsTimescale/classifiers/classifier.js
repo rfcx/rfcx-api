@@ -32,9 +32,6 @@ module.exports = (sequelize, DataTypes) => {
     last_executed_at: {
       type: DataTypes.DATE(3)
     }
-  },
-  {
-    timestamps: true
   })
   Classifier.associate = function (models) {
     Classifier.hasMany(models.ClassifierDeployment, { as: 'deployments', foreignKey: 'classifier_id' })

@@ -23,6 +23,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false
     }
+  },
+  {
+    timestamps: false
   })
   ClassifierOutput.associate = function (models) {
     ClassifierOutput.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })

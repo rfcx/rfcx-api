@@ -86,15 +86,27 @@ function query (attrs, opts = {}) {
 }
 
 function create (attrs) {
-  const classifier = {
+  const classifierData = {
     name: attrs.name,
     version: attrs.version,
-    external_id: attrs.external_id,
-    model_url: attrs.model_url || '',
-    model_runner: attrs.model_runner || 'tf2',
+    external_id: attrs.externalId,
+    model_url: attrs.modelUrl || '',
+    model_runner: attrs.modelRunner || 'tf2',
     created_by_id: attrs.createdById
   }
-  return models.Classifier.create(classifier)
+  return models.sequelize.transaction(async (t) => {
+    // Create the classifier
+    const classifier = await models.Classifier.create(classifierData, { transaction: t })
+
+    // Create the outputs
+    const outputsData = attrs.outputs.map(output => ({
+      classifier_id: classifier.id,
+      classification_id: output.id,
+      output_class_name: output.className
+    }))
+    await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction: t })))
+    return classifier
+  })
 }
 
 function update (id, createdBy, attrs, opts = {}) {
@@ -162,9 +174,9 @@ function updateStatus (update) {
       if (!itemDeployment) {
         // Create if there is not last active
         const active = {
-          active:true
+          active: true
         }
-        const classifierObj = {...classifierDeployment, ...active}
+        const classifierObj = { ...classifierDeployment, ...active }
         return models.ClassifierDeployment.create(classifierObj)
       } else {
         if (itemDeployment.status !== update.status) {
@@ -175,9 +187,9 @@ function updateStatus (update) {
           itemDeployment.update(updateDeployment)
           // Create if the new one
           const active = {
-            active:false
+            active: false
           }
-          const classifierObj = {...classifierDeployment, ...active}
+          const classifierObj = { ...classifierDeployment, ...active }
           return models.ClassifierDeployment.create(classifierObj)
         }
       }

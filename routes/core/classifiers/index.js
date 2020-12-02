@@ -116,7 +116,6 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
  *       400:
  *         description: Invalid query parameters
  */
-// multipartFormDataMiddleware.single('file')
 router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.body, transformedParams)
@@ -145,26 +144,27 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
       // Get the classification ids for each output
       const outputMappings = transformedParams.classification_values.map(parseClassifierOutputMapping)
       const serverIds = await getIds(outputMappings.map(value => value.to))
-      if (serverIds.filter(value => value === undefined).length > 0) {
+      if (Object.keys(serverIds).find(key => serverIds[key] === undefined) !== undefined) {
         throw new ValidationError('Classification values not found')
       }
-      const outputs = outputMappings.map((value, index) => ({ from: value.from, to: serverIds[index] }))
+      const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
 
       const createdById = req.rfcx.auth_token_info.owner_id
       const classifier = {
         name: transformedParams.name,
         version: transformedParams.version,
-        external_id: transformedParams.external_id,
-        model_url: modelUrl,
-        created_by_id: createdById,
-        outputs: outputs
+        externalId: transformedParams.external_id,
+        modelUrl,
+        createdById,
+        outputs,
+        activeProjects: transformedParams.active_projects,
+        activeStreams: transformedParams.active_streams
       }
       return service.create(classifier)
     })
     .then(classifier => {
-      // TODO create outputs and streams/projects
+      res.location(`${req.baseUrl}${req.path}${classifier.id}`).sendStatus(201)
     })
-    .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
 
