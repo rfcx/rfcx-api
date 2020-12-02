@@ -43,14 +43,28 @@ const itemModelNames = Object.keys(hierarchy)
 
 /**
  * Returns true if the user has permission for the subject
+ * @param {string} type
  * @param {number} userId
  * @param {string} itemOrId item id or item model item
- * @param {string} type
+ * @param {string} itemModelName model class name
  */
 async function hasPermission (type, userId, itemOrId, itemModelName) {
+  const permissions = await getPermissions(userId, itemOrId, itemModelName)
+  return permissions.includes(type)
+}
+
+/**
+ * Returns true if the user has permission for the subject
+ * @param {number} userOrId
+ * @param {string} itemOrId item id or item model item
+ * @param {string} itemModelName model class name
+ */
+async function getPermissions (userOrId, itemOrId, itemModelName) {
   const isId = typeof itemOrId === 'string'
+  const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
+  const userId = userIsPrimitive ? userOrId : userOrId.owner_id
   if (isId && !itemModelName) {
-    throw new Error('RolesService: hasPermission: missing required parameter "subjectModel"')
+    throw new Error('RolesService: getPermissions: missing required parameter "itemModelName"')
   }
   if (!itemModelNames.includes(itemModelName)) {
     throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
@@ -59,12 +73,12 @@ async function hasPermission (type, userId, itemOrId, itemModelName) {
   if (!item) {
     throw new EmptyResultError(`${itemModelName} with given id doesn't exist.`)
   }
-  const user = await usersFusedService.getByParams({ id: userId })
-  if (user.is_super || item.created_by_id === userId || (item.is_public && type === 'R')) {
-    return true
+  const user = await (userIsPrimitive ? usersFusedService.getByParams({ id: userId }) : Promise.resolve(userOrId))
+  if (user.is_super || item.created_by_id === userId) {
+    return ['C', 'R', 'U', 'D']
   }
 
-  var allow = false
+  var permissions = []
   let currentLevel = hierarchy[itemModelName]
   while (currentLevel) {
     // try to find role for requested item
@@ -77,9 +91,7 @@ async function hasPermission (type, userId, itemOrId, itemModelName) {
     })
     if (itemRole && itemRole.role) {
       // if role is found, check permissions of this role
-      allow = !!(itemRole.role.permissions || []).find((per) => {
-        return per.permission === type
-      })
+      permissions = (itemRole.role.permissions || []).map(x => x.permission)
       break
     } else if (!itemRole && currentLevel.parent) {
       const parentColumnId = `${currentLevel.parent.toLowerCase()}_id`
@@ -93,16 +105,21 @@ async function hasPermission (type, userId, itemOrId, itemModelName) {
         if (item) {
           currentLevel = hierarchy[currentLevel.parent]
         }
+      } else {
+        break
       }
     } else {
-      // nothing is found, deny
+      // nothing is found
       break
     }
   }
-
-  return allow
+  if (!permissions.length && item.is_public) {
+    permissions = ['R']
+  }
+  return permissions
 }
 
 module.exports = {
-  hasPermission
+  hasPermission,
+  getPermissions
 }
