@@ -50,19 +50,23 @@
         "description": "The version of the classifier",
         "example": "9"
       },
-      "supported_classification_values": {
+      "classification_values": {
         "type": "array",
         "description": "IDs of the classifications that this classifier supports",
         "items": {
           "type": "string"
-        }
+        },
+        "examples": [
+          "chainsaw",
+          "dog_bark:dogbark"
+        ]
       }
     },
     "required": [
       "id",
       "name",
       "version",
-      "supported_classification_values"
+      "classification_values"
     ]
   },
   "ClassifierWithFile": {

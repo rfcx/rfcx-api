@@ -6,6 +6,7 @@ const service = require('../../../services/classifiers')
 const Converter = require('../../../utils/converter/converter')
 const storageService = process.env.PLATFORM === 'google' ? require('../../../services/storage/google') : require('../../../services/storage/amazon')
 const { hash } = require('../../../utils/misc/hash')
+const { getIds } = require('../../../services/classifications')
 
 /**
  * @swagger
@@ -122,7 +123,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
   params.convert('name').toString()
   params.convert('version').toInt()
   params.convert('external_id').toString()
-  params.convert('supported_classification_values').optional().toArray()
+  params.convert('classification_values').toArray()
   params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
 
@@ -141,13 +142,22 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
         modelUrl = `${process.env.PLATFORM === 'google' ? 'gs' : 's3'}://${storageBucket}/${storagePath}`
       }
 
+      // Get the classification ids for each output
+      const outputMappings = transformedParams.classification_values.map(parseClassifierOutputMapping)
+      const serverIds = await getIds(outputMappings.map(value => value.to))
+      if (serverIds.filter(value => value === undefined).length > 0) {
+        throw new ValidationError('Classification values not found')
+      }
+      const outputs = outputMappings.map((value, index) => ({ from: value.from, to: serverIds[index] }))
+
       const createdById = req.rfcx.auth_token_info.owner_id
       const classifier = {
         name: transformedParams.name,
         version: transformedParams.version,
         external_id: transformedParams.external_id,
         model_url: modelUrl,
-        created_by_id: createdById
+        created_by_id: createdById,
+        outputs: outputs
       }
       return service.create(classifier)
     })
@@ -157,6 +167,11 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
+
+function parseClassifierOutputMapping (str) {
+  const components = str.split(':')
+  return { from: components[0], to: components.length === 1 ? components[0] : components[1] }
+}
 
 /**
  * @swagger
