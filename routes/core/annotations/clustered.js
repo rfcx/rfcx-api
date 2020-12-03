@@ -4,7 +4,7 @@ const annotationsService = require('../../../services/annotations')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const models = require('../../../modelsTimescale')
-const streamPermissionService = require('../../../services/streams/permission')
+const rolesService = require('../../../services/roles')
 
 /**
  * @swagger
@@ -99,7 +99,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -118,12 +118,12 @@ router.get('/', (req, res) => {
   return params.validate()
     .then(() => {
       // TODO: handler username or guid case
-      return convertedParams.created_by === 'me' ? req.rfcx.auth_token_info.owner_id : undefined
+      return convertedParams.created_by === 'me' ? user.owner_id : undefined
     })
     .then(async (createdBy) => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, 'R')
+        const allowed = await rolesService.hasPermission('R', user, streamId, 'Stream')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
@@ -131,7 +131,7 @@ router.get('/', (req, res) => {
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
       const streamsOnlyCreatedBy = convertedParams.streams_created_by
       const streamsOnlyPublic = convertedParams.streams_public
-      return annotationsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, createdBy, interval, aggregate, field, descending, limit, offset, userId)
+      return annotationsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, createdBy, interval, aggregate, field, descending, limit, offset, user)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

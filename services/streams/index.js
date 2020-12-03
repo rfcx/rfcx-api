@@ -256,6 +256,41 @@ function ensureStreamExistsForGuardian (dbGuardian) {
     })
 }
 
+async function getPublicStreamIds () {
+  return (await query({
+    is_public: true
+  })).streams.map(d => d.id)
+}
+
+/**
+ * Get a list of IDs for streams which are accessible to the user
+ * @param {string} createdBy Limit to streams created by `me` (my streams) or `collaborators` (shared with me)
+ */
+async function getAccessibleStreamIds (user, createdBy = undefined) {
+  // Only my streams or my collaborators
+  if (createdBy !== undefined) {
+    return (await query({
+      current_user_id: user.owner_id,
+      created_by: createdBy
+    })).streams.map(d => d.id)
+  }
+
+  // Get my streams and my collaborators
+  const s1 = await query({
+    current_user_id: user.owner_id
+  })
+  const s2 = await query({
+    current_user_id: user.owner_id,
+    created_by: 'collaborators',
+    current_user_is_super: user.is_super
+  })
+  const streamIds = [...new Set([
+    ...s1.streams.map(d => d.id),
+    ...s2.streams.map(d => d.id)
+  ])]
+  return streamIds
+}
+
 module.exports = {
   getById,
   create,
@@ -267,5 +302,7 @@ module.exports = {
   formatStreams,
   refreshStreamMaxSampleRate,
   refreshStreamStartEnd,
-  ensureStreamExistsForGuardian
+  ensureStreamExistsForGuardian,
+  getPublicStreamIds,
+  getAccessibleStreamIds
 }

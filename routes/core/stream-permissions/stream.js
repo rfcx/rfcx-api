@@ -1,11 +1,14 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const streamsService = require('../../../services/streams')
-const streamPermissionService = require('../../../services/streams/permission')
-const usersFusedService = require('../../../services/users/fused')
-const Converter = require('../../../utils/converter/converter')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { hasPermission } = require('../../../middleware/authorization/streams')
+// const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+// const streamsService = require('../../../services/streams')
+// const usersFusedService = require('../../../services/users/fused')
+// const Converter = require('../../../utils/converter/converter')
+// const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
+
+function hasPermission (p) {
+  return hasPermissionMW(p, 'Stream')
+}
 
 /**
  * @swagger
@@ -27,14 +30,15 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *                 $ref: '#/components/schemas/Permission'
  */
 
-router.get('/:streamId/users', hasPermission('W'), async function (req, res) {
-  try {
-    const streamId = req.params.streamId
-    const permissions = await streamPermissionService.query({ stream_id: streamId }, { joinRelations: true })
-    return res.json(streamPermissionService.formatMultiple(permissions))
-  } catch (e) {
-    httpErrorHandler(req, res, 'Failed getting stream permission.')(e)
-  }
+router.get('/:id/users', hasPermission('U'), async function (req, res) {
+  // try {
+  //   const streamId = req.params.streamId
+  //   const permissions = await streamPermissionService.query({ stream_id: streamId }, { joinRelations: true })
+  //   return res.json(streamPermissionService.formatMultiple(permissions))
+  // } catch (e) {
+  //   httpErrorHandler(req, res, 'Failed getting stream permission.')(e)
+  // }
+  res.sendStatus(501)
 })
 
 /**
@@ -62,29 +66,30 @@ router.get('/:streamId/users', hasPermission('W'), async function (req, res) {
  */
 
 router.put('/:streamId/users', function (req, res) {
-  const streamId = req.params.streamId
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('type').toString().isEqualToAny(['R', 'W'])
-  params.convert('email').toString()
+  // const streamId = req.params.streamId
+  // const convertedParams = {}
+  // const params = new Converter(req.body, convertedParams)
+  // params.convert('type').toString().isEqualToAny(['R', 'W'])
+  // params.convert('email').toString()
 
-  return params.validate()
-    .then(async () => {
-      const stream = await streamsService.getById(streamId, { joinRelations: true })
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'W')
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
-      }
-      const user = await usersFusedService.getByEmail(convertedParams.email)
-      await usersFusedService.ensureUserSynced(user)
-      if (stream.created_by_id === user.id) {
-        throw new ForbiddenError('You can not assign permission to stream owner.')
-      }
-      await streamPermissionService.add(streamId, user.id, convertedParams.type)
-      const permissions = await streamPermissionService.query({ stream_id: streamId, user_id: user.id, type: convertedParams.type }, { joinRelations: true })
-      return res.status(201).json(streamPermissionService.format(permissions[0]))
-    })
-    .catch(httpErrorHandler(req, res, 'Failed updating stream permission'))
+  // return params.validate()
+  //   .then(async () => {
+  //     const stream = await streamsService.getById(streamId, { joinRelations: true })
+  //     const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'W')
+  //     if (!allowed) {
+  //       throw new ForbiddenError('You do not have permission to access this stream.')
+  //     }
+  //     const user = await usersFusedService.getByEmail(convertedParams.email)
+  //     await usersFusedService.ensureUserSynced(user)
+  //     if (stream.created_by_id === user.id) {
+  //       throw new ForbiddenError('You can not assign permission to stream owner.')
+  //     }
+  //     await streamPermissionService.add(streamId, user.id, convertedParams.type)
+  //     const permissions = await streamPermissionService.query({ stream_id: streamId, user_id: user.id, type: convertedParams.type }, { joinRelations: true })
+  //     return res.status(201).json(streamPermissionService.format(permissions[0]))
+  //   })
+  //   .catch(httpErrorHandler(req, res, 'Failed updating stream permission'))
+  res.sendStatus(501)
 })
 
 /**
@@ -106,19 +111,20 @@ router.put('/:streamId/users', function (req, res) {
  *         description: OK
  */
 
-router.delete('/:streamId/users', hasPermission('W'), function (req, res) {
-  const streamId = req.params.streamId
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('email').toString()
+router.delete('/:streamId/users', hasPermission('U'), function (req, res) {
+  // const streamId = req.params.streamId
+  // const convertedParams = {}
+  // const params = new Converter(req.body, convertedParams)
+  // params.convert('email').toString()
 
-  return params.validate()
-    .then(async () => {
-      const user = await usersFusedService.getByEmail(convertedParams.email)
-      await streamPermissionService.remove(streamId, user.id)
-      return res.sendStatus(200)
-    })
-    .catch(httpErrorHandler(req, res, 'Failed removing stream permission.'))
+  // return params.validate()
+  //   .then(async () => {
+  //     const user = await usersFusedService.getByEmail(convertedParams.email)
+  //     await streamPermissionService.remove(streamId, user.id)
+  //     return res.sendStatus(200)
+  //   })
+  //   .catch(httpErrorHandler(req, res, 'Failed removing stream permission.'))
+  res.sendStatus(501)
 })
 
 module.exports = router

@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const streamSourceFileService = require('../../../services/streams/stream-source-file')
+const { hasRole } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
 
 /**
@@ -33,7 +34,7 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Invalid query parameters
  */
 
-router.post('/:streamId/stream-source-files', function (req, res) {
+router.post('/:streamId/stream-source-files', hasRole(['systemUser']), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

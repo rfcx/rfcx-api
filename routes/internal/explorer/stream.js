@@ -2,7 +2,11 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const segmentService = require('../../../services/streams/stream-segment')
 const Converter = require('../../../utils/converter/converter')
-const { hasPermission } = require('../../../middleware/authorization/streams')
+const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
+
+function hasPermission (p) {
+  return hasPermissionMW(p, 'Stream')
+}
 
 /**
  * @swagger

@@ -1,12 +1,16 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { hasPermission } = require('../../../middleware/authorization/streams')
 const indicesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
 const platform = process.env.PLATFORM || 'amazon'
 const storageService = require(`../../../services/storage/${platform}`)
+const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
+
+function hasPermission (p) {
+  return hasPermissionMW(p, 'Stream')
+}
 
 /**
  * @swagger
@@ -64,8 +68,8 @@ const storageService = require(`../../../services/storage/${platform}`)
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/streams/:streamId/indices/:index/heatmap', hasPermission('R'), (req, res) => {
-  const streamId = req.params.streamId
+router.get('/streams/:id/indices/:index/heatmap', hasPermission('R'), (req, res) => {
+  const streamId = req.params.id
   const index = req.params.index
 
   const convertedParams = {}

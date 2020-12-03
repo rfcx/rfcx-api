@@ -3,10 +3,15 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classification/classification-service')
 const classifierService = require('../../../services/classifier/classifier-service')
+const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
-const { hasPermission } = require('../../../middleware/authorization/streams')
-const streamPermissionService = require('../../../services/streams/permission')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
+
+function hasPermission (p) {
+  return hasPermissionMW(p, 'Stream')
+}
 
 /**
  * @swagger
@@ -72,9 +77,9 @@ const streamPermissionService = require('../../../services/streams/permission')
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
-  const userId = req.rfcx.auth_token_info.owner_id
-  const streamId = req.params.streamId
+router.get('/:id/detections', hasPermission('R'), function (req, res) {
+  const user = req.rfcx.auth_token_info
+  const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -89,7 +94,7 @@ router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
     .then(async () => {
       const { start, end, classifications, limit, offset, reviews } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset, userId)
+      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset, user)
       return res.json(detections)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
@@ -141,8 +146,9 @@ router.get('/:streamId/detections', hasPermission('R'), function (req, res) {
  *       404:
  *         description: Stream not found
  */
-router.post('/:streamId/detections', function (req, res) {
-  const streamId = req.params.streamId
+router.post('/:id/detections', function (req, res) {
+  const user = req.rfcx.auth_token_info
+  const streamId = req.params.id
   const detections = Array.isArray(req.body) ? req.body : [req.body]
 
   const params = new ArrayConverter(detections)
@@ -155,11 +161,14 @@ router.post('/:streamId/detections', function (req, res) {
   let classificationMapping
 
   return params.validate()
-    .then(() => {
-      if ((req.rfcx.auth_token_info.roles || []).includes('systemUser')) {
+    .then(async () => {
+      if ((user.roles || []).includes('systemUser')) {
         return true
       }
-      return streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, 'W')
+      const allowed = await rolesService.hasPermission('U', user, streamId, 'Stream')
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
     })
     .then(() => {
       const validatedDetections = params.transformedArray

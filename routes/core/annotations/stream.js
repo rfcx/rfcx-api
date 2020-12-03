@@ -4,7 +4,11 @@ const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
 const Converter = require('../../../utils/converter/converter')
 const usersFusedService = require('../../../services/users/fused')
-const { hasPermission } = require('../../../middleware/authorization/streams')
+const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
+
+function hasPermission (p) {
+  return hasPermissionMW(p, 'Stream')
+}
 
 /**
  * @swagger
@@ -58,9 +62,9 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
-  const userId = req.rfcx.auth_token_info.owner_id
-  const streamId = req.params.streamId
+router.get('/:id/annotations', hasPermission('R'), function (req, res) {
+  const user = req.rfcx.auth_token_info
+  const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -72,7 +76,7 @@ router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
   return params.validate()
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query(start, end, streamId, classifications, limit, offset, userId)
+      return annotationsService.query(start, end, streamId, classifications, limit, offset, user)
     })
     .then((annotations) => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
@@ -114,8 +118,8 @@ router.get('/:streamId/annotations', hasPermission('R'), function (req, res) {
  *       404:
  *         description: Stream not found
  */
-router.post('/:streamId/annotations', hasPermission('W'), function (req, res) {
-  const streamId = req.params.streamId
+router.post('/:id/annotations', hasPermission('U'), function (req, res) {
+  const streamId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
