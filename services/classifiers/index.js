@@ -112,16 +112,20 @@ function create (attrs) {
     await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction: t })))
 
     // Create the active projects and streams
-    // TODO - Frongs
-    insertActiveProjects({id:classifier.id, active_projects:attrs.activeProjects})
-    insertActiveStreams({id:classifier.id, active_streams:attrs.activeStreams})
+    console.log(classifier.id)
+    if (attrs.activeStreams) {
+      await insertActiveProjects({id:classifier.id, active_projects:attrs.activeProjects}, t)
+    }
+    if (attrs.activeProjects) {
+      await insertActiveStreams({id:classifier.id, active_streams:attrs.activeStreams}, t)
+    }
 
     return classifier
   })
 }
 
 function update (id, createdBy, attrs, opts = {}) {
-  return models.Classifier
+    return models.Classifier
     .findOne({
       where: { id },
       attributes: models.Classifier.attributes.full,
@@ -131,45 +135,51 @@ function update (id, createdBy, attrs, opts = {}) {
       if (!item) {
         throw new EmptyResultError('Classifier with given uuid not found.')
       }
-
-      // TODO - Frongs - all updates in a single transaction - if 1 fails, they all fail
-
-      // Update classifier-deployment if there is status in update body.
-      if (attrs.status) {
-        const update = {
-          id: id,
-          created_by: createdBy,
-          status: attrs.status,
-          deployment_parameters: attrs.deployment_parameters || null
+      return models.sequelize.transaction(async (t) => {
+        // Update classifier-deployment if there is status in update body.
+        if (attrs.status) {
+          const update = {
+            id: id,
+            created_by: createdBy,
+            status: attrs.status,
+            deployment_parameters: attrs.deployment_parameters || null
+          }
+          await updateStatus(update, t)
         }
-        await updateStatus(update)
-      }
 
-      // Update classifier-deployment if there is deployment_parameters in update body.
-      if (attrs.deployment_parameters) {
-        const update = {
-          id: id,
-          parameters: attrs.deployment_parameters
+        // Update classifier-deployment if there is deployment_parameters in update body.
+        if (attrs.deployment_parameters) {
+          const update = {
+            id: id,
+            parameters: attrs.deployment_parameters
+          }
+          await updateDeploymentParameters(update, t)
         }
-        await updateDeploymentParameters(update)
-      }
 
-      // Update classifier-active-streams if there is active_streams in update body.
-      if (attrs.active_streams) {
-        const update = {
-          id: id,
-          active_streams: attrs.active_streams
+        // Update classifier-active-streams if there is active_streams in update body.
+        if (attrs.active_streams) {
+          const update = {
+            id: id,
+            active_streams: attrs.active_streams
+          }
+          await insertActiveStreams(update, t)
         }
-        await insertActiveStreams(update)
-      }
 
-      // TODO - Frongs - update active projects
+        // Update classifier-active-projects if there is active_projects in update body.
+        if (attrs.active_projects) {
+          const update = {
+            id: id,
+            active_projects: attrs.active_projects
+          }
+          await insertActiveProjects(update, t)
+        }
 
-      return item.update(attrs)
+        return item.update(attrs, t)
+      })
     })
 }
 
-function updateStatus (update) {
+async function updateStatus (update, transaction) {
   const classifierDeployment = {
     classifier_id: update.id,
     status: update.status,
@@ -186,75 +196,79 @@ function updateStatus (update) {
     },
     attributes: models.ClassifierDeployment.attributes.full
   })
-    .then(itemDeployment => {
+    .then(async (itemDeployment) => {
       if (!itemDeployment) {
         // Create if there is not last active
         const active = {
           active: true
         }
         const classifierObj = { ...classifierDeployment, ...active }
-        return models.ClassifierDeployment.create(classifierObj)
+        return await models.ClassifierDeployment.create(classifierObj, { transaction: transaction })
       } else {
         if (itemDeployment.status !== update.status) {
           const updateDeployment = {
             end: Date()
           }
           // Update the old one with end
-          itemDeployment.update(updateDeployment)
+          await itemDeployment.update(updateDeployment, { transaction: transaction })
           // Create if the new one
           const active = {
             active: false
           }
           const classifierObj = { ...classifierDeployment, ...active }
-          return models.ClassifierDeployment.create(classifierObj)
+          return await models.ClassifierDeployment.create(classifierObj, { transaction: transaction })
         }
       }
     })
 }
 
-function insertActiveStreams (update) {
+function insertActiveStreams (update, transaction) {
+  console.log(1)
   const activeStreams = update.active_streams
-  activeStreams.forEach(streamId => {
+
+  return Promise.all(activeStreams.map(async (streamId) => {
     const stream = {
       classifier_id: update.id,
       stream_id: streamId
     }
     // Search for specific classifier_id and stream_id if it's existed
-    models.ClassifierActiveStreams.findOne({
+    await models.ClassifierActiveStreams.findOne({
       where: stream,
       attributes: models.ClassifierActiveStreams.attributes.full
     })
-      .then(itemActiveStreams => {
+      .then(async (itemActiveStreams) => {
       // If not existed then create new one
         if (!itemActiveStreams) {
-          models.ClassifierActiveStreams.create(stream)
+          return await models.ClassifierActiveStreams.create(stream, { transaction: transaction })
         }
       })
-  })
+  }))
 }
 
-function insertActiveProjects (update) {
+function insertActiveProjects (update, transaction) {
+  console.log(2)
   const activeProjects = update.active_projects
-  activeProjects.forEach(projectId => {
+
+  return Promise.all(activeProjects.map(async (projectId) => {
     const project = {
       classifier_id: update.id,
       project_id: projectId
     }
     // Search for specific classifier_id and project_id if it's existed
-    models.ClassifierActiveProjects.findOne({
+    await models.ClassifierActiveProjects.findOne({
       where: project,
       attributes: models.ClassifierActiveProjects.attributes.full
     })
-      .then(itemActiveProjects => {
+      .then(async (itemActiveProjects) => {
       // If not existed then create new one
         if (!itemActiveProjects) {
-          models.ClassifierActiveProjects.create(project)
+          return await models.ClassifierActiveProjects.create(project, { transaction: transaction })
         }
       })
-  })
+  }))
 }
 
-function updateDeploymentParameters (update) {
+function updateDeploymentParameters (update, transaction) {
   // Search for last active of classifier id
   return models.ClassifierDeployment.findOne({
     where: {
@@ -263,13 +277,13 @@ function updateDeploymentParameters (update) {
     },
     attributes: models.ClassifierDeployment.attributes.full
   })
-    .then(itemDeployment => {
+    .then(async (itemDeployment) => {
       if (itemDeployment && !itemDeployment.end) {
       // Update deployment-parameters
         const updateDeployment = {
           deployment_parameters: update.parameters
         }
-        return itemDeployment.update(updateDeployment)
+        return await itemDeployment.update(updateDeployment, { transaction: transaction })
       }
     })
 }

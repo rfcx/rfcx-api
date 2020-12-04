@@ -207,6 +207,7 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (re
   const params = new Converter(req.body, transformedParams)
   params.convert('status').optional().toInt()
   params.convert('deployment_parameters').optional().toString()
+  params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.owner_id
