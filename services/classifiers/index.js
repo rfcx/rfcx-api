@@ -112,7 +112,6 @@ function create (attrs) {
     await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction: t })))
 
     // Create the active projects and streams
-    console.log(classifier.id)
     if (attrs.activeStreams) {
       await insertActiveProjects({id:classifier.id, active_projects:attrs.activeProjects}, t)
     }
@@ -223,7 +222,6 @@ async function updateStatus (update, transaction) {
 }
 
 function insertActiveStreams (update, transaction) {
-  console.log(1)
   const activeStreams = update.active_streams
 
   return Promise.all(activeStreams.map(async (streamId) => {
@@ -246,7 +244,6 @@ function insertActiveStreams (update, transaction) {
 }
 
 function insertActiveProjects (update, transaction) {
-  console.log(2)
   const activeProjects = update.active_projects
 
   return Promise.all(activeProjects.map(async (projectId) => {
