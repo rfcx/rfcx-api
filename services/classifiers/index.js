@@ -22,6 +22,11 @@ const baseInclude = [
     model: models.Stream,
     as: 'active_streams',
     attributes: models.Stream.attributes.lite
+  },
+  {
+    model:models.Project,
+    as: 'active_projects',
+    attributes: models.Project.attributes.lite
   }
 ]
 
@@ -108,6 +113,8 @@ function create (attrs) {
 
     // Create the active projects and streams
     // TODO - Frongs
+    insertActiveProjects({id:classifier.id, active_projects:attrs.activeProjects})
+    insertActiveStreams({id:classifier.id, active_streams:attrs.activeStreams})
 
     return classifier
   })
@@ -153,7 +160,7 @@ function update (id, createdBy, attrs, opts = {}) {
           id: id,
           active_streams: attrs.active_streams
         }
-        await updateActiveStreams(update)
+        await insertActiveStreams(update)
       }
 
       // TODO - Frongs - update active projects
@@ -205,22 +212,43 @@ function updateStatus (update) {
     })
 }
 
-function updateActiveStreams (update) {
+function insertActiveStreams (update) {
   const activeStreams = update.active_streams
   activeStreams.forEach(streamId => {
-    const activeStreams = {
+    const stream = {
       classifier_id: update.id,
       stream_id: streamId
     }
     // Search for specific classifier_id and stream_id if it's existed
     models.ClassifierActiveStreams.findOne({
-      where: activeStreams,
+      where: stream,
       attributes: models.ClassifierActiveStreams.attributes.full
     })
       .then(itemActiveStreams => {
       // If not existed then create new one
         if (!itemActiveStreams) {
-          models.ClassifierActiveStreams.create(activeStreams)
+          models.ClassifierActiveStreams.create(stream)
+        }
+      })
+  })
+}
+
+function insertActiveProjects (update) {
+  const activeProjects = update.active_projects
+  activeProjects.forEach(projectId => {
+    const project = {
+      classifier_id: update.id,
+      project_id: projectId
+    }
+    // Search for specific classifier_id and project_id if it's existed
+    models.ClassifierActiveProjects.findOne({
+      where: project,
+      attributes: models.ClassifierActiveProjects.attributes.full
+    })
+      .then(itemActiveProjects => {
+      // If not existed then create new one
+        if (!itemActiveProjects) {
+          models.ClassifierActiveProjects.create(project)
         }
       })
   })

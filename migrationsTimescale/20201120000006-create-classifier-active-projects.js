@@ -13,7 +13,7 @@ module.exports = {
         }
       },
       project_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING(12),
         allowNull: false,
         references: {
           model: {
@@ -23,7 +23,7 @@ module.exports = {
         }
       }
     }).then(() => {
-      return queryInterface.sequelize.query('ALTER TABLE "classifier_active_projects" ADD CONSTRAINT "pk_composite" PRIMARY KEY ("classifier_id", "project_id")')
+      return queryInterface.sequelize.query('ALTER TABLE "classifier_active_projects" ADD CONSTRAINT "pk_composite2" PRIMARY KEY ("classifier_id", "project_id")')
     })
   },
   down: (queryInterface, Sequelize) => {
