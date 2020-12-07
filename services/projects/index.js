@@ -1,6 +1,7 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
+const rolesService = require('../roles')
 
 const baseInclude = [
   {
@@ -76,6 +77,13 @@ async function query (attrs, opts = {}) {
 
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
+  } else if (attrs.created_by === 'collaborators') {
+    if (!attrs.current_user_is_super) {
+      const ids = await rolesService.getSharedObjectsIDs(attrs.current_user_id, 'Project')
+      where.id = {
+        [models.Sequelize.Op.in]: ids
+      }
+    }
   } else if (attrs.current_user_id !== undefined) {
     where[models.Sequelize.Op.or] = [{
       [models.Sequelize.Op.and]: {

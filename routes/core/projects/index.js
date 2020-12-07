@@ -128,18 +128,20 @@ router.post('/', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
   params.convert('is_deleted').optional().toBoolean()
-  params.convert('created_by').optional().toString().isEqualToAny(['me'])
+  params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('keyword').optional().toString()
   params.convert('limit').optional().toInt().default(100)
   params.convert('offset').optional().toInt().default(0)
 
   return params.validate()
     .then(async () => {
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_is_super = user.is_super
       const projectsData = await projectsService.query(convertedParams, { joinRelations: true })
       const projects = projectsService.formatProjects(projectsData.projects)
       return res

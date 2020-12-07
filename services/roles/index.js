@@ -17,55 +17,67 @@ const roleBaseInclude = [
   }
 ]
 
-const OrganizationInclude = [
-  {
-    model: models.Organization,
-    as: 'organization',
-    attributes: models.Organization.attributes.lite,
-    required: true,
-    include: [
+function getHierarchyInclude (highestLevel, lowestLevel) {
+  let include = []
+  if (highestLevel === 'Organization') {
+    include = [
+      {
+        model: models.Organization,
+        as: 'organization',
+        attributes: models.Organization.attributes.lite,
+        required: true,
+        ...(lowestLevel === 'Project' || lowestLevel === 'Stream') && {
+          include: [
+            {
+              model: models.Project,
+              as: 'projects',
+              attributes: models.Project.attributes.lite,
+              required: true,
+              ...lowestLevel === 'Stream' && {
+                include: [
+                  {
+                    model: models.Stream,
+                    as: 'streams',
+                    attributes: ['id'],
+                    required: true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  } else if (highestLevel === 'Project') {
+    include = [
       {
         model: models.Project,
-        as: 'projects',
+        as: 'project',
         attributes: models.Project.attributes.lite,
         required: true,
-        include: [
-          {
-            model: models.Stream,
-            as: 'streams',
-            attributes: ['id'],
-            required: true
-          }
-        ]
+        ...lowestLevel === 'Stream' && {
+          include: [
+            {
+              model: models.Stream,
+              as: 'streams',
+              attributes: ['id'],
+              required: true
+            }
+          ]
+        }
       }
     ]
-  }
-]
-
-const ProjectInclude = [
-  {
-    model: models.Project,
-    as: 'project',
-    attributes: models.Project.attributes.lite,
-    required: true,
-    include: [
+  } else if (highestLevel === 'Stream') {
+    include = [
       {
         model: models.Stream,
-        as: 'streams',
-        attributes: models.Stream.attributes.lite,
-        required: true
+        as: 'stream',
+        attributes: models.Stream.attributes.lite
       }
     ]
   }
-]
-
-const StreamInclude = [
-  {
-    model: models.Stream,
-    as: 'stream',
-    attributes: models.Stream.attributes.lite
-  }
-]
+  return include
+}
 
 const hierarchy = {
   Organization: {
@@ -168,29 +180,24 @@ async function getSharedObjectsIDs (userOrId, itemModelName) {
   const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
   const userId = userIsPrimitive ? userOrId : userOrId.owner_id
 
+  const originalItemModelName = itemModelName
   const proms = []
   while (itemModelName) {
     (function (currentItemModelName) {
       const prom = hierarchy[currentItemModelName].roleModel.findAll({
         where: { user_id: userId },
-        include: [
-          ...(currentItemModelName === 'Organization' ? OrganizationInclude : []),
-          ...(currentItemModelName === 'Project' ? ProjectInclude : []),
-          ...(currentItemModelName === 'Stream' ? StreamInclude : [])
-        ]
+        include: getHierarchyInclude(currentItemModelName, originalItemModelName)
       })
         .then(async (userRoles) => {
           let result = userRoles
             .map(x => x[currentItemModelName.toLowerCase()])
-          if (currentItemModelName === 'Organization') {
+          if (currentItemModelName === 'Organization' && (originalItemModelName === 'Project' || originalItemModelName === 'Stream')) {
             result = result
               .reduce((arr, org) => {
                 return arr.concat(org.projects || [])
               }, [])
-              .reduce((arr, proj) => {
-                return arr.concat(proj.streams || [])
-              }, [])
-          } else if (currentItemModelName === 'Project') {
+          }
+          if ((currentItemModelName === 'Organization' || currentItemModelName === 'Project') && originalItemModelName === 'Stream') {
             result = result
               .reduce((arr, proj) => {
                 return arr.concat(proj.streams || [])
@@ -208,7 +215,7 @@ async function getSharedObjectsIDs (userOrId, itemModelName) {
   }
 
   const promsResults = await Promise.all(proms)
-  return [...new Set([...promsResults[0], ...promsResults[1], ...promsResults[2]])]
+  return [...new Set([...(promsResults[0] || []), ...(promsResults[1] || []), ...(promsResults[2] || [])])]
 }
 
 module.exports = {
