@@ -138,6 +138,7 @@ router.post('/', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -151,11 +152,11 @@ router.get('/', (req, res) => {
 
   return params.validate()
     .then(async () => {
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
-      convertedParams.current_user_is_super = req.rfcx.auth_token_info.is_super
+      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_is_super = user.is_super
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
       const streams = await Promise.all(streamsData.streams.map(async (stream) => {
-        const permissions = ['R']
+        const permissions = await rolesService.getPermissions(user, stream, 'Stream')
         return streamsService.formatStream(stream, permissions)
       }))
       return res

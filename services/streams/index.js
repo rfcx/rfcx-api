@@ -2,6 +2,7 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
+const rolesService = require('../roles')
 
 const streamBaseInclude = [
   {
@@ -85,10 +86,9 @@ async function query (attrs, opts = {}) {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
-      const streamIds = [...new Set(permissions.map(d => d.stream_id))]
+      const ids = await rolesService.getSharedObjectsIDs(attrs.current_user_id, 'Stream')
       where.id = {
-        [models.Sequelize.Op.in]: streamIds
+        [models.Sequelize.Op.in]: ids
       }
     }
   } else if (attrs.current_user_id !== undefined) {

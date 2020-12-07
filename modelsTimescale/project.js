@@ -38,6 +38,7 @@ module.exports = function (sequelize, DataTypes) {
   Project.associate = function (models) {
     Project.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
     Project.belongsTo(models.Organization, { as: 'organization', foreignKey: 'organization_id' })
+    Project.hasMany(models.Stream, { as: 'streams', foreignKey: 'project_id' })
   }
   Project.attributes = {
     full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'created_at', 'updated_at'],
