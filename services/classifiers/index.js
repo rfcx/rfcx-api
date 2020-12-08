@@ -1,4 +1,3 @@
-const { Converter } = require('aws-sdk/clients/dynamodb')
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
@@ -24,7 +23,7 @@ const baseInclude = [
     attributes: models.Stream.attributes.lite
   },
   {
-    model:models.Project,
+    model: models.Project,
     as: 'active_projects',
     attributes: models.Project.attributes.lite
   }
@@ -113,10 +112,10 @@ function create (attrs) {
 
     // Create the active projects and streams
     if (attrs.activeStreams) {
-      await insertActiveProjects({id:classifier.id, active_projects:attrs.activeProjects}, t)
+      await insertActiveProjects({ id: classifier.id, active_projects: attrs.activeProjects }, t)
     }
     if (attrs.activeProjects) {
-      await insertActiveStreams({id:classifier.id, active_streams:attrs.activeStreams}, t)
+      await insertActiveStreams({ id: classifier.id, active_streams: attrs.activeStreams }, t)
     }
 
     return classifier
@@ -124,7 +123,7 @@ function create (attrs) {
 }
 
 function update (id, createdBy, attrs, opts = {}) {
-    return models.Classifier
+  return models.Classifier
     .findOne({
       where: { id },
       attributes: models.Classifier.attributes.full,
