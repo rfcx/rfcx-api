@@ -5,23 +5,17 @@ var passport = require('passport')
 var httpError = require('../../../utils/http-errors.js')
 var analysisUtils = require('../../../utils/rfcx-analysis/analysis-queue.js').analysisUtils
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var loggers = require('../../../utils/logger')
 var sequelize = require('sequelize')
-
-var logDebug = loggers.debugLogger.log
 
 router.route('/:audio_id/tags')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
     try {
       var analysisResults = req.body.json
-      logDebug('Audio tags endpoint: extracted json', { req: req, json: analysisResults })
     } catch (e) {
-      loggers.warnLogger.log('Audio tags endpoint: invalid json data', { req: req })
       return httpError(req, res, 400, null, 'Failed to parse json data')
     }
 
     if (!analysisResults.results || !analysisResults.results.length) {
-      loggers.warnLogger.log('Audio tags endpoint: request payload doesn\'t contain tags', { req: req })
       return httpError(req, res, 400, null, 'Request payload doesn\'t contain tags')
     }
 
@@ -30,25 +24,15 @@ router.route('/:audio_id/tags')
       .bind({})
       .then(function (dbAudio) {
         if (!dbAudio) {
-          loggers.errorLogger.log('Audio with given guid not found', { req: req })
           throw new sequelize.EmptyResultError('Audio with given guid not found')
         }
-        logDebug('Audio tags endpoint: dbAudio founded', {
-          req: req,
-          audio: Object.assign({}, dbAudio.toJSON())
-        })
         this.dbAudio = dbAudio
         return models.AudioAnalysisModel.findOne({ where: { guid: analysisResults.model } })
       })
       .then(function (dbModel) {
         if (!dbModel) {
-          loggers.errorLogger.log('Model with given guid not found', { req: req })
           throw new sequelize.EmptyResultError('Model with given guid not found')
         }
-        logDebug('Audio tags endpoint: dbModel founded', {
-          req: req,
-          model: Object.assign({}, dbModel.toJSON())
-        })
         this.dbModel = dbModel
 
         var removePromises = []
@@ -77,16 +61,9 @@ router.route('/:audio_id/tags')
             }
           }
         }
-        logDebug('Audio tags endpoint: remove previous tags', {
-          req: req,
-          modelGuid: dbModel.guid,
-          audioGuid: this.dbAudio.guid,
-          values: logTagNames
-        })
         return Promise.all(removePromises)
       })
       .then(function () {
-        logDebug('Audio tags endpoint: previous tags removed', { req: req })
         // contains all probabilities for the model
         this.probabilityVector = []
         this.cognitionValue = ''
@@ -124,23 +101,15 @@ router.route('/:audio_id/tags')
             }
           }
         }
-        logDebug('Audio tags endpoint: creating new tags', {
-          req: req,
-          tagsData: preInsertGuardianAudioTags
-        })
         return models.GuardianAudioTag.bulkCreate(preInsertGuardianAudioTags)
       })
       .then(function (tags) {
-        var tagsJson = tags.map(function (tag) {
-          return tag.toJSON()
-        })
-        logDebug('Audio tags endpoint: created new tags', {
-          req: req,
-          tagsJson: tagsJson
-        })
+        analysisService.findStateByName('perc_done')
+          .then((state) => {
+            analysisService.changeEntityState(this.dbAudio.id, this.dbModel.id, state.id)
+          })
 
         if (this.dbModel.generate_event === 0) {
-          logDebug('Audio tags endpoint: model not generating events, finishing', { req: req })
           return tags
         }
         // queue up cognition analysis
@@ -198,26 +167,15 @@ router.route('/:audio_id/tags')
         var options = {
           api_url_domain: req.rfcx.api_url_domain
         }
-
-        logDebug('Audio tags endpoint: model is generating events', {
-          req: req,
-          createdEvent: createdEvent,
-          cognitionParmas: cognitionParmas,
-          options: options
-        })
-
         return analysisUtils.queueForCognitionAnalysis('rfcx-cognition', createdEvent, cognitionParmas, options)
       })
       .then(function () {
-        logDebug('Audio tags endpoint: finishing', { req: req })
         res.status(200).json([])
       })
       .catch(sequelize.EmptyResultError, function (err) {
-        loggers.errorLogger.log('Failed to save tags', { req: req, err: err })
         httpError(req, res, 404, null, err.message)
       })
       .catch(function (err) {
-        loggers.errorLogger.log('Failed to save tags', { req: req, err: err })
         httpError(req, res, 500, err, 'Failed to save tags')
       })
   })

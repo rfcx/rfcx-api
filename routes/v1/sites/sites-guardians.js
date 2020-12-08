@@ -6,10 +6,8 @@ var httpError = require('../../../utils/http-errors.js')
 var passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 var hasRole = require('../../../middleware/authorization/authorization').hasRole
-var loggers = require('../../../utils/logger')
 var Promise = require('bluebird')
 var sequelize = require('sequelize')
-var logError = loggers.errorLogger.log
 var ForbiddenError = require('../../../utils/converter/forbidden-error')
 const userService = require('../../../services/users/users-service-legacy')
 
@@ -105,7 +103,7 @@ router.route('/:site_id/guardians')
       .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch((err) => {
-        logError('Failed to get guardians', { err })
+        console.error('Failed to get guardians', err)
         res.status(500).json({ msg: 'Failed to get guardians' })
       })
   })

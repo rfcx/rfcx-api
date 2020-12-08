@@ -1,8 +1,6 @@
 const Promise = require('bluebird')
 const fs = require('fs')
 const assetUtil = require('../internal-rfcx/asset-utils').assetUtils
-var loggers = require('../logger')
-var logError = loggers.errorLogger.log
 
 function serveFile (res, filePathToServe, fileName, mimeType, inline) {
   return new Promise((resolve, reject) => {
@@ -32,7 +30,7 @@ function serveFile (res, filePathToServe, fileName, mimeType, inline) {
               resolve()
               fs.unlink(filePathToServe, (err) => {
                 if (err) {
-                  logError(`Failed to remove local file ${filePathToServe}`, { err })
+                  console.error(`Failed to remove local file ${filePathToServe}`, err)
                 }
               })
             })

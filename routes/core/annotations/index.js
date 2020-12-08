@@ -78,7 +78,7 @@ router.get('/', (req, res) => {
     .then(async () => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'R')
+        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, 'R')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
@@ -118,7 +118,7 @@ router.get('/:id', (req, res) => {
 
   return annotationsService.get(annotationId)
     .then(async (annotation) => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'R')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, annotation.stream_id, 'R')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
@@ -182,7 +182,7 @@ router.put('/:id', (req, res) => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, annotation.stream_id, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission for this operation.')
       }
@@ -233,7 +233,7 @@ router.delete('/:id', (req, res) => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, annotation.stream_id, 'W')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission for this operation.')
       }
