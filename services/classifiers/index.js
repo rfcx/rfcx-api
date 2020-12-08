@@ -42,22 +42,26 @@ function get (id, opts = {}) {
       attributes: models.Classifier.attributes.full,
       include: opts && opts.joinRelations ? baseInclude : []
     })
-    .then(item => {
-      if (!item) {
-        throw new EmptyResultError('Classifier with given uuid not found.')
+    .then(classifier => {
+      if (!classifier) {
+        throw new EmptyResultError('Classifier with given id not found.')
       }
-      return item
+      const data = classifier.toJSON()
+      // Remove join tables from json
+      data.active_streams = data.active_streams.map(({ classifier_active_streams, ...obj }) => obj)
+      data.active_projects = data.active_projects.map(({ classifier_active_projects, ...obj }) => obj)
+      return data
     })
 }
 
-function getIdByExternalId (uuid) {
+function getIdByExternalId (externalId) {
   return models.Classifier
     .findOne({
-      where: { uuid },
+      where: { external_id: externalId },
       attributes: ['id']
     }).then(item => {
       if (!item) {
-        throw new EmptyResultError('Classifier with given uuid not found.')
+        throw new EmptyResultError('Classifier with given external id not found.')
       }
       return item.id
     })
@@ -111,73 +115,61 @@ function create (attrs) {
     await Promise.all(outputsData.map(output => models.ClassifierOutput.create(output, { transaction: t })))
 
     // Create the active projects and streams
-    if (attrs.activeStreams) {
-      await insertActiveProjects({ id: classifier.id, active_projects: attrs.activeProjects }, t)
-    }
     if (attrs.activeProjects) {
-      await insertActiveStreams({ id: classifier.id, active_streams: attrs.activeStreams }, t)
+      await updateActiveProjects({ id: classifier.id, active_projects: attrs.activeProjects }, t)
+    }
+    if (attrs.activeStreams) {
+      await updateActiveStreams({ id: classifier.id, active_streams: attrs.activeStreams }, t)
     }
 
     return classifier
   })
 }
 
-function update (id, createdBy, attrs, opts = {}) {
-  return models.Classifier
-    .findOne({
-      where: { id },
-      attributes: models.Classifier.attributes.full,
-      include: opts && opts.joinRelations ? baseInclude : []
-    })
-    .then(async (item) => {
-      if (!item) {
-        throw new EmptyResultError('Classifier with given uuid not found.')
+async function update (id, createdBy, attrs) {
+  const classifier = await models.Classifier.findOne({
+    where: { id }
+  })
+
+  if (!classifier) {
+    throw new EmptyResultError('Classifier with given id not found.')
+  }
+
+  await models.sequelize.transaction(async (t) => {
+    // Only update if there is a change in status or deployment parameters
+    if (attrs.status || attrs.deployment_parameters) {
+      const update = {
+        id: id,
+        created_by: createdBy,
+        status: attrs.status,
+        deployment_parameters: attrs.deployment_parameters || null
       }
-      return models.sequelize.transaction(async (t) => {
-        // Update classifier-deployment if there is status in update body.
-        if (attrs.status) {
-          const update = {
-            id: id,
-            created_by: createdBy,
-            status: attrs.status,
-            deployment_parameters: attrs.deployment_parameters || null
-          }
-          await updateStatus(update, t)
-        }
+      await updateDeployment(update, t)
+    }
 
-        // Update classifier-deployment if there is deployment_parameters in update body.
-        if (attrs.deployment_parameters) {
-          const update = {
-            id: id,
-            parameters: attrs.deployment_parameters
-          }
-          await updateDeploymentParameters(update, t)
-        }
+    // Only update if there are active_streams
+    if (Array.isArray(attrs.active_streams)) {
+      const update = {
+        id: id,
+        active_streams: attrs.active_streams
+      }
+      await updateActiveStreams(update, t)
+    }
 
-        // Update classifier-active-streams if there is active_streams in update body.
-        if (attrs.active_streams) {
-          const update = {
-            id: id,
-            active_streams: attrs.active_streams
-          }
-          await insertActiveStreams(update, t)
-        }
+    // Only update if there is active_projects
+    if (Array.isArray(attrs.active_projects)) {
+      const update = {
+        id: id,
+        active_projects: attrs.active_projects
+      }
+      await updateActiveProjects(update, t)
+    }
 
-        // Update classifier-active-projects if there is active_projects in update body.
-        if (attrs.active_projects) {
-          const update = {
-            id: id,
-            active_projects: attrs.active_projects
-          }
-          await insertActiveProjects(update, t)
-        }
-
-        return item.update(attrs, t)
-      })
-    })
+    await classifier.update(attrs, t)
+  })
 }
 
-async function updateStatus (update, transaction) {
+async function updateDeployment (update, transaction) {
   // Search for current deployment
   const existingDeployment = models.ClassifierDeployment.findOne({
     where: {
@@ -188,7 +180,7 @@ async function updateStatus (update, transaction) {
   })
 
   // Status is the same, do nothing
-  if (existingDeployment && existingDeployment.status === update.status) {
+  if (existingDeployment && (!update.status || existingDeployment.status === update.status) && (!update.deployment_parameters || existingDeployment.deployment_parameters === update.deployment_parameters)) {
     return
   }
 
@@ -210,68 +202,56 @@ async function updateStatus (update, transaction) {
   return await models.ClassifierDeployment.create(newDeployment, { transaction: transaction })
 }
 
-function insertActiveStreams (update, transaction) {
-  const activeStreams = update.active_streams
-
-  return Promise.all(activeStreams.map(async (streamId) => {
-    const stream = {
-      classifier_id: update.id,
-      stream_id: streamId
+async function updateActiveStreams (update, transaction) {
+  const existingStreams = await models.ClassifierActiveStreams.findAll({
+    attributes: ['stream_id'],
+    where: {
+      classifier_id: update.id
     }
-    // Search for specific classifier_id and stream_id if it's existed
-    await models.ClassifierActiveStreams.findOne({
-      where: stream,
-      attributes: models.ClassifierActiveStreams.attributes.full
-    })
-      .then(async (itemActiveStreams) => {
-      // If not existed then create new one
-        if (!itemActiveStreams) {
-          return await models.ClassifierActiveStreams.create(stream, { transaction: transaction })
-        }
-      })
-  }))
-}
+  }, { transaction })
+  const existingStreamIds = existingStreams.map(s => s.stream_id)
 
-function insertActiveProjects (update, transaction) {
-  const activeProjects = update.active_projects
-
-  return Promise.all(activeProjects.map(async (projectId) => {
-    const project = {
-      classifier_id: update.id,
-      project_id: projectId
-    }
-    // Search for specific classifier_id and project_id if it's existed
-    await models.ClassifierActiveProjects.findOne({
-      where: project,
-      attributes: models.ClassifierActiveProjects.attributes.full
-    })
-      .then(async (itemActiveProjects) => {
-      // If not existed then create new one
-        if (!itemActiveProjects) {
-          return await models.ClassifierActiveProjects.create(project, { transaction: transaction })
-        }
-      })
-  }))
-}
-
-function updateDeploymentParameters (update, transaction) {
-  // Search for last active of classifier id
-  return models.ClassifierDeployment.findOne({
+  // Additions
+  const deletedStreamIds = existingStreamIds.filter(s => !update.active_streams.includes(s))
+  await models.ClassifierActiveStreams.destroy({
     where: {
       classifier_id: update.id,
-      active: true
-    },
-    attributes: models.ClassifierDeployment.attributes.full
-  })
-    .then(async (itemDeployment) => {
-      if (itemDeployment && !itemDeployment.end) {
-      // Update deployment-parameters
-        const updateDeployment = {
-          deployment_parameters: update.parameters
-        }
-        return await itemDeployment.update(updateDeployment, { transaction: transaction })
-      }
-    })
+      stream_id: deletedStreamIds
+    }
+  }, { transaction })
+
+  // Deletions
+  const addedStreamIds = update.active_streams.filter(s => !existingStreamIds.includes(s))
+  await models.ClassifierActiveStreams.bulkCreate(addedStreamIds.map(streamId => ({
+    classifier_id: update.id,
+    stream_id: streamId
+  })), { transaction })
+}
+
+async function updateActiveProjects (update, transaction) {
+  const existingProjects = await models.ClassifierActiveProjects.findAll({
+    attributes: ['project_id'],
+    where: {
+      classifier_id: update.id
+    }
+  }, { transaction })
+  const existingProjectIds = existingProjects.map(p => p.project_id)
+
+  // Additions
+  const deletedProjectIds = existingProjectIds.filter(p => !update.active_projects.includes(p))
+  await models.ClassifierActiveProjects.destroy({
+    where: {
+      classifier_id: update.id,
+      project_id: deletedProjectIds
+    }
+  }, { transaction })
+
+  // Deletions
+  const addedProjectIds = update.active_projects.filter(p => !existingProjectIds.includes(p))
+  await models.ClassifierActiveProjects.bulkCreate(addedProjectIds.map(streamId => ({
+    classifier_id: update.id,
+    project_id: streamId
+  })), { transaction })
 }
 
 module.exports = {

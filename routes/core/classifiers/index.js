@@ -109,10 +109,6 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
  *     responses:
  *       201:
  *         description: Created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Classifier'
  *       400:
  *         description: Invalid query parameters
  */
@@ -187,17 +183,13 @@ function parseClassifierOutputMapping (str) {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierUpdate'
+ *             $ref: '#/components/requestBodies/Classifier'
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierUpdate'
+ *             $ref: '#/components/requestBodies/Classifier'
  *     responses:
  *       200:
  *         description: Updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Classifier'
  *       400:
  *         description: Invalid query parameters
  */
@@ -205,6 +197,9 @@ router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (re
   const transformedParams = {}
   const id = req.params.id
   const params = new Converter(req.body, transformedParams)
+  params.convert('name').optional().toString()
+  params.convert('version').optional().toInt()
+  params.convert('external_id').optional().toString()
   params.convert('status').optional().toInt()
   params.convert('deployment_parameters').optional().toString()
   params.convert('active_projects').optional().toArray()
