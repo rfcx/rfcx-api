@@ -179,46 +179,36 @@ function update (id, createdBy, attrs, opts = {}) {
 }
 
 async function updateStatus (update, transaction) {
-  const classifierDeployment = {
+  // Search for current deployment
+  const existingDeployment = models.ClassifierDeployment.findOne({
+    where: {
+      classifier_id: update.id,
+      start: { [models.sequelize.Op.lt]: new Date() },
+      [models.sequelize.Op.or]: [{ end: null }, { end: { [models.sequelize.Op.gt]: new Date() } }]
+    }
+  })
+
+  // Status is the same, do nothing
+  if (existingDeployment && existingDeployment.status === update.status) {
+    return
+  }
+
+  // Update the existing deployment before creating a new one
+  if (existingDeployment) {
+    await existingDeployment.update({ end: Date() }, { transaction: transaction })
+  }
+
+  // Create the new deployment
+  const newDeployment = {
     classifier_id: update.id,
     status: update.status,
     start: Date(),
     end: null,
     created_by_id: update.created_by,
-    deployment_parameters: update.deployment_parameters
+    deployment_parameters: update.deployment_parameters,
+    active: false // Background job will transition this to true on classifier deployment
   }
-  // Search for last active of classifier id
-  return models.ClassifierDeployment.findOne({
-    where: {
-      classifier_id: update.id,
-      active: true
-    },
-    attributes: models.ClassifierDeployment.attributes.full
-  })
-    .then(async (itemDeployment) => {
-      if (!itemDeployment) {
-        // Create if there is not last active
-        const active = {
-          active: true
-        }
-        const classifierObj = { ...classifierDeployment, ...active }
-        return await models.ClassifierDeployment.create(classifierObj, { transaction: transaction })
-      } else {
-        if (itemDeployment.status !== update.status) {
-          const updateDeployment = {
-            end: Date()
-          }
-          // Update the old one with end
-          await itemDeployment.update(updateDeployment, { transaction: transaction })
-          // Create if the new one
-          const active = {
-            active: false
-          }
-          const classifierObj = { ...classifierDeployment, ...active }
-          return await models.ClassifierDeployment.create(classifierObj, { transaction: transaction })
-        }
-      }
-    })
+  return await models.ClassifierDeployment.create(newDeployment, { transaction: transaction })
 }
 
 function insertActiveStreams (update, transaction) {
