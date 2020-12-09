@@ -1,9 +1,9 @@
-var Conversion = require('./conversion')
-var ValidationError = require('./validation-error')
-var Promise = require('bluebird')
+const Conversion = require('./conversion')
+const ValidationError = require('./validation-error')
+const { toCamelObject } = require('../formatters/snake-case')
 
 module.exports = class Converter {
-  constructor (validatedObject, transformedObject) {
+  constructor (validatedObject, transformedObject, camelize) {
     if (validatedObject instanceof Converter) {
       validatedObject = validatedObject.validatedObject
     }
@@ -12,7 +12,8 @@ module.exports = class Converter {
     this.currentProperty = null
     this.transformedObject = transformedObject || {}
     this.conversions = []
-  };
+    this.camelize = camelize || false
+  }
 
   convert (property) {
     const conversion = new Conversion(this.validatedObject, property, this.transformedObject)
@@ -32,7 +33,7 @@ module.exports = class Converter {
           }
         }
         if (exceptions.length === 0) {
-          return this.transformedObject
+          return this.camelize ? toCamelObject(this.transformedObject) : this.transformedObject
         } else {
           throw new ValidationError(`Validation errors: ${exceptions.join('; ')}.`)
         }

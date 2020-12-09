@@ -1,10 +1,9 @@
+function isObject (o) {
+  return o === Object(o) && !Array.isArray(o) && typeof o !== 'function'
+}
 
 function toSnakeCase (str) {
   return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
-}
-
-function isObject (o) {
-  return o === Object(o) && !Array.isArray(o) && typeof o !== 'function'
 }
 
 function toSnakeObject (obj) {
@@ -15,8 +14,33 @@ function toSnakeObject (obj) {
     }), {})
 }
 
+function toCamelCase (str) {
+  return str.replace(/([-_][a-z])/ig, ($1) => {
+    return $1.toUpperCase()
+      .replace('-', '')
+      .replace('_', '')
+  })
+}
+
+function toCamelObject (o) {
+  if (isObject(o)) {
+    const n = {}
+    Object.keys(o)
+      .forEach((k) => {
+        n[toCamelCase(k)] = toCamelObject(o[k])
+      })
+    return n
+  } else if (Array.isArray(o)) {
+    return o.map((i) => {
+      return toCamelObject(i)
+    })
+  }
+  return o
+}
+
 module.exports = {
   toSnakeCase,
-  isObject,
-  toSnakeObject
+  toSnakeObject,
+  toCamelCase,
+  toCamelObject
 }
