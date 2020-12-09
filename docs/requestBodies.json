@@ -121,6 +121,55 @@
       "step"
     ]
   },
+  "Event": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "xu82jDgX49"
+      },
+      "classification": {
+        "type": "string",
+        "description": "Classification value",
+        "example": "obscurus"
+      },
+      "classifier_event_strategy": {
+        "type": "integer",
+        "description": "Classifier and strategy that produced the event",
+        "example": "12"
+      },
+      "start": {
+        "type": "date",
+        "description": "Beginning of event (first detection timestamp)",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "description": "End of event (last detection timestamp)",
+        "example": "2020-05-12T07:45:19.000Z"
+      },
+      "start_detection": {
+        "type": "string",
+        "description": "Identifier of first detection in the event",
+        "example": "(uuid)"
+      },
+      "end_detection": {
+        "type": "string",
+        "description": "Identifier of last detection in the event",
+        "example": "(uuid)"
+      }
+    },
+    "required": [
+      "stream",
+      "classification",
+      "classifier_event_strategy",
+      "start",
+      "end",
+      "start_detection",
+      "end_detection"
+    ]
+  },
   "IndexValuesCompact": {
     "type": "object",
     "properties": {
