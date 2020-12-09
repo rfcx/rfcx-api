@@ -24,6 +24,13 @@ spec:
               cpu: "2"
           ports:
             - containerPort: 8081
+          env:
+            - name: NEW_RELIC_NO_CONFIG_FILE
+              value: "true"
+            - name: NEW_RELIC_APP_NAME
+              value: "Core API"
+            - name: NEW_RELIC_LOG_LEVEL
+              value: "warn"
 ---
 kind: Service
 apiVersion: v1
