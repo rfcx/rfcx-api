@@ -8,6 +8,10 @@ const bodyParser = require('body-parser')
 const addRequestId = require('express-request-id')
 const promBundle = require('express-prom-bundle')
 
+if (process.env.NODE_ENV === 'production') {
+  require('newrelic')
+}
+
 const app = express()
 
 app.set('title', 'rfcx-api')
