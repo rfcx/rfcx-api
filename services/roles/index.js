@@ -91,7 +91,7 @@ const itemModelNames = Object.keys(hierarchy)
  * Returns true if the user has permission for the subject
  * @param {string} type
  * @param {number} userId
- * @param {string} itemOrId item id or item model item
+ * @param {string} itemOrId item id or item
  * @param {string} itemModelName model class name
  */
 async function hasPermission (type, userId, itemOrId, itemModelName) {
@@ -101,8 +101,7 @@ async function hasPermission (type, userId, itemOrId, itemModelName) {
 
 /**
  * Returns true if the user has permission for the subject
- * @param {number} userOrId
- * @param {string} itemOrId item id or item model item
+ * @param {string | object} itemOrId item id or item
  * @param {string} itemModelName model class name
  */
 async function getPermissions (userOrId, itemOrId, itemModelName) {
@@ -165,27 +164,38 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
   return permissions
 }
 
+/**
+ * Returns ids of all Organizations or Projects or Streams (based on specified itemModelName) which are accessible for user
+ * based on his direct roles assigned to these objects or roles which assigned to parent objects (e.g. user will have access
+ * to all Streams of the Project he has access to)
+ * The function will go from bottom to top in the hierarchy.
+ * @param {string | object} itemOrId item id or model item
+ * @param {string} itemModelName model class name
+ */
 async function getSharedObjectsIDs (userOrId, itemModelName) {
   const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
   const userId = userIsPrimitive ? userOrId : userOrId.owner_id
 
-  const originalItemModelName = itemModelName
+  const originalItemModelName = itemModelName // save originally requested model name to compare it during hierarchy climbing
   const proms = []
   while (itemModelName) {
+    // anonymous function is needed because async operations and variable will have only last assigned value if we don't use anonymous function
     (function (currentItemModelName) {
       const prom = hierarchy[currentItemModelName].roleModel.findAll({
         where: { user_id: userId },
-        include: getHierarchyInclude(currentItemModelName, originalItemModelName)
+        include: getHierarchyInclude(currentItemModelName, originalItemModelName) // include will be different on different levels
       })
         .then(async (userRoles) => {
           let result = userRoles
             .map(x => x[currentItemModelName.toLowerCase()])
+          // go ddeper in the hierarchy to get ids of requested type
           if (currentItemModelName === 'Organization' && (originalItemModelName === 'Project' || originalItemModelName === 'Stream')) {
             result = result
               .reduce((arr, org) => {
                 return arr.concat(org.projects || [])
               }, [])
           }
+          // go ddeper in the hierarchy to get ids of requested type
           if ((currentItemModelName === 'Organization' || currentItemModelName === 'Project') && originalItemModelName === 'Stream') {
             result = result
               .reduce((arr, proj) => {
@@ -196,7 +206,7 @@ async function getSharedObjectsIDs (userOrId, itemModelName) {
         })
       proms.push(prom)
     }(itemModelName))
-    if (hierarchy[itemModelName].parent) {
+    if (hierarchy[itemModelName].parent) { // "climb" the hierarchy
       itemModelName = hierarchy[itemModelName].parent
     } else {
       itemModelName = null
@@ -204,7 +214,13 @@ async function getSharedObjectsIDs (userOrId, itemModelName) {
   }
 
   const promsResults = await Promise.all(proms)
-  return [...new Set([...(promsResults[0] || []), ...(promsResults[1] || []), ...(promsResults[2] || [])])]
+  return [
+    ...new Set([
+      ...(promsResults[0] || []),
+      ...(promsResults[1] || []),
+      ...(promsResults[2] || [])
+    ])
+  ]
 }
 
 module.exports = {
