@@ -56,7 +56,6 @@ exports.env = {
 
   SQS_PERCEPTION_BATCH: "rfcx-perception-batch",
 
-  NEW_RELIC_KEY: "",
   MANDRILL_KEY: "",
 
   MAILCHIMP_KEY: "",
@@ -119,4 +118,9 @@ exports.env = {
   // EARTHRANGER_BASE_URL: 'https://sandbox.pamdas.org/',
   // EARTHRANGER_ACCESS_TOKEN: '',
 
+  /// Logging and metrics
+  // NEW_RELIC_LICENSE_KEY: '',
+  // NEW_RELIC_NO_CONFIG_FILE: 'true',
+  // NEW_RELIC_APP_NAME: 'Core API Dev',
+  // NEW_RELIC_LOG_LEVEL: 'warn'
 }
