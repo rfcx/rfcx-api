@@ -53,6 +53,7 @@ router.post('/', function (req, res) {
   params.convert('description').optional().toString()
   params.convert('is_public').optional().toBoolean().default(false)
   params.convert('project_id').optional().toString()
+  params.convert('project_external_id').optional().toInt()
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
@@ -63,6 +64,14 @@ router.post('/', function (req, res) {
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
+      }
+      if (convertedParams.project_external_id) {
+        const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
+        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, externalProject.id, 'Project')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to create stream in this project.')
+        }
+        convertedParams.project_id = externalProject.id
       }
       convertedParams.id = convertedParams.id || hash.randomString(12)
       convertedParams.created_by_id = userId

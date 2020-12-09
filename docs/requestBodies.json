@@ -197,6 +197,16 @@
         "type": "boolean",
         "description": "Whether stream is public (default false)",
         "default": "false"
+      },
+      "project_id": {
+        "type": "string",
+        "description": "A project id",
+        "example": "qwe2jDgX49"
+      },
+      "project_external_id": {
+        "type": "integer",
+        "description": "An external project id",
+        "example": 1051
       }
     },
     "required": [

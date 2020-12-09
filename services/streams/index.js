@@ -44,9 +44,9 @@ function create (data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create stream with empty object.')
   }
-  const { id, name, description, start, end, is_public, latitude, longitude, created_by_id } = data // eslint-disable-line camelcase
+  const { id, name, description, start, end, is_public, latitude, longitude, created_by_id, project_id } = data // eslint-disable-line camelcase
   return models.Stream
-    .create({ id, name, description, start, end, is_public, latitude, longitude, created_by_id })
+    .create({ id, name, description, start, end, is_public, latitude, longitude, created_by_id, project_id })
     .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
