@@ -5,11 +5,7 @@ const streamSourceFileService = require('../../../services/streams/stream-source
 const streamSegmentService = require('../../../services/streams/stream-segment')
 const Converter = require('../../../utils/converter/converter')
 const { hasRole } = require('../../../middleware/authorization/authorization')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Stream')
-}
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -119,7 +115,7 @@ router.post('/:streamId/stream-segments', hasRole(['systemUser']), function (req
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/stream-segments', hasPermission('R'), function (req, res) {
+router.get('/:id/stream-segments', hasStreamPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

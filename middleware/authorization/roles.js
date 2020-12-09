@@ -24,6 +24,21 @@ function hasPermission (permission, modelName) {
   }
 }
 
+function hasOrganizationPermission (permission) {
+  return hasPermission(permission, 'Organization')
+}
+
+function hasProjectPermission (permission) {
+  return hasPermission(permission, 'Project')
+}
+
+function hasStreamPermission (permission) {
+  return hasPermission(permission, 'Stream')
+}
+
 module.exports = {
-  hasPermission
+  hasPermission,
+  hasOrganizationPermission,
+  hasProjectPermission,
+  hasStreamPermission
 }

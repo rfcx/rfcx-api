@@ -4,11 +4,7 @@ const router = require('express').Router()
 // const usersFusedService = require('../../../services/users/fused')
 // const Converter = require('../../../utils/converter/converter')
 // const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Stream')
-}
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -30,7 +26,7 @@ function hasPermission (p) {
  *                 $ref: '#/components/schemas/Permission'
  */
 
-router.get('/:id/users', hasPermission('U'), async function (req, res) {
+router.get('/:id/users', hasStreamPermission('U'), async function (req, res) {
   // try {
   //   const streamId = req.params.streamId
   //   const permissions = await streamPermissionService.query({ stream_id: streamId }, { joinRelations: true })
@@ -111,7 +107,7 @@ router.put('/:streamId/users', function (req, res) {
  *         description: OK
  */
 
-router.delete('/:streamId/users', hasPermission('U'), function (req, res) {
+router.delete('/:streamId/users', hasStreamPermission('U'), function (req, res) {
   // const streamId = req.params.streamId
   // const convertedParams = {}
   // const params = new Converter(req.body, convertedParams)

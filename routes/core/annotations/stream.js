@@ -4,11 +4,7 @@ const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classification/classification-service')
 const Converter = require('../../../utils/converter/converter')
 const usersFusedService = require('../../../services/users/fused')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Stream')
-}
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -62,7 +58,7 @@ function hasPermission (p) {
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/annotations', hasPermission('R'), function (req, res) {
+router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const convertedParams = {}
@@ -118,7 +114,7 @@ router.get('/:id/annotations', hasPermission('R'), function (req, res) {
  *       404:
  *         description: Stream not found
  */
-router.post('/:id/annotations', hasPermission('U'), function (req, res) {
+router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   const streamId = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}

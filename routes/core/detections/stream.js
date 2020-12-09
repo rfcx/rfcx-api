@@ -7,11 +7,7 @@ const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Stream')
-}
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -77,7 +73,7 @@ function hasPermission (p) {
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/detections', hasPermission('R'), function (req, res) {
+router.get('/:id/detections', hasStreamPermission('R'), function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const convertedParams = {}

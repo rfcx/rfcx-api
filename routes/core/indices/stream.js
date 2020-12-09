@@ -2,11 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const indicesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Stream')
-}
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -83,7 +79,7 @@ function hasPermission (p) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/:id/indices/:index/values', hasPermission('R'), (req, res) => {
+router.get('/:id/indices/:index/values', hasStreamPermission('R'), (req, res) => {
   const streamId = req.params.id
   const index = req.params.index
 

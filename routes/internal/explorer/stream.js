@@ -2,11 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const segmentService = require('../../../services/streams/stream-segment')
 const Converter = require('../../../utils/converter/converter')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Stream')
-}
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -62,7 +58,7 @@ function hasPermission (p) {
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/:id/coverage', hasPermission('R'), function (req, res) {
+router.get('/streams/:id/coverage', hasStreamPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

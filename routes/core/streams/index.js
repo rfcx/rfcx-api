@@ -6,12 +6,8 @@ const projectsService = require('../../../services/projects')
 const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const rolesService = require('../../../services/roles')
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Stream')
-}
 
 /**
  * @swagger
@@ -250,7 +246,7 @@ router.get('/:id', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.patch('/:id', hasPermission('U'), (req, res) => {
+router.patch('/:id', hasStreamPermission('U'), (req, res) => {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -297,7 +293,7 @@ router.patch('/:id', hasPermission('U'), (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.delete('/:id', hasPermission('D'), (req, res) => {
+router.delete('/:id', hasStreamPermission('D'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(streamsService.softDelete)
     .then(json => res.sendStatus(204))
