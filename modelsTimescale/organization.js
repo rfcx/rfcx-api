@@ -9,18 +9,23 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING,
       unique: true
     },
-    is_public: {
+    isPublic: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+      allowNull: false
+    },
+    createdById: {
+      type: DataTypes.INTEGER,
       allowNull: false
     }
   }, {
     paranoid: true,
     timestamps: true,
-    deletedAt: 'deleted_at'
+    underscored: true
   })
   Organization.associate = function (models) {
     Organization.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
+    Organization.hasMany(models.Project, { as: 'projects', foreignKey: 'organization_id' })
   }
   Organization.attributes = {
     full: ['id', 'name', 'is_public', 'created_by_id', 'created_at', 'updated_at'],
