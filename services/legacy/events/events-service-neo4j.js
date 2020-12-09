@@ -2,16 +2,16 @@ var Promise = require('bluebird')
 const fs = require('fs')
 const path = require('path')
 const moment = require('moment-timezone')
-var EmptyResultError = require('../../utils/converter/empty-result-error')
-var sqlUtils = require('../../utils/misc/sql')
-const neo4j = require('../../utils/neo4j')
-const firebaseService = require('../firebase/firebase-service')
-const guardianGroupService = require('../guardians/guardian-group-service')
-const userService = require('../users/users-service-legacy')
-const textGridService = require('../textgrid/textgrid-service')
-const mailService = require('../mail/mail-service')
-const aws = require('../../utils/external/aws.js').aws()
-const hash = require('../../utils/misc/hash.js').hash
+var EmptyResultError = require('../../../utils/converter/empty-result-error')
+var sqlUtils = require('../../../utils/misc/sql')
+const neo4j = require('../../../utils/neo4j')
+const firebaseService = require('../../firebase/firebase-service')
+const guardianGroupService = require('../../guardians/guardian-group-service')
+const userService = require('../../users/users-service-legacy')
+const textGridService = require('../../textgrid/textgrid-service')
+const mailService = require('../../mail/mail-service')
+const aws = require('../../../utils/external/aws.js').aws()
+const hash = require('../../../utils/misc/hash.js').hash
 
 function prepareOpts (req) {
   let order, dir
