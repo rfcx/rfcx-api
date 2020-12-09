@@ -19,6 +19,23 @@ const roleBaseInclude = [
 
 function getHierarchyInclude (highestLevel, lowestLevel) {
   let include = []
+  const projectInclude = lowestLevel === 'Stream' ? [
+    {
+      model: models.Stream,
+      as: 'streams',
+      attributes: ['id'],
+      required: true
+    }
+  ] : []
+  const organizationInclude = lowestLevel === 'Project' || lowestLevel === 'Stream' ? [
+    {
+      model: models.Project,
+      as: 'projects',
+      attributes: models.Project.attributes.lite,
+      required: true,
+      include: projectInclude
+    }
+  ] : []
   if (highestLevel === 'Organization') {
     include = [
       {
@@ -26,26 +43,7 @@ function getHierarchyInclude (highestLevel, lowestLevel) {
         as: 'organization',
         attributes: models.Organization.attributes.lite,
         required: true,
-        ...(lowestLevel === 'Project' || lowestLevel === 'Stream') && {
-          include: [
-            {
-              model: models.Project,
-              as: 'projects',
-              attributes: models.Project.attributes.lite,
-              required: true,
-              ...lowestLevel === 'Stream' && {
-                include: [
-                  {
-                    model: models.Stream,
-                    as: 'streams',
-                    attributes: ['id'],
-                    required: true
-                  }
-                ]
-              }
-            }
-          ]
-        }
+        include: organizationInclude
       }
     ]
   } else if (highestLevel === 'Project') {
@@ -55,16 +53,7 @@ function getHierarchyInclude (highestLevel, lowestLevel) {
         as: 'project',
         attributes: models.Project.attributes.lite,
         required: true,
-        ...lowestLevel === 'Stream' && {
-          include: [
-            {
-              model: models.Stream,
-              as: 'streams',
-              attributes: ['id'],
-              required: true
-            }
-          ]
-        }
+        include: projectInclude
       }
     ]
   } else if (highestLevel === 'Stream') {
