@@ -1,8 +1,7 @@
 FROM 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_base:latest AS builder
 COPY package*.json /tmp/
 WORKDIR /tmp
-RUN npm install && \
-    npm install newrelic --save 
+RUN npm install
 RUN mkdir -p /usr/src/app && \
     cp -a /tmp/node_modules /usr/src/app && \
     cp /root/newrelic.js node_modules/newrelic/newrelic.js && \
