@@ -15,15 +15,11 @@ var eventsService = require('../../../services/events/events-service')
 var eventValueService = require('../../../services/events/event-value-service')
 var eventTypeService = require('../../../services/events/event-type-service')
 var sequelize = require('sequelize')
-var loggers = require('../../../utils/logger')
 var ValidationError = require('../../../utils/converter/validation-error')
 var EmptyResultError = require('../../../utils/converter/empty-result-error')
 var hasRole = require('../../../middleware/authorization/authorization').hasRole
 var firebaseService = require('../../../services/firebase/firebase-service')
 var guardianGroupService = require('../../../services/guardians/guardian-group-service')
-
-var logDebug = loggers.debugLogger.log
-var logError = loggers.errorLogger.log
 
 router.route('/event')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
@@ -474,14 +470,11 @@ router.route('/')
                       body: `A ${this.value} detected from ${this.guardian}`
                     }
                     firebaseService.sendToTopic(opts)
-                      .then((response) => {
-                        logDebug(`Firebase message sent to ${this.dbSite.guid} topic`, { req, response })
-                      })
                       .catch((err) => {
-                        logError(`Error sending Firebase message to ${this.dbSite.guid} topic`, { req, err })
+                        console.error(`Error sending Firebase message to ${this.dbSite.guid} topic`, err)
                       })
                   } catch (e) {
-                    logError(`Error sending Firebase message to ${this.dbSite.guid} topic`, { req, err: e })
+                    console.error(`Error sending Firebase message to ${this.dbSite.guid} topic`, e)
                   }
                 }
               })
@@ -510,7 +503,7 @@ router.route('/')
               return aws.publish(topic, msg)
             })
             .catch((err) => {
-              logError('Event creation request: error creating SNS topic', { req: req, err: err })
+              console.error('Event creation request: error creating SNS topic', err)
             })
         }
       })

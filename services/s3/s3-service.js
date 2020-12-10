@@ -2,8 +2,6 @@ var Promise = require('bluebird')
 var fs = require('fs')
 var AWS = require('aws-sdk')
 var aws = require('../../utils/external/aws').aws()
-const loggers = require('../../utils/logger')
-const logError = loggers.errorLogger.log
 
 const client = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -115,7 +113,7 @@ function getObject (localPath, filename, bucket) {
           }
         })
     } catch (err) {
-      logError('Failed to get object from S3', err)
+      console.error('Failed to get object from S3', err)
       reject(new Error(err))
     }
   })

@@ -169,3 +169,11 @@ To run only Standard: `npm run lint`
 Recommend developers to setup Standard in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [StandardJS extension](https://marketplace.visualstudio.com/items?itemName=chenxsan.vscode-standardjs) is installed.
 
 Standard options are kept in package.json -- currently required as there are a long list of ignores.
+
+
+## Deployment
+
+In an emergency, you can revert a deployment to a specific build like this (example for mqtt):
+```sh
+kubectl set image deployment api-mqtt-legacy api-mqtt-legacy=887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-mqtt_production:192 --namespace production
+```

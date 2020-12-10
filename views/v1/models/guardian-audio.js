@@ -8,9 +8,6 @@ var audioUtils = require('../../../utils/rfcx-audio').audioUtils
 var assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
 var validation = require('../../../utils/misc/validation.js')
 
-var loggers = require('../../../utils/logger')
-var logInfo = loggers.infoLogger.log
-
 exports.models = {
 
   guardianAudioFile: function (req, res, dbRow) {
@@ -157,9 +154,6 @@ exports.models = {
         var pngCrush = (process.env.PNGCRUSH_PATH == null)
           ? `cp ${tmpFilePath}-rotated.png ${tmpFilePath}-final.png`
           : `${process.env.PNGCRUSH_PATH} ${tmpFilePath}-rotated.png ${tmpFilePath}-final.png`
-
-        logInfo(`imageMagick val: ${imageMagick}`)
-        logInfo(`pngCrush val: ${pngCrush}`)
 
         exec(ffmpegSox + ' && ' + imageMagick + ' && ' + pngCrush, function (err, stdout, stderr) {
           if (stderr.trim().length > 0) {

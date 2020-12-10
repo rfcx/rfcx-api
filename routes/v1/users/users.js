@@ -516,7 +516,11 @@ router.route('/accept-terms')
 
     return auth0Service.getToken()
       .then((token) => {
-        const user_metadata = {} // eslint-disable-line camelcase
+        const user_metadata = { // eslint-disable-line camelcase
+          consentGivenRangerApp: 'true',
+          consentGivenDashboard: 'true',
+          consentGivenAcousticsExplorer: 'true'
+        }
         user_metadata[`consentGiven${app}`] = 'true'
         return auth0Service.updateAuth0User(token, {
           user_id: req.rfcx.auth_token_info.sub,

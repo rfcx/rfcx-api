@@ -8,9 +8,7 @@ if (fs.existsSync('./config/env_vars.js')) {
   for (const i in env) { process.env[i] = env[i] }
 }
 
-// New Relic Initialization
 if (process.env.NODE_ENV === 'production') {
-  process.env.NEW_RELIC_HOME = path.join(__dirname, '/config')
   require('newrelic')
 }
 

@@ -1,18 +1,14 @@
 const winston = require('winston')
 const expressWinston = require('express-winston')
-const loggers = require('../utils/logger')
 
 module.exports = expressWinston.logger({
-  winstonInstance: loggers.expressLogger,
-  expressFormat: true,
-  level: 'info',
-  requestWhitelist: ['guid', 'instance', 'url', 'headers', 'method', 'httpVersion', 'originalUrl', 'query', 'body', 'files'],
+  transports: [
+    new winston.transports.Console()
+  ],
   format: winston.format.combine(
-    winston.format.colorize(),
-    winston.format.json()
+    winston.format.simple()
   ),
-  ignoreRoute: function (req) {
-    if (req.url === '/health_check') return true
-    return false
-  }
+  meta: false,
+  msg: '{{req.method}} {{res.statusCode}} {{req.url}} {{res.responseTime}} Authorization: {{req.headers.authorization}} {{Math.random()}}',
+  expressFormat: false
 })

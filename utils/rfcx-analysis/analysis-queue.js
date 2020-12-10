@@ -3,8 +3,6 @@ var token = require('../../utils/internal-rfcx/token.js').token
 var aws = require('../../utils/external/aws.js').aws()
 var models = require('../../models')
 const moment = require('moment-timezone')
-var loggers = require('../../utils/logger')
-var logDebug = loggers.debugLogger.log
 
 function snsPublishAsync (queueName, options, tokenInfo, dbAnalysisModel) {
   return new Promise(function (resolve, reject) {
@@ -44,7 +42,7 @@ function snsPublishAsync (queueName, options, tokenInfo, dbAnalysisModel) {
       })
     }, function (snsErr, snsData) {
       if (!!snsErr && !aws.snsIgnoreError()) {
-        console.log(snsErr)
+        console.error(snsErr)
         reject(new Error(snsErr))
       } else {
         resolve()
@@ -128,7 +126,6 @@ exports.analysisUtils = {
         .findOne({
           where: { guid: analysisModelGuid }
         }).then(function (dbAnalysisModel) {
-          logDebug('queueAudioForAnalysis: model', { dbAnalysisModel: !!dbAnalysisModel })
           if (dbAnalysisModel == null) {
             console.log('failed to find analysis model')
             reject(new Error('failed to find analysis model'))
@@ -150,8 +147,6 @@ exports.analysisUtils = {
                 allow_garbage_collection: true,
                 only_allow_access_to: ['^' + apiWriteBackEndpoint + '$']
               }).then(function (tokenInfo) {
-                logDebug('queueAudioForAnalysis: createAnonymousToken', { tokenInfo })
-
                 var apiTokenGuid = tokenInfo.token_guid
                 var apiToken = tokenInfo.token
                 var apiTokenExpiresAt = tokenInfo.token_expires_at
@@ -177,9 +172,8 @@ exports.analysisUtils = {
 
                   })
                 }, function (snsErr, snsData) {
-                  logDebug('queueAudioForAnalysis: sns publish', { snsData })
                   if (!!snsErr && !aws.snsIgnoreError()) {
-                    console.log(snsErr)
+                    console.error(snsErr)
                     reject(new Error(snsErr))
                   } else {
                     resolve()
@@ -187,8 +181,7 @@ exports.analysisUtils = {
                 })
               })
                 .catch(function (err) {
-                  logDebug('queueAudioForAnalysis: error', { err })
-                  console.log('error creating access token for analysis worker | ' + err)
+                  console.error('Error creating access token for analysis worker | ' + err)
                   reject(new Error(err))
                 })
             } catch (err) {
