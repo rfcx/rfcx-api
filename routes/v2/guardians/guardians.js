@@ -54,7 +54,7 @@ router.route('/public')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'systemUser']), function (req, res) {
     return guardiansService.getGuardianByGuid(req.params.guid)
       .then((guardian) => {
         return guardiansService.formatGuardian(guardian)
