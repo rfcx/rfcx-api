@@ -27,7 +27,7 @@ module.exports = {
         unique: true
       },
       picture: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       created_at: {
         type: Sequelize.DATE,

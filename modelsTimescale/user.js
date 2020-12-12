@@ -20,7 +20,7 @@ module.exports = function (sequelize, DataTypes) {
       unique: true
     },
     picture: {
-      type: DataTypes.STRING
+      type: DataTypes.TEXT
     },
     is_super: {
       type: DataTypes.BOOLEAN,
