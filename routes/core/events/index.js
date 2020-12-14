@@ -41,19 +41,19 @@ router.post('/', function (req, res) { // authenticatedWithRoles('systemUser'),
   params.convert('classifier_event_strategy').toInt()
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
-  params.convert('start_detection').toString()
-  params.convert('end_detection').toString()
+  params.convert('first_detection').toString()
+  params.convert('last_detection').toString()
 
   return params.validate()
     .then(async convertedParams => {
-      const { stream, classification, classifierEventStrategy, startDetection, endDetection, ...otherParams } = convertedParams
+      const { stream, classification, classifierEventStrategy, firstDetection, lastDetection, ...otherParams } = convertedParams
       const classificationId = await classificationsService.getId(classification)
       const event = {
         classificationId,
         streamId: stream,
         classifierEventStrategyId: classifierEventStrategy,
-        startDetectionId: startDetection,
-        endDetectionId: endDetection,
+        firstDetectionId: firstDetection,
+        lastDetectionId: lastDetection,
         ...otherParams
       }
       return eventsService.create(event)

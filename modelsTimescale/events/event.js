@@ -1,40 +1,42 @@
 module.exports = (sequelize, DataTypes) => {
   const Event = sequelize.define('Event', {
     id: {
-      type: DataTypes.STRING(12),
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true
     },
-    stream_id: {
+    start: {
+      type: DataTypes.DATE(3),
+      allowNull: false,
+      primaryKey: true
+    },
+    end: {
+      type: DataTypes.DATE(3),
+      allowNull: false
+    },
+    streamId: {
       type: DataTypes.STRING(12),
       allowNull: false
     },
-    classification_id: {
+    classificationId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    classifier_event_strategy_id: {
+    classifierEventStrategyId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    start: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    end: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    start_detection_id: {
+    firstDetectionId: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
       allowNull: false
     },
-    end_detection_id: {
+    lastDetectionId: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
       allowNull: false
     }
+  }, {
+    underscored: true
   })
   Event.associate = function (models) {
     Event.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })

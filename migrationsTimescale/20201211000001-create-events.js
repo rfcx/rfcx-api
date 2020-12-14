@@ -3,9 +3,19 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('events', {
       id: {
-        type: Sequelize.STRING(12),
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         allowNull: false,
         primaryKey: true
+      },
+      start: {
+        type: Sequelize.DATE(3),
+        allowNull: false,
+        primaryKey: true
+      },
+      end: {
+        type: Sequelize.DATE(3),
+        allowNull: false
       },
       stream_id: {
         type: Sequelize.STRING(12),
@@ -37,20 +47,11 @@ module.exports = {
           key: 'id'
         }
       },
-      start: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        primaryKey: true
-      },
-      end: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      start_detection_id: {
+      first_detection_id: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      end_detection_id: {
+      last_detection_id: {
         type: Sequelize.STRING,
         allowNull: false
       },

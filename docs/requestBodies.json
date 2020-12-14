@@ -149,12 +149,12 @@
         "description": "End of event (last detection timestamp)",
         "example": "2020-05-12T07:45:19.000Z"
       },
-      "start_detection": {
+      "first_detection": {
         "type": "string",
         "description": "Identifier of first detection in the event",
         "example": "(uuid)"
       },
-      "end_detection": {
+      "last_detection": {
         "type": "string",
         "description": "Identifier of last detection in the event",
         "example": "(uuid)"
