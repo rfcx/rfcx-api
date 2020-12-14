@@ -29,3 +29,15 @@ test('can convert to moment', () => {
     expect(result.start.toISOString()).toStrictEqual(source.start)
   })
 })
+
+test('can convert to moment and camelize', () => {
+  const source = {
+    start: '2020-02-03T04:05:06.700Z'
+  }
+  const converter = new Converter(source, {}, true)
+  converter.convert('start').toMomentUtc()
+  return converter.validate().then(result => {
+    expect(result.start).toBeInstanceOf(moment)
+    expect(result.start.toISOString()).toStrictEqual(source.start)
+  })
+})

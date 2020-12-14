@@ -1,6 +1,6 @@
 const Conversion = require('./conversion')
 const ValidationError = require('./validation-error')
-const { toCamelObject } = require('../formatters/snake-case')
+const { toCamelObject } = require('../formatters/string-cases')
 
 module.exports = class Converter {
   constructor (validatedObject, transformedObject, camelize) {
@@ -33,7 +33,7 @@ module.exports = class Converter {
           }
         }
         if (exceptions.length === 0) {
-          return this.camelize ? toCamelObject(this.transformedObject) : this.transformedObject
+          return this.camelize ? toCamelObject(this.transformedObject, 1) : this.transformedObject
         } else {
           throw new ValidationError(`Validation errors: ${exceptions.join('; ')}.`)
         }

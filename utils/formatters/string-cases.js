@@ -22,17 +22,20 @@ function toCamelCase (str) {
   })
 }
 
-function toCamelObject (o) {
+function toCamelObject (o, maxLevels) {
+  if (maxLevels === 0) {
+    return o
+  }
   if (isObject(o)) {
     const n = {}
     Object.keys(o)
       .forEach((k) => {
-        n[toCamelCase(k)] = toCamelObject(o[k])
+        n[toCamelCase(k)] = toCamelObject(o[k], maxLevels ? maxLevels - 1 : undefined)
       })
     return n
   } else if (Array.isArray(o)) {
     return o.map((i) => {
-      return toCamelObject(i)
+      return toCamelObject(i, maxLevels)
     })
   }
   return o
