@@ -92,7 +92,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     picture: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     is_super: {

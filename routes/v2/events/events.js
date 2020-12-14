@@ -22,9 +22,8 @@ if (earthRangerEnabled) {
   var earthRangerService = require('../../../services/earthranger')
 }
 
-router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
-    return eventsServiceNeo4j.queryData(req)
+function query (req, res) {
+  return eventsServiceNeo4j.queryData(req)
       .then(function (json) {
         res.status(200).send(json)
       })
@@ -32,7 +31,16 @@ router.route('/')
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch(e => { httpError(req, res, 500, e, 'Error while searching events.'); console.log(e) })
-  })
+}
+
+router.route('/')
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), query)
+
+router.route('/search')
+  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res, next) {
+    req.query = req.body;
+    next()
+  }, query)
 
 router.route('/reviews')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
