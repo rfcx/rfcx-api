@@ -32,7 +32,7 @@ const { upload } = require('../../../services/classifiers/upload')
  *       404:
  *         description: Not found
  */
-router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   return service.get(req.params.id, { joinRelations: true })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
@@ -69,7 +69,7 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req,
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.query, transformedParams)
   params.convert('limit').default(100).toInt()
@@ -117,7 +117,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.body, transformedParams)
   params.convert('name').toString()
@@ -192,7 +192,7 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
  *       400:
  *         description: Invalid query parameters
  */
-router.patch('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.patch('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const transformedParams = {}
   const id = req.params.id
   const params = new Converter(req.body, transformedParams)
