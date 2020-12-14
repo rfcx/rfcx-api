@@ -4,9 +4,9 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const service = require('../../../services/classifiers')
 const Converter = require('../../../utils/converter/converter')
-const storageService = process.env.PLATFORM === 'google' ? require('../../../services/storage/google') : require('../../../services/storage/amazon')
-const { hash } = require('../../../utils/misc/hash')
 const { getIds } = require('../../../services/classifications')
+const { parseClassifierOutputMapping } = require('../../../services/classifiers/parsing')
+const { upload } = require('../../../services/classifiers/upload')
 
 /**
  * @swagger
@@ -109,6 +109,11 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
  *     responses:
  *       201:
  *         description: Created
+ *         headers:
+ *           Location:
+ *             description: Path of the created resource (e.g. `/classifiers/12`)
+ *             schema:
+ *               type: string
  *       400:
  *         description: Invalid query parameters
  */
@@ -124,23 +129,22 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
 
   params.validate()
     .then(async () => {
+      // Upload model if included
       let modelUrl = ''
       if (req.files && req.files.file) {
         const file = req.files.file
         if (!file.originalname.endsWith('.tar.gz')) {
           throw new ValidationError('File must be .tar.gz')
         }
-        // Perform upload
-        const storageBucket = process.env.ASSET_BUCKET_AI
-        const storagePath = `classifiers/${hash.randomString(8)}.tar.gz`
-        await storageService.upload(storageBucket, storagePath, file.path)
-        modelUrl = `${process.env.PLATFORM === 'google' ? 'gs' : 's3'}://${storageBucket}/${storagePath}`
+        modelUrl = await upload(file)
       }
 
-      // Get the classification ids for each output
+      // Get the classification ids for each output (or error if not found)
       const outputMappings = transformedParams.classification_values.map(parseClassifierOutputMapping)
-      const serverIds = await getIds(outputMappings.map(value => value.to))
-      if (Object.keys(serverIds).find(key => serverIds[key] === undefined) !== undefined) {
+      let serverIds = {}
+      try {
+        serverIds = await getIds(outputMappings.map(value => value.to))
+      } catch (_) {
         throw new ValidationError('Classification values not found')
       }
       const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
@@ -163,11 +167,6 @@ router.post('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, r
     })
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
-
-function parseClassifierOutputMapping (str) {
-  const components = str.split(':')
-  return { from: components[0], to: components.length === 1 ? components[0] : components[1] }
-}
 
 /**
  * @swagger
