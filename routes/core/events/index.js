@@ -34,7 +34,7 @@ const eventsService = require('../../../services/events')
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', function (req, res) { // authenticatedWithRoles('systemUser'),
+router.post('/', authenticatedWithRoles('systemUser'), function (req, res) {
   const params = new Converter(req.body, {}, true)
   params.convert('stream').toString()
   params.convert('classification').toString()
