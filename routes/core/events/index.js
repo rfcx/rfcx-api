@@ -58,7 +58,7 @@ router.post('/', authenticatedWithRoles('systemUser'), function (req, res) {
       }
       return eventsService.create(event)
     })
-    .then(event => res.location(`/events/${event.id}`).status(201))
+    .then(event => res.location(`/events/${event.id}`).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating event'))
 })
 
