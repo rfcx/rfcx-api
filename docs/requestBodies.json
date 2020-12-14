@@ -137,7 +137,7 @@
       "classifier_event_strategy": {
         "type": "integer",
         "description": "Classifier and strategy that produced the event",
-        "example": "12"
+        "example": 12
       },
       "start": {
         "type": "date",
