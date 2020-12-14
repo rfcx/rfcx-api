@@ -37,8 +37,8 @@
     "properties": {
       "id": {
         "type": "integer",
-        "description": "A classifier id",
-        "example": "123"
+        "description": "Classifier identifier",
+        "example": 12
       },
       "external_id": {
         "type": "string",
@@ -53,7 +53,7 @@
       "version": {
         "type": "integer",
         "description": "Version of the classifier",
-        "example": "9"
+        "example": 9
       },
       "classification_values": {
         "type": "array",

@@ -157,8 +157,8 @@
   "ClassifierLite": {
     "properties": {
       "id": {
-        "type": "string",
-        "example": "2p49i4XH"
+        "type": "integer",
+        "example": 12
       },
       "name": {
         "type": "string",
@@ -166,11 +166,15 @@
       },
       "version": {
         "type": "integer",
-        "example": "8"
+        "example": 8
       },
       "status": {
         "type": "string",
         "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
+      },
+      "external_id": {
+        "type": "string",
+        "description": "Identifier in AI Hub or other service"
       }
     },
     "required": [
@@ -210,15 +214,13 @@
             "type": "date"
           },
           "created_by": {
-            "type": "integer",
-            "description": "The user who created the classifier"
+            "$ref": "#/components/schemas/UserLite"
           },
           "updated_at": {
             "type": "date"
           },
           "updated_by": {
-            "type": "integer",
-            "description": "The user who last updated the classifier"
+            "$ref": "#/components/schemas/UserLite"
           }
         }
       }
@@ -787,7 +789,7 @@
       "id": {
         "type": "integer",
         "description": "Unique identifier for event strategies",
-        "example": "15"
+        "example": 15
       },
       "name": {
         "type": "string",
