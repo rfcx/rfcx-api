@@ -11,6 +11,9 @@ module.exports = {
   detections: [
     require('./detections')
   ],
+  events: [
+    require('./events')
+  ],
   'stream-source-files': [
     require('./stream-source-files')
   ],

@@ -1,11 +1,11 @@
-var models = require('../../models')
+var models = require('../../../models')
 var sequelize = require('sequelize')
 var Promise = require('bluebird')
 const moment = require('moment-timezone')
-var ValidationError = require('../../utils/converter/validation-error')
-var sqlUtils = require('../../utils/misc/sql')
-const guardianGroupService = require('../guardians/guardian-group-service')
-const views = require('../../views/v1')
+var ValidationError = require('../../../utils/converter/validation-error')
+var sqlUtils = require('../../../utils/misc/sql')
+const guardianGroupService = require('../../guardians/guardian-group-service')
+const views = require('../../../views/v1')
 
 const eventQueryCountSelect =
   'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone '
