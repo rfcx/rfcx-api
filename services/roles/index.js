@@ -17,57 +17,6 @@ const roleBaseInclude = [
   }
 ]
 
-function getHierarchyInclude (highestLevel, lowestLevel) {
-  let include = []
-  const projectInclude = lowestLevel === 'Stream' ? [
-    {
-      model: models.Stream,
-      as: 'streams',
-      attributes: ['id'],
-      required: true
-    }
-  ] : []
-  const organizationInclude = lowestLevel === 'Project' || lowestLevel === 'Stream' ? [
-    {
-      model: models.Project,
-      as: 'projects',
-      attributes: models.Project.attributes.lite,
-      required: true,
-      include: projectInclude
-    }
-  ] : []
-  if (highestLevel === 'Organization') {
-    include = [
-      {
-        model: models.Organization,
-        as: 'organization',
-        attributes: models.Organization.attributes.lite,
-        required: true,
-        include: organizationInclude
-      }
-    ]
-  } else if (highestLevel === 'Project') {
-    include = [
-      {
-        model: models.Project,
-        as: 'project',
-        attributes: models.Project.attributes.lite,
-        required: true,
-        include: projectInclude
-      }
-    ]
-  } else if (highestLevel === 'Stream') {
-    include = [
-      {
-        model: models.Stream,
-        as: 'stream',
-        attributes: models.Stream.attributes.lite
-      }
-    ]
-  }
-  return include
-}
-
 const hierarchy = {
   Organization: {
     columnId: 'organization_id',
@@ -168,59 +117,42 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
  * Returns ids of all Organizations or Projects or Streams (based on specified itemModelName) which are accessible for user
  * based on his direct roles assigned to these objects or roles which assigned to parent objects (e.g. user will have access
  * to all Streams of the Project he has access to)
- * The function will go from bottom to top in the hierarchy.
  * @param {string | object} itemOrId item id or model item
- * @param {string} itemModelName model class name
+ * @param {string} itemName item name
  */
-async function getSharedObjectsIDs (userOrId, itemModelName) {
+async function getSharedObjectsIDs (userOrId, itemName) {
   const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
   const userId = userIsPrimitive ? userOrId : userOrId.owner_id
 
-  const originalItemModelName = itemModelName // save originally requested model name to compare it during hierarchy climbing
-  const proms = []
-  while (itemModelName) {
-    // anonymous function is needed because async operations and variable will have only last assigned value if we don't use anonymous function
-    (function (currentItemModelName) {
-      const prom = hierarchy[currentItemModelName].roleModel.findAll({
-        where: { user_id: userId },
-        include: getHierarchyInclude(currentItemModelName, originalItemModelName) // include will be different on different levels
-      })
-        .then(async (userRoles) => {
-          let result = userRoles
-            .map(x => x[currentItemModelName.toLowerCase()])
-          // go ddeper in the hierarchy to get ids of requested type
-          if (currentItemModelName === 'Organization' && (originalItemModelName === 'Project' || originalItemModelName === 'Stream')) {
-            result = result
-              .reduce((arr, org) => {
-                return arr.concat(org.projects || [])
-              }, [])
-          }
-          // go ddeper in the hierarchy to get ids of requested type
-          if ((currentItemModelName === 'Organization' || currentItemModelName === 'Project') && originalItemModelName === 'Stream') {
-            result = result
-              .reduce((arr, proj) => {
-                return arr.concat(proj.streams || [])
-              }, [])
-          }
-          return result.map(x => x.id)
-        })
-      proms.push(prom)
-    }(itemModelName))
-    if (hierarchy[itemModelName].parent) { // "climb" the hierarchy
-      itemModelName = hierarchy[itemModelName].parent
-    } else {
-      itemModelName = null
-    }
-  }
-
-  const promsResults = await Promise.all(proms)
-  return [
-    ...new Set([
-      ...(promsResults[0] || []),
-      ...(promsResults[1] || []),
-      ...(promsResults[2] || [])
-    ])
+  const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
+  const joins = [
+    `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id`
   ]
+  const wheres = [
+    `${itemName}r.user_id = $userId`
+  ]
+  if (itemName === 'stream') {
+    joins.push(...[
+      `LEFT JOIN projects project ON ${itemName}.project_id = project.id`,
+      'LEFT JOIN user_project_roles projectr ON project.id = projectr.project_id'
+    ])
+    wheres.push('projectr.user_id = $userId')
+  }
+  if (itemName === 'stream' || itemName === 'project') {
+    joins.push(...[
+      'LEFT JOIN organizations organization ON project.organization_id = organization.id',
+      'LEFT JOIN user_organization_roles organizationr ON organization.id = organizationr.organization_id'
+    ])
+    wheres.push('organizationr.user_id = $userId')
+  }
+  const sql = `${select} ${joins.join(' ')} WHERE ${wheres.join(' OR ')};`
+  const options = {
+    raw: true,
+    nest: true,
+    bind: { userId }
+  }
+  return models.sequelize.query(sql, options)
+    .then(data => data.map(x => x.id))
 }
 
 module.exports = {

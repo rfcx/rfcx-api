@@ -138,7 +138,7 @@ router.post('/', function (req, res) {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/StreamWithPermissions'
+ *                 $ref: '#/components/schemas/Stream'
  *       400:
  *         description: Invalid query parameters
  */
@@ -160,10 +160,7 @@ router.get('/', (req, res) => {
       convertedParams.current_user_id = user.owner_id
       convertedParams.current_user_is_super = user.is_super
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
-      const streams = await Promise.all(streamsData.streams.map(async (stream) => {
-        const permissions = await rolesService.getPermissions(user, stream, 'Stream')
-        return streamsService.formatStream(stream, permissions)
-      }))
+      const streams = streamsData.streams.map(streamsService.formatStream)
       return res
         .header('Total-Items', streamsData.count)
         .json(streams)

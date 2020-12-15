@@ -78,15 +78,15 @@ async function query (attrs, opts = {}) {
     }
   }
 
-  if (attrs.is_public === true) {
-    where.is_public = true
+  if (attrs.is_public !== undefined) {
+    where.is_public = attrs.is_public
   }
 
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const ids = await rolesService.getSharedObjectsIDs(attrs.current_user_id, 'Stream')
+      const ids = await rolesService.getSharedObjectsIDs(attrs.current_user_id, 'stream')
       where.id = {
         [models.Sequelize.Op.in]: ids
       }
@@ -182,7 +182,7 @@ function restore (stream) {
     })
 }
 
-function formatStream (stream, permissions = []) {
+function formatStream (stream, permissions) {
   const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream // eslint-disable-line camelcase
   let country_name = null // eslint-disable-line camelcase
   if (latitude && longitude) {
@@ -205,7 +205,7 @@ function formatStream (stream, permissions = []) {
     latitude,
     longitude,
     country_name,
-    permissions
+    ...permissions && { permissions }
   }
 }
 
