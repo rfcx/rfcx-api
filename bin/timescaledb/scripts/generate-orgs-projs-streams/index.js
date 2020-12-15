@@ -54,13 +54,13 @@ function getRandomArrItem (arr) {
 }
 
 function generateOrganizations (userId) {
-  let ids = []
+  const ids = []
   let sql = ''
   for (let i = 0; i < orgsPerUser; i++) {
     const id = hash.randomString(12)
     const name = getRandomWords(3)
-    const public = getRandomBoolean()
-    sql += `INSERT INTO public.organizations(id, name, is_public, created_by_id, created_at, updated_at, deleted_at) VALUES ('${id}', '${name}', ${public}, ${userId}, '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z', null);\n`
+    const isPublic = getRandomBoolean()
+    sql += `INSERT INTO public.organizations(id, name, is_public, created_by_id, created_at, updated_at, deleted_at) VALUES ('${id}', '${name}', ${isPublic}, ${userId}, '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z', null);\n`
     ids.push(id)
   }
   orgStream.write(sql)
@@ -68,15 +68,15 @@ function generateOrganizations (userId) {
 }
 
 function generateProjects (userId, organizationIds) {
-  let ids = []
+  const ids = []
   let sql = ''
   const orgIds = [null, ...organizationIds]
   for (let i = 0; i < projsPerUser; i++) {
     const id = hash.randomString(12)
     const name = getRandomWords(3)
-    const public = getRandomBoolean()
-    const parent = getRandomArrItem(organizationIds)
-    sql += `INSERT INTO public.projects(id, name, description, is_public, organization_id, created_by_id, external_id, created_at, updated_at, deleted_at) VALUES ('${id}', '${name}', null, ${public}, ${parent === null? parent : "'" + parent + "'"}, ${userId}, null, '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z', null);\n`
+    const isPublic = getRandomBoolean()
+    const parent = getRandomArrItem(orgIds)
+    sql += `INSERT INTO public.projects(id, name, description, is_public, organization_id, created_by_id, external_id, created_at, updated_at, deleted_at) VALUES ('${id}', '${name}', null, ${isPublic}, ${parent === null ? parent : "'" + parent + "'"}, ${userId}, null, '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z', null);\n`
     ids.push(id)
   }
   projStream.write(sql)
@@ -84,15 +84,15 @@ function generateProjects (userId, organizationIds) {
 }
 
 function generateStreams (userId, projectIds) {
-  let ids = []
+  const ids = []
   let sql = ''
   const projIds = [null, ...projectIds]
   for (let i = 0; i < streamsPerUser; i++) {
     const id = hash.randomString(12)
     const name = getRandomWords(3)
-    const public = getRandomBoolean()
+    const isPublic = getRandomBoolean()
     const parent = getRandomArrItem(projIds)
-    sql += `INSERT INTO public.streams(id, name, start, "end", is_public, project_id, created_by_id, created_at, updated_at) VALUES ('${id}', '${name}', '2020-01-01T00:00:00.000Z', '2020-12-31T23:59:59.999Z', ${public}, ${parent === null? parent : "'" + parent + "'"}, ${userId}, '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z');\n`
+    sql += `INSERT INTO public.streams(id, name, start, "end", is_public, project_id, created_by_id, created_at, updated_at) VALUES ('${id}', '${name}', '2020-01-01T00:00:00.000Z', '2020-12-31T23:59:59.999Z', ${isPublic}, ${parent === null ? parent : "'" + parent + "'"}, ${userId}, '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z');\n`
     ids.push(id)
   }
   streamsStream.write(sql)
@@ -120,14 +120,14 @@ function closeFiles () {
 }
 
 function generateItems (userIds) {
-  let usersObj = {}
+  const usersObj = {}
   userIds.forEach((id, ind) => {
     usersObj[id] = {
       organizationIds: generateOrganizations(id)
     }
     usersObj[id].projectIds = generateProjects(id, usersObj[id].organizationIds)
     usersObj[id].streamIds = generateStreams(id, usersObj[id].projectIds)
-    process.stdout.write(`Generating organizations, projects, streams: ${(ind + 1) / userIds.length * 100}% complete... \r`);
+    process.stdout.write(`Generating organizations, projects, streams: ${(ind + 1) / userIds.length * 100}% complete... \r`)
   })
   return usersObj
 }
@@ -162,23 +162,23 @@ function generateUserStreamRoles (ids, userIds) {
 function randomSharing (userIds, usersObj) {
   userIds.forEach((id, ind) => {
     const otherUserIds = userIds.filter(x => x !== id)
-    const randomOrgs = usersObj[id].organizationIds.sort(() => .5 - Math.random()).slice(0, Math.floor(orgsPerUser / 1.25))
+    const randomOrgs = usersObj[id].organizationIds.sort(() => 0.5 - Math.random()).slice(0, Math.floor(orgsPerUser / 1.25))
     generateUserOrganizationRoles(randomOrgs, otherUserIds)
-    const randomProjs = usersObj[id].projectIds.sort(() => .5 - Math.random()).slice(0, Math.floor(projsPerUser / 1.25))
+    const randomProjs = usersObj[id].projectIds.sort(() => 0.5 - Math.random()).slice(0, Math.floor(projsPerUser / 1.25))
     generateUserProjectRoles(randomProjs, otherUserIds)
-    const randomStreams = usersObj[id].streamIds.sort(() => .5 - Math.random()).slice(0, Math.floor(streamsPerUser / 1.25))
+    const randomStreams = usersObj[id].streamIds.sort(() => 0.5 - Math.random()).slice(0, Math.floor(streamsPerUser / 1.25))
     generateUserStreamRoles(randomStreams, otherUserIds)
-    process.stdout.write(`Generating user roles: ${(ind + 1) / userIds.length * 100}% complete... \r`);
+    process.stdout.write(`Generating user roles: ${(ind + 1) / userIds.length * 100}% complete... \r`)
   })
 }
 
-async function main() {
+async function main () {
   const userIds = await getUserIds()
   await prepareFiles()
   const usersObj = generateItems(userIds)
-  console.log(`Generating organizations, projects, streams: 100% complete...`);
+  console.log('Generating organizations, projects, streams: 100% complete...')
   randomSharing(userIds, usersObj)
-  process.stdout.write(`Generating user roles: 100% complete... \r`);
+  process.stdout.write('Generating user roles: 100% complete... \r')
   closeFiles()
 }
 
