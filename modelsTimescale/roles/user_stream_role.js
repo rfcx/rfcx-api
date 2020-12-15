@@ -3,6 +3,7 @@ module.exports = function (sequelize, DataTypes) {
   })
   UserStreamRole.associate = function (models) {
     UserStreamRole.belongsTo(models.Role, { as: 'role', foreign_key: 'role_id' })
+    UserStreamRole.belongsTo(models.Stream, { as: 'stream', foreign_key: 'stream_id' })
   }
   UserStreamRole.attributes = {
     full: ['user_id', 'stream_id', 'role_id'],

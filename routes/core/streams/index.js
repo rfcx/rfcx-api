@@ -2,10 +2,12 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const streamsService = require('../../../services/streams')
-const streamPermissionService = require('../../../services/streams/permission')
+const projectsService = require('../../../services/projects')
 const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const rolesService = require('../../../services/roles')
 
 /**
  * @swagger
@@ -37,6 +39,7 @@ const Converter = require('../../../utils/converter/converter')
  */
 
 router.post('/', function (req, res) {
+  const userId = req.rfcx.auth_token_info.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('id').optional().toString()
@@ -45,12 +48,29 @@ router.post('/', function (req, res) {
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   params.convert('description').optional().toString()
   params.convert('is_public').optional().toBoolean().default(false)
+  params.convert('project_id').optional().toString()
+  params.convert('project_external_id').optional().toInt()
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(() => {
+    .then(async () => {
+      if (convertedParams.project_id) {
+        await projectsService.getById(convertedParams.project_id)
+        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, convertedParams.project_id, 'Project')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to create stream in this project.')
+        }
+      }
+      if (convertedParams.project_external_id) {
+        const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
+        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, externalProject.id, 'Project')
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to create stream in this project.')
+        }
+        convertedParams.project_id = externalProject.id
+      }
       convertedParams.id = convertedParams.id || hash.randomString(12)
-      convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.created_by_id = userId
       return streamsService.create(convertedParams, { joinRelations: true })
     })
     .then(streamsService.formatStream)
@@ -118,11 +138,12 @@ router.post('/', function (req, res) {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/StreamWithPermissions'
+ *                 $ref: '#/components/schemas/Stream'
  *       400:
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -136,13 +157,10 @@ router.get('/', (req, res) => {
 
   return params.validate()
     .then(async () => {
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
-      convertedParams.current_user_is_super = req.rfcx.auth_token_info.is_super
+      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_is_super = user.is_super
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
-      const streams = await Promise.all(streamsData.streams.map(async (stream) => {
-        const permissions = await streamPermissionService.getPermissionsForStream(convertedParams.current_user_id, stream)
-        return streamsService.formatStream(stream, permissions)
-      }))
+      const streams = streamsData.streams.map(streamsService.formatStream)
       return res
         .header('Total-Items', streamsData.count)
         .json(streams)
@@ -179,12 +197,10 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      const userId = req.rfcx.auth_token_info.owner_id
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'R')
-      if (!allowed) {
+      const permissions = await rolesService.getPermissions(req.rfcx.auth_token_info, stream, 'Stream')
+      if (!permissions.includes('R')) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
-      const permissions = await streamPermissionService.getPermissionsForStream(userId, stream)
       return streamsService.formatStream(stream, permissions)
     })
     .then(json => res.json(json))
@@ -227,7 +243,7 @@ router.get('/:id', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', hasStreamPermission('U'), (req, res) => {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -242,10 +258,6 @@ router.patch('/:id', (req, res) => {
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
     .then(async stream => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, stream, 'W')
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to write to this stream.')
-      }
       if (convertedParams.restore === true) {
         await streamsService.restore(stream)
       }
@@ -278,14 +290,9 @@ router.patch('/:id', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', hasStreamPermission('D'), (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
-    .then(async stream => {
-      if (stream.created_by_id !== req.rfcx.auth_token_info.owner_id) {
-        throw new ForbiddenError('You do not have permission to delete this stream.')
-      }
-      return streamsService.softDelete(stream)
-    })
+    .then(streamsService.softDelete)
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'))
 })

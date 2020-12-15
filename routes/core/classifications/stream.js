@@ -2,7 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const classificationsService = require('../../../services/classification/classification-service')
 const Converter = require('../../../utils/converter/converter')
-const { hasPermission } = require('../../../middleware/authorization/streams')
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -43,8 +43,8 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *         description: Stream not found
  */
 
-router.get('/:streamId/classifications', hasPermission('R'), function (req, res) {
-  const streamId = req.params.streamId
+router.get('/:id/classifications', hasStreamPermission('R'), function (req, res) {
+  const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('limit').default(100).toInt()
