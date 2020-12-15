@@ -117,13 +117,10 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
  * Returns ids of all Organizations or Projects or Streams (based on specified itemModelName) which are accessible for user
  * based on his direct roles assigned to these objects or roles which assigned to parent objects (e.g. user will have access
  * to all Streams of the Project he has access to)
- * @param {string | object} itemOrId item id or model item
+ * @param {string} userId user id
  * @param {string} itemName item name
  */
-async function getSharedObjectsIDs (userOrId, itemName) {
-  const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
-  const userId = userIsPrimitive ? userOrId : userOrId.owner_id
-
+async function getSharedObjectsIDs (userId, itemName) {
   const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
   const joins = [
     `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id`
