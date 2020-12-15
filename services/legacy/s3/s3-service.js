@@ -1,7 +1,9 @@
+// TODO: replace with services/storage/amazon
+
 var Promise = require('bluebird')
 var fs = require('fs')
 var AWS = require('aws-sdk')
-var aws = require('../../utils/external/aws').aws()
+var aws = require('../../../utils/external/aws').aws()
 
 const client = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,

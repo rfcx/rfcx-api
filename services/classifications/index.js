@@ -55,6 +55,7 @@ function getId (value) {
  * @returns {Promise<Object>} Object that maps values to ids
  */
 function getIds (values) {
+  // TODO use a single db query
   return Promise.all(values.map(value => getId(value)))
     .then(ids => {
       // Combine 2 arrays into a map

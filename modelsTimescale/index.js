@@ -55,8 +55,10 @@ fs.readdirSync(__dirname).filter(function (file) {
   return (file.indexOf('.') !== 0) && fs.statSync(path.join(__dirname, file)).isDirectory()
 }).forEach(function (file) {
   fs.readdirSync(path.join(__dirname, file)).filter(function (fileInDir) {
-    return (fileInDir.indexOf('.') !== 0)
-  }).forEach(function (fileInDir) { importSequelizeModelFile(path.join(file, fileInDir)) })
+    return (fileInDir.indexOf('.') !== 0 && fileInDir.endsWith('.js'))
+  }).forEach(function (fileInDir) {
+    importSequelizeModelFile(path.join(file, fileInDir))
+  })
 })
 
 Object.keys(db).forEach(function (modelName) {

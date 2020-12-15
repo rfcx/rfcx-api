@@ -5,7 +5,7 @@ const ValidationError = require('../../../utils/converter/validation-error')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const rolesService = require('../../../services/roles')
 const annotationsService = require('../../../services/annotations')
-const classificationService = require('../../../services/classification/classification-service')
+const classificationService = require('../../../services/classifications')
 const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 

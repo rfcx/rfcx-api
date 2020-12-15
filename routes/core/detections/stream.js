@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
-const classificationService = require('../../../services/classification/classification-service')
-const classifierService = require('../../../services/classifier/classifier-service')
+const classificationService = require('../../../services/classifications')
+const classifierService = require('../../../services/classifiers')
 const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
@@ -177,7 +177,7 @@ router.post('/:id/detections', function (req, res) {
       const validatedDetections = params.transformedArray
       // Get all the distinct classifier uuids
       const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))]
-      return classifierService.getIds(classifierUuids)
+      return classifierService.getIdsByExternalIds(classifierUuids)
     })
     .then(classifierMapping => {
       const validatedDetections = params.transformedArray

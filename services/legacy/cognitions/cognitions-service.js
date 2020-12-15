@@ -1,5 +1,5 @@
-var Converter = require('../../utils/converter/converter')
-var models = require('../../models')
+var Converter = require('../../../utils/converter/converter')
+var models = require('../../../models')
 var Promise = require('bluebird')
 
 module.exports = {

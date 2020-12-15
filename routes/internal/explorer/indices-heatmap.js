@@ -4,8 +4,7 @@ const indicesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
-const platform = process.env.PLATFORM || 'amazon'
-const storageService = require(`../../../services/storage/${platform}`)
+const storageService = process.env.PLATFORM === 'google' ? require('../../../services/storage/google') : require('../../../services/storage/amazon')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**

@@ -5,12 +5,12 @@ var Promise = require('bluebird')
 var sitesService = require('../sites/sites-service')
 const hash = require('../../utils/misc/hash').hash
 const guid = require('../../utils/misc/guid')
-const sensationsService = require('../sensations/sensations-service')
+const sensationsService = require('../legacy/sensations/sensations-service')
 const moment = require('moment-timezone')
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const sqlUtils = require('../../utils/misc/sql')
-var S3Service = require('../s3/s3-service')
+const s3Service = require('../legacy/s3/s3-service')
 const pathCompleteExtname = require('path-complete-extname')
 var probe = require('probe-image-size')
 var fs = require('fs')
@@ -511,13 +511,13 @@ function checkUserConnection (userId, connection, errorMessage) {
 }
 
 function uploadImageFile (opts) {
-  return S3Service.putObject(opts.filePath, opts.fileName, opts.bucket, opts.acl)
+  return s3Service.putObject(opts.filePath, opts.fileName, opts.bucket, opts.acl)
 }
 
 function deleteImageFile (picture, guid) {
   const ext = pathCompleteExtname(picture)
   const fullPath = `/userpics/${guid}${ext}`
-  return S3Service.deleteObject(process.env.USERS_BUCKET, fullPath)
+  return s3Service.deleteObject(process.env.USERS_BUCKET, fullPath)
 }
 
 function prepareUserUrlPicture (user, url) {
