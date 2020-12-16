@@ -5,8 +5,14 @@ module.exports = {
   classifications: [
     require('./classifications')
   ],
+  classifiers: [
+    require('./classifiers')
+  ],
   detections: [
     require('./detections')
+  ],
+  events: [
+    require('./events')
   ],
   'stream-source-files': [
     require('./stream-source-files')

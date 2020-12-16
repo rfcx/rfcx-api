@@ -9,6 +9,6 @@ module.exports = expressWinston.logger({
     winston.format.simple()
   ),
   meta: false,
-  msg: '{{req.method}} {{res.statusCode}} {{req.url}} {{res.responseTime}} Authorization: {{req.headers.authorization}} {{Math.random()}}',
+  msg: '{{req.method}} {{res.statusCode}} {{req.url}} {{res.responseTime}} Authorization: {{req.headers.authorization}} {{JSON.stringify(req.body)}}',
   expressFormat: false
 })

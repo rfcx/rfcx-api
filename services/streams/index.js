@@ -2,6 +2,7 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
+const rolesService = require('../roles')
 
 const streamBaseInclude = [
   {
@@ -43,9 +44,9 @@ function create (data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create stream with empty object.')
   }
-  const { id, name, description, start, end, is_public, latitude, longitude, created_by_id } = data // eslint-disable-line camelcase
+  const { id, name, description, start, end, is_public, latitude, longitude, created_by_id, project_id } = data // eslint-disable-line camelcase
   return models.Stream
-    .create({ id, name, description, start, end, is_public, latitude, longitude, created_by_id })
+    .create({ id, name, description, start, end, is_public, latitude, longitude, created_by_id, project_id })
     .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
@@ -77,18 +78,17 @@ async function query (attrs, opts = {}) {
     }
   }
 
-  if (attrs.is_public === true) {
-    where.is_public = true
+  if (attrs.is_public !== undefined) {
+    where.is_public = attrs.is_public
   }
 
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
-      const streamIds = [...new Set(permissions.map(d => d.stream_id))]
+      const ids = await rolesService.getSharedObjectsIDs(attrs.current_user_id, 'stream')
       where.id = {
-        [models.Sequelize.Op.in]: streamIds
+        [models.Sequelize.Op.in]: ids
       }
     }
   } else if (attrs.current_user_id !== undefined) {
@@ -182,7 +182,7 @@ function restore (stream) {
     })
 }
 
-function formatStream (stream, permissions = []) {
+function formatStream (stream, permissions) {
   const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream // eslint-disable-line camelcase
   let country_name = null // eslint-disable-line camelcase
   if (latitude && longitude) {
@@ -205,7 +205,7 @@ function formatStream (stream, permissions = []) {
     latitude,
     longitude,
     country_name,
-    permissions
+    ...permissions && { permissions }
   }
 }
 
@@ -256,6 +256,41 @@ function ensureStreamExistsForGuardian (dbGuardian) {
     })
 }
 
+async function getPublicStreamIds () {
+  return (await query({
+    is_public: true
+  })).streams.map(d => d.id)
+}
+
+/**
+ * Get a list of IDs for streams which are accessible to the user
+ * @param {string} createdBy Limit to streams created by `me` (my streams) or `collaborators` (shared with me)
+ */
+async function getAccessibleStreamIds (user, createdBy = undefined) {
+  // Only my streams or my collaborators
+  if (createdBy !== undefined) {
+    return (await query({
+      current_user_id: user.owner_id,
+      created_by: createdBy
+    })).streams.map(d => d.id)
+  }
+
+  // Get my streams and my collaborators
+  const s1 = await query({
+    current_user_id: user.owner_id
+  })
+  const s2 = await query({
+    current_user_id: user.owner_id,
+    created_by: 'collaborators',
+    current_user_is_super: user.is_super
+  })
+  const streamIds = [...new Set([
+    ...s1.streams.map(d => d.id),
+    ...s2.streams.map(d => d.id)
+  ])]
+  return streamIds
+}
+
 module.exports = {
   getById,
   create,
@@ -267,5 +302,7 @@ module.exports = {
   formatStreams,
   refreshStreamMaxSampleRate,
   refreshStreamStartEnd,
-  ensureStreamExistsForGuardian
+  ensureStreamExistsForGuardian,
+  getPublicStreamIds,
+  getAccessibleStreamIds
 }

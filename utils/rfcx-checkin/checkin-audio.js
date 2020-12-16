@@ -8,11 +8,9 @@ const util = require('util')
 const exec = util.promisify(require('child_process').exec)
 var audioUtils = require('../../utils/rfcx-audio').audioUtils
 var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
-var analysisUtils = require('../../utils/rfcx-analysis/analysis-queue.js').analysisUtils
 
 var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
-const analysisService = require('../../services/analysis/analysis-service')
-const aiService = require('../../services/ai/ai-service')
+const aiService = require('../../services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')
 var urls = require('../../utils/misc/urls')
@@ -222,49 +220,6 @@ exports.audio = {
             }
           })
     })
-  },
-
-  queueForTaggingByActiveModels: function (audioInfo) {
-    return models.AudioAnalysisModel
-      .findAll({
-        where: { is_active: true }
-      })
-      .bind({})
-      .then(function (dbModels) {
-        this.dbModels = dbModels
-        return dbModels.map(function (model) {
-          return model.guid
-        })
-      })
-      .then(function (modelGuids) {
-        var promises = []
-        for (const i in modelGuids) {
-          var prom = analysisUtils.queueAudioForAnalysis('rfcx-analysis', modelGuids[i], {
-            audio_guid: audioInfo.audio_guid,
-            api_url_domain: audioInfo.api_url_domain,
-            audio_s3_bucket: process.env.ASSET_BUCKET_AUDIO,
-            audio_s3_path: audioInfo.s3Path,
-            audio_sha1_checksum: audioInfo.sha1Hash
-          })
-          promises.push(prom)
-        }
-        return Promise.all(promises)
-      })
-      .then(function () {
-        analysisService.findStateByName('perc_queued')
-          .then((state) => {
-            const proms = this.dbModels.map((model) => {
-              return analysisService.createEntity(audioInfo.audio_id, model.id, state.id)
-            })
-            return Promise.all(proms)
-          })
-          .catch((err) => {
-            console.error('queueForTaggingByActiveModels: analysis entries error', err)
-          })
-
-        audioInfo.isSaved ? audioInfo.isSaved.sqs = true : audioInfo.isSaved = { sqs: true }
-        return audioInfo
-      })
   },
 
   queueForTaggingByActiveV3Models: function (audioInfo, dbGuardian) {

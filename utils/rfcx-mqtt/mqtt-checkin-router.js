@@ -7,7 +7,7 @@ var mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqt
 var mqttPublish = require('../../utils/rfcx-mqtt/mqtt-publish.js').mqttPublish
 var mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
 var queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
-var SensationsService = require('../../services/sensations/sensations-service')
+var SensationsService = require('../../services/legacy/sensations/sensations-service')
 
 function onMessageCheckin (data, messageId) {
   // cached file garbage collection... only do garbage collection ~1% of the time

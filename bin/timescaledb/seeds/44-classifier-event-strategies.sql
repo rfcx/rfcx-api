@@ -1,0 +1,16 @@
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (1, 1, 1, false, 'minimum_confidence=0.90', '2020-01-22 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (2, 2, 2, false, 'minimum_confidence=0.9995', '2020-02-23 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (3, 3, 2, true, 'minimum_confidence=0.9995', '2020-06-10 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (4, 4, 2, true, 'minimum_confidence=0.995', '2020-03-22 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (5, 5, 2, true, 'minimum_confidence=0.99', '2020-03-01 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (6, 6, 3, false, 'minimum_confidence=0.99', '2020-06-22 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (7, 7, 2, true, 'minimum_confidence=0.9925', '2020-01-22 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (8, 8, 3, true, 'minimum_confidence=0.99', '2020-11-20 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (9, 76, 2, false, 'minimum_confidence=0.99', '2020-09-04 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (10, 76, 2, true, 'minimum_confidence=0.99', '2020-09-13 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (11, 77, 2, false, 'minimum_confidence=0.80', '2020-09-28 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (12, 77, 2, false, 'minimum_confidence=0.90', '2020-09-30 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (13, 77, 2, false, 'minimum_confidence=0.925', '2020-10-12 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (14, 77, 2, true, 'minimum_confidence=0.951', '2020-10-22 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (15, 78, 2, false, 'minimum_confidence=0.995', '2020-10-20 21:30:14.376000');
+INSERT INTO public.classifier_event_strategies (id, classifier_id, event_strategy_id, active, parameters, last_executed_at) VALUES (16, 78, 2, true, 'minimum_confidence=0.999', '2020-10-22 21:30:14.376000');

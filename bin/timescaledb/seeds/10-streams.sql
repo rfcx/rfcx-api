@@ -21,9 +21,11 @@ INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, cre
 
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK13', 'Zephyr test private', '2020-01-01T20:00:00.000Z', '2020-01-01T21:00:00.000Z', false, 254, NOW(), NOW()) ON CONFLICT DO NOTHING;
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK14', 'Zephyr test public', '2020-01-01T21:00:00.000Z', '2020-01-01T22:00:00.000Z', true, 254, NOW(), NOW()) ON CONFLICT DO NOTHING;
+INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, project_id, created_at, updated_at) VALUES ('LilSjZJkR414', 'Zephyr test for project', '2020-01-01T21:00:00.000Z', '2020-01-01T22:00:00.000Z', true, 254, 'bbbbbbbbbb10', NOW(), NOW()) ON CONFLICT DO NOTHING;
 
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK15', 'Antony test private', '2020-01-01T22:00:00.000Z', '2020-01-01T23:00:00.000Z', false, 8, NOW(), NOW()) ON CONFLICT DO NOTHING;
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK16', 'Antony test public', '2020-01-01T23:00:00.000Z', '2020-01-02T00:00:00.000Z', true, 8, NOW(), NOW()) ON CONFLICT DO NOTHING;
+INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, project_id, created_at, updated_at) VALUES ('LilSjZJkRK19', 'Antony test for project', '2020-01-01T22:00:00.000Z', '2020-01-01T23:00:00.000Z', false, 8, 'bbbbbbbbbbb6', NOW(), NOW()) ON CONFLICT DO NOTHING;
 
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK17', 'Andrey test private', '2020-01-02T00:00:00.000Z', '2020-01-02T01:00:00.000Z', false, 255, NOW(), NOW()) ON CONFLICT DO NOTHING;
 INSERT INTO public.streams(id, name, start, "end", is_public, created_by_id, created_at, updated_at) VALUES ('LilSjZJkRK18', 'Andrey test public', '2020-01-02T01:00:00.000Z', '2020-01-02T02:00:00.000Z', true, 255, NOW(), NOW()) ON CONFLICT DO NOTHING;
