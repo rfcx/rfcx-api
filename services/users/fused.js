@@ -3,8 +3,15 @@ const modelsTimescale = require('../../modelsTimescale')
 const neo4j = require('../../utils/neo4j')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
+const userBaseInclude = [{
+  include: [{ all: true }]
+}]
+
 function getByParams (where, opts = {}) {
-  return models.User.findOne({ where })
+  return models.User.findOne({
+    where,
+    include: opts && opts.joinRelations ? userBaseInclude : []
+  })
     .then(item => {
       if (!item) {
         throw new EmptyResultError('User with given parameters not found.')
@@ -21,8 +28,8 @@ function getByEmail (email, opts = {}) {
   return getByParams({ email }, opts)
 }
 
-function getByGuidOrEmail (guid, email) {
-  return getByParams({ [models.Sequelize.Op.or]: { guid, email } })
+function getByGuidOrEmail (guid, email, opts = {}) {
+  return getByParams({ [models.Sequelize.Op.or]: { guid, email } }, opts)
 }
 
 function collectUserDataForSync (req) {
@@ -69,13 +76,14 @@ async function ensureUserSyncedInTimescaleDB (user) {
 }
 
 async function ensureUserSyncedInNeo4j (user) {
-  console.log('\n\nensureUserSyncedInNeo4j', user, '\n\n')
+  if (user instanceof models.User) {
+    user = user.toJSON()
+  }
   const searchQuery = 'MATCH (user:user) WHERE user.guid = {guid} AND user.email = {email} RETURN user LIMIT 1'
   const searchsession = neo4j.session()
   const searchResult = await Promise.resolve(searchsession.run(searchQuery, user))
   searchsession.close()
   if ((!searchResult.records || !searchResult.records.length)) {
-    console.log('\n\ncreate neo4j user\n\n')
     const creationQuery = 'CREATE (user:user { guid: {guid}, firstname: {firstname}, lastname: {lastname}, email: {email}, username: {username}, pictureUrl: {picture} }) RETURN user'
     const creationSession = neo4j.session()
     const creationResult = await Promise.resolve(creationSession.run(creationQuery, user))

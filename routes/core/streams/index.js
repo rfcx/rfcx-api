@@ -188,7 +188,7 @@ router.get('/', (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/StreamWithPermissions'
+ *               $ref: '#/components/schemas/Stream'
  *       403:
  *         description: Insufficient privileges
  *       404:

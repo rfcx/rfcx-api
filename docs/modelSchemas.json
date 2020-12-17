@@ -425,6 +425,28 @@
       }
     }
   },
+  "UserLiteWithRoleAndPermissions": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      {
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "Member"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["O", "W", "R"]
+          }
+        }
+      }
+    ]
+  },
   "IndexLite": {
     "properties": {
       "code": {

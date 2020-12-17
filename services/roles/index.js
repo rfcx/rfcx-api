@@ -2,7 +2,7 @@ const models = require('../../modelsTimescale')
 const usersFusedService = require('../users/fused')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
-const roleBaseInclude = [
+const userRoleBaseInclude = [
   {
     model: models.Role,
     as: 'role',
@@ -14,6 +14,14 @@ const roleBaseInclude = [
         attributes: models.RolePermission.attributes.lite
       }
     ]
+  }
+]
+
+const roleBaseInclude = [
+  {
+    model: models.RolePermission,
+    as: 'permissions',
+    attributes: models.RolePermission.attributes.lite
   }
 ]
 
@@ -37,14 +45,35 @@ const hierarchy = {
 const itemModelNames = Object.keys(hierarchy)
 
 /**
+ * Searches for role model with given name
+ * @param {string} name
+ * @param {*} opts additional function params
+ * @returns {*} role model item
+ */
+function getByName (name, opts = {}) {
+  return models.Role
+    .findOne({
+      where: { name },
+      attributes: models.Role.attributes.full,
+      include: opts && opts.joinRelations ? roleBaseInclude : []
+    })
+    .then(item => {
+      if (!item) {
+        throw new EmptyResultError('Role with given name not found.')
+      }
+      return item
+    })
+}
+
+/**
  * Returns true if the user has permission for the subject
  * @param {string} type
- * @param {number} userId
+ * @param {number} user
  * @param {string} itemOrId item id or item
  * @param {string} itemModelName model class name
  */
-async function hasPermission (type, userId, itemOrId, itemModelName) {
-  const permissions = await getPermissions(userId, itemOrId, itemModelName)
+async function hasPermission (type, user, itemOrId, itemModelName) {
+  const permissions = await getPermissions(user, itemOrId, itemModelName)
   return permissions.includes(type)
 }
 
@@ -81,7 +110,7 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
         user_id: userId,
         [currentLevel.columnId]: item.id
       },
-      include: roleBaseInclude
+      include: userRoleBaseInclude
     })
     if (itemRole && itemRole.role) {
       // if role is found, check permissions of this role
@@ -152,8 +181,125 @@ async function getSharedObjectsIDs (userId, itemName) {
     .then(data => data.map(x => x.id))
 }
 
+/**
+ * Returns list of users with their role and permissions for specified item
+ * @param {string} id item id
+ * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ */
+function getUsersForItem (id, itemModelName) {
+  if (!itemModelNames.includes(itemModelName)) {
+    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
+  }
+  return hierarchy[itemModelName].roleModel.findAll({
+    where: {
+      [hierarchy[itemModelName].columnId]: id
+    },
+    include: [
+      ...userRoleBaseInclude,
+      {
+        model: models.User,
+        as: 'user',
+        attributes: models.User.attributes.lite
+      }
+    ]
+  })
+    .then((items) => {
+      return items.map((item) => {
+        return {
+          ...item.user.toJSON(),
+          role: item.role.name,
+          permissions: item.role.permissions.map(x => x.permission)
+        }
+      })
+    })
+}
+
+/**
+ * Returns user info with user's role and permissions for specified item
+ * @param {string} id item id
+ * @param {string} userId user id
+ * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ */
+function getUserRoleForItem (id, userId, itemModelName) {
+  if (!itemModelNames.includes(itemModelName)) {
+    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
+  }
+  return hierarchy[itemModelName].roleModel.findOne({
+    where: {
+      [hierarchy[itemModelName].columnId]: id,
+      user_id: userId
+    },
+    include: [
+      ...userRoleBaseInclude,
+      {
+        model: models.User,
+        as: 'user',
+        attributes: models.User.attributes.lite
+      }
+    ]
+  })
+    .then((item) => {
+      if (!item) {
+        throw new EmptyResultError('No roles found for given item.')
+      }
+      return {
+        ...item.user.toJSON(),
+        role: item.role.name,
+        permissions: item.role.permissions.map(x => x.permission)
+      }
+    })
+}
+
+/**
+ * Adds specified role to item for user
+ * @param {string} userId user id
+ * @param {string} roleId role id
+ * @param {string} itemId item id
+ * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ */
+function addRole (userId, roleId, itemId, itemModelName) {
+  return models.sequelize.transaction(async (transaction) => {
+    const columnName = `${itemModelName.toLowerCase()}_id`
+    await hierarchy[itemModelName].roleModel.destroy({
+      where: {
+        [columnName]: itemId,
+        user_id: userId
+      },
+      transaction
+    })
+    return hierarchy[itemModelName].roleModel.create({
+      user_id: userId,
+      [columnName]: itemId,
+      role_id: roleId
+    }, {
+      transaction
+    })
+  })
+}
+
+/**
+ * Removes user role for specified item
+ * @param {string} userId user id
+ * @param {string} itemId item id
+ * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ */
+function removeRole (userId, itemId, itemModelName) {
+  const columnName = `${itemModelName.toLowerCase()}_id`
+  return hierarchy[itemModelName].roleModel.destroy({
+    where: {
+      [columnName]: itemId,
+      user_id: userId
+    }
+  })
+}
+
 module.exports = {
+  getByName,
   hasPermission,
   getPermissions,
-  getSharedObjectsIDs
+  getSharedObjectsIDs,
+  getUsersForItem,
+  getUserRoleForItem,
+  addRole,
+  removeRole
 }
