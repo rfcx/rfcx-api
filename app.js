@@ -42,22 +42,24 @@ const internalRoutes = require('./routes/internal/routes')
 
 // Routes middleware must stay on /v1 and /v2 level to keep the middleware logic valid
 for (const apiVersion in versionedRoutes) {
-  app.use('/' + apiVersion, routeMiddleware)
+  app.use(`/${apiVersion}`, routeMiddleware)
 }
 
 for (const apiVersion in versionedRoutes) {
   for (const routeName in versionedRoutes[apiVersion]) {
-    app.use('/' + apiVersion + '/' + routeName, versionedRoutes[apiVersion][routeName])
+    app.use(`/${apiVersion}/${routeName}`, versionedRoutes[apiVersion][routeName])
   }
 }
 for (const routeName in coreRoutes) {
+  app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {
-    app.use('/' + routeName, routeMiddleware, authenticate(), coreRoutes[routeName][route])
+    app.use(`/${routeName}`, coreRoutes[routeName][route])
   }
 }
 for (const routeName in internalRoutes) {
+  app.use(`/internal/${routeName}`, routeMiddleware, authenticate())
   for (const route in internalRoutes[routeName]) {
-    app.use('/internal/' + routeName, routeMiddleware, authenticate(), internalRoutes[routeName][route])
+    app.use(`/internal/${routeName}`, internalRoutes[routeName][route])
   }
 }
 
