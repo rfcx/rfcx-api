@@ -379,6 +379,9 @@
           "longitude": {
             "type": "float",
             "example": 125.912
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectLite"
           }
         },
         "required": [

@@ -9,6 +9,11 @@ const streamBaseInclude = [
     model: models.User,
     as: 'created_by',
     attributes: models.User.attributes.lite
+  },
+  {
+    model: models.Project,
+    as: 'project',
+    attributes: models.Project.attributes.lite
   }
 ]
 
@@ -183,7 +188,7 @@ function restore (stream) {
 }
 
 function formatStream (stream, permissions) {
-  const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream // eslint-disable-line camelcase
+  const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate, project } = stream // eslint-disable-line camelcase
   let country_name = null // eslint-disable-line camelcase
   if (latitude && longitude) {
     const country = crg.get_country(latitude, longitude)
@@ -205,6 +210,7 @@ function formatStream (stream, permissions) {
     latitude,
     longitude,
     country_name,
+    project: project || null,
     ...permissions && { permissions }
   }
 }
