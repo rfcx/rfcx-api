@@ -31,7 +31,7 @@ module.exports = {
     require('./indices/stream'),
     require('./stream-source-files/stream'),
     require('./stream-segments/stream'),
-    require('./stream-permissions/stream')
+    require('./roles/stream')
   ],
   'clustered-annotations': [
     require('./annotations/clustered')

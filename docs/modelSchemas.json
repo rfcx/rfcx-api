@@ -379,6 +379,9 @@
           "longitude": {
             "type": "float",
             "example": 125.912
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectLite"
           }
         },
         "required": [
@@ -424,6 +427,28 @@
         "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
+  },
+  "UserLiteWithRoleAndPermissions": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      {
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "Member"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["O", "W", "R"]
+          }
+        }
+      }
+    ]
   },
   "IndexLite": {
     "properties": {
