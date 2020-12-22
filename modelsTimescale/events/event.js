@@ -41,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   Event.associate = function (models) {
     Event.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     Event.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })
+    Event.belongsTo(models.ClassifierEventStrategy, { as: 'classifier_event_strategy', foreignKey: 'classifier_event_strategy_id' })
   }
   Event.attributes = {
     full: ['id', 'stream_id', 'start', 'end', 'created_at', 'updated_at'],

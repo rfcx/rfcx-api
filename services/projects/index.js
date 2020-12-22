@@ -101,7 +101,7 @@ async function query (attrs, opts = {}) {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const ids = await rolesService.getSharedObjectsIDs(attrs.current_user_id, 'project')
+      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, 'project', 'collaborators')
       where.id = {
         [models.Sequelize.Op.in]: ids
       }

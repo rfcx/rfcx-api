@@ -149,35 +149,41 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
  * @param {string} userId user id
  * @param {string} itemName item name
  */
-async function getSharedObjectsIDs (userId, itemName) {
+async function getAccessibleObjectsIDs (userId, itemName, createdBy = 'me', inIds) {
   const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
+  const appendMe = createdBy === 'me' || createdBy === 'all'
   const joins = [
     `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id`
   ]
   const wheres = [
-    `${itemName}r.user_id = $userId`
+    `${itemName}r.user_id = :userId`,
+    ...(appendMe ? [`${itemName}.created_by_id = :userId`] : [])
   ]
   if (itemName === 'stream') {
     joins.push(...[
       `LEFT JOIN projects project ON ${itemName}.project_id = project.id`,
       'LEFT JOIN user_project_roles projectr ON project.id = projectr.project_id'
     ])
-    wheres.push('projectr.user_id = $userId')
+    wheres.push(...[
+      'projectr.user_id = :userId',
+      ...(appendMe ? ['project.created_by_id = :userId'] : [])
+    ])
   }
   if (itemName === 'stream' || itemName === 'project') {
     joins.push(...[
       'LEFT JOIN organizations organization ON project.organization_id = organization.id',
       'LEFT JOIN user_organization_roles organizationr ON organization.id = organizationr.organization_id'
     ])
-    wheres.push('organizationr.user_id = $userId')
+    wheres.push(...[
+      'organizationr.user_id = :userId',
+      ...(appendMe ? ['organization.created_by_id = :userId'] : [])
+    ])
   }
-  const sql = `${select} ${joins.join(' ')} WHERE ${wheres.join(' OR ')};`
-  const options = {
-    raw: true,
-    nest: true,
-    bind: { userId }
+  let sql = `${select} ${joins.join(' ')} WHERE (${wheres.join(' OR ')})`
+  if (inIds && inIds.length) {
+    sql += ` AND ${itemName}.id IN (:inIds)`
   }
-  return models.sequelize.query(sql, options)
+  return models.sequelize.query(sql, { replacements: { userId, inIds }, type: models.sequelize.QueryTypes.SELECT })
     .then(data => data.map(x => x.id))
 }
 
@@ -297,7 +303,7 @@ module.exports = {
   getByName,
   hasPermission,
   getPermissions,
-  getSharedObjectsIDs,
+  getAccessibleObjectsIDs,
   getUsersForItem,
   getUserRoleForItem,
   addRole,
