@@ -26,7 +26,8 @@ const guardianGroupInclude = [
   {
     model: models.GuardianSite,
     as: 'Site',
-    attributes: ['guid']
+    attributes: ['guid'],
+    require: false
   }
 ]
 
