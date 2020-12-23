@@ -68,7 +68,9 @@ router.post('/', authenticatedWithRoles('systemUser'), function (req, res) {
  * /events:
  *   get:
  *     summary: Get list of events
- *     description: Perform event search across streams, classifications, classifiers
+ *     description: Perform event search across streams, classifications, classifiers.
+ *       The data is returned only for streams you have access to (based on your organization, project and stream roles).
+ *       If you are a super user then events for all streams are returned.
  *     tags:
  *       - events
  *     parameters:
