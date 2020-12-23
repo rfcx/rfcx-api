@@ -4,7 +4,7 @@ var mqttInputData = require('../../utils/rfcx-mqtt/mqtt-input-data.js').mqttInpu
 var checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInDatabase
 var checkInAssets = require('../../utils/rfcx-mqtt/mqtt-checkin-assets.js').checkInAssets
 var mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
-var mqttPublish = require('../../utils/rfcx-mqtt/mqtt-publish.js').mqttPublish
+var guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
 var mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
 var queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
 var SensationsService = require('../../services/sensations/sensations-service')
@@ -119,7 +119,7 @@ function onMessageCheckin (data, messageId) {
       return mqttInstructions.updateAndDispatchGuardianInstructions(checkInObj)
     })
     .then((checkInObj) => {
-      return mqttPublish.processAndCompressPublishJson(checkInObj)
+      return guardianCommand.processAndCompressCommandJson(checkInObj)
     })
     .then((checkInObj) => {
       return { guardian_guid: checkInObj.json.guardian.guid, obj: checkInObj.rtrn.obj, gzip: checkInObj.rtrn.gzip }

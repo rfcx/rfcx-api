@@ -1,9 +1,9 @@
 var Promise = require('bluebird')
 var zlib = require('zlib')
 
-exports.mqttPublish = {
+exports.guardianCommand = {
 
-  processAndCompressPublishJson: function (checkInObj) {
+  processAndCompressCommandJson: function (checkInObj) {
     return new Promise(function (resolve, reject) {
       try {
         for (var prop in checkInObj.rtrn.obj) {
