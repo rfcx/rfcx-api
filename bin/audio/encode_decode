@@ -6,6 +6,12 @@ TMP_DIR="$SCRIPT_DIR/tmp"; if [ ! -d $TMP_DIR ]; then mkdir -p $TMP_DIR; fi;
 FILEPATH_ORIG=$1;
 BITRATE_FLAT=$2;
 
+SPEC_COLORING="-m" # monochrome
+#SPEC_COLORING="" # color
+# SPEC_COLORING="-h" # high color
+
+SPEC_Z_INDEX="95"
+
 CHANNEL_COUNT="1";
 SAMPLE_PRECISION="16";
 SAMPLERATE_FLAT="24000";
@@ -44,10 +50,10 @@ EXEC_CONVERT_TO_FLAC=$(ffmpeg -i "$FILEPATH_ORIGINAL" -loglevel panic -ar "$SAMP
 EXEC_CLEANUP_POST=$(rm -f "$FILEPATH_TMPWAV_PREP" "$FILEPATH_TMPWAV_FLAT")
 
 if [ ! -f "$DB_DIR/checkins-complete.db" ]; then
-	EXEC_SPEC_ORIGINAL=$(ffmpeg -i "$FILEPATH_ORIGINAL" -loglevel panic -nostdin  -ac $CHANNEL_COUNT -ar "$SAMPLERATE_ORIG" -flags +bitexact -f sox - | sox  -t sox - -n spectrogram -o "$FILEPATH_ORIGINAL_SPEC" -x 8192 -y 1200 -z 105 -w Dolph -s)
+	EXEC_SPEC_ORIGINAL=$(ffmpeg -i "$FILEPATH_ORIGINAL" -loglevel panic -nostdin  -ac $CHANNEL_COUNT -ar "$SAMPLERATE_ORIG" -flags +bitexact -f sox - | sox  -t sox - -n spectrogram -o "$FILEPATH_ORIGINAL_SPEC" $SPEC_COLORING -x 8192 -y 1200 -z $SPEC_Z_INDEX -w Dolph -s)
 fi
 
-EXEC_SPEC_RECONSTRUCTED=$(ffmpeg -i "$FILEPATH_RECONSTRUCTED" -loglevel panic -nostdin  -ac $CHANNEL_COUNT -ar "$SAMPLERATE_ORIG" -flags +bitexact -f sox - | sox  -t sox - -n spectrogram -o "$FILEPATH_RECONSTRUCTED_SPEC" -x 8192 -y 1200 -z 105 -w Dolph -s)
+EXEC_SPEC_RECONSTRUCTED=$(ffmpeg -i "$FILEPATH_RECONSTRUCTED" -loglevel panic -nostdin  -ac $CHANNEL_COUNT -ar "$SAMPLERATE_ORIG" -flags +bitexact -f sox - | sox  -t sox - -n spectrogram -o "$FILEPATH_RECONSTRUCTED_SPEC" $SPEC_COLORING -x 8192 -y 1200 -z $SPEC_Z_INDEX -w Dolph -s)
 
 # if [ "$INPUT_EXTENSION" = "wav" ]; then 
 # 	AUDIO_SAMPLE_RATE=$(soxi -r "$AUDIO_ORIG_COPY_FILEPATH")
