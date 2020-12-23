@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+TMP_DIR="$SCRIPT_DIR/tmp"; if [ ! -d $TMP_DIR ]; then mkdir -p $TMP_DIR; fi;
+
+FILEPATH_ORIG=$1;
+BITRATE_FLAT=$2;
+
+CHANNEL_COUNT="1";
+SAMPLE_PRECISION="16";
+SAMPLERATE_FLAT="24000";
+
+# FILEPATH_ORIG=$1;
+FILENAME_ORIG=$(basename -- "$FILEPATH_ORIG")
+EXTENSION_ORIG=$(echo $FILENAME_ORIG | rev | cut -d'.' -f 1 | rev | tr '[:upper:]' '[:lower:]')
+FILEPATH_NOEXT_ORIG=$(echo "$FILENAME_ORIG" | cut -f 1 -d '.')
+SAMPLERATE_ORIG=$(soxi -r "$FILEPATH_ORIG")
+
+FILEPATH_TMPWAV_PREP="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.${SAMPLE_PRECISION}bit.${SAMPLERATE_ORIG}Hz.wav";
+FILEPATH_TMPWAV_FLAT="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.${SAMPLE_PRECISION}bit.${SAMPLERATE_FLAT}Hz.wav";
+FILEPATH_FLOPUS="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.compressed.${BITRATE_FLAT}.opus";
+FILEPATH_ORIGINAL="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.original.wav";
+FILEPATH_ORIGINAL_SPEC="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.original.png";
+FILEPATH_ORIGINAL_AS_FLAC="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.original.flac";
+FILEPATH_RECONSTRUCTED="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.reconstructed.${BITRATE_FLAT}.wav";
+FILEPATH_RECONSTRUCTED_SPEC="${TMP_DIR}/${FILEPATH_NOEXT_ORIG}.reconstructed.${BITRATE_FLAT}.png";
+
+# Pre Cleanup
+EXEC_CLEANUP_PRE=$(rm -f "$FILEPATH_TMPWAV_PREP" "$FILEPATH_TMPWAV_FLAT" "$FILEPATH_RECONSTRUCTED_SPEC" "$FILEPATH_FLOPUS" "$FILEPATH_RECONSTRUCTED" "$FILEPATH_ORIGINAL_AS_FLAC" "$FILEPATH_ORIGINAL")
+
+EXEC_CONVERT_TO_WAV=$(ffmpeg -i "$FILEPATH_ORIG" -loglevel panic -ar "$SAMPLERATE_ORIG" -ac $CHANNEL_COUNT -c:a pcm_s${SAMPLE_PRECISION}le -flags +bitexact "$FILEPATH_TMPWAV_PREP")
+EXEC_CONVERT_TO_FLAT=$($SCRIPT_DIR/wav_resize.js "$SAMPLERATE_FLAT" "$FILEPATH_TMPWAV_PREP" "$FILEPATH_TMPWAV_FLAT")
+EXEC_CONVERT_TO_FLOPUS=$(ffmpeg -i "$FILEPATH_TMPWAV_FLAT" -loglevel panic -ar "$SAMPLERATE_FLAT" -ac $CHANNEL_COUNT -c:a libopus -b:a $BITRATE_FLAT -vbr on -compression_level 10 "$FILEPATH_FLOPUS")
+
+# Post Cleanup
+EXEC_CLEANUP_POST=$(rm -f "$FILEPATH_TMPWAV_FLAT")
+
+EXEC_CONVERT_FROM_FLOPUS=$(ffmpeg -i "$FILEPATH_FLOPUS" -loglevel panic -ar "$SAMPLERATE_FLAT" -ac $CHANNEL_COUNT -c:a pcm_s${SAMPLE_PRECISION}le -flags +bitexact "$FILEPATH_TMPWAV_FLAT")
+EXEC_CONVERT_TO_FLAT=$($SCRIPT_DIR/wav_resize.js "$SAMPLERATE_ORIG" "$FILEPATH_TMPWAV_FLAT" "$FILEPATH_RECONSTRUCTED")
+EXEC_MOVE_ORIG=$(mv "$FILEPATH_TMPWAV_PREP" "$FILEPATH_ORIGINAL")
+EXEC_CONVERT_TO_FLAC=$(ffmpeg -i "$FILEPATH_ORIGINAL" -loglevel panic -ar "$SAMPLERATE_ORIG" -ac $CHANNEL_COUNT "$FILEPATH_ORIGINAL_AS_FLAC")
+
+# Final Cleanup
+EXEC_CLEANUP_POST=$(rm -f "$FILEPATH_TMPWAV_PREP" "$FILEPATH_TMPWAV_FLAT")
+
+if [ ! -f "$DB_DIR/checkins-complete.db" ]; then
+	EXEC_SPEC_ORIGINAL=$(ffmpeg -i "$FILEPATH_ORIGINAL" -loglevel panic -nostdin  -ac $CHANNEL_COUNT -ar "$SAMPLERATE_ORIG" -flags +bitexact -f sox - | sox  -t sox - -n spectrogram -o "$FILEPATH_ORIGINAL_SPEC" -x 8192 -y 1200 -z 105 -w Dolph -s)
+fi
+
+EXEC_SPEC_RECONSTRUCTED=$(ffmpeg -i "$FILEPATH_RECONSTRUCTED" -loglevel panic -nostdin  -ac $CHANNEL_COUNT -ar "$SAMPLERATE_ORIG" -flags +bitexact -f sox - | sox  -t sox - -n spectrogram -o "$FILEPATH_RECONSTRUCTED_SPEC" -x 8192 -y 1200 -z 105 -w Dolph -s)
+
+# if [ "$INPUT_EXTENSION" = "wav" ]; then 
+# 	AUDIO_SAMPLE_RATE=$(soxi -r "$AUDIO_ORIG_COPY_FILEPATH")
+# 	# AUDIO_SAMPLE_PRECISION=$(soxi -p "$AUDIO_ORIG_COPY_FILEPATH")
+# 	# AUDIO_CHANNEL_COUNT=$(soxi -c "$AUDIO_ORIG_COPY_FILEPATH")
+# 	EXEC_AUDIO_CONVERT=$(ffmpeg -loglevel panic -i "$AUDIO_ORIG_COPY_FILEPATH" -ar "$AUDIO_SAMPLE_RATE" -ac "$AUDIO_CHANNEL_COUNT" "$AUDIO_FINAL_FILEPATH")
+# else
+# 	AUDIO_TEMP_FILEPATH="$TMP_DIR/$DATETIME_EPOCH.wav"
+# 	EXEC_CLEANUP_TEMP=$(rm -f "$AUDIO_TEMP_FILEPATH")
+# 	EXEC_AUDIO_CONVERT=$(ffmpeg -loglevel panic -i "$AUDIO_ORIG_COPY_FILEPATH" "$AUDIO_TEMP_FILEPATH")
+# 	AUDIO_SAMPLE_RATE=$(soxi -r "$AUDIO_TEMP_FILEPATH")
+# 	# AUDIO_SAMPLE_PRECISION=$(soxi -p "$AUDIO_TEMP_FILEPATH")
+# 	# AUDIO_CHANNEL_COUNT=$(soxi -c "$AUDIO_TEMP_FILEPATH")
+# 	EXEC_CLEANUP_TEMP=$(rm -f "$AUDIO_TEMP_FILEPATH")
+# 	cp "$AUDIO_ORIG_COPY_FILEPATH" "$AUDIO_FINAL_FILEPATH";
+# fi
+
+
+# if [[ -z "$2" ]]; then
+#   export PREFIX="$ENV";
+# else
+#   export PREFIX="$ENV/$2";
+# fi
+
+# rm -f $JSON_FILE;
+# echo "fetching list of all s3 objects and caching it locally...";
+# $SCRIPT_DIR/utils/list_s3_objects --prefix $PREFIX > $JSON_FILE && echo "]" >> $JSON_FILE;
+
+# echo "cycling through the file list and checking database..."
+# $SCRIPT_DIR/utils/cycle_thru_files --env $ENV --json $JSON_FILE;
