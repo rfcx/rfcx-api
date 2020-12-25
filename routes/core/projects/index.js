@@ -54,7 +54,7 @@ router.post('/', function (req, res) {
     .then(async () => {
       if (convertedParams.organization_id) {
         await organizationsService.getById(convertedParams.organization_id)
-        const allowed = await rolesService.hasPermission('C', userId, convertedParams.organization_id, 'Organization')
+        const allowed = await rolesService.hasPermission(rolesService.CREATE, userId, convertedParams.organization_id, 'Organization')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create project in this organization.')
         }

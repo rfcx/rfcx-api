@@ -2,6 +2,15 @@ const models = require('../../modelsTimescale')
 const usersFusedService = require('../users/fused')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
+const ORGANIZATION = 'organization'
+const PROJECT = 'project'
+const STREAM = 'stream'
+
+const CREATE = 'C'
+const READ = 'R'
+const UPDATE = 'U'
+const DELETE = 'D'
+
 const roleBaseInclude = [
   {
     model: models.Role,
@@ -18,62 +27,64 @@ const roleBaseInclude = [
 ]
 
 const hierarchy = {
-  Organization: {
+  [ORGANIZATION]: {
     columnId: 'organization_id',
     parent: null,
+    model: models.Organization,
     roleModel: models.UserOrganizationRole
   },
-  Project: {
+  [PROJECT]: {
     columnId: 'project_id',
-    parent: 'Organization',
+    parent: ORGANIZATION,
+    model: models.Project,
     roleModel: models.UserProjectRole
   },
-  Stream: {
+  [STREAM]: {
     columnId: 'stream_id',
-    parent: 'Project',
+    parent: PROJECT,
+    model: models.Stream,
     roleModel: models.UserStreamRole
   }
 }
-const itemModelNames = Object.keys(hierarchy)
 
 /**
  * Returns true if the user has permission for the subject
- * @param {string} type
+ * @param {string} type `CREATE` or `READ` or `UPDATE` or `DELETE`
  * @param {number} userId
  * @param {string} itemOrId item id or item
- * @param {string} itemModelName model class name
+ * @param {string} itemName `STREAM` or `PROJECT` or `ORGANIZATION`
  */
-async function hasPermission (type, userId, itemOrId, itemModelName) {
-  const permissions = await getPermissions(userId, itemOrId, itemModelName)
+async function hasPermission (type, userId, itemOrId, itemName) {
+  const permissions = await getPermissions(userId, itemOrId, itemName)
   return permissions.includes(type)
 }
 
 /**
  * Returns true if the user has permission for the subject
  * @param {string | object} itemOrId item id or item
- * @param {string} itemModelName model class name
+ * @param {string} itemName `STREAM` or `PROJECT` or `ORGANIZATION`
  */
-async function getPermissions (userOrId, itemOrId, itemModelName) {
+async function getPermissions (userOrId, itemOrId, itemName) {
   const isId = typeof itemOrId === 'string'
   const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
   const userId = userIsPrimitive ? userOrId : userOrId.owner_id
-  if (isId && !itemModelName) {
-    throw new Error('RolesService: getPermissions: missing required parameter "itemModelName"')
+  if (isId && !itemName) {
+    throw new Error('RolesService: getPermissions: missing required parameter "itemName"')
   }
-  if (!itemModelNames.includes(itemModelName)) {
-    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
+  if (!Object.keys(hierarchy).includes(itemName)) {
+    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemName}"`)
   }
-  let item = await (isId ? models[itemModelName].findOne({ where: { id: itemOrId } }) : Promise.resolve(itemOrId))
+  let item = await (isId ? hierarchy[itemName].model.findOne({ where: { id: itemOrId } }) : Promise.resolve(itemOrId))
   if (!item) {
-    throw new EmptyResultError(`${itemModelName} with given id doesn't exist.`)
+    throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
   }
   const user = await (userIsPrimitive ? usersFusedService.getByParams({ id: userId }) : Promise.resolve(userOrId))
   if (user.is_super || item.created_by_id === userId) {
-    return ['C', 'R', 'U', 'D']
+    return [CREATE, READ, UPDATE, DELETE]
   }
 
   var permissions = []
-  let currentLevel = hierarchy[itemModelName]
+  let currentLevel = hierarchy[itemName]
   while (currentLevel) {
     // try to find role for requested item
     const itemRole = await currentLevel.roleModel.findOne({
@@ -108,7 +119,7 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
     }
   }
   if (!permissions.length && item.is_public) {
-    permissions = ['R']
+    permissions = [READ]
   }
   return permissions
 }
@@ -118,7 +129,7 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
  * based on his direct roles assigned to these objects or roles which assigned to parent objects (e.g. user will have access
  * to all Streams of the Project he has access to)
  * @param {string} userId user id
- * @param {string} itemName item name
+ * @param {string} itemName `STREAM` or `PROJECT` or `ORGANIZATION`
  */
 async function getSharedObjectsIDs (userId, itemName) {
   const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
@@ -128,14 +139,14 @@ async function getSharedObjectsIDs (userId, itemName) {
   const wheres = [
     `${itemName}r.user_id = $userId`
   ]
-  if (itemName === 'stream') {
+  if (itemName === STREAM) {
     joins.push(...[
       `LEFT JOIN projects project ON ${itemName}.project_id = project.id`,
       'LEFT JOIN user_project_roles projectr ON project.id = projectr.project_id'
     ])
     wheres.push('projectr.user_id = $userId')
   }
-  if (itemName === 'stream' || itemName === 'project') {
+  if (itemName === STREAM || itemName === PROJECT) {
     joins.push(...[
       'LEFT JOIN organizations organization ON project.organization_id = organization.id',
       'LEFT JOIN user_organization_roles organizationr ON organization.id = organizationr.organization_id'
@@ -155,5 +166,12 @@ async function getSharedObjectsIDs (userId, itemName) {
 module.exports = {
   hasPermission,
   getPermissions,
-  getSharedObjectsIDs
+  getSharedObjectsIDs,
+  ORGANIZATION,
+  PROJECT,
+  STREAM,
+  CREATE,
+  READ,
+  UPDATE,
+  DELETE
 }

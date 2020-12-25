@@ -7,7 +7,7 @@ const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
-const rolesService = require('../../../services/roles')
+const { getPermissions, hasPermission, STREAM, PROJECT, CREATE, READ } = require('../../../services/roles')
 
 /**
  * @swagger
@@ -56,14 +56,14 @@ router.post('/', function (req, res) {
     .then(async () => {
       if (convertedParams.project_id) {
         await projectsService.getById(convertedParams.project_id)
-        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, convertedParams.project_id, 'Project')
+        const allowed = await hasPermission(CREATE, req.rfcx.auth_token_info, convertedParams.project_id, PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
       }
       if (convertedParams.project_external_id) {
         const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
-        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, externalProject.id, 'Project')
+        const allowed = await hasPermission(CREATE, req.rfcx.auth_token_info, externalProject.id, PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
@@ -197,8 +197,8 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   return streamsService.getById(req.params.id, { joinRelations: true })
     .then(async stream => {
-      const permissions = await rolesService.getPermissions(req.rfcx.auth_token_info, stream, 'Stream')
-      if (!permissions.includes('R')) {
+      const permissions = await getPermissions(req.rfcx.auth_token_info, stream, STREAM)
+      if (!permissions.includes(READ)) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
       return streamsService.formatStream(stream, permissions)
