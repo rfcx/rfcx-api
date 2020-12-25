@@ -358,6 +358,11 @@
         "type": "integer",
         "description": "An external project id",
         "example": 1051
+      },
+      "external_id": {
+        "type": "integer",
+        "description": "An external stream id",
+        "example": 4551
       }
     },
     "required": [
@@ -396,6 +401,39 @@
         "type": "boolean",
         "description": "Restore previously deleted stream",
         "example": true
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "StreamPatchArbimon": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Stream name",
+        "example": "My Stream 1"
+      },
+      "latitude": {
+        "type": "float",
+        "description": "Stream coordinate for latitude",
+        "example": 90.123
+      },
+      "longitude": {
+        "type": "float",
+        "description": "Stream coordinate for longitude",
+        "example": 125.912
+      },
+      "description": {
+        "type": "string",
+        "description": "Stream description",
+        "example": "Stream 1 description"
+      },
+      "project_external_id": {
+        "type": "integer",
+        "description": "An external project id",
+        "example": 1051
       }
     },
     "required": []
@@ -509,7 +547,7 @@
       "file_extension"
     ]
   },
-  "Project": {
+  "ProjectPatch": {
     "type": "object",
     "properties": {
       "id": {
@@ -546,5 +584,25 @@
     "required": [
       "name"
     ]
+  },
+  "ProjectPatchArbimon": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Project name",
+        "example": "My Project 1"
+      },
+      "description": {
+        "type": "string",
+        "description": "Project description",
+        "example": "Project 1 description"
+      },
+      "is_public": {
+        "type": "boolean",
+        "description": "Whether project is public (default false)",
+        "default": "false"
+      }
+    }
   }
 }

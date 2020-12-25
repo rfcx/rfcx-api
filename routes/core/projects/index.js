@@ -200,10 +200,10 @@ router.get('/:id', hasProjectPermission('R'), (req, res) => {
  *       content:
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/ProjectPatch'
+ *             $ref: '#/components/requestBodies/ProjectPatchArbimon'
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/ProjectPatch'
+ *             $ref: '#/components/requestBodies/ProjectPatchArbimon'
  *     responses:
  *       200:
  *         description: Success
