@@ -858,9 +858,6 @@
       },
       "classification": {
         "$ref": "#/components/schemas/ClassificationLite"
-      },
-      "classifier": {
-        "$ref": "#/components/schemas/ClassifierLite"
       }
     }
   },

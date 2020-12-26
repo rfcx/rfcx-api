@@ -124,24 +124,35 @@ router.post('/', authenticatedWithRoles('systemUser'), function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  const user = req.rfcx.auth_token_info
-  const convertedParams = {}
-  const params = new Converter(req.query, convertedParams)
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('streams').optional().toArray()
-  params.convert('classifications').optional().toArray()
-  params.convert('classifiers').optional().toArray()
-  params.convert('limit').optional().toInt().default(100)
-  params.convert('offset').optional().toInt().default(0)
+  const userId = req.rfcx.auth_token_info.owner_id
+  const userIsSuper = req.rfcx.auth_token_info.is_super
+  const converter = new Converter(req.query, {})
+  converter.convert('start').toMomentUtc()
+  converter.convert('end').toMomentUtc()
+  converter.convert('streams').optional().toArray()
+  converter.convert('classifications').optional().toArray()
+  converter.convert('classifiers').optional().toArray()
+  converter.convert('limit').optional().toInt().default(100)
+  converter.convert('offset').optional().toInt().default(0)
+  converter.convert('fields').optional().toArray()
 
-  return params.validate()
-    .then(async () => {
-      const { start, end, streams, classifications, classifiers, limit, offset } = convertedParams
-      const eventsData = await eventsService.query(user, start, end, streams, classifications, classifiers, limit, offset)
-      return res
-        .header('Total-Items', eventsData.count)
-        .json(eventsData.events)
+  return converter.validate()
+    .then(params => {
+      const filters = {
+        start: params.start,
+        end: params.end,
+        streamIds: params.streams,
+        classificationValues: params.classifications,
+        classifierIds: params.classifiers
+      }
+      const options = {
+        readableBy: userIsSuper ? undefined : userId,
+        fields: params.fields
+      }
+      return eventsService.query(filters, options)
+    })
+    .then(data => {
+      res.header('Total-Items', data.total).json(data.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting events'))
 })
@@ -152,7 +163,7 @@ router.get('/', (req, res) => {
  * /events/{id}:
  *   get:
  *     summary: Get event
- *     description: Get an event and it's classification, classifier and strategy
+ *     description: Get an event including it's classification, classifier and strategy
  *     tags:
  *       - events
  *     parameters:
@@ -174,7 +185,21 @@ router.get('/', (req, res) => {
  *         description: Event not found
  */
 router.get('/:id', (req, res) => {
-  res.status(504).send('Not implemented')
+  const id = req.params.id
+  const userId = req.rfcx.auth_token_info.owner_id
+  const userIsSuper = req.rfcx.auth_token_info.is_super
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('fields').optional().toArray()
+  return converter.validate()
+    .then(params => {
+      const options = {
+        readableBy: userIsSuper ? undefined : userId,
+        fields: params.fields
+      }
+      return eventsService.get(id, options)
+    })
+    .then(event => res.json(event))
+    .catch(httpErrorHandler(req, res, 'Failed getting event'))
 })
 
 module.exports = router
