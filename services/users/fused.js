@@ -1,7 +1,7 @@
 const models = require('../../models')
 const modelsTimescale = require('../../modelsTimescale')
-const neo4j = require('../../utils/neo4j')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
+const ensureUserSyncedInNeo4j = process.env.NEO4J_ENABLED === 'true' ? require('./legacy/neo4j') : undefined
 
 const userBaseInclude = [{
   include: [{ all: true }]
@@ -43,7 +43,9 @@ function collectUserDataForSync (req) {
 
 async function ensureUserSynced (user) {
   await ensureUserSyncedInTimescaleDB(user)
-  await ensureUserSyncedInNeo4j(user)
+  if (ensureUserSyncedInNeo4j) {
+    await ensureUserSyncedInNeo4j(user)
+  }
 }
 
 async function ensureUserSyncedFromToken (req) {
@@ -73,33 +75,6 @@ async function ensureUserSyncedInTimescaleDB (user) {
         return dbUser
       }
     })
-}
-
-async function ensureUserSyncedInNeo4j (user) {
-  if (user instanceof models.User) {
-    user = user.toJSON()
-  }
-  const searchQuery = 'MATCH (user:user) WHERE user.guid = {guid} AND user.email = {email} RETURN user LIMIT 1'
-  const searchsession = neo4j.session()
-  const searchResult = await Promise.resolve(searchsession.run(searchQuery, user))
-  searchsession.close()
-  if ((!searchResult.records || !searchResult.records.length)) {
-    const creationQuery = 'CREATE (user:user { guid: {guid}, firstname: {firstname}, lastname: {lastname}, email: {email}, username: {username}, pictureUrl: {picture} }) RETURN user'
-    const creationSession = neo4j.session()
-    const creationResult = await Promise.resolve(creationSession.run(creationQuery, user))
-    creationSession.close()
-    return creationResult.records.map((record) => {
-      return record.get(0).properties
-    })[0]
-  } else {
-    const updateQuery = 'MATCH (user:user { guid: {guid}, email: {email} }) SET user.firstname = {firstname} SET user.lastname = {lastname} SET user.username = {username} SET user.pictureUrl = {picture} RETURN user'
-    const updateSession = neo4j.session()
-    const updateResult = await Promise.resolve(updateSession.run(updateQuery, user))
-    updateSession.close()
-    return updateResult.records.map((record) => {
-      return record.get(0).properties
-    })[0]
-  }
 }
 
 module.exports = {
