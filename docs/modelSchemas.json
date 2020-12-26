@@ -863,5 +863,34 @@
         "$ref": "#/components/schemas/ClassifierLite"
       }
     }
+  },
+  "Event": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/EventLite"
+      },
+      {
+        "properties": {
+          "stream": {
+            "$ref": "#/components/schemas/StreamLite"
+          },
+          "classifier_event_strategy": {
+            "type": "object",
+            "properties": {
+              "parameters": {
+                "type": "string",
+                "example": "min-gap-between-events=30m"
+              },
+              "event_strategy": {
+                "$ref": "#/components/schemas/EventStrategy"
+              },
+              "classifier": {
+                "$ref": "#/components/schemas/ClassifierLite"
+              }
+            }
+          }
+        }
+      }
+    ]
   }
 }

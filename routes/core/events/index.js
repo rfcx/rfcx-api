@@ -146,4 +146,35 @@ router.get('/', (req, res) => {
     .catch(httpErrorHandler(req, res, 'Failed getting events'))
 })
 
+/**
+ * @swagger
+ *
+ * /events/{id}:
+ *   get:
+ *     summary: Get event
+ *     description: Get an event and it's classification, classifier and strategy
+ *     tags:
+ *       - events
+ *     parameters:
+ *       - name: id
+ *         description: Event identifier (22-character uuid slug)
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       403:
+ *         description: Insufficient privileges
+ *       404:
+ *         description: Event not found
+ */
+router.get('/:id', (req, res) => {
+  res.status(504).send('Not implemented')
+})
+
 module.exports = router
