@@ -92,7 +92,10 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
   if (!itemModelNames.includes(itemModelName)) {
     throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
   }
-  let item = await (isId ? models[itemModelName].findOne({ where: { id: itemOrId } }) : Promise.resolve(itemOrId))
+  let item = await (isId ? hierarchy[itemName].model.findOne({
+    where: { id: itemOrId },
+    paranoid: false
+  }) : Promise.resolve(itemOrId))
   if (!item) {
     throw new EmptyResultError(`${itemModelName} with given id doesn't exist.`)
   }
@@ -123,7 +126,8 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
         item = await models[currentLevel.parent].findOne({
           where: {
             id: item[parentColumnId]
-          }
+          },
+          paranoid: false
         })
         if (item) {
           currentLevel = hierarchy[currentLevel.parent]
