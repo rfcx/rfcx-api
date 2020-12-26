@@ -9,7 +9,7 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
 var Converter = require('../../../utils/converter/converter')
 var ValidationError = require('../../../utils/converter/validation-error')
 var ForbiddenError = require('../../../utils/converter/forbidden-error')
-const userService = require('../../../services/users/users-service')
+const userService = require('../../../services/users/users-service-legacy')
 const sitesService = require('../../../services/sites/sites-service')
 const auth0Service = require('../../../services/auth0/auth0-service')
 const kmzService = require('../../../services/kmz/kmz-service')
@@ -97,7 +97,7 @@ router.route('/statistics/audio')
   })
 
 router.route('/:site_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
     return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
       .then((user) => {
         return userService.getAllUserSiteGuids(user)
@@ -106,7 +106,7 @@ router.route('/:site_id')
         const guid = req.params.site_id
         if (req.user && req.user.userType === 'auth0') {
           const userRoles = auth0Service.getUserRolesFromToken(req.user)
-          if (!guids.includes(guid) && !auth0Service.hasAnyRoleFromArray(['guardiansSitesAdmin', 'mobileAppAdmin'], userRoles)) {
+          if (!guids.includes(guid) && !auth0Service.hasAnyRoleFromArray(['guardiansSitesAdmin', 'mobileAppAdmin', 'systemUser'], userRoles)) {
             throw new ForbiddenError(`You are not allowed to get info of site with guid ${guid}`)
           }
         }

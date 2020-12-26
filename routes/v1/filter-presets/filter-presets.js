@@ -4,7 +4,7 @@ var passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 var httpError = require('../../../utils/http-errors')
 var ValidationError = require('../../../utils/converter/validation-error')
-var usersService = require('../../../services/users/users-service')
+var usersService = require('../../../services/users/users-service-legacy')
 var filterPresetsService = require('../../../services/filter-presets/filter-presets')
 var sequelize = require('sequelize')
 var hasRole = require('../../../middleware/authorization/authorization').hasRole

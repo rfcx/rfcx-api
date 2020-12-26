@@ -10,10 +10,6 @@ var app = require('../app-mqtt.js')
 var models = require('../models')
 const guidService = require('../utils/misc/guid.js')
 
-const loggers = require('../utils/logger')
-const logDebug = loggers.debugLogger.log
-const logError = loggers.errorLogger.log
-
 console.log('RFCX | Starting server')
 
 var httpServer = app.http.listen(app.http.get('port'), function () {
@@ -79,17 +75,11 @@ var mqttPingRouter = require('../utils/rfcx-mqtt/mqtt-ping-router.js').mqttPingR
 
 app.mqtt.on('message', (topic, data) => {
   let messageId = guidService.generate()
-  logDebug('new mqtt message', { topic })
   console.log('new mqtt message', topic, messageId)
 
   if (/grd\/.+\/chk/.test(topic)) {
     return mqttCheckInRouter.onMessageCheckin(data, messageId)
       .then((result) => {
-        logDebug('mqtt message return object', {
-          guardian_guid: result.guardian_guid,
-          gzip: result.gzip
-        })
-
         app.mqtt.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
 
       // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
@@ -106,8 +96,7 @@ app.mqtt.on('message', (topic, data) => {
         if (typeof (err) === 'string') {
           err = { message: err }
         }
-        logDebug('mqtt message return object', { err })
-        logError('mqtt message error', { err })
+        console.error('mqtt message error', err)
       })
   } else if (/grd\/.+\/png/.test(topic)) {
     return mqttPingRouter.onMessagePing(data, messageId)
@@ -125,8 +114,7 @@ app.mqtt.on('message', (topic, data) => {
         if (typeof (err) === 'string') {
           err = { message: err }
         }
-        logDebug('mqtt message return object', { err })
-        logError('mqtt message error', { err })
+        console.error('mqtt message error', err)
       })
   }
 })

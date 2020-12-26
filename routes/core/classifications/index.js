@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const classificationService = require('../../../services/classification/classification-service')
+const classificationService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
 
 /**
@@ -28,7 +27,7 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Not found
  */
-router.get('/:value', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.get('/:value', function (req, res) {
   return classificationService.get(req.params.value)
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classification'))
@@ -77,7 +76,7 @@ router.get('/:value', authenticatedWithRoles('appUser', 'rfcxUser'), function (r
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.get('/', function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.query, transformedParams)
 
@@ -121,7 +120,7 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, re
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/:value/characteristics', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
+router.get('/:value/characteristics', function (req, res) {
   return classificationService.queryByParent(req.params.value, 'characteristic')
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting characteristics'))

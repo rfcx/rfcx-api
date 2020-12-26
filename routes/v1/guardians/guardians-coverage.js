@@ -1,6 +1,6 @@
 var express = require('express')
 var router = express.Router()
-const SensationsService = require('../../../services/sensations/sensations-service')
+const SensationsService = require('../../../services/legacy/sensations/sensations-service')
 const executeService = require('../../../services/execute-service')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)

@@ -3,8 +3,8 @@ var sequelize = require('sequelize')
 var Converter = require('../../utils/converter/converter')
 var Promise = require('bluebird')
 var ValidationError = require('../../utils/converter/validation-error')
-const eventValueService = require('../events/event-value-service')
-const eventTypeService = require('../events/event-type-service')
+const eventValueService = require('../legacy/events/event-value-service')
+const eventTypeService = require('../legacy/events/event-type-service')
 const siteService = require('../sites/sites-service')
 
 const guardianGroupInclude = [

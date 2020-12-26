@@ -1,8 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsStatisticsService = require('../../../services/streams/statistics')
-const streamPermissionService = require('../../../services/streams/permission')
+const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
@@ -34,7 +33,8 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/uploads', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/uploads', async function (req, res) {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -43,13 +43,14 @@ router.get('/streams/statistics/uploads', authenticatedWithRoles('appUser', 'rfc
 
   return params.validate()
     .then(async () => {
-      if (convertedParams.stream_id) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, convertedParams.stream_id, 'R')
+      const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await rolesService.hasPermission('R', user, streamId, 'Stream')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = user.owner_id
       const data = await streamsStatisticsService.getUploads(convertedParams)
       return res.json(data)
     })
@@ -84,7 +85,8 @@ router.get('/streams/statistics/uploads', authenticatedWithRoles('appUser', 'rfc
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/annotations', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/annotations', async function (req, res) {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -93,13 +95,14 @@ router.get('/streams/statistics/annotations', authenticatedWithRoles('appUser', 
 
   return params.validate()
     .then(async () => {
-      if (convertedParams.stream_id) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, convertedParams.stream_id, 'R')
+      const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await rolesService.hasPermission('R', user, streamId, 'Stream')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = user.owner_id
       const data = await streamsStatisticsService.getAnnotations(convertedParams)
       return res.json(data)
     })
@@ -134,7 +137,8 @@ router.get('/streams/statistics/annotations', authenticatedWithRoles('appUser', 
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/detections', authenticatedWithRoles('appUser', 'rfcxUser'), async function (req, res) {
+router.get('/streams/statistics/detections', async function (req, res) {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
@@ -143,13 +147,14 @@ router.get('/streams/statistics/detections', authenticatedWithRoles('appUser', '
 
   return params.validate()
     .then(async () => {
-      if (convertedParams.stream_id) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, convertedParams.stream_id, 'R')
+      const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await rolesService.hasPermission('R', user, streamId, 'Stream')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = user.owner_id
       const data = await streamsStatisticsService.getDetections(convertedParams)
       return res.json(data)
     })

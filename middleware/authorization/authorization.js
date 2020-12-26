@@ -49,6 +49,13 @@ function authenticatedWithRoles (...roles) {
 }
 
 /**
+ * Creates a middleware that checks the user is authenticated (with JWT)
+ */
+function authenticate () {
+  return passport.authenticate(['jwt', 'jwt-custom'], { session: false })
+}
+
+/**
  * All DB users have attribute rfcx_system. Dev team and old RFCx users have rfcx_system === true
  * All other users which were authorized through auth0 or other services have rfcx_system === false
  * This middleware checks if user has rfcx_system set to true and denies access if it's false
@@ -64,6 +71,7 @@ function isRFCxUser () {
 module.exports = {
   requireTokenType,
   hasRole,
+  authenticate,
   authenticatedWithRoles,
   isRFCxUser
 }

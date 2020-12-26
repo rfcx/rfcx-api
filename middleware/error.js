@@ -1,4 +1,3 @@
-const loggers = require('../utils/logger')
 
 function notFound (req, res, next) {
   var err = new Error('Not Found')
@@ -8,7 +7,7 @@ function notFound (req, res, next) {
 
 function exceptionOccurred (err, req, res, next) {
   var status = err.status || 500
-  loggers.errorLogger.log('Express.js error handler', { req: req, url: req.url, status: status, err: err })
+  console.error('Express.js error handler', { req: req.guid, url: req.url, status: status, err: err })
   res.status(status).json({
     message: err.message,
     error: err

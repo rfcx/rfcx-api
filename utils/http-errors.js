@@ -1,5 +1,3 @@
-var loggers = require('./logger')
-
 var options = {
 
   400: {
@@ -37,9 +35,8 @@ var httpError = function (req, res, code, context, mes) {
       status: code
     }
   }
-  var logger = code === 400 ? loggers.warnLogger : loggers.errorLogger
-  logger.log('Validation error', { req, message, context })
-  loggers.debugLogger.log('httpError called with context', { req: req, context: context, message: message })
+  var logger = code === 400 ? console.warn : console.error
+  logger('Http error', { req: req.guid, message, context })
   res.status(parseInt(code)).json(json)
 }
 

@@ -8,6 +8,10 @@ const bodyParser = require('body-parser')
 const addRequestId = require('express-request-id')
 const promBundle = require('express-prom-bundle')
 
+if (process.env.NODE_ENV === 'production') {
+  require('newrelic')
+}
+
 const app = express()
 
 app.set('title', 'rfcx-api')
@@ -27,6 +31,7 @@ const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
 app.use(metricsMiddleware)
 
 const routeMiddleware = require('./middleware/route')
+const { authenticate } = require('./middleware/authorization/authorization')
 
 var versionedRoutes = {
   v1: require('./routes/v1/routes'),
@@ -37,22 +42,24 @@ const internalRoutes = require('./routes/internal/routes')
 
 // Routes middleware must stay on /v1 and /v2 level to keep the middleware logic valid
 for (const apiVersion in versionedRoutes) {
-  app.use('/' + apiVersion, routeMiddleware)
+  app.use(`/${apiVersion}`, routeMiddleware)
 }
 
 for (const apiVersion in versionedRoutes) {
   for (const routeName in versionedRoutes[apiVersion]) {
-    app.use('/' + apiVersion + '/' + routeName, versionedRoutes[apiVersion][routeName])
+    app.use(`/${apiVersion}/${routeName}`, versionedRoutes[apiVersion][routeName])
   }
 }
 for (const routeName in coreRoutes) {
+  app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {
-    app.use('/' + routeName, routeMiddleware, coreRoutes[routeName][route])
+    app.use(`/${routeName}`, coreRoutes[routeName][route])
   }
 }
 for (const routeName in internalRoutes) {
+  app.use(`/internal/${routeName}`, routeMiddleware, authenticate())
   for (const route in internalRoutes[routeName]) {
-    app.use('/internal/' + routeName, routeMiddleware, internalRoutes[routeName][route])
+    app.use(`/internal/${routeName}`, internalRoutes[routeName][route])
   }
 }
 

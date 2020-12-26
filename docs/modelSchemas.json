@@ -154,6 +154,78 @@
       }
     ]
   },
+  "ClassifierLite": {
+    "properties": {
+      "id": {
+        "type": "integer",
+        "example": 12
+      },
+      "name": {
+        "type": "string",
+        "example": "chainsaw"
+      },
+      "version": {
+        "type": "integer",
+        "example": 8
+      },
+      "status": {
+        "type": "string",
+        "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
+      },
+      "external_id": {
+        "type": "string",
+        "description": "Identifier in AI Hub or other service"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "version"
+    ]
+  },
+  "Classifier": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassifierLite"
+      },
+      {
+        "properties": {
+          "supported_classifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassificationLite"
+            }
+          },
+          "enabled_projects": {
+            "type": "array",
+            "description": "Projects that are enabled for this classifier",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled_streams": {
+            "type": "array",
+            "description": "Individual streams that are enabled for this classifier",
+            "items": {
+              "$ref": "#/components/schemas/StreamLite"
+            }
+          },
+          "created_at": {
+            "type": "date"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date"
+          },
+          "updated_by": {
+            "$ref": "#/components/schemas/UserLite"
+          }
+        }
+      }
+    ]
+  },
   "Cluster": {
     "type": "object",
     "properties": {
@@ -307,6 +379,9 @@
           "longitude": {
             "type": "float",
             "example": 125.912
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectLite"
           }
         },
         "required": [
@@ -352,6 +427,28 @@
         "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
+  },
+  "UserLiteWithRoleAndPermissions": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      {
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "Member"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["O", "W", "R"]
+          }
+        }
+      }
+    ]
   },
   "IndexLite": {
     "properties": {
@@ -483,11 +580,92 @@
   },
   "OrganizationLite": {
     "properties": {
+      "id": {
+        "type": "string",
+        "example": "128hqwgX49"
+      },
       "name": {
         "type": "string",
-        "example": "RFCx"
+        "example": "Rainforest Connection"
+      },
+      "is_public": {
+        "type": "boolean",
+        "example": false
       }
     }
+  },
+  "Organization": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/OrganizationLite"
+      },
+      {
+        "properties": {
+          "created_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          }
+        }
+      }
+    ]
+  },
+  "ProjectLite": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "name": {
+        "type": "string",
+        "example": "My Project 1"
+      },
+      "is_public": {
+        "type": "boolean",
+        "example": false
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "Project": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ProjectLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Project 1 description"
+          },
+          "created_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date",
+            "example": "2020-05-13T07:30:22.500Z"
+          },
+          "organization": {
+            "$ref": "#/components/schemas/OrganizationLite"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    ]
   },
   "Permission": {
     "properties": {
@@ -627,6 +805,36 @@
       "totalVerified": {
         "type": "number",
         "totalVerified": 20
+      }
+    }
+  },
+  "EventStrategy": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for event strategies",
+        "example": 15
+      },
+      "name": {
+        "type": "string",
+        "description": "Human-readable name of the strategy",
+        "example": "Min 4 detections over 90 seconds"
+      },
+      "description": {
+        "type": "string",
+        "description": "Description of the strategy",
+        "example": "Raise an event when 4 or more detections are found within a 90 second period."
+      },
+      "type": {
+        "type": "string",
+        "description": "Type of strategy (one of 'window' or ...)",
+        "example": "window"
+      },
+      "parameters": {
+        "type": "string",
+        "description": "Parameters to be applied to algorithm",
+        "example": "minimum-windows=4 period-seconds=90"
       }
     }
   }

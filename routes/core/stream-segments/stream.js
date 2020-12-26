@@ -1,11 +1,11 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const streamsService = require('../../../services/streams')
 const streamSourceFileService = require('../../../services/streams/stream-source-file')
 const streamSegmentService = require('../../../services/streams/stream-segment')
 const Converter = require('../../../utils/converter/converter')
-const { hasPermission } = require('../../../middleware/authorization/streams')
+const { hasRole } = require('../../../middleware/authorization/authorization')
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -36,7 +36,7 @@ const { hasPermission } = require('../../../middleware/authorization/streams')
  *         description: Invalid query parameters
  */
 
-router.post('/:streamId/stream-segments', authenticatedWithRoles('appUser', 'rfcxUser', 'systemUser'), function (req, res) {
+router.post('/:streamId/stream-segments', hasRole(['systemUser']), function (req, res) {
   const streamId = req.params.streamId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -115,8 +115,8 @@ router.post('/:streamId/stream-segments', authenticatedWithRoles('appUser', 'rfc
  *       404:
  *         description: Stream not found
  */
-router.get('/:streamId/stream-segments', hasPermission('R'), function (req, res) {
-  const streamId = req.params.streamId
+router.get('/:id/stream-segments', hasStreamPermission('R'), function (req, res) {
+  const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()

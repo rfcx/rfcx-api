@@ -3,11 +3,10 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const ValidationError = require('../../../utils/converter/validation-error')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
-const streamPermissionService = require('../../../services/streams/permission')
+const rolesService = require('../../../services/roles')
 const annotationsService = require('../../../services/annotations')
-const classificationService = require('../../../services/classification/classification-service')
-const usersTimescaleDBService = require('../../../services/users/users-service-timescaledb')
+const classificationService = require('../../../services/classifications')
+const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 
 function isUuid (str) {
@@ -64,8 +63,8 @@ function isUuid (str) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
+router.get('/', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -79,13 +78,13 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
     .then(async () => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, streamId, 'R')
+        const allowed = await rolesService.hasPermission('R', user, streamId, 'Stream')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query(start, end, streamId, classifications, limit, offset, userId)
+      return annotationsService.query(start, end, streamId, classifications, limit, offset, user)
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
@@ -110,16 +109,16 @@ router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.get('/:id', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const annotationId = req.params.id
-
   if (!isUuid(annotationId)) {
     return res.sendStatus(404)
   }
 
   return annotationsService.get(annotationId)
     .then(async (annotation) => {
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'R')
+      const allowed = await rolesService.hasPermission('R', user, annotation.stream_id, 'Stream')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
@@ -161,9 +160,10 @@ router.get('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  *       404:
  *         description: Annotation not found
  */
-router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.put('/:id', (req, res) => {
   const annotationId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const user = req.rfcx.auth_token_info
+  const userId = user.owner_id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMomentUtc()
@@ -177,13 +177,13 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
   }
 
   return params.validate()
-    .then(() => usersTimescaleDBService.ensureUserSyncedFromToken(req))
+    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => annotationsService.get(annotationId))
     .then(async annotation => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      const allowed = await rolesService.hasPermission('U', user, annotation.stream_id, 'Stream')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission for this operation.')
       }
@@ -222,9 +222,9 @@ router.put('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => 
  *       404:
  *         description: Annotation not found
  */
-router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) => {
+router.delete('/:id', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const annotationId = req.params.id
-
   if (!isUuid(annotationId)) {
     return httpErrorHandler(req, res)(new EmptyResultError('Annotation not found'))
   }
@@ -234,7 +234,7 @@ router.delete('/:id', authenticatedWithRoles('appUser', 'rfcxUser'), (req, res) 
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
       }
-      const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info.owner_id, annotation.stream_id, 'W')
+      const allowed = await rolesService.hasPermission('U', user, annotation.stream_id, 'Stream')
       if (!allowed) {
         throw new ForbiddenError('You do not have permission for this operation.')
       }

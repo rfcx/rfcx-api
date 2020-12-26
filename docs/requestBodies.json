@@ -4,7 +4,7 @@
     "properties": {
       "classification": {
         "type": "string",
-        "description": "A classification value",
+        "description": "Classification value",
         "example": "obscurus"
       },
       "start": {
@@ -32,17 +32,119 @@
       "frequencyMax"
     ]
   },
+  "ClassifierBase": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Classifier identifier",
+        "example": 12
+      },
+      "external_id": {
+        "type": "string",
+        "description": "Training job ID from AI Hub (or user-defined identifier)",
+        "example": "oH82Jp43"
+      },
+      "name": {
+        "type": "string",
+        "description": "Name of the classifier",
+        "example": "dog bark"
+      },
+      "version": {
+        "type": "integer",
+        "description": "Version of the classifier",
+        "example": 9
+      },
+      "classification_values": {
+        "type": "array",
+        "description": "Values of the classifications that this classifier supports (supports mapping if not the same `from_model_class_name:to_classification_value`)",
+        "items": {
+          "type": "string"
+        },
+        "examples": [
+          "chainsaw",
+          "dog_bark:dogbark"
+        ]
+      },
+      "status": {
+        "type": "integer",
+        "description": "One of: Draft (10), Staging (20), Production (30) or Retired (90)",
+        "example": 10
+      },
+      "deployment_parameters": {
+        "type": "string",
+        "description": "Parameters to be passed to the model (e.g. step size)",
+        "example": "step_seconds=0.48"
+      },
+      "model_runner": {
+        "type": "string",
+        "description": "Type of model runner to use (e.g. version of Tensorflow)",
+        "example": "tf2"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "version",
+      "classification_values"
+    ]
+  },
+  "ClassifierWithFile": {
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/ClassifierBase"
+      },
+      {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "description": "A `.tar.gz` of the model"
+          }
+        }
+      }
+    ]
+  },
+  "Classifier": {
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/ClassifierBase"
+      },
+      {
+        "properties": {
+          "active_projects": {
+            "type": "array",
+            "description": "List of identifiers of projects to enable for this classifier",
+            "items": {
+              "type": "string"
+            }
+          },
+          "active_streams": {
+            "type": "array",
+            "description": "List of identifiers of individual streams to enable for this classifier",
+            "items": {
+              "type": "string"
+            }
+          },
+          "event_strategy": {
+            "type": "string",
+            "description": "Identifies the strategy for sending events"
+          }
+        }
+      }
+    ]
+  },
   "Detection": {
     "type": "object",
     "properties": {
       "classifier": {
         "type": "integer",
-        "description": "A classifier uuid",
+        "description": "Classifier identifier",
         "example": 1
       },
       "classification": {
         "type": "string",
-        "description": "A classification value",
+        "description": "Classification value",
         "example": "obscurus"
       },
       "start": {
@@ -71,17 +173,17 @@
     "properties": {
       "stream_id": {
         "type": "string",
-        "description": "A stream id",
+        "description": "Stream identifier",
         "example": "xu82jDgX49"
       },
       "classifier": {
         "type": "integer",
-        "description": "A classifier id",
+        "description": "Classifier identifier",
         "example": 1
       },
       "classification": {
         "type": "string",
-        "description": "A classification value",
+        "description": "Classification value",
         "example": "obscurus"
       },
       "start": {
@@ -121,17 +223,66 @@
       "step"
     ]
   },
+  "Event": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "xu82jDgX49"
+      },
+      "classification": {
+        "type": "string",
+        "description": "Classification value",
+        "example": "obscurus"
+      },
+      "classifier_event_strategy": {
+        "type": "integer",
+        "description": "Classifier and strategy that produced the event",
+        "example": 12
+      },
+      "start": {
+        "type": "date",
+        "description": "Beginning of event (first detection timestamp)",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "description": "End of event (last detection timestamp)",
+        "example": "2020-05-12T07:45:19.000Z"
+      },
+      "first_detection": {
+        "type": "string",
+        "description": "Identifier of first detection in the event",
+        "example": "(uuid)"
+      },
+      "last_detection": {
+        "type": "string",
+        "description": "Identifier of last detection in the event",
+        "example": "(uuid)"
+      }
+    },
+    "required": [
+      "stream",
+      "classification",
+      "classifier_event_strategy",
+      "start",
+      "end",
+      "start_detection",
+      "end_detection"
+    ]
+  },
   "IndexValuesCompact": {
     "type": "object",
     "properties": {
       "stream_id": {
         "type": "string",
-        "description": "A stream id",
+        "description": "Stream identifier",
         "example": "xu82jDgX49"
       },
       "index": {
         "type": "string",
-        "description": "An index code",
+        "description": "Index code",
         "example": "se"
       },
       "time": {
@@ -170,33 +321,48 @@
     "properties": {
       "id": {
         "type": "string",
-        "description": "A stream id",
+        "description": "Stream identifier",
         "example": "xu82jDgX49"
       },
       "name": {
         "type": "string",
-        "description": "A stream name",
+        "description": "Stream name",
         "example": "My Stream 1"
       },
       "latitude": {
         "type": "float",
-        "description": "A stream coordinate",
+        "description": "Stream coordinate for latitude",
         "example": 90.123
       },
       "longitude": {
         "type": "float",
-        "description": "A stream coordinate",
+        "description": "Stream coordinate for longitude",
         "example": 125.912
       },
       "description": {
         "type": "string",
-        "description": "A stream description",
+        "description": "Stream description",
         "example": "Stream 1 description"
       },
       "is_public": {
         "type": "boolean",
         "description": "Whether stream is public (default false)",
         "default": "false"
+      },
+      "project_id": {
+        "type": "string",
+        "description": "A project id",
+        "example": "qwe2jDgX49"
+      },
+      "project_external_id": {
+        "type": "integer",
+        "description": "An external project id",
+        "example": 1051
+      },
+      "external_id": {
+        "type": "integer",
+        "description": "An external stream id",
+        "example": 4551
       }
     },
     "required": [
@@ -208,22 +374,22 @@
     "properties": {
       "name": {
         "type": "string",
-        "description": "A stream name",
+        "description": "Stream name",
         "example": "My Stream 1"
       },
       "latitude": {
         "type": "float",
-        "description": "A stream coordinate",
+        "description": "Stream coordinate for latitude",
         "example": 90.123
       },
       "longitude": {
         "type": "float",
-        "description": "A stream coordinate",
+        "description": "Stream coordinate for longitude",
         "example": 125.912
       },
       "description": {
         "type": "string",
-        "description": "A stream description",
+        "description": "Stream description",
         "example": "Stream 1 description"
       },
       "is_public": {
@@ -235,6 +401,39 @@
         "type": "boolean",
         "description": "Restore previously deleted stream",
         "example": true
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "StreamPatchArbimon": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Stream name",
+        "example": "My Stream 1"
+      },
+      "latitude": {
+        "type": "float",
+        "description": "Stream coordinate for latitude",
+        "example": 90.123
+      },
+      "longitude": {
+        "type": "float",
+        "description": "Stream coordinate for longitude",
+        "example": 125.912
+      },
+      "description": {
+        "type": "string",
+        "description": "Stream description",
+        "example": "Stream 1 description"
+      },
+      "project_external_id": {
+        "type": "integer",
+        "description": "An external project id",
+        "example": 1051
       }
     },
     "required": []
@@ -347,5 +546,63 @@
       "sample_count",
       "file_extension"
     ]
+  },
+  "ProjectPatch": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Project identifier",
+        "example": "xu82jDgX49"
+      },
+      "name": {
+        "type": "string",
+        "description": "Project name",
+        "example": "My Project 1"
+      },
+      "description": {
+        "type": "string",
+        "description": "Project description",
+        "example": "Project 1 description"
+      },
+      "is_public": {
+        "type": "boolean",
+        "description": "Whether project is public (default false)",
+        "default": "false"
+      },
+      "organization_id": {
+        "type": "string",
+        "description": "Organization identifier that the project belongs to (defaults to none)",
+        "example": "mwiojDg54a"
+      },
+      "external_id": {
+        "type": "integer",
+        "description": "Identifier in an external platform (e.g. Arbimon)",
+        "example": 1905
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "ProjectPatchArbimon": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Project name",
+        "example": "My Project 1"
+      },
+      "description": {
+        "type": "string",
+        "description": "Project description",
+        "example": "Project 1 description"
+      },
+      "is_public": {
+        "type": "boolean",
+        "description": "Whether project is public (default false)",
+        "default": "false"
+      }
+    }
   }
 }

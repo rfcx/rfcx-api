@@ -5,14 +5,23 @@ module.exports = {
   classifications: [
     require('./classifications')
   ],
+  classifiers: [
+    require('./classifiers')
+  ],
   detections: [
     require('./detections')
+  ],
+  events: [
+    require('./events')
   ],
   'stream-source-files': [
     require('./stream-source-files')
   ],
   'stream-segments': [
     require('./stream-segments')
+  ],
+  projects: [
+    require('./projects')
   ],
   streams: [
     require('./streams'),
@@ -22,7 +31,7 @@ module.exports = {
     require('./indices/stream'),
     require('./stream-source-files/stream'),
     require('./stream-segments/stream'),
-    require('./stream-permissions/stream')
+    require('./roles/stream')
   ],
   'clustered-annotations': [
     require('./annotations/clustered')
