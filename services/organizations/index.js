@@ -48,13 +48,12 @@ async function get (id, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.full
   const includes = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
 
-  return Organization
-    .findOne({
-      where: { id },
-      attributes,
-      include: includes,
-      paranoid: false
-    })
+  return Organization.findOne({
+    where: { id },
+    attributes,
+    include: includes,
+    paranoid: false
+  })
 }
 
 /**
@@ -107,7 +106,7 @@ async function query (filters, options = {}) {
     include: includes,
     limit: options.limit,
     offset: options.offset,
-    paranoid: options.onlyDeleted
+    paranoid: options.onlyDeleted !== true
   })
 }
 

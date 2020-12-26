@@ -189,7 +189,7 @@ router.get('/:id', (req, res) => {
  *       - organizations
  *     parameters:
  *       - name: id
- *         description: organization id
+ *         description: Organization identifier
  *         in: path
  *         required: true
  *         type: string
