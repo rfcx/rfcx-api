@@ -1,6 +1,7 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
 const ValidationError = require('../../utils/converter/validation-error')
+const { uuidToSlug } = require('../../utils/formatters/uuid')
 const rolesService = require('../roles')
 
 async function defaultQueryOptions (user, start, end, streams, classifications, classifiers, descending, limit, offset) {
@@ -25,7 +26,6 @@ async function defaultQueryOptions (user, start, end, streams, classifications, 
       id: { [models.Sequelize.Op.or]: classifiers }
     }
 
-  console.log('\n\ncondition', condition, 'n\n')
   return {
     where: condition,
     include: [
@@ -60,6 +60,10 @@ async function defaultQueryOptions (user, start, end, streams, classifications, 
 
 async function create (eventData) {
   return models.Event.create(eventData)
+    .then((event) => {
+      event.id = uuidToSlug(event.id)
+      return event
+    })
     .catch((e) => {
       console.error(e)
       throw new ValidationError('Cannot create event with provided data')
@@ -80,6 +84,7 @@ async function query (user, start, end, streams, classifications, classifiers, l
       data.events = data.events
         .map(x => x.toJSON())
         .map((event) => {
+          event.id = uuidToSlug(event.id)
           event.classifier = event.classifier_event_strategy.classifier
           delete event.classifier_event_strategy
           return event
