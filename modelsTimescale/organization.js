@@ -20,7 +20,6 @@ module.exports = function (sequelize, DataTypes) {
     }
   }, {
     paranoid: true,
-    timestamps: true,
     underscored: true
   })
   Organization.associate = function (models) {
@@ -28,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
     Organization.hasMany(models.Project, { as: 'projects', foreignKey: 'organization_id' })
   }
   Organization.attributes = {
-    full: ['id', 'name', 'is_public', 'created_by_id', 'created_at', 'updated_at'],
+    full: ['id', 'name', 'is_public', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'is_public']
   }
   return Organization

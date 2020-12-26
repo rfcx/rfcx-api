@@ -5,6 +5,8 @@ var sha = require('sha.js')
 var fs = require('fs')
 var pfs = Promise.promisifyAll(require('fs'))
 
+// TODO Change to module.exports to be able to import a specific function only
+// e.g. const { randomHash } = require('utils/hash.js')
 exports.hash = {
 
   /**
