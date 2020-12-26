@@ -137,7 +137,8 @@ async function getSharedObjectsIDs (userId, itemName) {
     `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id`
   ]
   const wheres = [
-    `${itemName}r.user_id = $userId`
+    `${itemName}r.user_id = $userId`,
+    `${itemName}.created_by_id = $userId`
   ]
   if (itemName === STREAM) {
     joins.push(...[
@@ -145,6 +146,7 @@ async function getSharedObjectsIDs (userId, itemName) {
       'LEFT JOIN user_project_roles projectr ON project.id = projectr.project_id'
     ])
     wheres.push('projectr.user_id = $userId')
+    wheres.push('project.created_by_id = $userId')
   }
   if (itemName === STREAM || itemName === PROJECT) {
     joins.push(...[
@@ -152,6 +154,7 @@ async function getSharedObjectsIDs (userId, itemName) {
       'LEFT JOIN user_organization_roles organizationr ON organization.id = organizationr.organization_id'
     ])
     wheres.push('organizationr.user_id = $userId')
+    wheres.push('organization.created_by_id = $userId')
   }
   const sql = `${select} ${joins.join(' ')} WHERE ${wheres.join(' OR ')};`
   const options = {
