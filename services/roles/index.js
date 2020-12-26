@@ -92,7 +92,7 @@ async function getPermissions (userOrId, itemOrId, itemModelName) {
   if (!itemModelNames.includes(itemModelName)) {
     throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
   }
-  let item = await (isId ? hierarchy[itemName].model.findOne({
+  let item = await (isId ? models[itemModelName].findOne({
     where: { id: itemOrId },
     paranoid: false
   }) : Promise.resolve(itemOrId))
