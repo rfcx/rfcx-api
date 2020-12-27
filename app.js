@@ -33,23 +33,21 @@ app.use(metricsMiddleware)
 const routeMiddleware = require('./middleware/route')
 const { authenticate } = require('./middleware/authorization/authorization')
 
-var versionedRoutes = {
+const versionedRoutes = process.env.DEV_CORE_ONLY === 'true' ? {} : {
   v1: require('./routes/v1/routes'),
   v2: require('./routes/v2/routes')
 }
-const coreRoutes = require('./routes/core/routes')
-const internalRoutes = require('./routes/internal/routes')
-
-// Routes middleware must stay on /v1 and /v2 level to keep the middleware logic valid
 for (const apiVersion in versionedRoutes) {
   app.use(`/${apiVersion}`, routeMiddleware)
 }
-
 for (const apiVersion in versionedRoutes) {
   for (const routeName in versionedRoutes[apiVersion]) {
     app.use(`/${apiVersion}/${routeName}`, versionedRoutes[apiVersion][routeName])
   }
 }
+
+const coreRoutes = require('./routes/core/routes')
+const internalRoutes = require('./routes/internal/routes')
 for (const routeName in coreRoutes) {
   app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {

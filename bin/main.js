@@ -10,11 +10,9 @@ require('../config/inspector')
 
 const app = require('../app')
 
-console.log('Execution time (app load): %dms', new Date() - startTime)
+console.log('App load time: %dms', new Date() - startTime)
 
 console.log('RFCX | Starting server')
 app.listen(app.get('port'), function () {
-  console.log(
-    app.get('title') + ' (port ' + app.get('port') + ') (' + process.env.NODE_ENV + ')'
-  )
+  console.log(`${app.get('title')} (port ${app.get('port')}) (${process.env.NODE_ENV})`)
 })
