@@ -11,9 +11,6 @@ module.exports = function (sequelize, DataTypes) {
   })
   Role.associate = function (models) {
     Role.hasMany(models.RolePermission, { as: 'permissions' })
-    Role.belongsTo(models.UserOrganizationRole, { foreign_key: 'role_id' })
-    Role.belongsTo(models.UserProjectRole, { foreign_key: 'role_id' })
-    Role.belongsTo(models.UserStreamRole, { foreign_key: 'role_id' })
   }
   Role.attributes = {
     full: ['id', 'name', 'description'],
