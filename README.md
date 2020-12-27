@@ -21,7 +21,7 @@ nvm use
 Sometimes node modules may dissappear from remote storage. That's why we keep them in `node_modules` in our repo. You **shouldn't** run `npm install` on your machine. All required deps are already here.
 
 ### Env variables
-Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fill it with required vars
+Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fill it with required vars. 
 
 ### Run all the required services
 
@@ -86,12 +86,12 @@ npx sequelize migration:create --migrations-path ./migrationsTimescale --name th
 For MySQL (you may need to create an empty `migrations` folder first):
 
 ```
-./bin/sync_sql --type mysql
+npm run sync-mysql
 ```
 
 For TimescaleDB:
 ```
-./bin/sync_sql --type timescale
+npm run sync-timescale
 ```
 
 ### Seed the database
@@ -118,14 +118,14 @@ Otherwise, specify your host/user/pass/etc as arguments:
 ## Running the API locally
 
 ### HTTP API
-To start http API run the following command in the project root:
-```
-npm start
-```
 
-To run the API with auto-reload (requires nodemon  `npm i nodemon -g`):
+To run the core API with auto-reload (requires nodemon  `npm i nodemon -g`):
 ```
-nodemon bin/start
+npm run dev:core
+```
+To include the full API with v1/v2 endpoints:
+```
+npm run dev
 ```
 
 ### MQTT API
