@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-console.log('----------------------------------\nRFCX | ./bin/sync_sql started')
+console.log('----------------------------------\nRFCX | sync-sql started')
 var exec = require('child_process').exec
 var fs = require('fs')
 var argv = require('minimist')(process.argv.slice(2))

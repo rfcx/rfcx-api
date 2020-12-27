@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-console.log('----------------------------------\nRFCX | ./bin/start_mqtt started')
+console.log('----------------------------------\nRFCX | main-mqtt started')
 
 console.log(new String(require('child_process').execSync(process.cwd() + '/bin/setup')))
 

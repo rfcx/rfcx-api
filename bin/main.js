@@ -1,5 +1,6 @@
-#!/usr/bin/env node
-console.log('----------------------------------\nRFCX | ./bin/start started')
+console.log('----------------------------------\nRFCX | main started')
+
+const startTime = new Date()
 
 // Ensure unhandled promises are handled by the process
 require('../utils/process')
@@ -21,6 +22,8 @@ if (process.env.NODE_ENV === 'production') {
 require('../config/inspector')
 
 const app = require('../app')
+
+console.log('Execution time (app load): %dms', new Date() - startTime)
 
 console.log('RFCX | Starting server')
 app.listen(app.get('port'), function () {

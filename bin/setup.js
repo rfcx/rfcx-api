@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-console.log('----------------------------------\nRFCX | ./bin/setup started')
+console.log('----------------------------------\nRFCX | setup started')
 var exec = require('child_process').exec
 var fs = require('fs')
 
