@@ -68,7 +68,8 @@
     "swagger-ui-express": "^4.1.4",
     "togeojson": "^0.16.0",
     "toobusy-js": "0.5.1",
-    "winston": "3.3.3"
+    "winston": "3.3.3",
+    "xmldom": "^0.4.0"
   },
   "devDependencies": {
     "faux-knox": "0.1.16",
