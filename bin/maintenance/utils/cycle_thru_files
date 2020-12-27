@@ -2,7 +2,7 @@
 var args = process.argv.slice(2)
 
 var fs = require('fs')
-var syncExec = require('sync-exec')
+var { syncExec } = require('child_process')
 
 if (fs.existsSync(__dirname + '/../../../config/env_vars.js')) {
   var env = require(__dirname + '/../../../config/env_vars.js').env
