@@ -10,7 +10,6 @@ const aiService = require('../../../services/legacy/ai/ai-service')
 const audioService = require('../../../services/audio/audio-service')
 const aws = require('../../../utils/external/aws.js').aws()
 var sequelize = require('sequelize')
-const pathCompleteExtname = require('path-complete-extname')
 const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
 var path = require('path')
@@ -111,14 +110,13 @@ router.route('/:guid/sns-sqs')
 
 router.route('/:guid/upload-file')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
-    const allowedExtensions = ['.tar.gz']
     const file = req.files.file
     if (!file) {
       return httpError(req, res, 400, null, 'No file provided.')
     }
-    const extension = pathCompleteExtname(file.originalname)
-    if (!allowedExtensions.includes(extension)) {
-      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`)
+    const extension = '.tar.gz'
+    if (!file.originalname.endsWith(extension)) {
+      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${extension}`)
     }
 
     const opts = {
