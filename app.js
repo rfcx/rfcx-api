@@ -1,5 +1,4 @@
 const express = require('express')
-const path = require('path')
 const multer = require('multer')
 const passport = require('passport')
 const cors = require('cors')
