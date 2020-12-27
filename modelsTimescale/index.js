@@ -45,7 +45,7 @@ const models = {
   ClassificationAlternativeName: require('./classifications/classification-alternative-name')(sequelize, Sequelize),
   ClassificationSource: require('./classifications/classification-source')(sequelize, Sequelize),
   ClassificationType: require('./classifications/classification-type')(sequelize, Sequelize),
-  Classification: require('./classifications/classification-alternative-name')(sequelize, Sequelize),
+  Classification: require('./classifications/classification')(sequelize, Sequelize),
   Language: require('./classifications/language')(sequelize, Sequelize),
   ClassifierActiveProject: require('./classifiers/classifier-active-project')(sequelize, Sequelize),
   ClassifierActiveStream: require('./classifiers/classifier-active-stream')(sequelize, Sequelize),
