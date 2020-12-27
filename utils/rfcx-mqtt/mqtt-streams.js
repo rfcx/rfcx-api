@@ -1,6 +1,6 @@
 const streamsUploadService = require('../../services/streams/streams-uploads-service')
 const streamsTimescaleService = require('../../services/streams')
-const S3Service = require('../../services/s3/legacy/s3-service')
+const S3Service = require('../../services/legacy/s3/s3-service')
 const moment = require('moment-timezone')
 const path = require('path')
 
