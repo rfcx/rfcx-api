@@ -1,6 +1,7 @@
 console.log('----------------------------------\nRFCX | main-mqtt started')
 
-console.log(new String(require('child_process').execSync(process.cwd() + '/bin/setup')))
+// check that all required env vars are set
+require('../config/inspector')
 
 var appId = 'rfcx-api-mqtt'
 

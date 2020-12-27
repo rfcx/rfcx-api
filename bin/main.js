@@ -5,19 +5,6 @@ const startTime = new Date()
 // Ensure unhandled promises are handled by the process
 require('../utils/process')
 
-// check for environmental variable file and load if present
-var fs = require('fs')
-if (fs.existsSync('./config/env_vars.js')) {
-  console.log('Using env_vars.js')
-  const env = require('../config/env_vars.js').env
-  for (const i in env) { process.env[i] = env[i] }
-}
-
-// New Relic Initialization
-if (process.env.NODE_ENV === 'production') {
-  process.env.NEW_RELIC_HOME = __dirname + '/config'; require('newrelic')
-}
-
 // check that all required env vars are set
 require('../config/inspector')
 
