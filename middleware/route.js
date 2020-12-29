@@ -1,5 +1,4 @@
 const path = require('path')
-const parseUrl = require('parseurl')
 
 module.exports = function (req, res, next) {
   var requestStartTime = (new Date()).valueOf()
@@ -20,7 +19,7 @@ module.exports = function (req, res, next) {
 
   var contentType = path.extname(req.path).trim().substr(1)
   if (contentType.trim().length === 0) { contentType = 'json' }
-  var urlPath = '/v1' + parseUrl(req).pathname
+  var urlPath = req.originalUrl
   req.url = req.url.replace('.' + contentType, '')
 
   var authUser = { header: null, query: null, body: null }

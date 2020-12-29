@@ -14,7 +14,7 @@ const sitesService = require('../../../services/sites/sites-service')
 const auth0Service = require('../../../services/auth0/auth0-service')
 const kmzService = require('../../../services/kmz/kmz-service')
 const Promise = require('bluebird')
-const pathCompleteExtname = require('path-complete-extname')
+const path = require('path')
 
 router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
@@ -140,7 +140,7 @@ router.route('/kmz')
     if (!file) {
       return httpError(req, res, 400, null, 'No file provided.')
     }
-    const extension = pathCompleteExtname(file.originalname)
+    const extension = path.extname(file.originalname)
     if (!allowedExtensions.includes(extension)) {
       return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`)
     }

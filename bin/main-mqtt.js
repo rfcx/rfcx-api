@@ -5,7 +5,6 @@ require('../config/inspector')
 
 var appId = 'rfcx-api-mqtt'
 
-var debug = require('debug')(appId)
 var app = require('../app-mqtt.js')
 var models = require('../models')
 const guidService = require('../utils/misc/guid.js')
