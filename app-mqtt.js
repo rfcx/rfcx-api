@@ -1,19 +1,10 @@
 // various process-related stuff
 require('./utils/process')
 var path = require('path')
-// check for environmental variable file and load if present
-var fs = require('fs')
-if (fs.existsSync('./config/env_vars.js')) {
-  var env = require('./config/env_vars.js').env
-  for (const i in env) { process.env[i] = env[i] }
-}
 
 if (process.env.NODE_ENV === 'production') {
   require('newrelic')
 }
-
-// check that all required env vars are set
-require('./config/inspector')
 
 var app = { http: null, mqtt: null }
 

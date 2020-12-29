@@ -3,8 +3,8 @@ var fs = require('fs')
 var args = process.argv.slice(2)
 var recipient_email = args[0].trim()
 
-if (fs.existsSync(__dirname + '/../config/env_vars.js')) {
-  var env = require(__dirname + '/../config/env_vars.js').env
+if (fs.existsSync(__dirname + '/../../config/env_vars.js')) {
+  var env = require(__dirname + '/../../config/env_vars.js').env
   for (i in env) { process.env[i] = env[i] }
 }
 
