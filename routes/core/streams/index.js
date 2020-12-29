@@ -48,6 +48,7 @@ router.post('/', function (req, res) {
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   params.convert('description').optional().toString()
   params.convert('is_public').optional().toBoolean().default(false)
+  params.convert('external_id').optional().toInt()
   params.convert('project_id').optional().toString()
   params.convert('project_external_id').optional().toInt()
 
