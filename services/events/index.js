@@ -2,7 +2,7 @@ const moment = require('moment')
 const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream, User } = require('../../modelsTimescale')
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
-const { uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
+const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission } = require('../roles')
 
 // TODO: move to model object
@@ -122,7 +122,7 @@ async function query (filters, options) {
 
 /**
  * Get event by identifier
- * @param {string} id
+ * @param {string} id An event identifier slug (preferred) or uuid
  * @param {*} options Additional get options
  * @param {number} options.readableBy Include only if the event is accessible to the given user id
  * @param {string[]} options.fields Attributes and relations to include in results (defaults to full attributes and all includes)
@@ -131,7 +131,7 @@ async function query (filters, options) {
  * @throws ForbiddenError when `readableBy` user does not have read permission on the stream to which the event belongs
 */
 async function get (id, options = {}) {
-  if (id.length !== 36) {
+  if (!isUuid(id)) {
     id = slugToUuid(id)
   }
 

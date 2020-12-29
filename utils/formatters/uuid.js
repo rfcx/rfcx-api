@@ -1,13 +1,14 @@
 const { parse, stringify } = require('uuid')
 
-function slugToUuid (uuidOrSlug) {
-  if (uuidOrSlug.length === 36) {
-    return uuidOrSlug
-  }
-  const base64 = uuidOrSlug
+function isUuid (str) {
+  return str.length === 36 && str.charAt(8) === '-'
+}
+
+function slugToUuid (slug) {
+  const base64 = slug
     .replace(/-/g, '+')
     .replace(/_/g, '/') +
-                  '=='
+    '=='
   return stringify(Buffer.from(base64, 'base64'))
 }
 
@@ -22,6 +23,7 @@ function uuidToSlug (uuid) {
 }
 
 module.exports = {
+  isUuid,
   slugToUuid,
   uuidToSlug
 }
