@@ -40,7 +40,7 @@ router.post('/', function (req, res) {
   converter.convert('is_public').default(false).toBoolean()
 
   return converter.validate()
-    .then(async () => {
+    .then(() => {
       const organization = {
         ...convertedParams,
         createdById
