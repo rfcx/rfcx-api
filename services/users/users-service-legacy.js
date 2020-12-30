@@ -11,9 +11,9 @@ const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const sqlUtils = require('../../utils/misc/sql')
 const s3Service = require('../legacy/s3/s3-service')
-const pathCompleteExtname = require('path-complete-extname')
 var probe = require('probe-image-size')
 var fs = require('fs')
+const path = require('path')
 
 const unsubscriptionSalt = 'you_will_never_guess_this_salt'
 
@@ -515,8 +515,8 @@ function uploadImageFile (opts) {
 }
 
 function deleteImageFile (picture, guid) {
-  const ext = pathCompleteExtname(picture)
-  const fullPath = `/userpics/${guid}${ext}`
+  const extension = path.extname(picture)
+  const fullPath = `/userpics/${guid}${extension}`
   return s3Service.deleteObject(process.env.USERS_BUCKET, fullPath)
 }
 

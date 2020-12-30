@@ -9,4 +9,4 @@ COPY --from=builder /usr/src/app /usr/src/app
 WORKDIR /usr/src/app
 
 EXPOSE 3000
-CMD [ "/bin/bash", "-c", "./bin/start_mqtt" ]
+CMD [ "npm", "run", "start.mqtt" ]

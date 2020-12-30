@@ -7,10 +7,12 @@
     "url": "https://github.com/rfcx/rfcx-api.git"
   },
   "scripts": {
-    "start": "./bin/setup; ./bin/start;",
-    "start.mqtt": "./bin/setup; ./bin/start_mqtt;",
-    "sync-mysql": "./bin/sync_sql --type=mysql",
-    "sync-timescale": "./bin/sync_sql --type=timescale",
+    "dev": "nodemon bin/main.js",
+    "dev:core": "DEV_CORE_ONLY=true nodemon bin/main.js",
+    "start": "node bin/setup.js; node bin/main.js;",
+    "start.mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
+    "sync-mysql": "node bin/sync-sql.js --type=mysql",
+    "sync-timescale": "node bin/sync-sql.js --type=timescale",
     "test": "standard && jest",
     "jest": "jest",
     "lint": "standard"
@@ -25,7 +27,6 @@
     "cors": "2.8.5",
     "country-reverse-geocoding": "^0.2.2",
     "csprng": "0.1.2",
-    "debug": "2.6.8",
     "express": "4.17.1",
     "express-prom-bundle": "^6.0.0",
     "express-request-id": "1.4.1",
@@ -36,9 +37,7 @@
     "handlebars": "4.0.12",
     "imagemagick": "0.1.3",
     "jimp": "^0.13.0",
-    "js-beautify": "1.6.14",
     "jwks-rsa-passport-edition": "1.2.2",
-    "kmz-geojson": "0.1.0",
     "knox": "0.9.2",
     "mandrill-api": "1.0.45",
     "moment": "2.25.3",
@@ -54,7 +53,6 @@
     "passport-accesstoken": "0.1.0",
     "passport-jwt": "4.0.0",
     "passport-local": "1.0.0",
-    "path-complete-extname": "1.0.0",
     "pdfmake": "0.1.53",
     "pg": "6.4.2",
     "pg-hstore": "2.3.3",
@@ -63,16 +61,17 @@
     "redis": "2.8.0",
     "request": "2.88.2",
     "request-promise": "4.2.1",
-    "rimraf": "3.0.2",
     "roboto-font": "0.1.0",
     "sequelize": "5.21.8",
-    "serve-favicon": "2.4.3",
     "sha.js": "2.4.8",
     "stripe": "6.20.1",
     "swagger-jsdoc": "^4.0.0",
     "swagger-ui-express": "^4.1.4",
+    "togeojson": "^0.16.0",
     "toobusy-js": "0.5.1",
-    "winston": "3.3.3"
+    "uuid": "^8.3.2",
+    "winston": "3.3.3",
+    "xmldom": "^0.4.0"
   },
   "devDependencies": {
     "faux-knox": "0.1.16",
@@ -81,11 +80,7 @@
     "minimist": "1.2.5",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",
-    "standard": "*",
-    "sync-exec": "0.6.2"
-  },
-  "resolutions": {
-    "js-beautify": "1.6.14"
+    "standard": "*"
   },
   "standard": {
     "env": [

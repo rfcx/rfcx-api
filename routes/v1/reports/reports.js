@@ -16,7 +16,6 @@ const ValidationError = require('../../../utils/converter/validation-error')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const httpError = require('../../../utils/http-errors.js')
-const pathCompleteExtname = require('path-complete-extname')
 
 router.route('/')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -212,7 +211,7 @@ router.route('/:guid')
           const attachments = dbReport.Attachments
           const s3Bucket = process.env.ASSET_BUCKET_ATTACHMENT
           attachments.forEach((file) => {
-            const extension = pathCompleteExtname(file.url)
+            const extension = path.extname(file.url)
             const prom = attachmentService.removeAttachmentFromS3({
               fileName: `${file.guid}${extension}`,
               bucket: s3Bucket,
@@ -237,7 +236,7 @@ router.route('/:guid')
       })
       .then(() => {
         if (dbReport && dbReport.audio) {
-          const extension = pathCompleteExtname(dbReport.audio)
+          const extension = path.extname(dbReport.audio)
           const s3Bucket = process.env.ASSET_BUCKET_REPORT
           return attachmentService.removeAttachmentFromS3({
             fileName: `${dbReport.guid}${extension}`,

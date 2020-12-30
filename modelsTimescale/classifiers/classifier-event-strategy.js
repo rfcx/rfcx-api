@@ -25,6 +25,8 @@ module.exports = (sequelize, DataTypes) => {
     last_executed_at: {
       type: DataTypes.DATE(3)
     }
+  }, {
+    timestamps: false
   })
   ClassifierEventStrategy.associate = function (models) {
     ClassifierEventStrategy.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
