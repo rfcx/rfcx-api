@@ -83,6 +83,9 @@ async function ensureUserSyncedInNeo4j (user) {
   const searchsession = neo4j.session()
   const searchResult = await Promise.resolve(searchsession.run(searchQuery, user))
   searchsession.close()
+  if (!user.picture) {
+    user.picture = ''
+  }
   if ((!searchResult.records || !searchResult.records.length)) {
     const creationQuery = 'CREATE (user:user { guid: {guid}, firstname: {firstname}, lastname: {lastname}, email: {email}, username: {username}, pictureUrl: {picture} }) RETURN user'
     const creationSession = neo4j.session()
