@@ -15,23 +15,7 @@ function onMessageCheckin (data, messageId) {
 
   return mqttInputData.parseCheckInInput(data)
     .then((checkInObj) => {
-      checkInObj.rtrn = {
-        obj: {
-          checkin_id: null,
-          audio: [],
-          screenshots: [],
-          logs: [],
-          messages: [],
-          meta: [],
-          photos: [],
-          videos: [],
-          purged: [],
-          received: [],
-          unconfirmed: [],
-          prefs: [],
-          instructions: []
-        }
-      }
+      checkInObj.rtrn = { obj: guardianCommand.defaultCommandJsonObj }
       return checkInDatabase.getDbGuardian(checkInObj)
     })
     .then((checkInObj) => {

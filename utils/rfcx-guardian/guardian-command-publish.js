@@ -8,7 +8,9 @@ exports.guardianCommand = {
       try {
         for (var prop in checkInObj.rtrn.obj) {
           if (!checkInObj.rtrn.obj.hasOwnProperty(prop)) continue // eslint-disable-line no-prototype-builtins
-          if (Array.isArray(checkInObj.rtrn.obj[prop]) && (checkInObj.rtrn.obj[prop].length === 0)) {
+          if (  (Array.isArray(checkInObj.rtrn.obj[prop]) && (checkInObj.rtrn.obj[prop].length === 0)) 
+             || (checkInObj.rtrn.obj[prop] == null)
+            ) {
             delete checkInObj.rtrn.obj[prop]
           }
         }
@@ -21,6 +23,24 @@ exports.guardianCommand = {
         })
       } catch (errProcessPublishJson) { console.log(errProcessPublishJson); reject(new Error(errProcessPublishJson)) }
     })
+  },
+
+  defaultCommandJsonObj: {
+      checkin_id: null,
+      audio: [],
+      screenshots: [],
+      logs: [],
+      messages: [],
+      meta: [],
+      photos: [],
+      videos: [],
+      purged: [],
+      received: [],
+      unconfirmed: [],
+      prefs: [],
+      instructions: []
   }
 
 }
+
+

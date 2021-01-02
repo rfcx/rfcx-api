@@ -1,29 +1,13 @@
 var mqttPingProcess = require('../../utils/rfcx-mqtt/mqtt-ping-process.js').mqttPingProcess
 var checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInDatabase
 var mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
-var guardianCommand = require('../../utils/rfcx-mqtt/guardian-command-publish.js').guardianCommand
+var guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
 
-function onMessagePing (data, messageId) {
-  return mqttPingProcess.parsePingInput(data)
-    .then((pingObj) => {
-      pingObj.rtrn = {
-        obj: {
-          audio: [],
-          screenshots: [],
-          logs: [],
-          messages: [],
-          meta: [],
-          photos: [],
-          videos: [],
-          purged: [],
-          received: [],
-          unconfirmed: [],
-          prefs: [],
-          instructions: []
-        }
-      }
-      return checkInDatabase.getDbGuardian(pingObj)
-    })
+function onMessagePing (pingObj, messageId) {
+  
+  pingObj.rtrn = { obj: guardianCommand.defaultCommandJsonObj }
+
+  return checkInDatabase.getDbGuardian(pingObj)
     .then((pingObj) => {
       return checkInDatabase.validateDbGuardianToken(pingObj)
     })
@@ -50,6 +34,14 @@ function onMessagePing (data, messageId) {
     })
 }
 
-exports.mqttPingRouter = {
+function onMqttMessagePing (data, messageId) {
+  return mqttPingProcess.parsePingInput(data)
+    .then((pingObj) => {
+      return onMessagePing(pingObj, messageId)
+    })
+}
+
+exports.pingRouter = {
+  onMqttMessagePing,
   onMessagePing
 }

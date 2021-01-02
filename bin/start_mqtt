@@ -71,7 +71,7 @@ if (process && process.pid) {
 }
 
 var mqttCheckInRouter = require('../utils/rfcx-mqtt/mqtt-checkin-router.js').mqttCheckInRouter
-var mqttPingRouter = require('../utils/rfcx-mqtt/mqtt-ping-router.js').mqttPingRouter
+var pingRouter = require('../utils/rfcx-guardian/router-ping.js').pingRouter
 
 app.mqtt.on('message', (topic, data) => {
   let messageId = guidService.generate()
@@ -99,7 +99,7 @@ app.mqtt.on('message', (topic, data) => {
         console.error('mqtt message error', err)
       })
   } else if (/grd\/.+\/png/.test(topic)) {
-    return mqttPingRouter.onMessagePing(data, messageId)
+    return pingRouter.onMqttMessagePing(data, messageId)
       .then((result) => {
         if (Object.keys(result.obj).length > 0) {
           app.mqtt.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
