@@ -1,6 +1,7 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
+const { findOrCreateItem } = require('../../utils/sequelize')
 
 const streamSourceFileBaseInclude = [
   {
