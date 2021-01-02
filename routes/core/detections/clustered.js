@@ -4,7 +4,7 @@ const detectionsService = require('../../../services/detections')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const models = require('../../../modelsTimescale')
-const streamPermissionService = require('../../../services/streams/permission')
+const rolesService = require('../../../services/roles')
 
 /**
  * @swagger
@@ -99,7 +99,7 @@ const streamPermissionService = require('../../../services/streams/permission')
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
@@ -119,7 +119,7 @@ router.get('/', (req, res) => {
     .then(async () => {
       const streamId = convertedParams.stream_id
       if (streamId) {
-        const allowed = await streamPermissionService.hasPermission(req.rfcx.auth_token_info, streamId, 'R')
+        const allowed = await rolesService.hasPermission('R', user, streamId, 'Stream')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
@@ -128,7 +128,7 @@ router.get('/', (req, res) => {
       const minConfidence = convertedParams.min_confidence
       const streamsOnlyCreatedBy = convertedParams.streams_created_by
       const streamsOnlyPublic = convertedParams.streams_public
-      return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, interval, aggregate, field, minConfidence, descending, limit, offset, userId)
+      return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, interval, aggregate, field, minConfidence, descending, limit, offset, user)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

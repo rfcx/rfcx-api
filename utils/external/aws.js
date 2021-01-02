@@ -1,14 +1,15 @@
-var AWS = require('aws-sdk')
-var S3 = useAWSMocks() ? require('faux-knox') : require('knox')
+const SNS = require('aws-sdk/clients/sns')
+const SQS = require('aws-sdk/clients/sqs')
+const S3 = useAWSMocks() ? require('faux-knox') : require('knox')
 const EmptyResultError = require('..//converter/empty-result-error')
 
-const _snsClient = new AWS.SNS({
+const _snsClient = new SNS({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_KEY,
   region: process.env.AWS_REGION_ID
 })
 
-const _sqsClient = new AWS.SQS({
+const _sqsClient = new SQS({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_KEY,
   region: process.env.AWS_REGION_ID

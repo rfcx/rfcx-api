@@ -7,7 +7,7 @@ const archiveUtil = require('../../../utils/misc/archive')
 const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
 const guidUtil = require('../../../utils/misc/guid')
-const eventsServiceNeo4j = require('../../../services/events/events-service-neo4j')
+const eventsServiceNeo4j = require('../../../services/legacy/events/events-service-neo4j')
 const usersService = require('../../../services/users/users-service-legacy')
 const usersFusedService = require('../../../services/users/fused')
 const ValidationError = require('../../../utils/converter/validation-error')
@@ -24,13 +24,13 @@ if (earthRangerEnabled) {
 
 function query (req, res) {
   return eventsServiceNeo4j.queryData(req)
-      .then(function (json) {
-        res.status(200).send(json)
-      })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while searching events.'); console.log(e) })
+    .then(function (json) {
+      res.status(200).send(json)
+    })
+    .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+    .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
+    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+    .catch(e => { httpError(req, res, 500, e, 'Error while searching events.'); console.log(e) })
 }
 
 router.route('/')
@@ -38,7 +38,7 @@ router.route('/')
 
 router.route('/search')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res, next) {
-    req.query = req.body;
+    req.query = req.body
     next()
   }, query)
 

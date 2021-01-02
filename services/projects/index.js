@@ -1,6 +1,7 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
+const rolesService = require('../roles')
 
 const baseInclude = [
   {
@@ -16,25 +17,45 @@ const baseInclude = [
 ]
 
 /**
- * Searches for project model with given id
- * @param {string} id
+ * Searches for project model with given params
+ * @param {object} where
  * @param {*} opts additional function params
  * @returns {*} project model item
  */
-function getById (id, opts = {}) {
+function getByParams (where, opts = {}) {
   return models.Project
     .findOne({
-      where: { id },
+      where,
       attributes: models.Project.attributes.full,
       include: opts && opts.joinRelations ? baseInclude : [],
       paranoid: !opts.includeDeleted
     })
     .then(item => {
       if (!item) {
-        throw new EmptyResultError('Project with given id not found.')
+        throw new EmptyResultError('Project with given params not found.')
       }
       return item
     })
+}
+
+/**
+ * Searches for project model with given id
+ * @param {string} id
+ * @param {*} opts additional function params
+ * @returns {*} project model item
+ */
+function getById (id, opts = {}) {
+  return getByParams({ id }, opts)
+}
+
+/**
+ * Searches for project model with given external id
+ * @param {string} id
+ * @param {*} opts additional function params
+ * @returns {*} project model item
+ */
+function getByExternalId (id, opts = {}) {
+  return getByParams({ external_id: id }, opts)
 }
 
 /**
@@ -47,9 +68,9 @@ function create (data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create project with empty object.')
   }
-  const { id, name, description, is_public, organization_id, created_by_id } = data // eslint-disable-line camelcase
+  const { id, name, description, is_public, organization_id, created_by_id, external_id } = data // eslint-disable-line camelcase
   return models.Project
-    .create({ id, name, description, is_public, organization_id, created_by_id })
+    .create({ id, name, description, is_public, organization_id, created_by_id, external_id })
     .then(item => { return opts && opts.joinRelations ? item.reload({ include: baseInclude }) : item })
     .catch((e) => {
       console.error('Projects service -> create -> error', e)
@@ -76,6 +97,13 @@ async function query (attrs, opts = {}) {
 
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
+  } else if (attrs.created_by === 'collaborators') {
+    if (!attrs.current_user_is_super) {
+      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, 'project', 'collaborators')
+      where.id = {
+        [models.Sequelize.Op.in]: ids
+      }
+    }
   } else if (attrs.current_user_id !== undefined) {
     where[models.Sequelize.Op.or] = [{
       [models.Sequelize.Op.and]: {
@@ -189,6 +217,7 @@ function formatProjects (data) {
 
 module.exports = {
   getById,
+  getByExternalId,
   create,
   query,
   update,
