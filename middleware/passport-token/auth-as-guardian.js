@@ -2,14 +2,14 @@ var verboseLogging = (process.env.NODE_ENV !== 'production')
 var models = require('../../models')
 var hash = require('../../utils/misc/hash.js').hash
 var regex = require('../../utils/misc/regex.js')
-var url = require("url");
+var url = require('url')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   var onlyAllowAccessTo = [
-    '^/guardians/' + authUser.guid + '/checkins$',
+    '^/v1/guardians/' + authUser.guid + '/checkins$',
     '^/v1/guardians/' + authUser.guid + '/software/[a-z]+$',
     '^/v2/guardians/' + authUser.guid + '/software/[a-z]+$',
-    '^/v2/guardians/' + authUser.guid + '/pings$',
+    '^/v2/guardians/' + authUser.guid + '/pings$'
   ]
 
   models.Guardian
