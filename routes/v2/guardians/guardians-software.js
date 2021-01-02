@@ -12,8 +12,10 @@ router.route('/:guardian_id/software/:software_role')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
     var softwareRole = req.params.software_role
 
+    console.log("v2");
+
     var inquiringGuardianBattery = parseInt(req.query.battery)
-    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
+//    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
 
     models.Guardian
       .findOne({
@@ -26,51 +28,14 @@ router.route('/:guardian_id/software/:software_role')
           throw new sequelize.EmptyResultError('Guardian with given guid not found.')
         }
         this.dbGuardian = dbGuardian
-        return models.GuardianSoftware.findOne({
-          where: { role: req.query.role }
-        })
+        return dbGuardian;
       })
-      .then(function (dbSoftware) {
-        if (!dbSoftware) {
-          console.error('Software with given guid not found', { req: req.guid })
-          throw new sequelize.EmptyResultError('Software with given guid not found.')
-        }
-        this.dbSoftware = dbSoftware
-        return models.GuardianSoftwareVersion.findOne({
-          where: {
-            software_role_id: dbSoftware.id,
-            version: req.query.version
-          }
-        })
-      })
-      .then(function (dbSoftwareVersion) {
-        if (!dbSoftwareVersion) {
-          console.error('SoftwareVersion with given guid not found', { req: req.guid })
-          throw new sequelize.EmptyResultError('SoftwareVersion with given guid not found.')
-        }
-        return models.GuardianMetaUpdateCheckIn.create({
-          guardian_id: this.dbGuardian.id,
-          version_id: dbSoftwareVersion.id,
-          role_id: this.dbSoftware.id
-        })
-      })
-      .then(function (dbGuardianMetaUpdateCheckIn) {
-        return models.GuardianMetaBattery.create({
-          guardian_id: this.dbGuardian.id,
-          check_in_id: null,
-          measured_at: inquiringGuardianTimeStamp,
-          battery_percent: inquiringGuardianBattery,
-          battery_temperature: null
-        })
-      })
-      .then(function (dbGuardianMetaBattery) {
+      .then(function (dbGuardian) {
         var dbQuery = {
           is_available: true
         }
         if (softwareRole === 'all') {
           dbQuery.is_updatable = true
-        } else if (softwareRole === 'extra') {
-          dbQuery.is_extra = true
         } else {
           dbQuery.role = softwareRole
         }
