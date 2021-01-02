@@ -2,14 +2,7 @@
 
 var Promise = require('bluebird')
 var fs = require('fs')
-var AWS = require('aws-sdk')
 var aws = require('../../../utils/external/aws').aws()
-
-const client = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_KEY,
-  region: process.env.AWS_REGION_ID
-})
 
 /**
  * Uploads file to S3 storage
@@ -126,6 +119,5 @@ module.exports = {
   copyObject,
   headObject,
   getObject,
-  deleteObject,
-  client
+  deleteObject
 }

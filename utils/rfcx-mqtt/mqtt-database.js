@@ -1,7 +1,7 @@
 var models = require('../../models')
 var fs = require('fs')
 var saveMeta = require('../../utils/rfcx-mqtt/mqtt-save-meta.js').saveMeta
-var smsMessages = require('../../utils/rfcx-mqtt/mqtt-sms.js').messages
+var smsMessages = require('../../utils/rfcx-guardian/guardian-sms-database.js').messages
 var hash = require('../../utils/misc/hash.js').hash
 var Promise = require('bluebird')
 const moment = require('moment-timezone')
@@ -613,7 +613,7 @@ exports.checkInDatabase = {
     try {
       checkInObj.db.dbGuardian.last_check_in = new Date()
       checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count
-      checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.checkStartTime.valueOf()
+      checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.startTime.valueOf()
     } catch (e) {
       return Promise.reject(e)
     }

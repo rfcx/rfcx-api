@@ -2,7 +2,6 @@ const guid = require('../../utils/misc/guid')
 const Promise = require('bluebird')
 const path = require('path')
 const fs = require('fs')
-const rimraf = require('rimraf')
 
 function createTempDir (cacheSubDir) {
   cacheSubDir = cacheSubDir || 'random'
@@ -37,20 +36,7 @@ function ensureDirExists (dirPath) {
   })
 }
 
-function removeDirRecursively (path) {
-  return new Promise((resolve, reject) => {
-    rimraf(path, (err) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve()
-      }
-    })
-  })
-}
-
 module.exports = {
   createTempDir,
-  ensureDirExists,
-  removeDirRecursively
+  ensureDirExists
 }

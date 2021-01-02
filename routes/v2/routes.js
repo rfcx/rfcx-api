@@ -7,6 +7,7 @@ module.exports = {
   ],
   guardians: [
     require('./guardians/guardians'),
+    require('./guardians/guardians-pings'),
     require('./guardians/guardians-software')
   ],
   tags: [
