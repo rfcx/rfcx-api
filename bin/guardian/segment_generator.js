@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 //var ascii85 = require('ascii85').ZeroMQ;
-//var z85 = require('z85');
 var hash = require('../../utils/misc/hash.js').hash;
 var zlib = require('zlib')
 
