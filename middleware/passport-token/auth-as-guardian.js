@@ -5,8 +5,9 @@ var regex = require('../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   var onlyAllowAccessTo = [
-    '^/v1/guardians/' + authUser.guid + '/checkins$',
-    '^/v1/guardians/' + authUser.guid + '/software/[a-z]+$'
+    '^/guardians/' + authUser.guid + '/checkins$',
+    '^/guardians/' + authUser.guid + '/software/[a-z]+$',
+    '^/guardians/' + authUser.guid + '/pings$',
   ]
 
   models.Guardian
@@ -16,7 +17,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
       if (dbGuardian == null) {
         return done(null, false, { message: "this guardian doesn't exist in the database" })
       } else if ((dbGuardian.auth_token_hash === hash.hashedCredentials(dbGuardian.auth_token_salt, token)) &&
-                (regex.regExIndexOf(req.rfcx.url_path, onlyAllowAccessTo) > -1)
+                (regex.regExIndexOf(req.rfcx.url_path_no_version, onlyAllowAccessTo) > -1)
       ) {
         req.rfcx.auth_token_info = {
           type: 'guardian',
