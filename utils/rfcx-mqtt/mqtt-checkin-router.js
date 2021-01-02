@@ -5,6 +5,7 @@ var checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInD
 var checkInAssets = require('../../utils/rfcx-mqtt/mqtt-checkin-assets.js').checkInAssets
 var mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
 var guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
+var guardianMsgParsingUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 var mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
 var queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
 var SensationsService = require('../../services/sensations/sensations-service')
@@ -15,7 +16,6 @@ function onMessageCheckin (data, messageId) {
 
   return mqttInputData.parseCheckInInput(data)
     .then((checkInObj) => {
-      checkInObj.rtrn = { obj: guardianCommand.defaultCommandJsonObj }
       return checkInDatabase.getDbGuardian(checkInObj)
     })
     .then((checkInObj) => {

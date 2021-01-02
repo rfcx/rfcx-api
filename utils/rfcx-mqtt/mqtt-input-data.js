@@ -4,6 +4,7 @@ var hash = require('../../utils/misc/hash.js').hash
 var aws = require('../../utils/external/aws.js').aws()
 var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 var Promise = require('bluebird')
+var guardianMsgParsingUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 
 exports.mqttInputData = {
 
@@ -24,16 +25,12 @@ exports.mqttInputData = {
         var photoFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileBuffer + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength)
         var videoFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileBuffer + metaLength + photoFileBuffer + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength + metaLength + videoFileLength)
 
-        var checkInObj = { json: {}, meta: {}, db: {}, audio: {}, screenshots: {}, logs: {}, photos: {}, videos: {} }
-
-        checkInObj.meta.checkStartTime = new Date()
-
         zlib.gunzip(mqttData.slice(metaLength, metaLength + jsonBlobLength), function (jsonError, jsonBuffer) {
           if (jsonError) {
             reject(jsonError)
           }
 
-          checkInObj.json = JSON.parse(jsonBuffer.toString('utf8'))
+          var checkInObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null);
 
           // Adding support for differently structured guardian JSON blobs, which don't support auth.
           // This supports guardian software deployed before May 2020.

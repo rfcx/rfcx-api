@@ -12,7 +12,7 @@ var sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
 
-var guardianCommand = require('../../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
+var guardianMsgParsingUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 var pingRouter = require('../../../utils/rfcx-guardian/router-ping.js').pingRouter
 const guidService = require('../../../utils/misc/guid.js')
 
@@ -26,15 +26,8 @@ router.route('/:guardian_id/pings')
 
         let messageId = guidService.generate()
         
-        var pingObj = { json: {}, meta: { guardian: {} }, db: {} }
-        pingObj.meta.pingStartTime = new Date()
-        pingObj.json = json;
-
-        pingObj.json.guardian = { 
-          guid: req.params.guardian_id,
-          token: req.headers["x-auth-token"]
-        };
-
+        var pingObj = guardianMsgParsingUtils.constructGuardianMsgObj(json, req.params.guardian_id, req.headers["x-auth-token"]);
+  
         pingRouter.onMessagePing(pingObj, messageId)
           .then((result) => {
 

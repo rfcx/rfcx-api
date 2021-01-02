@@ -613,7 +613,7 @@ exports.checkInDatabase = {
     try {
       checkInObj.db.dbGuardian.last_check_in = new Date()
       checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count
-      checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.checkStartTime.valueOf()
+      checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.startTime.valueOf()
     } catch (e) {
       return Promise.reject(e)
     }

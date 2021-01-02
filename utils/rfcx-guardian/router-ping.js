@@ -5,8 +5,6 @@ var guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publis
 
 function onMessagePing (pingObj, messageId) {
   
-  pingObj.rtrn = { obj: guardianCommand.defaultCommandJsonObj }
-
   return checkInDatabase.getDbGuardian(pingObj)
     .then((pingObj) => {
       return checkInDatabase.validateDbGuardianToken(pingObj)

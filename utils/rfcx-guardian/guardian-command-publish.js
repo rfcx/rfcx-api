@@ -23,22 +23,6 @@ exports.guardianCommand = {
         })
       } catch (errProcessPublishJson) { console.log(errProcessPublishJson); reject(new Error(errProcessPublishJson)) }
     })
-  },
-
-  defaultCommandJsonObj: {
-      checkin_id: null,
-      audio: [],
-      screenshots: [],
-      logs: [],
-      messages: [],
-      meta: [],
-      photos: [],
-      videos: [],
-      purged: [],
-      received: [],
-      unconfirmed: [],
-      prefs: [],
-      instructions: []
   }
 
 }
