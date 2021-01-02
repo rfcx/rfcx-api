@@ -38,7 +38,6 @@ module.exports = function (req, res, next) {
     api_url_domain: apiUrlDomain,
     api_version: apiVersion,
     url_path: urlPath,
-    url_path_no_version: parseUrl(req).pathname,
     limit: paramLimit,
     offset: paramOffset,
     starting_after: paramAfter,
