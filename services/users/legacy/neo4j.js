@@ -31,4 +31,4 @@ async function ensureUserSyncedInNeo4j (user) {
   }
 }
 
-module.exports = { ensureUserSyncedInNeo4j }
+module.exports = ensureUserSyncedInNeo4j
