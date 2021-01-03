@@ -11,7 +11,7 @@ module.exports = function (sequelize, DataTypes) {
 
     segment_count: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       validate: {
         isInt: true,
         min: 0

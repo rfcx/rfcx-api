@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-//var ascii85 = require('ascii85').ZeroMQ;
+var ascii85 = require('ascii85').ZeroMQ;
 var hash = require('../../utils/misc/hash.js').hash;
 var zlib = require('zlib')
 
@@ -28,11 +28,11 @@ function createSegments(guardianGuid, fullOriginalMsg) {
     if (errJsonGzip) { console.log(errJsonGzip); } else {
 
       var fullEncodedMsg =  bufJsonGzip.toString('base64');
-                            // ascii85.encode(bufJsonGzip).toString('ascii')
+                            //ascii85.encode(bufJsonGzip).toString('ascii')
                             // .replace(/\^/g,",")
                             // .replace(/\[/g,"_").replace(/\]/g,"¿")
                             // .replace(/\{/g,"é").replace(/\}/g,"è")
-                            // ;
+                            ;
 
 //     console.log("Base85 - Length: "+fullEncodedMsg.length+" Checksum: "+hash.hashData(fullEncodedMsg)+"\n\n");
     
@@ -65,7 +65,11 @@ function createSegments(guardianGuid, fullOriginalMsg) {
 }
 
 var guardianGuid = '298c2kwyfg55';
-var jsonMsgStr = "{\"checkin_id\":\"0e380746-7a0b-4f37-814d-c93dde3c283b\",\"audio\":[{\"id\":\"1608367468981\"}],\"meta\":[{\"id\":\"1608367559144\"},{\"id\":\"1608367358777\"}],\"purged\":[{\"type\":\"audio\",\"id\":\"1608367268514\"},{\"type\":\"audio\",\"id\":\"1608367358860\"}],\"instructions\":[{\"id\":247,\"type\":\"set\",\"cmd\":\"prefs\",\"meta\":\"{'admin_enable_geoposition_capture':'false'}\",\"at\":\"\"}]}";
+//var jsonMsgStr = "{\"segment\":[{\"id\":\"2LzH-000\"},{\"id\":\"2LzH-001\"},{\"id\":\"2LzH-002\"},{\"id\":\"2LzH-003\"},{\"id\":\"2LzH-004\"},{\"id\":\"2LzH-005\"}]}";
+var jsonMsgStr = "{\"segment\":[\"KqdO-000\",\"KqdO-001\",\"KqdO-002\",\"KqdO-003\",\"KqdO-004\",\"KqdO-005\",\"KqdO-006\",\"KqdO-007\",\"KqdO-008\"]}";
+
+
+//var jsonMsgStr = "{\"checkin_id\":\"0e380746-7a0b-4f37-814d-c93dde3c283b\",\"audio\":[{\"id\":\"1608367468981\"}],\"meta\":[{\"id\":\"1608367559144\"},{\"id\":\"1608367358777\"}],\"purged\":[{\"type\":\"audio\",\"id\":\"1608367268514\"},{\"type\":\"audio\",\"id\":\"1608367358860\"}],\"instructions\":[{\"id\":247,\"type\":\"set\",\"cmd\":\"prefs\",\"meta\":\"{'admin_enable_geoposition_capture':'false'}\",\"at\":\"\"}]}";
 
 createSegments(guardianGuid, jsonMsgStr);
 

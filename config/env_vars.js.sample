@@ -99,6 +99,8 @@ exports.env = {
   CLASSY_CLIENT_ID: "",
   CLASSY_CLIENT_SECRET: "",
 
+  TWILIO_AUTH_TOKEN: "",
+
   RECAPTCHA_V3_SECRET_KEY: "",
 
   GUARDIAN_BROKER_HOSTNAME: "", // environment mqtt hostname for checkins/pings
