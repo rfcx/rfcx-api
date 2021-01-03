@@ -100,6 +100,8 @@ function defineRelationships (models) {
   models.GuardianMetaUpdateCheckIn.belongsTo(models.GuardianSoftwareVersion, { as: 'Version', foreignKey: 'version_id' })
   models.GuardianMetaUpdateCheckIn.belongsTo(models.GuardianSoftware, { as: 'Role', foreignKey: 'role_id' })
   models.GuardianMetaVideo.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  models.GuardianMetaSegmentsGroup.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  models.GuardianMetaSegmentsQueue.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
 
   models.GuardianMetaSentinelPower.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaSentinelAccelerometer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })

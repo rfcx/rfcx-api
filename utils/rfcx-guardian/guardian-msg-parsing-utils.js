@@ -41,7 +41,8 @@ exports.guardianMsgParsingUtils = {
           received: [],
           unconfirmed: [],
           prefs: [],
-          instructions: []
+          instructions: [],
+          segment: []
         }
       }
     };
@@ -52,6 +53,18 @@ exports.guardianMsgParsingUtils = {
 
     return msgObj;
 
+  },
+
+
+  msgSegmentConstants: function (protocol) {
+  
+    var segmentConstants = {
+
+
+    };
+
+    return segmentConstants;
+  
   }
 
 }

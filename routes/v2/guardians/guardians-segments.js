@@ -1,20 +1,38 @@
 // var models = require('../../../models')
 var express = require('express')
 var router = express.Router()
-var checkInHelpers = require('../../../utils/rfcx-checkin')
-var httpError = require('../../../utils/http-errors.js')
-var sequelize = require('sequelize')
-const ValidationError = require('../../../utils/converter/validation-error')
+// var checkInHelpers = require('../../../utils/rfcx-checkin')
+// var httpError = require('../../../utils/http-errors.js')
+// var sequelize = require('sequelize')
+// const ValidationError = require('../../../utils/converter/validation-error')
 
 var guardianMsgParsingUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
-var pingRouter = require('../../../utils/rfcx-guardian/router-ping.js').pingRouter
-const guidService = require('../../../utils/misc/guid.js')
+// var pingRouter = require('../../../utils/rfcx-guardian/router-ping.js').pingRouter
+// const guidService = require('../../../utils/misc/guid.js')
 
 router.route('/segments/twilio')
   .post(function (req, res) {
 
+    var segmentConstants = guardianMsgParsingUtils.msgSegmentConstants("sms");
 
-    res.status(200);
+    var msgSid = req.body.MessageSid,
+        msgBody = req.body.Body,
+        msgTo = req.body.To,
+        msgFrom = req.body.From,
+        svcSid = req.body.MessagingServiceSid,
+        acctSid = req.body.AccountSid;
+
+    console.log(
+        "\n - " + msgSid
+      + "\n - " + msgTo
+      + "\n - " + msgFrom
+      + "\n - " + svcSid
+      + "\n - " + acctSid
+      + "\n - " + msgBody
+    );
+
+    res.writeHead(200, {'Content-Type': 'text/xml'});
+    res.end();
 
     // // unzip gzipped meta json blob
     // checkInHelpers.gzip.unZipJson(req.body.meta)
