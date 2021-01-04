@@ -99,8 +99,8 @@ exports.env = {
   CLASSY_CLIENT_ID: "",
   CLASSY_CLIENT_SECRET: "",
 
-  TWILIO_ACCOUNT_SID: "",
-  TWILIO_AUTH_TOKEN: "",
+  // TWILIO_ACCOUNT_SID: "", // required for sending and receiving requests to/from Twilio on the REST api
+  // TWILIO_AUTH_TOKEN: "", // required for sending and receiving requests to/from Twilio on the REST api
 
   RECAPTCHA_V3_SECRET_KEY: "",
 

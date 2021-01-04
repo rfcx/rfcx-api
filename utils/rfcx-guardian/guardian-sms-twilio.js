@@ -33,6 +33,8 @@ exports.smsTwilio = {
       twilioClient(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
         .messages.create(smsOpts).then(message => console.log("SMS sent to " + message.to + " via Twilio: " + message.body));
       
+    } else {
+      console.error("Unable to send SMS because Twilio environmental variables are not set");
     }
 
   }
