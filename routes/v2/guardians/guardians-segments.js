@@ -56,7 +56,7 @@ router.route('/segments/twilio')
                             protocol: segObj.protocol,
                             segment_count: segObj.segment_count,
                             type: segObj.message_type,
-                            checksum: segObj.message_checksum,
+                            checksum_snippet: segObj.message_checksum_snippet,
                             guardian_id: dbGuardian.id
                           }
                         })
@@ -103,43 +103,6 @@ router.route('/segments/twilio')
 
             })
 
-            // .then((dbGuardian) => {
-            //   if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
-            //     return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-            //       .then((user) => {
-            //         dbGuardian.creator = user.id
-            //         dbGuardian.is_private = true
-            //         return dbGuardian.save()
-            //       })
-            //   } else {
-            //     return this.dbGuardian
-            //   };
-            // })
-
-            // .then((dbGuardian) => {
-            //   const visibility = dbGuardian.is_private ? 'private' : 'public'
-            //   return models.StreamVisibility
-            //     .findOrCreate({
-            //       where: { value: visibility },
-            //       defaults: { value: visibility }
-            //     })
-            //     .spread((dbVisibility) => {
-            //       const opts = {
-            //         guid: dbGuardian.guid,
-            //         name: dbGuardian.shortname,
-            //         site: dbGuardian.site_id,
-            //         created_by: dbGuardian.creator,
-            //         visibility: dbVisibility.id
-            //       }
-            //       if (dbGuardian.creator) {
-            //         opts.created_by = dbGuardian.creator
-            //       }
-            //       return models.Stream
-            //         .create(opts)
-            //     })
-            // })
-
-            
             .then(() => {
               res.writeHead(200, {'Content-Type': 'text/xml'});
               res.end();

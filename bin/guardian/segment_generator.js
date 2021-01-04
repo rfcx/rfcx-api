@@ -7,6 +7,7 @@ var zlib = require('zlib')
 var groupLength = 4;
 var segmentIdLength = 3;
 var msgTypeLength = 3;
+var msgChecksumSnippetLength = 20;
 var segmentMaxLength = 160;
 
 function generateGroupId() {
@@ -40,7 +41,7 @@ function createSegments(guardianGuid, fullOriginalMsg) {
       var segments = [];
 
       var segIdDec = 0;
-      var segHeader = "", segHeaderZero = grpId + generateSegmentId(segIdDec) + guardianGuid + "cmd" + hash.hashData(fullOriginalMsg);
+      var segHeader = "", segHeaderZero = grpId + generateSegmentId(segIdDec) + guardianGuid + "cmd" + hash.hashData(fullOriginalMsg).substr(0,msgChecksumSnippetLength);
       var segBodyLength = 0, segBodyLengthZero = segmentMaxLength - segHeaderZero.length - segmentIdLength;
       segments.push(fullEncodedMsg.substring(0, segBodyLengthZero));
       fullEncodedMsg = fullEncodedMsg.substring(segBodyLengthZero);
@@ -66,7 +67,7 @@ function createSegments(guardianGuid, fullOriginalMsg) {
 
 var guardianGuid = '298c2kwyfg55';
 //var jsonMsgStr = "{\"segment\":[{\"id\":\"2LzH-000\"},{\"id\":\"2LzH-001\"},{\"id\":\"2LzH-002\"},{\"id\":\"2LzH-003\"},{\"id\":\"2LzH-004\"},{\"id\":\"2LzH-005\"}]}";
-var jsonMsgStr = "{\"segment\":[\"KqdO-000\",\"KqdO-001\",\"KqdO-002\",\"KqdO-003\",\"KqdO-004\",\"KqdO-005\",\"KqdO-006\",\"KqdO-007\",\"KqdO-008\"]}";
+var jsonMsgStr = "{\"segment\":[\"KqdO-000\",\"KqdO-001\",\"KqdO-002\",\"KqdO-003\",\"KqdO-004\",\"KqdO-005\",\"KqdO-006\",\"KqdO-007\",\"KqdO-008\",\"KqdO-009\",\"KqdO-00a\",\"KqdO-00b\",\"KqdO-00c\",\"KqdO-00d\",\"KqdO-00e\"]}";
 
 
 //var jsonMsgStr = "{\"checkin_id\":\"0e380746-7a0b-4f37-814d-c93dde3c283b\",\"audio\":[{\"id\":\"1608367468981\"}],\"meta\":[{\"id\":\"1608367559144\"},{\"id\":\"1608367358777\"}],\"purged\":[{\"type\":\"audio\",\"id\":\"1608367268514\"},{\"type\":\"audio\",\"id\":\"1608367358860\"}],\"instructions\":[{\"id\":247,\"type\":\"set\",\"cmd\":\"prefs\",\"meta\":\"{'admin_enable_geoposition_capture':'false'}\",\"at\":\"\"}]}";

@@ -12,8 +12,6 @@ router.route('/:guardian_id/software/:software_role')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
     var softwareRole = req.params.software_role
 
-    console.log("v2");
-
     var inquiringGuardianBattery = parseInt(req.query.battery)
 //    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
 

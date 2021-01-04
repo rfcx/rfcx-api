@@ -32,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
 
-    checksum: {
+    checksum_snippet: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {

@@ -20,6 +20,7 @@ exports.guardianMsgParsingUtils = {
       // general msg meta
       meta: { 
         guardian: { },
+        allow_without_auth_token: false,
         startTime: new Date()
       }, 
 
@@ -65,8 +66,9 @@ exports.guardianMsgParsingUtils = {
     var grpGuidLength = 4,
         segIdLength = 3,
         guardianGuidLength = 12,
+        guardianPinCodeLength = 4,
         msgTypeLength = 3,
-        msgChecksumLength = 40;
+        msgChecksumSnippetLength = 20;
     
     // var segMaxLength = 160;
 
@@ -76,18 +78,20 @@ exports.guardianMsgParsingUtils = {
       protocol: segProtocol,
       origin_address: originAddress,
       message_type: null,
-      message_checksum: null,
+      message_checksum_snippet: null,
       segment_count: 0,
       guardian_guid: null,
+      guardian_pincode: null,
       segment_body: null
     };
 
     if (segObj.segment_id == 0) {
       segObj.guardian_guid = segBody.substr(grpGuidLength+segIdLength, guardianGuidLength);
-      segObj.message_type = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength, msgTypeLength);
-      segObj.message_checksum = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+msgTypeLength, msgChecksumLength);
-      segObj.segment_count = parseInt(segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+msgTypeLength+msgChecksumLength, segIdLength), 16);
-      segObj.segment_body = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+msgTypeLength+msgChecksumLength+segIdLength);
+      segObj.guardian_pincode = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength, guardianGuidLength);
+      segObj.message_type = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength, msgTypeLength);
+      segObj.message_checksum_snippet = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength, msgChecksumSnippetLength);
+      segObj.segment_count = parseInt(segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength+msgChecksumSnippetLength, segIdLength), 16);
+      segObj.segment_body = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength+msgChecksumSnippetLength+segIdLength);
     } else {
       segObj.segment_body = segBody.substr(grpGuidLength+segIdLength);
     }
@@ -105,19 +109,26 @@ exports.guardianMsgParsingUtils = {
 
         if (dbSegGrp.type == "png") {
           
-          if (hash.hashData(JSON.stringify(jsonObj)) == dbSegGrp.checksum) {
+          if (hash.hashData(JSON.stringify(jsonObj)).substr(0,dbSegGrp.checksum_snippet.length) == dbSegGrp.checksum_snippet) {
             
             let messageId = guidService.generate()
-            var pingObj = getPingObj(jsonObj, guardianGuid, "gays3c1g04su7z39aevqiomzblh06h896t99hu8a");
+            
+            var pingObj = getPingObj(jsonObj, guardianGuid, null);
+            pingObj.meta.allow_without_auth_token = true;
+
             pingRouter.onMessagePing(pingObj, messageId)
-              .then((result) => {    
+              .then((result) => {   
+
+                for (var i = 0; i < dbSegs.length; i++) { dbSegs[i].destroy(); }
+                dbSegGrp.destroy();
+ 
                 console.log('sms message processed', messageId)
                 messageId = null
                 result = null
+
                 return true
               })
-            for (var i = 0; i < dbSegs.length; i++) { dbSegs[i].destroy(); }
-            dbSegGrp.destroy();
+
           }
 
         }

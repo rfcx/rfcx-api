@@ -77,11 +77,12 @@ router.route('/register')
     params.convert('site').optional().toString()
 
     const token = hash.randomString(40)
+    const pinCode = hash.randomString(4)
 
     try {
       await params.validate()
 
-      const guardianAttrs = { ...transformedParams, token }
+      const guardianAttrs = { ...transformedParams, token, pinCode }
 
       await usersFusedService.ensureUserSyncedFromToken(req)
 
@@ -124,6 +125,7 @@ router.route('/register')
         guid: dbGuardian.guid,
         stream: dbStream.guid,
         token: token,
+        pin_code: pinCode,
         api_mqtt_host: process.env.GUARDIAN_BROKER_HOSTNAME,
         api_sms_address: process.env.GUARDIAN_API_SMS_ADDRESS,
         keystore_passphrase: process.env.GUARDIAN_KEYSTORE_PASSPHRASE
