@@ -87,7 +87,7 @@ exports.guardianMsgParsingUtils = {
 
     if (segObj.segment_id == 0) {
       segObj.guardian_guid = segBody.substr(grpGuidLength+segIdLength, guardianGuidLength);
-      segObj.guardian_pincode = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength, guardianGuidLength);
+      segObj.guardian_pincode = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength, guardianPinCodeLength);
       segObj.message_type = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength, msgTypeLength);
       segObj.message_checksum_snippet = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength, msgChecksumSnippetLength);
       segObj.segment_count = parseInt(segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength+msgChecksumSnippetLength, segIdLength), 16);
@@ -122,7 +122,7 @@ exports.guardianMsgParsingUtils = {
                 for (var i = 0; i < dbSegs.length; i++) { dbSegs[i].destroy(); }
                 dbSegGrp.destroy();
  
-                console.log('sms message processed', messageId)
+                console.log('sms ping message processed', messageId)
                 messageId = null
                 result = null
 
