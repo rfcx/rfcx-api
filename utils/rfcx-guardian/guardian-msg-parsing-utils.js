@@ -64,6 +64,7 @@ exports.guardianMsgParsingUtils = {
   msgSegmentConstants: function() {
     return {
       lengths: {
+        maxFullSeg: { sms: 160, sbd: 340 },
         grpGuid: 4,
         segId: 3,
         grdGuid: 12,
@@ -74,14 +75,66 @@ exports.guardianMsgParsingUtils = {
     }
   },
 
+
+  generateGroupGuid: function() {
+    var groupGuidLength = this.msgSegmentConstants().lengths.grpGuid,
+        str = '',
+        key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (var i = 0; i < groupGuidLength; i++) { str += key.charAt(Math.floor(Math.random() * key.length)) }
+    return str
+  },
+
+
+  generateSegmentId: function(idNum) {
+    var segmentIdLength = this.msgSegmentConstants().lengths.segId,
+        zeroes = "";
+    for (var i = 0; i < segmentIdLength; i++) { zeroes += "0"; }
+    return (zeroes + idNum.toString(16)).slice(0-segmentIdLength);
+  },
+
+
+  constructSegmentsGroupForQueue: function(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer) {
+
+    var msgGzipStr = msgJsonGzippedBuffer.toString('base64'),
+        groupGuid = this.generateGroupGuid(),
+        msgSegLengths = this.msgSegmentConstants().lengths,
+        fullMsgChecksumSnippet = hash.hashData(JSON.stringify(msgJsonObj)).substr(0,msgSegLengths.chkSumSnip),
+        segments = [];
+
+    var segIdDec = 0,
+        segHeader = "", 
+        segHeaderZero = groupGuid + this.generateSegmentId(segIdDec) + guardianGuid + guardianPinCode + msgType + fullMsgChecksumSnippet,
+        segBodyLength = 0, 
+        segBodyLengthZero = msgSegLengths.maxFullSeg[apiProtocol] - segHeaderZero.length - msgSegLengths.segId;
+
+    segments.push(msgGzipStr.substring(0, segBodyLengthZero));
+    msgGzipStr = msgGzipStr.substring(segBodyLengthZero);
+
+    while (msgGzipStr.length > 0) {
+      segIdDec++;
+      segHeader = groupGuid + this.generateSegmentId(segIdDec);
+      segBodyLength = msgSegLengths.maxFullSeg[apiProtocol] - segHeader.length;
+      segments.push(segHeader + msgGzipStr.substring(0, segBodyLength));
+      msgGzipStr = msgGzipStr.substring(segBodyLength);
+    }
+
+    segments[0] = segHeaderZero + this.generateSegmentId(segments.length) + segments[0];
+
+    // for (var i = 0; i < segments.length; i++) {
+    //   console.log(" - "+segments[i]+" ("+segments[i].length+")")
+    // }
+
+    return segments;
+  },
+
+
   parseMsgSegment: function (segBody, segProtocol, originAddress) {
     
-    var msgSegNums = this.msgSegmentConstants().lengths;
-    // var segMaxLength = 160;
+    var msgSegLengths = this.msgSegmentConstants().lengths;
 
     var segObj = {
-      group_guid: segBody.substr(0, msgSegNums.grpGuid),
-      segment_id: parseInt(segBody.substr(msgSegNums.grpGuid, msgSegNums.segId), 16),
+      group_guid: segBody.substr(0, msgSegLengths.grpGuid),
+      segment_id: parseInt(segBody.substr(msgSegLengths.grpGuid, msgSegLengths.segId), 16),
       protocol: segProtocol,
       origin_address: originAddress,
       message_type: null,
@@ -93,20 +146,20 @@ exports.guardianMsgParsingUtils = {
     };
 
     if (segObj.segment_id == 0) {
-      segObj.guardian_guid = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId, msgSegNums.grdGuid);
-      segObj.guardian_pincode = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid, msgSegNums.pinCode);
-      segObj.message_type = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode, msgSegNums.msgType);
-      segObj.message_checksum_snippet = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode+msgSegNums.msgType, msgSegNums.chkSumSnip);
-      segObj.segment_count = parseInt(segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode+msgSegNums.msgType+msgSegNums.chkSumSnip, msgSegNums.segId), 16);
-      segObj.segment_body = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode+msgSegNums.msgType+msgSegNums.chkSumSnip+msgSegNums.segId);
+      segObj.guardian_guid = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId, msgSegLengths.grdGuid);
+      segObj.guardian_pincode = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid, msgSegLengths.pinCode);
+      segObj.message_type = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode, msgSegLengths.msgType);
+      segObj.message_checksum_snippet = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode+msgSegLengths.msgType, msgSegLengths.chkSumSnip);
+      segObj.segment_count = parseInt(segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode+msgSegLengths.msgType+msgSegLengths.chkSumSnip, msgSegLengths.segId), 16);
+      segObj.segment_body = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode+msgSegLengths.msgType+msgSegLengths.chkSumSnip+msgSegLengths.segId);
     } else {
-      segObj.segment_body = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId);
+      segObj.segment_body = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId);
     }
 
     return segObj;  
   },
 
-  assembleReceivedSegments: function (dbSegs, dbSegGrp, guardianGuid) {
+  assembleReceivedSegments: function (dbSegs, dbSegGrp, guardianGuid, guardianPinCode) {
 
     var concatSegs = "";
     for (var i = 0; i < dbSegs.length; i++) { concatSegs += dbSegs[i].body; }
@@ -126,7 +179,12 @@ exports.guardianMsgParsingUtils = {
             pingRouter.onMessagePing(pingObj, messageId)
               .then((result) => {   
 
-                smsTwilio.sendSms("This is a test, hello", dbSegs[0].origin_address)
+                if (JSON.stringify(result.obj).length > 2) {
+                  var segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, "cmd", dbSegGrp.protocol, result.obj, result.gzip);
+                  for (var i = 0; i < segsForQueue.length; i++) { 
+                    smsTwilio.sendSms(segsForQueue[i], dbSegs[0].origin_address);
+                  }
+                }
 
                 for (var i = 0; i < dbSegs.length; i++) { dbSegs[i].destroy(); }
                 dbSegGrp.destroy();
@@ -149,4 +207,8 @@ exports.guardianMsgParsingUtils = {
 
 function getPingObj(inputJsonObj, guardianId, guardianToken) {
   return exports.guardianMsgParsingUtils.constructGuardianMsgObj(inputJsonObj, guardianId, guardianToken);
+}
+
+function constructSegmentsGroup(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer) {
+  return exports.guardianMsgParsingUtils.constructSegmentsGroupForQueue(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer);
 }

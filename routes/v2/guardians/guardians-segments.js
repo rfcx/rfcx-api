@@ -68,7 +68,7 @@ router.route('/segments/sms')
                                   }).then(function (dbSegments) {
                                     if (dbSegmentGrp.segment_count == dbSegments.length) {
                                     
-                                      msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, segObj.guardian_guid);
+                                      msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, segObj.guardian_guid, segObj.guardian_pincode);
                                     
                                     }
                                   })
@@ -98,7 +98,7 @@ router.route('/segments/sms')
                             }).then(function (dbSegments) {
                               if (dbSegmentGrp.segment_count == dbSegments.length) {
                                 
-                                msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, dbSegmentGrp.Guardian.guid);
+                                msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, dbSegmentGrp.Guardian.guid, dbSegmentGrp.Guardian.auth_pin_code);
                               
                               }
                             })
