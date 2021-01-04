@@ -31,7 +31,7 @@ exports.smsTwilio = {
       };
 
       twilioClient(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-        .messages.create(smsOpts).then(message => console.log("SMS sent via Twilio: " + message.sid));
+        .messages.create(smsOpts).then(message => console.log("SMS sent to " + message.to + " via Twilio: " + message.body));
       
     }
 
