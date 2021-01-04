@@ -7,6 +7,7 @@ const ValidationError = require('../../../utils/converter/validation-error')
 
 var msgSegUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 var smsTwilio = require('../../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
+var sbdRockBlock = require('../../../utils/rfcx-guardian/guardian-sbd-rockblock.js').sbdRockBlock
 
 router.route('/segments/sms')
   .post(function (req, res) {
@@ -136,5 +137,17 @@ router.route('/segments/sms')
     }
 
   })
+
+
+router.route('/segments/sbd')
+  .post(function (req, res) {
+ 
+    console.log(req.body)
+
+    res.writeHead(200, {'Content-Type': 'text/xml'});
+    res.end();
+  
+  })
+
 
 module.exports = router

@@ -62,7 +62,8 @@ exports.guardianMsgParsingUtils = {
   },
 
   msgSegmentConstants: function() {
-    return {
+
+    var obj = {
       lengths: {
         maxFullSeg: { sms: 160, sbd: 340 },
         grpGuid: 4,
@@ -72,7 +73,19 @@ exports.guardianMsgParsingUtils = {
         msgType: 3,
         chkSumSnip: 20
       }
-    }
+    };
+
+    obj.slice = {
+      group_guid: [ 0, obj.lengths.grpGuid ],
+      segment_id: [ obj.lengths.grpGuid, obj.lengths.segId ],
+      guardian_guid: [ (obj.lengths.grpGuid+obj.lengths.segId), obj.lengths.grdGuid ],
+      guardian_pincode: [ (obj.lengths.grpGuid+obj.lengths.segId+obj.lengths.grdGuid), obj.lengths.pinCode ],
+      message_type: [ (obj.lengths.grpGuid+obj.lengths.segId+obj.lengths.grdGuid+obj.lengths.pinCode), obj.lengths.msgType ],
+      message_checksum_snippet: [ (obj.lengths.grpGuid+obj.lengths.segId+obj.lengths.grdGuid+obj.lengths.pinCode+obj.lengths.msgType), obj.lengths.chkSumSnip ],
+      segment_count: [ (obj.lengths.grpGuid+obj.lengths.segId+obj.lengths.grdGuid+obj.lengths.pinCode+obj.lengths.msgType+obj.lengths.chkSumSnip), obj.lengths.segId ]
+    };
+
+    return obj;
   },
 
 
@@ -128,32 +141,25 @@ exports.guardianMsgParsingUtils = {
   },
 
 
-  parseMsgSegment: function (segBody, segProtocol, originAddress) {
+  parseMsgSegment: function (segPayload, segProtocol, originAddress) {
     
-    var msgSegLengths = this.msgSegmentConstants().lengths;
+    var sliceVars = this.msgSegmentConstants().slice;
 
     var segObj = {
-      group_guid: segBody.substr(0, msgSegLengths.grpGuid),
-      segment_id: parseInt(segBody.substr(msgSegLengths.grpGuid, msgSegLengths.segId), 16),
+      group_guid: slicePayload(segPayload, segProtocol, "group_guid", sliceVars, false),
+      segment_id: parseInt(slicePayload(segPayload, segProtocol, "segment_id", sliceVars, false), 16),
+      segment_body: slicePayload(segPayload, segProtocol, "segment_id", sliceVars, true),
       protocol: segProtocol,
-      origin_address: originAddress,
-      message_type: null,
-      message_checksum_snippet: null,
-      segment_count: 0,
-      guardian_guid: null,
-      guardian_pincode: null,
-      segment_body: null
+      origin_address: originAddress
     };
 
     if (segObj.segment_id == 0) {
-      segObj.guardian_guid = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId, msgSegLengths.grdGuid);
-      segObj.guardian_pincode = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid, msgSegLengths.pinCode);
-      segObj.message_type = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode, msgSegLengths.msgType);
-      segObj.message_checksum_snippet = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode+msgSegLengths.msgType, msgSegLengths.chkSumSnip);
-      segObj.segment_count = parseInt(segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode+msgSegLengths.msgType+msgSegLengths.chkSumSnip, msgSegLengths.segId), 16);
-      segObj.segment_body = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId+msgSegLengths.grdGuid+msgSegLengths.pinCode+msgSegLengths.msgType+msgSegLengths.chkSumSnip+msgSegLengths.segId);
-    } else {
-      segObj.segment_body = segBody.substr(msgSegLengths.grpGuid+msgSegLengths.segId);
+      segObj.guardian_guid = slicePayload(segPayload, segProtocol, "guardian_guid", sliceVars, false);
+      segObj.guardian_pincode = slicePayload(segPayload, segProtocol, "guardian_pincode", sliceVars, false);
+      segObj.message_type = slicePayload(segPayload, segProtocol, "message_type", sliceVars, false);
+      segObj.message_checksum_snippet = slicePayload(segPayload, segProtocol, "message_checksum_snippet", sliceVars, false);
+      segObj.segment_count = parseInt(slicePayload(segPayload, segProtocol, "segment_count", sliceVars, false), 16);
+      segObj.segment_body = slicePayload(segPayload, segProtocol, "segment_count", sliceVars, true);
     }
 
     return segObj;  
@@ -181,9 +187,11 @@ exports.guardianMsgParsingUtils = {
 
                 if (JSON.stringify(result.obj).length > 2) {
                   var segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, "cmd", dbSegGrp.protocol, result.obj, result.gzip);
+                  
                   for (var i = 0; i < segsForQueue.length; i++) { 
                     smsTwilio.sendSms(segsForQueue[i], dbSegs[0].origin_address);
                   }
+                  
                 }
 
                 for (var i = 0; i < dbSegs.length; i++) { dbSegs[i].destroy(); }
@@ -211,4 +219,20 @@ function getPingObj(inputJsonObj, guardianId, guardianToken) {
 
 function constructSegmentsGroup(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer) {
   return exports.guardianMsgParsingUtils.constructSegmentsGroupForQueue(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer);
+}
+
+function slicePayload(segPayload, segProtocol, keyName, sliceVals, useSumOfIndices) {
+
+  var sliceAt = (!useSumOfIndices) ? [ sliceVals[keyName][0], sliceVals[keyName][1] ] : [ (sliceVals[keyName][0]+sliceVals[keyName][1]) ];
+
+  if (segProtocol == "sms") {
+
+    return segPayload.substr(sliceAt[0], sliceAt[1]);
+
+  } else if (segProtocol == "sbd") {
+  
+    return null;
+  }
+
+  return null;
 }
