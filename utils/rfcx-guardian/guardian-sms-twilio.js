@@ -7,6 +7,8 @@ exports.smsTwilio = {
     
     var isValid = false;
 
+    console.log( process.env.TWILIO_AUTH_TOKEN + " - " + req.headers["x-twilio-signature"] + " - " + req.headers["x-forwarded-proto"] + "://" + req.headers.host + req.originalUrl)
+
     if ( (req.headers["x-twilio-signature"] != null) && (process.env.TWILIO_AUTH_TOKEN != null) ) {
 
       isValid = twilioClient.validateRequest(
