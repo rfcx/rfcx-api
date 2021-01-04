@@ -142,10 +142,20 @@ router.route('/segments/sms')
 router.route('/segments/sbd')
   .post(function (req, res) {
  
-    console.log(req.body)
+    if (sbdRockBlock.validateIncomingMessage(req)) {
 
-    res.writeHead(200, {'Content-Type': 'text/xml'});
-    res.end();
+      console.log("Incoming RockBlock message validated...")
+
+
+      console.log(req.body)
+      var segObj = msgSegUtils.parseMsgSegment(req.body.Body, "sms", req.body.From);
+    
+    } else {
+
+      res.writeHead(401, {'Content-Type': 'text/xml'});
+      res.end();
+
+    }
   
   })
 
