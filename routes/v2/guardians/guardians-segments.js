@@ -131,6 +131,8 @@ router.route('/segments/sms')
     
     } else {
 
+      console.error(req.headers["x-forwarded-proto"] + "://" + req.headers.host + req.originalUrl)
+
       res.writeHead(401, {'Content-Type': 'text/xml'});
       res.end();
 
@@ -146,10 +148,15 @@ router.route('/segments/sbd')
 
       console.log("Incoming RockBlock message validated...")
 
+//      console.log(req.body)
 
-      console.log(req.body)
-      var segObj = msgSegUtils.parseMsgSegment(req.body.Body, "sms", req.body.From);
-    
+      var segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, "hex"), "sbd", req.body.imei);
+      
+      console.log(""+segObj.segment_body)
+
+      res.writeHead(200, {'Content-Type': 'text/xml'});
+      res.end();
+
     } else {
 
       res.writeHead(401, {'Content-Type': 'text/xml'});

@@ -75,7 +75,7 @@ exports.guardianMsgParsingUtils = {
       }
     };
 
-    obj.slice = {
+    obj.sliceAt = {
       group_guid: [ 0, obj.lengths.grpGuid ],
       segment_id: [ obj.lengths.grpGuid, obj.lengths.segId ],
       guardian_guid: [ (obj.lengths.grpGuid+obj.lengths.segId), obj.lengths.grdGuid ],
@@ -143,23 +143,23 @@ exports.guardianMsgParsingUtils = {
 
   parseMsgSegment: function (segPayload, segProtocol, originAddress) {
     
-    var sliceVars = this.msgSegmentConstants().slice;
+    var sliceAt = this.msgSegmentConstants().sliceAt;
 
     var segObj = {
-      group_guid: slicePayload(segPayload, segProtocol, "group_guid", sliceVars, false),
-      segment_id: parseInt(slicePayload(segPayload, segProtocol, "segment_id", sliceVars, false), 16),
-      segment_body: slicePayload(segPayload, segProtocol, "segment_id", sliceVars, true),
+      group_guid: slicePayload(segPayload, segProtocol, "group_guid", sliceAt, true),
+      segment_id: parseInt(slicePayload(segPayload, segProtocol, "segment_id", sliceAt, true), 16),
+      segment_body: slicePayload(segPayload, segProtocol, "segment_id", sliceAt, false),
       protocol: segProtocol,
       origin_address: originAddress
     };
 
     if (segObj.segment_id == 0) {
-      segObj.guardian_guid = slicePayload(segPayload, segProtocol, "guardian_guid", sliceVars, false);
-      segObj.guardian_pincode = slicePayload(segPayload, segProtocol, "guardian_pincode", sliceVars, false);
-      segObj.message_type = slicePayload(segPayload, segProtocol, "message_type", sliceVars, false);
-      segObj.message_checksum_snippet = slicePayload(segPayload, segProtocol, "message_checksum_snippet", sliceVars, false);
-      segObj.segment_count = parseInt(slicePayload(segPayload, segProtocol, "segment_count", sliceVars, false), 16);
-      segObj.segment_body = slicePayload(segPayload, segProtocol, "segment_count", sliceVars, true);
+      segObj.guardian_guid = slicePayload(segPayload, segProtocol, "guardian_guid", sliceAt, true);
+      segObj.guardian_pincode = slicePayload(segPayload, segProtocol, "guardian_pincode", sliceAt, true);
+      segObj.message_type = slicePayload(segPayload, segProtocol, "message_type", sliceAt, true);
+      segObj.message_checksum_snippet = slicePayload(segPayload, segProtocol, "message_checksum_snippet", sliceAt, true);
+      segObj.segment_count = parseInt(slicePayload(segPayload, segProtocol, "segment_count", sliceAt, true), 16);
+      segObj.segment_body = slicePayload(segPayload, segProtocol, "segment_count", sliceAt, false);
     }
 
     return segObj;  
@@ -221,18 +221,14 @@ function constructSegmentsGroup(guardianGuid, guardianPinCode, msgType, apiProto
   return exports.guardianMsgParsingUtils.constructSegmentsGroupForQueue(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer);
 }
 
-function slicePayload(segPayload, segProtocol, keyName, sliceVals, useSumOfIndices) {
-
-  var sliceAt = (!useSumOfIndices) ? [ sliceVals[keyName][0], sliceVals[keyName][1] ] : [ (sliceVals[keyName][0]+sliceVals[keyName][1]) ];
-
+function slicePayload(segPayload, segProtocol, keyName, sliceAtVals, hasFiniteLength) {
+  var sliceAt = (hasFiniteLength) ? [ sliceAtVals[keyName][0], sliceAtVals[keyName][1] ] : [ (sliceAtVals[keyName][0]+sliceAtVals[keyName][1]) ];
   if (segProtocol == "sms") {
-
-    return segPayload.substr(sliceAt[0], sliceAt[1]);
-
+    // return sliced string
+    return (sliceAt.length > 1) ? segPayload.substr(sliceAt[0], sliceAt[1]) : segPayload.substr(sliceAt[0]);
   } else if (segProtocol == "sbd") {
-  
-    return null;
+    // return sliced byte buffer
+    return (sliceAt.length > 1) ? segPayload.slice(sliceAt[0], sliceAt[1]) : segPayload.slice(sliceAt[0]);
   }
-
   return null;
 }
