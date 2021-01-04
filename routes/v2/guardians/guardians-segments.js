@@ -15,7 +15,7 @@ router.route('/segments/sms')
 
       console.log("Incoming Twilio message validated...")
 
-      var segObj = msgSegUtils.buildMsgSegmentObj(req.body.Body, "sms", req.body.From);
+      var segObj = msgSegUtils.parseMsgSegment(req.body.Body, "sms", req.body.From);
 
       models.GuardianMetaSegmentsReceived
           .findOrCreate({

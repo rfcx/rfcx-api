@@ -4,6 +4,7 @@ var hash = require('../../utils/misc/hash.js').hash;
 var checkInHelpers = require('../../utils/rfcx-checkin')
 var pingRouter = require('../../utils/rfcx-guardian/router-ping.js').pingRouter
 const guidService = require('../../utils/misc/guid.js')
+var smsTwilio = require('../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
 
 exports.guardianMsgParsingUtils = {
 
@@ -60,21 +61,27 @@ exports.guardianMsgParsingUtils = {
 
   },
 
+  msgSegmentConstants: function() {
+    return {
+      lengths: {
+        grpGuid: 4,
+        segId: 3,
+        grdGuid: 12,
+        pinCode: 4,
+        msgType: 3,
+        chkSumSnip: 20
+      }
+    }
+  },
 
-  buildMsgSegmentObj: function (segBody, segProtocol, originAddress) {
+  parseMsgSegment: function (segBody, segProtocol, originAddress) {
     
-    var grpGuidLength = 4,
-        segIdLength = 3,
-        guardianGuidLength = 12,
-        guardianPinCodeLength = 4,
-        msgTypeLength = 3,
-        msgChecksumSnippetLength = 20;
-    
+    var msgSegNums = this.msgSegmentConstants().lengths;
     // var segMaxLength = 160;
 
     var segObj = {
-      group_guid: segBody.substr(0, grpGuidLength),
-      segment_id: parseInt(segBody.substr(grpGuidLength, segIdLength), 16),
+      group_guid: segBody.substr(0, msgSegNums.grpGuid),
+      segment_id: parseInt(segBody.substr(msgSegNums.grpGuid, msgSegNums.segId), 16),
       protocol: segProtocol,
       origin_address: originAddress,
       message_type: null,
@@ -86,14 +93,14 @@ exports.guardianMsgParsingUtils = {
     };
 
     if (segObj.segment_id == 0) {
-      segObj.guardian_guid = segBody.substr(grpGuidLength+segIdLength, guardianGuidLength);
-      segObj.guardian_pincode = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength, guardianPinCodeLength);
-      segObj.message_type = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength, msgTypeLength);
-      segObj.message_checksum_snippet = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength, msgChecksumSnippetLength);
-      segObj.segment_count = parseInt(segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength+msgChecksumSnippetLength, segIdLength), 16);
-      segObj.segment_body = segBody.substr(grpGuidLength+segIdLength+guardianGuidLength+guardianPinCodeLength+msgTypeLength+msgChecksumSnippetLength+segIdLength);
+      segObj.guardian_guid = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId, msgSegNums.grdGuid);
+      segObj.guardian_pincode = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid, msgSegNums.pinCode);
+      segObj.message_type = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode, msgSegNums.msgType);
+      segObj.message_checksum_snippet = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode+msgSegNums.msgType, msgSegNums.chkSumSnip);
+      segObj.segment_count = parseInt(segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode+msgSegNums.msgType+msgSegNums.chkSumSnip, msgSegNums.segId), 16);
+      segObj.segment_body = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId+msgSegNums.grdGuid+msgSegNums.pinCode+msgSegNums.msgType+msgSegNums.chkSumSnip+msgSegNums.segId);
     } else {
-      segObj.segment_body = segBody.substr(grpGuidLength+segIdLength);
+      segObj.segment_body = segBody.substr(msgSegNums.grpGuid+msgSegNums.segId);
     }
 
     return segObj;  
@@ -118,6 +125,8 @@ exports.guardianMsgParsingUtils = {
 
             pingRouter.onMessagePing(pingObj, messageId)
               .then((result) => {   
+
+                smsTwilio.sendSms("This is a test, hello", dbSegs[0].origin_address)
 
                 for (var i = 0; i < dbSegs.length; i++) { dbSegs[i].destroy(); }
                 dbSegGrp.destroy();
