@@ -89,7 +89,7 @@ exports.guardianMsgParsingUtils = {
   },
 
 
-  generateGroupGuid: function() {
+  generateSegmentGroupGuid: function() {
     var groupGuidLength = this.msgSegmentConstants().lengths.grpGuid,
         str = '',
         key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -109,7 +109,7 @@ exports.guardianMsgParsingUtils = {
   constructSegmentsGroupForQueue: function(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer) {
 
     var msgGzipStr = msgJsonGzippedBuffer.toString('base64'),
-        groupGuid = this.generateGroupGuid(),
+        groupGuid = this.generateSegmentGroupGuid(),
         msgSegLengths = this.msgSegmentConstants().lengths,
         fullMsgChecksumSnippet = hash.hashData(JSON.stringify(msgJsonObj)).substr(0,msgSegLengths.chkSumSnip),
         segments = [];

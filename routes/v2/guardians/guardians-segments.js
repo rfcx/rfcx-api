@@ -131,8 +131,6 @@ router.route('/segments/sms')
     
     } else {
 
-      console.error(req.headers["x-forwarded-proto"] + "://" + req.headers.host + req.originalUrl)
-
       res.writeHead(401, {'Content-Type': 'text/xml'});
       res.end();
 

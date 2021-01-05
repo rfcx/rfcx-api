@@ -10,7 +10,16 @@ function onMessagePing (pingObj, messageId) {
       return checkInDatabase.validateDbGuardianToken(pingObj)
     })
     .then((pingObj) => {
+      return checkInDatabase.getDbSite(pingObj)
+    })
+    .then((pingObj) => {
       return checkInDatabase.createDbSaveMeta(pingObj)
+    })
+    .then((pingObj) => {
+      return checkInDatabase.saveDbMessages(pingObj)
+    })
+    .then((pingObj) => {
+      return checkInDatabase.updateDbMetaAssetsExchangeLog(pingObj)
     })
     .then((pingObj) => {
       return checkInDatabase.syncGuardianPrefs(pingObj)

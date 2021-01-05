@@ -107,7 +107,9 @@ exports.checkInDatabase = {
     const proms = []
     try {
       msgInfo = smsMessages.info(
-        checkInObj.json.messages, checkInObj.db.dbGuardian.id, checkInObj.db.dbCheckIn.id
+        checkInObj.json.messages, 
+        checkInObj.db.dbGuardian.id, 
+        ((checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null)
       )
     } catch (e) {
       return Promise.reject(e)
