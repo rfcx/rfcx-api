@@ -39,7 +39,6 @@ if (process.env.NODE_ENV === 'development') {
 const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options)
 sequelize.authenticate() // check connection
 
-
 const models = {
   Annotation: require('./annotations/annotation')(sequelize, Sequelize),
   ClassificationAlternativeName: require('./classifications/classification-alternative-name')(sequelize, Sequelize),
@@ -65,6 +64,7 @@ const models = {
   Stream: require('./streams/stream')(sequelize, Sequelize),
   StreamSegment: require('./streams/stream-segment')(sequelize, Sequelize),
   StreamSourceFile: require('./streams/stream-source-file')(sequelize, Sequelize),
+  SubscriptionType: require('./users/subscription-type')(sequelize, Sequelize),
   AudioCodec: require('./to-be-removed/audio_codec')(sequelize, Sequelize),
   AudioFileFormat: require('./to-be-removed/audio_file_format')(sequelize, Sequelize),
   ChannelLayout: require('./to-be-removed/channel_layout')(sequelize, Sequelize),
@@ -74,6 +74,7 @@ const models = {
   Role: require('./users/role')(sequelize, Sequelize),
   UserOrganizationRole: require('./users/user-organization-role')(sequelize, Sequelize),
   UserProjectRole: require('./users/user-project-role')(sequelize, Sequelize),
+  UserProjectSubscription: require('./users/user-project-subscription')(sequelize, Sequelize),
   UserStreamRole: require('./users/user-stream-role')(sequelize, Sequelize),
   User: require('./users/user')(sequelize, Sequelize)
 }
@@ -84,6 +85,5 @@ Object.keys(models).forEach(function (modelName) {
     models[modelName].associate(models)
   }
 })
-
 
 module.exports = { ...models, sequelize, Sequelize, options, utils }

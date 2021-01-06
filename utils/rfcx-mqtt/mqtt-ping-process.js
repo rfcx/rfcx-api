@@ -16,7 +16,7 @@ exports.mqttPingProcess = {
           }
 
           try {
-            var pingObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null);
+            var pingObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null)
             resolve(pingObj)
           } catch (errParsePingObj) {
             console.log(errParsePingObj)

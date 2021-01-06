@@ -889,5 +889,45 @@
         }
       }
     ]
+  },
+  "SubscriptionTypeLite": {
+    "properties": {
+      "id": {
+        "type": "integer",
+        "example": 1
+      },
+      "name": {
+        "type": "string",
+        "example": "Email"
+      }
+    }
+  },
+  "SubscriptionType": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/SubscriptionTypeLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Email subscription"
+          }
+        }
+      }
+    ]
+  },
+  "Subscription": {
+    "properties": {
+      "user": {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      "project": {
+        "$ref": "#/components/schemas/ProjectLite"
+      },
+      "subscription_type": {
+        "$ref": "#/components/schemas/SubscriptionTypeLite"
+      }
+    }
   }
 }
