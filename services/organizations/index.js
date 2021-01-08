@@ -132,23 +132,29 @@ async function update (id, organization, options = {}) {
  * Delete organization
  * @param {string} id
  * @param {*} options Additional delete options
- * @param {number} options.deletableBy Include only if organization is deletable to the given user id
+ * @param {number} options.deletableBy Perform only if organization is deletable by the given user id
  * @param {boolean} options.force Remove from the database (not soft-delete)
- * @param {boolean} options.undo Restore a deleted organization
- * @throws EmptyResultError when organization not found
  * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
  */
 async function remove (id, options = {}) {
   if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, ORGANIZATION))) {
     throw new ForbiddenError()
   }
-  return options.undo
-    ? Organization.restore({
-      where: { id }
-    }) : Organization.destroy({
-      where: { id },
-      force: options.force
-    })
+  return Organization.destroy({ where: { id }, force: options.force })
+}
+
+/**
+ * Restore deleted organization
+ * @param {string} id
+ * @param {*} options Additional restore options
+ * @param {number} options.deletableBy Perform only if organization is deletable by the given user id
+ * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
+ */
+async function unremove (id, options = {}) {
+  if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, ORGANIZATION))) {
+    throw new ForbiddenError()
+  }
+  return Organization.restore({ where: { id } })
 }
 
 module.exports = {
@@ -156,5 +162,6 @@ module.exports = {
   get,
   query,
   update,
-  remove
+  remove,
+  unremove
 }

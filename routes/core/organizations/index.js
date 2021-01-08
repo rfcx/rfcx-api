@@ -252,11 +252,14 @@ router.patch('/:id', (req, res) => {
  */
 router.delete('/:id', (req, res) => {
   const id = req.params.id
+  const undo = req.query.undo === 'true'
   const options = {
-    deletableBy: req.rfcx.auth_token_info.owner_id,
-    undo: req.query.undo === 'true'
+    deletableBy: req.rfcx.auth_token_info.owner_id
   }
-  return organizationsService.remove(id, options)
+  const action = undo
+    ? organizationsService.remove(id, options)
+    : organizationsService.unremove(id, options)
+  return action
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting organization'))
 })
