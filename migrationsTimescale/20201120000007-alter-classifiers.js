@@ -20,8 +20,8 @@ module.exports = {
         queryInterface.addColumn('classifiers', 'model_runner', { type: Sequelize.STRING, allowNull: false, defaultValue: '' }, { transaction: t }),
         queryInterface.addColumn('classifiers', 'model_url', { type: Sequelize.STRING, allowNull: false, defaultValue: '' }, { transaction: t }),
         queryInterface.addColumn('classifiers', 'last_executed_at', { type: Sequelize.DATE(3) }, { transaction: t }),
-        queryInterface.addColumn('classifiers', 'created_at', { type: Sequelize.DATE(3), allowNull: false }, { transaction: t }),
-        queryInterface.addColumn('classifiers', 'updated_at', { type: Sequelize.DATE(3), allowNull: false }, { transaction: t })
+        queryInterface.addColumn('classifiers', 'created_at', { type: Sequelize.DATE(3), allowNull: false, defaultValue: Sequelize.fn('now') }, { transaction: t }),
+        queryInterface.addColumn('classifiers', 'updated_at', { type: Sequelize.DATE(3), allowNull: false, defaultValue: Sequelize.fn('now') }, { transaction: t })
       ]).then(() => {
         return queryInterface.sequelize.query('UPDATE classifiers SET external_id = uuid', { transaction: t })
       }).then(() => {

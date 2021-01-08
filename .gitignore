@@ -6,6 +6,7 @@
 /config/config.json
 /config/service-account.json
 /bin/admin/_private
+/bin/audio/tmp
 
 # Temporary cache directory
 /tmp

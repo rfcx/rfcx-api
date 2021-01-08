@@ -1,7 +1,7 @@
 var models = require('../../models')
 var fs = require('fs')
 var saveMeta = require('../../utils/rfcx-mqtt/mqtt-save-meta.js').saveMeta
-var smsMessages = require('../../utils/rfcx-mqtt/mqtt-sms.js').messages
+var smsMessages = require('../../utils/rfcx-guardian/guardian-sms-database.js').messages
 var hash = require('../../utils/misc/hash.js').hash
 var Promise = require('bluebird')
 const moment = require('moment-timezone')
@@ -42,18 +42,27 @@ exports.checkInDatabase = {
 
   validateDbGuardianToken: function (checkInObj) {
     if (checkInObj.json.guardian_guid != null) {
+    
       // Adding support for differently structured guardian JSON blobs, which don't support auth.
       // This supports guardian software deployed before May 2020.
       // THIS SHOULD BE REMOVED when those guardians are taken offline.
       console.log('token validation skipped for guardian ' + checkInObj.json.guardian.guid)
       return checkInObj
-    } else if ((checkInObj.json.guardian != null) && (checkInObj.json.guardian.token != null)) {
+    
+    } else if (checkInObj.json.guardian != null) {
+      
       if (checkInObj.db.dbGuardian == null) {
         return Promise.reject(`Couldn't find guardian with guid ${checkInObj.json.guardian.guid}`) // eslint-disable-line prefer-promise-reject-errors
-      } else if (checkInObj.db.dbGuardian.auth_token_hash === hash.hashedCredentials(checkInObj.db.dbGuardian.auth_token_salt, checkInObj.json.guardian.token)) {
+      
+      } else if (checkInObj.meta.allow_without_auth_token) {
+        console.log('auth token validation skipped for ' + checkInObj.json.guardian.guid)
+        return checkInObj
+      
+      } else if ((checkInObj.json.guardian.token != null) && (checkInObj.db.dbGuardian.auth_token_hash === hash.hashedCredentials(checkInObj.db.dbGuardian.auth_token_salt, checkInObj.json.guardian.token))) {
         console.log('auth token validated for ' + checkInObj.json.guardian.guid)
         return checkInObj
       }
+      
     }
     console.log(`Failed to verify guardian auth token for guardian with guid ${checkInObj.json.guardian.guid}`)
     return Promise.reject(`Failed to verify guardian auth token for guardian with guid ${checkInObj.json.guardian.guid}`) // eslint-disable-line prefer-promise-reject-errors
@@ -98,7 +107,9 @@ exports.checkInDatabase = {
     const proms = []
     try {
       msgInfo = smsMessages.info(
-        checkInObj.json.messages, checkInObj.db.dbGuardian.id, checkInObj.db.dbCheckIn.id
+        checkInObj.json.messages, 
+        checkInObj.db.dbGuardian.id, 
+        ((checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null)
       )
     } catch (e) {
       return Promise.reject(e)
@@ -613,7 +624,7 @@ exports.checkInDatabase = {
     try {
       checkInObj.db.dbGuardian.last_check_in = new Date()
       checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count
-      checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.checkStartTime.valueOf()
+      checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.startTime.valueOf()
     } catch (e) {
       return Promise.reject(e)
     }

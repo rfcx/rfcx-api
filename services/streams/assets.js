@@ -259,7 +259,7 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
         // "−y" can be slow to produce the spectrogram if this number is not one more than a power of two (e.g. 129).
         // So we will raise spectrogram height to nearest power of two and then resize image back to requested height
         const yDimension = mathUtil.isPowerOfTwo(attrs.dimensions.y - 1) ? attrs.dimensions.y : (mathUtil.ceilPowerOfTwo(attrs.dimensions.y) + 1)
-        const soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -r ${attrs.monochrome === 'true' ? '-m' : '-h'} -o  ${specFilePath} -x ${attrs.dimensions.x} -y ${yDimension} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`
+        const soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -r ${attrs.monochrome === 'true' ? '-lm' : '-h'} -o  ${specFilePath} -x ${attrs.dimensions.x} -y ${yDimension} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`
         console.log('\n', soxPng, '\n')
         return runExec(soxPng)
           .then(() => {

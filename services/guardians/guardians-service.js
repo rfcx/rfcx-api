@@ -104,6 +104,7 @@ async function createGuardian (attrs) {
   dbGuardian.auth_token_salt = tokenSalt
   dbGuardian.auth_token_hash = hash.hashedCredentials(tokenSalt, attrs.token)
   dbGuardian.auth_token_updated_at = new Date()
+  dbGuardian.auth_pin_code = attrs.pinCode
   dbGuardian.site_id = attrs.site_id || 1
   if (attrs.is_private !== undefined) {
     dbGuardian.is_private = attrs.is_private

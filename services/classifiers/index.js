@@ -174,8 +174,8 @@ async function updateDeployment (update, transaction) {
   const existingDeployment = models.ClassifierDeployment.findOne({
     where: {
       classifier_id: update.id,
-      start: { [models.sequelize.Op.lt]: new Date() },
-      [models.sequelize.Op.or]: [{ end: null }, { end: { [models.sequelize.Op.gt]: new Date() } }]
+      start: { [models.Sequelize.Op.lt]: new Date() },
+      [models.Sequelize.Op.or]: [{ end: null }, { end: { [models.Sequelize.Op.gt]: new Date() } }]
     }
   })
 

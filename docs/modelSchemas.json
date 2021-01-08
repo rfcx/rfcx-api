@@ -379,6 +379,9 @@
           "longitude": {
             "type": "float",
             "example": 125.912
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectLite"
           }
         },
         "required": [
@@ -424,6 +427,28 @@
         "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
+  },
+  "UserLiteWithRoleAndPermissions": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      {
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "Member"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["O", "W", "R"]
+          }
+        }
+      }
+    ]
   },
   "IndexLite": {
     "properties": {
@@ -812,5 +837,57 @@
         "example": "minimum-windows=4 period-seconds=90"
       }
     }
+  },
+  "EventLite": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "cf8a7ac9-0dd2-40b6-b03f-a067d6c43325"
+      },
+      "stream_id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
+      }
+    }
+  },
+  "Event": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/EventLite"
+      },
+      {
+        "properties": {
+          "stream": {
+            "$ref": "#/components/schemas/StreamLite"
+          },
+          "classifier_event_strategy": {
+            "type": "object",
+            "properties": {
+              "parameters": {
+                "type": "string",
+                "example": "min-gap-between-events=30m"
+              },
+              "event_strategy": {
+                "$ref": "#/components/schemas/EventStrategy"
+              },
+              "classifier": {
+                "$ref": "#/components/schemas/ClassifierLite"
+              }
+            }
+          }
+        }
+      }
+    ]
   }
 }

@@ -17,25 +17,35 @@ const baseInclude = [
 ]
 
 /**
- * Searches for project model with given id
- * @param {string} id
+ * Searches for project model with given params
+ * @param {object} where
  * @param {*} opts additional function params
  * @returns {*} project model item
  */
-function getById (id, opts = {}) {
+function getByParams (where, opts = {}) {
   return models.Project
     .findOne({
-      where: { id },
+      where,
       attributes: models.Project.attributes.full,
       include: opts && opts.joinRelations ? baseInclude : [],
       paranoid: !opts.includeDeleted
     })
     .then(item => {
       if (!item) {
-        throw new EmptyResultError('Project with given id not found.')
+        throw new EmptyResultError('Project with given params not found.')
       }
       return item
     })
+}
+
+/**
+ * Searches for project model with given id
+ * @param {string} id
+ * @param {*} opts additional function params
+ * @returns {*} project model item
+ */
+function getById (id, opts = {}) {
+  return getByParams({ id }, opts)
 }
 
 /**
@@ -45,19 +55,7 @@ function getById (id, opts = {}) {
  * @returns {*} project model item
  */
 function getByExternalId (id, opts = {}) {
-  return models.Project
-    .findOne({
-      where: { external_id: id },
-      attributes: models.Project.attributes.full,
-      include: opts && opts.joinRelations ? baseInclude : [],
-      paranoid: !opts.includeDeleted
-    })
-    .then(item => {
-      if (!item) {
-        throw new EmptyResultError('Project with given external id not found.')
-      }
-      return item
-    })
+  return getByParams({ external_id: id }, opts)
 }
 
 /**
@@ -101,7 +99,7 @@ async function query (attrs, opts = {}) {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const ids = await rolesService.getSharedObjectsIDs(attrs.current_user_id, 'project')
+      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, 'project')
       where.id = {
         [models.Sequelize.Op.in]: ids
       }

@@ -48,6 +48,7 @@ router.post('/', function (req, res) {
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   params.convert('description').optional().toString()
   params.convert('is_public').optional().toBoolean().default(false)
+  params.convert('external_id').optional().toInt()
   params.convert('project_id').optional().toString()
   params.convert('project_external_id').optional().toInt()
 
@@ -160,7 +161,7 @@ router.get('/', (req, res) => {
       convertedParams.current_user_id = user.owner_id
       convertedParams.current_user_is_super = user.is_super
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
-      const streams = streamsData.streams.map(streamsService.formatStream)
+      const streams = streamsData.streams.map(x => streamsService.formatStream(x, null))
       return res
         .header('Total-Items', streamsData.count)
         .json(streams)
@@ -188,7 +189,7 @@ router.get('/', (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/StreamWithPermissions'
+ *               $ref: '#/components/schemas/Stream'
  *       403:
  *         description: Insufficient privileges
  *       404:

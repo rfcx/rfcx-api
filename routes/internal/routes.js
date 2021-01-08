@@ -16,5 +16,9 @@ module.exports = {
   prediction: [
     require('./prediction/detections'),
     require('./prediction/indices')
+  ],
+  arbimon: [
+    require('./arbimon/stream'),
+    require('./arbimon/project')
   ]
 }

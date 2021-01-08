@@ -99,11 +99,14 @@ exports.env = {
   CLASSY_CLIENT_ID: "",
   CLASSY_CLIENT_SECRET: "",
 
+  // TWILIO_ACCOUNT_SID: "", // required for sending and receiving requests to/from Twilio on the REST api
+  // TWILIO_AUTH_TOKEN: "", // required for sending and receiving requests to/from Twilio on the REST api
+
   RECAPTCHA_V3_SECRET_KEY: "",
 
   GUARDIAN_BROKER_HOSTNAME: "", // environment mqtt hostname for checkins/pings
   GUARDIAN_API_SMS_ADDRESS: "", // environment SMS Twilio Phone Number for SMS-based interaction with the Guardians
-  GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used for guardian registration
+  GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used to access the certificate keystore for mqtt broker secure connections
 
   /// Enabling ingest service features will push guardian audio to the ingest service
   // INGEST_SERVICE_ENABLED: 'false',

@@ -121,14 +121,14 @@ exports.mqttInstructions = {
           if ((checkInObj.json.instructions.received != null) && (checkInObj.json.instructions.received.length > 0)) {
             for (let i = 0; i < checkInObj.json.instructions.received.length; i++) {
               if (checkInObj.json.instructions.received[i].id != null) {
-                blockedInstructions.push(checkInObj.json.instructions.received[i].id)
+                blockedInstructions.push(parseInt(checkInObj.json.instructions.received[i].id))
               }
             }
           }
           if ((checkInObj.json.instructions.executed != null) && (checkInObj.json.instructions.executed.length > 0)) {
             for (let i = 0; i < checkInObj.json.instructions.executed.length; i++) {
               if (checkInObj.json.instructions.executed[i].id != null) {
-                blockedInstructions.push(checkInObj.json.instructions.executed[i].id)
+                blockedInstructions.push(parseInt(checkInObj.json.instructions.executed[i].id))
               }
             }
           }
