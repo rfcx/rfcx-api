@@ -30,9 +30,16 @@ async function getClientToken () {
 
 async function checkToken (type, requestFunc) {
   if (!tokens[type] || tokens[type].expires_at - Date.now() < 5000) { // it token is not defined or expires in next 5 seconds, request new one
-    const token = await requestFunc()
-    token.expires_at = Date.now() + token.expires_in
-    tokens[type] = { ...token }
+    try {
+      const token = await requestFunc()
+      if (!token || !token.access_token) {
+        throw new Error(`Unable to get Auth0 "${type}" token`)
+      }
+      token.expires_at = Date.now() + token.expires_in
+      tokens[type] = { ...token }
+    } catch (e) {
+      throw new Error(`Unable to get Auth0 "${type}" token`, e.message)
+    }
   }
 }
 
