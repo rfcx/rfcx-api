@@ -14,7 +14,6 @@ const mailService = require('../../../services/mail/mail-service')
 var ValidationError = require('../../../utils/converter/validation-error')
 var ForbiddenError = require('../../../utils/converter/forbidden-error')
 var usersService = require('../../../services/users/users-service-legacy')
-var usersFusedService = require('../../../services/users/fused')
 var sitesService = require('../../../services/sites/sites-service')
 var auth0Service = require('../../../services/auth0/auth0-service')
 var tokensService = require('../../../services/tokens/tokens-service')
@@ -436,7 +435,6 @@ router.route('/lastcheckin')
 // exist in our database, and if not, create it
 router.route('/touchapi')
   .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), async function (req, res) {
-    await usersFusedService.ensureUserSyncedFromToken(req)
     res.status(200).json({ success: true })
   })
 

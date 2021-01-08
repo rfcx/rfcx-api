@@ -26,6 +26,7 @@ function getByGuidOrEmail (guid, email) {
 }
 
 function collectUserDataForSync (req) {
+  console.log('\n\nreq', req.rfcx, '\n\n\n')
   const { guid, email, picture } = req.rfcx.auth_token_info
   return getByGuidOrEmail(guid, email)
     .then((dbUser) => {
@@ -69,7 +70,6 @@ async function ensureUserSyncedInTimescaleDB (user) {
 }
 
 async function ensureUserSyncedInNeo4j (user) {
-  console.log('\n\nensureUserSyncedInNeo4j', user, '\n\n')
   const searchQuery = 'MATCH (user:user) WHERE user.guid = {guid} AND user.email = {email} RETURN user LIMIT 1'
   const searchsession = neo4j.session()
   const searchResult = await Promise.resolve(searchsession.run(searchQuery, user))
@@ -78,7 +78,6 @@ async function ensureUserSyncedInNeo4j (user) {
     user.picture = ''
   }
   if ((!searchResult.records || !searchResult.records.length)) {
-    console.log('\n\ncreate neo4j user\n\n')
     const creationQuery = 'CREATE (user:user { guid: {guid}, firstname: {firstname}, lastname: {lastname}, email: {email}, username: {username}, pictureUrl: {picture} }) RETURN user'
     const creationSession = neo4j.session()
     const creationResult = await Promise.resolve(creationSession.run(creationQuery, user))
