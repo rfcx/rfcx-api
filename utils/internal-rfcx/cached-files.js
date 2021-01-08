@@ -10,12 +10,22 @@ exports.cachedFiles = {
 
     if (fs.existsSync(tmpDir + '/' + subDir)) {
       fs.readdir(tmpDir + '/' + subDir, function (err, dirName) {
-        console.log('cacheDirectoryGarbageCollection readdir error', err)
+        if (err) {
+          console.error('cacheDirectoryGarbageCollection readdir', err)
+          return
+        }
         dirName.forEach(function (innerFileName) {
           fs.stat(tmpDir + '/' + subDir + '/' + innerFileName, function (err, fileStats) {
-            console.log('cacheDirectoryGarbageCollection stat error', err)
+            if (err) {
+              console.error('cacheDirectoryGarbageCollection stat', err)
+              return
+            }
             if ((((new Date()).valueOf() - fileStats.mtime.valueOf()) / 60000) > maxAgeInMinutes) {
-              fs.unlink(tmpDir + '/' + subDir + '/' + innerFileName, function (err) { if (err) console.log(err) })
+              fs.unlink(tmpDir + '/' + subDir + '/' + innerFileName, function (err) {
+                if (err) {
+                  console.error('cacheDirectoryGarbageCollection unlink', err)
+                }
+              })
             }
           })
         })
