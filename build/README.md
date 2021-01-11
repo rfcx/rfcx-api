@@ -56,3 +56,51 @@
 3. Copy the sql from `bin/timescale/seed.sql` to execute it.
 
 4. Ctrl-d to logout
+
+
+### Add/edit environment variables
+
+You have 2 options:
+1. If it is not a secret (it is regular config) then it is part of the deployment yaml file (in build/k8s/...).
+2. If it is a secret (e.g. API key) then it should be added to the secrets yaml (this requires a few steps including base 64 encoding the secret -- see below).
+
+#### Regular configuration
+
+These are non-secret environment variables (e.g. logging level, enabled features, public urls, etc).
+
+Add/edit in the `env` section of the deployment yaml file. They will look like:
+
+```yaml
+   env:
+   - name: NEW_RELIC_NO_CONFIG_FILE
+      value: "true"
+   - name: NEW_RELIC_APP_NAME
+      value: "Core API"
+   - name: NEW_RELIC_LOG_LEVEL
+      value: "warn"
+```
+
+_TODO_ The changes will be made automatically when pushed to `staging`/`master` branches.
+
+The changes can be applied manually by running `kubectl apply -f build/k8s/http --namespace staging` (assuming the placeholders in the yaml have been set -- see `[NAMESPACE]` and others).
+
+#### Secrets
+
+Assume you want to add `X_API_KEY=n0tTeLLiNg`.
+
+First, find out where the deployment is getting its environment variables by looking at the build/k8s/http/http-api.yaml file for it's fromEnv property. This will tell you the name of the secrets file. (It's probably `api-secrets`)
+
+Next, update the secret (this works for adding a new key or editing an existing key) being sure to specify the correct namespace:
+
+```
+kubectl patch secret api-secrets --namespace staging -p='{"stringData":{"X_API_KEY": "n0tTeLLiNg"}}' -v=1
+```
+
+Finally, restart the API(s):
+
+```
+kubectl rollout restart api
+```
+
+Note you might need to restart multiple APIs (replace `api` with the name of the deployment from the k8s yaml deployment file -- e.g. `api-mqtt`, `api-media`, etc).
+
