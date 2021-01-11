@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const organizationsService = require('../../../services/organizations')
+const usersService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 
 /**
@@ -60,22 +61,24 @@ router.post('/', function (req, res) {
  *     tags:
  *       - organizations
  *     parameters:
- *       - name: is_public
- *         description: Return public or private organizations
- *         in: query
- *         type: boolean
- *       - name: is_deleted
- *         description: Return only your deleted organizations
- *         in: query
- *         type: string
- *       - name: created_by
- *         description: Returns different set of organizations based on who has created it (can be `me` or a user id)
- *         in: query
- *         type: string
  *       - name: keyword
  *         description: Match organizations with name
  *         in: query
  *         type: string
+ *       - name: created_by
+ *         description: Match organizations based on creator (can be `me` or a user guid)
+ *         in: query
+ *         type: string
+ *       - name: only_public
+ *         description: Return public or private organizations
+ *         in: query
+ *         type: boolean
+ *         default: false
+ *       - name: only_deleted
+ *         description: Return only your deleted organizations
+ *         in: query
+ *         type: boolean
+ *         default: false
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -111,26 +114,33 @@ router.get('/', (req, res) => {
   const readableBy = req.rfcx.auth_token_info.owner_id
   const converter = new Converter(req.query, {}, true)
   converter.convert('keyword').optional().toString()
+  converter.convert('created_by').optional().toString()
   converter.convert('only_public').optional().toBoolean()
   converter.convert('only_deleted').optional().toBoolean()
-  converter.convert('created_by').optional().toString()
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
   converter.convert('fields').optional().toArray()
 
   return converter.validate()
     .then(async params => {
-      const { keyword, onlyPublic, onlyDeleted, createdBy, limit, offset, fields } = params
+      const { keyword, onlyPublic, onlyDeleted, limit, offset, fields } = params
+      let createdBy = params.createdBy
+      if (createdBy === 'me') {
+        createdBy = readableBy
+      } else if (createdBy) {
+        createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
+      }
+      console.log(createdBy)
+      const filters = { keyword, createdBy }
       const options = {
         readableBy,
-        createdBy: createdBy === 'me' ? readableBy : createdBy,
         onlyPublic,
         onlyDeleted,
         limit,
         offset,
         fields
       }
-      const organizationsData = await organizationsService.query({ keyword }, options)
+      const organizationsData = await organizationsService.query(filters, options)
       return res
         .header('Total-Items', organizationsData.total)
         .json(organizationsData.results)

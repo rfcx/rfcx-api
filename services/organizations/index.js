@@ -59,10 +59,10 @@ async function get (id, options = {}) {
 /**
  * Get a list of organizations matching the conditions
  * @param {*} filters Organization attributes to filter
- * @param {string} filters.keyword Filter by keyword (in the organization name)
+ * @param {string} filters.keyword Where keyword is found (in the organization name)
+ * @param {number} filters.createdBy Where created by the given user id
  * @param {*} options Query options
- * @param {number} options.readableBy Include only organizations accessible to the given user id
- * @param {number} options.createdBy Include only organizations created by the given user id
+ * @param {number} options.readableBy Include only organizations readable by the given user id
  * @param {boolean} options.onlyPublic Include only public organizations
  * @param {boolean} options.onlyDeleted Include only deleted organizations
  * @param {string[]} options.fields Attributes and relations to include in results
@@ -71,32 +71,31 @@ async function get (id, options = {}) {
  */
 async function query (filters, options = {}) {
   const where = {}
+
+  // Filters (restrict results - can use multiple filters safely)
   if (filters.keyword) {
     where.name = {
       [Sequelize.Op.iLike]: `%${filters.keyword}%`
     }
   }
+  if (filters.createdBy) {
+    where.created_by_id = filters.createdBy
+  }
 
+  // Options (change behaviour - mix with care)
   if (options.readableBy) {
     where.id = {
       [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, ORGANIZATION)
     }
   }
-
-  if (options.createdBy) {
-    where.created_by_id = options.createdBy
-  }
-
   if (options.onlyPublic) {
     where.is_public = true
   }
-
   if (options.onlyDeleted) {
     where.deleted_at = {
       [Sequelize.Op.ne]: null
     }
   }
-
   const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.lite
   const includes = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
 
