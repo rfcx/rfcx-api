@@ -24,13 +24,7 @@ module.exports = {
       },
       subscription_type_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: {
-            tableName: 'subscription_types'
-          },
-          key: 'id'
-        }
+        allowNull: false
       },
       created_at: {
         type: Sequelize.DATE,

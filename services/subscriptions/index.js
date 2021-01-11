@@ -1,10 +1,11 @@
 const {
-  SubscriptionType,
-  UserProjectSubscription,
+  Organization,
   Project,
+  Stream,
   User,
-  Sequelize
+  UserProjectSubscription
 } = require('../../modelsTimescale')
+const subscriptionTypes = require('./subscription-types')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidaionError = require('../../utils/converter/validation-error')
 
@@ -14,23 +15,20 @@ const subscriptionModels = {
   stream: null // not yet implemented
 }
 
-const subscriptionInclude = [
-  {
-    model: User,
-    as: 'user',
-    attributes: User.attributes.lite
-  },
-  {
-    model: Project,
-    as: 'project',
-    attributes: Project.attributes.lite
-  },
-  {
-    model: SubscriptionType,
-    as: 'subscription_type',
-    attributes: SubscriptionType.attributes.lite
-  }
-]
+const subscriptionIncludes = {
+  organization: [
+    User.asInclude.lite,
+    Organization.asInclude.lite
+  ],
+  project: [
+    User.asInclude.lite,
+    Project.asInclude.lite
+  ],
+  stream: [
+    User.asInclude.lite,
+    Stream.asInclude.lite
+  ]
+}
 
 function _getModel (name) {
   const model = subscriptionModels[name]
@@ -42,28 +40,19 @@ function _getModel (name) {
 }
 
 /**
- * Searches for role model with given name
+ * Searches for subscription type with given name
  * @param {string} q Id or Name
- * @param {*} opts additional function params
- * @returns {*} Subscription type model item
+ * @returns {*} Subscription type item
  */
 function getTypeByIdOrName (q) {
-  return SubscriptionType
-    .findOne({
-      where: {
-        [Sequelize.Op.or]: {
-          ...!isNaN(parseInt(q)) && { id: parseInt(q) },
-          name: q
-        }
-      },
-      attributes: SubscriptionType.attributes.full
-    })
-    .then(item => {
-      if (!item) {
-        throw new EmptyResultError('Subscription type with given parameter not found.')
-      }
-      return item
-    })
+  q = `${q}`.toLowerCase()
+  const item = subscriptionTypes.find((type) => {
+    return `${type.id}` === q || type.name.toLowerCase() === q
+  })
+  if (!item) {
+    throw new EmptyResultError('Subscription type with given parameter not found.')
+  }
+  return item
 }
 
 /**
@@ -119,12 +108,17 @@ function query (userId, itemId, itemModelName) {
       user_id: userId,
       ...itemId && { [columnName]: itemId }
     },
-    include: subscriptionInclude
+    include: subscriptionIncludes[itemModelName]
   })
     .then((items) => {
       return items.map((item) => {
-        const { user, project, subscription_type } = item // eslint-disable-line camelcase
-        return { user, project, subscription_type }
+        const subscriptionType = getTypeByIdOrName(item.subscription_type_id)
+        const { id, name } = subscriptionType
+        return {
+          user: item.user,
+          [itemModelName]: item[itemModelName],
+          subscription_type: { id, name }
+        }
       })
     })
 }

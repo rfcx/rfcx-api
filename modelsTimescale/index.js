@@ -64,7 +64,6 @@ const models = {
   Stream: require('./streams/stream')(sequelize, Sequelize),
   StreamSegment: require('./streams/stream-segment')(sequelize, Sequelize),
   StreamSourceFile: require('./streams/stream-source-file')(sequelize, Sequelize),
-  SubscriptionType: require('./users/subscription-type')(sequelize, Sequelize),
   AudioCodec: require('./to-be-removed/audio_codec')(sequelize, Sequelize),
   AudioFileFormat: require('./to-be-removed/audio_file_format')(sequelize, Sequelize),
   ChannelLayout: require('./to-be-removed/channel_layout')(sequelize, Sequelize),

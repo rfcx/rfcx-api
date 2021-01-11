@@ -19,7 +19,6 @@ module.exports = function (sequelize, DataTypes) {
   UserProjectSubscription.associate = function (models) {
     UserProjectSubscription.belongsTo(models.User, { as: 'user', foreign_key: 'user_id' })
     UserProjectSubscription.belongsTo(models.Project, { as: 'project', foreign_key: 'project_id' })
-    UserProjectSubscription.belongsTo(models.SubscriptionType, { as: 'subscription_type', foreign_key: 'subscription_type_id' })
   }
   UserProjectSubscription.attributes = {
     full: ['user_id', 'project_id', 'subscription_type_id'],
