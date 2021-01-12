@@ -46,6 +46,7 @@ router.post('/', function (req, res) {
   params.convert('name').toString()
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  params.convert('altitude').optional().toFloat()
   params.convert('description').optional().toString()
   params.convert('is_public').optional().toBoolean().default(false)
   params.convert('external_id').optional().toInt()
@@ -253,6 +254,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
   params.convert('is_public').optional().toBoolean()
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  params.convert('altitude').optional().toFloat()
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
@@ -284,7 +286,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
  *         required: true
  *         type: string
  *     responses:
- *       200:
+ *       204:
  *         description: Success
  *       403:
  *         description: Insufficient privileges
