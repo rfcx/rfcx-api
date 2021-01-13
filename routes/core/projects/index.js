@@ -119,7 +119,7 @@ router.post('/', function (req, res) {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Project'
+ *                 $ref: '#/components/schemas/ProjectLite'
  *       400:
  *         description: Invalid query parameters
  */

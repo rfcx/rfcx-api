@@ -137,7 +137,7 @@ async function query (attrs, opts = {}) {
     where,
     limit: attrs.limit,
     offset: attrs.offset,
-    attributes: models.Project.attributes.lite,
+    attributes: opts.attributes || models.Project.attributes.lite,
     include: opts.joinRelations ? baseInclude : [],
     paranoid: attrs.is_deleted !== true
   })
@@ -195,6 +195,26 @@ function restore (project) {
     })
 }
 
+/**
+ * Get project location by first stream related to a project
+ * @param {*} id project id
+ * @returns {object | null} object with latitude and longitude or null
+ */
+function getProjectLocation (id) {
+  return models.Stream.findOne({
+    where: {
+      project_id: id
+    },
+    attributes: ['latitude', 'longitude']
+  }).then((data) => {
+    if (!data) {
+      return null
+    }
+    const { latitude, longitude } = data
+    return { latitude, longitude }
+  })
+}
+
 function formatProject (project) {
   const { id, name, description, is_public, created_at, updated_at } = project // eslint-disable-line camelcase
   return {
@@ -223,6 +243,7 @@ module.exports = {
   update,
   softDelete,
   restore,
+  getProjectLocation,
   formatProject,
   formatProjects
 }
