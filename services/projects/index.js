@@ -95,6 +95,10 @@ async function query (attrs, opts = {}) {
     where.is_public = true
   }
 
+  if (attrs.is_partner === true) {
+    where.is_partner = true
+  }
+
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
