@@ -14,7 +14,7 @@ const { hasProjectPermission } = require('../../../middleware/authorization/role
  *       - subscriptions
  *     parameters:
  *       - name: subscription
- *         description: Subscription id or name
+ *         description: Subscription id or name. Available values are "Email" or 1, "Push Notification" or 2
  *         in: query
  *         type: string
  *         example: Email or 1
