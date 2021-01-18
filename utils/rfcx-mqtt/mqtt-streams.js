@@ -1,4 +1,4 @@
-const streamsUploadService = require('../../services/streams/streams-uploads-service')
+const { upload } = require('../../services/streams/source-file-upload')
 const streamsTimescaleService = require('../../services/streams')
 const S3Service = require('../../services/legacy/s3/s3-service')
 const moment = require('moment-timezone')
@@ -15,7 +15,7 @@ function ingestGuardianAudio (checkInObj) {
         targetBitrate: checkInObj.audio.meta.bitRate,
         sampleRate: checkInObj.audio.meta.sampleRate
       }
-      return streamsUploadService.requestUpload(uploadData)
+      return upload(uploadData)
     })
     .then((data) => {
       return S3Service.copyObject(process.env.ASSET_BUCKET_AUDIO, checkInObj.audio.meta.s3Path, data.bucket, data.path)
