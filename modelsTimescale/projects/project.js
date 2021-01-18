@@ -29,6 +29,11 @@ module.exports = function (sequelize, DataTypes) {
     external_id: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    is_partner: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
     }
   }, {
     paranoid: true,
@@ -41,7 +46,7 @@ module.exports = function (sequelize, DataTypes) {
     Project.hasMany(models.Stream, { as: 'streams', foreignKey: 'project_id' })
   }
   Project.attributes = {
-    full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'created_at', 'updated_at'],
+    full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'is_partner', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'is_public', 'external_id']
   }
   const includeBase = { model: Project, as: 'project' }
