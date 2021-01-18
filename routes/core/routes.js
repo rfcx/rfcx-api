@@ -21,7 +21,8 @@ module.exports = {
     require('./stream-segments')
   ],
   projects: [
-    require('./projects')
+    require('./projects'),
+    require('./subscriptions/project')
   ],
   streams: [
     require('./streams'),

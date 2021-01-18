@@ -37,5 +37,10 @@ module.exports = function (sequelize, DataTypes) {
     full: ['firstname', 'lastname', 'picture', 'username', 'email', 'guid'],
     lite: ['firstname', 'lastname', 'email', 'picture']
   }
+  const includeBase = { model: User, as: 'user' }
+  User.asInclude = {
+    full: { ...includeBase, attributes: User.attributes.full },
+    lite: { ...includeBase, attributes: User.attributes.lite }
+  }
   return User
 }

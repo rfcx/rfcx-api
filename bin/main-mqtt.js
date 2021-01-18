@@ -81,10 +81,10 @@ app.mqtt.on('message', (topic, data) => {
       .then((result) => {
         app.mqtt.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
 
-      // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
-      // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE BELOW SHOULD BE REMOVED
+        // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
+        // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE BELOW SHOULD BE REMOVED
         app.mqtt.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip)
-      // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE ABOVE SHOULD BE REMOVED
+        // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE ABOVE SHOULD BE REMOVED
 
         console.log('mqtt message processed', topic, messageId)
         messageId = null
