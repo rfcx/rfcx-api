@@ -57,14 +57,14 @@ router.post('/', function (req, res) {
     .then(async () => {
       if (convertedParams.project_id) {
         await projectsService.getById(convertedParams.project_id)
-        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, convertedParams.project_id, 'Project')
+        const allowed = await rolesService.hasPermission('U', req.rfcx.auth_token_info, convertedParams.project_id, 'Project')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
       }
       if (convertedParams.project_external_id) {
         const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
-        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, externalProject.id, 'Project')
+        const allowed = await rolesService.hasPermission('U', req.rfcx.auth_token_info, externalProject.id, 'Project')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
