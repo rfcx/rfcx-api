@@ -4,7 +4,6 @@ var mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqt
 var guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
 
 function onMessagePing (pingObj, messageId) {
-  
   return checkInDatabase.getDbGuardian(pingObj)
     .then((pingObj) => {
       return checkInDatabase.validateDbGuardianToken(pingObj)

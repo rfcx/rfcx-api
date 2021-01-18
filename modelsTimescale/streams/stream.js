@@ -85,5 +85,10 @@ module.exports = function (sequelize, DataTypes) {
     full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'max_sample_rate', 'project_id', 'created_by_id', 'external_id', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'start', 'end', 'is_public']
   }
+  const includeBase = { model: Stream, as: 'stream' }
+  Stream.asInclude = {
+    full: { ...includeBase, attributes: Stream.attributes.full },
+    lite: { ...includeBase, attributes: Stream.attributes.lite }
+  }
   return Stream
 }
