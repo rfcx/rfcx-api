@@ -1,6 +1,6 @@
 const { Organization, Sequelize, User } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError } = require('../../utils/errors')
-const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, rREAD, UPDATE, DELETE } = require('../roles')
+const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
 const { hash } = require('../../utils/misc/hash.js')
 const pagedQuery = require('../../utils/db/paged-query')
 
