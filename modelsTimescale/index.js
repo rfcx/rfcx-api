@@ -39,7 +39,6 @@ if (process.env.NODE_ENV === 'development') {
 const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options)
 sequelize.authenticate() // check connection
 
-
 const models = {
   Annotation: require('./annotations/annotation')(sequelize, Sequelize),
   ClassificationAlternativeName: require('./classifications/classification-alternative-name')(sequelize, Sequelize),
@@ -63,6 +62,7 @@ const models = {
   Organization: require('./projects/organization')(sequelize, Sequelize),
   Project: require('./projects/project')(sequelize, Sequelize),
   Stream: require('./streams/stream')(sequelize, Sequelize),
+  StreamAsset: require('./streams/stream-asset')(sequelize, Sequelize),
   StreamSegment: require('./streams/stream-segment')(sequelize, Sequelize),
   StreamSourceFile: require('./streams/stream-source-file')(sequelize, Sequelize),
   AudioCodec: require('./to-be-removed/audio_codec')(sequelize, Sequelize),
@@ -84,6 +84,5 @@ Object.keys(models).forEach(function (modelName) {
     models[modelName].associate(models)
   }
 })
-
 
 module.exports = { ...models, sequelize, Sequelize, options, utils }
