@@ -57,7 +57,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     altitude: {
-      type: DataTypes.DOUBLE,
+      type: DataTypes.REAL,
       allowNull: true
     },
     max_sample_rate: {
