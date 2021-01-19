@@ -3,7 +3,7 @@ const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrateg
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
-const { getAccessibleObjectsIDs, hasPermission } = require('../roles')
+const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
 
 // TODO: move to model object
 const availableIncludes = [
@@ -86,7 +86,7 @@ async function query (filters, options) {
     }
   }
   if (options.readableBy) {
-    const streamIds = await getAccessibleObjectsIDs(options.readableBy, 'stream', filters.streamIds)
+    const streamIds = await getAccessibleObjectsIDs(options.readableBy, STREAM, filters.streamIds)
     where.stream_id = {
       [Sequelize.Op.in]: streamIds
     }
@@ -145,7 +145,7 @@ async function get (id, options = {}) {
   })
 
   // TODO remove hard-coded strings
-  if (options.readableBy && !(await hasPermission('R', options.readableBy, event.stream_id, 'Stream'))) {
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, event.stream_id, STREAM))) {
     throw new ForbiddenError()
   }
 
