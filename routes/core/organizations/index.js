@@ -130,7 +130,6 @@ router.get('/', (req, res) => {
       } else if (createdBy) {
         createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
-      console.log(createdBy)
       const filters = { keyword, createdBy }
       const options = {
         readableBy,
@@ -248,10 +247,6 @@ router.patch('/:id', (req, res) => {
  *         in: path
  *         required: true
  *         type: string
- *       - name: undo
- *         description: Restore a deleted organization
- *         in: query
- *         type: boolean
  *     responses:
  *       204:
  *         description: Success
@@ -262,14 +257,10 @@ router.patch('/:id', (req, res) => {
  */
 router.delete('/:id', (req, res) => {
   const id = req.params.id
-  const undo = req.query.undo === 'true'
   const options = {
     deletableBy: req.rfcx.auth_token_info.owner_id
   }
-  const action = undo
-    ? organizationsService.remove(id, options)
-    : organizationsService.unremove(id, options)
-  return action
+  return organizationsService.remove(id, options)
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting organization'))
 })

@@ -149,7 +149,7 @@ async function remove (id, options = {}) {
  * @param {number} options.deletableBy Perform only if organization is deletable by the given user id
  * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
  */
-async function unremove (id, options = {}) {
+async function restore (id, options = {}) {
   if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, ORGANIZATION))) {
     throw new ForbiddenError()
   }
@@ -162,5 +162,5 @@ module.exports = {
   query,
   update,
   remove,
-  unremove
+  restore
 }
