@@ -101,9 +101,9 @@ async function getPermissions (userOrId, itemOrId, itemName) {
     throw new Error('RolesService: getPermissions: missing required parameter "itemName"')
   }
   if (!Object.keys(hierarchy).includes(itemName)) {
-    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemName}"`)
+    throw new Error(`RolesService: invalid value for "itemName" parameter: "${itemName}"`)
   }
-  let item = await (isId ? models[itemName].findOne({
+  let item = await (isId ? hierarchy[itemName].model.findOne({
     where: { id: itemOrId },
     paranoid: false
   }) : Promise.resolve(itemOrId))
@@ -134,7 +134,7 @@ async function getPermissions (userOrId, itemOrId, itemName) {
       const parentColumnId = `${currentLevel.parent.toLowerCase()}_id`
       // if current item is not the first in level hierarchy, request its parent item
       if (item[parentColumnId]) {
-        item = await models[currentLevel.parent].findOne({
+        item = await hierarchy[currentLevel.parent].model.findOne({
           where: {
             id: item[parentColumnId]
           },
@@ -203,13 +203,13 @@ async function getAccessibleObjectsIDs (userId, itemName, inIds) {
  * @param {string} id item id
  * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
  */
-function getUsersForItem (id, itemModelName) {
-  if (!itemModelNames.includes(itemModelName)) {
-    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
+function getUsersForItem (id, itemName) {
+  if (!Object.keys(hierarchy).includes(itemName)) {
+    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemName}"`)
   }
-  return hierarchy[itemModelName].roleModel.findAll({
+  return hierarchy[itemName].roleModel.findAll({
     where: {
-      [hierarchy[itemModelName].columnId]: id
+      [hierarchy[itemName].columnId]: id
     },
     include: [
       ...userRoleBaseInclude,
@@ -237,13 +237,13 @@ function getUsersForItem (id, itemModelName) {
  * @param {string} userId user id
  * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
  */
-function getUserRoleForItem (id, userId, itemModelName) {
-  if (!itemModelNames.includes(itemModelName)) {
-    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemModelName}"`)
+function getUserRoleForItem (id, userId, itemName) {
+  if (!Object.keys(hierarchy).includes(itemName)) {
+    throw new Error(`RolesService: invalid value for "itemModelName" parameter: "${itemName}"`)
   }
-  return hierarchy[itemModelName].roleModel.findOne({
+  return hierarchy[itemName].roleModel.findOne({
     where: {
-      [hierarchy[itemModelName].columnId]: id,
+      [hierarchy[itemName].columnId]: id,
       user_id: userId
     },
     include: [
@@ -272,19 +272,19 @@ function getUserRoleForItem (id, userId, itemModelName) {
  * @param {string} userId user id
  * @param {string} roleId role id
  * @param {string} itemId item id
- * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ * @param {string} itemName item model name (e.g. stream, project, organization)
  */
-function addRole (userId, roleId, itemId, itemModelName) {
+function addRole (userId, roleId, itemId, itemName) {
   return models.sequelize.transaction(async (transaction) => {
-    const columnName = `${itemModelName.toLowerCase()}_id`
-    await hierarchy[itemModelName].roleModel.destroy({
+    const columnName = `${itemName}_id`
+    await hierarchy[itemName].roleModel.destroy({
       where: {
         [columnName]: itemId,
         user_id: userId
       },
       transaction
     })
-    return hierarchy[itemModelName].roleModel.create({
+    return hierarchy[itemName].roleModel.create({
       user_id: userId,
       [columnName]: itemId,
       role_id: roleId
@@ -298,11 +298,11 @@ function addRole (userId, roleId, itemId, itemModelName) {
  * Removes user role for specified item
  * @param {string} userId user id
  * @param {string} itemId item id
- * @param {string} itemModelName item model name (e.g. Stream, Project, Organization)
+ * @param {string} itemName item model name (e.g. stream, project, organization)
  */
-function removeRole (userId, itemId, itemModelName) {
-  const columnName = `${itemModelName.toLowerCase()}_id`
-  return hierarchy[itemModelName].roleModel.destroy({
+function removeRole (userId, itemId, itemName) {
+  const columnName = `${itemName}_id`
+  return hierarchy[itemName].roleModel.destroy({
     where: {
       [columnName]: itemId,
       user_id: userId
@@ -315,6 +315,10 @@ module.exports = {
   hasPermission,
   getPermissions,
   getAccessibleObjectsIDs,
+  getUsersForItem,
+  getUserRoleForItem,
+  addRole,
+  removeRole,
   ORGANIZATION,
   PROJECT,
   STREAM,
