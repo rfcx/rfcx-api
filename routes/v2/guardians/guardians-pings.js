@@ -19,6 +19,7 @@ router.route('/:guardian_id/pings')
       .then(function (json) {
         let messageId = guidService.generate()
 
+        console.log(req.headers)
         var pingObj = guardianMsgParsingUtils.constructGuardianMsgObj(json, req.params.guardian_id, req.headers['x-auth-token'])
 
         pingRouter.onMessagePing(pingObj, messageId)
