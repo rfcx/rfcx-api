@@ -86,7 +86,7 @@ async function query (filters, options) {
     }
   }
   if (options.readableBy) {
-    const streamIds = await getAccessibleObjectsIDs(options.readableBy, 'stream', 'all', filters.streamIds)
+    const streamIds = await getAccessibleObjectsIDs(options.readableBy, 'stream', filters.streamIds)
     where.stream_id = {
       [Sequelize.Op.in]: streamIds
     }

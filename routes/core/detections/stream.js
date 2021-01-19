@@ -161,7 +161,7 @@ router.post('/:id/detections', function (req, res) {
       if ((user.roles || []).includes('systemUser')) {
         return true
       }
-      const allowed = await rolesService.hasPermission('U', user, streamId, 'Stream')
+      const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, streamId, rolesService.STREAM)
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }

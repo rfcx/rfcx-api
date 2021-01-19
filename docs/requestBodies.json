@@ -547,6 +547,24 @@
       "file_extension"
     ]
   },
+  "Organization": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Organization name",
+        "example": "Rainforest Connection"
+      },
+      "is_public": {
+        "type": "boolean",
+        "description": "Visible to the public",
+        "default": "false"
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
   "ProjectPatch": {
     "type": "object",
     "properties": {

@@ -45,7 +45,7 @@ router.post('/', function (req, res) {
   params.convert('id').optional().toString()
   params.convert('name').toString()
   params.convert('description').optional().toString()
-  params.convert('is_public').optional().toBoolean().default(false)
+  params.convert('is_public').default(false).toBoolean()
   params.convert('organization_id').optional().toString()
   params.convert('external_id').optional().toInt()
 
@@ -54,7 +54,7 @@ router.post('/', function (req, res) {
     .then(async () => {
       if (convertedParams.organization_id) {
         await organizationsService.getById(convertedParams.organization_id)
-        const allowed = await rolesService.hasPermission('C', userId, convertedParams.organization_id, 'Organization')
+        const allowed = await rolesService.hasPermission(rolesService.CREATE, userId, convertedParams.organization_id, 'Organization')
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create project in this organization.')
         }
@@ -259,7 +259,7 @@ router.patch('/:id', hasProjectPermission('U'), (req, res) => {
  *         required: true
  *         type: string
  *     responses:
- *       200:
+ *       204:
  *         description: Success
  *       403:
  *         description: Insufficient privileges

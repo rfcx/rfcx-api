@@ -79,7 +79,7 @@ router.put('/:id/review', function (req, res) {
       if (!detection) {
         throw new EmptyResultError('Detection with given id not found.')
       }
-      const allowed = await rolesService.hasPermission('U', user, detection.stream_id, 'Stream')
+      const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, detection.stream_id, rolesService.STREAM)
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
