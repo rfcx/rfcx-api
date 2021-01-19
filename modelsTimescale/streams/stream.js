@@ -56,6 +56,10 @@ module.exports = function (sequelize, DataTypes) {
         }
       }
     },
+    altitude: {
+      type: DataTypes.REAL,
+      allowNull: true
+    },
     max_sample_rate: {
       type: DataTypes.INTEGER,
       allowNull: true
@@ -82,8 +86,11 @@ module.exports = function (sequelize, DataTypes) {
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'max_sample_rate', 'project_id', 'created_by_id', 'external_id', 'created_at', 'updated_at'],
+    full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'project_id', 'created_by_id', 'external_id', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'start', 'end', 'is_public']
+  }
+  Stream.include = function (as = 'stream', attributes = Stream.attributes.lite, required = true) {
+    return { model: Stream, as, attributes, required }
   }
   return Stream
 }

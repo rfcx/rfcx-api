@@ -58,13 +58,13 @@ router.patch('/streams/:externalId', (req, res) => {
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.getByExternalId(streamId))
     .then(async stream => {
-      const allowed = await rolesService.hasPermission('U', user, stream, 'Stream')
+      const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, stream, rolesService.STREAM)
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
       if (convertedParams.project_external_id) {
         const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
-        const allowed = await rolesService.hasPermission('C', req.rfcx.auth_token_info, externalProject.id, 'Project')
+        const allowed = await rolesService.hasPermission(rolesService.CREATE, req.rfcx.auth_token_info, externalProject.id, rolesService.PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to add stream into this project.')
         }
@@ -103,7 +103,7 @@ router.delete('/streams/:externalId', async (req, res) => {
   try {
     await usersFusedService.ensureUserSyncedFromToken(req)
     const stream = await streamsService.getByExternalId(req.params.externalId, { joinRelations: true })
-    const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, 'Stream')
+    const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to delete this stream.')
     }

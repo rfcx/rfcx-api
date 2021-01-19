@@ -20,11 +20,16 @@ module.exports = {
   'stream-segments': [
     require('./stream-segments')
   ],
+  organizations: [
+    require('./organizations')
+  ],
   projects: [
-    require('./projects')
+    require('./projects'),
+    require('./subscriptions/project')
   ],
   streams: [
     require('./streams'),
+    require('./streams/assets'),
     require('./annotations/stream'),
     require('./classifications/stream'),
     require('./detections/stream'),

@@ -178,7 +178,6 @@ exports.guardianMsgParsingUtils = {
                     smsTwilio.sendSms(segsForQueue[i], dbSegs[0].origin_address)
                   }
                 }
-
                 for (var k = 0; k < dbSegs.length; k++) { dbSegs[k].destroy() }
                 dbSegGrp.destroy()
 

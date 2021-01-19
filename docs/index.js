@@ -63,6 +63,7 @@ const options = {
     './routes/internal/cron/*.js',
     './routes/internal/explorer/*.js',
     './routes/internal/prediction/*.js',
+    './routes/public/**/*.js',
     './routes/*.js'
   ]
 }

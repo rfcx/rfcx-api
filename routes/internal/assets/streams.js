@@ -3,8 +3,8 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const auth0Service = require('../../../services/auth0/auth0-service')
 const streamsService = require('../../../services/streams')
-const streamSegmentService = require('../../../services/streams/stream-segment')
-const streamsAssetsService = require('../../../services/streams/assets')
+const streamSegmentService = require('../../../services/streams/segments')
+const { parseFileNameAttrs, checkAttrsValidity, gluedDateToISO, getFile } = require('../../../services/streams/segment-file-utils')
 const rolesService = require('../../../services/roles')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
@@ -66,8 +66,8 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 router.get('/streams/:attrs', async function (req, res) {
   try {
-    const attrs = await streamsAssetsService.parseFileNameAttrs(req)
-    await streamsAssetsService.checkAttrsValidity(req, attrs)
+    const attrs = await parseFileNameAttrs(req)
+    await checkAttrsValidity(req, attrs)
     const stream = await streamsService.getById(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
     const roles = auth0Service.getUserRolesFromToken(req.user)
@@ -75,20 +75,20 @@ router.get('/streams/:attrs', async function (req, res) {
     if ((roles || []).includes('systemUser')) {
       allowed = true
     } else {
-      allowed = await rolesService.hasPermission('R', req.rfcx.auth_token_info, stream, 'Stream')
+      allowed = await rolesService.hasPermission(rolesService.READ, req.rfcx.auth_token_info, stream, rolesService.STREAM)
     }
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to access this stream.')
     }
-    const start = streamsAssetsService.gluedDateToISO(attrs.time.starts)
-    const end = streamsAssetsService.gluedDateToISO(attrs.time.ends)
+    const start = gluedDateToISO(attrs.time.starts)
+    const end = gluedDateToISO(attrs.time.ends)
     const queryData = await streamSegmentService.query({ stream_id, start, end }, { joinRelations: true })
     const segments = queryData.streamSegments
     if (!segments.length) {
       throw new EmptyResultError('No audio files found for selected time range.')
     }
     const nextTimestamp = await streamSegmentService.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
-    return await streamsAssetsService.getFile(req, res, attrs, segments, nextTimestamp)
+    return await getFile(req, res, attrs, segments, nextTimestamp)
   } catch (e) {
     httpErrorHandler(req, res, 'Failed getting stream asset.')(e)
   }

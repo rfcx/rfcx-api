@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
-const streamSegmentService = require('../../../services/streams/stream-segment')
+const streamSegmentService = require('../../../services/streams/segments')
 
 /**
  * @swagger

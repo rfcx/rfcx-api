@@ -32,6 +32,20 @@ function getByGuidOrEmail (guid, email, opts = {}) {
   return getByParams({ [models.Sequelize.Op.or]: { guid, email } }, opts)
 }
 
+/**
+ * Get user id by guid
+ * @param {string} guid
+ * @returns {number|undefined} user id
+ */
+async function getIdByGuid (guid) {
+  try {
+    const user = await getByGuid(guid)
+    return user.id
+  } catch (err) {
+    return undefined
+  }
+}
+
 function collectUserDataForSync (req) {
   console.log('\n\nreq', req.rfcx, '\n\n\n')
   const { guid, email, picture } = req.rfcx.auth_token_info
@@ -83,6 +97,7 @@ module.exports = {
   getByGuid,
   getByEmail,
   getByGuidOrEmail,
+  getIdByGuid,
   ensureUserSynced,
   ensureUserSyncedFromToken
 }

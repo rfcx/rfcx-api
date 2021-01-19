@@ -62,6 +62,7 @@ const models = {
   Organization: require('./projects/organization')(sequelize, Sequelize),
   Project: require('./projects/project')(sequelize, Sequelize),
   Stream: require('./streams/stream')(sequelize, Sequelize),
+  StreamAsset: require('./streams/stream-asset')(sequelize, Sequelize),
   StreamSegment: require('./streams/stream-segment')(sequelize, Sequelize),
   StreamSourceFile: require('./streams/stream-source-file')(sequelize, Sequelize),
   AudioCodec: require('./to-be-removed/audio_codec')(sequelize, Sequelize),
@@ -73,6 +74,7 @@ const models = {
   Role: require('./users/role')(sequelize, Sequelize),
   UserOrganizationRole: require('./users/user-organization-role')(sequelize, Sequelize),
   UserProjectRole: require('./users/user-project-role')(sequelize, Sequelize),
+  UserProjectSubscription: require('./users/user-project-subscription')(sequelize, Sequelize),
   UserStreamRole: require('./users/user-stream-role')(sequelize, Sequelize),
   User: require('./users/user')(sequelize, Sequelize)
 }

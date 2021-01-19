@@ -25,15 +25,15 @@ function hasPermission (permission, modelName) {
 }
 
 function hasOrganizationPermission (permission) {
-  return hasPermission(permission, 'Organization')
+  return hasPermission(permission, rolesService.ORGANIZATION)
 }
 
 function hasProjectPermission (permission) {
-  return hasPermission(permission, 'Project')
+  return hasPermission(permission, rolesService.PROJECT)
 }
 
 function hasStreamPermission (permission) {
-  return hasPermission(permission, 'Stream')
+  return hasPermission(permission, rolesService.STREAM)
 }
 
 module.exports = {

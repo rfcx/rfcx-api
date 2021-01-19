@@ -2,7 +2,7 @@ const rp = require('request-promise')
 const auth0Service = require('../auth0/auth0-service')
 const ValidationError = require('../../utils/converter/validation-error').ValidationError
 
-function requestUpload (data) {
+function upload (data) {
   const missingAttrs = ['filename', 'timestamp', 'stream', 'checksum'].filter(x => data[x] === undefined)
   if (missingAttrs.length) {
     throw new ValidationError(`The following attrs are required for requestUpload function call: ${missingAttrs.join(', ')}`)
@@ -32,5 +32,5 @@ function requestUpload (data) {
 }
 
 module.exports = {
-  requestUpload
+  upload
 }

@@ -29,7 +29,7 @@ const { hasStreamPermission } = require('../../../middleware/authorization/roles
 
 router.get('/:id/users', hasStreamPermission('U'), async function (req, res) {
   try {
-    return res.json(await rolesService.getUsersForItem(req.params.id, 'Stream'))
+    return res.json(await rolesService.getUsersForItem(req.params.id, rolesService.STREAM))
   } catch (e) {
     httpErrorHandler(req, res, 'Failed getting stream permission.')(e)
   }
@@ -73,18 +73,14 @@ router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
   return params.validate()
     .then(async () => {
       const stream = await streamsService.getById(streamId, { joinRelations: true })
-      const allowed = await rolesService.hasPermission('U', req.rfcx.auth_token_info, stream, 'Stream')
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
-      }
       const user = await usersFusedService.getByEmail(convertedParams.email)
       await usersFusedService.ensureUserSynced(user)
       if (stream.created_by_id === user.id) {
         throw new ForbiddenError('You can not assign role to stream owner.')
       }
       const role = await rolesService.getByName(convertedParams.role)
-      await rolesService.addRole(user.id, role.id, streamId, 'Stream')
-      return res.status(201).json(await rolesService.getUserRoleForItem(streamId, user.id, 'Stream'))
+      await rolesService.addRole(user.id, role.id, streamId, rolesService.STREAM)
+      return res.status(201).json(await rolesService.getUserRoleForItem(streamId, user.id, rolesService.STREAM))
     })
     .catch(httpErrorHandler(req, res, 'Failed adding stream role for user'))
 })
@@ -117,7 +113,7 @@ router.delete('/:id/users', hasStreamPermission('U'), function (req, res) {
   return params.validate()
     .then(async () => {
       const user = await usersFusedService.getByEmail(convertedParams.email)
-      await rolesService.removeRole(user.id, streamId, 'Stream')
+      await rolesService.removeRole(user.id, streamId, rolesService.STREAM)
       return res.sendStatus(200)
     })
     .catch(httpErrorHandler(req, res, 'Failed removing stream role.'))
