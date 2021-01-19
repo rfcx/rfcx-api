@@ -1,6 +1,6 @@
 var zlib = require('zlib')
 var Promise = require('bluebird')
-var guardianMsgParsingUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
+var msgSegUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js')
 
 exports.mqttPingProcess = {
 
@@ -14,9 +14,9 @@ exports.mqttPingProcess = {
           if (jsonError) {
             reject(jsonError)
           }
-
+        
           try {
-            var pingObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null);
+            var pingObj = msgSegUtils.guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null);
             resolve(pingObj)
           } catch (errParsePingObj) {
             console.log(errParsePingObj)

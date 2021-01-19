@@ -69,9 +69,9 @@ function create (data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create stream with empty object.')
   }
-  const { id, name, description, start, end, is_public, latitude, longitude, created_by_id, external_id, project_id } = data // eslint-disable-line camelcase
+  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id } = data // eslint-disable-line camelcase
   return models.Stream
-    .create({ id, name, description, start, end, is_public, latitude, longitude, created_by_id, external_id, project_id })
+    .create({ id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id })
     .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
@@ -111,7 +111,7 @@ async function query (attrs, opts = {}) {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, 'stream', 'collaborators')
+      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, rolesService.STREAM)
       where.id = {
         [models.Sequelize.Op.in]: ids
       }
@@ -169,7 +169,7 @@ async function query (attrs, opts = {}) {
  * @returns {*} stream model item
  */
 function update (stream, data, opts = {}) {
-  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'max_sample_rate', 'project_id'].forEach((attr) => {
+  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'project_id'].forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr]
     }
@@ -208,7 +208,7 @@ function restore (stream) {
 }
 
 function formatStream (stream, permissions) {
-  const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate, external_id, project } = stream // eslint-disable-line camelcase
+  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_at, updated_at, max_sample_rate, external_id, project } = stream // eslint-disable-line camelcase
   let country_name = null // eslint-disable-line camelcase
   if (latitude && longitude) {
     const country = crg.get_country(latitude, longitude)
@@ -229,6 +229,7 @@ function formatStream (stream, permissions) {
     max_sample_rate,
     latitude,
     longitude,
+    altitude,
     country_name,
     external_id,
     project: project || null,

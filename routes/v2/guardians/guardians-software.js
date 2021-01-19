@@ -13,7 +13,7 @@ router.route('/:guardian_id/software/:software_role')
     var softwareRole = req.params.software_role
 
     var inquiringGuardianBattery = parseInt(req.query.battery)
-//    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
+    //    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
 
     models.Guardian
       .findOne({
@@ -26,7 +26,7 @@ router.route('/:guardian_id/software/:software_role')
           throw new sequelize.EmptyResultError('Guardian with given guid not found.')
         }
         this.dbGuardian = dbGuardian
-        return dbGuardian;
+        return dbGuardian
       })
       .then(function (dbGuardian) {
         var dbQuery = {

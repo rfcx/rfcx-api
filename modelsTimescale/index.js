@@ -74,6 +74,7 @@ const models = {
   Role: require('./users/role')(sequelize, Sequelize),
   UserOrganizationRole: require('./users/user-organization-role')(sequelize, Sequelize),
   UserProjectRole: require('./users/user-project-role')(sequelize, Sequelize),
+  UserProjectSubscription: require('./users/user-project-subscription')(sequelize, Sequelize),
   UserStreamRole: require('./users/user-stream-role')(sequelize, Sequelize),
   User: require('./users/user')(sequelize, Sequelize)
 }

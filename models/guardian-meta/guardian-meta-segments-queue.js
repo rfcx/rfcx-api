@@ -27,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
         }
       }
     },
-    
+
     protocol: {
       type: DataTypes.STRING,
       allowNull: true,
