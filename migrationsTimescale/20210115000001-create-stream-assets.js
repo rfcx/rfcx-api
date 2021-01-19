@@ -23,7 +23,7 @@ module.exports = {
         allowNull: false
       },
       url: {
-        type: Sequelize.STRING(255),
+        type: Sequelize.STRING(2000),
         allowNull: false
       },
       created_by_id: {
