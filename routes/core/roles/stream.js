@@ -73,10 +73,6 @@ router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
   return params.validate()
     .then(async () => {
       const stream = await streamsService.getById(streamId, { joinRelations: true })
-      const allowed = await rolesService.hasPermission('U', req.rfcx.auth_token_info, stream, 'Stream')
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
-      }
       const user = await usersFusedService.getByEmail(convertedParams.email)
       await usersFusedService.ensureUserSynced(user)
       if (stream.created_by_id === user.id) {
