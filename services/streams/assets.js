@@ -8,6 +8,7 @@ const { hasPermission } = require('../roles')
  * @param {string} asset.streamId
  * @param {string} asset.type
  * @param {string} asset.url
+ * @param {number} asset.createdById
  * @param {*} options
  * @param {number} options.creatableBy Create only if given user id has permission to create in the stream
  * @returns {*}

@@ -46,7 +46,7 @@ router.post('/:streamId/assets', function (req, res) {
   return converter.validate()
     .then(params => {
       const { type, url } = params
-      return streamAssetsService.create({ streamId, type, url }, { creatableBy: userId })
+      return streamAssetsService.create({ streamId, type, url, createdById: userId }, { creatableBy: userId })
     })
     .then(asset => res.location(`/streams/${streamId}/assets/${asset.id}`).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating stream asset'))

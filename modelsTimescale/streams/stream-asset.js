@@ -17,12 +17,17 @@ module.exports = function (sequelize, DataTypes) {
     url: {
       type: DataTypes.STRING(255),
       allowNull: false
+    },
+    createdById: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {
     underscored: true
   })
   StreamAsset.associate = function (models) {
     StreamAsset.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
+    StreamAsset.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   StreamAsset.attributes = {
     full: ['id', 'stream_id', 'type', 'url', 'created_at', 'updated_at'],
