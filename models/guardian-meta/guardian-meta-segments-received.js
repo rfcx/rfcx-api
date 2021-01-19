@@ -17,14 +17,14 @@ module.exports = function (sequelize, DataTypes) {
         min: 0
       }
     },
-    
+
     protocol: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {
       }
     },
-    
+
     origin_address: {
       type: DataTypes.STRING,
       allowNull: true,

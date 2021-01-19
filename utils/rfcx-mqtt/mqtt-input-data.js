@@ -30,7 +30,7 @@ exports.mqttInputData = {
             reject(jsonError)
           }
 
-          var checkInObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null);
+          var checkInObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null)
 
           // Adding support for differently structured guardian JSON blobs, which don't support auth.
           // This supports guardian software deployed before May 2020.

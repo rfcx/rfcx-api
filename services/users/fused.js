@@ -47,6 +47,7 @@ async function getIdByGuid (guid) {
 }
 
 function collectUserDataForSync (req) {
+  console.log('\n\nreq', req.rfcx, '\n\n\n')
   const { guid, email, picture } = req.rfcx.auth_token_info
   return getByGuidOrEmail(guid, email)
     .then((dbUser) => {

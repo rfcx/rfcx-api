@@ -7,7 +7,7 @@ const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
-const { getPermissions, hasPermission, STREAM, PROJECT, CREATE, READ } = require('../../../services/roles')
+const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
 
 /**
  * @swagger
@@ -46,6 +46,7 @@ router.post('/', function (req, res) {
   params.convert('name').toString()
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  params.convert('altitude').optional().toFloat()
   params.convert('description').optional().toString()
   params.convert('is_public').optional().toBoolean().default(false)
   params.convert('external_id').optional().toInt()
@@ -57,14 +58,14 @@ router.post('/', function (req, res) {
     .then(async () => {
       if (convertedParams.project_id) {
         await projectsService.getById(convertedParams.project_id)
-        const allowed = await hasPermission(CREATE, req.rfcx.auth_token_info, convertedParams.project_id, PROJECT)
+        const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, convertedParams.project_id, PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
       }
       if (convertedParams.project_external_id) {
         const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
-        const allowed = await hasPermission(CREATE, req.rfcx.auth_token_info, externalProject.id, PROJECT)
+        const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, externalProject.id, PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
@@ -253,6 +254,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
   params.convert('is_public').optional().toBoolean()
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  params.convert('altitude').optional().toFloat()
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
@@ -284,7 +286,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
  *         required: true
  *         type: string
  *     responses:
- *       200:
+ *       204:
  *         description: Success
  *       403:
  *         description: Insufficient privileges
