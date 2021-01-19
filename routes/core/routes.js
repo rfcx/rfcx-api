@@ -29,6 +29,7 @@ module.exports = {
   ],
   streams: [
     require('./streams'),
+    require('./streams/assets'),
     require('./annotations/stream'),
     require('./classifications/stream'),
     require('./detections/stream'),

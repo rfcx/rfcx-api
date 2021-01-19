@@ -4,15 +4,6 @@ const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDA
 const { hash } = require('../../utils/misc/hash.js')
 const pagedQuery = require('../../utils/db/paged-query')
 
-// TODO: move to model definition (find out how to ref User from Organization)
-const availableIncludes = [
-  {
-    model: User,
-    as: 'created_by',
-    attributes: User.attributes.lite
-  }
-]
-
 /**
  * Create an organization
  * @param {*} organization
@@ -103,12 +94,13 @@ async function query (filters, options = {}) {
     }
   }
   const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.lite
-  const includes = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const availableIncludes = [User.include('created_by')]
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
 
   return pagedQuery(Organization, {
     where,
     attributes,
-    include: includes,
+    include,
     limit: options.limit,
     offset: options.offset,
     paranoid: options.onlyDeleted !== true

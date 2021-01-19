@@ -408,6 +408,29 @@
       }
     ]
   },
+  "StreamAsset": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Identifier for stream asset"
+      },
+      "type": {
+        "type": "string",
+        "description": "Type of asset",
+        "examples": ["deploymentphoto", "donatelink"]
+      },
+      "url": {
+        "type": "string",
+        "description": "Location of the file (publicly accessible)",
+        "example": "https://any.storage.provider/path/filename.jpg"
+      },
+      "created_at": {
+        "type": "date",
+        "example": "2020-05-13T07:30:22.500Z"
+      }
+    }
+  },
   "UserLite": {
     "properties": {
       "firstname": {

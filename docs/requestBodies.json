@@ -438,6 +438,21 @@
     },
     "required": []
   },
+  "StreamAsset": {
+    "type": "object",
+    "properties": {
+      "type": {
+        "type": "string",
+        "description": "Type of asset, maximum 16 characters",
+        "examples": ["deploymentphoto", "donatelink"]
+      },
+      "url": {
+        "type": "string",
+        "description": "Location of the file (publicly accessible)",
+        "example": "https://any.storage.provider/path/filename.jpg"
+      }
+    }
+  },
   "StreamSourceFile": {
     "type": "object",
     "properties": {

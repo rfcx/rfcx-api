@@ -49,10 +49,8 @@ module.exports = function (sequelize, DataTypes) {
     full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'is_partner', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'is_public', 'external_id']
   }
-  const includeBase = { model: Project, as: 'project' }
-  Project.asInclude = {
-    full: { ...includeBase, attributes: Project.attributes.full },
-    lite: { ...includeBase, attributes: Project.attributes.lite }
+  Project.include = function (as = 'project', attributes = Project.attributes.lite, required = true) {
+    return { model: Project, as, attributes, required }
   }
   return Project
 }
