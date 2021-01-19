@@ -1,4 +1,4 @@
-const { StreamAsset } = require('../../modelsTimescale')
+const { StreamAsset, User } = require('../../modelsTimescale')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const { hasPermission } = require('../roles')
 
@@ -45,12 +45,10 @@ async function query (filters, options = {}) {
   }
 
   const attributes = options.fields && options.fields.length > 0 ? StreamAsset.attributes.full.filter(a => options.fields.includes(a)) : StreamAsset.attributes.lite
+  const availableIncludes = [User.include('created_by')]
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
 
-  const query = {
-    where,
-    attributes,
-    order: [['created_at', 'DESC']]
-  }
+  const query = { where, attributes, include, order: [['created_at', 'DESC']] }
   return StreamAsset.findAll(query)
 }
 
