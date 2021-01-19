@@ -1,6 +1,6 @@
 const { Organization, Sequelize, User } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError } = require('../../utils/errors')
-const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, READ, UPDATE, DELETE } = require('../roles')
+const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, rREAD, UPDATE, DELETE } = require('../roles')
 const { hash } = require('../../utils/misc/hash.js')
 const pagedQuery = require('../../utils/db/paged-query')
 
@@ -18,8 +18,14 @@ const availableIncludes = [
  * @param {*} organization
  * @param {string} organization.name
  * @param {boolean} organization.isPublic
+ * @param {*} options Additional get options
+ * @param {number} options.creatableBy Allow only if the given user id has permission to create
  */
-function create (organization) {
+async function create (organization, options = {}) {
+  if (options.creatableBy && !(await hasPermission(CREATE, options.creatableBy, undefined, ORGANIZATION))) {
+    throw new ForbiddenError()
+  }
+
   if (!organization.id) {
     organization.id = hash.randomString(12)
   }
