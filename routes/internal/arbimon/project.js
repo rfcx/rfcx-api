@@ -55,7 +55,7 @@ router.patch('/projects/:externalId', (req, res) => {
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => projectsService.getByExternalId(projectId))
     .then(async project => {
-      const allowed = await rolesService.hasPermission('U', user, project, 'Project')
+      const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, project, rolesService.PROJECT)
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this project.')
       }

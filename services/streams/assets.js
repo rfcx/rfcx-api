@@ -1,6 +1,6 @@
 const { StreamAsset, User } = require('../../modelsTimescale')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
-const { hasPermission } = require('../roles')
+const { hasPermission, STREAM, READ, CREATE } = require('../roles')
 
 /**
  * Create a stream asset
@@ -14,7 +14,7 @@ const { hasPermission } = require('../roles')
  * @returns {*}
  */
 async function create (asset, options = {}) {
-  if (options.creatableBy && !(await hasPermission('C', options.creatableBy, asset.streamId, 'Stream'))) {
+  if (options.creatableBy && !(await hasPermission(CREATE, options.creatableBy, asset.streamId, STREAM))) {
     throw new ForbiddenError()
   }
 
@@ -32,7 +32,7 @@ async function create (asset, options = {}) {
 * @returns {*}
  */
 async function query (filters, options = {}) {
-  if (options.readableBy && !(await hasPermission('R', options.readableBy, filters.streamId, 'Stream'))) {
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, filters.streamId, STREAM))) {
     throw new ForbiddenError()
   }
 
