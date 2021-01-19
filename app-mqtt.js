@@ -1,6 +1,5 @@
 // various process-related stuff
 require('./utils/process')
-var path = require('path')
 
 if (process.env.NODE_ENV === 'production') {
   require('newrelic')

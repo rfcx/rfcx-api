@@ -1,10 +1,10 @@
 console.log('----------------------------------\nRFCX | setup started')
-var exec = require('child_process').exec
+var path = require('path')
 var fs = require('fs')
 
-if (fs.existsSync(__dirname + '/../config/env_vars.js')) {
-  var env = require(__dirname + '/../config/env_vars.js').env
-  for (i in env) { process.env[i] = env[i] }
+if (fs.existsSync(path.join(__dirname, '/../config/env_vars.js'))) {
+  var env = require(path.join(__dirname, '/../config/env_vars.js')).env
+  for (var i in env) { process.env[i] = env[i] }
 }
 
 // run the setup script(s)
@@ -15,7 +15,7 @@ initializeSequelize()
 
 function initializeSequelize () {
   console.log('RFCX | Creating config params: started')
-  var configJsonFile = __dirname + '/../config/config.json'
+  var configJsonFile = path.join(__dirname, '/../config/config.json')
 
   var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
 
@@ -48,7 +48,7 @@ function initializeSequelize () {
         //     /* run sequelize-cli migrations from command line */
         //     var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
         //     console.log('RFCX | Migrating db: started')
-        //     exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
+        //     require('child_process').exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
         //       console.log('RFCX | Migrating db: ended')
         //       console.log(sErr);
         //     });

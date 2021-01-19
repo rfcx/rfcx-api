@@ -6,7 +6,7 @@ var reps = 4
 
 function randomStr () {
   var str = ''
-  var key = '0123456789abcdef';//;ghijklmnopqrstuvwxyz';
+  var key = '0123456789abcdef'// ;ghijklmnopqrstuvwxyz';
 
   for (var i = 0; i < stringLength; i++) { str += key.charAt(Math.floor(Math.random() * key.length)) }
 

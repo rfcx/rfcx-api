@@ -19,7 +19,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
       if (dbGuardian == null) {
         return done(null, false, { message: "this guardian doesn't exist in the database" })
       } else if ((dbGuardian.auth_token_hash === hash.hashedCredentials(dbGuardian.auth_token_salt, token)) &&
-                (regex.regExIndexOf(url.parse(req.rfcx.url_path).pathname, onlyAllowAccessTo) > -1)
+                (regex.regExIndexOf((new url.URL(req.rfcx.url_path)).pathname, onlyAllowAccessTo) > -1)
       ) {
         req.rfcx.auth_token_info = {
           type: 'guardian',

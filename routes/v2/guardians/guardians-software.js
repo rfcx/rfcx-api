@@ -12,9 +12,6 @@ router.route('/:guardian_id/software/:software_role')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
     var softwareRole = req.params.software_role
 
-    var inquiringGuardianBattery = parseInt(req.query.battery)
-//    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
-
     models.Guardian
       .findOne({
         where: { guid: req.params.guardian_id }
@@ -26,7 +23,7 @@ router.route('/:guardian_id/software/:software_role')
           throw new sequelize.EmptyResultError('Guardian with given guid not found.')
         }
         this.dbGuardian = dbGuardian
-        return dbGuardian;
+        return dbGuardian
       })
       .then(function (dbGuardian) {
         var dbQuery = {

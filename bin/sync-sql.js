@@ -1,6 +1,7 @@
 console.log('----------------------------------\nRFCX | sync-sql started')
 var exec = require('child_process').exec
 var fs = require('fs')
+var path = require('path')
 var argv = require('minimist')(process.argv.slice(2))
 
 // MySQL by default
@@ -12,9 +13,9 @@ var databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql'
 // 3. Run model sync (mysql only)
 // 4. Run migrations
 
-if (fs.existsSync(__dirname + '/../config/env_vars.js')) {
-  var env = require(__dirname + '/../config/env_vars.js').env
-  for (i in env) { process.env[i] = env[i] }
+if (fs.existsSync(path.join(__dirname, '/../config/env_vars.js'))) {
+  var env = require(path.join(__dirname, '/../config/env_vars.js')).env
+  for (var i in env) { process.env[i] = env[i] }
 }
 
 console.log(`RFCX | Initializing sequelize for ${databaseType}`)
@@ -26,7 +27,7 @@ function initializeSequelize () {
   const models = require('../' + modelsPath)
 
   console.log('RFCX | Creating config params: started')
-  var configJsonFile = __dirname + '/../config/config.json'
+  var configJsonFile = path.join(__dirname, '/../config/config.json')
 
   var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
 

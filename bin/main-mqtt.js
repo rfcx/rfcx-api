@@ -6,12 +6,11 @@ require('../config/inspector')
 var appId = 'rfcx-api-mqtt'
 
 var app = require('../app-mqtt.js')
-var models = require('../models')
 const guidService = require('../utils/misc/guid.js')
 
 console.log('RFCX | Starting server')
 
-var httpServer = app.http.listen(app.http.get('port'), function () {
+app.http.listen(app.http.get('port'), function () {
   console.log('http: ' + app.http.get('title') + ' (port ' + app.http.get('port') + ') (' + process.env.NODE_ENV + ')')
 })
 
@@ -81,10 +80,10 @@ app.mqtt.on('message', (topic, data) => {
       .then((result) => {
         app.mqtt.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
 
-      // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
-      // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE BELOW SHOULD BE REMOVED
+        // THE FOLLOWING "publish" LINE IS INCLUDED TO SUPPORT GUARDIANS DEPLOYED PRIOR TO Q2, 2020
+        // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE BELOW SHOULD BE REMOVED
         app.mqtt.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip)
-      // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE ABOVE SHOULD BE REMOVED
+        // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE ABOVE SHOULD BE REMOVED
 
         console.log('mqtt message processed', topic, messageId)
         messageId = null

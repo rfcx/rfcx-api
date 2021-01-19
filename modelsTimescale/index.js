@@ -39,7 +39,6 @@ if (process.env.NODE_ENV === 'development') {
 const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options)
 sequelize.authenticate() // check connection
 
-
 const models = {
   Annotation: require('./annotations/annotation')(sequelize, Sequelize),
   ClassificationAlternativeName: require('./classifications/classification-alternative-name')(sequelize, Sequelize),
@@ -84,6 +83,5 @@ Object.keys(models).forEach(function (modelName) {
     models[modelName].associate(models)
   }
 })
-
 
 module.exports = { ...models, sequelize, Sequelize, options, utils }
