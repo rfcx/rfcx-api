@@ -8,6 +8,7 @@ const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const auth0Service = require('../../../services/auth0/auth0-service')
 
 /**
  * @swagger
@@ -158,7 +159,8 @@ router.post('/:id/detections', function (req, res) {
 
   return params.validate()
     .then(async () => {
-      if ((user.roles || []).includes('systemUser')) {
+      const roles = auth0Service.getUserRolesFromToken(req.user)
+      if (roles.includes('systemUser')) {
         return true
       }
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, streamId, rolesService.STREAM)
