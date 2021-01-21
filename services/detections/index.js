@@ -27,11 +27,8 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
       value: { [models.Sequelize.Op.or]: classifications }
     }
 
-  if (minConfidence === undefined) {
-    condition.confidence = { [models.Sequelize.Op.gte]: models.Sequelize.literal('classifier.min_confidence') }
-  } else {
-    condition.confidence = { [models.Sequelize.Op.gte]: minConfidence }
-  }
+  // TODO: if minConfidence is undefined, get it from event strategy
+  condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
 
   return {
     where: condition,
