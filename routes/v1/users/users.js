@@ -21,7 +21,7 @@ var sequelize = require('sequelize')
 var ApiConverter = require('../../../utils/api-converter')
 var hasRole = require('../../../middleware/authorization/authorization').hasRole
 var Converter = require('../../../utils/converter/converter')
-const pathCompleteExtname = require('path-complete-extname')
+const path = require('path')
 const fileUtil = require('../../../utils/misc/file')
 
 function removeExpiredResetPasswordTokens () {
@@ -963,14 +963,14 @@ router.route('/avatar-change')
       .then(() => {
         const opts = {
           filePath: req.files.file.path,
-          fileName: `/userpics/${guid}${pathCompleteExtname(req.files.file.originalname)}`,
+          fileName: `/userpics/${guid}${path.extname(req.files.file.originalname)}`,
           bucket: process.env.USERS_BUCKET,
           acl: 'public-read'
         }
         return usersService.uploadImageFile(opts)
       })
       .then(() => {
-        const url = `https://${process.env.USERS_BUCKET}.s3-${process.env.AWS_REGION_ID}.amazonaws.com/userpics/${guid}${pathCompleteExtname(req.files.file.originalname)}`
+        const url = `https://${process.env.USERS_BUCKET}.s3-${process.env.AWS_REGION_ID}.amazonaws.com/userpics/${guid}${path.extname(req.files.file.originalname)}`
         return usersService.prepareUserUrlPicture(user, url)
           .then(() => {
             return url

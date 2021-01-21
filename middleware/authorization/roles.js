@@ -13,8 +13,7 @@ const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 function hasPermission (permission, modelName) {
   return (req, res, next) => {
     const subjectId = req.params.id
-    const userId = req.rfcx.auth_token_info.owner_id
-    return rolesService.hasPermission(permission, userId, subjectId, modelName)
+    return rolesService.hasPermission(permission, req.rfcx.auth_token_info, subjectId, modelName)
       .then(allowed => {
         if (!allowed) {
           return httpError(req, res, 403, null, 'You do not have permission to access this item.')
@@ -25,6 +24,21 @@ function hasPermission (permission, modelName) {
   }
 }
 
+function hasOrganizationPermission (permission) {
+  return hasPermission(permission, rolesService.ORGANIZATION)
+}
+
+function hasProjectPermission (permission) {
+  return hasPermission(permission, rolesService.PROJECT)
+}
+
+function hasStreamPermission (permission) {
+  return hasPermission(permission, rolesService.STREAM)
+}
+
 module.exports = {
-  hasPermission
+  hasPermission,
+  hasOrganizationPermission,
+  hasProjectPermission,
+  hasStreamPermission
 }

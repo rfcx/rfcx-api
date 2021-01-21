@@ -1,5 +1,6 @@
 var zlib = require('zlib')
 var Promise = require('bluebird')
+var msgSegUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js')
 
 exports.mqttPingProcess = {
 
@@ -9,17 +10,13 @@ exports.mqttPingProcess = {
         var metaLength = 12
         var jsonBlobLength = parseInt(mqttData.toString('utf8', 0, metaLength))
 
-        var pingObj = { json: {}, meta: { guardian: {} }, db: {} }
-
-        pingObj.meta.pingStartTime = new Date()
-
         zlib.gunzip(mqttData.slice(metaLength, metaLength + jsonBlobLength), function (jsonError, jsonBuffer) {
           if (jsonError) {
             reject(jsonError)
           }
 
           try {
-            pingObj.json = JSON.parse(jsonBuffer.toString('utf8'))
+            var pingObj = msgSegUtils.guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null)
             resolve(pingObj)
           } catch (errParsePingObj) {
             console.log(errParsePingObj)

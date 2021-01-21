@@ -148,6 +148,13 @@ module.exports = function (sequelize, DataTypes) {
         isDate: { msg: 'auth_token_expires_at for Guardian should have type Date' }
       }
     },
+    auth_pin_code: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: false,
+      validate: {
+      }
+    },
     notes: {
       type: DataTypes.STRING,
       allowNull: true,

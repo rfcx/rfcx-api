@@ -6,12 +6,8 @@ const projectsService = require('../../../services/projects')
 const usersFusedService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
-const hasPermissionMW = require('../../../middleware/authorization/roles').hasPermission
-const rolesService = require('../../../services/roles')
-
-function hasPermission (p) {
-  return hasPermissionMW(p, 'Project')
-}
+const { hasProjectPermission } = require('../../../middleware/authorization/roles')
+const { hasPermission, CREATE, ORGANIZATION, UPDATE, DELETE, READ } = require('../../../services/roles')
 
 /**
  * @swagger
@@ -49,7 +45,7 @@ router.post('/', function (req, res) {
   params.convert('id').optional().toString()
   params.convert('name').toString()
   params.convert('description').optional().toString()
-  params.convert('is_public').optional().toBoolean().default(false)
+  params.convert('is_public').default(false).toBoolean()
   params.convert('organization_id').optional().toString()
   params.convert('external_id').optional().toInt()
 
@@ -58,7 +54,7 @@ router.post('/', function (req, res) {
     .then(async () => {
       if (convertedParams.organization_id) {
         await organizationsService.getById(convertedParams.organization_id)
-        const allowed = await rolesService.hasPermission('C', userId, convertedParams.organization_id, 'Organization')
+        const allowed = await hasPermission(CREATE, userId, convertedParams.organization_id, ORGANIZATION)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create project in this organization.')
         }
@@ -123,23 +119,25 @@ router.post('/', function (req, res) {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Project'
+ *                 $ref: '#/components/schemas/ProjectLite'
  *       400:
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('is_public').optional().toBoolean()
   params.convert('is_deleted').optional().toBoolean()
-  params.convert('created_by').optional().toString().isEqualToAny(['me'])
+  params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('keyword').optional().toString()
   params.convert('limit').optional().toInt().default(100)
   params.convert('offset').optional().toInt().default(0)
 
   return params.validate()
     .then(async () => {
-      convertedParams.current_user_id = req.rfcx.auth_token_info.owner_id
+      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_is_super = user.is_super
       const projectsData = await projectsService.query(convertedParams, { joinRelations: true })
       const projects = projectsService.formatProjects(projectsData.projects)
       return res
@@ -175,7 +173,7 @@ router.get('/', (req, res) => {
  *       404:
  *         description: Project not found
  */
-router.get('/:id', hasPermission('R'), (req, res) => {
+router.get('/:id', hasProjectPermission(READ), (req, res) => {
   return projectsService.getById(req.params.id, { joinRelations: true })
     .then(projectsService.formatProject)
     .then(json => res.json(json))
@@ -202,10 +200,10 @@ router.get('/:id', hasPermission('R'), (req, res) => {
  *       content:
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/ProjectPatch'
+ *             $ref: '#/components/requestBodies/ProjectPatchArbimon'
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/ProjectPatch'
+ *             $ref: '#/components/requestBodies/ProjectPatchArbimon'
  *     responses:
  *       200:
  *         description: Success
@@ -218,7 +216,7 @@ router.get('/:id', hasPermission('R'), (req, res) => {
  *       404:
  *         description: Project not found
  */
-router.patch('/:id', hasPermission('U'), (req, res) => {
+router.patch('/:id', hasProjectPermission(UPDATE), (req, res) => {
   const projectId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -261,14 +259,14 @@ router.patch('/:id', hasPermission('U'), (req, res) => {
  *         required: true
  *         type: string
  *     responses:
- *       200:
+ *       204:
  *         description: Success
  *       403:
  *         description: Insufficient privileges
  *       404:
  *         description: Project not found
  */
-router.delete('/:id', hasPermission('D'), (req, res) => {
+router.delete('/:id', hasProjectPermission(DELETE), (req, res) => {
   return projectsService.getById(req.params.id, { joinRelations: true })
     .then(projectsService.softDelete)
     .then(json => res.sendStatus(204))

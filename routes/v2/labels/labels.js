@@ -6,9 +6,8 @@ const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
-const aiService = require('../../../services/ai/ai-service')
+const aiService = require('../../../services/legacy/ai/ai-service')
 var sequelize = require('sequelize')
-const pathCompleteExtname = require('path-complete-extname')
 
 /**
  * Syncronizes MySQL GuardianAudioEventValues and GuardianAudioEventValueHighLevelKeys with :label and :highLevelKey:
@@ -76,14 +75,13 @@ router.route('/create')
 
 router.route('/:guid/upload-file')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
-    const allowedExtensions = ['.tar.gz']
     const file = req.files.file
     if (!file) {
       return httpError(req, res, 400, null, 'No file provided.')
     }
-    const extension = pathCompleteExtname(file.originalname)
-    if (!allowedExtensions.includes(extension)) {
-      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`)
+    const extension = '.tar.gz'
+    if (!file.originalname.endsWith(extension)) {
+      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${extension}`)
     }
 
     const opts = {

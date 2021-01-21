@@ -154,6 +154,78 @@
       }
     ]
   },
+  "ClassifierLite": {
+    "properties": {
+      "id": {
+        "type": "integer",
+        "example": 12
+      },
+      "name": {
+        "type": "string",
+        "example": "chainsaw"
+      },
+      "version": {
+        "type": "integer",
+        "example": 8
+      },
+      "status": {
+        "type": "string",
+        "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
+      },
+      "external_id": {
+        "type": "string",
+        "description": "Identifier in AI Hub or other service"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "version"
+    ]
+  },
+  "Classifier": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassifierLite"
+      },
+      {
+        "properties": {
+          "supported_classifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassificationLite"
+            }
+          },
+          "enabled_projects": {
+            "type": "array",
+            "description": "Projects that are enabled for this classifier",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled_streams": {
+            "type": "array",
+            "description": "Individual streams that are enabled for this classifier",
+            "items": {
+              "$ref": "#/components/schemas/StreamLite"
+            }
+          },
+          "created_at": {
+            "type": "date"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/UserLite"
+          },
+          "updated_at": {
+            "type": "date"
+          },
+          "updated_by": {
+            "$ref": "#/components/schemas/UserLite"
+          }
+        }
+      }
+    ]
+  },
   "Cluster": {
     "type": "object",
     "properties": {
@@ -307,6 +379,9 @@
           "longitude": {
             "type": "float",
             "example": 125.912
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectLite"
           }
         },
         "required": [
@@ -333,6 +408,29 @@
       }
     ]
   },
+  "StreamAsset": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Identifier for stream asset"
+      },
+      "type": {
+        "type": "string",
+        "description": "Type of asset",
+        "examples": ["deploymentphoto", "donatelink"]
+      },
+      "url": {
+        "type": "string",
+        "description": "Location of the file (publicly accessible)",
+        "example": "https://any.storage.provider/path/filename.jpg"
+      },
+      "created_at": {
+        "type": "date",
+        "example": "2020-05-13T07:30:22.500Z"
+      }
+    }
+  },
   "UserLite": {
     "properties": {
       "firstname": {
@@ -352,6 +450,28 @@
         "example": "https://upload.wikimedia.org/wikipedia/commons/1/11/Contact-new.svg"
       }
     }
+  },
+  "UserLiteWithRoleAndPermissions": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      {
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "Member"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["O", "W", "R"]
+          }
+        }
+      }
+    ]
   },
   "IndexLite": {
     "properties": {
@@ -570,6 +690,37 @@
       }
     ]
   },
+  "ProjectPublic": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "My Project 1"
+      },
+      "description": {
+        "type": "string",
+        "example": "Project 1 description"
+      }
+    }
+  },
+  "ProjectPublicWithLocation": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ProjectPublic"
+      },
+      {
+        "properties": {
+          "latitude": {
+            "type": "float",
+            "example": 90.123
+          },
+          "longitude": {
+            "type": "float",
+            "example": 125.912
+          }
+        }
+      }
+    ]
+  },
   "Permission": {
     "properties": {
       "stream": {
@@ -708,6 +859,128 @@
       "totalVerified": {
         "type": "number",
         "totalVerified": 20
+      }
+    }
+  },
+  "EventStrategy": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "Unique identifier for event strategies",
+        "example": 15
+      },
+      "name": {
+        "type": "string",
+        "description": "Human-readable name of the strategy",
+        "example": "Min 4 detections over 90 seconds"
+      },
+      "description": {
+        "type": "string",
+        "description": "Description of the strategy",
+        "example": "Raise an event when 4 or more detections are found within a 90 second period."
+      },
+      "type": {
+        "type": "string",
+        "description": "Type of strategy (one of 'window' or ...)",
+        "example": "window"
+      },
+      "parameters": {
+        "type": "string",
+        "description": "Parameters to be applied to algorithm",
+        "example": "minimum-windows=4 period-seconds=90"
+      }
+    }
+  },
+  "EventLite": {
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "cf8a7ac9-0dd2-40b6-b03f-a067d6c43325"
+      },
+      "stream_id": {
+        "type": "string",
+        "example": "xu82jDgX49"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "classification": {
+        "$ref": "#/components/schemas/ClassificationLite"
+      }
+    }
+  },
+  "Event": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/EventLite"
+      },
+      {
+        "properties": {
+          "stream": {
+            "$ref": "#/components/schemas/StreamLite"
+          },
+          "classifier_event_strategy": {
+            "type": "object",
+            "properties": {
+              "parameters": {
+                "type": "string",
+                "example": "min-gap-between-events=30m"
+              },
+              "event_strategy": {
+                "$ref": "#/components/schemas/EventStrategy"
+              },
+              "classifier": {
+                "$ref": "#/components/schemas/ClassifierLite"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "SubscriptionTypeLite": {
+    "properties": {
+      "id": {
+        "type": "integer",
+        "example": 1
+      },
+      "name": {
+        "type": "string",
+        "example": "Email"
+      }
+    }
+  },
+  "SubscriptionType": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/SubscriptionTypeLite"
+      },
+      {
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Email subscription"
+          }
+        }
+      }
+    ]
+  },
+  "Subscription": {
+    "properties": {
+      "user": {
+        "$ref": "#/components/schemas/UserLite"
+      },
+      "project": {
+        "$ref": "#/components/schemas/ProjectLite"
+      },
+      "subscription_type": {
+        "$ref": "#/components/schemas/SubscriptionTypeLite"
       }
     }
   }

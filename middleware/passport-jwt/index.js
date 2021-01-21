@@ -68,11 +68,8 @@ function checkDBUser (req, jwtPayload, done) {
     }
   )
     .spread(async (user, created) => {
-      const info = combineUserData(jwtPayload, user)
-      req.rfcx.auth_token_info = info
+      req.rfcx.auth_token_info = combineUserData(jwtPayload, user)
       if (!created) {
-        userService.refreshLastLogin(user)
-      } else {
         await usersFusedService.ensureUserSyncedFromToken(req)
       }
       done(null, req.rfcx.auth_token_info)

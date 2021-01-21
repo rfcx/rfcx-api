@@ -79,6 +79,27 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
 
+    iridium_imei: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+
+    sentinel_version: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+
+    sentry_version: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+
     description: {
       type: DataTypes.STRING,
       allowNull: true,

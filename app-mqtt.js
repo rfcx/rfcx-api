@@ -1,19 +1,9 @@
 // various process-related stuff
 require('./utils/process')
-var path = require('path')
-// check for environmental variable file and load if present
-var fs = require('fs')
-if (fs.existsSync('./config/env_vars.js')) {
-  var env = require('./config/env_vars.js').env
-  for (const i in env) { process.env[i] = env[i] }
-}
 
 if (process.env.NODE_ENV === 'production') {
   require('newrelic')
 }
-
-// check that all required env vars are set
-require('./config/inspector')
 
 var app = { http: null, mqtt: null }
 
@@ -34,7 +24,6 @@ app.mqtt = mqtt.connect({
 })
 
 var express = require('express')
-var favicon = require('serve-favicon')
 var passport = require('passport')
 var cors = require('cors')
 var bodyParser = require('body-parser')
@@ -43,7 +32,6 @@ var multer = require('multer')
 app.http = express()
 app.http.set('title', 'rfcx-api-mqtt')
 app.http.set('port', process.env.PORT || 8080)
-app.http.use(favicon(path.join(__dirname, '/public/img/logo/favicon.ico')))
 app.http.use(cors())
 app.http.use(require('./middleware/logging'))
 app.http.use(require('./middleware/toobusy'))

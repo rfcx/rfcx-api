@@ -11,7 +11,7 @@ var Promise = require('bluebird')
 var sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
-const SensationsService = require('../../../services/sensations/sensations-service')
+const SensationsService = require('../../../services/legacy/sensations/sensations-service')
 
 router.route('/:guardian_id/checkins')
   .post(passport.authenticate('token', { session: false }), function (req, res) {

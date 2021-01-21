@@ -40,6 +40,8 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false
       }
+    }).then(() => {
+      return queryInterface.sequelize.query('CREATE INDEX "user_stream_roles_stream_id" ON user_stream_roles using btree (stream_id);')
     })
   },
   down: (queryInterface, Sequelize) => {

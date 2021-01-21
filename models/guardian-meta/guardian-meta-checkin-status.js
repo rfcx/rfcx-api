@@ -102,6 +102,22 @@ module.exports = function (sequelize, DataTypes) {
         isInt: true,
         min: 0
       }
+    },
+    vault_count: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    vault_size_bytes: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      validate: {
+        isInt: true,
+        min: 0
+      }
     }
   }, {
     tableName: 'GuardianMetaCheckInStatus'

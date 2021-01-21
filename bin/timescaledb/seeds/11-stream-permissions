@@ -1,4 +1,0 @@
-INSERT INTO public.stream_permissions (stream_id, user_id, type, created_at, updated_at) VALUES ('ev69cht895gc', 8, 'R', '2020-07-10 10:08:37.746000', '2020-07-10 10:08:37.746000');
-INSERT INTO public.stream_permissions (stream_id, user_id, type, created_at, updated_at) VALUES ('lgndfyp1enmu', 8, 'W', '2020-07-10 10:08:37.746000', '2020-07-10 10:08:37.746000');
-INSERT INTO public.stream_permissions (stream_id, user_id, type, created_at, updated_at) VALUES ('ev69cht895gc', 13, 'R', '2020-07-10 10:08:37.746000', '2020-07-10 10:08:37.746000');
-INSERT INTO public.stream_permissions (stream_id, user_id, type, created_at, updated_at) VALUES ('lgndfyp1enmu', 13, 'W', '2020-07-10 10:08:37.746000', '2020-07-10 10:08:37.746000');

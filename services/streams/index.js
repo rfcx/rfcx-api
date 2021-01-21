@@ -2,25 +2,31 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
+const rolesService = require('../roles')
 
 const streamBaseInclude = [
   {
     model: models.User,
     as: 'created_by',
     attributes: models.User.attributes.lite
+  },
+  {
+    model: models.Project,
+    as: 'project',
+    attributes: models.Project.attributes.lite
   }
 ]
 
 /**
- * Searches for stream model with given id
- * @param {string} id
+ * Searches for stream model with given params
+ * @param {object} params
  * @param {*} opts additional function params
  * @returns {*} stream model item
  */
-function getById (id, opts = {}) {
+function getByParams (where, opts = {}) {
   return models.Stream
     .findOne({
-      where: { id },
+      where,
       attributes: models.Stream.attributes.full,
       include: opts && opts.joinRelations ? streamBaseInclude : [],
       paranoid: !opts.includeDeleted
@@ -34,6 +40,26 @@ function getById (id, opts = {}) {
 }
 
 /**
+ * Searches for stream model with given id
+ * @param {string} id
+ * @param {*} opts additional function params
+ * @returns {*} stream model item
+ */
+function getById (id, opts = {}) {
+  return getByParams({ id }, opts)
+}
+
+/**
+ * Searches for stream model with given external_id
+ * @param {string} id external stream id
+ * @param {*} opts additional function params
+ * @returns {*} stream model item
+ */
+function getByExternalId (id, opts = {}) {
+  return getByParams({ external_id: id }, opts)
+}
+
+/**
  * Creates stream item
  * @param {*} data stream attributes
  * @param {*} opts additional function params
@@ -43,9 +69,9 @@ function create (data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create stream with empty object.')
   }
-  const { id, name, description, start, end, is_public, latitude, longitude, created_by_id } = data // eslint-disable-line camelcase
+  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id } = data // eslint-disable-line camelcase
   return models.Stream
-    .create({ id, name, description, start, end, is_public, latitude, longitude, created_by_id })
+    .create({ id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id })
     .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
@@ -77,18 +103,17 @@ async function query (attrs, opts = {}) {
     }
   }
 
-  if (attrs.is_public === true) {
-    where.is_public = true
+  if (attrs.is_public !== undefined) {
+    where.is_public = attrs.is_public
   }
 
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const permissions = await models.StreamPermission.findAll({ where: { user_id: attrs.current_user_id } })
-      const streamIds = [...new Set(permissions.map(d => d.stream_id))]
+      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, rolesService.STREAM)
       where.id = {
-        [models.Sequelize.Op.in]: streamIds
+        [models.Sequelize.Op.in]: ids
       }
     }
   } else if (attrs.current_user_id !== undefined) {
@@ -144,7 +169,7 @@ async function query (attrs, opts = {}) {
  * @returns {*} stream model item
  */
 function update (stream, data, opts = {}) {
-  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'max_sample_rate'].forEach((attr) => {
+  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'project_id'].forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr]
     }
@@ -182,8 +207,8 @@ function restore (stream) {
     })
 }
 
-function formatStream (stream, permissions = []) {
-  const { id, name, description, start, end, is_public, latitude, longitude, created_at, updated_at, max_sample_rate } = stream // eslint-disable-line camelcase
+function formatStream (stream, permissions) {
+  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_at, updated_at, max_sample_rate, external_id, project } = stream // eslint-disable-line camelcase
   let country_name = null // eslint-disable-line camelcase
   if (latitude && longitude) {
     const country = crg.get_country(latitude, longitude)
@@ -204,8 +229,11 @@ function formatStream (stream, permissions = []) {
     max_sample_rate,
     latitude,
     longitude,
+    altitude,
     country_name,
-    permissions
+    external_id,
+    project: project || null,
+    ...permissions && { permissions }
   }
 }
 
@@ -256,8 +284,45 @@ function ensureStreamExistsForGuardian (dbGuardian) {
     })
 }
 
+async function getPublicStreamIds () {
+  return (await query({
+    is_public: true
+  })).streams.map(d => d.id)
+}
+
+/**
+ * Get a list of IDs for streams which are accessible to the user
+ * @param {string} createdBy Limit to streams created by `me` (my streams) or `collaborators` (shared with me)
+ */
+async function getAccessibleStreamIds (user, createdBy = undefined) {
+  // Only my streams or my collaborators
+  if (createdBy !== undefined) {
+    return (await query({
+      current_user_id: user.owner_id,
+      created_by: createdBy
+    })).streams.map(d => d.id)
+  }
+
+  // Get my streams and my collaborators
+  const s1 = await query({
+    current_user_id: user.owner_id
+  })
+  const s2 = await query({
+    current_user_id: user.owner_id,
+    created_by: 'collaborators',
+    current_user_is_super: user.is_super
+  })
+  const streamIds = [...new Set([
+    ...s1.streams.map(d => d.id),
+    ...s2.streams.map(d => d.id)
+  ])]
+  return streamIds
+}
+
 module.exports = {
+  getByParams,
   getById,
+  getByExternalId,
   create,
   query,
   update,
@@ -267,5 +332,7 @@ module.exports = {
   formatStreams,
   refreshStreamMaxSampleRate,
   refreshStreamStartEnd,
-  ensureStreamExistsForGuardian
+  ensureStreamExistsForGuardian,
+  getPublicStreamIds,
+  getAccessibleStreamIds
 }

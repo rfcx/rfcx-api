@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { hasPermission } = require('../../../middleware/authorization/streams')
-const classificationsService = require('../../../services/classification/classification-service')
+const classificationsService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
+const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
  * @swagger
@@ -61,7 +61,7 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/:id/classifications', hasPermission('R'), function (req, res) {
+router.get('/streams/:id/classifications', hasStreamPermission('R'), function (req, res) {
   const streamId = req.params.id
   const params = new Converter(req.query)
   params.convert('limit').default(100).toInt()

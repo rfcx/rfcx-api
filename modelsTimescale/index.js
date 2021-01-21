@@ -1,9 +1,5 @@
-'use strict'
-
-var fs = require('fs')
-var path = require('path')
-var Sequelize = require('sequelize')
-var env = process.env.NODE_ENV || 'development'
+const Sequelize = require('sequelize')
+const utils = require('../utils/sequelize')
 
 const options = {
   dialect: 'postgres',
@@ -27,52 +23,67 @@ const options = {
   migrationStorageTableSchema: 'sequelize',
   hooks: {
     afterConnect: () => {
-      console.log('Connected to MySQL')
+      console.log('Connected to Postgres')
     },
     afterDisconnect: () => {
-      console.log('Disonnected from MySQL')
+      console.log('Disonnected from Postgres')
     }
   }
 }
-
-if (env === 'development') {
+if (process.env.NODE_ENV === 'development') {
   options.logging = function (str) {
-    console.log('\nPostgres QUERY----------------------------------\n', str, '\n----------------------------------')
+    console.log('\nPostgres QUERY--------------------\n', str, '\n----------------------------------')
   }
 }
-var sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options)
-var db = {}
 
+const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options)
 sequelize.authenticate() // check connection
 
-// get file listing in 'models' directory, filtered by those we know to ignore...
-fs.readdirSync(__dirname).filter(function (file) {
-  return (file.indexOf('.') !== 0) && (file !== 'index.js') && (file !== 'relationships.js') && (file !== 'utils.js') && !fs.statSync(path.join(__dirname, file)).isDirectory()
-}).forEach(function (file) { importSequelizeModelFile(file) })
+const models = {
+  Annotation: require('./annotations/annotation')(sequelize, Sequelize),
+  ClassificationAlternativeName: require('./classifications/classification-alternative-name')(sequelize, Sequelize),
+  ClassificationSource: require('./classifications/classification-source')(sequelize, Sequelize),
+  ClassificationType: require('./classifications/classification-type')(sequelize, Sequelize),
+  Classification: require('./classifications/classification')(sequelize, Sequelize),
+  Language: require('./classifications/language')(sequelize, Sequelize),
+  ClassifierActiveProject: require('./classifiers/classifier-active-project')(sequelize, Sequelize),
+  ClassifierActiveStream: require('./classifiers/classifier-active-stream')(sequelize, Sequelize),
+  ClassifierDeployment: require('./classifiers/classifier-deployment')(sequelize, Sequelize),
+  ClassifierEventStrategy: require('./classifiers/classifier-event-strategy')(sequelize, Sequelize),
+  ClassifierOutput: require('./classifiers/classifier-output')(sequelize, Sequelize),
+  Classifier: require('./classifiers/classifier')(sequelize, Sequelize),
+  DetectionReview: require('./detections/detection-review')(sequelize, Sequelize),
+  Detection: require('./detections/detection')(sequelize, Sequelize),
+  EventStrategy: require('./events/event-strategy')(sequelize, Sequelize),
+  Event: require('./events/event')(sequelize, Sequelize),
+  IndexType: require('./indices/index-type')(sequelize, Sequelize),
+  IndexValue: require('./indices/index-value')(sequelize, Sequelize),
+  Index: require('./indices/index')(sequelize, Sequelize),
+  Organization: require('./projects/organization')(sequelize, Sequelize),
+  Project: require('./projects/project')(sequelize, Sequelize),
+  Stream: require('./streams/stream')(sequelize, Sequelize),
+  StreamAsset: require('./streams/stream-asset')(sequelize, Sequelize),
+  StreamSegment: require('./streams/stream-segment')(sequelize, Sequelize),
+  StreamSourceFile: require('./streams/stream-source-file')(sequelize, Sequelize),
+  AudioCodec: require('./to-be-removed/audio_codec')(sequelize, Sequelize),
+  AudioFileFormat: require('./to-be-removed/audio_file_format')(sequelize, Sequelize),
+  ChannelLayout: require('./to-be-removed/channel_layout')(sequelize, Sequelize),
+  FileExtension: require('./to-be-removed/file_extension')(sequelize, Sequelize),
+  SampleRate: require('./to-be-removed/sample_rate')(sequelize, Sequelize),
+  RolePermission: require('./users/role-permission')(sequelize, Sequelize),
+  Role: require('./users/role')(sequelize, Sequelize),
+  UserOrganizationRole: require('./users/user-organization-role')(sequelize, Sequelize),
+  UserProjectRole: require('./users/user-project-role')(sequelize, Sequelize),
+  UserProjectSubscription: require('./users/user-project-subscription')(sequelize, Sequelize),
+  UserStreamRole: require('./users/user-stream-role')(sequelize, Sequelize),
+  User: require('./users/user')(sequelize, Sequelize)
+}
 
-// get file listings from inner directories in models
-fs.readdirSync(__dirname).filter(function (file) {
-  return (file.indexOf('.') !== 0) && fs.statSync(path.join(__dirname, file)).isDirectory()
-}).forEach(function (file) {
-  fs.readdirSync(path.join(__dirname, file)).filter(function (fileInDir) {
-    return (fileInDir.indexOf('.') !== 0)
-  }).forEach(function (fileInDir) { importSequelizeModelFile(path.join(file, fileInDir)) })
-})
-
-Object.keys(db).forEach(function (modelName) {
-  if ('associate' in db[modelName]) {
-    db[modelName].associate(db)
+// Create associations
+Object.keys(models).forEach(function (modelName) {
+  if ('associate' in models[modelName]) {
+    models[modelName].associate(models)
   }
 })
 
-db.sequelize = sequelize
-db.Sequelize = Sequelize
-db.options = options
-db.utils = require('./utils')
-
-module.exports = db
-
-function importSequelizeModelFile (file) {
-  var model = sequelize.import(path.join(__dirname, file))
-  db[model.name] = model
-}
+module.exports = { ...models, sequelize, Sequelize, options, utils }

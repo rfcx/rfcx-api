@@ -4,7 +4,7 @@ var passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
 var httpError = require('../../../utils/http-errors')
-var sensationsService = require('../../../services/sensations/sensations-service')
+var sensationsService = require('../../../services/legacy/sensations/sensations-service')
 var ValidationError = require('../../../utils/converter/validation-error')
 
 router.route('/')
