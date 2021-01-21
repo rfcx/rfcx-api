@@ -3,6 +3,7 @@ const { ForbiddenError, ValidationError } = require('../../utils/errors')
 const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
 const { hash } = require('../../utils/misc/hash.js')
 const pagedQuery = require('../../utils/db/paged-query')
+const availableIncludes = [User.include('created_by')]
 
 /**
  * Create an organization
@@ -94,7 +95,6 @@ async function query (filters, options = {}) {
     }
   }
   const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.lite
-  const availableIncludes = [User.include('created_by')]
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
 
   return pagedQuery(Organization, {

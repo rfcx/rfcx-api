@@ -171,7 +171,7 @@ async function update (id, createdBy, attrs) {
 
 async function updateDeployment (update, transaction) {
   // Search for current deployment
-  const existingDeployment = models.ClassifierDeployment.findOne({
+  const existingDeployment = await models.ClassifierDeployment.findOne({
     where: {
       classifier_id: update.id,
       start: { [models.Sequelize.Op.lt]: new Date() },

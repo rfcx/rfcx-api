@@ -1,5 +1,5 @@
 const moment = require('moment')
-const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream, User } = require('../../modelsTimescale')
+const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream } = require('../../modelsTimescale')
 const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
