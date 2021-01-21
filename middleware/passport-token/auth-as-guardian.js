@@ -16,10 +16,11 @@ exports.authenticateAs = function (req, token, done, authUser) {
     .findOne({
       where: { guid: authUser.guid }
     }).then(function (dbGuardian) {
+      const requestFullUrl = new URL(req.rfcx.url_path, process.env.REST_PROTOCOL + '://' + process.env.REST_HOST)
       if (dbGuardian == null) {
         return done(null, false, { message: "this guardian doesn't exist in the database" })
       } else if ((dbGuardian.auth_token_hash === hash.hashedCredentials(dbGuardian.auth_token_salt, token)) &&
-                (regex.regExIndexOf((new url.URL(req.rfcx.url_path)).pathname, onlyAllowAccessTo) > -1)
+                (regex.regExIndexOf(requestFullUrl.pathname, onlyAllowAccessTo) > -1)
       ) {
         req.rfcx.auth_token_info = {
           type: 'guardian',

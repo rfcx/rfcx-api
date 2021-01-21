@@ -14,7 +14,7 @@ const guidService = require('../../../utils/misc/guid.js')
 router.route('/:guardian_id/pings')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
     // unzip gzipped meta json blob
-    checkInHelpers.gzip.unZipJson(req.body.meta)
+    checkInHelpers.gzip.unZipJson(req.body.json)
       .bind({})
       .then(function (json) {
         let messageId = guidService.generate()

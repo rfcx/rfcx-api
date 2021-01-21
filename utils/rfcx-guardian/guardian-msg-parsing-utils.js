@@ -52,9 +52,9 @@ exports.guardianMsgParsingUtils = {
       }
     }
 
-    if (msgObj.json.guardian === null) { msgObj.json.guardian = {} }
-    if (guardianId != null) { msgObj.json.guardian.guid = guardianId }
-    if (guardianToken != null) { msgObj.json.guardian.token = guardianToken }
+    if (!msgObj.json.guardian) { msgObj.json.guardian = {} }
+    if (guardianId) { msgObj.json.guardian.guid = guardianId }
+    if (guardianToken) { msgObj.json.guardian.token = guardianToken }
 
     return msgObj
   },

@@ -371,7 +371,7 @@ exports.checkInDatabase = {
   },
 
   createDbScreenShot: function (checkInObj) {
-    if (checkInObj.screenshots.filePath === null) {
+    if (!checkInObj.screenshots.filePath) {
       return Promise.resolve(checkInObj)
     }
 
@@ -422,7 +422,7 @@ exports.checkInDatabase = {
   },
 
   createDbLogFile: function (checkInObj) {
-    if (checkInObj.logs.filePath === null) {
+    if (!checkInObj.logs.filePath) {
       return Promise.resolve(checkInObj)
     }
 
@@ -473,7 +473,7 @@ exports.checkInDatabase = {
   },
 
   createDbMetaPhoto: function (checkInObj) {
-    if (checkInObj.photos.filePath === null) {
+    if (!checkInObj.photos.filePath) {
       return Promise.resolve(checkInObj)
     }
 
@@ -527,7 +527,7 @@ exports.checkInDatabase = {
   },
 
   createDbMetaVideo: function (checkInObj) {
-    if (checkInObj.videos.filePath === null) {
+    if (!checkInObj.videos.filePath) {
       return Promise.resolve(checkInObj)
     }
 
