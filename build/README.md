@@ -99,7 +99,7 @@ kubectl patch secret api-secrets --namespace staging -p='{"stringData":{"X_API_K
 Finally, restart the API(s):
 
 ```
-kubectl rollout restart api
+kubectl rollout restart deployment/api --namespace staging
 ```
 
 Note you might need to restart multiple APIs (replace `api` with the name of the deployment from the k8s yaml deployment file -- e.g. `api-mqtt`, `api-media`, etc).
