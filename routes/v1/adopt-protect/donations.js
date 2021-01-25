@@ -144,8 +144,9 @@ router.route('/stripe/classy')
     params.convert('billing_last_name').optional().toString()
     params.convert('is_anonymous').optional().toBoolean()
 
+    let stripeData
+
     params.validate()
-      .bind({})
       .then(() => {
         return stripe.charges.create({
           amount: transformedParams.amount * 100, // Stripe expects that this value is in cents
@@ -154,11 +155,11 @@ router.route('/stripe/classy')
           source: transformedParams.token
         })
       })
-      .then((stripeData) => {
-        if (stripeData.status !== 'succeeded') {
-          throw new ValidationError(stripeData.failure_message || 'Error creating Stripe charge.')
+      .then((data) => {
+        if (data.status !== 'succeeded') {
+          throw new ValidationError(data.failure_message || 'Error creating Stripe charge.')
         }
-        this.stripeData = stripeData
+        stripeData = data
         return classyService.requestAccessToken(process.env.CLASSY_CLIENT_ID, process.env.CLASSY_CLIENT_SECRET)
       })
       .then((classyTokenData) => {
@@ -184,7 +185,7 @@ router.route('/stripe/classy')
       })
       .then((classyData) => {
         res.status(200).json({
-          stripe: this.stripeData,
+          stripe: stripeData,
           classy: classyData
         })
       })

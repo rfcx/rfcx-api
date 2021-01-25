@@ -137,7 +137,6 @@ router.route('/:guid/attachments')
     let dbReport, dbAttachments
 
     return params.validate()
-      .bind({})
       .then(() => {
         return reportsService.getReportByGuid(req.params.guid)
       })
@@ -204,7 +203,6 @@ router.route('/:guid')
       .then((data) => {
         dbReport = data
       })
-      .bind({})
       .then(() => {
         const proms = []
         if (dbReport.Attachments) {

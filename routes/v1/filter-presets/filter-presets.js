@@ -47,15 +47,16 @@ router.route('/:guid')
       json: req.body.json
     }
 
+    let user
+
     usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
-      .bind({})
-      .then((user) => {
-        this.user = user
+      .then((data) => {
+        user = data
         serviceParams.updated_by = user.id
         return filterPresetsService.getFilterPresetByGuid(req.params.guid)
       })
       .then((filterPreset) => {
-        if (filterPreset.UserCreated.guid !== this.user.guid) {
+        if (filterPreset.UserCreated.guid !== user.guid) {
           throw new ValidationError('Only user who created filter preset can update it.')
         }
         return filterPresetsService.updateFilterPreset(filterPreset, serviceParams)
