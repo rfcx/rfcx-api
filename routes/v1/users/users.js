@@ -187,39 +187,39 @@ router.route('/register')
 
 router.route('/send-reset-password-link')
   .post(function (req, res) {
+    let dbUser, dbToken
     // first of all, check if user with requested e-mail exists
     models.User
       .findOne({
         where: { email: req.body.email }
       })
-      .bind({})
-      .then(function (dbUser) {
+      .then(function (user) {
         // if doesn't exists, simply do nothing
         // don't tell a client that e-mail doesn't exist in terms of security
         // this will prevent us from brute-force users by e-mails
         // Also don't allow to reset password for users which are not RFCx user (e.g. auth0 users)
-        if (!dbUser || dbUser.rfcx_system === false) {
+        if (!user || user.rfcx_system === false) {
           res.status(200).json({})
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         } else {
-          this.dbUser = dbUser
+          dbUser = user
           // create reset password token for founded user which will expire in 1 day
           return models.ResetPasswordToken
             .create({
-              user_id: dbUser.id,
+              user_id: user.id,
               expires_at: moment().add(1, 'day')
             })
         }
       })
-      .then(function (dbToken) {
-        this.dbToken = dbToken
+      .then(function (token) {
+        dbToken = token
         // send an email to user with link to change password
         var url = process.env.CONSOLE_BASE_URL + 'reset-password?token=' + dbToken.guid
         var text = 'To reset your RFCx account password click the following link: ' + url +
                    ' If you didn\'t request a password change, you can ignore this message.'
         return mailService.sendTextMail({
           email_address: req.body.email,
-          recipient_name: this.dbUser.firstname || 'RFCx User',
+          recipient_name: dbUser.firstname || 'RFCx User',
           subject: 'Password reset',
           message: text
         })
@@ -227,7 +227,7 @@ router.route('/send-reset-password-link')
       .then(function (mailServiceRes) {
         // return success to client with the time of token expiration
         res.status(200).json({
-          expires_at: this.dbToken.expires_at
+          expires_at: dbToken.expires_at
         })
       })
       .catch(function (err) {
@@ -240,22 +240,22 @@ router.route('/send-reset-password-link')
 
 router.route('/reset-password')
   .post(function (req, res) {
+    let dbToken
     // find reset password token by specified guid
     models.ResetPasswordToken
       .findOne({
         where: { guid: req.body.token }
       })
-      .bind({})
-      .then(function (dbToken) {
-        if (!dbToken) {
+      .then(function (token) {
+        if (!token) {
           // if user specified not existing token, then show a message and cancel password reset
           httpError(req, res, 404, null, 'Such token doesn\'t exist. It might be expired or invalid.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
-        this.dbToken = dbToken
+        dbToken = token
         // if token is expired, then show this message to user and cancel password reset. Destroy this token.
         if (new Date(dbToken.expires_at) < new Date()) {
-          this.dbToken.destroy()
+          dbToken.destroy()
           httpError(req, res, 400, null, 'Your token has expired. Please start reset password process once again.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         } else {
@@ -270,7 +270,7 @@ router.route('/reset-password')
         // if user was not found, then token has invalid user data. Destroy this token.
         // Also do the same if user is not RFCx user (e.g. auth0 user)
         if (!dbUser || dbUser.rfcx_system === false) {
-          this.dbToken.destroy()
+          dbToken.destroy()
           httpError(req, res, 400, null, 'Invalid token. Please start reset password process once again.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
@@ -283,7 +283,7 @@ router.route('/reset-password')
       })
       .then(function (dbUser) {
         // token doesn't need anymore, destroy it
-        this.dbToken.destroy()
+        dbToken.destroy()
         // and check for other tokens being expired
         removeExpiredResetPasswordTokens()
         return mailService.sendTextMail({
@@ -448,36 +448,37 @@ router.route('/code')
     params.convert('accept_terms').optional().toBoolean()
     params.convert('app').optional().toString().default('')
 
+    let user, userId, authToken, token
+
     params.validate()
       .then(() => {
         return usersService.getUserByGuid(req.rfcx.auth_token_info.guid)
       })
-      .bind({})
-      .then((user) => {
-        this.user = user
-        this.userId = req.rfcx.auth_token_info.sub || req.rfcx.auth_token_info.guid
+      .then((data) => {
+        user = data
+        userId = req.rfcx.auth_token_info.sub || req.rfcx.auth_token_info.guid
         return sitesService.getSiteByGuid(transformedParams.code)
       })
       .then(() => {
         return auth0Service.getAuthToken()
       })
       .then((token) => {
-        this.authToken = token
+        authToken = token
         return auth0Service.getToken()
       })
-      .then((token) => {
-        this.token = token
-        return auth0Service.getAllRolesByLabels(this.authToken, roles)
+      .then((t) => {
+        token = t
+        return auth0Service.getAllRolesByLabels(authToken, roles)
       })
       .then((roles) => {
         const rolesGuids = roles.map((role) => {
           return role._id
         })
-        return auth0Service.assignRolesToUser(this.authToken, this.userId, rolesGuids)
+        return auth0Service.assignRolesToUser(authToken, userId, rolesGuids)
       })
       .then(() => {
         const attrs = {
-          user_id: this.userId,
+          user_id: userId,
           defaultSite: transformedParams.code,
           accessibleSites: [transformedParams.code]
         }
@@ -486,26 +487,26 @@ router.route('/code')
           user_metadata[`consentGiven${transformedParams.app}`] = 'true'
           attrs.user_metadata = user_metadata // eslint-disable-line camelcase
         }
-        return auth0Service.updateAuth0User(this.token, attrs)
+        return auth0Service.updateAuth0User(token, attrs)
       })
       .then(() => {
-        return usersService.updateSiteRelations(this.user, { sites: [transformedParams.code] })
+        return usersService.updateSiteRelations(user, { sites: [transformedParams.code] })
       })
       .then(() => {
-        return usersService.updateDefaultSite(this.user, transformedParams.code)
+        return usersService.updateDefaultSite(user, transformedParams.code)
       })
       .then(() => {
         res.status(200).json({ success: true })
-        const userName = (this.user.firstname && this.user.lastname) ? `${this.user.firstname} ${this.user.lastname}` : 'No name user'
+        const userName = (user.firstname && user.lastname) ? `${user.firstname} ${user.lastname}` : 'No name user'
         mailService.sendMessage({
           from_name: 'RFCx Users Management',
           email: 'contact@rfcx.org',
           subject: 'User has got access',
-          html: `<b>${userName}</b> has got access to <b>${transformedParams.code}</b> site with <b>${roles.join(', ')}</b> role. </br>User guid <b>${this.user.guid}</b>, user email ${this.user.email}`
+          html: `<b>${userName}</b> has got access to <b>${transformedParams.code}</b> site with <b>${roles.join(', ')}</b> role. </br>User guid <b>${user.guid}</b>, user email ${user.email}`
         })
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, 'Invalid code.'))
+      .catch(e => { console.log('\n\n', e, '\n\n'); httpError(req, res, 500, e, 'Invalid code.') })
   })
 
 router.route('/accept-terms')
@@ -677,13 +678,14 @@ router.route('/auth0/update-user/public')
     params.convert('nickname').optional().toString()
     params.convert('picture').optional().toString()
 
+    let token, body
+
     params.validate()
       .then(() => {
         return auth0Service.getToken()
       })
-      .bind({})
-      .then((token) => {
-        this.token = token
+      .then((data) => {
+        token = data
         if (!transformedParams.name && transformedParams.given_name && transformedParams.family_name) {
           transformedParams.name = `${transformedParams.given_name} ${transformedParams.family_name}`
         }
@@ -707,12 +709,12 @@ router.route('/auth0/update-user/public')
           } else if (!opts.user_metadata.given_name && opts.user_metadata.family_name) {
             opts.user_metadata.name = `${opts.user_metadata.family_name}`
           }
-          return auth0Service.updateAuth0User(this.token, opts)
+          return auth0Service.updateAuth0User(token, opts)
         }
         return body
       })
-      .then((body) => {
-        this.body = body
+      .then((data) => {
+        body = data
         const email = body.email || req.user.email
         return usersService.getUserByEmail(email, true)
       })
@@ -736,7 +738,7 @@ router.route('/auth0/update-user/public')
         return true
       })
       .then((data) => {
-        res.status(200).json(this.body)
+        res.status(200).json(body)
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch((err) => {
@@ -754,22 +756,20 @@ router.route('/auth0/users/export-link')
     params.convert('limit').optional().toString()
     params.convert('fields').optional().toArray()
 
+    let token
+
     params.validate()
       .then(() => {
         return auth0Service.getToken()
       })
-      .bind({})
-      .then((token) => {
-        this.token = token
-        console.log('\ntransformedParams\n', transformedParams)
-        console.log('\ntoken\n', this.token)
+      .then((data) => {
+        token = data
         // use for getting all users by connections with database
         return auth0Service.getAllUsersForExports(token, transformedParams)
       })
       .then((data) => {
         // use for uploading csv or json file with sorting users by fields
-        console.log('\njob_ID\n', data)
-        return auth0Service.getAjob(this.token, data)
+        return auth0Service.getAjob(token, data)
       })
       .then((data) => {
         console.log('data for uploading users', data)
@@ -794,7 +794,6 @@ router.route('/auth0/update-users')
         return auth0Service.getToken()
       })
       .then((token) => {
-        console.log('\ntransformedParams\n', transformedParams)
         const proms = []
         if (transformedParams.users) {
           transformedParams.users.forEach((user) => {
@@ -833,18 +832,19 @@ router.route('/reset-user-password')
     params.convert('user_id').toString()
     params.convert('email').toString()
 
+    let token, password
+
     params.validate()
       .then(() => {
         return auth0Service.getToken()
       })
-      .bind({})
-      .then((token) => {
-        this.token = token
-        this.password = hash.randomString(50)
-        return usersService.updateMySQLUserPassword(this.password, transformedParams.email, transformedParams.guid)
+      .then((data) => {
+        token = data
+        password = hash.randomString(50)
+        return usersService.updateMySQLUserPassword(password, transformedParams.email, transformedParams.guid)
       })
       .then(() => {
-        return auth0Service.updateAuth0UserPassword(this.token, transformedParams, this.password)
+        return auth0Service.updateAuth0UserPassword(token, transformedParams, password)
       })
       .then((user) => {
         return mailService.sendTextMail({
@@ -876,17 +876,18 @@ router.route('/change-user-password')
     params.convert('email').toString()
     params.convert('password').toString()
 
+    let token
+
     params.validate()
       .then(() => {
         return auth0Service.getToken()
       })
-      .bind({})
-      .then((token) => {
-        this.token = token
+      .then((data) => {
+        token = data
         return usersService.updateMySQLUserPassword(transformedParams.password, transformedParams.email, transformedParams.guid)
       })
       .then(() => {
-        return auth0Service.updateAuth0UserPassword(this.token, transformedParams, transformedParams.password)
+        return auth0Service.updateAuth0UserPassword(token, transformedParams, transformedParams.password)
       })
       .then((data) => {
         res.status(200).json({ success: true })

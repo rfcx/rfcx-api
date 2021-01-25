@@ -229,17 +229,17 @@ function attachSitesToUser (sites, user) {
 }
 
 function updateSiteRelations (user, params) {
+  let sites
   return validateSiteRelationsParams(params)
-    .bind({})
     .then(data => {
       return getAllSitesByGuids(data.sites)
     })
-    .then(sites => {
-      this.sites = sites
+    .then(data => {
+      sites = data
       return clearSitesRelationsForUser(user)
     })
-    .then(sites => {
-      return attachSitesToUser(this.sites, user)
+    .then(() => {
+      return attachSitesToUser(sites, user)
     })
     .then(() => {
       return getUserByGuid(user.guid)
