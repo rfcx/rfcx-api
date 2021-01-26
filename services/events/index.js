@@ -1,7 +1,6 @@
 const moment = require('moment')
 const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream } = require('../../modelsTimescale')
-const ValidationError = require('../../utils/converter/validation-error')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
+const { EmptyResultError, ValidationError, ForbiddenError } = require('../../utils/errors')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
 
@@ -143,6 +142,10 @@ async function get (id, options = {}) {
     attributes,
     include: includes
   })
+
+  if (!event) {
+    throw new EmptyResultError('Event with given id not found.')
+  }
 
   // TODO remove hard-coded strings
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, event.stream_id, STREAM))) {
