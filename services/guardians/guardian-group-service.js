@@ -104,29 +104,29 @@ function doesGroupExist (shortname, name) {
 }
 
 function createGroup (opts) {
+  let data, group
   return validateCreateGroupParams(opts)
-    .bind({})
-    .then(data => {
-      this.data = data
+    .then(d => {
+      data = d
       return doesGroupExist(data.shortname, data.name)
     })
     .then((exist) => {
       if (exist) {
         throw new ValidationError('Group with this shortname or name already exists.')
       }
-      if (this.data.site) {
-        return siteService.getSiteByGuid(this.data.site)
+      if (data.site) {
+        return siteService.getSiteByGuid(data.site)
       }
       return Promise.resolve(null)
     })
     .then((site) => {
       if (site) {
-        this.data.site = site.id
+        data.site = site.id
       }
-      return models.GuardianGroup.create(this.data)
+      return models.GuardianGroup.create(data)
     })
-    .then(group => {
-      this.group = group
+    .then(g => {
+      group = g
       if (opts.guardians) {
         return updateGuardiansGroupRelations(group, opts)
       }
@@ -134,43 +134,43 @@ function createGroup (opts) {
     })
     .then(() => {
       if (opts.event_values) {
-        return updateGuardianGroupEventValuesRelations(this.group, opts)
+        return updateGuardianGroupEventValuesRelations(group, opts)
       }
       return Promise.resolve(true)
     })
     .then(() => {
       if (opts.event_types) {
-        return updateGuardianGroupEventTypesRelations(this.group, opts)
+        return updateGuardianGroupEventTypesRelations(group, opts)
       }
       return Promise.resolve(true)
     })
     .then(() => {
-      return this.group.reload({ include: [{ all: true }] })
+      return group.reload({ include: [{ all: true }] })
     })
 }
 
 function updateGroup (shortname, opts) {
+  let group
   return getGroupByShortname(shortname)
-    .bind({})
-    .then((group) => {
-      this.group = group
+    .then((g) => {
+      group = g
       if (opts.site) {
         return siteService.getSiteByGuid(opts.site)
           .then((site) => {
-            this.group.site = site.id
-            return this.group.save()
+            group.site = site.id
+            return group.save()
           })
       }
       return Promise.resolve()
     })
     .then(() => {
-      return updateGuardiansGroupRelations(this.group, opts)
+      return updateGuardiansGroupRelations(group, opts)
     })
     .then(() => {
-      return updateGuardianGroupEventValuesRelations(this.group, opts)
+      return updateGuardianGroupEventValuesRelations(group, opts)
     })
     .then(() => {
-      return updateGuardianGroupEventTypesRelations(this.group, opts)
+      return updateGuardianGroupEventTypesRelations(group, opts)
     })
 }
 
@@ -179,17 +179,17 @@ function deleteGroupByShortname (shortname) {
 }
 
 function updateGuardiansGroupRelations (group, params) {
+  let guardians
   return validateGuardiansRelationsParams(params)
-    .bind({})
     .then(data => {
       return getAllGuardiansByGuids(data.guardians)
     })
-    .then(guardians => {
-      this.guardians = guardians
+    .then(g => {
+      guardians = g
       return clearGuardiansRelationsForGroup(group)
     })
     .then(() => {
-      return attachGuardiansToGroup(this.guardians, group)
+      return attachGuardiansToGroup(guardians, group)
     })
     .then(() => {
       return group.reload({ include: [{ all: true }] })
@@ -197,17 +197,17 @@ function updateGuardiansGroupRelations (group, params) {
 }
 
 function updateGuardianGroupEventValuesRelations (group, params) {
+  let eventValues
   return validateGuardianGroupEventValuesRelationsParams(params)
-    .bind({})
     .then(data => {
       return eventValueService.getAllGuardianAudioEventValuesByValues(data.event_values)
     })
-    .then(eventValues => {
-      this.eventValues = eventValues
+    .then(e => {
+      eventValues = e
       return clearGuardianGroupEventValuesRelationsForGroup(group)
     })
     .then(() => {
-      return attachEventValuesToGroup(this.eventValues, group)
+      return attachEventValuesToGroup(eventValues, group)
     })
     .then(() => {
       return group.reload({ include: [{ all: true }] })
@@ -215,17 +215,17 @@ function updateGuardianGroupEventValuesRelations (group, params) {
 }
 
 function updateGuardianGroupEventTypesRelations (group, params) {
+  let eventTypes
   return validateGuardianGroupEventTypesRelationsParams(params)
-    .bind({})
     .then(data => {
       return eventTypeService.getAllGuardianAudioEventTypesByValues(data.event_types)
     })
-    .then(eventTypes => {
-      this.eventTypes = eventTypes
+    .then(e => {
+      eventTypes = e
       return clearGuardianGroupEventTypesRelationsForGroup(group)
     })
     .then(() => {
-      return attachEventTypesToGroup(this.eventTypes, group)
+      return attachEventTypesToGroup(eventTypes, group)
     })
     .then(() => {
       return group.reload({ include: [{ all: true }] })
