@@ -182,7 +182,7 @@ router.post('/:id/detections', function (req, res) {
       return classifierService.getIdsByExternalIds(classifierUuids)
     }).then(classifierMapping => {
       const classifierIds = Object.values(classifierMapping)
-      return Promise.all(classifierIds.map(id => classifierService.update(id, '', { last_executed_at: new Date() })))
+      return Promise.all(classifierIds.map(id => classifierService.update(id, null, { last_executed_at: new Date() })))
         .then(() => classifierMapping)
     }).then(classifierMapping => {
       const validatedDetections = params.transformedArray
