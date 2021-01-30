@@ -29,7 +29,6 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
 
   // TODO: if minConfidence is undefined, get it from event strategy
   condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
-
   return {
     where: condition,
     include: [
@@ -86,30 +85,6 @@ function create (detections) {
     })))
 }
 
-function get (detectionId) {
-  return models.Detection.findByPk(detectionId, {
-    include: [
-      {
-        as: 'classification',
-        model: models.Classification,
-        attributes: models.Classification.attributes.lite,
-        required: true
-      },
-      {
-        as: 'stream',
-        model: models.Stream,
-        attributes: models.Stream.attributes.lite
-      },
-      {
-        as: 'classifier',
-        model: models.Classifier,
-        attributes: models.Classifier.attributes.lite
-      }
-    ],
-    attributes: models.Detection.attributes.full
-  })
-}
-
 function matchDetectionsWithReviews (detections, reviews) {
   detections = detections.map(d => {
     return {
@@ -136,7 +111,6 @@ function matchDetectionsWithReviews (detections, reviews) {
 module.exports = {
   query,
   timeAggregatedQuery,
-  get,
   create,
   matchDetectionsWithReviews
 }

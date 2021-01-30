@@ -273,10 +273,6 @@
   },
   "Detection": {
     "properties": {
-      "id": {
-        "type": "string",
-        "example": "cf8a7ac9-0dd2-40b6-b03f-a067d6c43325"
-      },
       "stream_id": {
         "type": "string",
         "example": "xu82jDgX49"
