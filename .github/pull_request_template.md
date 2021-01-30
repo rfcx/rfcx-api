@@ -1,8 +1,10 @@
 ## ✅ DoD
 
-- [x] Resolves CS-XXX
-- [ ] API docs updated
-- [ ] Seed data created
+- [x] Resolves [CS-XXX](https://jira.rfcx.org/browse/CS-XXX)
+- [ ] Release notes updated
+- [ ] Deployment notes updated
+- [ ] DB migrations updated/na
+- [ ] ...
 
 ## 📝 Summary
 
