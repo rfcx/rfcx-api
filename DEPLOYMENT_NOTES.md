@@ -9,6 +9,7 @@
   - `20210130000001-add-is-suggested-is-opposite-to-annotaions`
   - `20210130000002-change-freq-min-freq-max-on-annotations`
   - `20210130000003-drop-id-on-detections`
+  - `20210130000004-change-confidence-on-detections`
 
 ## v1.0.0
 

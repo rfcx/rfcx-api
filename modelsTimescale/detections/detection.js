@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     },
     confidence: {
-      type: DataTypes.FLOAT
+      type: DataTypes.REAL
     }
   }, {
     timestamps: false

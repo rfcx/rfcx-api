@@ -8,6 +8,7 @@
 
 ### Performance Improvements
 * **core:** drop `id` column on `detections` table ([CS-392](https://jira.rfcx.org/browse/CS-392))
+* **core:** change `confidence` column on `detections` table from `FLOAT` to `REAL` ([CS-392](https://jira.rfcx.org/browse/CS-392))
 
 
 <a name="1.0.0"></a>
