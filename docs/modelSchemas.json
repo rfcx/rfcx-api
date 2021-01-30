@@ -266,10 +266,6 @@
         "type": "boolean",
         "example": true
       },
-      "created_at": {
-        "type": "date",
-        "example": "2020-05-13T09:25:21.500Z"
-      },
       "user": {
         "$ref": "#/components/schemas/UserLite"
       }

@@ -22,11 +22,24 @@ module.exports = (sequelize, DataTypes) => {
     },
     frequency_min: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     frequency_max: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
+    },
+    classification_id: {
+      type: DataTypes.INTEGER
+    },
+    is_suggested: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    is_opposite: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     },
     created_by_id: {
       type: DataTypes.INTEGER,

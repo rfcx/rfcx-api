@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
+const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classifications')
 const classifierService = require('../../../services/classifiers')
 const rolesService = require('../../../services/roles')
@@ -85,14 +86,25 @@ router.get('/:id/detections', hasStreamPermission('R'), function (req, res) {
   params.convert('min_confidence').optional().toFloat()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
-  params.convert('reviews').optional().toBoolean()
+  params.convert('reviews').toBoolean().default(false)
 
   return params.validate()
     .then(async () => {
       const { start, end, classifications, limit, offset, reviews } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      const detections = await detectionsService.query(start, end, streamId, classifications, minConfidence, reviews, limit, offset, user)
-      return res.json(detections)
+      const proms = [detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset, user)]
+      if (reviews) {
+        proms.push(annotationsService.query({ start, end, streamId, classifications, user, isSuggested: true }, { limit, offset }))
+      }
+      const result = await Promise.all(proms)
+        .then(async (data) => {
+          let detections = data[0]
+          if (reviews) {
+            detections = await detectionsService.matchDetectionsWithReviews(data[0], data[1])
+          }
+          return detections
+        })
+      return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })

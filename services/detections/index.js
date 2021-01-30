@@ -54,22 +54,8 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
   }
 }
 
-async function query (start, end, streamId, classifications, minConfidence, reviews, limit, offset, user) {
+async function query (start, end, streamId, classifications, minConfidence, limit, offset, user) {
   const opts = await defaultQueryOptions(start, end, streamId, undefined, false, classifications, minConfidence, false, limit, offset, user)
-  if (reviews) {
-    opts.include.push({
-      as: 'reviews',
-      model: models.DetectionReview,
-      include: [
-        {
-          as: 'user',
-          model: models.User,
-          attributes: models.User.attributes.lite
-        }
-      ],
-      attributes: ['positive', 'created_at']
-    })
-  }
   return models.Detection.findAll(opts)
 }
 
@@ -124,4 +110,33 @@ function get (detectionId) {
   })
 }
 
-module.exports = { query, timeAggregatedQuery, get, create }
+function matchDetectionsWithReviews (detections, reviews) {
+  detections = detections.map(d => {
+    return {
+      ...d.toJSON(),
+      reviews: []
+    }
+  })
+  reviews.forEach((r) => {
+    r = r.toJSON()
+    const detection = detections.find((d) => {
+      return r.start.valueOf() === d.start.valueOf() && r.end.valueOf() === d.end.valueOf() &&
+        r.stream_id === d.stream_id && r.classification.value === d.classification.value
+    })
+    if (detection) {
+      detection.reviews.push({
+        positive: !r.is_opposite,
+        user: r.created_by
+      })
+    }
+  })
+  return detections
+}
+
+module.exports = {
+  query,
+  timeAggregatedQuery,
+  get,
+  create,
+  matchDetectionsWithReviews
+}
