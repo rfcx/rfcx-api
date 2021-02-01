@@ -7,7 +7,6 @@ const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const auth0Service = require('../../../services/auth0/auth0-service')
 
 /**
@@ -74,7 +73,7 @@ const auth0Service = require('../../../services/auth0/auth0-service')
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/detections', hasStreamPermission('R'), function (req, res) {
+router.get('/:id/detections', function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const convertedParams = {}
@@ -88,6 +87,16 @@ router.get('/:id/detections', hasStreamPermission('R'), function (req, res) {
   params.convert('reviews').optional().toBoolean()
 
   return params.validate()
+    .then(async () => {
+      const roles = auth0Service.getUserRolesFromToken(req.user)
+      if (roles.includes('systemUser')) {
+        return true
+      }
+      const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
+    })
     .then(async () => {
       const { start, end, classifications, limit, offset, reviews } = convertedParams
       const minConfidence = convertedParams.min_confidence

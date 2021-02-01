@@ -1,8 +1,9 @@
 <a name="1.0.1"></a>
-## 1.0.1 (2021-01-31)
+## 1.0.1 (2021-01-30)
 
 
 ### Features
+* **core:** update events endpoints to support `systemUser` ([CS-105](https://jira.rfcx.org/browse/CS-105))
 * **core:** update classifier `last_executed_at` when saving detections ([CS-368](https://jira.rfcx.org/browse/CS-368))
 
 
