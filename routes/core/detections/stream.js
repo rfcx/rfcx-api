@@ -189,8 +189,11 @@ router.post('/:id/detections', function (req, res) {
       // Get all the distinct classifier uuids
       const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))]
       return classifierService.getIdsByExternalIds(classifierUuids)
-    })
-    .then(classifierMapping => {
+    }).then(classifierMapping => {
+      const classifierIds = Object.values(classifierMapping)
+      return Promise.all(classifierIds.map(id => classifierService.update(id, null, { last_executed_at: new Date() })))
+        .then(() => classifierMapping)
+    }).then(classifierMapping => {
       const validatedDetections = params.transformedArray
       const detections = validatedDetections.map(detection => {
         const classificationId = classificationMapping[detection.classification]

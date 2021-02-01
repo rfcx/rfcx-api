@@ -4,6 +4,7 @@
 
 ### Features
 * **core:** update events endpoints to support `systemUser` ([CS-105](https://jira.rfcx.org/browse/CS-105))
+* **core:** update classifier `last_executed_at` when saving detections ([CS-368](https://jira.rfcx.org/browse/CS-368))
 
 
 <a name="1.0.0"></a>
