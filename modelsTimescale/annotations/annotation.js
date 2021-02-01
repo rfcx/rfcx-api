@@ -31,15 +31,15 @@ module.exports = (sequelize, DataTypes) => {
     classification_id: {
       type: DataTypes.INTEGER
     },
-    is_suggested: {
+    is_manual: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false
+      defaultValue: true
     },
-    is_opposite: {
+    is_positive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false
+      defaultValue: true
     },
     created_by_id: {
       type: DataTypes.INTEGER,

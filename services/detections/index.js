@@ -100,7 +100,7 @@ function matchDetectionsWithReviews (detections, reviews) {
     })
     if (detection) {
       detection.reviews.push({
-        positive: !r.is_opposite,
+        positive: r.is_positive,
         user: r.created_by
       })
     }

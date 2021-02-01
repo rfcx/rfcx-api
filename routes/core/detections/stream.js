@@ -94,7 +94,7 @@ router.get('/:id/detections', hasStreamPermission('R'), function (req, res) {
       const minConfidence = convertedParams.min_confidence
       const proms = [detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset, user)]
       if (reviews) {
-        proms.push(annotationsService.query({ start, end, streamId, classifications, user, isSuggested: true }, { limit, offset }))
+        proms.push(annotationsService.query({ start, end, streamId, classifications, user, isManual: false }, { limit, offset }))
       }
       const result = await Promise.all(proms)
         .then(async (data) => {

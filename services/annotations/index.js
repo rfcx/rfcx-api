@@ -10,8 +10,8 @@ async function defaultQueryOptions (filters, options = {}) {
       [models.Sequelize.Op.gte]: moment.utc(filters.start).valueOf(),
       [models.Sequelize.Op.lt]: moment.utc(filters.end).valueOf()
     },
-    is_suggested: !!filters.isSuggested,
-    ...filters.isOpposite !== undefined && { is_opposite: filters.isOpposite }
+    is_manual: !!filters.isManual,
+    ...filters.isPositive !== undefined && { is_positive: filters.isPositive }
   }
   if (filters.streamId !== undefined) {
     condition.stream_id = filters.streamId
@@ -35,15 +35,14 @@ async function defaultQueryOptions (filters, options = {}) {
     required: true
   }]
   const attributes = [...models.Annotation.attributes.lite]
-  if (filters.isSuggested === true) {
+  if (filters.isManual === false) {
     include.push({
       as: 'created_by',
       model: models.User,
       attributes: models.User.attributes.lite
     })
-    attributes.push('is_opposite')
+    attributes.push('is_positive')
   }
-  console.log('\n\n\n', condition, '\n\n\n')
   return {
     where: condition,
     include,
@@ -83,21 +82,21 @@ async function timeAggregatedQuery (filters, options = {}) {
 }
 
 function create (annotation) {
-  const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId, isSuggested, isOpposite } = annotation
+  const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId, isManual, isPositive } = annotation
   const where = {
     start,
     end,
     stream_id: streamId,
     classification_id: classificationId,
     created_by_id: userId,
-    is_suggested: isSuggested
+    is_manual: isManual
   }
   const defaults = {
     ...where,
     frequency_min: frequencyMin,
     frequency_max: frequencyMax,
     updated_by_id: userId,
-    is_opposite: isOpposite
+    is_positive: isPositive
   }
   return models.Annotation.findOrCreate({ where, defaults }).spread(annotation, created => formatFull(annotation))
 }
@@ -126,7 +125,7 @@ function get (annotationId) {
   })
 }
 
-function update (annotationId, start, end, classificationId, frequencyMin, frequencyMax, userId, isOpposite) {
+function update (annotationId, start, end, classificationId, frequencyMin, frequencyMax, userId, isPositive) {
   return models.Annotation.findByPk(annotationId).then(annotation => {
     // Timescale time columns cannot be updated (outside of their "chunk interval")
     // so need to delete + create, while maintaining existing createdBy/At + streamId
@@ -141,7 +140,7 @@ function update (annotationId, start, end, classificationId, frequencyMin, frequ
           frequency_max: frequencyMax,
           updated_by_id: userId,
           updated_at: new Date(),
-          ...isOpposite !== undefined && { is_opposite: isOpposite }
+          ...isPositive !== undefined && { is_positive: isPositive }
         }, { transaction, silent: true })
       })
     })

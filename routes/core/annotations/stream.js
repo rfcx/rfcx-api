@@ -124,14 +124,14 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   params.convert('classification').toString()
   params.convert('frequency_min').optional().toInt()
   params.convert('frequency_max').optional().toInt()
-  params.convert('is_suggested').toBoolean().default(false)
-  params.convert('is_opposite').toBoolean().default(false)
+  params.convert('is_manual').toBoolean().default(true)
+  params.convert('is_positive').toBoolean().default(true)
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
-      const { start, end, frequency_min, frequency_max, is_suggested, is_opposite } = convertedParams // eslint-disable-line camelcase
+      const { start, end, frequency_min, frequency_max, is_manual, is_positive } = convertedParams // eslint-disable-line camelcase
       const annotation = {
         streamId,
         classificationId,
@@ -140,8 +140,8 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
         end,
         frequencyMin: frequency_min,
         frequencyMax: frequency_max,
-        isSuggested: is_suggested,
-        isOpposite: is_opposite
+        isManual: is_manual,
+        isPositive: is_positive
       }
       return annotationsService.create(annotation)
     })
