@@ -4,6 +4,7 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
 const Converter = require('../../../utils/converter/converter')
 const classificationsService = require('../../../services/classifications')
 const eventsService = require('../../../services/events')
+const auth0Service = require('../../../services/auth0/auth0-service')
 
 /**
  * @swagger
@@ -184,12 +185,13 @@ router.get('/:id', (req, res) => {
   const id = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const userIsSuper = req.rfcx.auth_token_info.is_super
+  const userIsSystem = auth0Service.getUserRolesFromToken(req.user).includes('systemUser')
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
   return converter.validate()
     .then(params => {
       const options = {
-        readableBy: userIsSuper ? undefined : userId,
+        readableBy: userIsSuper || userIsSystem ? undefined : userId,
         fields: params.fields
       }
       return eventsService.get(id, options)
