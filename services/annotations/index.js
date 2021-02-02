@@ -4,6 +4,23 @@ const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
 
+/**
+ * Combines query clauses based on input
+ * @param {*} filters
+ * @param {string} filters.streamId
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
+ * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
+ * @param {boolean} filters.streamsOnlyPublic
+ * @param {object} filters.user
+ * @param {string | number} filters.streamsOnlyCreatedBy
+ * @param {string[]} filters.classifications
+ * @param {*} options Additional options
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @param {boolean} options.descending
+ */
 async function defaultQueryOptions (filters, options = {}) {
   const condition = {
     start: {
@@ -60,11 +77,49 @@ function formatFull (annotation) {
   }, {})
 }
 
+/**
+ * Gets annotations based on input params
+ * @param {*} filters
+ * @param {string} filters.streamId
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
+ * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
+ * @param {boolean} filters.streamsOnlyPublic
+ * @param {object} filters.user
+ * @param {string | number} filters.streamsOnlyCreatedBy
+ * @param {string[]} filters.classifications
+ * @param {*} options Additional options
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @param {boolean} options.descending
+ */
 async function query (filters, options = {}) {
   const queryOptions = await defaultQueryOptions(filters, options)
   return models.Annotation.findAll(queryOptions)
 }
 
+/**
+ * Gets aggregated annotations based on input params
+ * @param {*} filters
+ * @param {string} filters.streamId
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
+ * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
+ * @param {boolean} filters.streamsOnlyPublic
+ * @param {object} filters.user
+ * @param {number} filters.createdBy
+ * @param {string | number} filters.streamsOnlyCreatedBy
+ * @param {string[]} filters.classifications
+ * @param {*} options Additional options
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @param {boolean} options.descending
+ * @param {string} options.interval
+ * @param {string} options.aggregate
+ * @param {string} options.field
+ */
 async function timeAggregatedQuery (filters, options = {}) {
   const queryOptions = await defaultQueryOptions(filters, options)
   if (filters.createdBy !== undefined) {
