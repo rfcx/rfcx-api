@@ -89,6 +89,14 @@ router.post('/', function (req, res) {
  *     tags:
  *       - streams
  *     parameters:
+ *       - name: organizations
+ *         description: List of organization ids
+ *         in: query
+ *         type: array
+ *       - name: projects
+ *         description: List of project ids
+ *         in: query
+ *         type: array
  *       - name: is_public
  *         description: Return public or private streams
  *         in: query
@@ -148,6 +156,8 @@ router.get('/', (req, res) => {
   const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
+  params.convert('organizations').optional().toArray()
+  params.convert('projects').optional().toArray()
   params.convert('is_public').optional().toBoolean()
   params.convert('is_deleted').optional().toBoolean()
   params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
@@ -161,8 +171,25 @@ router.get('/', (req, res) => {
     .then(async () => {
       convertedParams.current_user_id = user.owner_id
       convertedParams.current_user_is_super = user.is_super
+      if (convertedParams.projects) {
+        convertedParams.projects = convertedParams.projects[0].split(',')
+      }
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
-      const streams = streamsData.streams.map(x => streamsService.formatStream(x, null))
+      let streams = streamsData.streams.map(x => streamsService.formatStream(x, null))
+
+      // Filter by organizations
+      if (convertedParams.organizations) {
+        convertedParams.organizations = convertedParams.organizations[0].split(',')
+        const projectIds = []
+        for (const organizationId of convertedParams.organizations) {
+          const projects = await projectsService.query({ organization_id: organizationId })
+          for (const i of projects.projects.map(project => project.id)) projectIds.push(i)
+        }
+        streams = streams.filter(stream => {
+          return stream.project && projectIds.includes(stream.project.id)
+        })
+      }
+
       return res
         .header('Total-Items', streamsData.count)
         .json(streams)
