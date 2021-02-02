@@ -1,3 +1,11 @@
+<a name="1.0.2"></a>
+## 1.0.2 (2021-02-XX)
+
+
+### Features
+* **core:** Detection review from Neo4j is saved in TimescaleDB also ([CS-331](https://jira.rfcx.org/browse/CS-331))
+
+
 <a name="1.0.1"></a>
 ## 1.0.1 (2021-02-02)
 
