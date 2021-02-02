@@ -30,6 +30,11 @@ const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require
  *     responses:
  *       201:
  *         description: Created
+ *         headers:
+ *           Location:
+ *             description: Path of the created resource (e.g. `/streams/xyz123`)
+ *             schema:
+ *               type: string
  *         content:
  *           application/json:
  *             schema:
@@ -76,7 +81,7 @@ router.post('/', function (req, res) {
       return streamsService.create(convertedParams, { joinRelations: true })
     })
     .then(streamsService.formatStream)
-    .then(stream => res.status(201).json(stream))
+    .then(stream => res.location(`/streams/${stream.id}`).status(201).json(stream))
     .catch(httpErrorHandler(req, res, 'Failed creating stream'))
 })
 

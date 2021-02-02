@@ -1,3 +1,11 @@
+<a name="1.0.2"></a>
+## 1.0.2 (2021-02-XX)
+
+
+### Bug Fixes
+* **core:** CREATE requests for streams and projects return location header ([CS-237](https://jira.rfcx.org/browse/CS-237))
+
+
 <a name="1.0.1"></a>
 ## 1.0.1 (2021-02-02)
 
