@@ -17,19 +17,29 @@
       },
       "frequency_min": {
         "type": "integer",
+        "description": "Required if is_manual is not provided or set to false",
         "example": 1530
       },
       "frequency_max": {
         "type": "integer",
+        "description": "Required if is_manual is not provided or set to false",
         "example": 4010
+      },
+      "is_manual": {
+        "type": "boolean",
+        "description": "An annotation which was suggested to user by a system (e.g. detection review)",
+        "example": true
+      },
+      "is_positive": {
+        "type": "boolean",
+        "description": "Whether this annotation represents absence of specified classification",
+        "example": true
       }
     },
     "required": [
       "classification",
       "start",
-      "end",
-      "frequencyMin",
-      "frequencyMax"
+      "end"
     ]
   },
   "ClassifierBase": {
@@ -250,16 +260,6 @@
         "type": "date",
         "description": "End of event (last detection timestamp)",
         "example": "2020-05-12T07:45:19.000Z"
-      },
-      "first_detection": {
-        "type": "string",
-        "description": "Identifier of first detection in the event",
-        "example": "(uuid)"
-      },
-      "last_detection": {
-        "type": "string",
-        "description": "Identifier of last detection in the event",
-        "example": "(uuid)"
       }
     },
     "required": [
@@ -267,9 +267,7 @@
       "classification",
       "classifier_event_strategy",
       "start",
-      "end",
-      "start_detection",
-      "end_detection"
+      "end"
     ]
   },
   "IndexValuesCompact": {

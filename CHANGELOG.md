@@ -3,8 +3,15 @@
 
 
 ### Features
+* **core:** use `annotations` instead of `detection_reviews` ([CS-392](https://jira.rfcx.org/browse/CS-392))
 * **core:** update events endpoints to support `systemUser` ([CS-105](https://jira.rfcx.org/browse/CS-105))
 * **core:** update classifier `last_executed_at` when saving detections ([CS-368](https://jira.rfcx.org/browse/CS-368))
+
+
+### Performance Improvements
+* **core:** drop `id` column on `detections` table ([CS-392](https://jira.rfcx.org/browse/CS-392))
+* **core:** change `confidence` column on `detections` table from `FLOAT` to `REAL` ([CS-392](https://jira.rfcx.org/browse/CS-392))
+* **core:** drop `first_detection_id` and `last_detection_id` columns on `events` table ([CS-392](https://jira.rfcx.org/browse/CS-392))
 
 
 <a name="1.0.0"></a>

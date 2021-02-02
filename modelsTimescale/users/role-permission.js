@@ -13,7 +13,7 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     timestamps: false
   })
-  RolePermission.removeAttribute('id')
+  RolePermission.removeAttribute('id') // https://github.com/sequelize/sequelize/issues/1026#issuecomment-54877327
   RolePermission.associate = function (models) {
   }
   RolePermission.attributes = {

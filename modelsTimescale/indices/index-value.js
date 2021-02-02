@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: false
   })
-  IndexValue.removeAttribute('id')
+  IndexValue.removeAttribute('id') // https://github.com/sequelize/sequelize/issues/1026#issuecomment-54877327
   IndexValue.associate = function (models) {
     IndexValue.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     IndexValue.belongsTo(models.Index, { as: 'index', foreignKey: 'index_id' })
