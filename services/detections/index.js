@@ -85,32 +85,8 @@ function create (detections) {
     })))
 }
 
-function matchDetectionsWithReviews (detections, reviews) {
-  detections = detections.map(d => {
-    return {
-      ...d.toJSON(),
-      reviews: []
-    }
-  })
-  reviews.forEach((r) => {
-    r = r.toJSON()
-    const detection = detections.find((d) => {
-      return r.start.valueOf() === d.start.valueOf() && r.end.valueOf() === d.end.valueOf() &&
-        r.stream_id === d.stream_id && r.classification.value === d.classification.value
-    })
-    if (detection) {
-      detection.reviews.push({
-        positive: r.is_positive,
-        user: r.created_by
-      })
-    }
-  })
-  return detections
-}
-
 module.exports = {
   query,
   timeAggregatedQuery,
-  create,
-  matchDetectionsWithReviews
+  create
 }

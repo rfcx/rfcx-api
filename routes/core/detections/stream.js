@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
-const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classifications')
 const classifierService = require('../../../services/classifiers')
 const rolesService = require('../../../services/roles')
@@ -34,10 +33,6 @@ const auth0Service = require('../../../services/auth0/auth0-service')
  *         in: query
  *         required: true
  *         type: string
- *       - name: reviews
- *         description: Whether or not to include detection user reviews or not
- *         in: query
- *         type: boolean
  *       - name: classifications
  *         description: List of clasification identifiers
  *         in: query
@@ -58,17 +53,12 @@ const auth0Service = require('../../../services/auth0/auth0-service')
  *         default: 0
  *     responses:
  *       200:
- *         description: List of detections objects. **"reviews" attribute is included based on "reviews" query parameter**
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 oneOf:
- *                   - $ref: '#/components/schemas/Detection'
- *                   - $ref: '#/components/schemas/DetectionWithReviews'
- *                 discriminator:
- *                   propertyName: reviews
+ *                 $ref: '#/components/schemas/Detection'
  *       400:
  *         description: Invalid query parameters
  *       404:
@@ -85,7 +75,6 @@ router.get('/:id/detections', function (req, res) {
   params.convert('min_confidence').optional().toFloat()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
-  params.convert('reviews').toBoolean().default(false)
 
   return params.validate()
     .then(async () => {
@@ -99,20 +88,9 @@ router.get('/:id/detections', function (req, res) {
       }
     })
     .then(async () => {
-      const { start, end, classifications, limit, offset, reviews } = convertedParams
+      const { start, end, classifications, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      const proms = [detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset, user)]
-      if (reviews) {
-        proms.push(annotationsService.query({ start, end, streamId, classifications, user, isManual: false }, { limit, offset }))
-      }
-      const result = await Promise.all(proms)
-        .then(async (data) => {
-          let detections = data[0]
-          if (reviews) {
-            detections = await detectionsService.matchDetectionsWithReviews(data[0], data[1])
-          }
-          return detections
-        })
+      const result = await detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset, user)
       return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

@@ -9,6 +9,7 @@
 
 ### Other
 * **core:** Disable clustered detections endpoint temprary - return 501
+* **core:** Delete "reviews" parameter from detections query endpoint
 
 
 <a name="1.0.1"></a>
