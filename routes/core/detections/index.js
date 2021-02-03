@@ -20,7 +20,7 @@ const router = require('express').Router()
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  res.sendStatus(504)
+  res.sendStatus(501)
 })
 
 module.exports = router

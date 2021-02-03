@@ -4,6 +4,11 @@
 
 ### Bug Fixes
 * **core:** Remove bind({}) from AI creation endpoint
+* **core:** Not implemented endpoints should return 501 instead of 504
+
+
+### Other
+* **core:** Disable clustered detections endpoint temprary - return 501
 
 
 <a name="1.0.1"></a>

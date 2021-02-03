@@ -33,7 +33,7 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
  *         description: Invalid query parameters
  */
 router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
-  res.status(504).send('Not implemented')
+  res.status(501).send('Not implemented')
 })
 
 module.exports = router
