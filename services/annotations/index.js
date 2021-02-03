@@ -153,7 +153,7 @@ function create (annotation) {
     updated_by_id: userId,
     is_positive: isPositive
   }
-  return models.Annotation.findOrCreate({ where, defaults }).spread(annotation, created => formatFull(annotation))
+  return models.Annotation.findOrCreate({ where, defaults }).spread((annotation, created) => formatFull(annotation))
 }
 
 function get (annotationId) {
