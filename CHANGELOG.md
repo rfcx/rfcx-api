@@ -2,6 +2,10 @@
 ## 1.0.2 (2021-02-XX)
 
 
+### Features
+* **core:** Detection review from Neo4j is saved in TimescaleDB also ([CS-331](https://jira.rfcx.org/browse/CS-331))
+
+
 ### Bug Fixes
 * **core:** Remove bind({}) from AI creation endpoint
 * **core:** Not implemented endpoints should return 501 instead of 504

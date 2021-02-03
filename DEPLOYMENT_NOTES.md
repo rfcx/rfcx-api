@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## v1.0.2
+
+_None_
+
 ## v1.0.1
 
 - Delete `20200708000001-create-detection-review.js` from `sequelize.migrations` table in TimescaleDB.
