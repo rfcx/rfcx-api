@@ -171,24 +171,32 @@ router.get('/', (req, res) => {
     .then(async () => {
       convertedParams.current_user_id = user.owner_id
       convertedParams.current_user_is_super = user.is_super
-      if (convertedParams.projects) {
-        convertedParams.projects = convertedParams.projects[0].split(',')
-      }
-      const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
-      let streams = streamsData.streams.map(x => streamsService.formatStream(x, null))
 
       // Filter by organizations
       if (convertedParams.organizations) {
-        convertedParams.organizations = convertedParams.organizations[0].split(',')
         const projectIds = []
-        for (const organizationId of convertedParams.organizations) {
-          const projects = await projectsService.query({ organization_id: organizationId })
-          for (const i of projects.projects.map(project => project.id)) projectIds.push(i)
+        const attrs = {
+          created_by: convertedParams.created_by,
+          current_user_id: convertedParams.current_user_id,
+          is_public: convertedParams.is_public,
+          organization_id: convertedParams.organizations
         }
-        streams = streams.filter(stream => {
-          return stream.project && projectIds.includes(stream.project.id)
-        })
+        const projects = await projectsService.query(attrs)
+        for (const i of projects.projects.map(project => project.id)) {
+          projectIds.push(i)
+        }
+        // Filter by projects
+        if (convertedParams.projects) {
+          convertedParams.projects = convertedParams.projects.filter(project => {
+            return projectIds.includes(project)
+          })
+        } else {
+          convertedParams.projects = projectIds
+        }
       }
+
+      const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
+      const streams = streamsData.streams.map(x => streamsService.formatStream(x, null))
 
       return res
         .header('Total-Items', streamsData.count)
