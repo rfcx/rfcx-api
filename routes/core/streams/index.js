@@ -174,17 +174,14 @@ router.get('/', (req, res) => {
 
       // Filter by organizations
       if (convertedParams.organizations) {
-        const projectIds = []
         const attrs = {
           created_by: convertedParams.created_by,
           current_user_id: convertedParams.current_user_id,
           is_public: convertedParams.is_public,
           organization_id: convertedParams.organizations
         }
-        const projects = await projectsService.query(attrs)
-        for (const i of projects.projects.map(project => project.id)) {
-          projectIds.push(i)
-        }
+        const projectsData = await projectsService.query(attrs)
+        const projectIds = projectsData.projects.map(p => p.id)
         // Filter by projects
         if (convertedParams.projects) {
           convertedParams.projects = convertedParams.projects.filter(project => {
