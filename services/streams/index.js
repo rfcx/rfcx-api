@@ -151,17 +151,12 @@ async function query (attrs, opts = {}) {
   }
 
   if (attrs.organizations) {
-    streamBaseInclude.push(
-      {
-        model: models.Project,
-        as: 'project',
-        where: {
-          organization_id: {
-            [models.Sequelize.Op.in]: attrs.organizations
-          }
-        }
+    const projectInclude = streamBaseInclude.find(i => i.as === 'project')
+    projectInclude.where = {
+      organization_id: {
+        [models.Sequelize.Op.in]: attrs.organizations
       }
-    )
+    }
   }
 
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
