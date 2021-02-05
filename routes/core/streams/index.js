@@ -172,26 +172,6 @@ router.get('/', (req, res) => {
       convertedParams.current_user_id = user.owner_id
       convertedParams.current_user_is_super = user.is_super
 
-      // Filter by organizations
-      if (convertedParams.organizations) {
-        const attrs = {
-          created_by: convertedParams.created_by,
-          current_user_id: convertedParams.current_user_id,
-          is_public: convertedParams.is_public,
-          organization_id: convertedParams.organizations
-        }
-        const projectsData = await projectsService.query(attrs)
-        const projectIds = projectsData.projects.map(p => p.id)
-        // Filter by projects
-        if (convertedParams.projects) {
-          convertedParams.projects = convertedParams.projects.filter(project => {
-            return projectIds.includes(project)
-          })
-        } else {
-          convertedParams.projects = projectIds
-        }
-      }
-
       const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
       const streams = streamsData.streams.map(x => streamsService.formatStream(x, null))
 
