@@ -4,42 +4,69 @@ const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
 
-async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, descending, limit, offset, user) {
+/**
+ * Combines query clauses based on input
+ * @param {*} filters
+ * @param {string} filters.streamId
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
+ * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
+ * @param {boolean} filters.streamsOnlyPublic
+ * @param {object} filters.user
+ * @param {string | number} filters.streamsOnlyCreatedBy
+ * @param {string[]} filters.classifications
+ * @param {*} options Additional options
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @param {boolean} options.descending
+ */
+async function defaultQueryOptions (filters, options = {}) {
   const condition = {
     start: {
-      [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
-      [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
-    }
+      [models.Sequelize.Op.gte]: moment.utc(filters.start).valueOf(),
+      [models.Sequelize.Op.lt]: moment.utc(filters.end).valueOf()
+    },
+    is_manual: !!filters.isManual,
+    ...filters.isPositive !== undefined && { is_positive: filters.isPositive }
   }
-  if (streamId !== undefined) {
-    condition.stream_id = streamId
+  if (filters.streamId !== undefined) {
+    condition.stream_id = filters.streamId
   } else {
-    const streamIds = streamsOnlyPublic
+    const streamIds = filters.streamsOnlyPublic
       ? await streamsService.getPublicStreamIds()
-      : await streamsService.getAccessibleStreamIds(user, streamsOnlyCreatedBy)
+      : await streamsService.getAccessibleStreamIds(filters.user, filters.streamsOnlyCreatedBy)
     condition.stream_id = {
       [models.Sequelize.Op.in]: streamIds
     }
   }
-  const classificationCondition = classifications === undefined ? {}
+  const classificationCondition = filters.classifications === undefined ? {}
     : {
-      value: { [models.Sequelize.Op.or]: classifications }
+      value: { [models.Sequelize.Op.or]: filters.classifications }
     }
+  const include = [{
+    as: 'classification',
+    model: models.Classification,
+    where: classificationCondition,
+    attributes: models.Classification.attributes.lite,
+    required: true
+  }]
+  const attributes = [...models.Annotation.attributes.lite]
+  if (filters.isManual === false) {
+    include.push({
+      as: 'created_by',
+      model: models.User,
+      attributes: models.User.attributes.lite
+    })
+    attributes.push('is_positive')
+  }
   return {
     where: condition,
-    include: [
-      {
-        as: 'classification',
-        model: models.Classification,
-        where: classificationCondition,
-        attributes: models.Classification.attributes.lite,
-        required: true
-      }
-    ],
-    attributes: models.Annotation.attributes.lite,
-    offset: offset,
-    limit: limit,
-    order: [['start', descending ? 'DESC' : 'ASC']]
+    include,
+    attributes,
+    offset: options.offset,
+    limit: options.limit,
+    order: [['start', options.descending ? 'DESC' : 'ASC']]
   }
 }
 
@@ -50,20 +77,58 @@ function formatFull (annotation) {
   }, {})
 }
 
-async function query (start, end, streamId, classifications, limit, offset, user) {
-  const queryOptions = await defaultQueryOptions(start, end, streamId, undefined, false, classifications, false, limit, offset, user)
+/**
+ * Gets annotations based on input params
+ * @param {*} filters
+ * @param {string} filters.streamId
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
+ * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
+ * @param {boolean} filters.streamsOnlyPublic
+ * @param {object} filters.user
+ * @param {string | number} filters.streamsOnlyCreatedBy
+ * @param {string[]} filters.classifications
+ * @param {*} options Additional options
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @param {boolean} options.descending
+ */
+async function query (filters, options = {}) {
+  const queryOptions = await defaultQueryOptions(filters, options)
   return models.Annotation.findAll(queryOptions)
 }
 
-async function timeAggregatedQuery (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, createdById, timeInterval, aggregateFunction, aggregateField, descending, limit, offset, user) {
-  const queryOptions = await defaultQueryOptions(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, undefined, descending, limit, offset, user)
-  if (createdById !== undefined) {
-    queryOptions.where.created_by_id = createdById
+/**
+ * Gets aggregated annotations based on input params
+ * @param {*} filters
+ * @param {string} filters.streamId
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {boolean} filters.isManual Whether annotation was drawn or created as detection review
+ * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
+ * @param {boolean} filters.streamsOnlyPublic
+ * @param {object} filters.user
+ * @param {number} filters.createdBy
+ * @param {string | number} filters.streamsOnlyCreatedBy
+ * @param {string[]} filters.classifications
+ * @param {*} options Additional options
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @param {boolean} options.descending
+ * @param {string} options.interval
+ * @param {string} options.aggregate
+ * @param {string} options.field
+ */
+async function timeAggregatedQuery (filters, options = {}) {
+  const queryOptions = await defaultQueryOptions(filters, options)
+  if (filters.createdBy !== undefined) {
+    queryOptions.where.created_by_id = filters.createdBy
   }
   const timeBucketAttribute = 'time_bucket'
   const aggregatedValueAttribute = 'aggregated_value'
-  queryOptions.attributes = timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Annotation', 'start', timeBucketAttribute, aggregatedValueAttribute)
-  queryOptions.order = [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))]
+  queryOptions.attributes = timeAggregatedQueryAttributes(options.interval, options.aggregate, options.field, 'Annotation', 'start', timeBucketAttribute, aggregatedValueAttribute)
+  queryOptions.order = [models.Sequelize.literal(timeBucketAttribute + (options.descending ? ' DESC' : ''))]
   queryOptions.group = [timeBucketAttribute].concat(models.Sequelize.col('classification.id'))
   queryOptions.raw = true
   queryOptions.nest = true
@@ -72,17 +137,23 @@ async function timeAggregatedQuery (start, end, streamId, streamsOnlyCreatedBy, 
 }
 
 function create (annotation) {
-  const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId } = annotation
-  return models.Annotation.create({
+  const { streamId, start, end, classificationId, frequencyMin, frequencyMax, userId, isManual, isPositive } = annotation
+  const where = {
     start,
     end,
     stream_id: streamId,
     classification_id: classificationId,
+    created_by_id: userId,
+    is_manual: isManual
+  }
+  const defaults = {
+    ...where,
     frequency_min: frequencyMin,
     frequency_max: frequencyMax,
-    created_by_id: userId,
-    updated_by_id: userId
-  }).then(annotation => formatFull(annotation))
+    updated_by_id: userId,
+    is_positive: isPositive
+  }
+  return models.Annotation.findOrCreate({ where, defaults }).spread((annotation, created) => formatFull(annotation))
 }
 
 function get (annotationId) {
@@ -109,7 +180,7 @@ function get (annotationId) {
   })
 }
 
-function update (annotationId, start, end, classificationId, frequencyMin, frequencyMax, userId) {
+function update (annotationId, start, end, classificationId, frequencyMin, frequencyMax, userId, isPositive) {
   return models.Annotation.findByPk(annotationId).then(annotation => {
     // Timescale time columns cannot be updated (outside of their "chunk interval")
     // so need to delete + create, while maintaining existing createdBy/At + streamId
@@ -123,7 +194,8 @@ function update (annotationId, start, end, classificationId, frequencyMin, frequ
           frequency_min: frequencyMin,
           frequency_max: frequencyMax,
           updated_by_id: userId,
-          updated_at: new Date()
+          updated_at: new Date(),
+          ...isPositive !== undefined && { is_positive: isPositive }
         }, { transaction, silent: true })
       })
     })

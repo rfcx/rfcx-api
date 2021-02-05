@@ -64,16 +64,10 @@ router.route('/create')
     params.convert('isActive').optional().toBoolean().default(false)
 
     params.validate()
-      .then(() => {
-        return aiService.createAi(transformedParams)
-      })
-      .bind({})
-      .then((result) => {
-        this.result = result
-        return aiService.createSNSSQSStuff(transformedParams.aiGuid)
-      })
-      .then(() => {
-        res.status(200).json(this.result)
+      .then(async () => {
+        const ai = await aiService.createAi(transformedParams)
+        await aiService.createSNSSQSStuff(transformedParams.aiGuid)
+        return res.status(200).json(ai)
       })
       .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
       .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })

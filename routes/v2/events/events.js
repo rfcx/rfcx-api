@@ -183,6 +183,7 @@ router.route('/:guid/review')
 
     const user = usersService.getUserDataFromReq(req)
     const timestamp = (new Date()).valueOf()
+    let event
 
     return params.validate()
       .then(() => {
@@ -203,10 +204,12 @@ router.route('/:guid/review')
       .then(() => {
         return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp, transformedParams.unreliable)
       })
-      .then(() => {
+      .then((data) => {
+        event = data
         return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp, transformedParams.unreliable)
       })
-      .then(() => {
+      .then((winds) => {
+        eventsServiceNeo4j.saveInTimescaleDB(event, winds, transformedParams.windows, req.rfcx.auth_token_info.owner_id)
         res.status(200).send({ success: true })
       })
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))

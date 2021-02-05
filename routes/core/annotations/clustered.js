@@ -116,11 +116,8 @@ router.get('/', (req, res) => {
   params.convert('offset').default(0).toInt()
 
   return params.validate()
-    .then(() => {
-      // TODO: handler username or guid case
-      return convertedParams.created_by === 'me' ? user.owner_id : undefined
-    })
-    .then(async (createdBy) => {
+    .then(async () => {
+      const createdBy = convertedParams.created_by === 'me' ? user.owner_id : undefined // TODO: handler username or guid case
       const streamId = convertedParams.stream_id
       if (streamId) {
         const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
@@ -131,7 +128,18 @@ router.get('/', (req, res) => {
       const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
       const streamsOnlyCreatedBy = convertedParams.streams_created_by
       const streamsOnlyPublic = convertedParams.streams_public
-      return annotationsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, createdBy, interval, aggregate, field, descending, limit, offset, user)
+      return annotationsService.timeAggregatedQuery(
+        { start, end, streamId, user, createdBy },
+        {
+          streamsOnlyCreatedBy,
+          streamsOnlyPublic,
+          interval,
+          aggregate,
+          field,
+          descending,
+          limit,
+          offset
+        })
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

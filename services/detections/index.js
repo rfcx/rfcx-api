@@ -29,7 +29,6 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
 
   // TODO: if minConfidence is undefined, get it from event strategy
   condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
-
   return {
     where: condition,
     include: [
@@ -54,22 +53,8 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
   }
 }
 
-async function query (start, end, streamId, classifications, minConfidence, reviews, limit, offset, user) {
+async function query (start, end, streamId, classifications, minConfidence, limit, offset, user) {
   const opts = await defaultQueryOptions(start, end, streamId, undefined, false, classifications, minConfidence, false, limit, offset, user)
-  if (reviews) {
-    opts.include.push({
-      as: 'reviews',
-      model: models.DetectionReview,
-      include: [
-        {
-          as: 'user',
-          model: models.User,
-          attributes: models.User.attributes.lite
-        }
-      ],
-      attributes: ['positive', 'created_at']
-    })
-  }
   return models.Detection.findAll(opts)
 }
 
@@ -100,28 +85,8 @@ function create (detections) {
     })))
 }
 
-function get (detectionId) {
-  return models.Detection.findByPk(detectionId, {
-    include: [
-      {
-        as: 'classification',
-        model: models.Classification,
-        attributes: models.Classification.attributes.lite,
-        required: true
-      },
-      {
-        as: 'stream',
-        model: models.Stream,
-        attributes: models.Stream.attributes.lite
-      },
-      {
-        as: 'classifier',
-        model: models.Classifier,
-        attributes: models.Classifier.attributes.lite
-      }
-    ],
-    attributes: models.Detection.attributes.full
-  })
+module.exports = {
+  query,
+  timeAggregatedQuery,
+  create
 }
-
-module.exports = { query, timeAggregatedQuery, get, create }
