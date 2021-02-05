@@ -72,7 +72,7 @@ router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
   return params.validate()
     .then(() => {
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query(start, end, streamId, classifications, limit, offset, user)
+      return annotationsService.query({ start, end, classifications, streamId, user }, { limit, offset })
     })
     .then((annotations) => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
@@ -122,14 +122,16 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classification').toString()
-  params.convert('frequency_min').toInt()
-  params.convert('frequency_max').toInt()
+  params.convert('frequency_min').optional().toInt()
+  params.convert('frequency_max').optional().toInt()
+  params.convert('is_manual').toBoolean().default(true)
+  params.convert('is_positive').toBoolean().default(true)
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
-      const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase
+      const { start, end, frequency_min, frequency_max, is_manual, is_positive } = convertedParams // eslint-disable-line camelcase
       const annotation = {
         streamId,
         classificationId,
@@ -137,7 +139,9 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
         start,
         end,
         frequencyMin: frequency_min,
-        frequencyMax: frequency_max
+        frequencyMax: frequency_max,
+        isManual: is_manual,
+        isPositive: is_positive
       }
       return annotationsService.create(annotation)
     })

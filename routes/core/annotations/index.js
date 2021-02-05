@@ -84,7 +84,7 @@ router.get('/', (req, res) => {
         }
       }
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query(start, end, streamId, classifications, limit, offset, user)
+      return annotationsService.query({ start, end, streamId, classifications, user }, { limit, offset })
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

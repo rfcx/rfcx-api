@@ -12,6 +12,8 @@ const textGridService = require('../../textgrid/textgrid-service')
 const mailService = require('../../mail/mail-service')
 const aws = require('../../../utils/external/aws.js').aws()
 const hash = require('../../../utils/misc/hash.js').hash
+const annotationsService = require('../../annotations')
+const classificationService = require('../../classifications')
 
 function prepareOpts (req) {
   let order, dir
@@ -607,9 +609,9 @@ function clearLatestReview (guid) {
 }
 
 function reviewEvent (guid, confirmed, user, timestamp, unreliable) {
-  const query = 'MATCH (ev:event {guid: {guid}}), (user:user {guid: {userGuid}, email: {userEmail}})' +
+  const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:classifies]->(val:label), (user:user {guid: {userGuid}, email: {userEmail}})' +
               'MERGE (ev)-[:has_review]->(:review { latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
-              'RETURN ev as event'
+              'RETURN ev as event, val.value as value'
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, {
@@ -627,8 +629,10 @@ function reviewEvent (guid, confirmed, user, timestamp, unreliable) {
       throw new EmptyResultError('Event with given guid not found.')
     }
     return result.records.map((record) => {
-      return record.get(0).properties
-    })
+      const event = record.get(0).properties
+      event.value = record.get(1)
+      return event
+    })[0]
   })
 }
 
@@ -697,9 +701,13 @@ function reviewAudioWindows (windowsData, user, timestamp, unreliable) {
     proms.push(resultPromise)
   })
   return Promise.all(proms)
-    .then(() => {
+    .then((promData) => {
       session.close()
-      return true
+      return promData.map((item) => {
+        return item.records.map((record) => {
+          return record.get(0).properties
+        })[0]
+      })
     })
 }
 
@@ -780,6 +788,31 @@ function formatEventsAsTags (events, type) {
     .reduce((prev, cur) => { return prev.concat(cur) }, [])
 }
 
+async function saveInTimescaleDB (event, windows, confirmations, userId) {
+  try {
+    const confObj = confirmations.reduce((acc, conf) => {
+      acc[conf.guid] = conf.confirmed
+      return acc
+    }, {})
+    const classificationId = await classificationService.getId(event.value)
+    for (const w of windows) {
+      await annotationsService.create({
+        streamId: event.guardianGuid,
+        start: event.audioMeasuredAt + w.start,
+        end: event.audioMeasuredAt + w.end,
+        classificationId,
+        frequencyMin: null,
+        frequencyMax: null,
+        userId,
+        isManual: false,
+        isPositive: confObj[w.guid]
+      })
+    }
+  } catch (e) {
+    console.error('Failed sync between Neo4j and TimescaleDB reviews', e)
+  }
+}
+
 module.exports = {
   queryData,
   queryWindowsForEvent,
@@ -797,5 +830,6 @@ module.exports = {
   formatReviewsForFiles,
   formatEventsAsTags,
   getAiModelsForReviews,
-  getEventByGuid
+  getEventByGuid,
+  saveInTimescaleDB
 }
