@@ -150,13 +150,19 @@ async function query (attrs, opts = {}) {
     }
   }
 
+  let streamInclude = streamBaseInclude
   if (attrs.organizations) {
-    const projectInclude = streamBaseInclude.find(i => i.as === 'project')
-    projectInclude.where = {
-      organization_id: {
-        [models.Sequelize.Op.in]: attrs.organizations
+    const projectInclude = {
+      model: models.Project,
+      as: 'project',
+      attributes: models.Project.attributes.lite,
+      where: {
+        organization_id: {
+          [models.Sequelize.Op.in]: attrs.organizations
+        }
       }
     }
+    streamInclude = { ...streamBaseInclude, ...projectInclude }
   }
 
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
@@ -165,7 +171,7 @@ async function query (attrs, opts = {}) {
     limit: attrs.limit,
     offset: attrs.offset,
     attributes: models.Stream.attributes.full,
-    include: opts.joinRelations ? streamBaseInclude : streamBaseInclude.filter(i => i.as === 'project'),
+    include: opts.joinRelations ? streamInclude : [],
     paranoid: attrs.is_deleted !== true
   })
     .then((data) => {
