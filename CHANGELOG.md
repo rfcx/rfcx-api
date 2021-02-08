@@ -1,3 +1,10 @@
+<a name="1.0.3"></a>
+## 1.0.3 (2021-01-30)
+
+
+### Features
+* **core:** add `organizations` and `projects` query into the `/stream` endpoint ([CS-403](https://jira.rfcx.org/browse/CS-403))
+
 <a name="1.0.2"></a>
 ## 1.0.2 (2021-02-03)
 

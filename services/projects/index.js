@@ -136,6 +136,12 @@ async function query (attrs, opts = {}) {
     }
   }
 
+  if (attrs.organization_id) {
+    where.organization_id = {
+      [models.Sequelize.Op.in]: attrs.organization_id
+    }
+  }
+
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
   return models.Project[method]({
     where,

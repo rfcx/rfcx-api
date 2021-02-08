@@ -144,13 +144,35 @@ async function query (attrs, opts = {}) {
     }
   }
 
+  if (attrs.projects) {
+    where.project_id = {
+      [models.Sequelize.Op.in]: attrs.projects
+    }
+  }
+
+  let streamInclude = streamBaseInclude
+  if (attrs.organizations) {
+    const projectInclude = {
+      model: models.Project,
+      as: 'project',
+      attributes: models.Project.attributes.lite,
+      where: {
+        organization_id: {
+          [models.Sequelize.Op.in]: attrs.organizations
+        }
+      }
+    }
+    streamInclude = [streamBaseInclude.find(i => i.as === 'created_by'), projectInclude]
+    opts.joinRelations = true
+  }
+
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
   return models.Stream[method]({
     where,
     limit: attrs.limit,
     offset: attrs.offset,
     attributes: models.Stream.attributes.full,
-    include: opts.joinRelations ? streamBaseInclude : [],
+    include: opts.joinRelations ? streamInclude : [],
     paranoid: attrs.is_deleted !== true
   })
     .then((data) => {
