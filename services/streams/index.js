@@ -162,7 +162,7 @@ async function query (attrs, opts = {}) {
         }
       }
     }
-    streamInclude = { ...streamBaseInclude, ...projectInclude }
+    streamInclude = [streamBaseInclude.find(i => i.as === 'created_by'), projectInclude]
   }
 
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
