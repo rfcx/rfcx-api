@@ -1,3 +1,10 @@
+<a name="1.0.4"></a>
+## 1.0.4 (2021-02-09)
+
+### Bug Fixs
+* **core:** Fix wrong model spelling on classifiers endpoint ([CS-478](https://jira.rfcx.org/browse/CS-478))
+
+
 <a name="1.0.3"></a>
 ## 1.0.3 (2021-02-08)
 
