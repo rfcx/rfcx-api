@@ -72,6 +72,8 @@ async function create (eventData) {
  * @param {number} options.readableBy Include only if the event is accessible to the given user id
  * @param {string[]} options.fields Attributes and relations to include in results (defaults to lite attributes)
  * @param {boolean} options.descending Order the results in descending date order
+ * @param {number} options.limit
+ * @param {number} options.offset
  * @returns {Event[]} Events
  */
 async function query (filters, options) {

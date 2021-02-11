@@ -144,7 +144,9 @@ router.get('/', (req, res) => {
       }
       const options = {
         readableBy: userIsSuper ? undefined : userId,
-        fields: params.fields
+        fields: params.fields,
+        limit: params.limit,
+        offset: params.offset
       }
       return eventsService.query(filters, options)
     })
