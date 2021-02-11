@@ -3,6 +3,7 @@ const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrateg
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../utils/errors')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
+const pagedQuery = require('../../utils/db/paged-query')
 
 // TODO: move to model object
 const availableIncludes = [
@@ -110,15 +111,8 @@ async function query (filters, options) {
     order: [['start', options.descending ? 'DESC' : 'ASC']]
   }
 
-  // TODO use paged query wrapper
-  const method = (!!options.limit || !!options.offset) ? 'findAndCountAll' : 'findAll'
-  return Event[method](query)
-    .then(data => {
-      return {
-        total: method === 'findAndCountAll' ? data.count : data.length,
-        results: (method === 'findAndCountAll' ? data.rows : data).map(format)
-      }
-    })
+  return pagedQuery(Event, query)
+    .then(data => ({ total: data.total, results: data.results.map(format) }))
 }
 
 /**
@@ -149,7 +143,6 @@ async function get (id, options = {}) {
     throw new EmptyResultError('Event with given id not found.')
   }
 
-  // TODO remove hard-coded strings
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, event.stream_id, STREAM))) {
     throw new ForbiddenError()
   }
