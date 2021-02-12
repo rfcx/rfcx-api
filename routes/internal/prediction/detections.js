@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
 const classificationService = require('../../../services/classifications')
+const classifierService = require('../../../services/classifiers')
 const Converter = require('../../../utils/converter/converter')
 const { hasRole } = require('../../../middleware/authorization/authorization')
 
@@ -43,16 +44,29 @@ router.post('/detections', hasRole(['systemUser']), function (req, res) {
   return params.validate()
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
+      const classifier = classifierService.get(convertedParams.classifier_id, { joinRelations: true })
+      return Promise.all([classifier, classificationId])
+    })
+    .then(([classifier, classificationId]) => {
       const streamId = convertedParams.stream_id
       const classifierId = convertedParams.classifier_id
       const { start, end, confidences, step } = convertedParams
+      const threshold = classifier.outputs.find(i => i.classification_id === classificationId).ignore_threshold
+
       const detections = confidences.map((confidence, i) => {
         // Confidences then they are spaced by "step" seconds
         const offsetStart = start.clone().add(i * step, 's')
         const offsetEnd = end.clone().add(i * step, 's')
-        return { streamId, classificationId, classifierId, start: offsetStart, end: offsetEnd, confidence }
+        return {
+          streamId,
+          classificationId,
+          classifierId,
+          start: offsetStart,
+          end: offsetEnd,
+          confidence: confidence
+        }
       })
-      return detectionsService.create(detections)
+      return detectionsService.create(detections.filter(d => d.confidence > threshold))
     })
     .then(detections => res.sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))
