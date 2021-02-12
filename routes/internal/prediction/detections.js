@@ -45,6 +45,7 @@ router.post('/detections', hasRole(['systemUser']), function (req, res) {
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
       const classifier = classifierService.get(convertedParams.classifier_id, { joinRelations: true })
+      classifierService.update(classificationId, null, { last_executed_at: new Date() })
       return Promise.all([classifier, classificationId])
     })
     .then(([classifier, classificationId]) => {
