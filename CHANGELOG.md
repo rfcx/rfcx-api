@@ -4,10 +4,17 @@
 ### Features
 * **core:** Add `/event-strategies` endpoints to enable the cognition service to retrieve cognition logic ([CS-143](https://jira.rfcx.org/browse/CS-143))
 
+<a name="1.0.5"></a>
+## 1.0.5 (2021-02-12)
+
+### Bug Fixes
+* **core:** Enable clustered detections, fix `field` bug (previously defaulted to `id`)
+
+
 <a name="1.0.4"></a>
 ## 1.0.4 (2021-02-09)
 
-### Bug Fixs
+### Bug Fixes
 * **core:** Fix wrong model spelling on classifiers endpoint ([CS-478](https://jira.rfcx.org/browse/CS-478))
 
 

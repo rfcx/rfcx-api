@@ -1,10 +1,10 @@
 const router = require('express').Router()
-// const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-// const detectionsService = require('../../../services/detections')
-// const Converter = require('../../../utils/converter/converter')
-// const ForbiddenError = require('../../../utils/converter/forbidden-error')
-// const models = require('../../../modelsTimescale')
-// const rolesService = require('../../../services/roles')
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+const detectionsService = require('../../../services/detections')
+const Converter = require('../../../utils/converter/converter')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const models = require('../../../modelsTimescale')
+const rolesService = require('../../../services/roles')
 
 /**
  * @swagger
@@ -39,7 +39,7 @@ const router = require('express').Router()
  *         description: Column or field to apply the function.
  *         schema:
  *           type: string
- *         default: id
+ *         default: start
  *       - name: start
  *         description: Limit to a start date on or after (iso8601 or epoch)
  *         in: query
@@ -99,40 +99,39 @@ const router = require('express').Router()
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  res.sendStatus(501)
-  // const user = req.rfcx.auth_token_info
-  // const convertedParams = {}
-  // const params = new Converter(req.query, convertedParams)
-  // params.convert('start').toMomentUtc()
-  // params.convert('end').toMomentUtc()
-  // params.convert('stream_id').optional().toString()
-  // params.convert('streams_public').optional().toBoolean()
-  // params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
-  // params.convert('interval').default('1d').toTimeInterval()
-  // params.convert('aggregate').default('count').toAggregateFunction()
-  // params.convert('field').default('id').isEqualToAny(models.Detection.attributes.full)
-  // params.convert('min_confidence').optional().toFloat()
-  // params.convert('descending').default(false).toBoolean()
-  // params.convert('limit').default(100).toInt()
-  // params.convert('offset').default(0).toInt()
+  const user = req.rfcx.auth_token_info
+  const convertedParams = {}
+  const params = new Converter(req.query, convertedParams)
+  params.convert('start').toMomentUtc()
+  params.convert('end').toMomentUtc()
+  params.convert('stream_id').optional().toString()
+  params.convert('streams_public').optional().toBoolean()
+  params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
+  params.convert('interval').default('1d').toTimeInterval()
+  params.convert('aggregate').default('count').toAggregateFunction()
+  params.convert('field').default('start').isEqualToAny(models.Detection.attributes.full)
+  params.convert('min_confidence').optional().toFloat()
+  params.convert('descending').default(false).toBoolean()
+  params.convert('limit').default(100).toInt()
+  params.convert('offset').default(0).toInt()
 
-  // return params.validate()
-  //   .then(async () => {
-  //     const streamId = convertedParams.stream_id
-  //     if (streamId) {
-  //       const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
-  //       if (!allowed) {
-  //         throw new ForbiddenError('You do not have permission to access this stream.')
-  //       }
-  //     }
-  //     const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
-  //     const minConfidence = convertedParams.min_confidence
-  //     const streamsOnlyCreatedBy = convertedParams.streams_created_by
-  //     const streamsOnlyPublic = convertedParams.streams_public
-  //     return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, interval, aggregate, field, minConfidence, descending, limit, offset, user)
-  //   })
-  //   .then(detections => res.json(detections))
-  //   .catch(httpErrorHandler(req, res, 'Failed getting detections'))
+  return params.validate()
+    .then(async () => {
+      const streamId = convertedParams.stream_id
+      if (streamId) {
+        const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
+        if (!allowed) {
+          throw new ForbiddenError('You do not have permission to access this stream.')
+        }
+      }
+      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
+      const minConfidence = convertedParams.min_confidence
+      const streamsOnlyCreatedBy = convertedParams.streams_created_by
+      const streamsOnlyPublic = convertedParams.streams_public
+      return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, interval, aggregate, field, minConfidence, descending, limit, offset, user)
+    })
+    .then(detections => res.json(detections))
+    .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 })
 
 module.exports = router
