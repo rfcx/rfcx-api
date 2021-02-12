@@ -3,6 +3,7 @@
 
 ### Features
 * **core:** Add `/event-strategies` endpoints to enable the cognition service to retrieve cognition logic ([CS-143](https://jira.rfcx.org/browse/CS-143))
+* **core:** Add `descending` parameter to `/events` endpoint
 
 <a name="1.0.5"></a>
 ## 1.0.5 (2021-02-12)
