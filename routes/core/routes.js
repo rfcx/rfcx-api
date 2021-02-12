@@ -11,6 +11,9 @@ module.exports = {
   detections: [
     require('./detections')
   ],
+  'event-strategies': [
+    require('./events/strategies')
+  ],
   events: [
     require('./events')
   ],

@@ -44,5 +44,8 @@ module.exports = (sequelize, DataTypes) => {
     full: ['id', 'name', 'version', 'external_id', 'model_runner', 'model_url', 'last_executed_at'],
     lite: ['id', 'name', 'version', 'last_executed_at']
   }
+  Classifier.include = function (as = 'classifier', attributes = Classifier.attributes.lite, required = true) {
+    return { model: Classifier, as, attributes, required }
+  }
   return Classifier
 }
