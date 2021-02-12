@@ -52,7 +52,7 @@ router.post('/detections', hasRole(['systemUser']), function (req, res) {
       const streamId = convertedParams.stream_id
       const classifierId = convertedParams.classifier_id
       const { start, end, confidences, step } = convertedParams
-      const threshold = classifier.outputs.find(i => i.classification_id === classificationId).ignore_threshold
+      const threshold = classifier.outputs.find(i => i.classification_id === classificationId).ignore_threshold || detectionsService.DEFAULT_IGNORE_THRESHOLD
 
       const detections = confidences.map((confidence, i) => {
         // Confidences then they are spaced by "step" seconds

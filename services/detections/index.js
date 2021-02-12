@@ -85,8 +85,11 @@ function create (detections) {
     })))
 }
 
+const DEFAULT_IGNORE_THRESHOLD = 0.5
+
 module.exports = {
   query,
   timeAggregatedQuery,
-  create
+  create,
+  DEFAULT_IGNORE_THRESHOLD
 }
