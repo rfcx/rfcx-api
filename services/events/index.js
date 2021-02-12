@@ -5,20 +5,9 @@ const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid'
 const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 
-// TODO: move to model object
 const availableIncludes = [
-  {
-    as: 'stream',
-    model: Stream,
-    attributes: Stream.attributes.lite,
-    required: true
-  },
-  {
-    as: 'classification',
-    model: Classification,
-    attributes: Classification.attributes.lite,
-    required: true
-  },
+  Stream.include(), Classification.include(),
+  // TODO replace with include when CS-143 part 1 is merged
   {
     as: 'classifier_event_strategy',
     model: ClassifierEventStrategy,
