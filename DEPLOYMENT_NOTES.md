@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## v1.0.5
+
+- Create rows in `classifier_outputs` for every classifier currently in production
+
 ## v1.0.4
 
 _None_
