@@ -34,6 +34,14 @@ const { hasStreamPermission } = require('../../../middleware/authorization/roles
  *         description: List of clasification identifiers
  *         in: query
  *         type: array
+ *       - name: is_manual
+ *         description: Limit results to manual annotation
+ *         in: query
+ *         type: boolean
+ *       - name: is_positive
+ *         description: Limit results to a type of annotation ( true for true positive or false for false positive)
+ *         in: query
+ *         type: boolean
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -66,13 +74,17 @@ router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('classifications').optional().toArray()
+  params.convert('is_manual').optional().toBoolean()
+  params.convert('is_positive').optional().toBoolean()
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
   return params.validate()
     .then(() => {
+      const isManual = convertedParams.is_manual
+      const isPositive = convertedParams.is_positive
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query({ start, end, classifications, streamId, user }, { limit, offset })
+      return annotationsService.query({ start, end, classifications, streamId, isManual, isPositive, user }, { limit, offset })
     })
     .then((annotations) => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
