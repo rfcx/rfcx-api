@@ -1,5 +1,5 @@
 <a name="1.0.6"></a>
-## 1.0.6 (2021-02-14)
+## 1.0.6 (2021-02-15)
 
 ### Features
 * **core:** Detections endpoint from both internal and core will filter the detection that less than `ignore_threshold` out. And the default `ignore_threshold` is setting to 0.5 from classifier_output ([CS-473](https://jira.rfcx.org/browse/CS-473))
