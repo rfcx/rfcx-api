@@ -111,6 +111,8 @@ router.get('/', (req, res) => {
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('id').isEqualToAny(models.Annotation.attributes.full)
+  params.convert('is_manual').toBoolean()
+  params.convert('is_positive').toBoolean()
   params.convert('descending').default(false).toBoolean()
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()
@@ -119,6 +121,8 @@ router.get('/', (req, res) => {
     .then(async () => {
       const createdBy = convertedParams.created_by === 'me' ? user.owner_id : undefined // TODO: handler username or guid case
       const streamId = convertedParams.stream_id
+      const isManual = convertedParams.is_manual
+      const isPositive = convertedParams.is_positive
       if (streamId) {
         const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
         if (!allowed) {
@@ -129,7 +133,7 @@ router.get('/', (req, res) => {
       const streamsOnlyCreatedBy = convertedParams.streams_created_by
       const streamsOnlyPublic = convertedParams.streams_public
       return annotationsService.timeAggregatedQuery(
-        { start, end, streamId, user, createdBy },
+        { start, end, streamId, isManual, isPositive, user, createdBy },
         {
           streamsOnlyCreatedBy,
           streamsOnlyPublic,
