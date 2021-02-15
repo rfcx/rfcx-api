@@ -3,6 +3,8 @@
 
 ### Features
 * **core:** Detections endpoint from both internal and core will filter the detection that less than `ignore_threshold` out. And the default `ignore_threshold` is setting to 0.5 from classifier_output ([CS-473](https://jira.rfcx.org/browse/CS-473))
+* **core:** Add `/event-strategies` endpoints to enable the cognition service to retrieve cognition logic ([CS-143](https://jira.rfcx.org/browse/CS-143))
+* **core:** Add `descending` parameter to `/events` endpoint
 
 
 <a name="1.0.5"></a>

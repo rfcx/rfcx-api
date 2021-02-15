@@ -3,21 +3,11 @@ const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrateg
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../utils/errors')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
+const pagedQuery = require('../../utils/db/paged-query')
 
-// TODO: move to model object
 const availableIncludes = [
-  {
-    as: 'stream',
-    model: Stream,
-    attributes: Stream.attributes.lite,
-    required: true
-  },
-  {
-    as: 'classification',
-    model: Classification,
-    attributes: Classification.attributes.lite,
-    required: true
-  },
+  Stream.include(), Classification.include(),
+  // TODO replace with include when CS-143 part 1 is merged
   {
     as: 'classifier_event_strategy',
     model: ClassifierEventStrategy,
@@ -72,6 +62,8 @@ async function create (eventData) {
  * @param {number} options.readableBy Include only if the event is accessible to the given user id
  * @param {string[]} options.fields Attributes and relations to include in results (defaults to lite attributes)
  * @param {boolean} options.descending Order the results in descending date order
+ * @param {number} options.limit
+ * @param {number} options.offset
  * @returns {Event[]} Events
  */
 async function query (filters, options) {
@@ -108,15 +100,8 @@ async function query (filters, options) {
     order: [['start', options.descending ? 'DESC' : 'ASC']]
   }
 
-  // TODO use paged query wrapper
-  const method = (!!options.limit || !!options.offset) ? 'findAndCountAll' : 'findAll'
-  return Event[method](query)
-    .then(data => {
-      return {
-        total: method === 'findAndCountAll' ? data.count : data.length,
-        results: (method === 'findAndCountAll' ? data.rows : data).map(format)
-      }
-    })
+  return pagedQuery(Event, query)
+    .then(data => ({ total: data.total, results: data.results.map(format) }))
 }
 
 /**
@@ -147,7 +132,6 @@ async function get (id, options = {}) {
     throw new EmptyResultError('Event with given id not found.')
   }
 
-  // TODO remove hard-coded strings
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, event.stream_id, STREAM))) {
     throw new ForbiddenError()
   }

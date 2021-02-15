@@ -103,6 +103,15 @@ router.post('/', authenticatedWithRoles('systemUser'), function (req, res) {
  *         in: query
  *         type: int
  *         default: 0
+ *       - name: descending
+ *         description: Order the results in descending order (newest first)
+ *         in: query
+ *         type: boolean
+ *         default: false
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: List of event (lite) objects
@@ -131,6 +140,7 @@ router.get('/', (req, res) => {
   converter.convert('classifiers').optional().toArray()
   converter.convert('limit').optional().toInt().default(100)
   converter.convert('offset').optional().toInt().default(0)
+  converter.convert('descending').default(false).toBoolean()
   converter.convert('fields').optional().toArray()
 
   return converter.validate()
@@ -144,6 +154,9 @@ router.get('/', (req, res) => {
       }
       const options = {
         readableBy: userIsSuper ? undefined : userId,
+        limit: params.limit,
+        offset: params.offset,
+        descending: params.descending,
         fields: params.fields
       }
       return eventsService.query(filters, options)
