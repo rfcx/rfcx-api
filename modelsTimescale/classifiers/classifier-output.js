@@ -18,10 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    ignore: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
+    ignore_threshold: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      defaultValue: 0.5
     }
   },
   {
@@ -32,8 +32,8 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierOutput.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   ClassifierOutput.attributes = {
-    full: ['classification_id', 'output_class_name', 'ignore'],
-    lite: ['classification_id', 'output_class_name', 'ignore']
+    full: ['classification_id', 'output_class_name', 'ignore_threshold'],
+    lite: ['classification_id', 'output_class_name', 'ignore_threshold']
   }
   ClassifierOutput.include = function (as = 'classifier_output', attributes = ClassifierOutput.attributes.lite, required = true) {
     return { model: ClassifierOutput, as, attributes, required }
