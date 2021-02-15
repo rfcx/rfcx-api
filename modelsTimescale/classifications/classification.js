@@ -43,5 +43,8 @@ module.exports = function (sequelize, DataTypes) {
     full: ['value', 'title', 'image', 'description', 'frequency_min', 'frequency_max'],
     lite: ['value', 'title', 'image']
   }
+  Classification.include = function (as = 'classification', attributes = Classification.attributes.lite, required = true) {
+    return { model: Classification, as, attributes, required }
+  }
   return Classification
 }

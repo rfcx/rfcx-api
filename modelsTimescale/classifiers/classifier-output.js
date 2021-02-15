@@ -35,5 +35,8 @@ module.exports = (sequelize, DataTypes) => {
     full: ['classification_id', 'output_class_name', 'ignore'],
     lite: ['classification_id', 'output_class_name', 'ignore']
   }
+  ClassifierOutput.include = function (as = 'classifier_output', attributes = ClassifierOutput.attributes.lite, required = true) {
+    return { model: ClassifierOutput, as, attributes, required }
+  }
   return ClassifierOutput
 }

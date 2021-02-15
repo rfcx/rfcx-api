@@ -867,19 +867,14 @@
         "description": "Human-readable name of the strategy",
         "example": "Min 4 detections over 90 seconds"
       },
-      "description": {
+      "function_name": {
         "type": "string",
-        "description": "Description of the strategy",
-        "example": "Raise an event when 4 or more detections are found within a 90 second period."
-      },
-      "type": {
-        "type": "string",
-        "description": "Type of strategy (one of 'window' or ...)",
+        "description": "Type of strategy (function to be applied by cognition service)",
         "example": "window"
       },
-      "parameters": {
+      "function_parameters": {
         "type": "string",
-        "description": "Parameters to be applied to algorithm",
+        "description": "Parameters to be applied to strategy function",
         "example": "minimum-windows=4 period-seconds=90"
       }
     }

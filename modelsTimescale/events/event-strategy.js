@@ -10,19 +10,22 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    function_name: {
+    functionName: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    function_parameters: {
+    functionParameters: {
       type: DataTypes.STRING
     }
+  }, {
+    underscored: true
   })
   EventStrategy.associate = function (models) {
+    EventStrategy.belongsToMany(models.Classifier, { as: 'classifiers', through: 'classifier_event_strategies', timestamps: false })
   }
   EventStrategy.attributes = {
-    full: ['name', 'function_name', 'function_parameters'],
-    lite: ['name']
+    full: ['id', 'name', 'function_name', 'function_parameters'],
+    lite: ['id', 'name']
   }
   return EventStrategy
 }
