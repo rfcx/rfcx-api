@@ -193,7 +193,8 @@ router.post('/:id/detections', function (req, res) {
         const classificationId = classificationMapping[detection.classification]
         const classifierId = classifierMapping[detection.classifier]
         const classifier = classifiers.find(c => c.id === classifierId)
-        const threshold = classifier.outputs.find(i => i.classification_id === classificationId).ignore_threshold || detectionsService.DEFAULT_IGNORE_THRESHOLD
+        const output = (classifier.outputs || []).find(i => i.classification_id === classificationId)
+        const threshold = output ? output.ignore_threshold : detectionsService.DEFAULT_IGNORE_THRESHOLD
         if (detection.confidence > threshold) {
           return {
             streamId,
