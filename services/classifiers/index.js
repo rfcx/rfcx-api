@@ -48,8 +48,13 @@ function get (id, opts = {}) {
       }
       const data = classifier.toJSON()
       // Remove join tables from json
-      data.active_streams = data.active_streams.map(({ classifier_active_streams, ...obj }) => obj) // eslint-disable-line camelcase
-      data.active_projects = data.active_projects.map(({ classifier_active_projects, ...obj }) => obj) // eslint-disable-line camelcase
+      if (data.active_streams) {
+        data.active_streams = data.active_streams.map(({ classifier_active_streams, ...obj }) => obj) // eslint-disable-line camelcase
+      }
+
+      if (data.active_projects) {
+        data.active_projects = data.active_projects.map(({ classifier_active_projects, ...obj }) => obj) // eslint-disable-line camelcase
+      }
       return data
     })
 }

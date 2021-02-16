@@ -172,8 +172,7 @@ router.post('/:id/detections', function (req, res) {
       // Get all the distinct classification values
       const classificationValues = [...new Set(validatedDetections.map(d => d.classification))]
       return classificationService.getIds(classificationValues)
-    })
-    .then(data => {
+    }).then(data => {
       classificationMapping = data
       const validatedDetections = params.transformedArray
       // Get all the distinct classifier uuids
@@ -182,21 +181,31 @@ router.post('/:id/detections', function (req, res) {
     }).then(classifierMapping => {
       const classifierIds = Object.values(classifierMapping)
       return Promise.all(classifierIds.map(id => classifierService.update(id, null, { last_executed_at: new Date() })))
-        .then(() => classifierMapping)
-    }).then(classifierMapping => {
+        .then(() => {
+          return Promise.all(classifierIds.map(id => classifierService.get(id, { joinRelations: true })))
+        })
+        .then((classifiers) => {
+          return Promise.resolve([classifiers, classifierMapping])
+        })
+    }).then(([classifiers, classifierMapping]) => {
       const validatedDetections = params.transformedArray
       const detections = validatedDetections.map(detection => {
         const classificationId = classificationMapping[detection.classification]
         const classifierId = classifierMapping[detection.classifier]
-        return {
-          streamId,
-          classificationId,
-          classifierId,
-          start: detection.start,
-          end: detection.end,
-          confidence: detection.confidence
+        const classifier = classifiers.find(c => c.id === classifierId)
+        const output = (classifier.outputs || []).find(i => i.classification_id === classificationId)
+        const threshold = output ? output.ignore_threshold : detectionsService.DEFAULT_IGNORE_THRESHOLD
+        if (detection.confidence > threshold) {
+          return {
+            streamId,
+            classificationId,
+            classifierId,
+            start: detection.start,
+            end: detection.end,
+            confidence: detection.confidence
+          }
         }
-      })
+      }).filter(i => i !== undefined)
       return detectionsService.create(detections)
     })
     .then(detections => res.sendStatus(201)) // TODO: not returning the ids of the created detections
