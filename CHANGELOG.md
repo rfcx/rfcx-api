@@ -4,6 +4,9 @@
 ### Features
 * **media:** Use `ffmpeg` instead of `sox` for audio processing ([CS-439](https://jira.rfcx.org/browse/CS-439))
 
+### Bug Fixes
+* **media:** Handle case when one segment overlays another ([CS-439](https://jira.rfcx.org/browse/CS-439))
+
 ### Other
 * **media:** Add unit tests for `makeffmpegCmd` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
 * **core:** refactor setup script
