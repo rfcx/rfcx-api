@@ -62,78 +62,23 @@ function initializeSequelize () {
 }
 
 function setupTmpDirectory () {
-  var tmpDir = process.env.CACHE_DIRECTORY
-  if (!fs.existsSync(tmpDir)) { fs.mkdirSync(tmpDir) }
-
-  try {
-    if (fs.existsSync(tmpDir + '/uploads')) {
-      fs.readdir(tmpDir + '/uploads', function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir + '/uploads/' + innerFileName, function (err) { if (err) console.log(err) })
-        })
-      })
-    } else { fs.mkdirSync(tmpDir + '/uploads') }
-  } catch (err) {
-    console.error(err)
+  const tmpDir = process.env.CACHE_DIRECTORY
+  if (!fs.existsSync(tmpDir)) {
+    fs.mkdirSync(tmpDir)
   }
-
-  try {
-    if (fs.existsSync(tmpDir + '/test-assets')) {
-      fs.readdir(tmpDir + '/test-assets', function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir + '/test-assets/' + innerFileName, function (err) { if (err) console.log(err) })
+  ['uploads', 'test-assets', 'faux-knox', 'ffmpeg', 'zip'].forEach((name) => {
+    try {
+      const dirName = path.join(tmpDir, name)
+      if (fs.existsSync(dirName)) {
+        const dir = fs.readdirSync(dirName)
+        dir.forEach((child) => {
+          fs.unlinkSync(path.join(dirName, child))
         })
-      })
-    } else { fs.mkdirSync(tmpDir + '/test-assets') }
-  } catch (err) {
-    console.error(err)
-  }
-
-  try {
-    if (fs.existsSync(tmpDir + '/faux-knox')) {
-      fs.readdir(tmpDir + '/faux-knox/', function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir + '/faux-knox/' + innerFileName, function (err) { if (err) console.log(err) })
-        })
-      })
-    } else { fs.mkdirSync(tmpDir + '/faux-knox') }
-  } catch (err) {
-    console.error(err)
-  }
-
-  try {
-    if (fs.existsSync(tmpDir + '/ffmpeg')) {
-      fs.readdir(tmpDir + '/ffmpeg/', function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir + '/ffmpeg/' + innerFileName, function (err) { if (err) console.log(err) })
-        })
-      })
-    } else { fs.mkdirSync(tmpDir + '/ffmpeg') }
-  } catch (err) {
-    console.error(err)
-  }
-
-  try {
-    if (fs.existsSync(tmpDir + '/faux-knox')) {
-      fs.readdir(tmpDir + '/faux-knox/', function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir + '/faux-knox/' + innerFileName, function (err) { if (err) console.log(err) })
-        })
-      })
-    } else { fs.mkdirSync(tmpDir + '/faux-knox') }
-  } catch (err) {
-    console.error(err)
-  }
-
-  try {
-    if (fs.existsSync(tmpDir + '/zip')) {
-      fs.readdir(tmpDir + '/zip/', function (err, dirName) {
-        dirName.forEach(function (innerFileName) {
-          fs.unlink(tmpDir + '/zip/' + innerFileName, function (err) { if (err) console.log(err) })
-        })
-      })
-    } else { fs.mkdirSync(tmpDir + '/zip') }
-  } catch (err) {
-    console.error(err)
-  }
+      } else {
+        fs.mkdirSync(dirName)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  })
 }
