@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## v1.0.7
+
+- Add `MEDIA_CACHE_ENABLED` env var and set it to true
+
 ## v1.0.6
 
 - Create rows in `classifier_outputs` for every classifier currently in production

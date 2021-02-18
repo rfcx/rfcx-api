@@ -1,3 +1,9 @@
+<a name="1.0.7"></a>
+## 1.0.7 (2021-02-XX)
+
+### Features
+* **media:** Use `ffmpeg` instead of `sox` for audio processing
+
 <a name="1.0.6"></a>
 ## 1.0.6 (2021-02-15)
 

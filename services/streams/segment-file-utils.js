@@ -15,6 +15,14 @@ const possibleExtensions = ['png', 'jpeg', 'wav', 'opus', 'flac', 'mp3']
 const possibleFileTypes = ['spec', 'wav', 'opus', 'flac', 'mp3']
 const possibleAudioFileTypes = ['wav', 'opus', 'flac', 'mp3']
 
+const INGEST_BUCKET = process.env.INGEST_BUCKET
+const MEDIA_CACHE_ENABLED = `${process.env.MEDIA_CACHE_ENABLED}` === 'true'
+const STREAMS_CACHE_BUCKET = process.env.STREAMS_CACHE_BUCKET
+const CACHE_DIRECTORY = process.env.CACHE_DIRECTORY
+const FFMPEG_PATH = process.env.FFMPEG_PATH
+const SOX_PATH = process.env.SOX_PATH
+const IMAGEMAGICK_PATH = process.env.IMAGEMAGICK_PATH
+
 function parseFileNameAttrs (req) {
   return new Promise((resolve, reject) => {
     const name = req.params.attrs
@@ -121,13 +129,13 @@ async function getFile (req, res, attrs, segments, nextTimestamp) {
     additionalHeaders['RFCx-Stream-Next-Timestamp'] = nextTimestamp
   }
 
-  const exists = await storageService.exists(process.env.STREAMS_CACHE_BUCKET, storageFilePath)
-  if (exists) {
+  const getFromCache = MEDIA_CACHE_ENABLED ? await storageService.exists(STREAMS_CACHE_BUCKET, storageFilePath) : false
+  if (getFromCache) {
     res.attachment(attrs.fileType === 'spec' ? filenameSpec : filenameAudio)
     for (const key in additionalHeaders) {
       res.setHeader(key, additionalHeaders[key])
     }
-    return storageService.getReadStream(process.env.STREAMS_CACHE_BUCKET, storageFilePath).pipe(res)
+    return storageService.getReadStream(STREAMS_CACHE_BUCKET, storageFilePath).pipe(res)
   } else {
     return generateFile(req, res, attrs, segments, additionalHeaders)
   }
@@ -161,14 +169,15 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
   const filenameAudio = `${filename}.${extension}`
   const filenameAudioCache = `${filename}_cached.${extension}`
 
-  const audioFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudio}`
-  const audioFilePathCached = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameAudioCache}`
+  const tmpDir = `${CACHE_DIRECTORY}ffmpeg/`
+  const audioFilePath = `${tmpDir}${filenameAudio}`
+  const audioFilePathCached = `${tmpDir}${filenameAudioCache}`
 
   let filenameSpec = `${filename}.png`
   let filenameSpecCached = `${filename}_cached.png`
 
-  let specFilePath = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpec}`
-  let specFilePathCached = `${process.env.CACHE_DIRECTORY}ffmpeg/${filenameSpecCached}`
+  let specFilePath = `${tmpDir}${filenameSpec}`
+  let specFilePathCached = `${tmpDir}${filenameSpecCached}`
 
   const storageAudioFilePath = `${attrs.streamId}/audio/${filenameAudio}`
   const storagespecFilePath = `${attrs.streamId}/image/${filenameSpec}`
@@ -176,79 +185,97 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
   const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf()
   const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf()
 
-  let sox = `${process.env.SOX_PATH} --combine concatenate `
   // Step 1: Download all segment files
+  const downloadProms = []
   for (const segment of segments) {
     const ts = moment.tz(segment.start, 'UTC')
     const segmentExtension = segment.file_extension && segment.file_extension.value
       ? segment.file_extension.value : path.extname(segment.stream_source_file.filename)
     const remotePath = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
-    const localPath = `${process.env.CACHE_DIRECTORY}/ffmpeg/${hash.randomString(32)}${segmentExtension}`
-
-    await storageService.download(process.env.INGEST_BUCKET, remotePath, localPath)
-    segment.sourceFilePath = localPath
+    segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
+    downloadProms.push(storageService.download(INGEST_BUCKET, remotePath, segment.sourceFilePath))
   }
   // Step 2: combine all segment files into one file
-  return Promise.resolve()
+  return Promise.all(downloadProms)
     .then(() => {
+      let command = `${FFMPEG_PATH} `
+      const complexFilter = []
       segments.forEach((segment, ind) => {
-        sox += ` "|${process.env.SOX_PATH}`
-        if (attrs.gain && parseFloat(attrs.gain) !== 1) {
-          sox += ` -v ${attrs.gain}`
-        }
-        sox += ` ${segment.sourceFilePath} -p `
-
-        const pad = { start: 0, end: 0 }
-        const trim = { start: 0, end: 0 }
         if (ind === 0 && starts < segment.start) {
           // when requested time range starts earlier than first segment
           // add empty sound at the start
-          pad.start = (segment.start - starts) / 1000
+          var startSilsenceMs = segment.start - starts
         }
+        let endSilenceMs = 0
         const nextSegment = segments[ind + 1]
         if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) > 0) {
           // when there is a gap between current and next segment
           // add empty sound at the end of current segment
-          pad.end = (nextSegment.start - segment.end) / 1000
+          endSilenceMs = nextSegment.start - segment.end
         }
         if (ind === (segments.length - 1) && ends > segment.end) {
           // when requested time range ends later than last segment
           // add empty sound at the end
-          pad.end = (ends - segment.end) / 1000
+          endSilenceMs = ends - segment.end
         }
-
+        let seekMs = 0
         if (ind === 0 && starts > segment.start) {
           // when requested time range starts later than first segment
           // cut first segment at the start
-          trim.start = (starts - segment.start) / 1000
+          seekMs = starts - segment.start
+        }
+        let durationMs = 0
+        const segmentDuration = segment.end - segment.start
+        if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) < 0) {
+          // when there is an overlap between current and next segment
+          // trim current segment
+          durationMs = segmentDuration - seekMs - (segment.end - nextSegment.start)
         }
         if (ind === (segments.length - 1) && ends < segment.end) {
           // when requested time range ends earlier than last segment
           // cut last segment at the end
-          trim.end = (segment.end - ends) / 1000
+          durationMs = segmentDuration - seekMs - (segment.end - ends)
         }
-        if (pad.start !== 0 || pad.end !== 0) {
-          sox += ` pad ${pad.start} ${pad.end}`
+        if (seekMs) {
+          command += `-ss ${seekMs}ms ` // how many ms we should skip
         }
-        if (trim.start !== 0 || trim.end !== 0) {
-          sox += ` trim ${trim.start} -${trim.end}`
+        if (durationMs) {
+          command += `-t ${durationMs}ms ` // how much time in duration we should have
         }
+        command += `-i ${segment.sourceFilePath} `
         try {
           var sampleRate = segment.stream_source_file.sample_rate
         } catch (e) {
           console.error(`Could not get sampleRate for segment "${segment.id}"`)
         }
+        // We specify segment index for ffmpeg filter
+        // [0:a] means: get audio from 0 segment, [1:a] means audio from 1 segment, etc
+        let filterInputId = `[${ind}:a]`
+        // Filter output id could be any string. We set it equal to input id for case when no filter will be applied
+        let filterOutputId = filterInputId
         if (sampleRate) {
-          sox += ` rate ${sampleRate} `
+          filterOutputId = `[${ind}resampled]` // change output id to [0resampled] or [1resampled], etc...
+          complexFilter.push(`${filterInputId}aresample=${sampleRate}${filterOutputId}`)
+          filterInputId = filterOutputId // if there will be next filter, it will get output id which we have just set (e.g. [0resampled])
         }
-        sox += '"'
+        if (startSilsenceMs) {
+          filterOutputId = `[${ind}delayed]`
+          complexFilter.push(`${filterInputId}adelay=${startSilsenceMs}ms${filterOutputId}`)
+          filterInputId = filterOutputId
+        }
+        if (endSilenceMs) {
+          filterOutputId = `[${ind}padded]`
+          complexFilter.push(`${filterInputId}apad=pad_dur=${endSilenceMs / 1000}${filterOutputId}`)
+        }
+        segment.filterOutputId = filterOutputId // this id will be used in "concat" filter
       })
-      // Set sample rate, channels count and file name
-      // if (attrs.sampleRate) {
-      //   sox += ` -r ${attrs.sampleRate}`;
-      // }
-      sox += ` -c 1 ${audioFilePath}`
-      return runExec(sox)
+      // see https://ffmpeg.org/ffmpeg-filters.html#Filtergraph-description to learn filter syntax
+      command += `-filter_complex "${complexFilter.join(';')}; ${segments.map(s => s.filterOutputId).join('')}concat=n=${segments.length}:v=0:a=1 `
+      if (attrs.gain && parseFloat(attrs.gain) !== 1) {
+        command += `,volume=${attrs.gain} `
+      }
+      command += `" -y -vn ${audioFilePath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"
+      return runExec(command)
     })
     .then(() => {
       // Step 3: generate spectrogram if file type is "spec"
@@ -259,14 +286,12 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
         // "−y" can be slow to produce the spectrogram if this number is not one more than a power of two (e.g. 129).
         // So we will raise spectrogram height to nearest power of two and then resize image back to requested height
         const yDimension = mathUtil.isPowerOfTwo(attrs.dimensions.y - 1) ? attrs.dimensions.y : (mathUtil.ceilPowerOfTwo(attrs.dimensions.y) + 1)
-        const soxPng = `${process.env.SOX_PATH} ${audioFilePath} -n spectrogram -r ${attrs.monochrome === 'true' ? '-lm' : '-h'} -o  ${specFilePath} -x ${attrs.dimensions.x} -y ${yDimension} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`
-        console.log('\n', soxPng, '\n')
+        const soxPng = `${SOX_PATH} ${audioFilePath} -n spectrogram -r ${attrs.monochrome === 'true' ? '-lm' : '-h'} -o  ${specFilePath} -x ${attrs.dimensions.x} -y ${yDimension} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`
         return runExec(soxPng)
           .then(() => {
             // if requested image height is not 1+2^n, then resize it back to requested height
             if (yDimension !== attrs.dimensions.y) {
-              const imgMagickPng = `${process.env.IMAGEMAGICK_PATH} ${specFilePath} -sample '${attrs.dimensions.x}x${attrs.dimensions.y}!' ${specFilePath}`
-              console.log('\n', imgMagickPng, '\n')
+              const imgMagickPng = `${IMAGEMAGICK_PATH} ${specFilePath} -sample '${attrs.dimensions.x}x${attrs.dimensions.y}!' ${specFilePath}`
               return runExec(imgMagickPng)
             } else {
               return Promise.resolve()
@@ -279,8 +304,7 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
               specFilePathCached = specFilePathCached.replace('.png', `.${req.rfcx.content_type}`)
               filenameSpec = filenameSpec.replace('.png', `.${req.rfcx.content_type}`)
               filenameSpecCached = filenameSpecCached.replace('.png', `.${req.rfcx.content_type}`)
-              const imgMagickPng = `${process.env.IMAGEMAGICK_PATH} -strip -interlace Plane -quality ${100 - attrs.jpegCompression}% ${pngspecFilePath} ${specFilePath}`
-              console.log('\n', imgMagickPng, '\n')
+              const imgMagickPng = `${IMAGEMAGICK_PATH} -strip -interlace Plane -quality ${100 - attrs.jpegCompression}% ${pngspecFilePath} ${specFilePath}`
               return runExec(imgMagickPng)
             } else {
               return Promise.resolve()
@@ -306,14 +330,17 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
       }
     })
     .then(() => {
-      // Upload files to cache S3 bucket
-      const proms = [
-        storageService.upload(process.env.STREAMS_CACHE_BUCKET, storageAudioFilePath, audioFilePathCached)
-      ]
-      if (attrs.fileType === 'spec') {
-        storageService.upload(process.env.STREAMS_CACHE_BUCKET, storagespecFilePath, specFilePathCached)
+      if (MEDIA_CACHE_ENABLED) {
+        // Upload files to cache S3 bucket
+        const proms = [
+          storageService.upload(STREAMS_CACHE_BUCKET, storageAudioFilePath, audioFilePathCached)
+        ]
+        if (attrs.fileType === 'spec') {
+          storageService.upload(STREAMS_CACHE_BUCKET, storagespecFilePath, specFilePathCached)
+        }
+        return Promise.all(proms)
       }
-      return Promise.all(proms)
+      return true
     })
     .then(() => {
       // Clean up everything
@@ -363,8 +390,8 @@ function deleteFilesForStream (dbStream) {
           const key = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
           keys.push(key)
         })
-        console.log(`Deleting following files in ${process.env.INGEST_BUCKET} bucket:`, keys.join(', '))
-        return storageService.deleteFiles(process.env.INGEST_BUCKET, keys)
+        console.log(`Deleting following files in ${INGEST_BUCKET} bucket:`, keys.join(', '))
+        return storageService.deleteFiles(INGEST_BUCKET, keys)
       })
   })
 }
