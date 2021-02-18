@@ -162,6 +162,87 @@ function getGapsForFile (attrs, segments) {
   return gaps
 }
 
+function makeffmpegCmd (segments, starts, ends, attrs, outputPath) {
+  let command = `${FFMPEG_PATH} `
+  const complexFilter = []
+  segments.forEach((segment, ind) => {
+    if (ind === 0 && starts < segment.start) {
+      // when requested time range starts earlier than first segment
+      // add empty sound at the start
+      var startSilsenceMs = segment.start - starts
+    }
+    let endSilenceMs = 0
+    const nextSegment = segments[ind + 1]
+    if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) > 0) {
+      // when there is a gap between current and next segment
+      // add empty sound at the end of current segment
+      endSilenceMs = nextSegment.start - segment.end
+    }
+    if (ind === (segments.length - 1) && ends > segment.end) {
+      // when requested time range ends later than last segment
+      // add empty sound at the end
+      endSilenceMs = ends - segment.end
+    }
+    let seekMs = 0
+    if (ind === 0 && starts > segment.start) {
+      // when requested time range starts later than first segment
+      // cut first segment at the start
+      seekMs = starts - segment.start
+    }
+    let durationMs = 0
+    const segmentDuration = segment.end - segment.start
+    if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) < 0) {
+      // when there is an overlap between current and next segment
+      // trim current segment
+      durationMs = segmentDuration - seekMs - (segment.end - nextSegment.start)
+    }
+    if (ind === (segments.length - 1) && ends < segment.end) {
+      // when requested time range ends earlier than last segment
+      // cut last segment at the end
+      durationMs = segmentDuration - seekMs - (segment.end - ends)
+    }
+    if (seekMs) {
+      command += `-ss ${seekMs}ms ` // how many ms we should skip
+    }
+    if (durationMs) {
+      command += `-t ${durationMs}ms ` // how much time in duration we should have
+    }
+    command += `-i ${segment.sourceFilePath} `
+    try {
+      var sampleRate = segment.stream_source_file.sample_rate
+    } catch (e) {
+      console.error(`Could not get sampleRate for segment "${segment.id}"`)
+    }
+    // We specify segment index for ffmpeg filter
+    // [0:a] means: get audio from 0 segment, [1:a] means audio from 1 segment, etc
+    let filterInputId = `[${ind}:a]`
+    // Filter output id could be any string. We set it equal to input id for case when no filter will be applied
+    let filterOutputId = filterInputId
+    if (sampleRate) {
+      filterOutputId = `[${ind}resampled]` // change output id to [0resampled] or [1resampled], etc...
+      complexFilter.push(`${filterInputId}aresample=${sampleRate}${filterOutputId}`)
+      filterInputId = filterOutputId // if there will be next filter, it will get output id which we have just set (e.g. [0resampled])
+    }
+    if (startSilsenceMs) {
+      filterOutputId = `[${ind}delayed]`
+      complexFilter.push(`${filterInputId}adelay=${startSilsenceMs}ms${filterOutputId}`)
+      filterInputId = filterOutputId
+    }
+    if (endSilenceMs) {
+      filterOutputId = `[${ind}padded]`
+      complexFilter.push(`${filterInputId}apad=pad_dur=${endSilenceMs / 1000}${filterOutputId}`)
+    }
+    segment.filterOutputId = filterOutputId // this id will be used in "concat" filter
+  })
+  // see https://ffmpeg.org/ffmpeg-filters.html#Filtergraph-description to learn filter syntax
+  command += `-filter_complex "${complexFilter.length ? complexFilter.join(';') + ';' : ''}${segments.map(s => s.filterOutputId).join('')}concat=n=${segments.length}:v=0:a=1`
+  if (attrs.gain !== undefined && parseFloat(attrs.gain) !== 1) {
+    command += `,volume=${attrs.gain}`
+  }
+  command += `" -y -vn ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"
+  return command
+}
+
 async function generateFile (req, res, attrs, segments, additionalHeaders) {
   const filename = combineStandardFilename(attrs, req)
   const extension = attrs.fileType === 'spec' ? 'wav' : attrs.fileType
@@ -198,83 +279,7 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
   // Step 2: combine all segment files into one file
   return Promise.all(downloadProms)
     .then(() => {
-      let command = `${FFMPEG_PATH} `
-      const complexFilter = []
-      segments.forEach((segment, ind) => {
-        if (ind === 0 && starts < segment.start) {
-          // when requested time range starts earlier than first segment
-          // add empty sound at the start
-          var startSilsenceMs = segment.start - starts
-        }
-        let endSilenceMs = 0
-        const nextSegment = segments[ind + 1]
-        if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) > 0) {
-          // when there is a gap between current and next segment
-          // add empty sound at the end of current segment
-          endSilenceMs = nextSegment.start - segment.end
-        }
-        if (ind === (segments.length - 1) && ends > segment.end) {
-          // when requested time range ends later than last segment
-          // add empty sound at the end
-          endSilenceMs = ends - segment.end
-        }
-        let seekMs = 0
-        if (ind === 0 && starts > segment.start) {
-          // when requested time range starts later than first segment
-          // cut first segment at the start
-          seekMs = starts - segment.start
-        }
-        let durationMs = 0
-        const segmentDuration = segment.end - segment.start
-        if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) < 0) {
-          // when there is an overlap between current and next segment
-          // trim current segment
-          durationMs = segmentDuration - seekMs - (segment.end - nextSegment.start)
-        }
-        if (ind === (segments.length - 1) && ends < segment.end) {
-          // when requested time range ends earlier than last segment
-          // cut last segment at the end
-          durationMs = segmentDuration - seekMs - (segment.end - ends)
-        }
-        if (seekMs) {
-          command += `-ss ${seekMs}ms ` // how many ms we should skip
-        }
-        if (durationMs) {
-          command += `-t ${durationMs}ms ` // how much time in duration we should have
-        }
-        command += `-i ${segment.sourceFilePath} `
-        try {
-          var sampleRate = segment.stream_source_file.sample_rate
-        } catch (e) {
-          console.error(`Could not get sampleRate for segment "${segment.id}"`)
-        }
-        // We specify segment index for ffmpeg filter
-        // [0:a] means: get audio from 0 segment, [1:a] means audio from 1 segment, etc
-        let filterInputId = `[${ind}:a]`
-        // Filter output id could be any string. We set it equal to input id for case when no filter will be applied
-        let filterOutputId = filterInputId
-        if (sampleRate) {
-          filterOutputId = `[${ind}resampled]` // change output id to [0resampled] or [1resampled], etc...
-          complexFilter.push(`${filterInputId}aresample=${sampleRate}${filterOutputId}`)
-          filterInputId = filterOutputId // if there will be next filter, it will get output id which we have just set (e.g. [0resampled])
-        }
-        if (startSilsenceMs) {
-          filterOutputId = `[${ind}delayed]`
-          complexFilter.push(`${filterInputId}adelay=${startSilsenceMs}ms${filterOutputId}`)
-          filterInputId = filterOutputId
-        }
-        if (endSilenceMs) {
-          filterOutputId = `[${ind}padded]`
-          complexFilter.push(`${filterInputId}apad=pad_dur=${endSilenceMs / 1000}${filterOutputId}`)
-        }
-        segment.filterOutputId = filterOutputId // this id will be used in "concat" filter
-      })
-      // see https://ffmpeg.org/ffmpeg-filters.html#Filtergraph-description to learn filter syntax
-      command += `-filter_complex "${complexFilter.join(';')}; ${segments.map(s => s.filterOutputId).join('')}concat=n=${segments.length}:v=0:a=1 `
-      if (attrs.gain && parseFloat(attrs.gain) !== 1) {
-        command += `,volume=${attrs.gain} `
-      }
-      command += `" -y -vn ${audioFilePath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"
+      const command = makeffmpegCmd(segments, starts, ends, attrs, audioFilePath)
       return runExec(command)
     })
     .then(() => {
@@ -439,5 +444,6 @@ module.exports = {
   checkAttrsValidity,
   getFile,
   deleteFilesForStream,
-  gluedDateToISO
+  gluedDateToISO,
+  makeffmpegCmd
 }
