@@ -1,5 +1,5 @@
 <a name="1.0.6"></a>
-## 1.0.7 (2021-02-15)
+## 1.0.7 (2021-02-18)
 
 ### Features
 * **core:** Enable clustered annotation query by `is_manual` and `is_positive` [CE-127](https://jira.rfcx.org/browse/CE-127)
