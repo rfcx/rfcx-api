@@ -52,14 +52,6 @@ async function defaultQueryOptions (filters, options = {}) {
     required: true
   }]
   const attributes = [...models.Annotation.attributes.lite]
-  if (filters.isManual === false) {
-    include.push({
-      as: 'created_by',
-      model: models.User,
-      attributes: models.User.attributes.lite
-    })
-    attributes.push('is_positive')
-  }
   return {
     where: condition,
     include,
@@ -96,6 +88,14 @@ function formatFull (annotation) {
  */
 async function query (filters, options = {}) {
   const queryOptions = await defaultQueryOptions(filters, options)
+  if (filters.isManual === false) {
+    queryOptions.include.push({
+      as: 'created_by',
+      model: models.User,
+      attributes: models.User.attributes.lite
+    })
+    queryOptions.attributes.push('is_positive')
+  }
   return models.Annotation.findAll(queryOptions)
 }
 
