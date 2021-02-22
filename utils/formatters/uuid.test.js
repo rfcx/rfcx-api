@@ -15,7 +15,7 @@ test('can convert uuid to slug', () => {
 
 test('can convert slug to uuid', () => {
   const uuid = 'q_1g6VYvTnmjlYAkkb8BBg'
-  const result = uuidToSlug(uuid)
+  const result = slugToUuid(uuid)
   expect(result).toEqual('abfd60e9-562f-4e79-a395-802491bf0106')
 })
 
@@ -23,4 +23,9 @@ test('can convert to slug and back', () => {
   const uuid = '7b344a51-6531-48f9-b17b-8d0e84eca988'
   const result = slugToUuid(uuidToSlug(uuid))
   expect(result).toEqual(uuid)
+})
+
+test('can detect invalid uuid', () => {
+  const uuid = '71e8367c-3693-6eaa-9657-ccd3a372d7b0' // 13th char must be 1-5 (for version)
+  expect(() => uuidToSlug(uuid)).toThrow(TypeError)
 })

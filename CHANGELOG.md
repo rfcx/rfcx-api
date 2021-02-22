@@ -1,9 +1,56 @@
-<a name="1.0.2"></a>
-## 1.0.2 (2021-02-XX)
-
+<a name="1.0.7"></a>
+## 1.0.7 (2021-02-XX)
 
 ### Bug Fixes
 * **core:** CREATE requests for streams and projects return location header ([CS-237](https://jira.rfcx.org/browse/CS-237))
+
+<a name="1.0.6"></a>
+## 1.0.6 (2021-02-15)
+
+### Features
+* **core:** Detections endpoint from both internal and core will filter the detection that less than `ignore_threshold` out. And the default `ignore_threshold` is setting to 0.5 from classifier_output ([CS-473](https://jira.rfcx.org/browse/CS-473))
+* **core:** Add `/event-strategies` endpoints to enable the cognition service to retrieve cognition logic ([CS-143](https://jira.rfcx.org/browse/CS-143))
+* **core:** Add `descending` parameter to `/events` endpoint
+
+
+<a name="1.0.5"></a>
+## 1.0.5 (2021-02-12)
+
+### Bug Fixes
+* **core:** Enable clustered detections, fix `field` bug (previously defaulted to `id`)
+
+
+<a name="1.0.4"></a>
+## 1.0.4 (2021-02-09)
+
+### Bug Fixes
+* **core:** Fix wrong model spelling on classifiers endpoint ([CS-478](https://jira.rfcx.org/browse/CS-478))
+
+
+<a name="1.0.3"></a>
+## 1.0.3 (2021-02-08)
+
+
+### Features
+* **core:** add `organizations` and `projects` query into the `/stream` endpoint ([CS-403](https://jira.rfcx.org/browse/CS-403))
+
+
+<a name="1.0.2"></a>
+## 1.0.2 (2021-02-03)
+
+
+### Features
+* **core:** Detection review from Neo4j is saved in TimescaleDB also ([CS-331](https://jira.rfcx.org/browse/CS-331))
+
+
+### Bug Fixes
+* **core:** Remove bind({}) from AI creation endpoint
+* **core:** Not implemented endpoints should return 501 instead of 504
+
+
+### Other
+* **core:** Disable clustered detections endpoint temprary - return 501
+* **core:** Delete "reviews" parameter from detections query endpoint
 
 
 <a name="1.0.1"></a>

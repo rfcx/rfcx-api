@@ -36,5 +36,8 @@ module.exports = (sequelize, DataTypes) => {
     full: ['event_strategy_id', 'active', 'parameters', 'last_executed_at'],
     lite: ['event_strategy_id', 'active']
   }
+  ClassifierEventStrategy.include = function (as = 'classifier_event_strategy', attributes = ClassifierEventStrategy.attributes.lite, required = true) {
+    return { model: ClassifierEventStrategy, as, attributes, required }
+  }
   return ClassifierEventStrategy
 }

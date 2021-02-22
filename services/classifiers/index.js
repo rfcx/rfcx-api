@@ -48,8 +48,13 @@ function get (id, opts = {}) {
       }
       const data = classifier.toJSON()
       // Remove join tables from json
-      data.active_streams = data.active_streams.map(({ classifier_active_streams, ...obj }) => obj) // eslint-disable-line camelcase
-      data.active_projects = data.active_projects.map(({ classifier_active_projects, ...obj }) => obj) // eslint-disable-line camelcase
+      if (data.active_streams) {
+        data.active_streams = data.active_streams.map(({ classifier_active_streams, ...obj }) => obj) // eslint-disable-line camelcase
+      }
+
+      if (data.active_projects) {
+        data.active_projects = data.active_projects.map(({ classifier_active_projects, ...obj }) => obj) // eslint-disable-line camelcase
+      }
       return data
     })
 }
@@ -203,17 +208,16 @@ async function updateDeployment (update, transaction) {
 }
 
 async function updateActiveStreams (update, transaction) {
-  const existingStreams = await models.ClassifierActiveStreams.findAll({
+  const existingStreams = await models.ClassifierActiveStream.findAll({
     attributes: ['stream_id'],
     where: {
       classifier_id: update.id
     }
   }, { transaction })
   const existingStreamIds = existingStreams.map(s => s.stream_id)
-
   // Additions
   const deletedStreamIds = existingStreamIds.filter(s => !update.active_streams.includes(s))
-  await models.ClassifierActiveStreams.destroy({
+  await models.ClassifierActiveStream.destroy({
     where: {
       classifier_id: update.id,
       stream_id: deletedStreamIds
@@ -222,14 +226,14 @@ async function updateActiveStreams (update, transaction) {
 
   // Deletions
   const addedStreamIds = update.active_streams.filter(s => !existingStreamIds.includes(s))
-  await models.ClassifierActiveStreams.bulkCreate(addedStreamIds.map(streamId => ({
+  await models.ClassifierActiveStream.bulkCreate(addedStreamIds.map(streamId => ({
     classifier_id: update.id,
     stream_id: streamId
   })), { transaction })
 }
 
 async function updateActiveProjects (update, transaction) {
-  const existingProjects = await models.ClassifierActiveProjects.findAll({
+  const existingProjects = await models.ClassifierActiveProject.findAll({
     attributes: ['project_id'],
     where: {
       classifier_id: update.id
@@ -239,7 +243,7 @@ async function updateActiveProjects (update, transaction) {
 
   // Additions
   const deletedProjectIds = existingProjectIds.filter(p => !update.active_projects.includes(p))
-  await models.ClassifierActiveProjects.destroy({
+  await models.ClassifierActiveProject.destroy({
     where: {
       classifier_id: update.id,
       project_id: deletedProjectIds
@@ -248,7 +252,7 @@ async function updateActiveProjects (update, transaction) {
 
   // Deletions
   const addedProjectIds = update.active_projects.filter(p => !existingProjectIds.includes(p))
-  await models.ClassifierActiveProjects.bulkCreate(addedProjectIds.map(streamId => ({
+  await models.ClassifierActiveProject.bulkCreate(addedProjectIds.map(streamId => ({
     classifier_id: update.id,
     project_id: streamId
   })), { transaction })

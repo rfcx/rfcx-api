@@ -39,7 +39,7 @@ const rolesService = require('../../../services/roles')
  *         description: Column or field to apply the function.
  *         schema:
  *           type: string
- *         default: id
+ *         default: start
  *       - name: start
  *         description: Limit to a start date on or after (iso8601 or epoch)
  *         in: query
@@ -109,7 +109,7 @@ router.get('/', (req, res) => {
   params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
-  params.convert('field').default('id').isEqualToAny(models.Detection.attributes.full)
+  params.convert('field').default('start').isEqualToAny(models.Detection.attributes.full)
   params.convert('min_confidence').optional().toFloat()
   params.convert('descending').default(false).toBoolean()
   params.convert('limit').default(100).toInt()

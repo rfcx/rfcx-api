@@ -1,5 +1,27 @@
 # API Deployment Notes
 
+## v1.0.7
+
+_None_
+
+## v1.0.6
+
+- Create rows in `classifier_outputs` for every classifier currently in production
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210211170430-add-ignore-threshold-on-classifier-output`
+
+## v1.0.5
+
+_None_
+
+## v1.0.4
+
+_None_
+
+## v1.0.3
+
+_None_
+
 ## v1.0.2
 
 _None_

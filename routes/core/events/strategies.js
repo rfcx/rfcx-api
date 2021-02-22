@@ -1,5 +1,7 @@
 const router = require('express').Router()
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
+const Converter = require('../../../utils/converter/converter')
+const strategiesService = require('../../../services/events/strategies')
 
 /**
  * @swagger
@@ -10,6 +12,14 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
  *     tags:
  *       - events
  *     parameters:
+ *       - name: function_name
+ *         description: Filter the results for a specific function name
+ *         in: query
+ *         type: string
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -32,8 +42,54 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('appUser', 'rfcxUser'), function (req, res) {
-  res.status(504).send('Not implemented')
+router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), async function (req, res) {
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('function_name').optional()
+  converter.convert('limit').optional().toInt().default(100)
+  converter.convert('offset').optional().toInt().default(0)
+  converter.convert('fields').optional().toArray()
+
+  const params = await converter.validate()
+  const { functionName, limit, offset, fields } = params
+  const filters = { functionName }
+  const options = { fields, limit, offset }
+
+  const results = await strategiesService.query(filters, options)
+  res.json(results)
+})
+
+/**
+ * @swagger
+ *
+ * /event-strategies/{id}:
+ *   get:
+ *     summary: Get an event strategy
+ *     parameters:
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
+ *     tags:
+ *       - events
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EventStrategy'
+ *       404:
+ *         description: Event strategy not found
+*/
+router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), async function (req, res) {
+  const id = req.params.id
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('fields').optional().toArray()
+
+  const options = await converter.validate()
+
+  const result = await strategiesService.get(id, options)
+  res.json(result)
 })
 
 module.exports = router
