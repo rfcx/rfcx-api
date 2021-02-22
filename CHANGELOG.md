@@ -1,5 +1,5 @@
-<a name="1.0.7"></a>
-## 1.0.7 (2021-02-XX)
+<a name="1.0.8"></a>
+## 1.0.8 (2021-02-XX)
 
 ### Features
 * **media:** Use `ffmpeg` instead of `sox` for audio processing ([CS-439](https://jira.rfcx.org/browse/CS-439))
@@ -8,8 +8,18 @@
 * **media:** Handle case when one segment overlays another ([CS-439](https://jira.rfcx.org/browse/CS-439))
 
 ### Other
-* **media:** Add unit tests for `makeffmpegCmd` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
+* **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
 * **core:** refactor setup script
+
+
+## 1.0.7 (2021-02-22)
+
+### Features
+* **core:** Enable clustered annotation query by `is_manual` and `is_positive` [CE-127](https://jira.rfcx.org/browse/CE-127)
+
+### Bug Fixes
+* **core:** Remove unuse parameters from `event` model
+* **core:** CREATE requests for streams and projects return location header ([CS-237](https://jira.rfcx.org/browse/CS-237))
 
 
 <a name="1.0.6"></a>
