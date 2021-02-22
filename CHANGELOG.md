@@ -1,8 +1,11 @@
-<a name="1.0.6"></a>
-## 1.0.7 (2021-02-18)
+<a name="1.0.7"></a>
+## 1.0.7 (2021-02-22)
 
 ### Features
 * **core:** Enable clustered annotation query by `is_manual` and `is_positive` [CE-127](https://jira.rfcx.org/browse/CE-127)
+
+### Bug Fixes
+* **core:** Remove unuse parameters from `event` model
 
 
 <a name="1.0.6"></a>
