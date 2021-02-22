@@ -1,5 +1,5 @@
+var { runExec } = require('../../utils/misc/shell')
 const models = require('../../modelsTimescale')
-const exec = require('child_process').exec
 const Promise = require('bluebird')
 const path = require('path')
 const moment = require('moment-timezone')
@@ -113,11 +113,11 @@ async function getFile (req, res, attrs, segments, nextTimestamp) {
   const filename = combineStandardFilename(attrs, req)
   const extension = attrs.fileType === 'spec' ? 'wav' : attrs.fileType
 
-  const filenameAudio = `${filename}.${extension}`
-  const filenameSpec = `${filename}.png`
+  const audioFilename = `${filename}.${extension}`
+  const spectrogramFilename = `${filename}.png`
 
-  const storageAudioFilePath = `${attrs.streamId}/audio/${filenameAudio}`
-  const storagespecFilePath = `${attrs.streamId}/image/${filenameSpec}`
+  const storageAudioFilePath = `${attrs.streamId}/audio/${audioFilename}`
+  const storagespecFilePath = `${attrs.streamId}/image/${spectrogramFilename}`
 
   const storageFilePath = attrs.fileType === 'spec' ? storagespecFilePath : storageAudioFilePath
 
@@ -131,7 +131,7 @@ async function getFile (req, res, attrs, segments, nextTimestamp) {
 
   const getFromCache = MEDIA_CACHE_ENABLED ? await storageService.exists(STREAMS_CACHE_BUCKET, storageFilePath) : false
   if (getFromCache) {
-    res.attachment(attrs.fileType === 'spec' ? filenameSpec : filenameAudio)
+    res.attachment(attrs.fileType === 'spec' ? spectrogramFilename : audioFilename)
     for (const key in additionalHeaders) {
       res.setHeader(key, additionalHeaders[key])
     }
@@ -162,7 +162,27 @@ function getGapsForFile (attrs, segments) {
   return gaps
 }
 
-function makeffmpegCmd (segments, starts, ends, attrs, outputPath) {
+function getSoxFriendlyHeight (y) {
+  // From Sox docs:
+  // "−y" can be slow to produce the spectrogram if this number is not one more than a power of two (e.g. 129).
+  // So we will raise spectrogram height to nearest power of two and then resize image back to requested height
+  return mathUtil.isPowerOfTwo(y - 1) ? y : (mathUtil.ceilPowerOfTwo(y) + 1)
+}
+
+function downloadSegments (segments) {
+  const downloadProms = []
+  for (const segment of segments) {
+    const ts = moment.tz(segment.start, 'UTC')
+    const segmentExtension = segment.file_extension && segment.file_extension.value
+      ? segment.file_extension.value : path.extname(segment.stream_source_file.filename)
+    const remotePath = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
+    segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
+    downloadProms.push(storageService.download(INGEST_BUCKET, remotePath, segment.sourceFilePath))
+  }
+  return Promise.all(downloadProms)
+}
+
+function convertAudio (segments, starts, ends, attrs, outputPath) {
   let command = `${FFMPEG_PATH} `
   const complexFilter = []
   segments.forEach((segment, ind) => {
@@ -240,127 +260,121 @@ function makeffmpegCmd (segments, starts, ends, attrs, outputPath) {
     command += `,volume=${attrs.gain}`
   }
   command += `" -y -vn ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"
-  return command
+  return runExec(command)
+}
+
+function makeSpectrogram (sourcePath, outputPath, attrs) {
+  return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram -r ${attrs.monochrome === 'true' ? '-lm' : '-h'} -o  ${outputPath} -x ${attrs.dimensions.x} -y ${attrs.soxFriendlyHeight} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`)
+}
+
+function resizeSpectrogram (sourcePath, dimensions) {
+  return runExec(`${IMAGEMAGICK_PATH} ${sourcePath} -sample '${dimensions.x}x${dimensions.y}!' ${sourcePath}`)
+}
+
+function convertSpectrogram (sourcePath, attrs) {
+  const outputPath = sourcePath.replace('.png', `.${attrs.contentType}`)
+  return runExec(`${IMAGEMAGICK_PATH} -strip -interlace Plane -quality ${100 - attrs.jpegCompression}% ${sourcePath} ${outputPath}`)
+}
+
+async function cloneFile (sourcePath) {
+  const partials = sourcePath.split('.')
+  partials[partials.length - 1] += '_cached'
+  const destinationPath = partials.join()
+  await runExec(`cp ${sourcePath} ${destinationPath}`)
+  return destinationPath
+}
+
+async function cloneFiles (audioFilePath, spectrogramFilePath) {
+  const pathsArr = await Promise.all([
+    cloneFile(audioFilePath),
+    ...spectrogramFilePath ? [cloneFile(spectrogramFilePath)] : []
+  ])
+  return {
+    audioFilePathCached: pathsArr[0],
+    spectrogramFilePathCached: pathsArr[1]
+  }
+}
+
+function uploadCachedFiles (streamId, audioFilename, audioFilePath, spectrogramFilename, spectrogramFilePath) {
+  const audioStoragePath = `${streamId}/audio/${audioFilename}`
+  const spectrogramStoragePath = `${streamId}/image/${spectrogramFilename}`
+  const proms = [
+    storageService.upload(STREAMS_CACHE_BUCKET, audioStoragePath, audioFilePath),
+    ...!!spectrogramFilename && spectrogramFilePath ? [storageService.upload(STREAMS_CACHE_BUCKET, spectrogramStoragePath, spectrogramFilePath)] : []
+  ]
+  return Promise.all(proms)
+}
+
+function deleteLocalFiles (segments, audioFilePath, audioFilePathCached, spectrogramFilePathCached) {
+  segments.forEach((segment) => {
+    assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath)
+  })
+  if (audioFilePathCached) {
+    assetUtils.deleteLocalFileFromFileSystem(audioFilePathCached)
+  }
+  if (audioFilePath) {
+    assetUtils.deleteLocalFileFromFileSystem(audioFilePath)
+  }
+  if (spectrogramFilePathCached) {
+    assetUtils.deleteLocalFileFromFileSystem(spectrogramFilePathCached)
+  }
 }
 
 async function generateFile (req, res, attrs, segments, additionalHeaders) {
+  const reqContentType = req.rfcx.content_type
+  const tmpDir = `${CACHE_DIRECTORY}ffmpeg/`
   const filename = combineStandardFilename(attrs, req)
   const extension = attrs.fileType === 'spec' ? 'wav' : attrs.fileType
+  const spectrogramExtension = 'png'
 
-  const filenameAudio = `${filename}.${extension}`
-  const filenameAudioCache = `${filename}_cached.${extension}`
+  const start = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf()
+  const end = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf()
 
-  const tmpDir = `${CACHE_DIRECTORY}ffmpeg/`
-  const audioFilePath = `${tmpDir}${filenameAudio}`
-  const audioFilePathCached = `${tmpDir}${filenameAudioCache}`
+  const audioFilename = `${filename}.${extension}`
+  const audioFilePath = `${tmpDir}${audioFilename}`
+  var spectrogramFilename = `${filename}.${spectrogramExtension}`
+  var spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
 
-  let filenameSpec = `${filename}.png`
-  let filenameSpecCached = `${filename}_cached.png`
-
-  let specFilePath = `${tmpDir}${filenameSpec}`
-  let specFilePathCached = `${tmpDir}${filenameSpecCached}`
-
-  const storageAudioFilePath = `${attrs.streamId}/audio/${filenameAudio}`
-  const storagespecFilePath = `${attrs.streamId}/image/${filenameSpec}`
-
-  const starts = moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf()
-  const ends = moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').valueOf()
-
-  // Step 1: Download all segment files
-  const downloadProms = []
-  for (const segment of segments) {
-    const ts = moment.tz(segment.start, 'UTC')
-    const segmentExtension = segment.file_extension && segment.file_extension.value
-      ? segment.file_extension.value : path.extname(segment.stream_source_file.filename)
-    const remotePath = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
-    segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
-    downloadProms.push(storageService.download(INGEST_BUCKET, remotePath, segment.sourceFilePath))
+  await downloadSegments(segments)
+  await convertAudio(segments, start, end, attrs, audioFilePath)
+  if (attrs.fileType === 'spec') {
+    const soxFriendlyHeight = getSoxFriendlyHeight(attrs.dimensions.y)
+    await makeSpectrogram(audioFilePath, spectrogramFilePath, { ...attrs, soxFriendlyHeight })
+    if (soxFriendlyHeight !== attrs.dimensions.y) { // if requested image height is not 1+2^n, then resize it back to requested height
+      await resizeSpectrogram(spectrogramFilePath, attrs.dimensions)
+      if (req.rfcx.content_type !== 'png') {
+        await convertSpectrogram(spectrogramFilePath, { ...attrs, contentType: reqContentType })
+        spectrogramFilename = `${filename}.${reqContentType}`
+        spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
+      }
+    }
   }
-  // Step 2: combine all segment files into one file
-  return Promise.all(downloadProms)
-    .then(() => {
-      const command = makeffmpegCmd(segments, starts, ends, attrs, audioFilePath)
-      return runExec(command)
-    })
-    .then(() => {
-      // Step 3: generate spectrogram if file type is "spec"
-      if (attrs.fileType !== 'spec') {
-        return true
-      } else {
-        // From Sox docs:
-        // "−y" can be slow to produce the spectrogram if this number is not one more than a power of two (e.g. 129).
-        // So we will raise spectrogram height to nearest power of two and then resize image back to requested height
-        const yDimension = mathUtil.isPowerOfTwo(attrs.dimensions.y - 1) ? attrs.dimensions.y : (mathUtil.ceilPowerOfTwo(attrs.dimensions.y) + 1)
-        const soxPng = `${SOX_PATH} ${audioFilePath} -n spectrogram -r ${attrs.monochrome === 'true' ? '-lm' : '-h'} -o  ${specFilePath} -x ${attrs.dimensions.x} -y ${yDimension} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`
-        return runExec(soxPng)
-          .then(() => {
-            // if requested image height is not 1+2^n, then resize it back to requested height
-            if (yDimension !== attrs.dimensions.y) {
-              const imgMagickPng = `${IMAGEMAGICK_PATH} ${specFilePath} -sample '${attrs.dimensions.x}x${attrs.dimensions.y}!' ${specFilePath}`
-              return runExec(imgMagickPng)
-            } else {
-              return Promise.resolve()
-            }
-          })
-          .then(() => {
-            if (req.rfcx.content_type !== 'png') {
-              const pngspecFilePath = `${specFilePath}`
-              specFilePath = specFilePath.replace('.png', `.${req.rfcx.content_type}`)
-              specFilePathCached = specFilePathCached.replace('.png', `.${req.rfcx.content_type}`)
-              filenameSpec = filenameSpec.replace('.png', `.${req.rfcx.content_type}`)
-              filenameSpecCached = filenameSpecCached.replace('.png', `.${req.rfcx.content_type}`)
-              const imgMagickPng = `${IMAGEMAGICK_PATH} -strip -interlace Plane -quality ${100 - attrs.jpegCompression}% ${pngspecFilePath} ${specFilePath}`
-              return runExec(imgMagickPng)
-            } else {
-              return Promise.resolve()
-            }
-          })
-      }
-    })
-    .then(() => {
-      // Make copies of files for futher caching
-      // We need to make copies because original file is being deleted once client finish it download
-      const proms = [runExec(`cp ${audioFilePath} ${audioFilePathCached}`)]
-      if (attrs.fileType === 'spec') {
-        proms.push(runExec(`cp ${specFilePath} ${specFilePathCached}`))
-      }
-      return Promise.all(proms)
-    })
-    .then(() => {
-      // Rspond with a file
-      if (attrs.fileType === 'spec') {
-        return audioUtils.serveAudioFromFile(res, specFilePath, filenameSpec, `image/${req.rfcx.content_type}`, !!req.query.inline, additionalHeaders)
-      } else {
-        return audioUtils.serveAudioFromFile(res, audioFilePath, filenameAudio, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline, additionalHeaders)
-      }
-    })
-    .then(() => {
-      if (MEDIA_CACHE_ENABLED) {
-        // Upload files to cache S3 bucket
-        const proms = [
-          storageService.upload(STREAMS_CACHE_BUCKET, storageAudioFilePath, audioFilePathCached)
-        ]
-        if (attrs.fileType === 'spec') {
-          storageService.upload(STREAMS_CACHE_BUCKET, storagespecFilePath, specFilePathCached)
-        }
-        return Promise.all(proms)
-      }
-      return true
-    })
-    .then(() => {
-      // Clean up everything
-      segments.forEach((segment) => {
-        assetUtils.deleteLocalFileFromFileSystem(segment.sourceFilePath)
-      })
-      assetUtils.deleteLocalFileFromFileSystem(audioFilePathCached)
-      if (attrs.fileType === 'spec') {
-        assetUtils.deleteLocalFileFromFileSystem(audioFilePath)
-        assetUtils.deleteLocalFileFromFileSystem(specFilePathCached)
-      }
-      segments = null
-      attrs = null
-      return true
-    })
+  if (MEDIA_CACHE_ENABLED) {
+    var { audioFilePathCached, spectrogramFilePathCached } = await cloneFiles(audioFilePath, attrs.fileType === 'spec' ? spectrogramFilePath : null)
+  }
+  if (attrs.fileType === 'spec') {
+    await audioUtils.serveAudioFromFile(res, spectrogramFilePath, spectrogramFilename, `image/${reqContentType}`, !!req.query.inline, additionalHeaders)
+  } else {
+    await audioUtils.serveAudioFromFile(res, audioFilePath, audioFilename, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline, additionalHeaders)
+  }
+  if (MEDIA_CACHE_ENABLED) {
+    const args = [
+      attrs.streamId,
+      audioFilename,
+      audioFilePathCached,
+      ...attrs.fileType === 'spec' ? [spectrogramFilename, spectrogramFilePathCached] : []
+    ]
+    await uploadCachedFiles(...args)
+  }
+  const clearArgs = [
+    segments,
+    ...MEDIA_CACHE_ENABLED ? [audioFilePathCached] : [null],
+    ...attrs.fileType === 'spec' ? [audioFilePath] : [null],
+    ...(attrs.fileType === 'spec' && MEDIA_CACHE_ENABLED) ? [spectrogramFilePathCached] : [null]
+  ]
+  deleteLocalFiles(...clearArgs)
+  segments = null
+  attrs = null
 }
 
 function deleteFilesForStream (dbStream) {
@@ -401,18 +415,6 @@ function deleteFilesForStream (dbStream) {
   })
 }
 
-function runExec (command) {
-  return new Promise(function (resolve, reject) {
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve(stdout.trim())
-    })
-  })
-}
-
 function clipToStr (clip) {
   if (clip === 'full') {
     return 'full'
@@ -445,5 +447,5 @@ module.exports = {
   getFile,
   deleteFilesForStream,
   gluedDateToISO,
-  makeffmpegCmd
+  convertAudio
 }
