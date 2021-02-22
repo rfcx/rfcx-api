@@ -26,14 +26,6 @@ module.exports = (sequelize, DataTypes) => {
     classifierEventStrategyId: {
       type: DataTypes.INTEGER,
       allowNull: false
-    },
-    firstDetectionId: {
-      type: DataTypes.UUID,
-      allowNull: false
-    },
-    lastDetectionId: {
-      type: DataTypes.UUID,
-      allowNull: false
     }
   }, {
     underscored: true
