@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## v1.0.8
+
+_None_
+
 ## v1.0.7
 
 _None_

@@ -1,3 +1,10 @@
+<a name="1.0.8"></a>
+## 1.0.8 (2021-02-XX)
+
+### Features
+* **core:** Add GET /streams/{id}/stream-source-files endpoint [CE-31](https://jira.rfcx.org/browse/CE-31)
+
+
 <a name="1.0.7"></a>
 ## 1.0.7 (2021-02-22)
 
