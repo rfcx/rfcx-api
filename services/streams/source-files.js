@@ -1,4 +1,3 @@
-// const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const { findOrCreateItem } = require('../../utils/sequelize')
@@ -7,11 +6,7 @@ const { getAccessibleObjectsIDs, STREAM } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 
 const streamSourceFileBaseInclude = [
-  {
-    model: Stream,
-    as: 'stream',
-    attributes: Stream.attributes.lite
-  },
+  Stream.include(),
   {
     model: AudioCodec,
     as: 'audio_codec',
@@ -69,12 +64,12 @@ function create (data, opts = {}) {
  * Get a list of stream source files matching the filters
  * @param {string} id
  * @param {*} filters Additional query options
- * @param {moment} filters.start Limit to a start date on or after (iso8601 or epoch)
- * @param {moment} filters.end Limit to a start date before (iso8601 or epoch)
+ * @param {moment} filters.start Limit to a start date on or after
+ * @param {moment} filters.end Limit to a start date before
  * @param {string[]} filters.streamIds Filter by one or more stream identifiers
  * @param {string[]} filters.sha1Checksums Filter by sha1 checksums
  * @param {*} options Additional get options
- * @param {number} options.readableBy Include only if the event is accessible to the given user id
+ * @param {number} options.readableBy Include only if the stream is accessible to the given user id
  * @param {string[]} options.fields Attributes and relations to include in results (defaults to lite attributes)
  * @param {number} options.limit
  * @param {number} options.offset
