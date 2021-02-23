@@ -1,5 +1,14 @@
 # API Deployment Notes
 
+## v1.0.8
+
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210223000000-update-indexes-and-constraints-for-source-files`
+
+## v1.0.7
+
+_None_
+
 ## v1.0.6
 
 - Create rows in `classifier_outputs` for every classifier currently in production
