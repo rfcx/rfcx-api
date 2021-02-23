@@ -1,3 +1,29 @@
+<a name="1.0.8"></a>
+## 1.0.8 (2021-02-XX)
+
+### Features
+* **media:** Use `ffmpeg` instead of `sox` for audio processing ([CS-439](https://jira.rfcx.org/browse/CS-439))
+
+### Bug Fixes
+* **media:** Handle case when one segment overlays another ([CS-439](https://jira.rfcx.org/browse/CS-439))
+* **core:** Refactor stream source file creation endpoint to avoid duplicates ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+### Other
+* **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
+* **core:** Refactor setup script
+* **core:** Update stream_segments and stream_source_files tables to have unique constraint on stream_id and checksum ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+
+## 1.0.7 (2021-02-22)
+
+### Features
+* **core:** Enable clustered annotation query by `is_manual` and `is_positive` ([CE-127](https://jira.rfcx.org/browse/CE-127))
+
+### Bug Fixes
+* **core:** Remove unuse parameters from `event` model
+* **core:** CREATE requests for streams and projects return location header ([CS-237](https://jira.rfcx.org/browse/CS-237))
+
+
 <a name="1.0.6"></a>
 ## 1.0.6 (2021-02-15)
 
@@ -24,7 +50,6 @@
 <a name="1.0.3"></a>
 ## 1.0.3 (2021-02-08)
 
-
 ### Features
 * **core:** add `organizations` and `projects` query into the `/stream` endpoint ([CS-403](https://jira.rfcx.org/browse/CS-403))
 
@@ -32,15 +57,12 @@
 <a name="1.0.2"></a>
 ## 1.0.2 (2021-02-03)
 
-
 ### Features
 * **core:** Detection review from Neo4j is saved in TimescaleDB also ([CS-331](https://jira.rfcx.org/browse/CS-331))
-
 
 ### Bug Fixes
 * **core:** Remove bind({}) from AI creation endpoint
 * **core:** Not implemented endpoints should return 501 instead of 504
-
 
 ### Other
 * **core:** Disable clustered detections endpoint temprary - return 501
@@ -50,12 +72,10 @@
 <a name="1.0.1"></a>
 ## 1.0.1 (2021-02-02)
 
-
 ### Features
 * **core:** use `annotations` instead of `detection_reviews` ([CS-392](https://jira.rfcx.org/browse/CS-392))
 * **core:** update events endpoints to support `systemUser` ([CS-105](https://jira.rfcx.org/browse/CS-105))
 * **core:** update classifier `last_executed_at` when saving detections ([CS-368](https://jira.rfcx.org/browse/CS-368))
-
 
 ### Performance Improvements
 * **core:** drop `id` column on `detections` table ([CS-392](https://jira.rfcx.org/browse/CS-392))
@@ -65,23 +85,17 @@
 <a name="1.0.0"></a>
 ## 1.0.0 (2021-01-30)
 
-
 ### Bug Fixes
-
 * **core:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
 * **media:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
 * **mqtt:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
-
 
 ### Features
-
 * **core:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
 * **media:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
 * **mqtt:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
 
-
 ### Performance Improvements
-
 * **core:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
 * **media:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))
 * **mqtt:** setup release process ([CS-431](https://jira.rfcx.org/browse/CS-431))

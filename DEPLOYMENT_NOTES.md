@@ -4,6 +4,7 @@
 
 - Run `npm run sync-timescale` to apply the following migrations:
   - `20210223000000-update-indexes-and-constraints-for-source-files`
+- Add `MEDIA_CACHE_ENABLED` env var and set it to true
 
 ## v1.0.7
 

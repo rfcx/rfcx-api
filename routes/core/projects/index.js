@@ -30,6 +30,11 @@ const { hasPermission, CREATE, ORGANIZATION, UPDATE, DELETE, READ } = require('.
  *     responses:
  *       201:
  *         description: Created
+ *         headers:
+ *           Location:
+ *             description: Path of the created resource (e.g. `/projects/xyz123`)
+ *             schema:
+ *               type: string
  *         content:
  *           application/json:
  *             schema:
@@ -64,7 +69,7 @@ router.post('/', function (req, res) {
       return projectsService.create(convertedParams, { joinRelations: true })
     })
     .then(projectsService.formatProject)
-    .then(data => res.status(201).json(data))
+    .then(data => res.location(`/projects/${data.id}`).status(201).json(data))
     .catch(httpErrorHandler(req, res, 'Failed creating project'))
 })
 

@@ -1,6 +1,6 @@
 {
   "name": "rfcx-api",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": false,
   "repository": {
     "type": "git",
@@ -14,6 +14,7 @@
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
     "test": "standard && jest",
+    "test-coverage": "jest --coverage",
     "jest": "jest",
     "lint": "standard"
   },
@@ -92,7 +93,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint"
+      "pre-commit": "npm run test"
     }
   }
 }

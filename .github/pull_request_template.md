@@ -4,6 +4,7 @@
 - [ ] API docs updated (_or_ n/a)
 - [ ] Release notes updated (_or_ n/a)
 - [ ] Deployment notes updated (_or_ n/a)
+- [ ] Unit tests added (_or_ n/a)
 - [ ] DB migrations tested (_or_ n/a)
 
 _(use n/a when API docs (Release notes, etc) do not need to be updated)_
