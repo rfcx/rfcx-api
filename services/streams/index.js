@@ -277,16 +277,31 @@ async function refreshStreamMaxSampleRate (stream) {
 }
 
 /**
- * Finds first and last time points of stream segments and updates start and end columns of the stream
+ * Refreshes stream's start and end points based on provided segment or by searching for first and last segments
  * @param {*} stream stream model item
+ * @param {*} segment (optional) stream segment model item
  */
-async function refreshStreamStartEnd (stream) {
-  const where = { stream_id: stream.id }
-  let start = await models.StreamSegment.min('start', { where })
-  let end = await models.StreamSegment.max('end', { where })
-  start = start || null
-  end = end || null
-  return update(stream, { start, end })
+async function refreshStreamStartEnd (stream, segment) {
+  const upd = {}
+  if (segment) {
+    if (segment.start < stream.start || !stream.start) {
+      upd.start = segment.start
+    }
+    if (segment.end > stream.end || !stream.end) {
+      upd.end = segment.end
+    }
+  } else {
+    const where = { stream_id: stream.id }
+    upd.start = await models.StreamSegment.min('start', { where })
+    upd.end = await models.StreamSegment.max('end', { where })
+    if (upd.start === 0) {
+      upd.start = null
+    }
+    if (upd.end === 0) {
+      upd.end = null
+    }
+  }
+  return update(stream, upd)
 }
 
 function ensureStreamExistsForGuardian (dbGuardian) {

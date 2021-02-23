@@ -11,6 +11,9 @@
 * **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
 * **core:** refactor setup script
 
+### Performance Improvements
+* **core:** Do not request min and max segment time for stream on segment creation - get it from segment ([CE-106](https://jira.rfcx.org/browse/CE-106))
+
 
 ## 1.0.7 (2021-02-22)
 
