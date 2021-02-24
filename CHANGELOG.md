@@ -3,6 +3,7 @@
 
 ### Features
 * **media:** Use `ffmpeg` instead of `sox` for audio processing ([CS-439](https://jira.rfcx.org/browse/CS-439))
+* **core:** Add GET /streams/{id}/stream-source-files endpoint ([CE-31](https://jira.rfcx.org/browse/CE-31))
 
 ### Bug Fixes
 * **media:** Handle case when one segment overlays another ([CS-439](https://jira.rfcx.org/browse/CS-439))
