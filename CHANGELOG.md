@@ -1,5 +1,5 @@
 <a name="1.0.8"></a>
-## 1.0.8 (2021-02-XX)
+## 1.0.8 (2021-02-24)
 
 ### Features
 * **media:** Use `ffmpeg` instead of `sox` for audio processing ([CS-439](https://jira.rfcx.org/browse/CS-439))
