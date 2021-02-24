@@ -2,10 +2,17 @@
 ## 1.0.8 (2021-02-XX)
 
 ### Features
-* **core:** Add GET /streams/{id}/stream-source-files endpoint [CE-31](https://jira.rfcx.org/browse/CE-31)
+* **media:** Use `ffmpeg` instead of `sox` for audio processing ([CS-439](https://jira.rfcx.org/browse/CS-439))
+* **core:** Add GET /streams/{id}/stream-source-files endpoint ([CE-31](https://jira.rfcx.org/browse/CE-31))
+
+### Bug Fixes
+* **media:** Handle case when one segment overlays another ([CS-439](https://jira.rfcx.org/browse/CS-439))
+
+### Other
+* **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
+* **core:** refactor setup script
 
 
-<a name="1.0.7"></a>
 ## 1.0.7 (2021-02-22)
 
 ### Features
@@ -48,7 +55,6 @@
 
 <a name="1.0.2"></a>
 ## 1.0.2 (2021-02-03)
-
 
 ### Features
 * **core:** Detection review from Neo4j is saved in TimescaleDB also ([CS-331](https://jira.rfcx.org/browse/CS-331))

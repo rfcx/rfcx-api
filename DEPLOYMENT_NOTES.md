@@ -2,7 +2,7 @@
 
 ## v1.0.8
 
-_None_
+- Add `MEDIA_CACHE_ENABLED` env var and set it to true
 
 ## v1.0.7
 

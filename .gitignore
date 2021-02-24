@@ -43,3 +43,5 @@ bin/mongo/.env
 
 # TimescaleDB-related stuff
 bin/timescaledb/.env
+
+coverage
