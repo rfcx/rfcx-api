@@ -55,7 +55,7 @@ router.post('/:streamId/stream-segments', hasRole(['systemUser']), function (req
       convertedParams.stream_id = streamId
       await streamSegmentService.findOrCreateRelationships(convertedParams)
       const streamSegment = await streamSegmentService.create(convertedParams, { joinRelations: true })
-      await streamsService.refreshStreamStartEnd(stream) // refresh start and end columns of releated stream
+      await streamsService.refreshStreamStartEnd(stream, streamSegment) // refresh start and end columns of releated stream
       await streamSegment.reload() // reload segment model to apply stream model updates
       return res.status(201).json(streamSegmentService.format(streamSegment))
     })
