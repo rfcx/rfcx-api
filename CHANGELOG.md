@@ -1,3 +1,9 @@
+## 1.0.9 (2021-02-25)
+
+### Bug Fixes
+* **core:** On `GET /streams`, when created_by is not set then return all (non-public) accessible sites ([CE-183](https://jira.rfcx.org/browse/CE-183))
+
+
 <a name="1.0.8"></a>
 ## 1.0.8 (2021-02-24)
 
