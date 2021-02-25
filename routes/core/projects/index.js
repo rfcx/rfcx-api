@@ -58,7 +58,7 @@ router.post('/', function (req, res) {
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(async () => {
       if (convertedParams.organization_id) {
-        await organizationsService.getById(convertedParams.organization_id)
+        await organizationsService.get(convertedParams.organization_id)
         const allowed = await hasPermission(CREATE, userId, convertedParams.organization_id, ORGANIZATION)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create project in this organization.')
@@ -179,7 +179,7 @@ router.get('/', (req, res) => {
  *         description: Project not found
  */
 router.get('/:id', hasProjectPermission(READ), (req, res) => {
-  return projectsService.getById(req.params.id, { joinRelations: true })
+  return projectsService.get(req.params.id, { joinRelations: true })
     .then(projectsService.formatProject)
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed getting project'))
@@ -234,10 +234,10 @@ router.patch('/:id', hasProjectPermission(UPDATE), (req, res) => {
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(() => projectsService.getById(projectId, { includeDeleted: convertedParams.restore === true }))
+    .then(() => projectsService.get(projectId, { includeDeleted: convertedParams.restore === true }))
     .then(async project => {
       if (convertedParams.organization_id) {
-        await organizationsService.getById(convertedParams.organization_id)
+        await organizationsService.get(convertedParams.organization_id)
       }
       if (convertedParams.restore === true) {
         await projectsService.restore(project)
@@ -272,7 +272,7 @@ router.patch('/:id', hasProjectPermission(UPDATE), (req, res) => {
  *         description: Project not found
  */
 router.delete('/:id', hasProjectPermission(DELETE), (req, res) => {
-  return projectsService.getById(req.params.id, { joinRelations: true })
+  return projectsService.get(req.params.id, { joinRelations: true })
     .then(projectsService.softDelete)
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting project'))

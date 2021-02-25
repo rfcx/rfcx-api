@@ -97,7 +97,7 @@ router.get('/:streamId/assets', function (req, res) {
   converter.convert('type').optional().toString()
   converter.convert('fields').optional().toArray()
 
-  return streamsService.getById(streamId)
+  return streamsService.get(streamId)
     .then(() => converter.validate())
     .then(params => {
       const { type, fields } = params

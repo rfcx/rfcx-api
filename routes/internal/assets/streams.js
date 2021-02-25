@@ -68,7 +68,7 @@ router.get('/streams/:attrs', async function (req, res) {
   try {
     const attrs = await parseFileNameAttrs(req)
     await checkAttrsValidity(req, attrs)
-    const stream = await streamsService.getById(attrs.streamId)
+    const stream = await streamsService.get(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
     const roles = auth0Service.getUserRolesFromToken(req.user)
     var allowed

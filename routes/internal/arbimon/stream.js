@@ -45,7 +45,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  */
 router.patch('/streams/:externalId', (req, res) => {
   const user = req.rfcx.auth_token_info
-  const streamId = req.params.externalId
+  const externalId = req.params.externalId
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('name').optional().toString()
@@ -56,14 +56,14 @@ router.patch('/streams/:externalId', (req, res) => {
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(() => streamsService.getByExternalId(streamId))
+    .then(() => streamsService.get({ external_id: externalId }))
     .then(async stream => {
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, stream, rolesService.STREAM)
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
       if (convertedParams.project_external_id) {
-        const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
+        const externalProject = await projectsService.get({ external_id: convertedParams.project_external_id })
         const allowed = await rolesService.hasPermission(rolesService.CREATE, req.rfcx.auth_token_info, externalProject.id, rolesService.PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to add stream into this project.')
@@ -102,7 +102,7 @@ router.patch('/streams/:externalId', (req, res) => {
 router.delete('/streams/:externalId', async (req, res) => {
   try {
     await usersFusedService.ensureUserSyncedFromToken(req)
-    const stream = await streamsService.getByExternalId(req.params.externalId, { joinRelations: true })
+    const stream = await streamsService.get({ external_id: req.params.externalId })
     const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to delete this stream.')

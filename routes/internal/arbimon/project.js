@@ -53,7 +53,7 @@ router.patch('/projects/:externalId', (req, res) => {
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(() => projectsService.getByExternalId(projectId))
+    .then(() => projectsService.get({ external_id: projectId }))
     .then(async project => {
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, project, rolesService.PROJECT)
       if (!allowed) {

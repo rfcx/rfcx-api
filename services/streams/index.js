@@ -1,62 +1,43 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
+const { Stream, Project, Organization, User, StreamSegment, StreamSourceFile, Sequelize } = require('../../modelsTimescale')
+const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const rolesService = require('../roles')
+const projectsService = require('../projects')
+const { getAccessibleObjectsIDs, hasPermission, STREAM, READ } = require('../roles')
+const pagedQuery = require('../../utils/db/paged-query')
 
-const streamBaseInclude = [
-  {
-    model: models.User,
-    as: 'created_by',
-    attributes: models.User.attributes.lite
-  },
-  {
-    model: models.Project,
-    as: 'project',
-    attributes: models.Project.attributes.lite
-  }
+const availableIncludes = [
+  User.include('created_by'),
+  Project.include()
 ]
 
 /**
- * Searches for stream model with given params
- * @param {object} params
- * @param {*} opts additional function params
- * @returns {*} stream model item
+ * Get a single stream by id or where clause
+ * @param {string|object} idOrWhere id or where condition
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if organization is accessible to the given user id
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to all)
+ * @returns {Stream} stream model item
+ * @throws EmptyResultError when organization not found
+ * @throws ForbiddenError when `readableBy` user does not have read permission on the organization
  */
-function getByParams (where, opts = {}) {
-  return models.Stream
-    .findOne({
-      where,
-      attributes: models.Stream.attributes.full,
-      include: opts && opts.joinRelations ? streamBaseInclude : [],
-      paranoid: !opts.includeDeleted
-    })
-    .then(item => {
-      if (!item) {
-        throw new EmptyResultError('Stream with given id not found.')
-      }
-      return item
-    })
-}
+async function get (idOrWhere, options = {}) {
+  const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
+  const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.full
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
 
-/**
- * Searches for stream model with given id
- * @param {string} id
- * @param {*} opts additional function params
- * @returns {*} stream model item
- */
-function getById (id, opts = {}) {
-  return getByParams({ id }, opts)
-}
+  const stream = await Stream.findOne({ where, attributes, include, paranoid: false })
 
-/**
- * Searches for stream model with given external_id
- * @param {string} id external stream id
- * @param {*} opts additional function params
- * @returns {*} stream model item
- */
-function getByExternalId (id, opts = {}) {
-  return getByParams({ external_id: id }, opts)
+  if (!stream) {
+    throw new EmptyResultError('Stream not found')
+  }
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, stream.id, STREAM))) {
+    throw new ForbiddenError()
+  }
+  return stream
 }
 
 /**
@@ -70,9 +51,9 @@ function create (data, opts = {}) {
     throw new ValidationError('Cannot create stream with empty object.')
   }
   const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id } = data // eslint-disable-line camelcase
-  return models.Stream
+  return Stream
     .create({ id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id })
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
+    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
       throw new ValidationError('Cannot create stream with provided data.')
@@ -198,7 +179,7 @@ function update (stream, data, opts = {}) {
   })
   return stream
     .save()
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
+    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
     .catch((e) => {
       console.error('Streams service -> update -> error', e)
       throw new ValidationError('Cannot update stream with provided data.')
@@ -218,7 +199,7 @@ function softDelete (stream) {
 }
 
 /**
- * Restored deleted stream
+ * Restore deleted stream
  * @param {*} stream stream model item
  */
 function restore (stream) {
@@ -271,7 +252,7 @@ function formatStreams (data) {
  */
 async function refreshStreamMaxSampleRate (stream) {
   const where = { stream_id: stream.id }
-  let max_sample_rate = await models.StreamSourceFile.max('sample_rate', { where }) // eslint-disable-line camelcase
+  let max_sample_rate = await StreamSourceFile.max('sample_rate', { where }) // eslint-disable-line camelcase
   max_sample_rate = max_sample_rate || null // eslint-disable-line camelcase
   return update(stream, { max_sample_rate })
 }
@@ -292,8 +273,8 @@ async function refreshStreamStartEnd (stream, segment) {
     }
   } else {
     const where = { stream_id: stream.id }
-    upd.start = await models.StreamSegment.min('start', { where })
-    upd.end = await models.StreamSegment.max('end', { where })
+    upd.start = await StreamSegment.min('start', { where })
+    upd.end = await StreamSegment.max('end', { where })
     if (upd.start === 0) {
       upd.start = null
     }
@@ -304,6 +285,7 @@ async function refreshStreamStartEnd (stream, segment) {
   return update(stream, upd)
 }
 
+// TODO - move to guardian-related area (not part of Core)
 function ensureStreamExistsForGuardian (dbGuardian) {
   const where = {
     id: dbGuardian.guid
@@ -315,16 +297,14 @@ function ensureStreamExistsForGuardian (dbGuardian) {
     ...dbGuardian.longitude && { longitude: dbGuardian.longitude },
     created_by_id: dbGuardian.creator ? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
   }
-  return models.Stream.findOrCreate({ where, defaults })
+  return Stream.findOrCreate({ where, defaults })
     .spread((dbStream) => {
       return dbStream
     })
 }
 
 async function getPublicStreamIds () {
-  return (await query({
-    is_public: true
-  })).streams.map(d => d.id)
+  return (await query({ is_public: true })).streams.map(d => d.id)
 }
 
 /**
@@ -357,9 +337,7 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
 }
 
 module.exports = {
-  getByParams,
-  getById,
-  getByExternalId,
+  get,
   create,
   query,
   update,

@@ -369,7 +369,7 @@ router.route('/:guid')
       })
       .then(async (guardian) => {
         try {
-          const stream = await streamsService.getById(guardian.guid)
+          const stream = await streamsService.get(guardian.guid)
           if (stream) {
             await streamsService.update(stream, {
               name: guardian.shortname

@@ -25,7 +25,7 @@ const streamSourceFileBaseInclude = [
  * @param {*} opts additional function params
  * @returns {*} source file model item
  */
-function getById (id, opts = {}) {
+function get (id, opts = {}) {
   return StreamSourceFile
     .findOne({
       where: { id },
@@ -196,7 +196,7 @@ function format (streamSourceFile) {
 }
 
 module.exports = {
-  getById,
+  get,
   create,
   query,
   remove,

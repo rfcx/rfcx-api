@@ -62,14 +62,14 @@ router.post('/', function (req, res) {
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(async () => {
       if (convertedParams.project_id) {
-        await projectsService.getById(convertedParams.project_id)
+        await projectsService.get(convertedParams.project_id)
         const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, convertedParams.project_id, PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
       }
       if (convertedParams.project_external_id) {
-        const externalProject = await projectsService.getByExternalId(convertedParams.project_external_id)
+        const externalProject = await projectsService.get({ external_id: convertedParams.project_external_id })
         const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, externalProject.id, PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
@@ -214,7 +214,7 @@ router.get('/', (req, res) => {
  *         description: Stream not found
  */
 router.get('/:id', (req, res) => {
-  return streamsService.getById(req.params.id, { joinRelations: true })
+  return streamsService.get(req.params.id)
     .then(async stream => {
       const permissions = await getPermissions(req.rfcx.auth_token_info, stream, STREAM)
       if (!permissions.includes(READ)) {
@@ -276,7 +276,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
+    .then(() => streamsService.get(streamId))
     .then(async stream => {
       if (convertedParams.restore === true) {
         await streamsService.restore(stream)
@@ -311,7 +311,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
  *         description: Stream not found
  */
 router.delete('/:id', hasStreamPermission('D'), (req, res) => {
-  return streamsService.getById(req.params.id, { joinRelations: true })
+  return streamsService.get(req.params.id)
     .then(streamsService.softDelete)
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'))

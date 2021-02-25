@@ -1,61 +1,35 @@
-const models = require('../../modelsTimescale')
-const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
-const rolesService = require('../roles')
+const { Stream, Project, User, Organization, Sequelize } = require('../../modelsTimescale')
+const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
+const { hasPermission, getAccessibleObjectsIDs, PROJECT, READ } = require('../roles')
 
-const baseInclude = [
-  {
-    model: models.User,
-    as: 'created_by',
-    attributes: models.User.attributes.lite
-  },
-  {
-    model: models.Organization,
-    as: 'organization',
-    attributes: models.Organization.attributes.lite
-  }
+const availableIncludes = [
+  User.include('created_by'), Organization.include()
 ]
 
 /**
- * Searches for project model with given params
- * @param {object} where
- * @param {*} opts additional function params
- * @returns {*} project model item
+ * Get a single project by id or where clause
+ * @param {string|object} idOrWhere
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if project is accessible to the given user id
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to all)
+ * @returns {Project} project model item
+ * @throws EmptyResultError when project not found
+ * @throws ForbiddenError when `readableBy` user does not have read permission on the project
  */
-function getByParams (where, opts = {}) {
-  return models.Project
-    .findOne({
-      where,
-      attributes: models.Project.attributes.full,
-      include: opts && opts.joinRelations ? baseInclude : [],
-      paranoid: !opts.includeDeleted
-    })
-    .then(item => {
-      if (!item) {
-        throw new EmptyResultError('Project with given params not found.')
-      }
-      return item
-    })
-}
+async function get (idOrWhere, options = {}) {
+  const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
+  const attributes = options.fields && options.fields.length > 0 ? Project.attributes.full.filter(a => options.fields.includes(a)) : Project.attributes.full
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
 
-/**
- * Searches for project model with given id
- * @param {string} id
- * @param {*} opts additional function params
- * @returns {*} project model item
- */
-function getById (id, opts = {}) {
-  return getByParams({ id }, opts)
-}
+  const project = await Project.findOne({ where, attributes, include, paranoid: false })
 
-/**
- * Searches for project model with given external id
- * @param {string} id
- * @param {*} opts additional function params
- * @returns {*} project model item
- */
-function getByExternalId (id, opts = {}) {
-  return getByParams({ external_id: id }, opts)
+  if (!project) {
+    throw new EmptyResultError('Project not found')
+  }
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, project.id, PROJECT))) {
+    throw new ForbiddenError()
+  }
+  return project
 }
 
 /**
@@ -69,9 +43,9 @@ function create (data, opts = {}) {
     throw new ValidationError('Cannot create project with empty object.')
   }
   const { id, name, description, is_public, organization_id, created_by_id, external_id } = data // eslint-disable-line camelcase
-  return models.Project
+  return Project
     .create({ id, name, description, is_public, organization_id, created_by_id, external_id })
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: baseInclude }) : item })
+    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
     .catch((e) => {
       console.error('Projects service -> create -> error', e)
       throw new ValidationError('Cannot create project with provided data.')
@@ -87,7 +61,7 @@ async function query (attrs, opts = {}) {
   const where = {}
   if (attrs.keyword) {
     where.name = {
-      [models.Sequelize.Op.iLike]: `%${attrs.keyword}%`
+      [Sequelize.Op.iLike]: `%${attrs.keyword}%`
     }
   }
 
@@ -103,25 +77,25 @@ async function query (attrs, opts = {}) {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
     if (!attrs.current_user_is_super) {
-      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, rolesService.PROJECT)
+      const ids = await getAccessibleObjectsIDs(attrs.current_user_id, PROJECT)
       where.id = {
-        [models.Sequelize.Op.in]: ids
+        [Sequelize.Op.in]: ids
       }
     }
   } else if (attrs.current_user_id !== undefined) {
-    where[models.Sequelize.Op.or] = [{
-      [models.Sequelize.Op.and]: {
+    where[Sequelize.Op.or] = [{
+      [Sequelize.Op.and]: {
         created_by_id: attrs.current_user_id,
         ...attrs.is_public !== undefined && { is_public: attrs.is_public }
       }
     }]
     if (attrs.is_public !== false) {
-      where[models.Sequelize.Op.or].push(
+      where[Sequelize.Op.or].push(
         {
-          [models.Sequelize.Op.and]: {
+          [Sequelize.Op.and]: {
             is_public: true,
             created_by_id: {
-              [models.Sequelize.Op.ne]: attrs.current_user_id
+              [Sequelize.Op.ne]: attrs.current_user_id
             }
           }
         }
@@ -132,23 +106,23 @@ async function query (attrs, opts = {}) {
   if (attrs.is_deleted === true) { // user can get only personal deleted projects
     where.created_by_id = attrs.current_user_id
     where.deleted_at = {
-      [models.Sequelize.Op.ne]: null
+      [Sequelize.Op.ne]: null
     }
   }
 
   if (attrs.organization_id) {
     where.organization_id = {
-      [models.Sequelize.Op.in]: attrs.organization_id
+      [Sequelize.Op.in]: attrs.organization_id
     }
   }
 
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
-  return models.Project[method]({
+  return Project[method]({
     where,
     limit: attrs.limit,
     offset: attrs.offset,
-    attributes: opts.attributes || models.Project.attributes.lite,
-    include: opts.joinRelations ? baseInclude : [],
+    attributes: opts.attributes || Project.attributes.lite,
+    include: opts.joinRelations ? availableIncludes : [],
     paranoid: attrs.is_deleted !== true
   })
     .then((data) => {
@@ -174,7 +148,7 @@ function update (project, data, opts = {}) {
   })
   return project
     .save()
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: baseInclude }) : item })
+    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
     .catch((e) => {
       console.error('Projects service -> update -> error', e)
       throw new ValidationError('Cannot update project with provided data.')
@@ -211,7 +185,7 @@ function restore (project) {
  * @returns {object | null} object with latitude and longitude or null
  */
 function getProjectLocation (id) {
-  return models.Stream.findOne({
+  return Stream.findOne({
     where: {
       project_id: id
     },
@@ -246,8 +220,7 @@ function formatProjects (data) {
 }
 
 module.exports = {
-  getById,
-  getByExternalId,
+  get,
   create,
   query,
   update,
