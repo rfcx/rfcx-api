@@ -110,30 +110,17 @@ async function query (attrs, opts = {}) {
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
-    if (!attrs.current_user_is_super) {
+    where.created_by_id = { [models.Sequelize.Op.not]: attrs.current_user_id }
+  }
+
+  if (!attrs.current_user_is_super) {
+    if (attrs.is_public === true) {
+      where.is_public = true
+    } else {
       const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, rolesService.STREAM)
       where.id = {
         [models.Sequelize.Op.in]: ids
       }
-    }
-  } else if (attrs.current_user_id !== undefined) {
-    where[models.Sequelize.Op.or] = [{
-      [models.Sequelize.Op.and]: {
-        created_by_id: attrs.current_user_id,
-        ...attrs.is_public !== undefined && { is_public: attrs.is_public }
-      }
-    }]
-    if (attrs.is_public !== false) {
-      where[models.Sequelize.Op.or].push(
-        {
-          [models.Sequelize.Op.and]: {
-            is_public: true,
-            created_by_id: {
-              [models.Sequelize.Op.ne]: attrs.current_user_id
-            }
-          }
-        }
-      )
     }
   }
 
