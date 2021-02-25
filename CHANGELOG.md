@@ -1,3 +1,9 @@
+## 1.0.10 (2021-02-25)
+
+### Bug Fixes
+* **media:** Output single channel audio
+
+
 ## 1.0.9 (2021-02-25)
 
 ### Bug Fixes

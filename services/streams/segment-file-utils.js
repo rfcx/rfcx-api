@@ -259,7 +259,7 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   if (attrs.gain !== undefined && parseFloat(attrs.gain) !== 1) {
     command += `,volume=${attrs.gain}`
   }
-  command += `" -y -vn ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"
+  command += `" -y -vn -ac 1 ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"; -ac 1 - single audio channel
   return runExec(command)
 }
 
