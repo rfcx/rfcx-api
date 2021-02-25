@@ -3,10 +3,11 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const streamsService = require('../../../services/streams')
 const projectsService = require('../../../services/projects')
-const usersFusedService = require('../../../services/users/fused')
+const usersService = require('../../../services/users/fused')
 const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const { Stream } = require('../../../modelsTimescale')
 const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
 
 /**
@@ -59,7 +60,7 @@ router.post('/', function (req, res) {
   params.convert('project_external_id').optional().toInt()
 
   return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
+    .then(() => usersService.ensureUserSyncedFromToken(req))
     .then(async () => {
       if (convertedParams.project_id) {
         await projectsService.get(convertedParams.project_id)
@@ -94,42 +95,40 @@ router.post('/', function (req, res) {
  *     tags:
  *       - streams
  *     parameters:
- *       - name: organizations
- *         description: List of organization ids
- *         in: query
- *         type: array
- *       - name: projects
- *         description: List of project ids
- *         in: query
- *         type: array
- *       - name: is_public
- *         description: Return public or private streams
- *         in: query
- *         type: boolean
- *       - name: is_deleted
- *         description: Return only your deleted streams
- *         in: query
- *         type: string
- *       - name: created_by
- *         description: Returns different set of streams based on who has created it
- *         in: query
- *         schema:
- *           type: string
- *           enum:
- *             - me
- *             - collaborators
- *       - name: start
- *         description: Limit to a start date on or after (iso8601 or epoch)
- *         in: query
- *         type: string
- *       - name: end
- *         description: Limit to a start date before (iso8601 or epoch)
- *         in: query
- *         type: string
  *       - name: keyword
  *         description: Match streams with name
  *         in: query
  *         type: string
+ *       - name: organizations
+ *         description: Match streams belonging to one or more organizations (by id)
+ *         in: query
+ *         type: array
+ *       - name: projects
+ *         description: Match streams belonging to one or more projects (by id)
+ *         in: query
+ *         type: array
+ *       - name: created_by
+ *         description: Match streams based on creator (can be `me` or a user guid)
+ *         in: query
+ *         type: string
+ *       - name: start
+ *         description: Match streams starting after (iso8601 or epoch)
+ *         in: query
+ *         type: string
+ *       - name: end
+ *         description: Match streams starting before (iso8601 or epoch)
+ *         in: query
+ *         type: string
+ *       - name: only_public
+ *         description: Include public streams only
+ *         in: query
+ *         type: boolean
+ *         default: false
+ *       - name: only_deleted
+ *         description: Include deleted streams only
+ *         in: query
+ *         type: boolean
+ *         default: false
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -140,6 +139,10 @@ router.post('/', function (req, res) {
  *         in: query
  *         type: int
  *         default: 0
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: List of streams objects
@@ -158,31 +161,43 @@ router.post('/', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  const user = req.rfcx.auth_token_info
-  const convertedParams = {}
-  const params = new Converter(req.query, convertedParams)
-  params.convert('organizations').optional().toArray()
-  params.convert('projects').optional().toArray()
-  params.convert('is_public').optional().toBoolean()
-  params.convert('is_deleted').optional().toBoolean()
-  params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
-  params.convert('start').optional().toMomentUtc()
-  params.convert('end').optional().toMomentUtc()
-  params.convert('keyword').optional().toString()
-  params.convert('limit').optional().toInt().default(100)
-  params.convert('offset').optional().toInt().default(0)
+  const readableBy = req.rfcx.auth_token_info.owner_id
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('keyword').optional().toString()
+  converter.convert('organizations').optional().toArray()
+  converter.convert('projects').optional().toArray()
+  converter.convert('start').optional().toMomentUtc()
+  converter.convert('end').optional().toMomentUtc()
+  converter.convert('created_by').optional().toString()
+  converter.convert('only_public').optional().toBoolean()
+  converter.convert('only_deleted').optional().toBoolean()
+  converter.convert('limit').default(100).toInt()
+  converter.convert('offset').default(0).toInt()
+  converter.convert('fields').optional().toArray()
 
-  return params.validate()
-    .then(async () => {
-      convertedParams.current_user_id = user.owner_id
-      convertedParams.current_user_is_super = user.is_super
-
-      const streamsData = await streamsService.query(convertedParams, { joinRelations: true })
-      const streams = streamsData.streams.map(x => streamsService.formatStream(x, null))
-
-      return res
-        .header('Total-Items', streamsData.count)
-        .json(streams)
+  return converter.validate()
+    .then(async params => {
+      const { keyword, organizations, projects, start, end, onlyPublic, onlyDeleted, limit, offset, fields } = params
+      let createdBy = params.createdBy
+      if (createdBy === 'me') {
+        createdBy = readableBy
+      } else if (createdBy) {
+        createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
+      }
+      const filters = { keyword, organizations, projects, start, end, createdBy }
+      const options = {
+        readableBy,
+        onlyPublic,
+        onlyDeleted,
+        limit,
+        offset,
+        // TODO remove this hack after fixing apps are using non-lite attributes
+        fields: fields !== undefined
+          ? fields
+          : [...Stream.attributes.full, 'created_by', 'project', 'permissions']
+      }
+      const streamsData = await streamsService.query(filters, options)
+      return res.header('Total-Items', streamsData.total).json(streamsData.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting streams'))
 })
@@ -275,7 +290,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
+    .then(() => usersService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.get(streamId))
     .then(async stream => {
       if (convertedParams.restore === true) {

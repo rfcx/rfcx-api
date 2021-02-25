@@ -1,5 +1,7 @@
 # API Deployment Notes
 
+- Expect some errors from Explorer due to removal of `is_deleted`, `is_public`, and `created_by=collaborators` on `GET /streams`
+
 ## v1.0.8
 
 - Add `MEDIA_CACHE_ENABLED` env var and set it to true

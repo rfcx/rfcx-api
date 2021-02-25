@@ -1,17 +1,13 @@
-const models = require('../../modelsTimescale')
-const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
 const { Stream, Project, Organization, User, StreamSegment, StreamSourceFile, Sequelize } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
-const rolesService = require('../roles')
 const projectsService = require('../projects')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, READ } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 
 const availableIncludes = [
   User.include('created_by'),
-  Project.include()
+  Project.include('project', Project.attributes.lite, false)
 ]
 
 /**
@@ -61,107 +57,95 @@ function create (data, opts = {}) {
 }
 
 /**
- * Returns list of streams with total number filtered by specified attributes
- * @param {*} attrs stream attributes
- * @param {*} opts additional function params
+ * Get a list of streams matching the filters
+ * @param {*} filters Stream attributes
+ * @param {string} filters.keyword Where keyword is found (in the stream name)
+ * @param {string[]} filters.projects Where belongs to one of the projects (array of project ids)
+ * @param {string[]} filters.organizations Where belongs to one of the organizations (array of organization ids)
+ * @param {string|number} filters.start Having audio (segments) after start (iso or unix)
+ * @param {string|number} filters.end Having audio (segments) before end (iso or unix)
+ * @param {number} filters.createdBy Where created by the given user id
+ * @param {*} options Query options
+ * @param {number} options.readableBy Include only streams readable by the given user id
+ * @param {boolean} options.onlyPublic Include only public streams
+ * @param {boolean} options.onlyDeleted Include only deleted streams
+ * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {number} options.limit Maximum results to include
+ * @param {number} options.offset Number of results to skip
  */
-async function query (attrs, opts = {}) {
+async function query (filters, options = {}) {
   const where = {}
-  if (attrs.start !== undefined) {
-    where.start = {
-      [models.Sequelize.Op.gte]: attrs.start
-    }
-  }
-  if (attrs.end !== undefined) {
-    where.end = {
-      [models.Sequelize.Op.lt]: attrs.end
-    }
-  }
 
-  if (attrs.keyword) {
+  // Filters (restrict results - can use multiple filters safely)
+  if (filters.keyword) {
     where.name = {
-      [models.Sequelize.Op.iLike]: `%${attrs.keyword}%`
+      [Sequelize.Op.iLike]: `%${filters.keyword}%`
     }
   }
-
-  if (attrs.is_public !== undefined) {
-    where.is_public = attrs.is_public
-  }
-
-  if (attrs.created_by === 'me') {
-    where.created_by_id = attrs.current_user_id
-  } else if (attrs.created_by === 'collaborators') {
-    if (!attrs.current_user_is_super) {
-      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, rolesService.STREAM)
-      where.id = {
-        [models.Sequelize.Op.in]: ids
-      }
-    }
-  } else if (attrs.current_user_id !== undefined) {
-    where[models.Sequelize.Op.or] = [{
-      [models.Sequelize.Op.and]: {
-        created_by_id: attrs.current_user_id,
-        ...attrs.is_public !== undefined && { is_public: attrs.is_public }
-      }
-    }]
-    if (attrs.is_public !== false) {
-      where[models.Sequelize.Op.or].push(
-        {
-          [models.Sequelize.Op.and]: {
-            is_public: true,
-            created_by_id: {
-              [models.Sequelize.Op.ne]: attrs.current_user_id
-            }
-          }
-        }
-      )
-    }
-  }
-
-  if (attrs.is_deleted === true) { // user can get only personal deleted streams
-    where.created_by_id = attrs.current_user_id
-    where.deleted_at = {
-      [models.Sequelize.Op.ne]: null
-    }
-  }
-
-  if (attrs.projects) {
+  if (filters.organizations) {
+    const projectIds = await projectsService.query({ organizations: filters.organizations }, { fields: ['id'] })
     where.project_id = {
-      [models.Sequelize.Op.in]: attrs.projects
+      [Sequelize.Op.in]: projectIds
     }
   }
-
-  let streamInclude = streamBaseInclude
-  if (attrs.organizations) {
-    const projectInclude = {
-      model: models.Project,
-      as: 'project',
-      attributes: models.Project.attributes.lite,
-      where: {
-        organization_id: {
-          [models.Sequelize.Op.in]: attrs.organizations
-        }
-      }
+  if (filters.projects) {
+    where.project_id = {
+      [Sequelize.Op.in]: filters.projects
     }
-    streamInclude = [streamBaseInclude.find(i => i.as === 'created_by'), projectInclude]
-    opts.joinRelations = true
+  }
+  if (filters.start) {
+    where.start = {
+      [Sequelize.Op.gte]: filters.start
+    }
+  }
+  if (filters.end) {
+    where.end = {
+      [Sequelize.Op.lt]: filters.end
+    }
+  }
+  if (filters.createdBy) {
+    where.created_by_id = filters.createdBy
   }
 
-  const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
-  return models.Stream[method]({
+  // Options (change behaviour - mix with care)
+  if (options.readableBy) {
+    where.id = {
+      [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, STREAM)
+    }
+  }
+  if (options.onlyPublic) {
+    where.is_public = true
+  }
+  if (options.onlyDeleted) {
+    where.deleted_at = {
+      [Sequelize.Op.ne]: null
+    }
+  }
+  const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+
+  const streamsData = await pagedQuery(Stream, {
     where,
-    limit: attrs.limit,
-    offset: attrs.offset,
-    attributes: models.Stream.attributes.full,
-    include: opts.joinRelations ? streamInclude : [],
-    paranoid: attrs.is_deleted !== true
+    attributes,
+    include,
+    limit: options.limit,
+    offset: options.offset,
+    paranoid: options.onlyDeleted !== true
   })
-    .then((data) => {
-      return {
-        count: method === 'findAndCountAll' ? data.count : data.length,
-        streams: method === 'findAndCountAll' ? data.rows : data
+
+  // TODO move country into the table and perform lookup once on create/update
+  // TODO avoid language-specific data in results (return country code instead of name)
+  streamsData.results = streamsData.results.map(stream => {
+    if (stream.latitude && stream.longitude) {
+      const country = crg.get_country(stream.latitude, stream.longitude)
+      if (country) {
+        return { ...stream.toJSON(), country_name: country.name } // eslint-disable-line camelcase
       }
-    })
+    }
+    return stream
+  })
+
+  return streamsData
 }
 
 /**
@@ -285,7 +269,7 @@ async function refreshStreamStartEnd (stream, segment) {
   return update(stream, upd)
 }
 
-// TODO - move to guardian-related area (not part of Core)
+// TODO move to guardian-related area (not part of Core)
 function ensureStreamExistsForGuardian (dbGuardian) {
   const where = {
     id: dbGuardian.guid
