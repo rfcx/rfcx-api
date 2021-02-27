@@ -8,6 +8,10 @@ const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
+const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
+if (ARBIMON_ENABLED) {
+  var arbimonService = require('../../../services/arbimon')
+}
 
 /**
  * @swagger
@@ -262,30 +266,33 @@ router.get('/:id', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.patch('/:id', hasStreamPermission('U'), (req, res) => {
+router.patch('/:id', hasStreamPermission('U'), async (req, res) => {
   const streamId = req.params.id
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('name').optional().toString()
-  params.convert('description').optional().toString()
-  params.convert('is_public').optional().toBoolean()
-  params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
-  params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
-  params.convert('altitude').optional().toFloat()
-  params.convert('restore').optional().toBoolean()
+  const converter = new Converter(req.body, {})
+  converter.convert('name').optional().toString()
+  converter.convert('description').optional().toString()
+  converter.convert('is_public').optional().toBoolean()
+  converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
+  converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  converter.convert('altitude').optional().toFloat()
+  converter.convert('restore').optional().toBoolean()
 
-  return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(() => streamsService.getById(streamId, { includeDeleted: convertedParams.restore === true }))
-    .then(async stream => {
-      if (convertedParams.restore === true) {
-        await streamsService.restore(stream)
-      }
-      return streamsService.update(stream, convertedParams, { joinRelations: true })
-    })
-    .then(streamsService.formatStream)
-    .then(json => res.json(json))
-    .catch(httpErrorHandler(req, res, 'Failed updating stream'))
+  try {
+    const params = await converter.validate()
+    await usersFusedService.ensureUserSyncedFromToken(req)
+    const stream = await streamsService.getById(streamId, { includeDeleted: params.restore === true })
+    if (params.restore === true) {
+      await streamsService.restore(stream)
+    }
+    const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
+    if (ARBIMON_ENABLED) {
+      const idToken = req.headers.authorization
+      arbimonService.updateSite(updatedStream.toJSON(), idToken) // do not use await to avoid errors for missing sites
+    }
+    res.json(streamsService.formatStream(updatedStream))
+  } catch (e) {
+    httpErrorHandler(req, res, 'Failed updating stream')(e)
+  }
 })
 
 /**
