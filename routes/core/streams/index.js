@@ -122,6 +122,10 @@ router.post('/', function (req, res) {
  *           enum:
  *             - me
  *             - collaborators
+ *       - name: updated_after
+ *         description: Only return streams that were updated since/after (iso8601 or epoch)
+ *         in: query
+ *         type: string
  *       - name: start
  *         description: Limit to a start date on or after (iso8601 or epoch)
  *         in: query
