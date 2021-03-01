@@ -137,6 +137,12 @@ async function query (attrs, opts = {}) {
     }
   }
 
+  if (attrs.updated_after) {
+    where.updated_at = {
+      [models.Sequelize.Op.gte]: attrs.updated_after
+    }
+  }
+
   let streamInclude = streamBaseInclude
   if (attrs.organizations) {
     const projectInclude = {

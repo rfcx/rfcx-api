@@ -122,6 +122,10 @@ router.post('/', function (req, res) {
  *           enum:
  *             - me
  *             - collaborators
+ *       - name: updated_after
+ *         description: Only return streams that were updated since/after (iso8601 or epoch)
+ *         in: query
+ *         type: string
  *       - name: start
  *         description: Limit to a start date on or after (iso8601 or epoch)
  *         in: query
@@ -170,6 +174,7 @@ router.get('/', (req, res) => {
   params.convert('is_public').optional().toBoolean()
   params.convert('is_deleted').optional().toBoolean()
   params.convert('created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
+  params.convert('updated_after').optional().toMomentUtc()
   params.convert('start').optional().toMomentUtc()
   params.convert('end').optional().toMomentUtc()
   params.convert('keyword').optional().toString()

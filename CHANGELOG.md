@@ -1,3 +1,9 @@
+## 1.0.12 (2021-02-28)
+
+### Features
+* **core:** Filter streams by `updated_after`
+
+
 ## 1.0.11 (2021-02-27)
 
 ### Features
