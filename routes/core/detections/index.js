@@ -20,11 +20,13 @@ const { ForbiddenError } = require('../../../utils/errors')
  *         in: query
  *         required: true
  *         type: string
+ *         example: 2020-01-01T00:00:00.000Z
  *       - name: end
  *         description: Limit to a start date before (iso8601 or epoch)
  *         in: query
  *         required: true
  *         type: string
+ *         example: 2020-12-31T00:00:00.000Z
  *       - name: streams
  *         description: List of stream ids to limit results
  *         in: query
@@ -33,6 +35,11 @@ const { ForbiddenError } = require('../../../utils/errors')
  *         description: List of clasification values
  *         in: query
  *         type: array|string
+ *       - name: min_confidence
+ *         description: Return results above a minimum confidence
+ *         in: query
+ *         type: float
+ *         example: 0.95
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
