@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const detectionsService = require('../../../services/detections')
-const models = require('../../../modelsTimescale')
 const roleService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const { ForbiddenError } = require('../../../utils/errors')
@@ -11,7 +10,7 @@ const { ForbiddenError } = require('../../../utils/errors')
  *
  * /detections:
  *   get:
- *     summary: Get list of detections (not yet implemented)
+ *     summary: Get list of detections
  *     description:
  *     tags:
  *       - detections
