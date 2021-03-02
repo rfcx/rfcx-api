@@ -1,7 +1,13 @@
-## 1.0.12 (2021-03-02)
+## 1.0.13 (2021-03-02)
 
 ### Features
 * **core:** Implement GET /detections with required `start` and `end` query and optional `streams`, `classifications`, `min_confidence`, `limit`, and `offset` ([CE-161](https://jira.rfcx.org/browse/CE-161))
+
+
+## 1.0.12 (2021-02-28)
+
+### Features
+* **core:** Filter streams by `updated_after`
 
 
 ## 1.0.11 (2021-02-27)
