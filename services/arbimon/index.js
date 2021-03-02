@@ -2,6 +2,8 @@ const rp = require('request-promise')
 const arbimonBaseUrl = process.env.ARBIMON_BASE_URL
 const { rpErrorMatcher } = require('../../utils/http-error-handler')
 
+const isEnabled = `${process.env.ARBIMON_ENABLED}` === 'true'
+
 function createProject (project, idToken) {
   const body = {};
   ['name', 'description'].forEach((attr) => { body[attr] = project[attr] })
@@ -74,6 +76,7 @@ function deleteSite (id, idToken) {
 }
 
 module.exports = {
+  isEnabled,
   createProject,
   createSite,
   updateSite,

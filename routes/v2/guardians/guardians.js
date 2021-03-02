@@ -13,10 +13,7 @@ const guardiansService = require('../../../services/guardians/guardians-service'
 const sitesService = require('../../../services/sites/sites-service')
 const streamsService = require('../../../services/streams')
 var Converter = require('../../../utils/converter/converter')
-const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
-if (ARBIMON_ENABLED) {
-  var arbimonService = require('../../../services/arbimon')
-}
+const arbimonService = require('../../../services/arbimon')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -106,7 +103,7 @@ router.route('/register')
       // Create stream
       const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
 
-      if (ARBIMON_ENABLED) {
+      if (arbimonService.isEnabled) {
         const idToken = req.headers.authorization
         const arbimonSiteData = {
           name: dbGuardian.shortname,

@@ -8,10 +8,7 @@ const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
-const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
-if (ARBIMON_ENABLED) {
-  var arbimonService = require('../../../services/arbimon')
-}
+const arbimonService = require('../../../services/arbimon')
 
 /**
  * @swagger
@@ -85,7 +82,7 @@ router.post('/', async (req, res) => {
     }
 
     stream = await streamsService.create(params, { joinRelations: true })
-    if (ARBIMON_ENABLED && source !== 'arbimon') {
+    if (arbimonService.isEnabled && source !== 'arbimon') {
       const idToken = req.headers.authorization
       var arbimonSite = await arbimonService.createSite(stream.toJSON(), idToken)
       stream = await streamsService.update(stream, { external_id: arbimonSite.site_id }, { joinRelations: true })
@@ -301,7 +298,7 @@ router.patch('/:id', hasStreamPermission('U'), async (req, res) => {
       await streamsService.restore(stream)
     }
     const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
-    if (ARBIMON_ENABLED && source !== 'arbimon') {
+    if (arbimonService.isEnabled && source !== 'arbimon') {
       const idToken = req.headers.authorization
       arbimonService.updateSite(updatedStream.toJSON(), idToken) // do not use await to avoid errors for missing sites
     }
@@ -339,7 +336,7 @@ router.delete('/:id', hasStreamPermission('D'), async (req, res) => {
     const stream = await streamsService.getById(req.params.id, { joinRelations: true })
     const streamId = stream.id
     await streamsService.del(stream)
-    if (ARBIMON_ENABLED && source !== 'arbimon') {
+    if (arbimonService.isEnabled && source !== 'arbimon') {
       const idToken = req.headers.authorization
       arbimonService.deleteSite(streamId, idToken) // do not use await to avoid errors for missing sites
     }

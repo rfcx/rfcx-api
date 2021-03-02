@@ -8,10 +8,7 @@ const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasProjectPermission } = require('../../../middleware/authorization/roles')
 const { hasPermission, CREATE, ORGANIZATION, UPDATE, DELETE, READ } = require('../../../services/roles')
-const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
-if (ARBIMON_ENABLED) {
-  var arbimonService = require('../../../services/arbimon')
-}
+const arbimonService = require('../../../services/arbimon')
 
 /**
  * @swagger
@@ -72,7 +69,7 @@ router.post('/', async (req, res) => {
       }
     }
     project = await projectsService.create(params, { joinRelations: true })
-    if (ARBIMON_ENABLED && source !== 'arbimon') {
+    if (arbimonService.isEnabled && source !== 'arbimon') {
       const idToken = req.headers.authorization
       var arbimonProject = await arbimonService.createProject(project.toJSON(), idToken)
       project = await projectsService.update(project, { external_id: arbimonProject.project_id }, { joinRelations: true })
