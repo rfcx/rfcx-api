@@ -299,8 +299,12 @@ router.patch('/:id', hasStreamPermission('U'), async (req, res) => {
     }
     const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
     if (arbimonService.isEnabled && source !== 'arbimon') {
-      const idToken = req.headers.authorization
-      arbimonService.updateSite(updatedStream.toJSON(), idToken) // do not use await to avoid errors for missing sites
+      try {
+        const idToken = req.headers.authorization
+        await arbimonService.updateSite(updatedStream.toJSON(), idToken)
+      } catch (err) {
+        console.error('Failed updating stream in Arbimon', err)
+      }
     }
     res.json(streamsService.formatStream(updatedStream))
   } catch (e) {
@@ -337,8 +341,12 @@ router.delete('/:id', hasStreamPermission('D'), async (req, res) => {
     const streamId = stream.id
     await streamsService.del(stream)
     if (arbimonService.isEnabled && source !== 'arbimon') {
-      const idToken = req.headers.authorization
-      arbimonService.deleteSite(streamId, idToken) // do not use await to avoid errors for missing sites
+      try {
+        const idToken = req.headers.authorization
+        await arbimonService.deleteSite(streamId, idToken)
+      } catch (err) {
+        console.error('Failed deleting site in Arbimon', err)
+      }
     }
     res.sendStatus(204)
   } catch (e) {
