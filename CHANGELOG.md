@@ -1,3 +1,9 @@
+## 1.0.13 (2021-03-XX)
+
+### Features
+* **core:** Rework streams-sites unification ([CE-174](https://jira.rfcx.org/browse/CE-174))
+
+
 ## 1.0.12 (2021-02-28)
 
 ### Features
