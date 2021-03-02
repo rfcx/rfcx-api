@@ -9,6 +9,10 @@ const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const { Stream } = require('../../../modelsTimescale')
 const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
+const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
+if (ARBIMON_ENABLED) {
+  var arbimonService = require('../../../services/arbimon')
+}
 
 /**
  * @swagger
@@ -110,6 +114,9 @@ router.post('/', function (req, res) {
  *       - name: created_by
  *         description: Match streams based on creator (can be `me` or a user guid)
  *         in: query
+ *       - name: updated_after
+ *         description: Only return streams that were updated since/after (iso8601 or epoch)
+ *         in: query
  *         type: string
  *       - name: start
  *         description: Match streams starting after (iso8601 or epoch)
@@ -169,6 +176,7 @@ router.get('/', (req, res) => {
   converter.convert('start').optional().toMomentUtc()
   converter.convert('end').optional().toMomentUtc()
   converter.convert('created_by').optional().toString()
+  converter.convert('updated_after').optional().toMomentUtc()
   converter.convert('only_public').optional().toBoolean()
   converter.convert('only_deleted').optional().toBoolean()
   converter.convert('limit').default(100).toInt()
@@ -279,28 +287,30 @@ router.get('/:id', (req, res) => {
  */
 router.patch('/:id', hasStreamPermission('U'), (req, res) => {
   const streamId = req.params.id
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('name').optional().toString()
-  params.convert('description').optional().toString()
-  params.convert('is_public').optional().toBoolean()
-  params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
-  params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
-  params.convert('altitude').optional().toFloat()
-  params.convert('restore').optional().toBoolean()
+  const converter = new Converter(req.body, {})
+  converter.convert('name').optional().toString()
+  converter.convert('description').optional().toString()
+  converter.convert('is_public').optional().toBoolean()
+  converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
+  converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  converter.convert('altitude').optional().toFloat()
+  converter.convert('restore').optional().toBoolean()
 
-  return params.validate()
-    .then(() => usersService.ensureUserSyncedFromToken(req))
-    .then(() => streamsService.get(streamId))
-    .then(async stream => {
-      if (convertedParams.restore === true) {
-        await streamsService.restore(stream)
-      }
-      return streamsService.update(stream, convertedParams, { joinRelations: true })
-    })
-    .then(streamsService.formatStream)
-    .then(json => res.json(json))
-    .catch(httpErrorHandler(req, res, 'Failed updating stream'))
+  converter.validate().then(async (params) => {
+    await usersService.ensureUserSyncedFromToken(req)
+    const stream = await streamsService.get(streamId)
+    if (params.restore === true) {
+      await streamsService.restore(stream)
+    }
+    const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
+    if (ARBIMON_ENABLED) {
+      const idToken = req.headers.authorization
+      arbimonService.updateSite(updatedStream.toJSON(), idToken) // do not use await to avoid errors for missing sites
+    }
+    res.json(streamsService.formatStream(updatedStream))
+  }).catch((e) => {
+    httpErrorHandler(req, res, 'Failed updating stream')(e)
+  })
 })
 
 /**

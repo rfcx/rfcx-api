@@ -1,3 +1,27 @@
+## 1.0.12 (2021-02-28)
+
+### Features
+* **core:** Filter streams by `updated_after`
+
+
+## 1.0.11 (2021-02-27)
+
+### Features
+* **core:** Call Arbimon endpoint on Stream update call ([CE-203](https://jira.rfcx.org/browse/CE-203))
+
+
+## 1.0.10 (2021-02-25)
+
+### Bug Fixes
+* **media:** Output single channel audio
+
+
+## 1.0.9 (2021-02-25)
+
+### Bug Fixes
+* **core:** On `GET /streams`, when created_by is not set then return all (non-public) accessible sites ([CE-183](https://jira.rfcx.org/browse/CE-183))
+
+
 <a name="1.0.8"></a>
 ## 1.0.8 (2021-02-24)
 

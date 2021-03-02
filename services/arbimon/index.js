@@ -32,7 +32,25 @@ function createSite (opts, idToken) {
   return rp(options)
 }
 
+function updateSite (opts, idToken) {
+  const body = {};
+  ['name', 'latitude', 'longitude', 'altitude'].forEach((attr) => { body[attr] = opts[attr] })
+  const options = {
+    method: 'PATCH',
+    url: `${arbimonBaseUrl}api/ingest/sites/${opts.id}`,
+    headers: {
+      Authorization: idToken,
+      'Content-Type': 'application/json'
+    },
+    body,
+    json: true
+  }
+
+  return rp(options)
+}
+
 module.exports = {
   userProject,
-  createSite
+  createSite,
+  updateSite
 }
