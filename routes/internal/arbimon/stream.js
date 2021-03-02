@@ -52,6 +52,7 @@ router.patch('/streams/:externalId', (req, res) => {
   params.convert('description').optional().toString()
   params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  params.convert('altitude').optional().toFloat()
   params.convert('project_external_id').optional().toInt()
 
   return params.validate()
@@ -107,7 +108,7 @@ router.delete('/streams/:externalId', async (req, res) => {
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to delete this stream.')
     }
-    await streamsService.softDelete(stream)
+    await streamsService.del(stream)
     res.sendStatus(204)
   } catch (e) {
     httpErrorHandler(req, res, 'Failed deleting stream')(e)

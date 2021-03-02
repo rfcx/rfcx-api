@@ -63,6 +63,7 @@ function getByExternalId (id, opts = {}) {
  * Creates stream item
  * @param {*} data stream attributes
  * @param {*} opts additional function params
+ * @param {boolean} opts.joinRelations whether to include joined tables in returned object
  * @returns {*} stream model item
  */
 function create (data, opts = {}) {
@@ -180,11 +181,26 @@ async function query (attrs, opts = {}) {
  * Updates existing stream item
  * @param {*} stream stream model item
  * @param {*} data attributes to update
+ * @param {string} data.name
+ * @param {string} data.description
+ * @param {boolean} data.is_public
+ * @param {string} data.start
+ * @param {string} data.end
+ * @param {float} data.latitude
+ * @param {float} data.longitude
+ * @param {float} data.altitude
+ * @param {integer} data.max_sample_rate
+ * @param {integer} data.project_id
+ * @param {integer} data.external_id
+ * @param {integer} data.project_external_id
  * @param {*} opts additional function params
+ * @param {boolean} opts.joinRelations whether join related tables or not
  * @returns {*} stream model item
  */
 function update (stream, data, opts = {}) {
-  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'project_id'].forEach((attr) => {
+  const attrs = ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude',
+    'altitude', 'max_sample_rate', 'project_id', 'external_id', 'project_external_id']
+  attrs.forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr]
     }
@@ -199,13 +215,17 @@ function update (stream, data, opts = {}) {
 }
 
 /**
- * Deletes stream softly
+ * Deletes stream (soft or hard)
  * @param {*} stream stream model item
+ * @param {*} opts
+ * @param {boolean} force
  */
-function softDelete (stream) {
-  return stream.destroy()
+function del (stream, opts = {}) {
+  return stream.destroy({
+    ...opts.force !== undefined ? { force: opts.force } : {}
+  })
     .catch((e) => {
-      console.error('Streams service -> softDelete -> error', e)
+      console.error('Streams service -> delete -> error', e)
       throw new ValidationError('Cannot delete stream.')
     })
 }
@@ -356,7 +376,7 @@ module.exports = {
   create,
   query,
   update,
-  softDelete,
+  del,
   restore,
   formatStream,
   formatStreams,

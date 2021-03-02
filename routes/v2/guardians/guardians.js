@@ -108,9 +108,7 @@ router.route('/register')
 
       if (ARBIMON_ENABLED) {
         const idToken = req.headers.authorization
-        const userProject = await arbimonService.userProject(idToken)
         const arbimonSiteData = {
-          project_id: userProject.project_id,
           name: dbGuardian.shortname,
           external_id: dbGuardian.guid,
           lat: dbGuardian.latitude || 0,
