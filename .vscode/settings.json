@@ -1,10 +1,6 @@
 {
-    // Prevents VS Code from formatting JavaScript with the default linter
-    "javascript.format.enable": false,
-    // Prevents VS Code linting JavaScript with the default linter
-    "javascript.validate.enable": false,
-    // Lints with Standard JS
-    "standard.enable": true,
-    // Format files with Standard whenever you save the file
-    "standard.autoFixOnSave": true,
+    "eslint.format.enable": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
 }
