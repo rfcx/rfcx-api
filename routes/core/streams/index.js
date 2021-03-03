@@ -155,6 +155,12 @@ router.post('/', async (req, res) => {
  *         in: query
  *         type: int
  *         default: 0
+ *       - name: sort
+ *         description: Name of field to sorted / "-" for DESC default for ASC
+ *         in: query
+ *         type: string
+ *         example: is_public,-updated_at
+ *            
  *     responses:
  *       200:
  *         description: List of streams objects
@@ -187,6 +193,7 @@ router.get('/', (req, res) => {
   params.convert('keyword').optional().toString()
   params.convert('limit').optional().toInt().default(100)
   params.convert('offset').optional().toInt().default(0)
+  params.convert('sort').optional().toString()
 
   return params.validate()
     .then(async () => {

@@ -3,6 +3,7 @@ const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const rolesService = require('../roles')
+const { getSortFields } = require('../../utils/sort')
 
 const streamBaseInclude = [
   {
@@ -87,6 +88,7 @@ function create (data, opts = {}) {
  */
 async function query (attrs, opts = {}) {
   const where = {}
+  let order = []
   if (attrs.start !== undefined) {
     where.start = {
       [models.Sequelize.Op.gte]: attrs.start
@@ -160,6 +162,10 @@ async function query (attrs, opts = {}) {
     opts.joinRelations = true
   }
 
+  if (attrs.sort) {
+    order = getSortFields(attrs.sort)
+  }
+
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
   return models.Stream[method]({
     where,
@@ -167,7 +173,8 @@ async function query (attrs, opts = {}) {
     offset: attrs.offset,
     attributes: models.Stream.attributes.full,
     include: opts.joinRelations ? streamInclude : [],
-    paranoid: attrs.is_deleted !== true
+    paranoid: attrs.is_deleted !== true,
+    order: order
   })
     .then((data) => {
       return {

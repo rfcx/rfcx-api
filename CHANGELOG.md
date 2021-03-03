@@ -1,6 +1,7 @@
-## 1.0.14 (2021-03-03)
+## 1.0.14 (2012-03-03)
 
 ### Features
+* **core:** Add sort param to streams `GET`
 * **core:** Implement GET /detections with required `start` and `end` query and optional `streams`, `classifications`, `min_confidence`, `limit`, and `offset` ([CE-161](https://jira.rfcx.org/browse/CE-161))
 
 
