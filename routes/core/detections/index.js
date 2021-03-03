@@ -3,7 +3,6 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const detectionsService = require('../../../services/detections')
 const roleService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
-const { ForbiddenError } = require('../../../utils/errors')
 
 /**
  * @swagger
@@ -76,17 +75,10 @@ router.get('/', (req, res) => {
   return params.validate()
     .then(async () => {
       const streamIds = convertedParams.streams
-      let allowedStreams = []
-      if (streamIds) {
-        allowedStreams = await roleService.getAccessibleObjectsIDs(user.owner_id, 'stream', streamIds)
-        const notAllowedStreams = streamIds.filter(s => allowedStreams.indexOf(s) < 0)
-        if (notAllowedStreams.length > 0) {
-          throw new ForbiddenError(`You do not have permission to access these streams: ${notAllowedStreams}`)
-        }
-      }
       const minConfidence = convertedParams.min_confidence
       const { start, end, classifications, limit, offset } = convertedParams
-      const result = await detectionsService.query(start, end, streamIds, classifications, minConfidence, limit, offset, user)
+      const allowedStreams = streamIds ? await roleService.getAccessibleObjectsIDs(user.owner_id, 'stream', streamIds) : undefined
+      const result = await detectionsService.query(start, end, allowedStreams, classifications, minConfidence, limit, offset, user)
       return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
