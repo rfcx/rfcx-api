@@ -159,7 +159,7 @@ router.post('/', async (req, res) => {
  *         description: Name of field to sorted / "-" for DESC default for ASC
  *         in: query
  *         type: string
- *         example: sort=created_at,-deleted_at
+ *         example: is_public,-updated_at
  *            
  *     responses:
  *       200:
