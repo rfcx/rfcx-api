@@ -1,7 +1,7 @@
 ## 1.0.14 (2012-03-03)
 
 ### Features
-* **core:** Add sort param to streams
+* **core:** Add sort param to streams `GET`
 
 ## 1.0.13 (2021-03-02)
 
