@@ -16,38 +16,26 @@ pipeline {
                  expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
-            slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
-            sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
-            sh "docker build -f build/http/Dockerfile -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
-            sh "docker tag ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
-            sh "docker push ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
-
-            slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*API MQTT*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
-            sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
-            sh "docker build -f build/mqtt/Dockerfile -t ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ."
-            sh "docker tag ${APIMQTT}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER}"
-            sh "docker push ${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER}"
-
-            slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*Media API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
-            sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
-            sh "docker build -f build/media/Dockerfile -t ${APIMEDIA}_${PHASE}:${BUILD_NUMBER} ."
-            sh "docker tag ${APIMEDIA}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIMEDIA}_${PHASE}:${BUILD_NUMBER}"
-            sh "docker push ${ECR}/${APIMEDIA}_${PHASE}:${BUILD_NUMBER}"
+                slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
+                sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
+                sh "docker build -f build/Dockerfile -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
+                sh "docker tag ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
+                sh "docker push ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
             }
-           post {
-               success {
-                   slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*HTTP API*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
-                   slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*API MQTT*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
-                   slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*Media API*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
-                   echo 'Compile Stage Successful'
-               }
-               failure {
-                   slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*HTTP API*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
-                   slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*API MQTT*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
-                   slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*Media API*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
-                   echo 'Compile Stage Failed'
-               }
-           }
+            post {
+                success {
+                    slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*HTTP API*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                    slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*API MQTT*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                    slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*Media API*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                    echo 'Compile Stage Successful'
+                }
+                failure {
+                    slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*HTTP API*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                    slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*API MQTT*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                    slackSend (channel: "#${slackChannel}", color: '#F44336', message: "*Media API*: Image build failed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                    echo 'Compile Stage Failed'
+                }
+            }
         }
         stage('Deploy') {
             when {
@@ -55,7 +43,7 @@ pipeline {
             }
             steps {
                 sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
+                sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
             }
         }
         stage('Verifying') {
@@ -79,8 +67,8 @@ pipeline {
             }
             steps {
                 sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl set image deployment api-rabbitmq api-rabbitmq=${ECR}/${APIMQTT}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl set image deployment ${APIMEDIA} ${APIMEDIA}=${ECR}/${APIMEDIA}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
+                sh "kubectl set image deployment api-rabbitmq api-rabbitmq=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
+                sh "kubectl set image deployment ${APIMEDIA} ${APIMEDIA}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
             }
         }
         stage('Verify Production') {
