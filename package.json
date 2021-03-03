@@ -11,7 +11,7 @@
     "dev": "nodemon bin/main.js",
     "dev:core": "DEV_CORE_ONLY=true nodemon bin/main.js",
     "start": "node bin/setup.js; node bin/main.js;",
-    "start.mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
+    "start:mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
     "test": "standard && jest",
