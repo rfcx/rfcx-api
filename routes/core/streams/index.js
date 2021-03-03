@@ -156,9 +156,11 @@ router.post('/', async (req, res) => {
  *         type: int
  *         default: 0
  *       - name: sort
- *         description: Name of field to sorted
+ *         description: Name of field to sorted / "-" for DESC default for ASC
  *         in: query
  *         type: string
+ *         example: sort=created_at,-deleted_at
+ *            
  *     responses:
  *       200:
  *         description: List of streams objects
