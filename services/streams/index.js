@@ -164,7 +164,7 @@ async function query (attrs, opts = {}) {
   if (attrs.sort) {
     const sortItems = attrs.sort.split(',')
     sortItems.forEach( item => {
-      if(item.startWith('-')) {
+      if(item.startsWith('-')) {
         order.push([item.substring(1), 'DESC'])
       } else {
         order.push([item, 'ASC'])
