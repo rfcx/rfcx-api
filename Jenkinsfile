@@ -1,6 +1,27 @@
 pipeline {
     agent {
-        label 'slave'
+        kubernetes {
+            yaml """
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: docker-config
+        mountPath: /kaniko/.docker
+  volumes:
+    - name: docker-config
+      configMap:
+        name: docker-config
+"""
+        }
     }
     environment {
         APIHTTP="api"
@@ -17,10 +38,11 @@ pipeline {
             }
             steps {
                 slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
-                sh "aws ecr get-login --no-include-email --region eu-west-1 | bash"
-                sh "docker build -f build/Dockerfile -t ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ."
-                sh "docker tag ${APIHTTP}_${PHASE}:${BUILD_NUMBER} ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
-                sh "docker push ${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER}"
+                container(name: 'kaniko') {
+                    sh """
+                    /kaniko/executor --snapshotMode=redo --use-new-run=true --cache=true --cache-repo=${ECR}/${APIHTTP}_${PHASE} --dockerfile `pwd`/build/Dockerfile --context `pwd` --destination=${ECR}/${APIHTTP}_${PHASE}:latest --destination=${ECR}/${APIHTTP}_${PHASE}:$BUILD_NUMBER
+                    """
+                }
             }
             post {
                 success {
