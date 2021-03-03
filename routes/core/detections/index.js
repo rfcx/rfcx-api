@@ -69,7 +69,7 @@ router.get('/', (req, res) => {
   params.convert('streams').optional().toArray()
   params.convert('classifications').optional().toArray()
   params.convert('min_confidence').optional().toFloat()
-  params.convert('limit').optional().toInt().maximum(1000000)
+  params.convert('limit').optional().toInt().maximum(1000)
   params.convert('offset').optional().toInt()
 
   return params.validate()
