@@ -45,3 +45,4 @@ bin/mongo/.env
 bin/timescaledb/.env
 
 coverage
+node_modules
