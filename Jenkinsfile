@@ -60,6 +60,9 @@ spec:
             }
         }
         stage('Deploy') {
+            agent {
+                label 'slave'
+            }
             when {
                  expression { BRANCH_NAME ==~ /(develop|staging)/ }
             }
@@ -69,6 +72,9 @@ spec:
             }
         }
         stage('Verifying') {
+            agent {
+                label 'slave'
+            }
             when {
                  expression { BRANCH_NAME ==~ /(develop|staging)/ }
             }
@@ -81,6 +87,9 @@ spec:
         }
 
         stage('Deploy Production') {
+            agent {
+                label 'slave'
+            }
             when {
                  expression { BRANCH_NAME ==~ /(master)/ }
             }
@@ -91,6 +100,9 @@ spec:
             }
         }
         stage('Verify Production') {
+            agent {
+                label 'slave'
+            }
             when {
                  expression { BRANCH_NAME ==~ /(master)/ }
             }
