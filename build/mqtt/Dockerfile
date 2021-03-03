@@ -1,7 +1,7 @@
 FROM 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_base:latest AS builder
 ADD package*.json /tmp/
 WORKDIR /tmp
-RUN npm install
+RUN npm ci
 RUN mkdir -p /usr/src/app && cp -a /tmp/node_modules /usr/src/app
 FROM 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_base:latest
 COPY . /usr/src/app
