@@ -70,19 +70,18 @@ router.get('/', (req, res) => {
   params.convert('streams').optional().toArray()
   params.convert('classifications').optional().toArray()
   params.convert('min_confidence').optional().toFloat()
-  params.convert('limit').optional().toInt()
+  params.convert('limit').optional().toInt().maximum(1000000)
   params.convert('offset').optional().toInt()
 
   return params.validate()
     .then(async () => {
       const streamIds = convertedParams.streams
-      console.log('Stream ids', streamIds)
+      let allowedStreams = []
       if (streamIds) {
-        for (const id of streamIds) {
-          const allowed = await roleService.hasPermission(roleService.READ, user, id, roleService.STREAM)
-          if (!allowed) {
-            throw new ForbiddenError(`You do not have permission to access this stream: ${id}`)
-          }
+        allowedStreams = await roleService.getAccessibleObjectsIDs(user.owner_id, 'stream', streamIds)
+        const notAllowedStreams = streamIds.filter(s => allowedStreams.indexOf(s) < 0)
+        if (notAllowedStreams.length > 0) {
+          throw new ForbiddenError(`You do not have permission to access these streams: ${notAllowedStreams}`)
         }
       }
       const minConfidence = convertedParams.min_confidence
