@@ -87,6 +87,7 @@ function create (data, opts = {}) {
  */
 async function query (attrs, opts = {}) {
   const where = {}
+  const order = []
   if (attrs.start !== undefined) {
     where.start = {
       [models.Sequelize.Op.gte]: attrs.start
@@ -160,6 +161,17 @@ async function query (attrs, opts = {}) {
     opts.joinRelations = true
   }
 
+  if (attrs.sort) {
+    const sortItems = attrs.sort.split(',')
+    sortItems.forEach( item => {
+      if(item.startWith('-')) {
+        order.push([item.substring(1), 'DESC'])
+      } else {
+        order.push([item, 'ASC'])
+      }
+    })
+  }
+
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
   return models.Stream[method]({
     where,
@@ -167,7 +179,8 @@ async function query (attrs, opts = {}) {
     offset: attrs.offset,
     attributes: models.Stream.attributes.full,
     include: opts.joinRelations ? streamInclude : [],
-    paranoid: attrs.is_deleted !== true
+    paranoid: attrs.is_deleted !== true,
+    order: order
   })
     .then((data) => {
       return {
