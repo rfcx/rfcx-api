@@ -4,15 +4,30 @@ const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
 
-async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user) {
+/**
+ * Get a list of detections
+ * @param {string} start
+ * @param {string} end
+ * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
+ * @param {object} streamsOnlyCreatedBy
+ * @param {boolean} streamsOnlyPublic
+ * @param {string | string[]} classifications Classification or list of classifications
+ * @param {number} minConfidence Minimum confidence to query detections
+ * @param {boolean} descending
+ * @param {number} limit Maximum number to get detections
+ * @param {number} offset Number of resuls to skip
+ * @param {object} user
+ * @returns {Detection[]} Detections
+ */
+async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user) {
   const condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
       [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
     }
   }
-  if (streamId !== undefined) {
-    condition.stream_id = streamId
+  if (streamIdOrIds !== undefined) {
+    condition.stream_id = streamIdOrIds
   } else {
     const streamIds = streamsOnlyPublic
       ? await streamsService.getPublicStreamIds()
@@ -53,8 +68,20 @@ async function defaultQueryOptions (start, end, streamId, streamsOnlyCreatedBy, 
   }
 }
 
-async function query (start, end, streamId, classifications, minConfidence, limit, offset, user) {
-  const opts = await defaultQueryOptions(start, end, streamId, undefined, false, classifications, minConfidence, false, limit, offset, user)
+/**
+ * Get a list of detections
+ * @param {string} start
+ * @param {string} end
+ * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
+ * @param {string | string[]} classifications Classification or list of classifications
+ * @param {number} minConfidence Minimum confidence to query detections
+ * @param {number} limit Maximum number to get detections
+ * @param {number} offset Number of resuls to skip
+ * @param {object} user
+ * @returns {Detection[]} Detections
+ */
+async function query (start, end, streamIdOrIds, classifications, minConfidence, limit, offset, user) {
+  const opts = await defaultQueryOptions(start, end, streamIdOrIds, undefined, false, classifications, minConfidence, false, limit, offset, user)
   return models.Detection.findAll(opts)
 }
 
