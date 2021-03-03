@@ -78,8 +78,7 @@ router.get('/:id/detections', function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const roles = auth0Service.getUserRolesFromToken(req.user)
-      if (roles.includes('systemUser')) {
+      if (user.has_system_role) {
         return true
       }
       const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
@@ -158,8 +157,7 @@ router.post('/:id/detections', function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const roles = auth0Service.getUserRolesFromToken(req.user)
-      if (roles.includes('systemUser')) {
+      if (user.has_system_role) {
         return true
       }
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, streamId, rolesService.STREAM)

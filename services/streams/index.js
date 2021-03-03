@@ -93,10 +93,6 @@ async function query (filters, options = {}) {
       [Sequelize.Op.in]: filters.projects
     }
   }
-
-  if (attrs.is_public !== undefined) {
-    where.is_public = attrs.is_public
-  }
   if (filters.start) {
     where.start = {
       [Sequelize.Op.gte]: filters.start
@@ -110,26 +106,25 @@ async function query (filters, options = {}) {
   if (filters.createdBy) {
     where.created_by_id = filters.createdBy
   }
+  if (filters.updated_after) {
+    where.updated_at = {
+      [Sequelize.Op.gte]: filters.updated_after
+    }
+  }
 
   // Options (change behaviour - mix with care)
-  if (options.readableBy) {
-    where.id = {
-      [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, STREAM)
-    }
-  }
-
-  if (attrs.updated_after) {
-    where.updated_at = {
-      [models.Sequelize.Op.gte]: attrs.updated_after
-    }
-  }
-
   if (options.onlyPublic) {
     where.is_public = true
-  }
-  if (options.onlyDeleted) {
-    where.deleted_at = {
-      [Sequelize.Op.ne]: null
+  } else {
+    if (options.readableBy) {
+      where.id = {
+        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, STREAM)
+      }
+    }
+    if (options.onlyDeleted) {
+      where.deleted_at = {
+        [Sequelize.Op.ne]: null
+      }
     }
   }
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite

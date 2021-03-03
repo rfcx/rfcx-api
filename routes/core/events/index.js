@@ -198,13 +198,13 @@ router.get('/:id', (req, res) => {
   const id = req.params.id
   const userId = req.rfcx.auth_token_info.owner_id
   const userIsSuper = req.rfcx.auth_token_info.is_super
-  const userIsSystem = auth0Service.getUserRolesFromToken(req.user).includes('systemUser')
+  const hasSystemRole = req.rfcx.auth_token_info.has_system_role
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
   return converter.validate()
     .then(params => {
       const options = {
-        readableBy: userIsSuper || userIsSystem ? undefined : userId,
+        readableBy: userIsSuper || hasSystemRole ? undefined : userId,
         fields: params.fields
       }
       return eventsService.get(id, options)

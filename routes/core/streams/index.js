@@ -8,7 +8,7 @@ const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const { Stream } = require('../../../modelsTimescale')
-const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
+const { hasPermission, PROJECT, UPDATE } = require('../../../services/roles')
 const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
 if (ARBIMON_ENABLED) {
   var arbimonService = require('../../../services/arbimon')
@@ -168,7 +168,8 @@ router.post('/', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  const readableBy = req.rfcx.auth_token_info.owner_id
+  const user = req.rfcx.auth_token_info
+  const readableBy = user.is_super || user.has_system_role ? undefined : user.owner_id
   const converter = new Converter(req.query, {}, true)
   converter.convert('keyword').optional().toString()
   converter.convert('organizations').optional().toArray()
@@ -237,15 +238,19 @@ router.get('/', (req, res) => {
  *         description: Stream not found
  */
 router.get('/:id', (req, res) => {
-  return streamsService.get(req.params.id)
-    .then(async stream => {
-      const permissions = await getPermissions(req.rfcx.auth_token_info, stream, STREAM)
-      if (!permissions.includes(READ)) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
+  const id = req.params.id
+  const user = req.rfcx.auth_token_info
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('fields').optional().toArray()
+  return converter.validate()
+    .then(params => {
+      const options = {
+        readableBy: user.is_super || user.has_system_role ? undefined : user.owner_id,
+        fields: params.fields
       }
-      return streamsService.formatStream(stream, permissions)
+      return streamsService.get(id, options)
     })
-    .then(json => res.json(json))
+    .then(stream => res.json(stream))
     .catch(httpErrorHandler(req, res, 'Failed getting stream'))
 })
 
@@ -302,6 +307,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
     if (params.restore === true) {
       await streamsService.restore(stream)
     }
+    // TODO - add updatableBy checks
     const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
     if (ARBIMON_ENABLED) {
       const idToken = req.headers.authorization
@@ -336,6 +342,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
  *         description: Stream not found
  */
 router.delete('/:id', hasStreamPermission('D'), (req, res) => {
+  // TODO - add deletableBy checks
   return streamsService.get(req.params.id)
     .then(streamsService.softDelete)
     .then(json => res.sendStatus(204))

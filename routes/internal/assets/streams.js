@@ -64,15 +64,13 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         description: Insufficient privileges
  */
 
-router.get('/streams/:attrs', async function (req, res) {
-  try {
-    const attrs = await parseFileNameAttrs(req)
+router.get('/streams/:attrs', function (req, res) {
+  parseFileNameAttrs(req).then(async (attrs) => {
     await checkAttrsValidity(req, attrs)
     const stream = await streamsService.get(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
-    const roles = auth0Service.getUserRolesFromToken(req.user)
-    var allowed
-    if ((roles || []).includes('systemUser')) {
+    let allowed
+    if (req.rfcx.auth_token_info.has_system_role) {
       allowed = true
     } else {
       allowed = await rolesService.hasPermission(rolesService.READ, req.rfcx.auth_token_info, stream, rolesService.STREAM)
@@ -89,9 +87,9 @@ router.get('/streams/:attrs', async function (req, res) {
     }
     const nextTimestamp = await streamSegmentService.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
     return await getFile(req, res, attrs, segments, nextTimestamp)
-  } catch (e) {
+  }).catch((e) => {
     httpErrorHandler(req, res, 'Failed getting stream asset.')(e)
-  }
+  })
 })
 
 module.exports = router
