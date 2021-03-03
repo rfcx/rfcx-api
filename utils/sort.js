@@ -1,9 +1,9 @@
 module.exports = {
   /**
-  * return a list of fields to sort
+  * Prepare a sort clause for Sequelize
   *
-  * @param {String} sort
-  * @return {List} fields to sort
+  * @param {string} sort request
+  * @return {string[]} Sequelize sort clause
   */
   getSortFields: function (sort) {
     const sortList = []
