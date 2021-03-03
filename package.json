@@ -14,11 +14,11 @@
     "start.mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
-    "test": "standard && jest",
+    "test": "eslint \"**/*\" && jest",
     "test-coverage": "jest --coverage",
     "jest": "jest",
-    "lint": "eslint \"**/*.js\"",
-    "lint:fix": "eslint --fix \"**/*.js\""
+    "lint": "eslint \"**/*\"",
+    "lint:fix": "eslint --fix \"**/*\""
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.5.0",
@@ -93,14 +93,9 @@
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1"
   },
-  "standard": {
-    "env": [
-      "jest"
-    ]
-  },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run test"
+      "pre-commit": "npm run jest"
     }
   }
 }
