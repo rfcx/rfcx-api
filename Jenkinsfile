@@ -75,6 +75,9 @@ spec:
             agent {
                 label 'slave'
             }
+            options {
+                skipDefaultCheckout true
+            }
             when {
                  expression { BRANCH_NAME ==~ /(develop|staging)/ }
             }
@@ -102,6 +105,9 @@ spec:
         stage('Verify Production') {
             agent {
                 label 'slave'
+            }
+            options {
+                skipDefaultCheckout true
             }
             when {
                  expression { BRANCH_NAME ==~ /(master)/ }
