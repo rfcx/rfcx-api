@@ -82,6 +82,17 @@ function getDetectionAlertHtml () {
   })
 }
 
+function getEventAlertHtml () {
+  return new Promise((resolve, reject) => {
+    try {
+      const source = fs.readFileSync(path.join(__dirname, '../../views/email/event-alert.handlebars'), 'utf8')
+      resolve(source)
+    } catch (e) {
+      reject(e)
+    }
+  })
+}
+
 function registerToAppWaitingList (serviceRequest) {
   var params = {}
   serviceRequest = new Converter(serviceRequest, params)
@@ -102,5 +113,6 @@ module.exports = {
   sendMessage,
   sendEmail,
   renderContactFormEmail,
-  getDetectionAlertHtml
+  getDetectionAlertHtml,
+  getEventAlertHtml
 }

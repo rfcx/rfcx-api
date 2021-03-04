@@ -1,3 +1,9 @@
+## 1.0.15 (2021-03-XX)
+
+### Features
+* **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
+
+
 ## 1.0.14 (2021-03-03)
 
 ### Features
