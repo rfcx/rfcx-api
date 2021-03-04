@@ -1,4 +1,4 @@
-## 1.0.15 (2012-03-XX)
+## 1.0.15 (2012-03-05)
 
 ### Bug Fixes
 * **core:** GET /stream-source-files endpoint can be used by `systemUser`
