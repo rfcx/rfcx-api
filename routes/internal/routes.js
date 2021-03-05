@@ -20,5 +20,8 @@ module.exports = {
   arbimon: [
     require('./arbimon/stream'),
     require('./arbimon/project')
+  ],
+  'prediction-deployer': [
+    require('./prediction-deployer/classifier-deployments')
   ]
 }
