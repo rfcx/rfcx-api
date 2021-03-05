@@ -1,5 +1,23 @@
 # API Deployment Notes
 
+## v1.0.16
+
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210305141000-add-platform-on-classifier-deployments`
+  - `20210305141400-change-active-to-deployed-on-classifier-deployments`
+
+## v1.0.15
+
+_None_
+
+## v1.0.14
+
+_None_
+
+## v1.0.13
+
+_None_
+
 ## v1.0.12
 
 _None_

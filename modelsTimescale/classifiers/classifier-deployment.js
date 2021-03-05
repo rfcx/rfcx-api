@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    active: { // true when this is the active (current) deployment for a given classifier
+    deployed: { // true when this is the deployed classifier to the prediction deployer
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
@@ -30,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    platform: { // deploy platform e.g. aws, hwc
+      type: DataTypes.STRING(3),
+      allowNull: false,
+      defaultValue: 'aws'
+    },
     deployment_parameters: { // prediction service parameters specific to the deployment (e.g. step seconds)
       type: DataTypes.STRING
     }
@@ -41,8 +46,8 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierDeployment.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   ClassifierDeployment.attributes = {
-    full: ['id', 'active', 'status', 'start', 'end', 'deployment_parameters'],
-    lite: ['id', 'active', 'status', 'start', 'end']
+    full: ['id', 'deployed', 'status', 'start', 'end', 'platform', 'deployment_parameters'],
+    lite: ['id', 'deployed', 'status', 'start', 'end']
   }
   return ClassifierDeployment
 }
