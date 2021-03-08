@@ -276,7 +276,7 @@ async function queryDeployments (filters) {
     condition.platform = filters.platform
   }
 
-  if (filters.deployed) {
+  if (filters.deployed !== undefined) {
     condition.deployed = filters.deployed
   }
 
@@ -287,6 +287,8 @@ async function queryDeployments (filters) {
   if (filters.endBefore) {
     condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.endBefore).valueOf() }
   }
+
+  console.log('\n\n\n', filters.deployed, '\n\n\n')
 
   return models.ClassifierDeployment.findAll({
     where: condition,
