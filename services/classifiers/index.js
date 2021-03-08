@@ -288,8 +288,6 @@ async function queryDeployments (filters) {
     condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.endBefore).valueOf() }
   }
 
-  console.log('\n\n\n', filters.deployed, '\n\n\n')
-
   return models.ClassifierDeployment.findAll({
     where: condition,
     order: [['id', 'DESC']],
