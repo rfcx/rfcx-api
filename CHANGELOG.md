@@ -1,3 +1,9 @@
+## 1.0.16 (2021-03-08)
+
+### Features
+* **internal:** GET /prediction-deployer/classifier-deployments endpoint for getting the list of latest deployment information of each classifier id
+* **internal:** PATCH /prediction-deployer/classifier-deployments/:id endpoint for updating deployed status
+
 ## 1.0.15 (2012-03-05)
 
 ### Bug Fixes
