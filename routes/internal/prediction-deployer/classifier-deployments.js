@@ -56,10 +56,7 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
     .then(deployments => {
       const filteredDeployments = []
       for (const deployment of deployments) {
-        const idx = filteredDeployments.findIndex(d => {
-          console.log(d.classifier_id, deployment.classifier_id)
-          return d.classifier_id === deployment.classifier_id
-        })
+        const idx = filteredDeployments.findIndex(d => d.classifier_id === deployment.classifier_id)
         if (idx < 0) {
           filteredDeployments.push(deployment)
         }
