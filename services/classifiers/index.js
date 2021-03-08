@@ -148,6 +148,7 @@ async function update (id, createdBy, attrs) {
         id: id,
         created_by: createdBy,
         status: attrs.status,
+        platform: attrs.platform || 'aws',
         deployment_parameters: attrs.deployment_parameters || null
       }
       await updateDeployment(update, t)
@@ -202,8 +203,9 @@ async function updateDeployment (update, transaction) {
     start: Date(),
     end: null,
     created_by_id: update.created_by,
+    platform: update.platform,
     deployment_parameters: update.deployment_parameters,
-    active: false // Background job will transition this to true on classifier deployment
+    deployed: false // Background job will transition this to true on classifier deployment
   }
   return await models.ClassifierDeployment.create(newDeployment, { transaction: transaction })
 }
@@ -293,11 +295,24 @@ async function queryDeployments (filters) {
   })
 }
 
+/**
+ * Update classifier deployment deployed status by id
+ * @param {number} id
+ * @param {boolean} deployed
+ */
+async function updateDeploymentStatusById (id, deployed) {
+  const deployment = await models.ClassifierDeployment.findOne({ where: { id } })
+  await models.sequelize.transaction(async (t) => {
+    await deployment.update({ deployed: deployed }, { transaction: t })
+  })
+}
+
 module.exports = {
   get,
   getIdsByExternalIds,
   query,
   create,
   update,
-  queryDeployments
+  queryDeployments,
+  updateDeploymentStatusById
 }

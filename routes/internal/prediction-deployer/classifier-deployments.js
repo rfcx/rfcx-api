@@ -39,7 +39,6 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
  *         description: Success
  */
 router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
-  // Not yet implemented
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
   params.convert('platform').optional().toString()
@@ -74,20 +73,37 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
 /**
  * @swagger
  * 
- * /internal/prediction-deployer/classifier-deployments
+ * /internal/prediction-deployer/classifier-deployments/{id}
  *   get:
  *     summary: Get classifier deployment information
  *     description: This endpoint is used by the "prediction-deployer" service for create, update, or delete the k8s deployment
  *     tags:
  *       - internal
  *     parameters:
+ *       - name: deployed
+ *         description: classifier deployed status
+ *         in: query
+ *         required: true
+ *         type: boolean
  *     responses:
  *       200:
  *         description: Success
+ *       400:
+ *         description: Invalid query parameters
  */
-router.patch('/classifier-deployments', hasRole(['systemUser']), function (req, res) {
-  // Not yet implemented
-  res.sendStatus(501)
+router.patch('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) => {
+  const convertedParams = {}
+  const id = req.params.id
+  const params = new Converter(req.query, convertedParams)
+  params.convert('deployed').toBoolean()
+
+  return params.validate()
+    .then(() => {
+      const deployed = convertedParams.deployed
+      return classifierService.updateDeploymentStatusById(id, deployed)
+    })
+    .then(() => res.status(200).send('Updated'))
+    .catch(httpErrorHandler(req, res, 'Failed to update `deployed` status'))
 })
 
 module.exports = router
