@@ -1,5 +1,6 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
+const moment = require('moment')
 
 const baseInclude = [
   {
@@ -258,10 +259,45 @@ async function updateActiveProjects (update, transaction) {
   })), { transaction })
 }
 
+/**
+ * Gets classifier deployments based on input params
+ * @param {*} filters
+ * @param {string} filters.platform
+ * @param {boolean} filters.deployed
+ * @param {string} filters.endBefore
+ * @param {string} filter.startAfter
+ */
+async function queryDeployments (filters) {
+  const condition = {}
+
+  if (filters.platform) {
+    condition.platform = filters.platform
+  }
+
+  if (filters.deployed) {
+    condition.deployed = filters.deployed
+  }
+
+  if (filters.startAfter) {
+    condition.start = { [models.Sequelize.Op.gte]: moment.utc(filters.startAfter).valueOf() }
+  }
+
+  if (filters.endBefore) {
+    condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.endBefore).valueOf() }
+  }
+
+  return models.ClassifierDeployment.findAll({
+    where: condition,
+    order: [['id', 'DESC']],
+    attributes: models.ClassifierDeployment.attributes.full
+  })
+}
+
 module.exports = {
   get,
   getIdsByExternalIds,
   query,
   create,
-  update
+  update,
+  queryDeployments
 }
