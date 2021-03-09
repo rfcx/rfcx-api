@@ -4,7 +4,7 @@ const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, READ } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
-const { getSortFields } = require('../../utils/sort')
+const { getSortFields } = require('../../utils/sequelize/sort')
 const rolesService = require('../roles')
 
 const availableIncludes = [
