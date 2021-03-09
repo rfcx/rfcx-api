@@ -1,6 +1,6 @@
 /* eslint camelcase: "off" */
 var Promise = require('bluebird')
-var hash = require('../../utils/misc/hash.js').hash
+var hash = require('../../utils/misc/hash')
 var models = require('../../models')
 
 exports.token = {

@@ -4,7 +4,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const streamsService = require('../../../services/streams')
 const projectsService = require('../../../services/projects')
 const usersService = require('../../../services/users/fused')
-const hash = require('../../../utils/misc/hash.js').hash
+const { randomId } = require('../../../utils/misc/hash')
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const { Stream } = require('../../../modelsTimescale')
@@ -63,7 +63,7 @@ router.post('/', (req, res) => {
     .then(async (params) => {
       await usersFusedService.ensureUserSyncedFromToken(req)
 
-      params.id = params.id || hash.randomString(12).toLowerCase()
+      params.id = params.id ?? randomId()
       params.created_by_id = userId
 
       let project

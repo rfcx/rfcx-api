@@ -2,7 +2,7 @@ var models = require('../../models')
 var fs = require('fs')
 var saveMeta = require('../../utils/rfcx-mqtt/mqtt-save-meta.js').saveMeta
 var smsMessages = require('../../utils/rfcx-guardian/guardian-sms-database.js').messages
-var hash = require('../../utils/misc/hash.js').hash
+var hash = require('../../utils/misc/hash')
 var Promise = require('bluebird')
 const moment = require('moment-timezone')
 

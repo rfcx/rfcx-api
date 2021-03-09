@@ -1,7 +1,7 @@
 var fs = require('fs')
 var Promise = require('bluebird')
 var models = require('../../models')
-var hash = require('../../utils/misc/hash.js').hash
+var hash = require('../../utils/misc/hash')
 var aws = require('../../utils/external/aws.js').aws()
 var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 

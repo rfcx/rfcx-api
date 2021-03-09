@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // var ascii85 = require('ascii85').ZeroMQ
-var hash = require('../../utils/misc/hash.js').hash
+var hash = require('../../utils/misc/hash')
 var zlib = require('zlib')
 
 var groupLength = 4

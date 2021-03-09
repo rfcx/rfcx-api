@@ -2,7 +2,7 @@ var Promise = require('bluebird')
 var exec = require('child_process').exec
 const moment = require('moment-timezone')
 var fs = require('fs')
-var hash = require('../../../utils/misc/hash.js').hash
+var hash = require('../../../utils/misc/hash')
 var token = require('../../../utils/internal-rfcx/token.js').token
 var audioUtils = require('../../../utils/rfcx-audio').audioUtils
 var assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
@@ -26,7 +26,7 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
         if ((dbRow.Format.file_extension === outputFileExtension) &&
-            (Math.round(1000 * queryParams.clipDuration) / 1000 === Math.round(1000 * clipDurationFull) / 1000)) {
+          (Math.round(1000 * queryParams.clipDuration) / 1000 === Math.round(1000 * clipDurationFull) / 1000)) {
           console.log('serving ' + outputFileExtension + ' file without transcoding')
           audioUtils.serveAudioFromFile(res, sourceFilePath, outputFileName, audioUtils.formatSettings[outputFileExtension].mime, !!req.query.inline)
             .then(function () {
@@ -87,7 +87,7 @@ exports.models = {
             for (var i = 0; i < (queryParams.clipDuration / queryParams.amplitudeWindowDuration); i++) {
               if (i > 0) { soxExec += ' && ' }
               soxExec += 'echo "$(' + process.env.SOX_PATH + ' ' + outputFilePath + ' -n trim ' + (queryParams.amplitudeWindowDuration * i) + ' ' + queryParams.amplitudeWindowDuration + ' stat 2>&1)"' +
-                          ' | grep "' + amplitudeType + "\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'"
+                ' | grep "' + amplitudeType + "\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'"
             }
 
             exec(soxExec, function (err, stdout, stderr) {
@@ -135,17 +135,17 @@ exports.models = {
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
         var ffmpegSox =
-            process.env.FFMPEG_PATH +
-              ' -i ' + sourceFilePath + ' -loglevel panic -nostdin' +
-              ' -ac 1 -ar ' + dbRow.Format.sample_rate +
-              ' -ss ' + queryParams.clipOffset + ' -t ' + queryParams.clipDuration +
-              ' -f sox - ' +
-            ' | ' + process.env.SOX_PATH +
-              ' -t sox - -n spectrogram -h -r' +
-              ' -o ' + tmpFilePath + '-sox.png' +
-              ' -x ' + queryParams.specWidth + ' -y ' + queryParams.specHeight +
-              ' -w ' + queryParams.specWindowFunc + ' -z ' + queryParams.specZaxis + ' -s' +
-              ' -d ' + queryParams.clipDuration
+          process.env.FFMPEG_PATH +
+          ' -i ' + sourceFilePath + ' -loglevel panic -nostdin' +
+          ' -ac 1 -ar ' + dbRow.Format.sample_rate +
+          ' -ss ' + queryParams.clipOffset + ' -t ' + queryParams.clipDuration +
+          ' -f sox - ' +
+          ' | ' + process.env.SOX_PATH +
+          ' -t sox - -n spectrogram -h -r' +
+          ' -o ' + tmpFilePath + '-sox.png' +
+          ' -x ' + queryParams.specWidth + ' -y ' + queryParams.specHeight +
+          ' -w ' + queryParams.specWindowFunc + ' -z ' + queryParams.specZaxis + ' -s' +
+          ' -d ' + queryParams.clipDuration
 
         var imageMagick = ((queryParams.specRotate === 0) || (process.env.IMAGEMAGICK_PATH == null))
           ? `cp ${tmpFilePath}-sox.png ${tmpFilePath}-rotated.png`

@@ -1,7 +1,7 @@
 const { Organization, Sequelize, User } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError } = require('../../utils/errors')
 const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
-const { hash } = require('../../utils/misc/hash.js')
+const { randomId } = require('../../utils/misc/hash')
 const pagedQuery = require('../../utils/db/paged-query')
 const availableIncludes = [User.include('created_by')]
 
@@ -19,7 +19,7 @@ async function create (organization, options = {}) {
   }
 
   if (!organization.id) {
-    organization.id = hash.randomString(12)
+    organization.id = randomId()
   }
   return Organization.create(organization).catch(error => {
     if (error instanceof Sequelize.UniqueConstraintError && error.fields.name) {

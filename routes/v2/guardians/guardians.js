@@ -1,6 +1,6 @@
 var express = require('express')
 var router = express.Router()
-var hash = require('../../../utils/misc/hash.js').hash
+var hash = require('../../../utils/misc/hash')
 var httpError = require('../../../utils/http-errors.js')
 var passport = require('passport')
 var Promise = require('bluebird')
