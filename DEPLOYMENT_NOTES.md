@@ -3,8 +3,7 @@
 ## v1.0.16
 
 - Run `npm run sync-timescale` to apply the following migrations:
-  - `20210305141000-add-platform-on-classifier-deployments`
-  - `20210305141400-change-active-to-deployed-on-classifier-deployments`
+  - `20210305141400-change-active-to-deployed-and-add-platform-on-classifier-deployments`
 
 ## v1.0.15
 
