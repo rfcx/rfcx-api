@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const Converter = require('../../../utils/converter/converter')
 const { hasRole } = require('../../../middleware/authorization/authorization')
-const classifierService = require('../../../services/classifiers')
+const classifierDeploymentService = require('../../../services/classifiers/deployments')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 
 /**
@@ -47,11 +47,9 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
   params.convert('end_before').optional().toMomentUtc()
 
   return params.validate()
-    .then(() => {
-      const endBefore = convertedParams.end_before
-      const startAfter = convertedParams.start_after
-      const { platform, deployed } = convertedParams
-      return classifierService.queryDeployments({ platform, deployed, endBefore, startAfter })
+    .then((params) => {
+      const { platform, deployed, startAfter, endBefore } = params
+      return classifierDeploymentService.query({ platform, deployed, endBefore, startAfter })
     })
     .then(deployments => {
       const filteredDeployments = []
@@ -97,7 +95,7 @@ router.patch('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) 
   return params.validate()
     .then(() => {
       const deployed = convertedParams.deployed
-      return classifierService.updateDeploymentStatusById(id, deployed)
+      return classifierDeploymentService.update(id, deployed)
     })
     .then(() => res.status(200).send('Updated'))
     .catch(httpErrorHandler(req, res, 'Failed to update `deployed` status'))
