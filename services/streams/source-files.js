@@ -1,23 +1,21 @@
-const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const { findOrCreateItem } = require('../../utils/sequelize')
+const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../modelsTimescale')
+const { getAccessibleObjectsIDs, STREAM } = require('../roles')
+const pagedQuery = require('../../utils/db/paged-query')
 
 const streamSourceFileBaseInclude = [
+  Stream.include(),
   {
-    model: models.Stream,
-    as: 'stream',
-    attributes: models.Stream.attributes.lite
-  },
-  {
-    model: models.AudioCodec,
+    model: AudioCodec,
     as: 'audio_codec',
-    attributes: models.AudioCodec.attributes.lite
+    attributes: AudioCodec.attributes.lite
   },
   {
-    model: models.AudioFileFormat,
+    model: AudioFileFormat,
     as: 'audio_file_format',
-    attributes: models.AudioFileFormat.attributes.lite
+    attributes: AudioFileFormat.attributes.lite
   }
 ]
 
@@ -28,10 +26,10 @@ const streamSourceFileBaseInclude = [
  * @returns {*} source file model item
  */
 function getById (id, opts = {}) {
-  return models.StreamSourceFile
+  return StreamSourceFile
     .findOne({
       where: { id },
-      attributes: models.StreamSourceFile.attributes.full,
+      attributes: StreamSourceFile.attributes.full,
       include: opts && opts.joinRelations ? streamSourceFileBaseInclude : []
     })
     .then(item => {
@@ -57,7 +55,7 @@ async function create (data, opts = {}) {
   const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data) // eslint-disable-line camelcase
   const where = { stream_id, sha1_checksum }
   const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
-  return models.StreamSourceFile.findOrCreate({ where, defaults })
+  return StreamSourceFile.findOrCreate({ where, defaults })
     .spread((item, created) => {
       if (!created) {
         throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
@@ -68,6 +66,71 @@ async function create (data, opts = {}) {
       console.error('Source file service -> create -> error', e)
       throw new ValidationError('Cannot create source file with provided data.')
     })
+}
+
+/**
+ * Get a list of stream source files matching the filters
+ * @param {string} id
+ * @param {*} filters Additional query options
+ * @param {moment} filters.start Limit to a start date on or after
+ * @param {moment} filters.end Limit to a start date before
+ * @param {string[]} filters.streamIds Filter by one or more stream identifiers
+ * @param {string[]} filters.sha1Checksums Filter by sha1 checksums
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if the stream is accessible to the given user id
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to lite attributes)
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @returns {StreamSourceFile[]} StreamSourceFile
+ */
+async function query (filters, options) {
+  const attributes = options.fields && options.fields.length > 0 ? StreamSourceFile.attributes.full.filter(a => options.fields.includes(a)) : StreamSourceFile.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? streamSourceFileBaseInclude.filter(i => options.fields.includes(i.as)) : []
+
+  const where = {}
+  if (options.readableBy) {
+    const streamIds = await getAccessibleObjectsIDs(options.readableBy, STREAM, filters.streamIds)
+    where.stream_id = {
+      [Sequelize.Op.in]: streamIds
+    }
+  } else if (filters.streamIds) {
+    where.stream_id = {
+      [Sequelize.Op.in]: filters.streamIds
+    }
+  }
+  if (filters.filenames) {
+    where.filename = {
+      [Sequelize.Op.in]: filters.filenames
+    }
+  }
+  if (filters.sha1Checksums) {
+    where.sha1_checksum = {
+      [Sequelize.Op.in]: filters.sha1Checksums
+    }
+  }
+
+  const query = {
+    where,
+    attributes,
+    include,
+    offset: options.offset,
+    limit: options.limit
+  }
+
+  return pagedQuery(StreamSourceFile, query)
+    .then(data => ({
+      total: data.total,
+      results: data.results.map((item) => {
+        item = item.toJSON()
+        if (item.audio_file_format) {
+          item.audio_file_format = item.audio_file_format.value // eslint-disable-line camelcase
+        }
+        if (item.audio_codec) {
+          item.audio_codec = item.audio_codec.value // eslint-disable-line camelcase
+        }
+        return item
+      })
+    }))
 }
 
 /**
@@ -86,7 +149,7 @@ function remove (streamSourceFile) {
  */
 function checkForDuplicates (stream_id, sha1_checksum, filename) { // eslint-disable-line camelcase
   // check for duplicate source file files in this stream
-  return models.StreamSourceFile
+  return StreamSourceFile
     .findAll({ where: { stream_id, sha1_checksum } }) // eslint-disable-line camelcase
     .then((existingStreamSourceFiles) => {
       if (existingStreamSourceFiles && existingStreamSourceFiles.length) {
@@ -106,13 +169,13 @@ function checkForDuplicates (stream_id, sha1_checksum, filename) { // eslint-dis
  */
 async function findOrCreateRelationships (data) {
   const arr = [
-    { modelName: 'AudioCodec', objKey: 'audio_codec' },
-    { modelName: 'AudioFileFormat', objKey: 'audio_file_format' }
+    { model: AudioCodec, objKey: 'audio_codec' },
+    { model: AudioFileFormat, objKey: 'audio_file_format' }
   ]
   const result = {}
   for (const item of arr) {
     const where = { value: data[item.objKey] }
-    const modelItem = await findOrCreateItem(models[item.modelName], where, where)
+    const modelItem = await findOrCreateItem(item.model, where, where)
     result[`${item.objKey}_id`] = modelItem.id
   }
   return result
@@ -145,6 +208,7 @@ function format (streamSourceFile) {
 module.exports = {
   getById,
   create,
+  query,
   remove,
   checkForDuplicates,
   findOrCreateRelationships,

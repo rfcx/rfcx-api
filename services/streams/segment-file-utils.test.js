@@ -21,7 +21,7 @@ describe('convertAudio', () => {
       const segments = [
         { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus' }
       ]
-      const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+      const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
       segmentFileUtils.convertAudio(segments, 1000, 2000, {}, '/tmp/destination.opus')
       expect(runExec).toHaveBeenCalledTimes(1)
       expect(runExec).toHaveBeenCalledWith(command)
@@ -37,7 +37,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -46,7 +46,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 0 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -55,7 +55,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -64,7 +64,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 22579200 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=22579200[0resampled];[0resampled]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=22579200[0resampled];[0resampled]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -76,7 +76,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=0" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=0" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, { gain: 0 }, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -86,7 +86,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=0.5" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=0.5" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, { gain: 0.5 }, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -96,7 +96,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, { gain: 1 }, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -106,7 +106,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=1.5" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=1.5" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, { gain: 1.5 }, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -116,7 +116,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=9007199254740991" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=9007199254740991" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 1900, { gain: 9007199254740991 }, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -128,7 +128,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 900, 2000, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -138,7 +138,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1000, 2000, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -148,7 +148,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source.opus -filter_complex "[0:a]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 2000, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -158,7 +158,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -t 900ms -i /tmp/source.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -t 900ms -i /tmp/source.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 900, 1900, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -168,7 +168,7 @@ describe('convertAudio', () => {
         const segments = [
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]apad=pad_dur=0.1[0padded];[0padded]concat=n=1:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -i /tmp/source.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]apad=pad_dur=0.1[0padded];[0padded]concat=n=1:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 900, 2100, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -182,7 +182,7 @@ describe('convertAudio', () => {
         { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
         { start: 2000, end: 3000, sourceFilePath: '/tmp/source2.opus' }
       ]
-      const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+      const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
       segmentFileUtils.convertAudio(segments, 1000, 3000, {}, '/tmp/destination.opus')
       expect(runExec).toHaveBeenCalledTimes(1)
       expect(runExec).toHaveBeenCalledWith(command)
@@ -193,7 +193,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 2000, end: 3000, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed][1:a]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed][1:a]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 900, 3000, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -203,7 +203,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 2000, end: 3000, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 3000, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -213,7 +213,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 2000, end: 3000, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -t 900ms -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed][1:a]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -t 900ms -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed][1:a]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 900, 2900, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -223,7 +223,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 2000, end: 3000, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source1.opus -t 900ms -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source1.opus -t 900ms -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 2900, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -233,7 +233,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 2000, end: 3000, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[1:a]apad=pad_dur=0.1[1padded];[0delayed][1padded]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[1:a]apad=pad_dur=0.1[1padded];[0delayed][1padded]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 900, 3100, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -243,7 +243,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 2000, end: 3000, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[1:a]apad=pad_dur=0.1[1padded];[0:a][1padded]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[1:a]apad=pad_dur=0.1[1padded];[0:a][1padded]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 3100, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -253,7 +253,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 2200, end: 3200, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]apad=pad_dur=0.2[0padded];[1:a]apad=pad_dur=0.1[1padded];[0padded][1padded]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -i /tmp/source1.opus -i /tmp/source2.opus -filter_complex "[0:a]adelay=100ms[0delayed];[0delayed]apad=pad_dur=0.2[0padded];[1:a]apad=pad_dur=0.1[1padded];[0padded][1padded]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 900, 3300, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)
@@ -263,7 +263,7 @@ describe('convertAudio', () => {
           { start: 1000, end: 2000, sourceFilePath: '/tmp/source1.opus' },
           { start: 1900, end: 2900, sourceFilePath: '/tmp/source2.opus' }
         ]
-        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source1.opus -t 900ms -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn /tmp/destination.opus'
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source1.opus -t 900ms -i /tmp/source2.opus -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1" -y -vn -ac 1 /tmp/destination.opus'
         segmentFileUtils.convertAudio(segments, 1100, 2800, {}, '/tmp/destination.opus')
         expect(runExec).toHaveBeenCalledTimes(1)
         expect(runExec).toHaveBeenCalledWith(command)

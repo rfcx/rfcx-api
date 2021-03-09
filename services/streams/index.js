@@ -3,6 +3,7 @@ const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const rolesService = require('../roles')
+const { getSortFields } = require('../../utils/sort')
 
 const streamBaseInclude = [
   {
@@ -63,6 +64,7 @@ function getByExternalId (id, opts = {}) {
  * Creates stream item
  * @param {*} data stream attributes
  * @param {*} opts additional function params
+ * @param {boolean} opts.joinRelations whether to include joined tables in returned object
  * @returns {*} stream model item
  */
 function create (data, opts = {}) {
@@ -86,6 +88,7 @@ function create (data, opts = {}) {
  */
 async function query (attrs, opts = {}) {
   const where = {}
+  let order = []
   if (attrs.start !== undefined) {
     where.start = {
       [models.Sequelize.Op.gte]: attrs.start
@@ -110,30 +113,17 @@ async function query (attrs, opts = {}) {
   if (attrs.created_by === 'me') {
     where.created_by_id = attrs.current_user_id
   } else if (attrs.created_by === 'collaborators') {
-    if (!attrs.current_user_is_super) {
+    where.created_by_id = { [models.Sequelize.Op.not]: attrs.current_user_id }
+  }
+
+  if (!attrs.current_user_is_super) {
+    if (attrs.is_public === true) {
+      where.is_public = true
+    } else {
       const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, rolesService.STREAM)
       where.id = {
         [models.Sequelize.Op.in]: ids
       }
-    }
-  } else if (attrs.current_user_id !== undefined) {
-    where[models.Sequelize.Op.or] = [{
-      [models.Sequelize.Op.and]: {
-        created_by_id: attrs.current_user_id,
-        ...attrs.is_public !== undefined && { is_public: attrs.is_public }
-      }
-    }]
-    if (attrs.is_public !== false) {
-      where[models.Sequelize.Op.or].push(
-        {
-          [models.Sequelize.Op.and]: {
-            is_public: true,
-            created_by_id: {
-              [models.Sequelize.Op.ne]: attrs.current_user_id
-            }
-          }
-        }
-      )
     }
   }
 
@@ -147,6 +137,12 @@ async function query (attrs, opts = {}) {
   if (attrs.projects) {
     where.project_id = {
       [models.Sequelize.Op.in]: attrs.projects
+    }
+  }
+
+  if (attrs.updated_after) {
+    where.updated_at = {
+      [models.Sequelize.Op.gte]: attrs.updated_after
     }
   }
 
@@ -166,6 +162,10 @@ async function query (attrs, opts = {}) {
     opts.joinRelations = true
   }
 
+  if (attrs.sort) {
+    order = getSortFields(attrs.sort)
+  }
+
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
   return models.Stream[method]({
     where,
@@ -173,7 +173,8 @@ async function query (attrs, opts = {}) {
     offset: attrs.offset,
     attributes: models.Stream.attributes.full,
     include: opts.joinRelations ? streamInclude : [],
-    paranoid: attrs.is_deleted !== true
+    paranoid: attrs.is_deleted !== true,
+    order: order
   })
     .then((data) => {
       return {
@@ -187,11 +188,26 @@ async function query (attrs, opts = {}) {
  * Updates existing stream item
  * @param {*} stream stream model item
  * @param {*} data attributes to update
+ * @param {string} data.name
+ * @param {string} data.description
+ * @param {boolean} data.is_public
+ * @param {string} data.start
+ * @param {string} data.end
+ * @param {float} data.latitude
+ * @param {float} data.longitude
+ * @param {float} data.altitude
+ * @param {integer} data.max_sample_rate
+ * @param {integer} data.project_id
+ * @param {integer} data.external_id
+ * @param {integer} data.project_external_id
  * @param {*} opts additional function params
+ * @param {boolean} opts.joinRelations whether join related tables or not
  * @returns {*} stream model item
  */
 function update (stream, data, opts = {}) {
-  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'project_id'].forEach((attr) => {
+  const attrs = ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude',
+    'altitude', 'max_sample_rate', 'project_id', 'external_id', 'project_external_id']
+  attrs.forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr]
     }
@@ -206,13 +222,17 @@ function update (stream, data, opts = {}) {
 }
 
 /**
- * Deletes stream softly
+ * Deletes stream (soft or hard)
  * @param {*} stream stream model item
+ * @param {*} opts
+ * @param {boolean} force
  */
-function softDelete (stream) {
-  return stream.destroy()
+function del (stream, opts = {}) {
+  return stream.destroy({
+    ...opts.force !== undefined ? { force: opts.force } : {}
+  })
     .catch((e) => {
-      console.error('Streams service -> softDelete -> error', e)
+      console.error('Streams service -> delete -> error', e)
       throw new ValidationError('Cannot delete stream.')
     })
 }
@@ -277,16 +297,31 @@ async function refreshStreamMaxSampleRate (stream) {
 }
 
 /**
- * Finds first and last time points of stream segments and updates start and end columns of the stream
+ * Refreshes stream's start and end points based on provided segment or by searching for first and last segments
  * @param {*} stream stream model item
+ * @param {*} segment (optional) stream segment model item
  */
-async function refreshStreamStartEnd (stream) {
-  const where = { stream_id: stream.id }
-  let start = await models.StreamSegment.min('start', { where })
-  let end = await models.StreamSegment.max('end', { where })
-  start = start || null
-  end = end || null
-  return update(stream, { start, end })
+async function refreshStreamStartEnd (stream, segment) {
+  const upd = {}
+  if (segment) {
+    if (segment.start < stream.start || !stream.start) {
+      upd.start = segment.start
+    }
+    if (segment.end > stream.end || !stream.end) {
+      upd.end = segment.end
+    }
+  } else {
+    const where = { stream_id: stream.id }
+    upd.start = await models.StreamSegment.min('start', { where })
+    upd.end = await models.StreamSegment.max('end', { where })
+    if (upd.start === 0) {
+      upd.start = null
+    }
+    if (upd.end === 0) {
+      upd.end = null
+    }
+  }
+  return update(stream, upd)
 }
 
 function ensureStreamExistsForGuardian (dbGuardian) {
@@ -348,7 +383,7 @@ module.exports = {
   create,
   query,
   update,
-  softDelete,
+  del,
   restore,
   formatStream,
   formatStreams,

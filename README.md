@@ -151,7 +151,7 @@ npm run start.mqtt
 
 ## Testing
 
-This project uses [Jest](https://jestjs.io) for testing and [Standard](https://standardjs.com) for linting. To run both:
+This project uses [Jest](https://jestjs.io) for testing and [ESLint](https://eslint.org) for linting. To run both:
 
 ```
 npm test
@@ -161,11 +161,9 @@ In general, unit tests should be saved alongside the code files that they apply 
 
 To run only Jest: `npm run jest`
 
-To run only Standard: `npm run lint`
+To run only ESLint: `npm run lint` or `npm run lint:fix`
 
-Recommend developers to setup Standard in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [StandardJS extension](https://marketplace.visualstudio.com/items?itemName=chenxsan.vscode-standardjs) is installed.
-
-Standard options are kept in package.json -- currently required as there are a long list of ignores.
+Recommend developers to setup ESLint in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) is installed.
 
 
 ## Deployment

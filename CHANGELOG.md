@@ -1,8 +1,52 @@
+## 1.0.15 (2012-03-05)
+
+### Bug Fixes
+* **core:** GET /stream-source-files endpoint can be used by `systemUser`
+
+
+## 1.0.14 (2012-03-03)
+
+### Features
+* **core:** Add sort param to streams `GET`
+* **core:** Implement GET /detections with required `start` and `end` query and optional `streams`, `classifications`, `min_confidence`, `limit`, and `offset` ([CE-161](https://jira.rfcx.org/browse/CE-161))
+
+
+## 1.0.13 (2021-03-02)
+
+### Features
+* **core:** Rework streams-sites unification ([CE-174](https://jira.rfcx.org/browse/CE-174))
+
+
+## 1.0.12 (2021-02-28)
+
+### Features
+* **core:** Filter streams by `updated_after`
+
+
+## 1.0.11 (2021-02-27)
+
+### Features
+* **core:** Call Arbimon endpoint on Stream update call ([CE-203](https://jira.rfcx.org/browse/CE-203))
+
+
+## 1.0.10 (2021-02-25)
+
+### Bug Fixes
+* **media:** Output single channel audio
+
+
+## 1.0.9 (2021-02-25)
+
+### Bug Fixes
+* **core:** On `GET /streams`, when created_by is not set then return all (non-public) accessible sites ([CE-183](https://jira.rfcx.org/browse/CE-183))
+
+
 <a name="1.0.8"></a>
-## 1.0.8 (2021-02-XX)
+## 1.0.8 (2021-02-24)
 
 ### Features
 * **media:** Use `ffmpeg` instead of `sox` for audio processing ([CS-439](https://jira.rfcx.org/browse/CS-439))
+* **core:** Add GET /streams/{id}/stream-source-files endpoint ([CE-31](https://jira.rfcx.org/browse/CE-31))
 
 ### Bug Fixes
 * **media:** Handle case when one segment overlays another ([CS-439](https://jira.rfcx.org/browse/CS-439))
@@ -12,6 +56,9 @@
 * **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
 * **core:** Refactor setup script
 * **core:** Update stream_segments and stream_source_files tables to have unique constraint on stream_id and checksum ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+### Performance Improvements
+* **core:** Do not request min and max segment time for stream on segment creation - get it from segment ([CE-106](https://jira.rfcx.org/browse/CE-106))
 
 
 ## 1.0.7 (2021-02-22)
