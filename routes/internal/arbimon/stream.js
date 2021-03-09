@@ -100,9 +100,8 @@ router.patch('/streams/:externalId', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.delete('/streams/:externalId', async (req, res) => {
-  try {
-    await usersFusedService.ensureUserSyncedFromToken(req)
+router.delete('/streams/:externalId', (req, res) => {
+  usersFusedService.ensureUserSyncedFromToken(req).then(async () => {
     const stream = await streamsService.get({ external_id: req.params.externalId })
     const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)
     if (!allowed) {
@@ -110,9 +109,9 @@ router.delete('/streams/:externalId', async (req, res) => {
     }
     await streamsService.remove(stream)
     res.sendStatus(204)
-  } catch (e) {
-    httpErrorHandler(req, res, 'Failed deleting stream')(e)
-  }
+  }).catch(error => {
+    httpErrorHandler(req, res, 'Failed deleting stream')(error)
+  })
 })
 
 module.exports = router
