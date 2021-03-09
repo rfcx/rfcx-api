@@ -8,11 +8,8 @@ const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const { Stream } = require('../../../modelsTimescale')
-const { hasPermission, PROJECT, UPDATE } = require('../../../services/roles')
-const ARBIMON_ENABLED = `${process.env.ARBIMON_ENABLED}` === 'true'
-if (ARBIMON_ENABLED) {
-  var arbimonService = require('../../../services/arbimon')
-}
+const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
+const arbimonService = require('../../../services/arbimon')
 
 /**
  * @swagger
@@ -48,46 +45,59 @@ if (ARBIMON_ENABLED) {
  *         description: Invalid query parameters
  */
 
-router.post('/', function (req, res) {
+router.post('/', (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('id').optional().toString()
-  params.convert('name').toString()
-  params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
-  params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
-  params.convert('altitude').optional().toFloat()
-  params.convert('description').optional().toString()
-  params.convert('is_public').optional().toBoolean().default(false)
-  params.convert('external_id').optional().toInt()
-  params.convert('project_id').optional().toString()
-  params.convert('project_external_id').optional().toInt()
+  const converter = new Converter(req.body, {})
+  converter.convert('id').optional().toString().toLowerCase()
+  converter.convert('name').toString()
+  converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
+  converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+  converter.convert('altitude').optional().toFloat()
+  converter.convert('description').optional().toString()
+  converter.convert('is_public').optional().toBoolean().default(false)
+  converter.convert('external_id').optional().toInt()
+  converter.convert('project_id').optional().toString()
+  converter.convert('project_external_id').optional().toInt()
 
-  return params.validate()
-    .then(() => usersService.ensureUserSyncedFromToken(req))
-    .then(async () => {
-      if (convertedParams.project_id) {
-        await projectsService.get(convertedParams.project_id)
-        const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, convertedParams.project_id, PROJECT)
+  return converter.validate()
+    .then(async (params) => {
+      await usersFusedService.ensureUserSyncedFromToken(req)
+
+      params.id = params.id || hash.randomString(12).toLowerCase()
+      params.created_by_id = userId
+
+      let project
+      if (params.project_id) {
+        project = await projectsService.get(params.project_id)
+      }
+      if (params.project_external_id) {
+        project = await projectsService.get({ external_id: params.project_external_id })
+        // TODO: request project from Arbimon if not found
+        params.project_id = project.id
+      }
+      if (project) {
+        const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, project.id, PROJECT)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create stream in this project.')
         }
       }
-      if (convertedParams.project_external_id) {
-        const externalProject = await projectsService.get({ external_id: convertedParams.project_external_id })
-        const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, externalProject.id, PROJECT)
-        if (!allowed) {
-          throw new ForbiddenError('You do not have permission to create stream in this project.')
+
+      if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
+        const idToken = req.headers.authorization
+        try {
+          const arbimonSite = await arbimonService.createSite(stream.toJSON(), idToken)
+          params.external_id = arbimonSite.site_id
+        } catch (error) {
+          console.error(`Error creating site in Arbimon (stream: ${params.id})`)
         }
-        convertedParams.project_id = externalProject.id
       }
-      convertedParams.id = convertedParams.id || hash.randomString(12)
-      convertedParams.created_by_id = userId
-      return streamsService.create(convertedParams, { joinRelations: true })
+
+      const stream = await streamsService.create(params, { joinRelations: true })
+
+      res.location(`/streams/${stream.id}`).status(201).json(streamsService.formatStream(stream))
+    }).catch(error => {
+      httpErrorHandler(req, res, 'Failed creating stream')(error)
     })
-    .then(streamsService.formatStream)
-    .then(stream => res.location(`/streams/${stream.id}`).status(201).json(stream))
-    .catch(httpErrorHandler(req, res, 'Failed creating stream'))
 })
 
 /**
@@ -146,6 +156,12 @@ router.post('/', function (req, res) {
  *         in: query
  *         type: int
  *         default: 0
+ *       - name: sort
+ *         description: Order the results (comma-separated list of fields, prefix "-" for descending)
+ *         in: query
+ *         type: string
+ *         example: is_public,-updated_at
+ *         default: -updated_at
  *       - name: fields
  *         description: Customize included fields and relations
  *         in: query
@@ -182,11 +198,12 @@ router.get('/', (req, res) => {
   converter.convert('only_deleted').optional().toBoolean()
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
+  converter.convert('sort').optional().toString()
   converter.convert('fields').optional().toArray()
 
   return converter.validate()
     .then(async params => {
-      const { keyword, organizations, projects, start, end, onlyPublic, onlyDeleted, limit, offset, fields } = params
+      const { keyword, organizations, projects, start, end, onlyPublic, onlyDeleted, limit, offset, sort, fields } = params
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = readableBy
@@ -200,6 +217,7 @@ router.get('/', (req, res) => {
         onlyDeleted,
         limit,
         offset,
+        sort,
         // TODO remove this hack after fixing apps are using non-lite attributes
         fields: fields !== undefined
           ? fields
@@ -309,9 +327,13 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
     }
     // TODO - add updatableBy checks
     const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
-    if (ARBIMON_ENABLED) {
-      const idToken = req.headers.authorization
-      arbimonService.updateSite(updatedStream.toJSON(), idToken) // do not use await to avoid errors for missing sites
+    if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
+      try {
+        const idToken = req.headers.authorization
+        await arbimonService.updateSite(updatedStream.toJSON(), idToken)
+      } catch (err) {
+        console.error('Failed updating stream in Arbimon', err)
+      }
     }
     res.json(streamsService.formatStream(updatedStream))
   }).catch((e) => {
@@ -344,7 +366,17 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
 router.delete('/:id', hasStreamPermission('D'), (req, res) => {
   // TODO - add deletableBy checks
   return streamsService.get(req.params.id)
-    .then(streamsService.softDelete)
+    .then(async (stream) => {
+      if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
+        try {
+          const idToken = req.headers.authorization
+          await arbimonService.deleteSite(streamId, idToken)
+        } catch (err) {
+          console.error('Failed deleting site in Arbimon', err)
+        }
+      }
+      await streamsService.remove(stream)
+    })
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'))
 })

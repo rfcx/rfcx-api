@@ -137,6 +137,10 @@ async function query (attrs, opts = {}) {
  * Updates existing project item
  * @param {*} project project model item
  * @param {*} data attributes to update
+ * @param {string} data.name
+ * @param {string} data.description
+ * @param {boolean} data.is_public
+ * @param {integer} data.external_id
  * @param {*} opts additional function params
  * @returns {*} project model item
  */
@@ -156,13 +160,17 @@ function update (project, data, opts = {}) {
 }
 
 /**
- * Deletes project softly
+ * Deletes project (soft or hard)
  * @param {*} project project model item
+ * @param {*} opts
+ * @param {boolean} force
  */
-function softDelete (project) {
-  return project.destroy()
+function del (project, opts) {
+  return project.destroy({
+    ...opts.force !== undefined ? { force: opts.force } : {}
+  })
     .catch((e) => {
-      console.error('Projects service -> softDelete -> error', e)
+      console.error('Projects service -> delete -> error', e)
       throw new ValidationError('Cannot delete project.')
     })
 }
@@ -224,7 +232,7 @@ module.exports = {
   create,
   query,
   update,
-  softDelete,
+  del,
   restore,
   getProjectLocation,
   formatProject,

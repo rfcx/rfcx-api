@@ -8,6 +8,7 @@ const hash = require('../../../utils/misc/hash.js').hash
 const Converter = require('../../../utils/converter/converter')
 const { hasProjectPermission } = require('../../../middleware/authorization/roles')
 const { hasPermission, CREATE, ORGANIZATION, UPDATE, DELETE, READ } = require('../../../services/roles')
+const arbimonService = require('../../../services/arbimon')
 
 /**
  * @swagger
@@ -43,16 +44,15 @@ const { hasPermission, CREATE, ORGANIZATION, UPDATE, DELETE, READ } = require('.
  *         description: Invalid query parameters
  */
 
-router.post('/', function (req, res) {
+router.post('/', (req, res) => {
   const userId = req.rfcx.auth_token_info.owner_id
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('id').optional().toString()
-  params.convert('name').toString()
-  params.convert('description').optional().toString()
-  params.convert('is_public').default(false).toBoolean()
-  params.convert('organization_id').optional().toString()
-  params.convert('external_id').optional().toInt()
+  const converter = new Converter(req.body, {})
+  converter.convert('id').optional().toString()
+  converter.convert('name').toString()
+  converter.convert('description').optional().toString()
+  converter.convert('is_public').default(false).toBoolean()
+  converter.convert('organization_id').optional().toString()
+  converter.convert('external_id').optional().toInt()
 
   return params.validate()
     .then(() => usersFusedService.ensureUserSyncedFromToken(req))
@@ -64,13 +64,23 @@ router.post('/', function (req, res) {
           throw new ForbiddenError('You do not have permission to create project in this organization.')
         }
       }
-      convertedParams.id = convertedParams.id || hash.randomString(12)
-      convertedParams.created_by_id = req.rfcx.auth_token_info.owner_id
-      return projectsService.create(convertedParams, { joinRelations: true })
+
+      params.created_by_id = userId
+      project = await projectsService.create(params, { joinRelations: true })
+
+      if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
+        const idToken = req.headers.authorization
+        const arbimonProject = await arbimonService.createProject(project.toJSON(), idToken)
+        project = await projectsService.update(project, { external_id: arbimonProject.project_id }, { joinRelations: true })
+      }
+
+      res.location(`/projects/${project.id}`).status(201).json(projectsService.formatProject(project))
+    }).catch(error => {
+      httpErrorHandler(req, res, 'Failed creating project')(error)
+      if (project) {
+        projectsService.remove(project, { force: true })
+      }
     })
-    .then(projectsService.formatProject)
-    .then(data => res.location(`/projects/${data.id}`).status(201).json(data))
-    .catch(httpErrorHandler(req, res, 'Failed creating project'))
 })
 
 /**
@@ -273,7 +283,7 @@ router.patch('/:id', hasProjectPermission(UPDATE), (req, res) => {
  */
 router.delete('/:id', hasProjectPermission(DELETE), (req, res) => {
   return projectsService.get(req.params.id, { joinRelations: true })
-    .then(projectsService.softDelete)
+    .then(projectsService.remove)
     .then(json => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting project'))
 })

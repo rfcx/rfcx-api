@@ -1,6 +1,7 @@
 {
   "name": "rfcx-api",
-  "version": "1.0.11",
+  "version": "1.0.15",
+  "license": "UNLICENSED",
   "private": false,
   "repository": {
     "type": "git",
@@ -10,13 +11,14 @@
     "dev": "nodemon bin/main.js",
     "dev:core": "DEV_CORE_ONLY=true nodemon bin/main.js",
     "start": "node bin/setup.js; node bin/main.js;",
-    "start.mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
+    "start:mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
-    "test": "standard && jest",
+    "test": "eslint \"**/*\" && jest",
     "test-coverage": "jest --coverage",
     "jest": "jest",
-    "lint": "standard"
+    "lint": "eslint \"**/*\"",
+    "lint:fix": "eslint --fix \"**/*\""
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.5.0",
@@ -78,22 +80,22 @@
     "xmldom": "^0.4.0"
   },
   "devDependencies": {
+    "eslint": "^7.21.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.1.5",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
     "faux-knox": "0.1.16",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
     "minimist": "1.2.5",
     "s3": "4.4.0",
-    "sequelize-cli": "5.5.1",
-    "standard": "*"
-  },
-  "standard": {
-    "env": [
-      "jest"
-    ]
+    "sequelize-cli": "5.5.1"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run test"
+      "pre-commit": "npm run jest"
     }
   }
 }

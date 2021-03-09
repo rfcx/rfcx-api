@@ -4,6 +4,8 @@ const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, READ } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
+const { getSortFields } = require('../../utils/sort')
+const rolesService = require('../roles')
 
 const availableIncludes = [
   User.include('created_by'),
@@ -40,6 +42,7 @@ async function get (idOrWhere, options = {}) {
  * Creates stream item
  * @param {*} data stream attributes
  * @param {*} opts additional function params
+ * @param {boolean} opts.joinRelations whether to include joined tables in returned object
  * @returns {*} stream model item
  */
 function create (data, opts = {}) {
@@ -70,6 +73,7 @@ function create (data, opts = {}) {
  * @param {boolean} options.onlyPublic Include only public streams
  * @param {boolean} options.onlyDeleted Include only deleted streams
  * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {string} options.sort Order the results by one or more columns
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
@@ -129,11 +133,13 @@ async function query (filters, options = {}) {
   }
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const order = getSortFields(options.sort ?? '-updated_at')
 
   const streamsData = await pagedQuery(Stream, {
     where,
     attributes,
     include,
+    order,
     limit: options.limit,
     offset: options.offset,
     paranoid: options.onlyDeleted !== true
@@ -158,11 +164,26 @@ async function query (filters, options = {}) {
  * Updates existing stream item
  * @param {*} stream stream model item
  * @param {*} data attributes to update
+ * @param {string} data.name
+ * @param {string} data.description
+ * @param {boolean} data.is_public
+ * @param {string} data.start
+ * @param {string} data.end
+ * @param {float} data.latitude
+ * @param {float} data.longitude
+ * @param {float} data.altitude
+ * @param {integer} data.max_sample_rate
+ * @param {integer} data.project_id
+ * @param {integer} data.external_id
+ * @param {integer} data.project_external_id
  * @param {*} opts additional function params
+ * @param {boolean} opts.joinRelations whether join related tables or not
  * @returns {*} stream model item
  */
 function update (stream, data, opts = {}) {
-  ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'project_id'].forEach((attr) => {
+  const attrs = ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude',
+    'altitude', 'max_sample_rate', 'project_id', 'external_id', 'project_external_id']
+  attrs.forEach((attr) => {
     if (data[attr] !== undefined) {
       stream[attr] = data[attr]
     }
@@ -177,13 +198,17 @@ function update (stream, data, opts = {}) {
 }
 
 /**
- * Deletes stream softly
+ * Delete a stream (soft or hard)
  * @param {*} stream stream model item
+ * @param {*} options
+ * @param {boolean} options.force
  */
-function softDelete (stream) {
-  return stream.destroy()
+function remove (stream, opts = {}) {
+  return stream.destroy({
+    ...opts.force !== undefined ? { force: opts.force } : {}
+  })
     .catch((e) => {
-      console.error('Streams service -> softDelete -> error', e)
+      console.error('Streams service -> delete -> error', e)
       throw new ValidationError('Cannot delete stream.')
     })
 }
@@ -331,7 +356,7 @@ module.exports = {
   create,
   query,
   update,
-  softDelete,
+  remove,
   restore,
   formatStream,
   formatStreams,

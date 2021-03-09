@@ -1,3 +1,22 @@
+## 1.0.15 (2012-03-05)
+
+### Bug Fixes
+* **core:** GET /stream-source-files endpoint can be used by `systemUser`
+
+
+## 1.0.14 (2012-03-03)
+
+### Features
+* **core:** Add sort param to streams `GET`
+* **core:** Implement GET /detections with required `start` and `end` query and optional `streams`, `classifications`, `min_confidence`, `limit`, and `offset` ([CE-161](https://jira.rfcx.org/browse/CE-161))
+
+
+## 1.0.13 (2021-03-02)
+
+### Features
+* **core:** Rework streams-sites unification ([CE-174](https://jira.rfcx.org/browse/CE-174))
+
+
 ## 1.0.12 (2021-02-28)
 
 ### Features

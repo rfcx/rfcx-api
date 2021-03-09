@@ -1,6 +1,21 @@
 # API Deployment Notes
 
 - Expect some errors from Explorer due to removal of `is_deleted`, `is_public`, and `created_by=collaborators` on `GET /streams`
+## v1.0.12
+
+_None_
+
+## v1.0.11
+
+_None_
+
+## v1.0.10
+
+_None_
+
+## v1.0.9
+
+_None_
 
 ## v1.0.8
 
