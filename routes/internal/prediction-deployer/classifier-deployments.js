@@ -39,8 +39,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
  *         description: Success
  */
 router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
-  const convertedParams = {}
-  const params = new Converter(req.query, convertedParams)
+  const params = new Converter(req.query, {}, true)
   params.convert('platform').optional().toString()
   params.convert('deployed').optional().toBoolean()
   params.convert('start_after').optional().toMomentUtc()
