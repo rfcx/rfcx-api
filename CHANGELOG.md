@@ -1,3 +1,13 @@
+## 1.0.16 (2012-03-10)
+
+### Bug Fixes
+* **core:** Refactor stream source file creation endpoint to avoid duplicates ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+### Other
+* **core:** Refactor setup script
+* **core:** Update stream_segments and stream_source_files tables to have unique constraint on stream_id and checksum ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+
 ## 1.0.15 (2012-03-05)
 
 ### Bug Fixes
@@ -50,12 +60,9 @@
 
 ### Bug Fixes
 * **media:** Handle case when one segment overlays another ([CS-439](https://jira.rfcx.org/browse/CS-439))
-* **core:** Refactor stream source file creation endpoint to avoid duplicates ([CE-179](https://jira.rfcx.org/browse/CE-179))
 
 ### Other
 * **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
-* **core:** Refactor setup script
-* **core:** Update stream_segments and stream_source_files tables to have unique constraint on stream_id and checksum ([CE-179](https://jira.rfcx.org/browse/CE-179))
 
 ### Performance Improvements
 * **core:** Do not request min and max segment time for stream on segment creation - get it from segment ([CE-106](https://jira.rfcx.org/browse/CE-106))

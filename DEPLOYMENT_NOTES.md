@@ -1,5 +1,10 @@
 # API Deployment Notes
 
+## v1.0.16
+
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210223000000-update-indexes-and-constraints-for-source-files`
+
 ## v1.0.12
 
 _None_
@@ -18,8 +23,6 @@ _None_
 
 ## v1.0.8
 
-- Run `npm run sync-timescale` to apply the following migrations:
-  - `20210223000000-update-indexes-and-constraints-for-source-files`
 - Add `MEDIA_CACHE_ENABLED` env var and set it to true
 
 ## v1.0.7
