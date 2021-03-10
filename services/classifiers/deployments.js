@@ -42,9 +42,7 @@ async function query(filters) {
  */
 async function update(id, deployed) {
   const deployment = await models.ClassifierDeployment.findOne({ where: { id } })
-  await models.sequelize.transaction(async (t) => {
-    await deployment.update({ deployed: deployed }, { transaction: t })
-  })
+  await deployment.update({ deployed: deployed })
 }
 
 module.exports = {
