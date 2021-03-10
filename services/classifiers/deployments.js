@@ -1,5 +1,19 @@
+const EmptyResultError = require('../../utils/converter/empty-result-error')
 const models = require('../../modelsTimescale')
 const moment = require('moment')
+
+/**
+ * Gets classifier deployment from
+ * @param {integer} id
+ */
+async function get (id) {
+  try {
+    return await models.ClassifierDeployment.findOne({ where: { id } })
+  } catch (e) {
+    throw new EmptyResultError('Classifier deployment information with given id not found.')
+  }
+}
+
 
 /**
  * Gets classifier deployments based on input params
@@ -41,7 +55,7 @@ async function query(filters) {
  * @param {boolean} deployed
  */
 async function update(id, deployed) {
-  const deployment = await models.ClassifierDeployment.findOne({ where: { id } })
+  const deployment = await get(id)
   await deployment.update({ deployed: deployed })
 }
 
