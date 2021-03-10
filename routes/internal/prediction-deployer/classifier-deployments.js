@@ -6,6 +6,28 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 
 /**
  * @swagger
+ * /internal/prediction-deployer/classifier-deployments/{id}
+ *   get:
+ *     summary: Get the classifier deployment by id
+ *     description: -
+ *     tags:
+ *       - internal
+ *     responses:
+ *       200:
+ *         description: Success
+ *       404:
+ *         Not found the classifier deployment with given id
+ */
+router.get('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) => {
+  const id = req.params.id
+
+  return classifierDeploymentService.get(id)
+    .then(deployments => res.json(deployments))
+    .catch(httpErrorHandler(req, res, 'Failed to get deployments'))
+})
+
+/**
+ * @swagger
  * 
  * /internal/prediction-deployer/classifier-deployments
  *   get:
@@ -63,8 +85,8 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
  * @swagger
  * 
  * /internal/prediction-deployer/classifier-deployments/{id}
- *   get:
- *     summary: Get classifier deployment information
+ *   patch:
+ *     summary: Update the deployed status of given classifier id
  *     description: This endpoint is used by the "prediction-deployer" service for create, update, or delete the k8s deployment
  *     tags:
  *       - internal

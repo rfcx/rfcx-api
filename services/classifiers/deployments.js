@@ -5,13 +5,14 @@ const moment = require('moment')
 /**
  * Gets classifier deployment from
  * @param {integer} id
+ * @throws EmptyResultError when classifier not found
  */
 async function get (id) {
-  try {
-    return await models.ClassifierDeployment.findOne({ where: { id } })
-  } catch (e) {
+  const deployment = await models.ClassifierDeployment.findOne({ where: { id } })
+  if (!deployment) {
     throw new EmptyResultError('Classifier deployment information with given id not found.')
   }
+  return deployment
 }
 
 
