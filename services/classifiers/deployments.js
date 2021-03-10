@@ -22,6 +22,7 @@ async function get (id) {
  * @param {boolean} filters.deployed
  * @param {string} filters.endBefore
  * @param {string} filter.startAfter
+ * @param {string} filter.type
  */
 async function query(filters) {
   const condition = {}
@@ -42,11 +43,29 @@ async function query(filters) {
     condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.endBefore).valueOf() }
   }
 
-  return models.ClassifierDeployment.findAll({
+  const query = {
     where: condition,
-    order: [['id', 'DESC']],
     attributes: models.ClassifierDeployment.attributes.full
-  })
+  }
+
+  if (filters.type && filters.type === 'only_last') {
+    query.order = [['id', 'DESC']]
+  }
+
+  const deployments = await models.ClassifierDeployment.findAll(query)
+
+  if (filters.type) {
+    const filteredDeployments = []
+    for (const deployment of deployments) {
+      const idx = filteredDeployments.findIndex(d => d.classifier_id === deployment.classifier_id)
+      if (idx < 0) {
+        filteredDeployments.push(deployment)
+      }
+    }
+    return filteredDeployments
+  }
+
+  return deployments
 }
 
 /**
@@ -60,6 +79,7 @@ async function update(id, deployed) {
 }
 
 module.exports = {
+  get,
   query,
   update
 }
