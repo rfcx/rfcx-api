@@ -21,8 +21,8 @@ async function get (id) {
  * @param {*} filters
  * @param {string} filters.platform
  * @param {boolean} filters.deployed
- * @param {string} filters.endBefore
- * @param {string} filter.startAfter
+ * @param {string} filter.start
+ * @param {string} filters.end
  * @param {string} filter.type
  */
 async function query(filters) {
@@ -36,11 +36,11 @@ async function query(filters) {
     condition.deployed = filters.deployed
   }
 
-  if (filters.startAfter) {
+  if (filters.start) {
     condition.start = { [models.Sequelize.Op.gte]: moment.utc(filters.startAfter).valueOf() }
   }
 
-  if (filters.endBefore) {
+  if (filters.end) {
     condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.endBefore).valueOf() }
   }
 
