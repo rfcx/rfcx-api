@@ -49,7 +49,7 @@ async function query(filters) {
     attributes: models.ClassifierDeployment.attributes.full,
     include: {
       model: models.Classifier,
-      as: 'info',
+      as: 'classifier',
       attributes: ['name']
     }
   }
