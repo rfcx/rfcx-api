@@ -5,13 +5,13 @@
 * **internal:** GET /prediction-deployer/classifier-deployments endpoint for getting the list of latest deployment information of each classifier id
 * **internal:** PATCH /prediction-deployer/classifier-deployments/:id endpoint for updating deployed status
 
-## 1.0.15 (2012-03-05)
+## 1.0.15 (2021-03-05)
 
 ### Bug Fixes
 * **core:** GET /stream-source-files endpoint can be used by `systemUser`
 
 
-## 1.0.14 (2012-03-03)
+## 1.0.14 (2021-03-03)
 
 ### Features
 * **core:** Add sort param to streams `GET`
