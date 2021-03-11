@@ -57,16 +57,14 @@ router.post('/:streamId/stream-source-files', hasRole(['systemUser']), function 
     .then(async () => {
       const stream = await streamsService.getById(streamId)
       convertedParams.stream_id = streamId
-      await streamSourceFileService.checkForDuplicates(streamId, convertedParams.sha1_checksum, convertedParams.filename)
       if (convertedParams.meta && Object.keys(convertedParams.meta).length !== 0 && convertedParams.meta.constructor === Object) {
         convertedParams.meta = JSON.stringify(convertedParams.meta)
       } else {
         delete convertedParams.meta
       }
-      await streamSourceFileService.findOrCreateRelationships(convertedParams)
       const streamSourceFile = await streamSourceFileService.create(convertedParams, { joinRelations: true })
       await streamsService.refreshStreamMaxSampleRate(stream, streamSourceFile)
-      return res.status(201).json(streamSourceFileService.format(streamSourceFile))
+      return res.location(`/stream-source-file/${streamSourceFile.id}`).status(201).json(streamSourceFileService.format(streamSourceFile))
     })
     .catch(httpErrorHandler(req, res, 'Failed creating stream source file'))
 })

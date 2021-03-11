@@ -1,9 +1,20 @@
-## 1.0.16 (2021-03-08)
+## 1.0.17 (2021-03-11)
 
 ### Features
 * **internal:** GET /prediction-deployer/classifier-deployments/:id endpoint for getting individual classifier deployment information by id
-* **internal:** GET /prediction-deployer/classifier-deployments endpoint for getting the list of latest deployment information of each classifier id
-* **internal:** PATCH /prediction-deployer/classifier-deployments/:id endpoint for updating deployed status
+* **internal:** GET /prediction-deployer/classifier-deployments endpoint for getting the list of latest deployment information of each classifier id ([CE-277](https://jira.rfcx.org/browse/CE-277))
+* **internal:** PATCH /prediction-deployer/classifier-deployments/:id endpoint for updating deployed status ([CE-277](https://jira.rfcx.org/browse/CE-277))
+
+
+## 1.0.16 (2012-03-10)
+
+### Bug Fixes
+* **core:** Refactor stream source file creation endpoint to avoid duplicates ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+### Other
+* **core:** Refactor setup script
+* **core:** Update stream_segments and stream_source_files tables to have unique constraint on stream_id and checksum ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
 
 ## 1.0.15 (2021-03-05)
 
@@ -60,7 +71,6 @@
 
 ### Other
 * **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
-* **core:** refactor setup script
 
 ### Performance Improvements
 * **core:** Do not request min and max segment time for stream on segment creation - get it from segment ([CE-106](https://jira.rfcx.org/browse/CE-106))
@@ -69,7 +79,7 @@
 ## 1.0.7 (2021-02-22)
 
 ### Features
-* **core:** Enable clustered annotation query by `is_manual` and `is_positive` [CE-127](https://jira.rfcx.org/browse/CE-127)
+* **core:** Enable clustered annotation query by `is_manual` and `is_positive` ([CE-127](https://jira.rfcx.org/browse/CE-127))
 
 ### Bug Fixes
 * **core:** Remove unuse parameters from `event` model
