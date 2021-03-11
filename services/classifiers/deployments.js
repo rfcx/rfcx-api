@@ -46,11 +46,11 @@ async function query(filters) {
 
   const query = {
     where: condition,
-    attributes: models.ClassifierDeployment.attributes.full,
+    attributes: ['id', 'deployed', 'status', 'start', 'end', 'platform', 'deployment_parameters'],
     include: {
       model: models.Classifier,
       as: 'classifier',
-      attributes: ['name']
+      attributes: ['id', 'name']
     }
   }
 
