@@ -46,7 +46,12 @@ async function query(filters) {
 
   const query = {
     where: condition,
-    attributes: models.ClassifierDeployment.attributes.full
+    attributes: models.ClassifierDeployment.attributes.full,
+    include: {
+      model: models.Classifier,
+      as: 'info',
+      attributes: ['name']
+    }
   }
 
   if (filters.type && filters.type === 'only_last') {
