@@ -46,8 +46,13 @@ router.get('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) =>
  *         in: query
  *         required: false
  *         type: boolean
- *       - name: start_after
+ *       - name: start
  *         description: Time to query the classifier which have start time greater or equal given time
+ *         in: query
+ *         required: false
+ *         type: string
+ *       - name: end
+ *         description: Time to query the classifier which have end time less or equal given time
  *         in: query
  *         required: false
  *         type: string
@@ -68,14 +73,14 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
   const params = new Converter(req.query, {}, true)
   params.convert('platform').optional().toString()
   params.convert('deployed').optional().toBoolean()
-  params.convert('start_after').optional().toMomentUtc()
-  params.convert('end_before').optional().toMomentUtc()
+  params.convert('start').optional().toMomentUtc()
+  params.convert('end').optional().toMomentUtc()
   params.convert('type').optional().toString().isEqualToAny(['only_first', 'only_last'])
 
   return params.validate()
     .then((params) => {
-      const { platform, deployed, startAfter, endBefore, type } = params
-      return classifierDeploymentService.query({ platform, deployed, endBefore, startAfter, type })
+      const { platform, deployed, start, end, type } = params
+      return classifierDeploymentService.query({ platform, deployed, start, end, type })
     })
     .then(deployments => res.json(deployments))
     .catch(httpErrorHandler(req, res, 'Failed to get deployments'))
