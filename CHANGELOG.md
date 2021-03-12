@@ -1,3 +1,11 @@
+## 1.0.17 (2021-03-11)
+
+### Features
+* **internal:** GET /prediction-deployer/classifier-deployments/:id endpoint for getting individual classifier deployment information by id
+* **internal:** GET /prediction-deployer/classifier-deployments endpoint for getting the list of latest deployment information of each classifier id ([CE-277](https://jira.rfcx.org/browse/CE-277))
+* **internal:** PATCH /prediction-deployer/classifier-deployments/:id endpoint for updating deployed status ([CE-277](https://jira.rfcx.org/browse/CE-277))
+
+
 ## 1.0.16 (2012-03-10)
 
 ### Bug Fixes
@@ -8,13 +16,13 @@
 * **core:** Update stream_segments and stream_source_files tables to have unique constraint on stream_id and checksum ([CE-179](https://jira.rfcx.org/browse/CE-179))
 
 
-## 1.0.15 (2012-03-05)
+## 1.0.15 (2021-03-05)
 
 ### Bug Fixes
 * **core:** GET /stream-source-files endpoint can be used by `systemUser`
 
 
-## 1.0.14 (2012-03-03)
+## 1.0.14 (2021-03-03)
 
 ### Features
 * **core:** Add sort param to streams `GET`
