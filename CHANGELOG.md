@@ -1,12 +1,9 @@
-## 1.0.17 (2021-03-11)
+## 1.0.16 (2012-03-12)
 
 ### Features
 * **internal:** GET /prediction-deployer/classifier-deployments/:id endpoint for getting individual classifier deployment information by id
 * **internal:** GET /prediction-deployer/classifier-deployments endpoint for getting the list of latest deployment information of each classifier id ([CE-277](https://jira.rfcx.org/browse/CE-277))
 * **internal:** PATCH /prediction-deployer/classifier-deployments/:id endpoint for updating deployed status ([CE-277](https://jira.rfcx.org/browse/CE-277))
-
-
-## 1.0.16 (2012-03-10)
 
 ### Bug Fixes
 * **core:** Refactor stream source file creation endpoint to avoid duplicates ([CE-179](https://jira.rfcx.org/browse/CE-179))
