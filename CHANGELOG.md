@@ -1,3 +1,9 @@
+## 1.0.15-hotfix.0 (2021-03-13)
+
+### Bug Fixes
+* **core:** POST /v2/guardians/register endpoint uses correct data for Arbimon site creation
+
+
 ## 1.0.16 (2012-03-12)
 
 ### Features
