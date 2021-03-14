@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 const streamsService = require('../../../services/streams')
 const projectsService = require('../../../services/projects')
 const usersService = require('../../../services/users/fused')
@@ -37,18 +38,12 @@ const arbimonService = require('../../../services/arbimon')
  *             description: Path of the created resource (e.g. `/streams/xyz123`)
  *             schema:
  *               type: string
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Stream'
  *       400:
  *         description: Invalid query parameters
  */
-
-router.post('/', (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
-  const converter = new Converter(req.body, {})
-  converter.convert('id').optional().toString().toLowerCase()
+router.post('/', ensureUserSynced, (req, res) => {
+  const user = req.rfcx.auth_token_info
+  const converter = new Converter(req.body, {}, true)
   converter.convert('name').toString()
   converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
@@ -57,47 +52,33 @@ router.post('/', (req, res) => {
   converter.convert('is_public').optional().toBoolean().default(false)
   converter.convert('external_id').optional().toInt()
   converter.convert('project_id').optional().toString()
-  converter.convert('project_external_id').optional().toInt()
 
-  return converter.validate()
+  return 
+    .then(converter.validate)
     .then(async (params) => {
-      await usersFusedService.ensureUserSyncedFromToken(req)
-
-      params.id = params.id ?? randomId()
-      params.created_by_id = userId
-
-      let project
-      if (params.project_id) {
-        project = await projectsService.get(params.project_id)
-      }
-      if (params.project_external_id) {
-        project = await projectsService.get({ external_id: params.project_external_id })
-        // TODO: request project from Arbimon if not found
-        params.project_id = project.id
-      }
-      if (project) {
-        const allowed = await hasPermission(UPDATE, req.rfcx.auth_token_info, project.id, PROJECT)
-        if (!allowed) {
-          throw new ForbiddenError('You do not have permission to create stream in this project.')
-        }
+      const stream = {
+        ...params,
+        id: randomId(),
+        createdById: user.id
       }
 
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
-        const idToken = req.headers.authorization
         try {
-          const arbimonSite = await arbimonService.createSite(stream.toJSON(), idToken)
-          params.external_id = arbimonSite.site_id
+          const externalSite = await arbimonService.createSite(stream, req.headers.authorization)
+          stream.externalId = externalSite.site_id
         } catch (error) {
           console.error(`Error creating site in Arbimon (stream: ${params.id})`)
         }
       }
 
-      const stream = await streamsService.create(params, { joinRelations: true })
+      const options = {
+        creatableBy: user.is_super || user.has_system_role ? undefined : user.id
+      }
+      const stream = await streamsService.create(stream, options)
 
-      res.location(`/streams/${stream.id}`).status(201).json(streamsService.formatStream(stream))
-    }).catch(error => {
-      httpErrorHandler(req, res, 'Failed creating stream')(error)
+      res.location(`/streams/${stream.id}`).status(201)
     })
+    .catch(httpErrorHandler(req, res, 'Failed creating stream'))
 })
 
 /**
@@ -185,7 +166,7 @@ router.post('/', (req, res) => {
  */
 router.get('/', (req, res) => {
   const user = req.rfcx.auth_token_info
-  const readableBy = user.is_super || user.has_system_role ? undefined : user.owner_id
+  const readableBy = user.is_super || user.has_system_role ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('keyword').optional().toString()
   converter.convert('organizations').optional().toArray()
@@ -263,7 +244,7 @@ router.get('/:id', (req, res) => {
   return converter.validate()
     .then(params => {
       const options = {
-        readableBy: user.is_super || user.has_system_role ? undefined : user.owner_id,
+        readableBy: user.is_super || user.has_system_role ? undefined : user.id,
         fields: params.fields
       }
       return streamsService.get(id, options)
@@ -308,7 +289,7 @@ router.get('/:id', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.patch('/:id', hasStreamPermission('U'), (req, res) => {
+router.patch('/:id', ensureUserSynced, (req, res) => {
   const streamId = req.params.id
   const converter = new Converter(req.body, {})
   converter.convert('name').optional().toString()
@@ -319,26 +300,24 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
   converter.convert('altitude').optional().toFloat()
   converter.convert('restore').optional().toBoolean()
 
-  converter.validate().then(async (params) => {
-    await usersService.ensureUserSyncedFromToken(req)
-    const stream = await streamsService.get(streamId)
-    if (params.restore === true) {
-      await streamsService.restore(stream)
-    }
-    // TODO - add updatableBy checks
-    const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
-    if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
-      try {
-        const idToken = req.headers.authorization
-        await arbimonService.updateSite(updatedStream.toJSON(), idToken)
-      } catch (err) {
-        console.error('Failed updating stream in Arbimon', err)
+  converter.validate()
+    .then(async (params) => {
+      const stream = await streamsService.get(streamId)
+      if (params.restore === true) {
+        await streamsService.restore(stream)
       }
-    }
-    res.json(streamsService.formatStream(updatedStream))
-  }).catch((e) => {
-    httpErrorHandler(req, res, 'Failed updating stream')(e)
-  })
+      const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
+      if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
+        try {
+          const idToken = req.headers.authorization
+          await arbimonService.updateSite(updatedStream.toJSON(), idToken)
+        } catch (err) {
+          console.error('Failed updating stream in Arbimon', err)
+        }
+      }
+      res.json(streamsService.formatStream(updatedStream))
+    })
+    .catch(httpErrorHandler(req, res, 'Failed updating stream'))
 })
 
 /**
@@ -363,8 +342,7 @@ router.patch('/:id', hasStreamPermission('U'), (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.delete('/:id', hasStreamPermission('D'), (req, res) => {
-  // TODO - add deletableBy checks
+router.delete('/:id', (req, res) => {
   return streamsService.get(req.params.id)
     .then(async (stream) => {
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {

@@ -1,11 +1,11 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const usersFusedService = require('../../../services/users/fused')
 const streamsService = require('../../../services/streams')
 const projectsService = require('../../../services/projects')
 const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger
@@ -56,7 +56,6 @@ router.patch('/streams/:externalId', (req, res) => {
   params.convert('project_external_id').optional().toInt()
 
   return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => streamsService.get({ external_id: externalId }))
     .then(async stream => {
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, stream, rolesService.STREAM)
@@ -100,18 +99,17 @@ router.patch('/streams/:externalId', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.delete('/streams/:externalId', (req, res) => {
-  usersFusedService.ensureUserSyncedFromToken(req).then(async () => {
-    const stream = await streamsService.get({ external_id: req.params.externalId })
-    const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)
-    if (!allowed) {
-      throw new ForbiddenError('You do not have permission to delete this stream.')
-    }
-    await streamsService.remove(stream)
-    res.sendStatus(204)
-  }).catch(error => {
-    httpErrorHandler(req, res, 'Failed deleting stream')(error)
-  })
+router.delete('/streams/:externalId', ensureUserSynced, (req, res) => {
+  streamsService.get({ external_id: req.params.externalId })
+    .then(async (stream) => {
+      const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to delete this stream.')
+      }
+      await streamsService.remove(stream)
+      res.sendStatus(204)
+    })
+    .catch(httpErrorHandler(req, res, 'Failed deleting stream'))
 })
 
 module.exports = router

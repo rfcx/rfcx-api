@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const organizationsService = require('../../../services/organizations')
 const projectsService = require('../../../services/projects')
-const usersFusedService = require('../../../services/users/fused')
+const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 const { randomId } = require('../../../utils/misc/hash')
 const Converter = require('../../../utils/converter/converter')
 const { hasProjectPermission } = require('../../../middleware/authorization/roles')
@@ -44,9 +44,9 @@ const arbimonService = require('../../../services/arbimon')
  *         description: Invalid query parameters
  */
 
-router.post('/', (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
-  const converter = new Converter(req.body, {})
+router.post('/', ensureUserSynced, (req, res) => {
+  const createdById = req.rfcx.auth_token_info.id
+  const converter = new Converter(req.body, {}, true)
   converter.convert('id').optional().toString()
   converter.convert('name').toString()
   converter.convert('description').optional().toString()
@@ -54,34 +54,34 @@ router.post('/', (req, res) => {
   converter.convert('organization_id').optional().toString()
   converter.convert('external_id').optional().toInt()
 
-  return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(async () => {
-      if (convertedParams.organization_id) {
-        await organizationsService.get(convertedParams.organization_id)
-        const allowed = await hasPermission(CREATE, userId, convertedParams.organization_id, ORGANIZATION)
+  return converter.validate()
+    .then(async (params) => {
+      if (params.organizationId) {
+        const allowed = await hasPermission(CREATE, createdById, params.organizationId, ORGANIZATION)
         if (!allowed) {
           throw new ForbiddenError('You do not have permission to create project in this organization.')
         }
       }
 
-      params.created_by_id = userId
-      project = await projectsService.create(params, { joinRelations: true })
+      const project = {
+        ...params,
+        createdById,
+        id: randomId()
+      }
 
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
-        const idToken = req.headers.authorization
-        const arbimonProject = await arbimonService.createProject(project.toJSON(), idToken)
-        project = await projectsService.update(project, { external_id: arbimonProject.project_id }, { joinRelations: true })
+        const arbimonProject = await arbimonService.createProject(project, req.headers.authorization)
+        project.external_id = arbimonProject.project_id
       }
 
-      res.location(`/projects/${project.id}`).status(201).json(projectsService.formatProject(project))
-    }).catch(error => {
-      httpErrorHandler(req, res, 'Failed creating project')(error)
-      if (project) {
-        projectsService.remove(project, { force: true })
-      }
+      return await projectsService.create(project)
     })
+    .then(project => res.location(`/projects/${project.id}`).sendStatus(201))
+    .catch(
+      httpErrorHandler(req, res, 'Failed creating project')
+    )
 })
+
 
 /**
  * @swagger
@@ -151,7 +151,7 @@ router.get('/', (req, res) => {
 
   return params.validate()
     .then(async () => {
-      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_id = user.id
       convertedParams.current_user_is_super = user.is_super
       const projectsData = await projectsService.query(convertedParams, { joinRelations: true })
       const projects = projectsService.formatProjects(projectsData.projects)
@@ -243,7 +243,6 @@ router.patch('/:id', hasProjectPermission(UPDATE), (req, res) => {
   params.convert('restore').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => projectsService.get(projectId, { includeDeleted: convertedParams.restore === true }))
     .then(async project => {
       if (convertedParams.organization_id) {

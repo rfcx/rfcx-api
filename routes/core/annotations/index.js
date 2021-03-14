@@ -6,8 +6,8 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const rolesService = require('../../../services/roles')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classifications')
-const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
+const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 
 function isUuid (str) {
   return str.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/g) !== null
@@ -172,7 +172,7 @@ router.get('/:id', (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', ensureUserSynced, (req, res) => {
   const annotationId = req.params.id
   const user = req.rfcx.auth_token_info
   const userId = user.id
@@ -189,7 +189,6 @@ router.put('/:id', (req, res) => {
   }
 
   return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => annotationsService.get(annotationId))
     .then(async annotation => {
       if (!annotation) {
