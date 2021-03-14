@@ -175,7 +175,7 @@ router.get('/:id', (req, res) => {
 router.put('/:id', (req, res) => {
   const annotationId = req.params.id
   const user = req.rfcx.auth_token_info
-  const userId = user.owner_id
+  const userId = user.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMomentUtc()

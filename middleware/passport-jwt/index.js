@@ -29,6 +29,7 @@ const optsCustom = Object.assign({}, baseOpts, { issuer: `https://${process.env.
 
 function combineUserData (jwtPayload, user) {
   return Object.assign({}, jwtPayload, {
+    id: user.id,
     guid: user.guid,
     type: 'user',
     owner_id: user.id,

@@ -131,6 +131,7 @@ async function query (filters, options = {}) {
       }
     }
   }
+
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
   const order = getSortFields(options.sort ?? '-updated_at')
@@ -330,17 +331,17 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
   // Only my streams or my collaborators
   if (createdBy !== undefined) {
     return (await query({
-      current_user_id: user.owner_id,
+      current_user_id: user.id,
       created_by: createdBy
     })).streams.map(d => d.id)
   }
 
   // Get my streams and my collaborators
   const s1 = await query({
-    current_user_id: user.owner_id
+    current_user_id: user.id
   })
   const s2 = await query({
-    current_user_id: user.owner_id,
+    current_user_id: user.id,
     created_by: 'collaborators',
     current_user_is_super: user.is_super
   })

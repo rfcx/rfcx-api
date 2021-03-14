@@ -96,7 +96,7 @@ async function hasPermission (type, userId, itemOrId, itemName) {
 async function getPermissions (userOrId, itemOrId, itemName) {
   const isId = typeof itemOrId === 'string'
   const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
-  const userId = userIsPrimitive ? userOrId : userOrId.owner_id
+  const userId = userIsPrimitive ? userOrId : userOrId.id
   if (isId && !itemName) {
     throw new Error('RolesService: getPermissions: missing required parameter "itemName"')
   }

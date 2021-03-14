@@ -128,7 +128,7 @@ router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
  */
 router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   const streamId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMomentUtc()

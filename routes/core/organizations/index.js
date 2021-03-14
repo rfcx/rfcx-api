@@ -34,16 +34,15 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Invalid query parameters
  */
 router.post('/', function (req, res) {
-  const createdById = req.rfcx.auth_token_info.owner_id
-  const convertedParams = {}
-  const converter = new Converter(req.body, convertedParams, true)
+  const createdById = req.rfcx.auth_token_info.id
+  const converter = new Converter(req.body, {}, true)
   converter.convert('name').toString()
   converter.convert('is_public').default(false).toBoolean()
 
   return converter.validate()
-    .then(() => {
+    .then((params) => {
       const organization = {
-        ...convertedParams,
+        ...params,
         createdById
       }
       return organizationsService.create(organization)
@@ -111,7 +110,7 @@ router.post('/', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  const readableBy = req.rfcx.auth_token_info.owner_id
+  const readableBy = req.rfcx.auth_token_info.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('keyword').optional().toString()
   converter.convert('created_by').optional().toString()
@@ -179,7 +178,7 @@ router.get('/:id', (req, res) => {
   return converter.validate()
     .then(params => {
       const options = {
-        readableBy: req.rfcx.auth_token_info.owner_id,
+        readableBy: req.rfcx.auth_token_info.id,
         fields: params.fields
       }
       return organizationsService.get(req.params.id, options)
@@ -225,7 +224,7 @@ router.patch('/:id', (req, res) => {
   const converter = new Converter(req.body, {}, true)
   converter.convert('name').optional().toString()
   converter.convert('is_public').optional().toBoolean()
-  const options = { updatableBy: req.rfcx.auth_token_info.owner_id }
+  const options = { updatableBy: req.rfcx.auth_token_info.id }
 
   return converter.validate()
     .then(params => organizationsService.update(id, params, options))
@@ -258,7 +257,7 @@ router.patch('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const id = req.params.id
   const options = {
-    deletableBy: req.rfcx.auth_token_info.owner_id
+    deletableBy: req.rfcx.auth_token_info.id
   }
   return organizationsService.remove(id, options)
     .then(() => res.sendStatus(204))

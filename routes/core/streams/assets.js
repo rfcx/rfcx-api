@@ -38,7 +38,7 @@ const Converter = require('../../../utils/converter/converter')
 
 router.post('/:streamId/assets', function (req, res) {
   const streamId = req.params.streamId
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const converter = new Converter(req.body, {})
   converter.convert('type').toString()
   converter.convert('url').toString()
@@ -92,7 +92,7 @@ router.post('/:streamId/assets', function (req, res) {
  */
 router.get('/:streamId/assets', function (req, res) {
   const streamId = req.params.streamId
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const converter = new Converter(req.query, {})
   converter.convert('type').optional().toString()
   converter.convert('fields').optional().toArray()
