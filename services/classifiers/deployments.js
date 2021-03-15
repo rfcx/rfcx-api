@@ -37,11 +37,11 @@ async function query(filters) {
   }
 
   if (filters.start) {
-    condition.start = { [models.Sequelize.Op.gte]: moment.utc(filters.startAfter).valueOf() }
+    condition.start = { [models.Sequelize.Op.gte]: moment.utc(filters.start).valueOf() }
   }
 
   if (filters.end) {
-    condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.endBefore).valueOf() }
+    condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.end).valueOf() }
   }
 
   const query = {
