@@ -1,4 +1,4 @@
-## 1.0.17 (2012-03-XX)
+## 1.0.17 (2012-03-15)
 
 ### Features
 * **core:** Shorten /streams/id/detections body payload to 5 items ([CE-310](https://jira.rfcx.org/browse/CE-310))
