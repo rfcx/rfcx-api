@@ -3,6 +3,9 @@
 ### Features
 * **core:** Shorten /streams/id/detections body payload to 5 items ([CE-310](https://jira.rfcx.org/browse/CE-310))
 
+### Bug Fixes
+* **internal:** Fix parameters name for `start` and `end` in /prediction-deployer/classifier-deployments query
+
 
 ## 1.0.15-hotfix.0 (2021-03-13)
 
@@ -10,7 +13,7 @@
 * **core:** POST /v2/guardians/register endpoint uses correct data for Arbimon site creation
 
 
-## 1.0.16 (2012-03-12)
+## 1.0.16 (2021-03-12)
 
 ### Features
 * **internal:** GET /prediction-deployer/classifier-deployments/:id endpoint for getting individual classifier deployment information by id
