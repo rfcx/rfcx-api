@@ -1,4 +1,7 @@
-## 1.0.17 (2021-03-15)
+## 1.0.17 (2012-03-XX)
+
+### Features
+* **core:** Shorten /streams/id/detections body payload to 5 items ([CE-310](https://jira.rfcx.org/browse/CE-310))
 
 ### Bug Fixes
 * **internal:** Fix parameters name for `start` and `end` in /prediction-deployer/classifier-deployments query
