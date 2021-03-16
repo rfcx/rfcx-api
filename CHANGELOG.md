@@ -1,3 +1,9 @@
+## 1.0.18 (2021-03-16)
+
+### Features
+* **internal:** GET /prediction-deployer/classifier-deployments to return classifier lite attributes information
+
+
 ## 1.0.17 (2012-03-15)
 
 ### Features
