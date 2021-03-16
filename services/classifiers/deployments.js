@@ -50,7 +50,7 @@ async function query(filters) {
     include: {
       model: models.Classifier,
       as: 'classifier',
-      attributes: ['id', 'name']
+      attributes: models.Classifier.attributes.lite
     }
   }
 
