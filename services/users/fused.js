@@ -1,5 +1,5 @@
-const models = require('../../models')
-const modelsTimescale = require('../../modelsTimescale')
+const { User: LegacyUser } = process.env.NODE_ENV === 'test' ? require('../../modelsTimescale') : require('../../models')
+const { User, Sequelize } = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ensureUserSyncedInNeo4j = process.env.NEO4J_ENABLED === 'true' ? require('./legacy/neo4j') : undefined
 
@@ -8,7 +8,8 @@ const userBaseInclude = [{
 }]
 
 function getByParams (where, opts = {}) {
-  return models.User.findOne({
+  // TODO use Timescale as the master
+  return LegacyUser.findOne({
     where,
     include: opts && opts.joinRelations ? userBaseInclude : []
   })
@@ -29,7 +30,7 @@ function getByEmail (email, opts = {}) {
 }
 
 function getByGuidOrEmail (guid, email, opts = {}) {
-  return getByParams({ [models.Sequelize.Op.or]: { guid, email } }, opts)
+  return getByParams({ [Sequelize.Op.or]: { guid, email } }, opts)
 }
 
 /**
@@ -79,7 +80,7 @@ async function ensureUserSyncedInTimescaleDB (user) {
     if (user[attr]) defaults[attr] = user[attr]
   })
 
-  return modelsTimescale.User.findOrCreate({ where, defaults })
+  return User.findOrCreate({ where, defaults })
     .spread((dbUser, created) => {
       if (!created) {
         // if some of attributes have changed since last sync then update user

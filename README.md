@@ -157,11 +157,23 @@ This project uses [Jest](https://jestjs.io) for testing and [ESLint](https://esl
 npm test
 ```
 
-In general, unit tests should be saved alongside the code files that they apply to (e.g. for a module `xyz.js`, if there are tests then they will be stored in `xyz.test.js`).
+### Unit &amp; integration tests
 
-To run only Jest: `npm run jest`
+In general, unit tests should be saved alongside the code files that they apply to (e.g. for a module `xyz.js`, if there are tests then they will be stored in `xyz.unit.test.js`).
 
-To run only ESLint: `npm run lint` or `npm run lint:fix`
+Run Jest on all tests: `npm run jest`
+
+Run Jest on unit tests: `npm run jest unit`
+
+Run Jest on integration tests: `npm run jest integration`
+
+Run Jest on specific folder/file: `npm run jest routes/core/streams`
+
+### Linting
+
+Run ESLint: `npm run lint`
+
+Fix all fixable errors: `npm run lint:fix`
 
 Recommend developers to setup ESLint in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) is installed.
 

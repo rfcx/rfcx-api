@@ -1,43 +1,4 @@
-const Sequelize = require('sequelize')
-const utils = require('../utils/sequelize')
-
-const options = {
-  dialect: 'postgres',
-  dialectOptions: {
-    ssl: process.env.POSTGRES_SSL_ENABLED === 'true'
-  },
-  host: process.env.POSTGRES_HOSTNAME,
-  port: process.env.POSTGRES_PORT,
-  logging: false,
-  define: {
-    underscored: true,
-    charset: 'utf8',
-    dialectOptions: {
-      collate: 'utf8_general_ci'
-    },
-    timestamps: true,
-    createdAt: 'created_at', // force sequelize to respect snake_case for created_at
-    updatedAt: 'updated_at' // force sequelize to respect snake_case for updated_at
-  },
-  migrationStorageTableName: 'migrations',
-  migrationStorageTableSchema: 'sequelize',
-  hooks: {
-    afterConnect: () => {
-      console.log('Connected to Postgres')
-    },
-    afterDisconnect: () => {
-      console.log('Disonnected from Postgres')
-    }
-  }
-}
-if (process.env.NODE_ENV === 'development') {
-  options.logging = function (str) {
-    console.log('\nPostgres QUERY--------------------\n', str, '\n----------------------------------')
-  }
-}
-
-const sequelize = new Sequelize(process.env.POSTGRES_DB, process.env.POSTGRES_USER, process.env.POSTGRES_PASSWORD, options)
-sequelize.authenticate() // check connection
+const { sequelize, Sequelize, options } = require('./db')
 
 const models = {
   Annotation: require('./annotations/annotation')(sequelize, Sequelize),
@@ -85,4 +46,4 @@ Object.keys(models).forEach(function (modelName) {
   }
 })
 
-module.exports = { ...models, sequelize, Sequelize, options, utils }
+module.exports = { ...models, sequelize, Sequelize, options }
