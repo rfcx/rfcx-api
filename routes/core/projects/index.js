@@ -36,10 +36,6 @@ const arbimonService = require('../../../services/arbimon')
  *             description: Path of the created resource (e.g. `/projects/xyz123`)
  *             schema:
  *               type: string
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Project'
  *       400:
  *         description: Invalid query parameters
  */
@@ -77,9 +73,7 @@ router.post('/', ensureUserSynced, (req, res) => {
       return await projectsService.create(project)
     })
     .then(project => res.location(`/projects/${project.id}`).sendStatus(201))
-    .catch(
-      httpErrorHandler(req, res, 'Failed creating project')
-    )
+    .catch(httpErrorHandler(req, res, 'Failed creating project'))
 })
 
 
@@ -281,10 +275,9 @@ router.patch('/:id', hasProjectPermission(UPDATE), (req, res) => {
  *         description: Project not found
  */
 router.delete('/:id', hasProjectPermission(DELETE), (req, res) => {
-  return projectsService.get(req.params.id, { joinRelations: true })
-    .then(projectsService.remove)
-    .then(json => res.sendStatus(204))
-    .catch(httpErrorHandler(req, res, 'Failed deleting project'))
+  return projectsService.remove(req.params.id)
+    .then(()) => res.sendStatus(204))
+  .catch(httpErrorHandler(req, res, 'Failed deleting project'))
 })
 
 module.exports = router

@@ -13,32 +13,31 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    is_public: {
+    isPublic: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
     },
-    organization_id: {
+    organizationId: {
       type: DataTypes.STRING(12),
       allowNull: true
     },
-    created_by_id: {
+    createdById: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    external_id: {
+    externalId: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    is_partner: {
+    isPartner: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
     }
   }, {
     paranoid: true,
-    timestamps: true,
-    deletedAt: 'deleted_at'
+    underscored: true
   })
   Project.associate = function (models) {
     Project.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })

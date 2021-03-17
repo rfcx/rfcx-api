@@ -21,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true
     },
-    is_public: {
+    isPublic: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
@@ -60,26 +60,25 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.REAL,
       allowNull: true
     },
-    max_sample_rate: {
+    maxSampleRate: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    project_id: {
+    projectId: {
       type: DataTypes.STRING(12),
       allowNull: true
     },
-    created_by_id: {
+    createdById: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    external_id: {
+    externalId: {
       type: DataTypes.INTEGER,
       allowNull: true
     }
   }, {
     paranoid: true,
-    timestamps: true,
-    deletedAt: 'deleted_at'
+    underscored: true
   })
   Stream.associate = function (models) {
     Stream.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })

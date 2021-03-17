@@ -1,15 +1,11 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 const streamsService = require('../../../services/streams')
-const projectsService = require('../../../services/projects')
 const usersService = require('../../../services/users/fused')
-const { randomId } = require('../../../utils/misc/hash')
+const hash = require('../../../utils/misc/hash')
 const Converter = require('../../../utils/converter/converter')
-const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const { Stream } = require('../../../modelsTimescale')
-const { getPermissions, hasPermission, STREAM, PROJECT, READ, UPDATE } = require('../../../services/roles')
 const arbimonService = require('../../../services/arbimon')
 
 /**
@@ -53,12 +49,11 @@ router.post('/', ensureUserSynced, (req, res) => {
   converter.convert('external_id').optional().toInt()
   converter.convert('project_id').optional().toString()
 
-  return 
-    .then(converter.validate)
+  return converter.validate()
     .then(async (params) => {
       const stream = {
         ...params,
-        id: randomId(),
+        id: hash.randomId(),
         createdById: user.id
       }
 
@@ -74,9 +69,9 @@ router.post('/', ensureUserSynced, (req, res) => {
       const options = {
         creatableBy: user.is_super || user.has_system_role ? undefined : user.id
       }
-      const stream = await streamsService.create(stream, options)
+      const createdStream = await streamsService.create(stream, options)
 
-      res.location(`/streams/${stream.id}`).status(201)
+      res.location(`/streams/${createdStream.id}`).sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating stream'))
 })

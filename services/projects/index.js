@@ -1,6 +1,9 @@
 const { Stream, Project, User, Organization, Sequelize } = require('../../modelsTimescale')
-const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
-const { hasPermission, getAccessibleObjectsIDs, PROJECT, READ } = require('../roles')
+const { ForbiddenError, EmptyResultError } = require('../../utils/errors')
+const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, UPDATE, DELETE } = require('../roles')
+const { randomId } = require('../../utils/misc/hash')
+const pagedQuery = require('../../utils/db/paged-query')
+const { getSortFields } = require('../../utils/sequelize/sort')
 
 const availableIncludes = [
   User.include('created_by'), Organization.include()
@@ -33,158 +36,153 @@ async function get (idOrWhere, options = {}) {
 }
 
 /**
- * Creates project item
- * @param {*} data project attributes
- * @param {*} opts additional function params
- * @returns {*} project model item
+ * Create a project
+ * @param {*} project
+ * @param {string} project.name
+ * @param {string|undefined} project.description
+ * @param {boolean} project.isPublic
+ * @param {number} project.createdById
+ * @param {string|undefined} project.organizationId
+ * @param {string|undefined} project.externalId Arbimon project identifier
+ * @param {*} options Additional create options
+ * @param {number|undefined} options.creatableBy Allow only if the given user id has permission to create
+ * @throws ForbiddenError when `creatableBy` user does not have create permission on the organization
  */
-function create (data, opts = {}) {
-  if (!data) {
-    throw new ValidationError('Cannot create project with empty object.')
+async function create (project, options = {}) {
+  if (project.organizationId && options.creatableBy && !(await hasPermission(CREATE, options.creatableBy, project.organizationId, ORGANIZATION))) {
+    throw new ForbiddenError()
   }
-  const { id, name, description, is_public, organization_id, created_by_id, external_id } = data // eslint-disable-line camelcase
-  return Project
-    .create({ id, name, description, is_public, organization_id, created_by_id, external_id })
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
-    .catch((e) => {
-      console.error('Projects service -> create -> error', e)
-      throw new ValidationError('Cannot create project with provided data.')
+
+  if (!project.id) {
+    project.id = randomId()
+  }
+
+  return Project.create(project)
+    .catch(error => {
+      // TODO What errors do we expect here? Catch specific errors and create ValidationError for each
+      throw error
     })
 }
 
 /**
- * Returns list of projects with total number filtered by specified attributes
- * @param {*} attrs project attributes
- * @param {*} opts additional function params
+ * Get a list of projects matching the conditions
+ * @param {*} filters Project attributes to filter
+ * @param {string} filters.keyword Where keyword is found (in the project name)
+ * @param {number} filters.createdBy Where created by the given user id
+ * @param {string[]} filters.organizations Where belongs to one of the organizations (array of organization ids)
+ * @param {*} options Query options
+ * @param {number} options.readableBy Include only organizations readable by the given user id
+ * @param {boolean} options.onlyPublic Include only public organizations
+ * @param {boolean} options.onlyPartner Include only public organizations
+ * @param {boolean} options.onlyDeleted Include only deleted organizations
+ * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {string} options.sort Order the results by one or more columns
+ * @param {number} options.limit Maximum results to include
+ * @param {number} options.offset Number of results to skip
  */
-async function query (attrs, opts = {}) {
+async function query (filters, options = {}) {
   const where = {}
-  if (attrs.keyword) {
+
+  // Filters (restrict results - can use multiple filters safely)
+  if (filters.keyword) {
     where.name = {
-      [Sequelize.Op.iLike]: `%${attrs.keyword}%`
+      [Sequelize.Op.iLike]: `%${filters.keyword}%`
     }
   }
-
-  if (attrs.is_public === true) {
-    where.is_public = true
-  }
-
-  if (attrs.is_partner === true) {
-    where.is_partner = true
-  }
-
-  if (attrs.created_by === 'me') {
-    where.created_by_id = attrs.current_user_id
-  } else if (attrs.created_by === 'collaborators') {
-    if (!attrs.current_user_is_super) {
-      const ids = await getAccessibleObjectsIDs(attrs.current_user_id, PROJECT)
-      where.id = {
-        [Sequelize.Op.in]: ids
-      }
-    }
-  } else if (attrs.current_user_id !== undefined) {
-    where[Sequelize.Op.or] = [{
-      [Sequelize.Op.and]: {
-        created_by_id: attrs.current_user_id,
-        ...attrs.is_public !== undefined && { is_public: attrs.is_public }
-      }
-    }]
-    if (attrs.is_public !== false) {
-      where[Sequelize.Op.or].push(
-        {
-          [Sequelize.Op.and]: {
-            is_public: true,
-            created_by_id: {
-              [Sequelize.Op.ne]: attrs.current_user_id
-            }
-          }
-        }
-      )
-    }
-  }
-
-  if (attrs.is_deleted === true) { // user can get only personal deleted projects
-    where.created_by_id = attrs.current_user_id
-    where.deleted_at = {
-      [Sequelize.Op.ne]: null
-    }
-  }
-
-  if (attrs.organization_id) {
+  if (filters.organizations) {
     where.organization_id = {
-      [Sequelize.Op.in]: attrs.organization_id
+      [Sequelize.Op.in]: filters.organizations
     }
   }
 
-  const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
-  return Project[method]({
-    where,
-    limit: attrs.limit,
-    offset: attrs.offset,
-    attributes: opts.attributes || Project.attributes.lite,
-    include: opts.joinRelations ? availableIncludes : [],
-    paranoid: attrs.is_deleted !== true
-  })
-    .then((data) => {
-      return {
-        count: method === 'findAndCountAll' ? data.count : data.length,
-        projects: method === 'findAndCountAll' ? data.rows : data
+  if (filters.createdBy) {
+    where.created_by_id = filters.createdBy
+  }
+
+  // Options (change behaviour - mix with care)
+  if (options.onlyPartner) {
+    where.is_partner = true
+    where.is_public = true
+  } else if (options.onlyPublic) {
+    where.is_public = true
+  } else {
+    if (options.readableBy) {
+      where.id = {
+        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, PROJECT)
       }
-    })
-}
-
-/**
- * Updates existing project item
- * @param {*} project project model item
- * @param {*} data attributes to update
- * @param {string} data.name
- * @param {string} data.description
- * @param {boolean} data.is_public
- * @param {integer} data.external_id
- * @param {*} opts additional function params
- * @returns {*} project model item
- */
-function update (project, data, opts = {}) {
-  ['name', 'description', 'is_public', 'external_id'].forEach((attr) => {
-    if (data[attr] !== undefined) {
-      project[attr] = data[attr]
     }
+    if (options.onlyDeleted) {
+      where.deleted_at = {
+        [Sequelize.Op.ne]: null
+      }
+    }
+  }
+
+  const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const order = getSortFields(options.sort || '-updated_at')
+
+  return pagedQuery(Organization, {
+    where,
+    attributes,
+    include,
+    order,
+    limit: options.limit,
+    offset: options.offset,
+    paranoid: options.onlyDeleted !== true
   })
-  return project
-    .save()
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
-    .catch((e) => {
-      console.error('Projects service -> update -> error', e)
-      throw new ValidationError('Cannot update project with provided data.')
-    })
 }
 
 /**
- * Deletes project (soft or hard)
- * @param {*} project project model item
- * @param {*} opts
- * @param {boolean} force
+ * Update project
+ * @param {string} id
+ * @param {Project} project
+ * @param {string} project.name
+ * @param {string} project.description
+ * @param {boolean} project.is_public
+ * @param {boolean} project.is_partner
+ * @param {integer} project.external_id
+ * @param {*} options
+ * @param {number} options.updatableBy Update only if project is updatable by the given user id
+ * @throws EmptyResultError when project not found
+ * @throws ForbiddenError when `updatableBy` user does not have update permission on the organization
  */
-function del (project, opts) {
-  return project.destroy({
-    ...opts.force !== undefined ? { force: opts.force } : {}
+async function update (id, project, options = {}) {
+  if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, PROJECT))) {
+    throw new ForbiddenError()
+  }
+  return Project.update(project, {
+    where: { id }
   })
-    .catch((e) => {
-      console.error('Projects service -> delete -> error', e)
-      throw new ValidationError('Cannot delete project.')
-    })
+}
+
+/**
+ * Delete project
+ * @param {string} id
+ * @param {*} options Additional delete options
+ * @param {number} options.deletableBy Perform only if project is deletable by the given user id
+ * @param {boolean} options.force Remove from the database (not soft-delete)
+ * @throws ForbiddenError when `deletableBy` user does not have delete permission on the project
+ */
+async function remove (id, options = {}) {
+  if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, PROJECT))) {
+    throw new ForbiddenError()
+  }
+  return Project.destroy({ where: { id }, force: options.force })
 }
 
 /**
  * Restore deleted project
- * @param {*} project project model item
+ * @param {string} id
+ * @param {*} options Additional restore options
+ * @param {number} options.deletableBy Perform only if project is deletable by the given user id
+ * @throws ForbiddenError when `deletableBy` user does not have delete permission on the project
  */
-function restore (project) {
-  return project.restore()
-    .catch((e) => {
-      console.error('Projects service -> restore -> error', e)
-      throw new ValidationError('Cannot restore project.')
-    })
+async function restore (id, options = {}) {
+  if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, PROJECT))) {
+    throw new ForbiddenError()
+  }
+  return Project.restore({ where: { id } })
 }
 
 /**
@@ -193,6 +191,7 @@ function restore (project) {
  * @returns {object | null} object with latitude and longitude or null
  */
 function getProjectLocation (id) {
+  // TODO replace with columns in db
   return Stream.findOne({
     where: {
       project_id: id
@@ -232,7 +231,7 @@ module.exports = {
   create,
   query,
   update,
-  del,
+  remove,
   restore,
   getProjectLocation,
   formatProject,

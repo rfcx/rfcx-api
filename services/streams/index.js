@@ -5,7 +5,6 @@ const projectsService = require('../projects')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, READ } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
-const rolesService = require('../roles')
 
 const availableIncludes = [
   User.include('created_by'),
@@ -24,7 +23,7 @@ const availableIncludes = [
  */
 async function get (idOrWhere, options = {}) {
   const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
-  const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.full
+  const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.full
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
 
   const stream = await Stream.findOne({ where, attributes, include, paranoid: false })
@@ -39,20 +38,12 @@ async function get (idOrWhere, options = {}) {
 }
 
 /**
- * Creates stream item
- * @param {*} data stream attributes
- * @param {*} opts additional function params
- * @param {boolean} opts.joinRelations whether to include joined tables in returned object
- * @returns {*} stream model item
+ * Create a stream
+ * @param {Stream} stream
+ * @param {*} options
  */
-function create (data, opts = {}) {
-  if (!data) {
-    throw new ValidationError('Cannot create stream with empty object.')
-  }
-  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id } = data // eslint-disable-line camelcase
-  return Stream
-    .create({ id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id })
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
+function create (stream, options = {}) {
+  return Stream.create(stream)
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
       throw new ValidationError('Cannot create stream with provided data.')
@@ -134,7 +125,7 @@ async function query (filters, options = {}) {
 
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
-  const order = getSortFields(options.sort ?? '-updated_at')
+  const order = getSortFields(options.sort || '-updated_at')
 
   const streamsData = await pagedQuery(Stream, {
     where,
