@@ -1,12 +1,14 @@
 const router = require('express').Router()
 const Converter = require('../../../utils/converter/converter')
 const { hasRole } = require('../../../middleware/authorization/authorization')
-const classifierDeploymentService = require('../../../services/classifiers/deployments')
+const classifierDeploymentsService = require('../../../services/classifiers/deployments')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+
+router.use(hasRole(['systemUser']))
 
 /**
  * @swagger
- * /internal/prediction-deployer/classifier-deployments/{id}
+ * /internal/prediction/classifier-deployments/{id}
  *   get:
  *     summary: Get the classifier deployment by id
  *     description: -
@@ -18,20 +20,20 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
  *       404:
  *         Not found the classifier deployment with given id
  */
-router.get('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) => {
+router.get('/classifier-deployments/:id', (req, res) => {
   const id = req.params.id
 
-  return classifierDeploymentService.get(id)
+  return classifierDeploymentsService.get(id)
     .then(deployments => res.json(deployments))
-    .catch(httpErrorHandler(req, res, 'Failed to get deployments'))
+    .catch(httpErrorHandler(req, res, 'Failed to get deployment'))
 })
 
 /**
  * @swagger
- * 
- * /internal/prediction-deployer/classifier-deployments
+ *
+ * /internal/prediction/classifier-deployments
  *   get:
- *     summary: Get classifier deployments information
+ *     summary: Get classifier deployments
  *     description: This endpoint is used by the "prediction-deployer" service for create, update, or delete the k8s deployment
  *     tags:
  *       - internal
@@ -69,7 +71,7 @@ router.get('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) =>
  *       200:
  *         description: Success
  */
-router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
+router.get('/classifier-deployments', (req, res) => {
   const params = new Converter(req.query, {}, true)
   params.convert('platform').optional().toString()
   params.convert('deployed').optional().toBoolean()
@@ -80,7 +82,7 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
   return params.validate()
     .then((params) => {
       const { platform, deployed, start, end, type } = params
-      return classifierDeploymentService.query({ platform, deployed, start, end, type })
+      return classifierDeploymentsService.query({ platform, deployed, start, end, type })
     })
     .then(deployments => res.json(deployments))
     .catch(httpErrorHandler(req, res, 'Failed to get deployments'))
@@ -88,8 +90,8 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
 
 /**
  * @swagger
- * 
- * /internal/prediction-deployer/classifier-deployments/{id}
+ *
+ * /internal/prediction/classifier-deployments/{id}
  *   patch:
  *     summary: Update the deployed status of given classifier id
  *     description: This endpoint is used by the "prediction-deployer" service for create, update, or delete the k8s deployment
@@ -98,28 +100,26 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
  *     parameters:
  *       - name: deployed
  *         description: classifier deployed status
- *         in: query
+ *         in: body
  *         required: true
  *         type: boolean
  *     responses:
  *       200:
  *         description: Success
  *       400:
- *         description: Invalid query parameters
+ *         description: Invalid body parameters
  */
-router.patch('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) => {
-  const convertedParams = {}
+router.patch('/classifier-deployments/:id', (req, res) => {
   const id = req.params.id
-  const params = new Converter(req.query, convertedParams)
-  params.convert('deployed').toBoolean()
+  const converter = new Converter(req.body, {}, true)
+  converter.convert('deployed').toBoolean()
 
-  return params.validate()
-    .then(() => {
-      const deployed = convertedParams.deployed
-      return classifierDeploymentService.update(id, deployed)
+  return converter.validate()
+    .then((deployment) => {
+      return classifierDeploymentsService.update(id, deployment)
     })
     .then(() => res.status(200).send('Updated'))
-    .catch(httpErrorHandler(req, res, 'Failed to update `deployed` status'))
+    .catch(httpErrorHandler(req, res, 'Failed to update classifier deployment'))
 })
 
 module.exports = router
