@@ -24,7 +24,7 @@ async function get (id) {
  * @param {string} filters.end
  * @param {string} filter.type
  */
-async function query (filters) {
+function query (filters) {
   const condition = {}
 
   if (filters.platform) {
@@ -53,24 +53,7 @@ async function query (filters) {
     }
   }
 
-  if (filters.type && filters.type === 'only_last') {
-    query.order = [['id', 'DESC']]
-  }
-
-  const deployments = await models.ClassifierDeployment.findAll(query)
-
-  if (filters.type) {
-    const filteredDeployments = []
-    for (const deployment of deployments) {
-      const idx = filteredDeployments.findIndex(d => d.classifier.id === deployment.classifier.id)
-      if (idx < 0) {
-        filteredDeployments.push(deployment)
-      }
-    }
-    return filteredDeployments
-  }
-
-  return deployments
+  return models.ClassifierDeployment.findAll(query)
 }
 
 /**
