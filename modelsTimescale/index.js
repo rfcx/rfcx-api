@@ -28,6 +28,12 @@ const options = {
     afterDisconnect: () => {
       console.log('Disonnected from Postgres')
     }
+  },
+  pool: {
+    max: 20,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
   }
 }
 if (process.env.NODE_ENV === 'development') {
