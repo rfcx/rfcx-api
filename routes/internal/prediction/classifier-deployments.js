@@ -8,10 +8,10 @@ router.use(hasRole(['systemUser']))
 
 /**
  * @swagger
- * /internal/prediction/classifier-deployments/{id}
+ *
+ * /internal/prediction/classifier-deployments/{id}:
  *   get:
  *     summary: Get the classifier deployment by id
- *     description: -
  *     tags:
  *       - internal
  *     responses:
@@ -31,10 +31,10 @@ router.get('/classifier-deployments/:id', (req, res) => {
 /**
  * @swagger
  *
- * /internal/prediction/classifier-deployments
+ * /internal/prediction/classifier-deployments:
  *   get:
  *     summary: Get classifier deployments
- *     description: This endpoint is used by the "prediction-deployer" service for create, update, or delete the k8s deployment
+ *     description: Used by the prediction-deployer to find out which classifiers need deploying/deleting
  *     tags:
  *       - internal
  *     parameters:
@@ -58,31 +58,44 @@ router.get('/classifier-deployments/:id', (req, res) => {
  *         in: query
  *         required: false
  *         type: string
- *       - name: type
- *         description: Limit the result by returnin `only_first` or `only_last` of each classifier deployment
+ *       - name: sort
+ *         description: Name of field to sorted / "-" for DESC default for ASC
  *         in: query
- *         required: false
- *         schema:
- *           type: string
- *           enum:
- *             - only_first
- *             - only_last
+ *         type: string
+ *         default: -updated_at
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
+ *       - name: limit
+ *         description: Maximum number of results to return
+ *         in: query
+ *         type: int
+ *         default: 100
+ *       - name: offset
+ *         description: Number of results to skip
+ *         in: query
+ *         type: int
+ *         default: 0
  *     responses:
  *       200:
  *         description: Success
  */
 router.get('/classifier-deployments', (req, res) => {
-  const params = new Converter(req.query, {}, true)
-  params.convert('platform').optional().toString()
-  params.convert('deployed').optional().toBoolean()
-  params.convert('start').optional().toMomentUtc()
-  params.convert('end').optional().toMomentUtc()
-  params.convert('type').optional().toString().isEqualToAny(['only_first', 'only_last'])
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('platform').optional().toString()
+  converter.convert('deployed').optional().toBoolean()
+  converter.convert('start').optional().toMomentUtc()
+  converter.convert('end').optional().toMomentUtc()
+  converter.convert('sort').default('-updated_at').toString()
+  converter.convert('fields').optional().toArray()
+  converter.convert('limit').default(100).toInt()
+  converter.convert('offset').default(0).toInt()
 
-  return params.validate()
+  return converter.validate()
     .then((params) => {
-      const { platform, deployed, start, end, type } = params
-      return classifierDeploymentsService.query({ platform, deployed, start, end, type })
+      const { platform, deployed, start, end, ...options } = params
+      return classifierDeploymentsService.query({ platform, deployed, start, end }, options)
     })
     .then(deployments => res.json(deployments))
     .catch(httpErrorHandler(req, res, 'Failed to get deployments'))
@@ -91,18 +104,28 @@ router.get('/classifier-deployments', (req, res) => {
 /**
  * @swagger
  *
- * /internal/prediction/classifier-deployments/{id}
+ * /internal/prediction/classifier-deployments/{id}:
  *   patch:
  *     summary: Update the deployed status of given classifier id
- *     description: This endpoint is used by the "prediction-deployer" service for create, update, or delete the k8s deployment
+ *     description: Used by the prediction-deployer to update the deployment status of classifiers
  *     tags:
  *       - internal
  *     parameters:
- *       - name: deployed
- *         description: classifier deployed status
- *         in: body
+ *       - name: id
+ *         description: Classifier deployment identifier
+ *         in: path
  *         required: true
- *         type: boolean
+ *         type: string
+ *     requestBody:
+ *       description: Classifier deployment attributes
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: '#/components/requestBodies/ClassifierDeployment'
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/requestBodies/ClassifierDeployment'
  *     responses:
  *       200:
  *         description: Success
