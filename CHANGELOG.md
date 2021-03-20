@@ -1,3 +1,13 @@
+## 1.0.17-hotfix.1 (2012-03-20)
+
+### Bug Fixes
+* **core:** Fix incorrect classifier id on /internal/prediction/detections. Switch to using output class names instead of classification values for prediction service.
+
+## 1.0.17-hotfix.0 (2012-03-18)
+
+### Bug Fixes
+* **global:** Remove toobusy.js to avoid impact on autoscaling. Set connection pool for postgres up to 20 connections.
+
 ## 1.0.17 (2012-03-15)
 
 ### Features

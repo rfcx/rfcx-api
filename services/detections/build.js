@@ -1,6 +1,4 @@
 const classifierService = require('../classifiers')
-const classificationService = require('../classifications')
-const detectionsService = require('.')
 
 async function addClassifiers (rawDetections) {
   // Extract all classifier ids
@@ -8,7 +6,7 @@ async function addClassifiers (rawDetections) {
 
   // Gather the potential classifiers
   const queryOptions = { fields: ['id', 'external_id', 'outputs'] }
-  const classifiersUsingIds = (await classifierService.query({ ids: unknownIds }, queryOptions)).results
+  const classifiersUsingIds = (await classifierService.query({ ids: unknownIds.filter(id => !isNaN(id)) }, queryOptions)).results
   const classifiersUsingExternalIds = (await classifierService.query({ externalIds: unknownIds }, queryOptions)).results
 
   // Create a mapping from unknown id to classifier
@@ -42,7 +40,8 @@ async function build (rawDetections, streamId) {
   const classifierIds = [...new Set(validDetections.map(detection => detection.classifier.id))]
 
   if (validDetections.length < rawDetections.length) {
-    console.warn(`Missing classifier or classifier output in classifiers with ids: ${classifierIds.join(',')}`)
+    const missingIds = [...new Set(rawDetections.map(d => d.classifier).filter(c => !classifierIds.includes(c)))]
+    console.warn(`WARN: Missing classifier or classifier output in classifiers with ids: ${missingIds.join(',')}`)
   }
 
   // Remove detections below the threshold
