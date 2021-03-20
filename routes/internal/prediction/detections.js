@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
-const classificationService = require('../../../services/classifications')
+const build = require('../../../services/detections/build')
 const classifierService = require('../../../services/classifiers')
 const Converter = require('../../../utils/converter/converter')
 const { hasRole } = require('../../../middleware/authorization/authorization')
@@ -31,45 +31,43 @@ const { hasRole } = require('../../../middleware/authorization/authorization')
  *         description: Stream not found
  */
 router.post('/detections', hasRole(['systemUser']), function (req, res) {
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-  params.convert('stream_id').toString()
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('classification').toString()
-  params.convert('classifier_id').toInt()
-  params.convert('confidences').toFloatArray()
-  params.convert('step').toFloat()
+  const converter = new Converter(req.body, {}, true)
+  converter.convert('stream_id').toString()
+  converter.convert('classifier_id').toInt()
+  converter.convert('classification').toString()
+  converter.convert('start').toMomentUtc()
+  converter.convert('end').toMomentUtc()
+  converter.convert('confidences').toFloatArray()
+  converter.convert('step').toFloat()
 
-  return params.validate()
-    .then(() => classificationService.getId(convertedParams.classification))
-    .then(classificationId => {
-      const classifier = classifierService.get(convertedParams.classifier_id, { joinRelations: true })
-      classifierService.update(classificationId, null, { last_executed_at: new Date() })
-      return Promise.all([classifier, classificationId])
-    })
-    .then(([classifier, classificationId]) => {
-      const streamId = convertedParams.stream_id
-      const classifierId = convertedParams.classifier_id
-      const { start, end, confidences, step } = convertedParams
-      const threshold = classifier.outputs.find(i => i.classification_id === classificationId).ignore_threshold || detectionsService.DEFAULT_IGNORE_THRESHOLD
+  converter.validate()
+    .then(async (params) => {
+      const { streamId, classifierId, classification, start, end, confidences, step } = params
 
-      const detections = confidences.map((confidence, i) => {
-        // Confidences then they are spaced by "step" seconds
+      const expandedDetections = confidences.map((confidence, i) => {
+        // Detections are spaced by "step" seconds
         const offsetStart = start.clone().add(i * step, 's')
         const offsetEnd = end.clone().add(i * step, 's')
         return {
           streamId,
-          classificationId,
-          classifierId,
+          classifier: classifierId,
+          classification,
           start: offsetStart,
           end: offsetEnd,
-          confidence: confidence
+          confidence
         }
       })
-      return detectionsService.create(detections.filter(d => d.confidence > threshold))
+
+      const { detections } = await build(expandedDetections, streamId)
+
+      // Save the detections
+      await detectionsService.create(detections)
+
+      // Mark classifiers as updated
+      await classifierService.update(classifierId, null, { last_executed_at: new Date() })
+
+      return res.sendStatus(201)
     })
-    .then(detections => res.sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))
 })
 
