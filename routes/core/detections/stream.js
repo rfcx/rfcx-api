@@ -1,13 +1,13 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
-const classificationService = require('../../../services/classifications')
 const classifierService = require('../../../services/classifiers')
-const rolesService = require('../../../services/roles')
+const { hasPermission, READ, UPDATE, STREAM } = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const auth0Service = require('../../../services/auth0/auth0-service')
+const { getUserRolesFromToken } = require('../../../services/auth0/auth0-service')
+const build = require('../../../services/detections/build')
 
 /**
  * @swagger
@@ -76,16 +76,13 @@ router.get('/:id/detections', function (req, res) {
   params.convert('limit').optional().toInt()
   params.convert('offset').optional().toInt()
 
-  return params.validate()
+  params.validate()
     .then(async () => {
-      const roles = auth0Service.getUserRolesFromToken(req.user)
-      if (roles.includes('systemUser')) {
-        return true
-      }
-      const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
-      if (!allowed) {
+      if (!getUserRolesFromToken(req.user).includes('systemUser') &&
+        !(await hasPermission(READ, user, streamId, STREAM))) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
+      return undefined
     })
     .then(async () => {
       const { start, end, classifications, limit, offset } = convertedParams
@@ -154,61 +151,23 @@ router.post('/:id/detections', function (req, res) {
   params.convert('classifier').toString()
   params.convert('confidence').toFloat()
 
-  let classificationMapping
-
-  return params.validate()
+  params.validate()
     .then(async () => {
-      const roles = auth0Service.getUserRolesFromToken(req.user)
-      if (roles.includes('systemUser')) {
-        return true
-      }
-      const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, streamId, rolesService.STREAM)
-      if (!allowed) {
+      if (!getUserRolesFromToken(req.user).includes('systemUser') &&
+        !(await hasPermission(UPDATE, user, streamId, STREAM))) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
+
+      const { detections, classifierIds } = await build(params.transformedArray, streamId)
+
+      // Save the detections
+      await detectionsService.create(detections)
+
+      // Mark classifiers as updated
+      await Promise.all(classifierIds.map(id => classifierService.update(id, null, { last_executed_at: new Date() })))
+
+      return res.sendStatus(201)
     })
-    .then(() => {
-      const validatedDetections = params.transformedArray
-      // Get all the distinct classification values
-      const classificationValues = [...new Set(validatedDetections.map(d => d.classification))]
-      return classificationService.getIds(classificationValues)
-    }).then(data => {
-      classificationMapping = data
-      const validatedDetections = params.transformedArray
-      // Get all the distinct classifier uuids
-      const classifierUuids = [...new Set(validatedDetections.map(d => d.classifier))]
-      return classifierService.getIdsByExternalIds(classifierUuids)
-    }).then(classifierMapping => {
-      const classifierIds = Object.values(classifierMapping)
-      return Promise.all(classifierIds.map(id => classifierService.update(id, null, { last_executed_at: new Date() })))
-        .then(() => {
-          return Promise.all(classifierIds.map(id => classifierService.get(id, { joinRelations: true })))
-        })
-        .then((classifiers) => {
-          return Promise.resolve([classifiers, classifierMapping])
-        })
-    }).then(([classifiers, classifierMapping]) => {
-      const validatedDetections = params.transformedArray
-      const detections = validatedDetections.map(detection => {
-        const classificationId = classificationMapping[detection.classification]
-        const classifierId = classifierMapping[detection.classifier]
-        const classifier = classifiers.find(c => c.id === classifierId)
-        const output = (classifier.outputs || []).find(i => i.classification_id === classificationId)
-        const threshold = output ? output.ignore_threshold : detectionsService.DEFAULT_IGNORE_THRESHOLD
-        if (detection.confidence > threshold) {
-          return {
-            streamId,
-            classificationId,
-            classifierId,
-            start: detection.start,
-            end: detection.end,
-            confidence: detection.confidence
-          }
-        }
-      }).filter(i => i !== undefined)
-      return detectionsService.create(detections)
-    })
-    .then(detections => res.sendStatus(201)) // TODO: not returning the ids of the created detections
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))
 })
 
