@@ -8,7 +8,7 @@ async function addClassifiers (rawDetections) {
 
   // Gather the potential classifiers
   const queryOptions = { fields: ['id', 'external_id', 'outputs'] }
-  const classifiersUsingIds = (await classifierService.query({ ids: unknownIds }, queryOptions)).results
+  const classifiersUsingIds = (await classifierService.query({ ids: unknownIds.filter(id => !isNaN(id)) }, queryOptions)).results
   const classifiersUsingExternalIds = (await classifierService.query({ externalIds: unknownIds }, queryOptions)).results
 
   // Create a mapping from unknown id to classifier
