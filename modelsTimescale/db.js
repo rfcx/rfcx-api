@@ -47,7 +47,6 @@ const sequelize = new Sequelize(options)
 
 try {
   sequelize.authenticate()
-  console.log('Core database connected')
 } catch (error) {
   console.error('Unable to connect to the Core database:', error)
 }
