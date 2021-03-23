@@ -1,3 +1,9 @@
+## 1.0.18 (2012-03-24)
+
+### Bug Fixes
+* **core:** update PATCH /classifier endpoint to save previous `deployment_parameters` configuration when given only status change ([CE-344](https://jira.rfcx.org/browse/CE-344))
+
+
 ## 1.0.17-hotfix.1 (2012-03-20)
 
 ### Bug Fixes

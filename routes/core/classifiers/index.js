@@ -200,7 +200,7 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function 
   params.convert('version').optional().toInt()
   params.convert('external_id').optional().toString()
   params.convert('status').optional().toInt()
-  params.convert('deployment_parameters').optional().toString()
+  params.convert('deployment_parameters').optional()
   params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
 

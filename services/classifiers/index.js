@@ -189,7 +189,7 @@ async function updateDeployment (update, transaction) {
     }
   })
 
-  // Status is the same, do nothing
+  // Status and deployment is the same, do nothing
   if (existingDeployment && (!update.status || existingDeployment.status === update.status) && (!update.deployment_parameters || existingDeployment.deployment_parameters === update.deployment_parameters)) {
     return
   }
@@ -199,6 +199,9 @@ async function updateDeployment (update, transaction) {
     await existingDeployment.update({ end: Date() }, { transaction: transaction })
   }
 
+  // Get the old deployment params if not given
+  const deploymentParams = update.deployment_parameters ? JSON.stringify(update.deployment_parameters) : existingDeployment.deployment_parameters
+
   // Create the new deployment
   const newDeployment = {
     classifier_id: update.id,
@@ -207,7 +210,7 @@ async function updateDeployment (update, transaction) {
     end: null,
     created_by_id: update.created_by,
     platform: update.platform,
-    deployment_parameters: update.deployment_parameters,
+    deployment_parameters: deploymentParams,
     deployed: false // Background job will transition this to true on classifier deployment
   }
   return await models.ClassifierDeployment.create(newDeployment, { transaction: transaction })
