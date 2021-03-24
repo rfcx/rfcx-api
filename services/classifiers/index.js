@@ -151,9 +151,12 @@ async function update (id, createdBy, attrs) {
         id: id,
         created_by: createdBy,
         status: attrs.status,
-        platform: attrs.platform || 'aws',
-        deployment_parameters: attrs.deployment_parameters || null
+        platform: attrs.platform
       }
+      if (attrs.deployment_parameters) {
+        update.deployment_parameters = attrs.deployment_parameters
+      }
+
       await updateDeployment(update, t)
     }
 
@@ -200,7 +203,7 @@ async function updateDeployment (update, transaction) {
   }
 
   // Get the old deployment params if not given
-  const deploymentParams = update.deployment_parameters ? JSON.stringify(update.deployment_parameters) : existingDeployment.deployment_parameters
+  const deploymentParams = update.deployment_parameters !== undefined ? update.deployment_parameters : existingDeployment.deployment_parameters
 
   // Create the new deployment
   const newDeployment = {
