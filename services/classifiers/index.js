@@ -153,8 +153,8 @@ async function update (id, createdBy, attrs) {
         status: attrs.status,
         platform: attrs.platform
       }
-      if (attrs.deployment_parameters) {
-        update.deployment_parameters = attrs.deployment_parameters
+      if (attrs.deployment_parameters || attrs.deployment_parameters === '') {
+        update.deployment_parameters = attrs.deployment_parameters || null
       }
 
       await updateDeployment(update, t)
@@ -193,7 +193,7 @@ async function updateDeployment (update, transaction) {
   })
 
   // Status and deployment is the same, do nothing
-  if (existingDeployment && (!update.status || existingDeployment.status === update.status) && (!update.deployment_parameters || existingDeployment.deployment_parameters === update.deployment_parameters)) {
+  if (existingDeployment && ((!update.status || existingDeployment.status) === update.status) && ((!update.deployment_parameters || existingDeployment.deployment_parameters) === update.deployment_parameters)) {
     return
   }
 
