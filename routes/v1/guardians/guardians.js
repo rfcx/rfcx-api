@@ -264,38 +264,36 @@ router.route('/register')
 
     params.validate()
       .then(() => {
-        return models.Guardian
-          .findOrCreate({
-            where: {
-              guid: transformedParams.guid,
-              shortname: transformedParams.shortname ? transformedParams.shortname : `_${transformedParams.guid.substr(0, 4)}`,
-              latitude: 0,
-              longitude: 0
-            }
-          })
+        return models.Guardian.findOne({ where: { guid: transformedParams.guid } })
       })
-      .spread((dbGuardian, created) => {
-        if (!created) {
+      .then((guardian) => {
+        if (guardian) {
           res.status(200).json(
-            views.models.guardian(req, res, dbGuardian)
+            views.models.guardian(req, res, guardian)
           )
           return true
         } else {
           var tokenSalt = hash.randomHash(320)
-          dbGuardian.auth_token_salt = tokenSalt
-          dbGuardian.auth_token_hash = hash.hashedCredentials(tokenSalt, transformedParams.token)
-          dbGuardian.auth_token_updated_at = new Date()
+          let params = {
+            guid: transformedParams.guid,
+            shortname: transformedParams.shortname ? transformedParams.shortname : `_${transformedParams.guid.substr(0, 4)}`,
+            latitude: 0,
+            longitude: 0,
+            auth_token_salt: tokenSalt,
+            auth_token_hash: hash.hashedCredentials(tokenSalt, transformedParams.token),
+            auth_token_updated_at: new Date()
+          }
 
-          return dbGuardian.save()
-            .bind({})
+          let dbGuardian
+          return models.Guardian.create(params)
             .then((dbGuardian) => {
-              this.dbGuardian = dbGuardian
+              dbGuardian = dbGuardian
               const siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'derc' // "RFCx lab" (derc) by default
               return siteService.getSiteByGuid(siteGuid)
             })
             .then((site) => {
-              this.dbGuardian.site_id = site.id
-              return this.dbGuardian.save()
+              dbGuardian.site_id = site.id
+              return dbGuardian.save()
             })
             .then((dbGuardian) => {
               if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
@@ -306,7 +304,7 @@ router.route('/register')
                     return dbGuardian.save()
                   })
               } else {
-                return this.dbGuardian
+                return dbGuardian
               };
             })
             .then((dbGuardian) => {
@@ -332,7 +330,7 @@ router.route('/register')
                 })
             })
             .then(() => {
-              res.status(200).json(views.models.guardian(req, res, this.dbGuardian))
+              res.status(200).json(views.models.guardian(req, res, dbGuardian))
             })
         }
       })
