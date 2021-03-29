@@ -1,18 +1,26 @@
-## 1.0.18 (2012-03-24)
+## 1.0.18 (2012-03-29)
 
 ### Bug Fixes
 * **core:** update PATCH /classifier endpoint to save previous `deployment_parameters` configuration when given only status change ([CE-344](https://jira.rfcx.org/browse/CE-344))
 
 
-## 1.0.17-hotfix.1 (2012-03-20)
+## 1.0.17-hotfix.2 (2021-03-27)
+
+### Bug Fixes
+* **legacy:** Fix v1/guardians/register endpoint
+
+
+## 1.0.17-hotfix.1 (2021-03-20)
 
 ### Bug Fixes
 * **core:** Fix incorrect classifier id on /internal/prediction/detections. Switch to using output class names instead of classification values for prediction service.
+
 
 ## 1.0.17-hotfix.0 (2012-03-18)
 
 ### Bug Fixes
 * **global:** Remove toobusy.js to avoid impact on autoscaling. Set connection pool for postgres up to 20 connections.
+
 
 ## 1.0.17 (2012-03-15)
 
