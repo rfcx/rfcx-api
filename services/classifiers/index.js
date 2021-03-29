@@ -150,12 +150,14 @@ async function update (id, createdBy, attrs) {
       const update = {
         id: id,
         created_by: createdBy,
-        status: attrs.status,
         platform: attrs.platform
-      }
-      if (attrs.deployment_parameters || attrs.deployment_parameters === '') {
-        update.deployment_parameters = attrs.deployment_parameters || null
-      }
+      };
+
+      ['status', 'deployment_parameters'].forEach(a => {
+        if (attrs[a] !== undefined) {
+          update[a] = attrs[a]
+        }
+      });
 
       await updateDeployment(update, t)
     }
@@ -193,7 +195,7 @@ async function updateDeployment (update, transaction) {
   })
 
   // Status and deployment is the same, do nothing
-  if (existingDeployment && ((!update.status || existingDeployment.status) === update.status) && ((!update.deployment_parameters || existingDeployment.deployment_parameters) === update.deployment_parameters)) {
+  if (existingDeployment && (existingDeployment.status === update.status) && ((!update.deployment_parameters || existingDeployment.deployment_parameters) === update.deployment_parameters)) {
     return
   }
 
@@ -203,12 +205,12 @@ async function updateDeployment (update, transaction) {
   }
 
   // Get the old deployment params if not given
-  const deploymentParams = update.deployment_parameters !== undefined ? update.deployment_parameters : existingDeployment.deployment_parameters
+  const deploymentParams = update.deployment_parameters !== undefined ? update.deployment_parameters || null : existingDeployment.deployment_parameters
 
   // Create the new deployment
   const newDeployment = {
     classifier_id: update.id,
-    status: update.status,
+    status: update.status || existingDeployment.status,
     start: Date(),
     end: null,
     created_by_id: update.created_by,
