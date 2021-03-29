@@ -195,7 +195,7 @@ async function updateDeployment (update, transaction) {
   })
 
   // Status and deployment is the same, do nothing
-  if (existingDeployment && (existingDeployment.status === update.status) && ((!update.deployment_parameters || existingDeployment.deployment_parameters) === update.deployment_parameters)) {
+  if (existingDeployment && (!update.status || existingDeployment.status === update.status) && ((!update.deployment_parameters || existingDeployment.deployment_parameters) === update.deployment_parameters)) {
     return
   }
 
