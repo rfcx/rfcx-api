@@ -105,14 +105,13 @@ router.route('/register')
 
       if (arbimonService.isEnabled) {
         const idToken = req.headers.authorization
-        const arbimonSiteData = {
-          name: dbGuardian.shortname,
-          external_id: dbGuardian.guid,
-          lat: dbGuardian.latitude || 0,
-          lon: dbGuardian.longitude || 0,
-          alt: dbGuardian.altitude || 0
-        }
-        await arbimonService.createSite(arbimonSiteData, idToken)
+        const arbimonSite = await arbimonService.createSite({
+          ...dbStream.toJSON(),
+          latitude: 0,
+          longitude: 0,
+          altitude: 0
+        }, idToken)
+        await streamsService.update(dbStream, { external_id: arbimonSite.site_id })
       }
 
       res.status(200).json({

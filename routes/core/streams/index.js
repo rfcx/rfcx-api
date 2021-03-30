@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 const streamsService = require('../../../services/streams')
 const usersService = require('../../../services/users/fused')
-const hash = require('../../../utils/misc/hash')
+const { randomId } = require('../../../utils/misc/hash')
 const Converter = require('../../../utils/converter/converter')
 const { Stream } = require('../../../modelsTimescale')
 const arbimonService = require('../../../services/arbimon')
@@ -53,7 +53,7 @@ router.post('/', ensureUserSynced, (req, res) => {
     .then(async (params) => {
       const stream = {
         ...params,
-        id: hash.randomId(),
+        id: randomId(),
         createdById: user.id
       }
 
@@ -67,11 +67,11 @@ router.post('/', ensureUserSynced, (req, res) => {
       }
 
       const options = {
-        creatableBy: user.is_super || user.has_system_role ? undefined : user.id
+        creatableBy: (user.is_super || user.has_system_role) ? undefined : user.id
       }
       const createdStream = await streamsService.create(stream, options)
 
-      res.location(`/streams/${createdStream.id}`).sendStatus(201)
+      return res.location(`/streams/${createdStream.id}`).sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating stream'))
 })

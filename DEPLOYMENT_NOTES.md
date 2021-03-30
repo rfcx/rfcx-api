@@ -1,6 +1,15 @@
 # API Deployment Notes
 
+## next version
+
 - Expect some errors from Explorer due to removal of `is_deleted`, `is_public`, and `created_by=collaborators` on `GET /streams`
+
+## v1.0.16
+
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210223000000-update-indexes-and-constraints-for-source-files`
+  - `20210305141400-change-active-to-deployed-and-add-platform-on-classifier-deployments`
+
 ## v1.0.12
 
 _None_

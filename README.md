@@ -163,9 +163,9 @@ In general, unit tests should be saved alongside the code files that they apply 
 
 Run Jest on all tests: `npm run jest`
 
-Run Jest on unit tests: `npm run jest unit`
+Run Jest on unit tests (any file named `*.unit.test.js`): `npm run jest unit`
 
-Run Jest on integration tests: `npm run jest integration`
+Run Jest on integration tests (any file named `*.int.test.js`): `npm run jest int`
 
 Run Jest on specific folder/file: `npm run jest routes/core/streams`
 

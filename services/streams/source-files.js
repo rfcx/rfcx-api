@@ -46,14 +46,22 @@ function get (id, opts = {}) {
  * @param {*} opts additional function params
  * @returns {*} source file model item
  */
-function create (data, opts = {}) {
+async function create (data, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create source file with empty object.')
   }
-  const { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta } = data // eslint-disable-line camelcase
-  return StreamSourceFile
-    .create({ stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }) // eslint-disable-line camelcase
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamSourceFileBaseInclude }) : item })
+  const { stream_id, filename, duration, sample_count, sample_rate, channels_count, bit_rate, sha1_checksum, meta } = data // eslint-disable-line camelcase
+  await checkForDuplicates(stream_id, sha1_checksum, filename)
+  const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data) // eslint-disable-line camelcase
+  const where = { stream_id, sha1_checksum }
+  const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
+  return StreamSourceFile.findOrCreate({ where, defaults })
+    .spread((item, created) => {
+      if (!created) {
+        throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
+      }
+      return item
+    })
     .catch((e) => {
       console.error('Source file service -> create -> error', e)
       throw new ValidationError('Cannot create source file with provided data.')
@@ -164,11 +172,13 @@ async function findOrCreateRelationships (data) {
     { model: AudioCodec, objKey: 'audio_codec' },
     { model: AudioFileFormat, objKey: 'audio_file_format' }
   ]
+  const result = {}
   for (const item of arr) {
     const where = { value: data[item.objKey] }
     const modelItem = await findOrCreateItem(item.model, where, where)
-    data[`${item.objKey}_id`] = modelItem.id
+    result[`${item.objKey}_id`] = modelItem.id
   }
+  return result
 }
 
 function format (streamSourceFile) {
