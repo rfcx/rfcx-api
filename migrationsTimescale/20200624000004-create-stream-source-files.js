@@ -80,44 +80,48 @@ module.exports = {
       }
     })
       .then(() => {
-        return Promise.all([
-          queryInterface.addConstraint('stream_source_files', {
-            type: 'CHECK',
-            fields: ['duration'],
-            where: {
-              duration: {
-                [Sequelize.Op.gt]: 0
-              }
+        return queryInterface.addConstraint('stream_source_files', {
+          type: 'CHECK',
+          fields: ['duration'],
+          where: {
+            duration: {
+              [Sequelize.Op.gt]: 0
             }
-          }),
-          queryInterface.addConstraint('stream_source_files', {
-            type: 'CHECK',
-            fields: ['sample_count'],
-            where: {
-              sample_count: {
-                [Sequelize.Op.gt]: 0
-              }
+          }
+        })
+      })
+      .then(() => {
+        return queryInterface.addConstraint('stream_source_files', {
+          type: 'CHECK',
+          fields: ['sample_count'],
+          where: {
+            sample_count: {
+              [Sequelize.Op.gt]: 0
             }
-          }),
-          queryInterface.addConstraint('stream_source_files', {
-            type: 'CHECK',
-            fields: ['channels_count'],
-            where: {
-              channels_count: {
-                [Sequelize.Op.gt]: 0
-              }
+          }
+        })
+      })
+      .then(() => {
+        return queryInterface.addConstraint('stream_source_files', {
+          type: 'CHECK',
+          fields: ['channels_count'],
+          where: {
+            channels_count: {
+              [Sequelize.Op.gt]: 0
             }
-          }),
-          queryInterface.addConstraint('stream_source_files', {
-            type: 'CHECK',
-            fields: ['sample_rate'],
-            where: {
-              sample_rate: {
-                [Sequelize.Op.gt]: 0
-              }
+          }
+        })
+      })
+      .then(() => {
+        return queryInterface.addConstraint('stream_source_files', {
+          type: 'CHECK',
+          fields: ['sample_rate'],
+          where: {
+            sample_rate: {
+              [Sequelize.Op.gt]: 0
             }
-          })
-        ])
+          }
+        })
       })
   },
   down: (queryInterface, Sequelize) => {

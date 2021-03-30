@@ -1,41 +1,45 @@
 'use strict'
 
-var fs = require('fs')
-var path = require('path')
-var Sequelize = require('sequelize')
-var defineRelationships = require('./relationships')
-var env = process.env.NODE_ENV || 'development'
+const fs = require('fs')
+const path = require('path')
+const Sequelize = require('sequelize')
+const defineRelationships = require('./relationships')
+const env = process.env.NODE_ENV || 'development'
 
-const options = {
-  dialect: 'mysql',
-  host: process.env.DB_HOSTNAME,
-  port: process.env.DB_PORT,
-  logging: false,
-  define: {
-    underscored: true,
-    timestamps: true,
-    charset: 'utf8',
-    dialectOptions: {
-      collate: 'utf8_general_ci'
+const options = env === 'test'
+  ? {
+      dialect: 'sqlite'
     }
-  },
-  hooks: {
-    afterConnect: () => {
-      console.log('Connected to MySQL')
-    },
-    afterDisconnect: () => {
-      console.log('Disonnected from MySQL')
+  : {
+      dialect: 'mysql',
+      host: process.env.DB_HOSTNAME,
+      port: process.env.DB_PORT,
+      logging: false,
+      define: {
+        underscored: true,
+        timestamps: true,
+        charset: 'utf8',
+        dialectOptions: {
+          collate: 'utf8_general_ci'
+        }
+      },
+      hooks: {
+        afterConnect: () => {
+          console.log('Connected to MySQL')
+        },
+        afterDisconnect: () => {
+          console.log('Disonnected from MySQL')
+        }
+      }
     }
-  }
-}
 if (env === 'development') {
   options.logging = function (str) {
     console.log('\nSQL QUERY----------------------------------\n', str, '\n----------------------------------')
   }
 }
 
-var sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, options)
-var db = {}
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, options)
+const db = {}
 
 sequelize.authenticate() // check connection
 
@@ -68,6 +72,6 @@ db.options = options
 module.exports = db
 
 function importSequelizeModelFile (file) {
-  var model = sequelize.import(path.join(__dirname, file))
+  const model = sequelize.import(path.join(__dirname, file))
   db[model.name] = model
 }
