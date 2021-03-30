@@ -15,27 +15,6 @@ beforeEach(async () => {
   await truncate(models)
 })
 
-describe('GET /', () => {
-  test('no results', async () => {
-    const response = await request(app).get('/')
-
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual([])
-  })
-
-  test('single result', async () => {
-    const stream = await models.Stream.create({ id: 'j123s', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
-
-    const response = await request(app).get('/')
-
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toBe(1)
-    expect(response.body[0].id).toBe(stream.id)
-    expect(response.body[0].name).toBe(stream.name)
-    expect(response.body[0].latitude).toBe(stream.latitude)
-  })
-})
-
 describe('GET /:id', () => {
   test('result', async () => {
     const stream = { id: 'j123s', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
@@ -105,33 +84,5 @@ describe('GET /:id', () => {
     const response = await request(app).get(`/${stream.id}`)
 
     expect(response.statusCode).toBe(200)
-  })
-})
-
-describe('POST /', () => {
-  test('required fields only', async () => {
-    const requestBody = {
-      name: 'Trail 39',
-      latitude: 10.123,
-      longitude: 101.456
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-
-    expect(response.statusCode).toBe(201)
-    expect(response.header.location).toMatch(/^\/streams\/[0-9a-z]+$/)
-    const id = response.header.location.replace('/streams/', '')
-    const stream = await models.Stream.findByPk(id)
-    expect(stream.name).toBe(requestBody.name)
-  })
-
-  test('missing name', async () => {
-    const requestBody = {
-      latitude: 10.123
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-
-    expect(response.statusCode).toBe(400)
   })
 })
