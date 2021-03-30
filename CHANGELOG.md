@@ -1,3 +1,8 @@
+## 1.0.18 (???)
+
+### Features
+* **core:** Stream assets are no longer stored in Core.
+
 ## 1.0.17-hotfix.2 (2021-03-27)
 
 ### Bug Fixes
