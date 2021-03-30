@@ -151,13 +151,13 @@ async function update (id, createdBy, attrs) {
         id: id,
         created_by: createdBy,
         platform: attrs.platform
-      };
+      }
 
       ['status', 'deployment_parameters'].forEach(a => {
         if (attrs[a] !== undefined) {
           update[a] = attrs[a]
         }
-      });
+      })
 
       await updateDeployment(update, t)
     }
