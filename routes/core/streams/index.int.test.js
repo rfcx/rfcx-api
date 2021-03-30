@@ -1,46 +1,18 @@
 const routes = require('.')
 const models = require('../../../modelsTimescale')
-const { migrate, truncate } = require('../../../utils/sequelize/testing')
-
+const { migrate, truncate, expressApp, seed, seedValues } = require('../../../utils/sequelize/testing')
 const request = require('supertest')
-const express = require('express')
 
-const app = express()
+const app = expressApp()
 
-const primaryUserId = 1
-const primaryUserGuid = 'abc123'
-const primaryUserEmail = 'jb@astonmartin.com'
-const otherUserId = 2
-const roleAdmin = 1
-const roleMember = 2
-const roleGuest = 3
-
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
-app.use((req, res, next) => {
-  req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail } }
-  next()
-})
 app.use('/', routes)
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
+  await seed(models)
 })
 beforeEach(async () => {
   await truncate(models)
-  await models.User.create({ id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: 'James', lastname: 'Bond', email: primaryUserEmail })
-  await models.User.create({ id: otherUserId, guid: 'def456', username: 'em', firstname: 'Eve', lastname: 'Moneypenny', email: 'em@astonmartin.com' })
-  await models.Role.create({ id: roleAdmin, name: 'Admin' })
-  await models.Role.create({ id: roleMember, name: 'Member' })
-  await models.Role.create({ id: roleGuest, name: 'Guest' })
-  await models.RolePermission.create({ role_id: roleAdmin, permission: 'C' })
-  await models.RolePermission.create({ role_id: roleAdmin, permission: 'R' })
-  await models.RolePermission.create({ role_id: roleAdmin, permission: 'U' })
-  await models.RolePermission.create({ role_id: roleAdmin, permission: 'D' })
-  await models.RolePermission.create({ role_id: roleMember, permission: 'C' })
-  await models.RolePermission.create({ role_id: roleMember, permission: 'R' })
-  await models.RolePermission.create({ role_id: roleMember, permission: 'U' })
-  await models.RolePermission.create({ role_id: roleGuest, permission: 'R' })
 })
 
 describe('GET /', () => {
@@ -52,7 +24,7 @@ describe('GET /', () => {
   })
 
   test('single result', async () => {
-    const stream = await models.Stream.create({ id: 'j123s', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: primaryUserId })
+    const stream = await models.Stream.create({ id: 'j123s', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
 
     const response = await request(app).get('/')
 
@@ -66,7 +38,7 @@ describe('GET /', () => {
 
 describe('GET /:id', () => {
   test('result', async () => {
-    const stream = { id: 'j123s', createdById: primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
+    const stream = { id: 'j123s', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
     await models.Stream.create(stream)
 
     const response = await request(app).get(`/${stream.id}`)
@@ -89,7 +61,7 @@ describe('GET /:id', () => {
   })
 
   test('forbidden', async () => {
-    const stream = { id: 'x456y', createdById: otherUserId, name: 'Jaguar Station' }
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
     await models.Stream.create(stream)
     console.warn = jest.fn()
 
@@ -100,9 +72,9 @@ describe('GET /:id', () => {
   })
 
   test('readable by stream guest', async () => {
-    const stream = { id: 'x456y', createdById: otherUserId, name: 'Jaguar Station' }
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
     await models.Stream.create(stream)
-    await models.UserStreamRole.create({ user_id: primaryUserId, stream_id: stream.id, role_id: roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: stream.id, role_id: seedValues.roleGuest })
 
     const response = await request(app).get(`/${stream.id}`)
 
@@ -110,11 +82,11 @@ describe('GET /:id', () => {
   })
 
   test('readable by project guest', async () => {
-    const project = { id: 'p123p', createdById: otherUserId, name: 'Other Project' }
-    const stream = { id: 'x456y', createdById: otherUserId, project_id: project.id, name: 'Jaguar Station' }
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other Project' }
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
     await models.Project.create(project)
     await models.Stream.create(stream)
-    await models.UserProjectRole.create({ user_id: primaryUserId, project_id: project.id, role_id: roleGuest })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleGuest })
 
     const response = await request(app).get(`/${stream.id}`)
 
@@ -122,13 +94,13 @@ describe('GET /:id', () => {
   })
 
   test('readable by organization guest', async () => {
-    const organization = { id: 'o789o', createdById: otherUserId, name: 'Other Org' }
-    const project = { id: 'p123p', createdById: otherUserId, organization_id: organization.id, name: 'Other Project' }
-    const stream = { id: 'x456y', createdById: otherUserId, project_id: project.id, name: 'Jaguar Station' }
+    const organization = { id: 'o789o', createdById: seedValues.otherUserId, name: 'Other Org' }
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, organization_id: organization.id, name: 'Other Project' }
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
     await models.Organization.create(organization)
     await models.Project.create(project)
     await models.Stream.create(stream)
-    await models.UserOrganizationRole.create({ user_id: primaryUserId, organization_id: organization.id, role_id: roleGuest })
+    await models.UserOrganizationRole.create({ user_id: seedValues.primaryUserId, organization_id: organization.id, role_id: seedValues.roleGuest })
 
     const response = await request(app).get(`/${stream.id}`)
 
