@@ -1,3 +1,9 @@
+## 1.0.18 (???)
+
+### Features
+* **core:** Detection endpoints use classifier output mappings.
+
+
 ## 1.0.17-hotfix.2 (2021-03-27)
 
 ### Bug Fixes
