@@ -189,8 +189,8 @@ async function updateDeployment (update, transaction) {
   })
 
   // Status and deployment is the same, do nothing
-  const statusHasChanged = !update.status || existingDeployment.status === update.status
-  const deploymentParametersHaveChanged = !update.deployment_parameters || existingDeployment.deployment_parameters === update.deployment_parameters
+  const statusHasChanged = !update.status || existingDeployment.status !== update.status
+  const deploymentParametersHaveChanged = !update.deployment_parameters || existingDeployment.deployment_parameters !== update.deployment_parameters
   if (existingDeployment && !statusHasChanged && !deploymentParametersHaveChanged) {
     return
   }
