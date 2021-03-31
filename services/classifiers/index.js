@@ -36,7 +36,7 @@ const availableIncludes = [
  * @param {*} opts additional function params
  * @returns {*} classifier model item
  */
-function get (id, opts = {}) {
+function get(id, opts = {}) {
   return models.Classifier
     .findOne({
       where: { id },
@@ -72,7 +72,7 @@ function get (id, opts = {}) {
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
-async function query (filters, options = {}) {
+async function query(filters, options = {}) {
   const where = {}
 
   if (filters.keyword) {
@@ -102,7 +102,7 @@ async function query (filters, options = {}) {
   })
 }
 
-function create (attrs) {
+function create(attrs) {
   const classifierData = {
     name: attrs.name,
     version: attrs.version,
@@ -135,7 +135,7 @@ function create (attrs) {
   })
 }
 
-async function update (id, createdBy, attrs) {
+async function update(id, createdBy, attrs) {
   const classifier = await models.Classifier.findOne({
     where: { id }
   })
@@ -148,16 +148,10 @@ async function update (id, createdBy, attrs) {
     // Only update if there is a change in status or deployment parameters
     if (attrs.status || attrs.deployment_parameters) {
       const update = {
+        ...attrs,
         id: id,
-        created_by: createdBy,
-        platform: attrs.platform
+        created_by: createdBy
       }
-
-      ['status', 'deployment_parameters'].forEach(a => {
-        if (attrs[a] !== undefined) {
-          update[a] = attrs[a]
-        }
-      })
 
       await updateDeployment(update, t)
     }
@@ -184,7 +178,7 @@ async function update (id, createdBy, attrs) {
   })
 }
 
-async function updateDeployment (update, transaction) {
+async function updateDeployment(update, transaction) {
   // Search for current deployment
   const existingDeployment = await models.ClassifierDeployment.findOne({
     where: {
@@ -221,7 +215,7 @@ async function updateDeployment (update, transaction) {
   return await models.ClassifierDeployment.create(newDeployment, { transaction: transaction })
 }
 
-async function updateActiveStreams (update, transaction) {
+async function updateActiveStreams(update, transaction) {
   const existingStreams = await models.ClassifierActiveStream.findAll({
     attributes: ['stream_id'],
     where: {
@@ -246,7 +240,7 @@ async function updateActiveStreams (update, transaction) {
   })), { transaction })
 }
 
-async function updateActiveProjects (update, transaction) {
+async function updateActiveProjects(update, transaction) {
   const existingProjects = await models.ClassifierActiveProject.findAll({
     attributes: ['project_id'],
     where: {
