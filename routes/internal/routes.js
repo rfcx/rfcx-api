@@ -23,5 +23,8 @@ module.exports = {
   ],
   'prediction-deployer': [
     require('./prediction-deployer/classifier-deployments')
+  ],
+  annotations: [
+    require('./annotations')
   ]
 }
