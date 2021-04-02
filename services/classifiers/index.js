@@ -152,8 +152,7 @@ async function update (id, createdBy, attrs) {
         id: id,
         created_by: createdBy
       }
-
-      await updateDeployment(update, t)
+      await updateClassifierDeployment(update, t)
     }
 
     // Only update if there are active_streams
@@ -178,7 +177,7 @@ async function update (id, createdBy, attrs) {
   })
 }
 
-async function updateDeployment (update, transaction) {
+async function updateClassifierDeployment (update, transaction) {
   // Search for current deployment
   const existingDeployment = await models.ClassifierDeployment.findOne({
     where: {
