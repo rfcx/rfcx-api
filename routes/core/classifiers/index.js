@@ -201,13 +201,14 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function 
   params.convert('external_id').optional().toString()
   params.convert('status').optional().toInt()
   params.convert('platform').optional().toString().default('aws')
-  params.convert('deployment_parameters').optional().toString()
+  params.convert('deployment_parameters').optional().toString().default(null)
   params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.owner_id
   params.validate()
     .then(() => {
+      console.log('\n\n\n', transformedParams, '\n\n\n')
       return service.update(id, createdById, transformedParams)
     })
     .then(data => res.json(data))

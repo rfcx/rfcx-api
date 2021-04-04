@@ -200,7 +200,7 @@ async function updateClassifierDeployment (update, transaction) {
   }
 
   // Get the old deployment params if not given
-  const deploymentParams = update.deployment_parameters !== undefined ? update.deployment_parameters || null : existingDeployment.deployment_parameters
+  const deploymentParams = update.deployment_parameters !== undefined ? update.deployment_parameters : existingDeployment.deployment_parameters
 
   // Create the new deployment
   const newDeployment = {
