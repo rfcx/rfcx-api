@@ -1,18 +1,18 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const organizationsService = require('../../../services/organizations')
+const projectsService = require('../../../services/projects')
 const Converter = require('../../../utils/converter/converter')
 
 /**
  * @swagger
  *
- * /organizations/{id}:
+ * /projects/{id}:
  *   get:
- *     summary: Get an organization
+ *     summary: Get a project
  *     tags:
- *       - organizations
+ *       - projects
  *     parameters:
  *       - name: id
- *         description: Organization identifier
+ *         description: Project id
  *         in: path
  *         required: true
  *         type: string
@@ -26,22 +26,24 @@ const Converter = require('../../../utils/converter/converter')
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Organization'
+ *               $ref: '#/components/schemas/Project'
  *       403:
  *         description: Insufficient privileges
  *       404:
- *         description: Organization not found
+ *         description: Project not found
  */
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const readableBy = user.is_super || user.has_system_role ? undefined : user.id
+
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
+
   return converter.validate()
     .then(params => {
       const options = { ...params, readableBy }
-      return organizationsService.get(req.params.id, options)
+      return projectsService.get(req.params.id, options)
     })
-    .then(organization => res.json(organization))
-    .catch(httpErrorHandler(req, res, 'Failed getting organization'))
+    .then(project => res.json(project))
+    .catch(httpErrorHandler(req, res, 'Failed getting project'))
 }

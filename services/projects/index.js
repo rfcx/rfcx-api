@@ -6,7 +6,7 @@ const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 
 const availableIncludes = [
-  User.include('created_by'), Organization.include()
+  User.include('created_by'), Organization.include({ required: false })
 ]
 
 /**
@@ -24,9 +24,9 @@ async function get (idOrWhere, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? Project.attributes.full.filter(a => options.fields.includes(a)) : Project.attributes.full
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
 
-  const project = await Project.findOne({ where, attributes, include, paranoid: false })
+  const project = await Project.findOne({ where, attributes, include })
 
-  if (!project) {
+  if (project === null) {
     throw new EmptyResultError('Project not found')
   }
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, project.id, PROJECT))) {
@@ -118,11 +118,11 @@ async function query (filters, options = {}) {
     }
   }
 
-  const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.lite
+  const attributes = options.fields && options.fields.length > 0 ? Project.attributes.full.filter(a => options.fields.includes(a)) : Project.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
   const order = getSortFields(options.sort || '-updated_at')
 
-  return pagedQuery(Organization, {
+  return pagedQuery(Project, {
     where,
     attributes,
     include,
@@ -145,7 +145,7 @@ async function query (filters, options = {}) {
  * @param {*} options
  * @param {number} options.updatableBy Update only if project is updatable by the given user id
  * @throws EmptyResultError when project not found
- * @throws ForbiddenError when `updatableBy` user does not have update permission on the organization
+ * @throws ForbiddenError when `updatableBy` user does not have update permission on the project
  */
 async function update (id, project, options = {}) {
   if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, PROJECT))) {
@@ -173,7 +173,6 @@ async function remove (id, options = {}) {
 
 /**
  * Restore deleted project
- * @param {string} id
  * @param {*} options Additional restore options
  * @param {number} options.deletableBy Perform only if project is deletable by the given user id
  * @throws ForbiddenError when `deletableBy` user does not have delete permission on the project

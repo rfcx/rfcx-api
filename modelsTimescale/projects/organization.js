@@ -30,8 +30,13 @@ module.exports = function (sequelize, DataTypes) {
     full: ['id', 'name', 'is_public', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'is_public']
   }
-  Organization.include = function (as = 'organization', attributes = Organization.attributes.lite, required = true) {
-    return { model: Organization, as, attributes, required }
+  Organization.include = function (options = {}) {
+    const defaults = {
+      as: 'organization',
+      attributes: Organization.attributes.lite,
+      required: true
+    }
+    return { model: Organization, ...defaults, ...options }
   }
   return Organization
 }
