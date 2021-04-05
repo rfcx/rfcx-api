@@ -38,10 +38,15 @@ router.route('/:guardian_id/checkins')
           include: [{ all: true }]
         })
       })
-      .then(function (dbGuardian) {
+      .then(async function (dbGuardian) {
         if (!dbGuardian) {
           console.error('Guardian with given guid not found', { req: req.guid })
           throw new sequelize.EmptyResultError('Guardian with given guid not found.')
+        }
+        const checksum = strArrToJSArr(this.json.audio, '|', '*')[0][3]
+        const existingAudio = await models.GuardianAudio.findOne({ where: { sha1_checksum: checksum } })
+        if (existingAudio) {
+          throw new ValidationError('Duplicate audio file.')
         }
         dbGuardian.last_check_in = new Date()
         dbGuardian.check_in_count = 1 + dbGuardian.check_in_count
