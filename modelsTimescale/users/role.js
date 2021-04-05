@@ -8,6 +8,8 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     }
+  }, {
+    timestamps: false
   })
   Role.associate = function (models) {
     Role.hasMany(models.RolePermission, { as: 'permissions' })

@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-mqtt
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: api-mqtt
+  template:
+    metadata:
+      labels:
+        app: api-mqtt
+    spec:
+      containers:
+        - name: api-mqtt
+          image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_production:latest
+          args: ["npm", "run", "start:mqtt"]
+          envFrom:
+            - secretRef:
+                name: api-rabbitmq-secrets
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2000Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi

@@ -1,7 +1,69 @@
-## 1.0.15 (2021-03-XX)
+## 1.0.18 (???)
 
 ### Features
+* **core:** Detection endpoints use classifier output mappings.
+* **core:** Stream assets are no longer stored in Core.
 * **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
+
+
+## 1.0.17-hotfix.3 (2021-04-02)
+
+### Bug Fixes
+* **legacy:** Check for duplicate audio files in /v1/guardians/:id/checkins endpoint
+
+
+## 1.0.17-hotfix.2 (2021-03-27)
+
+### Bug Fixes
+* **legacy:** Fix v1/guardians/register endpoint
+
+
+## 1.0.17-hotfix.1 (2021-03-20)
+
+### Bug Fixes
+* **core:** Fix incorrect classifier id on /internal/prediction/detections. Switch to using output class names instead of classification values for prediction service.
+
+
+## 1.0.17-hotfix.0 (2012-03-18)
+
+### Bug Fixes
+* **global:** Remove toobusy.js to avoid impact on autoscaling. Set connection pool for postgres up to 20 connections.
+
+
+## 1.0.17 (2012-03-15)
+
+### Features
+* **core:** Shorten /streams/id/detections body payload to 5 items ([CE-310](https://jira.rfcx.org/browse/CE-310))
+
+### Bug Fixes
+* **internal:** Fix parameters name for `start` and `end` in /prediction-deployer/classifier-deployments query
+
+
+## 1.0.15-hotfix.0 (2021-03-13)
+
+### Bug Fixes
+* **core:** POST /v2/guardians/register endpoint uses correct data for Arbimon site creation
+
+
+## 1.0.16 (2021-03-12)
+
+### Features
+* **internal:** GET /prediction-deployer/classifier-deployments/:id endpoint for getting individual classifier deployment information by id
+* **internal:** GET /prediction-deployer/classifier-deployments endpoint for getting the list of latest deployment information of each classifier id ([CE-277](https://jira.rfcx.org/browse/CE-277))
+* **internal:** PATCH /prediction-deployer/classifier-deployments/:id endpoint for updating deployed status ([CE-277](https://jira.rfcx.org/browse/CE-277))
+
+### Bug Fixes
+* **core:** Refactor stream source file creation endpoint to avoid duplicates ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+### Other
+* **core:** Refactor setup script
+* **core:** Update stream_segments and stream_source_files tables to have unique constraint on stream_id and checksum ([CE-179](https://jira.rfcx.org/browse/CE-179))
+
+
+## 1.0.15 (2021-03-05)
+
+### Bug Fixes
+* **core:** GET /stream-source-files endpoint can be used by `systemUser`
 
 
 ## 1.0.14 (2021-03-03)
@@ -53,7 +115,6 @@
 
 ### Other
 * **media:** Add unit tests for `convertAudio` function of `segment-file-utils` service ([CS-439](https://jira.rfcx.org/browse/CS-439))
-* **core:** refactor setup script
 
 ### Performance Improvements
 * **core:** Do not request min and max segment time for stream on segment creation - get it from segment ([CE-106](https://jira.rfcx.org/browse/CE-106))
@@ -62,7 +123,7 @@
 ## 1.0.7 (2021-02-22)
 
 ### Features
-* **core:** Enable clustered annotation query by `is_manual` and `is_positive` [CE-127](https://jira.rfcx.org/browse/CE-127)
+* **core:** Enable clustered annotation query by `is_manual` and `is_positive` ([CE-127](https://jira.rfcx.org/browse/CE-127))
 
 ### Bug Fixes
 * **core:** Remove unuse parameters from `event` model

@@ -1,6 +1,6 @@
 {
   "name": "rfcx-api",
-  "version": "1.0.13",
+  "version": "1.0.17",
   "license": "UNLICENSED",
   "private": false,
   "repository": {
@@ -72,7 +72,6 @@
     "swagger-jsdoc": "^4.0.0",
     "swagger-ui-express": "^4.1.4",
     "togeojson": "^0.16.0",
-    "toobusy-js": "0.5.1",
     "twilio": "3.54.1",
     "tz-lookup": "^6.1.25",
     "uuid": "^8.3.2",
@@ -88,15 +87,11 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "faux-knox": "0.1.16",
-    "husky": "^4.2.5",
     "jest": "^26.0.1",
     "minimist": "1.2.5",
     "s3": "4.4.0",
-    "sequelize-cli": "5.5.1"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run jest"
-    }
+    "sequelize-cli": "5.5.1",
+    "sqlite3": "^5.0.2",
+    "supertest": "^6.1.3"
   }
 }

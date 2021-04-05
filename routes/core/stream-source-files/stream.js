@@ -4,7 +4,9 @@ const streamsService = require('../../../services/streams')
 const streamSourceFileService = require('../../../services/streams/source-files')
 const { hasRole } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
-const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const auth0Service = require('../../../services/auth0/auth0-service')
+const rolesService = require('../../../services/roles')
 
 /**
  * @swagger
@@ -55,16 +57,14 @@ router.post('/:streamId/stream-source-files', hasRole(['systemUser']), function 
     .then(async () => {
       const stream = await streamsService.getById(streamId)
       convertedParams.stream_id = streamId
-      await streamSourceFileService.checkForDuplicates(streamId, convertedParams.sha1_checksum, convertedParams.filename)
       if (convertedParams.meta && Object.keys(convertedParams.meta).length !== 0 && convertedParams.meta.constructor === Object) {
         convertedParams.meta = JSON.stringify(convertedParams.meta)
       } else {
         delete convertedParams.meta
       }
-      await streamSourceFileService.findOrCreateRelationships(convertedParams)
       const streamSourceFile = await streamSourceFileService.create(convertedParams, { joinRelations: true })
       await streamsService.refreshStreamMaxSampleRate(stream, streamSourceFile)
-      return res.status(201).json(streamSourceFileService.format(streamSourceFile))
+      return res.location(`/stream-source-file/${streamSourceFile.id}`).status(201).json(streamSourceFileService.format(streamSourceFile))
     })
     .catch(httpErrorHandler(req, res, 'Failed creating stream source file'))
 })
@@ -119,7 +119,9 @@ router.post('/:streamId/stream-source-files', hasRole(['systemUser']), function 
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/stream-source-files', hasStreamPermission('R'), function (req, res) {
+router.get('/:id/stream-source-files', function (req, res) {
+  const user = req.rfcx.auth_token_info
+  const streamId = req.params.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('filename').optional().toArray()
   converter.convert('sha1_checksum').optional().toArray()
@@ -128,6 +130,17 @@ router.get('/:id/stream-source-files', hasStreamPermission('R'), function (req, 
   converter.convert('fields').optional().toArray()
 
   return converter.validate()
+    .then(async (params) => {
+      const roles = auth0Service.getUserRolesFromToken(req.user)
+      if (roles.includes('systemUser')) {
+        return params
+      }
+      const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
+      if (!allowed) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
+      }
+      return params
+    })
     .then(params => {
       const filters = {
         filenames: params.filename,
