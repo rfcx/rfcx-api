@@ -16,6 +16,10 @@ const Converter = require('../../../utils/converter/converter')
  *         in: path
  *         required: true
  *         type: string
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: Success

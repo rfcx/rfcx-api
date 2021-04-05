@@ -70,9 +70,9 @@ router.patch('/streams/:externalId', (req, res) => {
         }
         convertedParams.project_id = externalProject.id
       }
-      return streamsService.update(stream, convertedParams, { joinRelations: true })
+      await streamsService.update(stream.id, convertedParams)
+      return await streamsService.get(stream)
     })
-    .then(streamsService.formatStream)
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed updating stream'))
 })
@@ -106,8 +106,8 @@ router.delete('/streams/:externalId', ensureUserSynced, (req, res) => {
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to delete this stream.')
       }
-      await streamsService.remove(stream)
-      res.sendStatus(204)
+      await streamsService.remove(stream.id)
+      return res.sendStatus(204)
     })
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'))
 })

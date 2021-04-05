@@ -40,7 +40,11 @@ const arbimonService = require('../../../services/arbimon')
  *         description: Stream not found
  */
 module.exports = (req, res) => {
-  const streamId = req.params.id
+  const user = req.rfcx.auth_token_info
+  const updatableBy = user.is_super || user.has_system_role ? undefined : user.id
+  const id = req.params.id
+  const options = { updatableBy }
+
   const converter = new Converter(req.body, {})
   converter.convert('name').optional().toString()
   converter.convert('description').optional().toString()
@@ -48,24 +52,22 @@ module.exports = (req, res) => {
   converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   converter.convert('altitude').optional().toFloat()
-  converter.convert('restore').optional().toBoolean()
 
   converter.validate()
-    .then(async (params) => {
-      const stream = await streamsService.get(streamId)
-      if (params.restore === true) {
-        await streamsService.restore(stream)
-      }
-      const updatedStream = await streamsService.update(stream, params, { joinRelations: true })
+    .then((params) => streamsService.update(id, params, options))
+    .then(async () => {
+      // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
         try {
+          const updatedStream = await streamsService.get(id)
           const idToken = req.headers.authorization
-          await arbimonService.updateSite(updatedStream.toJSON(), idToken)
+          return await arbimonService.updateSite(updatedStream.toJSON(), idToken)
         } catch (err) {
           console.error('Failed updating stream in Arbimon', err)
         }
       }
-      return res.json(streamsService.formatStream(updatedStream))
+      return undefined
     })
+    .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed updating stream'))
 }

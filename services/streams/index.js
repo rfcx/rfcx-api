@@ -1,8 +1,8 @@
-const { Stream, Project, Organization, User, StreamSegment, StreamSourceFile, Sequelize } = require('../../modelsTimescale')
+const { Stream, Project, User, StreamSegment, StreamSourceFile, Sequelize } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
-const { getAccessibleObjectsIDs, hasPermission, STREAM, READ } = require('../roles')
+const { getAccessibleObjectsIDs, hasPermission, STREAM, READ, UPDATE, DELETE } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 
@@ -10,6 +10,17 @@ const availableIncludes = [
   User.include({ as: 'created_by' }),
   Project.include({ required: false })
 ]
+
+function computedAdditions (stream) {
+  const additions = {}
+  if (stream.latitude && stream.longitude) {
+    const country = crg.get_country(stream.latitude, stream.longitude)
+    if (country) {
+      additions.countryName = country.name
+    }
+  }
+  return additions
+}
 
 /**
  * Get a single stream by id or where clause
@@ -43,7 +54,8 @@ async function get (idOrWhere, options = {}) {
  * @param {*} options
  */
 function create (stream, options = {}) {
-  return Stream.create(stream)
+  const fullStream = { ...stream, ...computedAdditions(stream) }
+  return Stream.create(fullStream)
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
       throw new ValidationError('Cannot create stream with provided data.')
@@ -153,104 +165,63 @@ async function query (filters, options = {}) {
 }
 
 /**
- * Updates existing stream item
- * @param {*} stream stream model item
- * @param {*} data attributes to update
- * @param {string} data.name
- * @param {string} data.description
- * @param {boolean} data.is_public
- * @param {string} data.start
- * @param {string} data.end
- * @param {float} data.latitude
- * @param {float} data.longitude
- * @param {float} data.altitude
- * @param {integer} data.max_sample_rate
- * @param {integer} data.project_id
- * @param {integer} data.external_id
- * @param {integer} data.project_external_id
- * @param {*} opts additional function params
- * @param {boolean} opts.joinRelations whether join related tables or not
- * @returns {*} stream model item
+ * Update stream
+ * @param {string} id
+ * @param {Stream} stream
+ * @param {string} stream.name
+ * @param {string} stream.description
+ * @param {boolean} stream.is_public
+ * @param {string} stream.start
+ * @param {string} stream.end
+ * @param {float} stream.latitude
+ * @param {float} stream.longitude
+ * @param {float} stream.altitude
+ * @param {integer} stream.max_sample_rate
+ * @param {integer} stream.project_id
+ * @param {integer} stream.external_id
+ * @param {integer} stream.project_external_id
+ * @param {*} options
+ * @param {number} options.updatableBy Update only if stream is updatable by the given user id
+ * @throws EmptyResultError when stream not found
+ * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
  */
-function update (stream, data, opts = {}) {
-  const attrs = ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude',
-    'altitude', 'max_sample_rate', 'project_id', 'external_id', 'project_external_id']
-  attrs.forEach((attr) => {
-    if (data[attr] !== undefined) {
-      stream[attr] = data[attr]
-    }
+async function update (id, stream, options = {}) {
+  if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, STREAM))) {
+    throw new ForbiddenError()
+  }
+  const fullStream = { ...stream, ...computedAdditions(stream) }
+  return Stream.update(fullStream, {
+    where: { id }
   })
-  return stream
-    .save()
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: availableIncludes }) : item })
-    .catch((e) => {
-      console.error('Streams service -> update -> error', e)
-      throw new ValidationError('Cannot update stream with provided data.')
-    })
 }
 
 /**
- * Delete a stream (soft or hard)
- * @param {*} stream stream model item
- * @param {*} options
- * @param {boolean} options.force
+ * Delete stream
+ * @param {string} id
+ * @param {*} options Additional delete options
+ * @param {number} options.deletableBy Perform only if organization is deletable by the given user id
+ * @param {boolean} options.force Remove from the database (not soft-delete)
+ * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
  */
-function remove (stream, opts = {}) {
-  return stream.destroy({
-    ...opts.force !== undefined ? { force: opts.force } : {}
-  })
-    .catch((e) => {
-      console.error('Streams service -> delete -> error', e)
-      throw new ValidationError('Cannot delete stream.')
-    })
+async function remove (id, options = {}) {
+  if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, STREAM))) {
+    throw new ForbiddenError()
+  }
+  return Stream.destroy({ where: { id }, force: options.force })
 }
 
 /**
  * Restore deleted stream
- * @param {*} stream stream model item
+ * @param {string} id
+ * @param {*} options Additional restore options
+ * @param {number} options.deletableBy Perform only if organization is deletable by the given user id
+ * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
  */
-function restore (stream) {
-  return stream.restore()
-    .catch((e) => {
-      console.error('Streams service -> restore -> error', e)
-      throw new ValidationError('Cannot restore stream.')
-    })
-}
-
-function formatStream (stream, permissions) {
-  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_at, updated_at, max_sample_rate, external_id, project } = stream // eslint-disable-line camelcase
-  let country_name = null // eslint-disable-line camelcase
-  if (latitude && longitude) {
-    const country = crg.get_country(latitude, longitude)
-    if (country) {
-      country_name = country.name // eslint-disable-line camelcase
-    }
+async function restore (id, options = {}) {
+  if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, STREAM))) {
+    throw new ForbiddenError()
   }
-  return {
-    id,
-    name,
-    description,
-    start,
-    end,
-    is_public,
-    created_at,
-    created_by: stream.created_by || null,
-    updated_at,
-    max_sample_rate,
-    latitude,
-    longitude,
-    altitude,
-    country_name,
-    external_id,
-    project: project || null,
-    ...permissions && { permissions }
-  }
-}
-
-function formatStreams (data) {
-  return data.map((item) => {
-    return formatStream(item.stream, item.permissions)
-  })
+  return Stream.restore({ where: { id } })
 }
 
 /**
@@ -350,8 +321,6 @@ module.exports = {
   update,
   remove,
   restore,
-  formatStream,
-  formatStreams,
   refreshStreamMaxSampleRate,
   refreshStreamStartEnd,
   ensureStreamExistsForGuardian,

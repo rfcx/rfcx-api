@@ -26,19 +26,23 @@ const arbimonService = require('../../../services/arbimon')
  */
 
 module.exports = (req, res) => {
-  const streamId = req.params.id
-  return streamsService.get(streamId)
-    .then(async (stream) => {
+  const user = req.rfcx.auth_token_info
+  const deletableBy = user.is_super || user.has_system_role ? undefined : user.id
+  const id = req.params.id
+  const options = { deletableBy }
+  return streamsService.remove(id, options)
+    .then(async () => {
+      // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
         try {
           const idToken = req.headers.authorization
-          await arbimonService.deleteSite(streamId, idToken)
+          return await arbimonService.deleteSite(id, idToken)
         } catch (err) {
           console.error('Failed deleting site in Arbimon', err)
         }
       }
-      await streamsService.remove(stream)
-      return res.sendStatus(204)
+      return undefined
     })
+    .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'))
 }

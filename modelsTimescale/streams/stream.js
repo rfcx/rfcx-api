@@ -91,4 +91,5 @@ module.exports = function (sequelize, DataTypes) {
     lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'is_public']
   }
   Stream.include = includeBuilder(Stream, 'stream', Stream.attributes.lite)
+  return Stream
 }

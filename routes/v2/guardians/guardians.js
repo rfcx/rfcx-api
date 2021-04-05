@@ -111,7 +111,7 @@ router.route('/register')
           longitude: 0,
           altitude: 0
         }, idToken)
-        await streamsService.update(dbStream, { external_id: arbimonSite.site_id })
+        await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
       }
 
       res.status(200).json({

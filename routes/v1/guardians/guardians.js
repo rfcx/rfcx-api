@@ -302,7 +302,7 @@ router.route('/register')
               longitude: 0,
               altitude: 0
             }, idToken)
-            await streamsService.update(dbStream, { external_id: arbimonSite.site_id })
+            await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
           }
           res.status(200).json(views.models.guardian(req, res, dbGuardian))
         }
@@ -342,7 +342,7 @@ router.route('/:guid')
         try {
           const stream = await streamsService.get(guardian.guid)
           if (stream) {
-            await streamsService.update(stream, {
+            await streamsService.update(stream.id, {
               name: guardian.shortname
             })
           }

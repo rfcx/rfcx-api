@@ -53,12 +53,13 @@ module.exports = (req, res) => {
         createdById: user.id
       }
 
+      // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
         try {
           const externalSite = await arbimonService.createSite(stream, req.headers.authorization)
           stream.externalId = externalSite.site_id
         } catch (error) {
-          console.error(`Error creating site in Arbimon (stream: ${params.id})`)
+          console.error(`Error creating site in Arbimon (stream: ${stream.id})`)
         }
       }
 

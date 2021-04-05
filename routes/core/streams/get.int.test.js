@@ -15,8 +15,17 @@ beforeEach(async () => {
   await truncate(models)
 })
 
-describe('GET /:id', () => {
-  test('result', async () => {
+describe('GET /streams/:id', () => {
+  test('not found', async () => {
+    console.warn = jest.fn()
+
+    const response = await request(app).get('/1234')
+
+    expect(response.statusCode).toBe(404)
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  test('readable by creator', async () => {
     const stream = { id: 'j123s', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
     await models.Stream.create(stream)
 
@@ -28,15 +37,6 @@ describe('GET /:id', () => {
     expect(response.body.latitude).toBe(stream.latitude)
     expect(response.body.longitude).toBe(stream.longitude)
     expect(response.body.altitude).toBe(stream.altitude)
-  })
-
-  test('not found', async () => {
-    console.warn = jest.fn()
-
-    const response = await request(app).get('/1234')
-
-    expect(response.statusCode).toBe(404)
-    expect(console.warn).toHaveBeenCalled()
   })
 
   test('forbidden', async () => {

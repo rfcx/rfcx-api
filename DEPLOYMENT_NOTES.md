@@ -3,6 +3,7 @@
 ## next version
 
 - Expect some errors from Explorer due to removal of `is_deleted`, `is_public`, and `created_by=collaborators` on `GET /streams`
+- Restoring streams and projects is no longer supported
 
 ## v1.0.16
 

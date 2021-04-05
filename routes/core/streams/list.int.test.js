@@ -15,7 +15,7 @@ beforeEach(async () => {
   await truncate(models)
 })
 
-describe('GET /', () => {
+describe('GET /streams', () => {
   test('no results', async () => {
     const response = await request(app).get('/')
 
