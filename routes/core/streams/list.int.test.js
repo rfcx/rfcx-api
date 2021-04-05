@@ -68,6 +68,16 @@ describe('GET /streams', () => {
     expect(response.body[1].id).toBe(stream1.id)
   })
 
+  test('results do not include private streams from others', async () => {
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
+    await models.Stream.create(stream)
+
+    const response = await request(app).get('/')
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(0)
+  })
+
   test('results do not include public streams from others', async () => {
     const stream = { id: 'x456y', isPublic: true, createdById: seedValues.otherUserId, name: 'Jaguar Station' }
     await models.Stream.create(stream)
@@ -136,5 +146,31 @@ describe('GET /streams', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
+  })
+
+  test('results include everything for super user', async () => {
+    const superUserApp = expressApp({ is_super: true })
+    superUserApp.use('/', routes)
+    await models.Stream.create({ id: 'guard1', createdById: seedValues.primaryUserId, name: 'GU01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 'guard2', createdById: seedValues.otherUserId, name: 'GU02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 'guard3', createdById: seedValues.otherUserId, name: 'GU03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(superUserApp).get('/')
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
+  })
+
+  test('results include everything for system user', async () => {
+    const systemUserApp = expressApp({ has_system_role: true })
+    systemUserApp.use('/', routes)
+    await models.Stream.create({ id: 'guard1', createdById: seedValues.primaryUserId, name: 'GU01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 'guard2', createdById: seedValues.otherUserId, name: 'GU02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 'guard3', createdById: seedValues.otherUserId, name: 'GU03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(systemUserApp).get('/')
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
   })
 })

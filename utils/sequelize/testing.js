@@ -76,12 +76,12 @@ async function truncate (models) {
   )
 }
 
-function expressApp () {
+function expressApp (userAdditions = {}) {
   const app = express()
   app.use(express.json())
   app.use(express.urlencoded({ extended: false }))
   app.use((req, res, next) => {
-    req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail } }
+    req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail, ...userAdditions } }
     req.rfcx.auth_token_info.owner_id = primaryUserId // TODO remove
     next()
   })
