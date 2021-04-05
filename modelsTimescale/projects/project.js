@@ -34,6 +34,25 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
+    },
+    min_latitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: false
+    }
+    ,
+    min_longitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: false
+    }
+    ,
+    max_latitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: false
+    }
+    ,
+    max_longitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: false
     }
   }, {
     paranoid: true,
@@ -46,8 +65,8 @@ module.exports = function (sequelize, DataTypes) {
     Project.hasMany(models.Stream, { as: 'streams', foreignKey: 'project_id' })
   }
   Project.attributes = {
-    full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'is_partner', 'created_at', 'updated_at'],
-    lite: ['id', 'name', 'is_public', 'external_id']
+    full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'is_partner', 'created_at', 'updated_at', 'min_latitude', 'min_longitude', 'max_latitude', 'max_longitude'],
+    lite: ['id', 'name', 'is_public', 'external_id', 'min_latitude', 'min_longitude', 'max_latitude', 'max_longitude']
   }
   Project.include = function (as = 'project', attributes = Project.attributes.lite, required = true) {
     return { model: Project, as, attributes, required }

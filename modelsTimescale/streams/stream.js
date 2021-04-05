@@ -79,8 +79,43 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     paranoid: true,
     timestamps: true,
-    deletedAt: 'deleted_at'
+    deletedAt: 'deleted_at',
+    hooks: {
+      afterCreate: async (stream, option) => {
+        await updateMinMaxLatLng(stream)
+      },
+      afterUpdate: async (stream, option) => {
+        await updateMinMaxLatLng(stream)
+      },
+      afterSave: async (stream, option) => {
+        await updateMinMaxLatLng(stream)
+      },
+      afterDestroy: async (stream, option) => {
+        await updateMinMaxLatLng(stream)
+      }
+    }
   })
+
+  async function updateMinMaxLatLng(stream) {
+    const projectId = stream.project_id
+    if (projectId != null) {
+      const allStreamsInProject = await sequelize.models.Stream.findAll({ where: { project_id: projectId} })
+      const allLat = allStreamsInProject.map( (stream) => { return stream.latitude } )
+      const allLng = allStreamsInProject.map( (stream) => { return stream.longitude } )
+      // update lat lng
+      await sequelize.models.Project.update({
+        min_latitude: Math.min(...allLat),
+        min_longitude: Math.min(...allLng),
+        max_latitude: Math.max(...allLat),
+        max_longitude: Math.max(...allLng)
+      },{
+        where: {
+          id: projectId
+        }
+      })
+    }
+  }
+
   Stream.associate = function (models) {
     Stream.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
