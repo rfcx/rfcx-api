@@ -5,6 +5,8 @@ const Converter = require('../../../utils/converter/converter')
 const classificationsService = require('../../../services/classifications')
 const eventsService = require('../../../services/events')
 const auth0Service = require('../../../services/auth0/auth0-service')
+const streamsService = require('../../../services/streams')
+const notificationsService = require('../../../services/events/notifications')
 
 /**
  * @swagger
@@ -35,28 +37,36 @@ const auth0Service = require('../../../services/auth0/auth0-service')
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', authenticatedWithRoles('systemUser'), function (req, res) {
-  const params = new Converter(req.body, {}, true)
-  params.convert('stream').toString()
-  params.convert('classification').toString()
-  params.convert('classifier_event_strategy').toInt()
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
+router.post('/', authenticatedWithRoles('systemUser'), async function (req, res) {
+  try {
+    const converter = new Converter(req.body, {}, true)
+    converter.convert('stream').toString()
+    converter.convert('classification').toString()
+    converter.convert('classifier_event_strategy').toInt()
+    converter.convert('start').toMomentUtc()
+    converter.convert('end').toMomentUtc()
 
-  return params.validate()
-    .then(async convertedParams => {
-      const { stream, classification, classifierEventStrategy, ...otherParams } = convertedParams
-      const classificationId = await classificationsService.getId(classification)
-      const event = {
-        classificationId,
-        streamId: stream,
-        classifierEventStrategyId: classifierEventStrategy,
-        ...otherParams
-      }
-      return eventsService.create(event)
-    })
-    .then(event => res.location(`/events/${event.id}`).sendStatus(201))
-    .catch(httpErrorHandler(req, res, 'Failed creating event'))
+    const params = await converter.validate()
+    const { classifierEventStrategy, ...otherParams } = params
+    const streamId = params.stream
+    const stream = await streamsService.getById(streamId, { joinRelations: true })
+    const classification = await classificationsService.get(params.classification)
+    const eventData = {
+      ...otherParams,
+      classificationId: classification.id,
+      streamId,
+      classifierEventStrategyId: classifierEventStrategy
+    }
+    const event = await eventsService.create(eventData)
+    try {
+      await notificationsService.notifyAboutEvent({ ...event.toJSON(), stream, classification })
+    } catch (err) {
+      console.error('Failed notifying about event:', err.message)
+    }
+    res.location(`/events/${event.id}`).sendStatus(201)
+  } catch (e) {
+    httpErrorHandler(req, res, 'Failed creating event')(e)
+  }
 })
 
 /**
