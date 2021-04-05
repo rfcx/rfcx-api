@@ -14,8 +14,7 @@
     "start:mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
-    "test": "eslint \"**/*\" && jest",
-    "test-coverage": "jest --coverage",
+    "test": "eslint \"**/*.js\" && jest",
     "jest": "jest",
     "lint": "eslint \"**/*.js\""
   },
