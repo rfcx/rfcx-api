@@ -37,22 +37,22 @@ module.exports = function (sequelize, DataTypes) {
     },
     min_latitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false
+      allowNull: true
     }
     ,
     min_longitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false
+      allowNull: true
     }
     ,
     max_latitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false
+      allowNull: true
     }
     ,
     max_longitude: {
       type: DataTypes.DOUBLE,
-      allowNull: false
+      allowNull: true
     }
   }, {
     paranoid: true,
