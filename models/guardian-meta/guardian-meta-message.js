@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaMessage = sequelize.define('GuardianMetaMessage', {
+  const GuardianMetaMessage = sequelize.define('GuardianMetaMessage', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4

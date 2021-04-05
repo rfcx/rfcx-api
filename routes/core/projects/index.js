@@ -71,7 +71,7 @@ router.post('/', async (req, res) => {
     project = await projectsService.create(params, { joinRelations: true })
     if (arbimonService.isEnabled && source !== 'arbimon') {
       const idToken = req.headers.authorization
-      var arbimonProject = await arbimonService.createProject(project.toJSON(), idToken)
+      const arbimonProject = await arbimonService.createProject(project.toJSON(), idToken)
       project = await projectsService.update(project, { external_id: arbimonProject.project_id }, { joinRelations: true })
     }
     res.location(`/projects/${project.id}`).status(201).json(projectsService.formatProject(project))

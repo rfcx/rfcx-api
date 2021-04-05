@@ -1,19 +1,19 @@
-var Promise = require('bluebird')
-var models = require('../../models')
-var fs = require('fs')
-var zlib = require('zlib')
-var hash = require('../../utils/misc/hash.js').hash
-var aws = require('../../utils/external/aws.js').aws()
+const Promise = require('bluebird')
+const models = require('../../models')
+const fs = require('fs')
+const zlib = require('zlib')
+const hash = require('../../utils/misc/hash.js').hash
+const aws = require('../../utils/external/aws.js').aws()
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
-var audioUtils = require('../../utils/rfcx-audio').audioUtils
-var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
+const audioUtils = require('../../utils/rfcx-audio').audioUtils
+const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 
-var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
+const cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
 const aiService = require('../../services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')
-var urls = require('../../utils/misc/urls')
+const urls = require('../../utils/misc/urls')
 
 exports.audio = {
 
@@ -24,7 +24,7 @@ exports.audio = {
       cachedFiles.cacheDirectoryGarbageCollection()
     }
 
-    var audioInfo = {}
+    const audioInfo = {}
 
     if (audioFiles) {
       // make sure the screenshot files is an array
@@ -32,8 +32,8 @@ exports.audio = {
 
       if (audioMeta.length === audioFiles.length) {
         for (const i in audioFiles) {
-          var timeStamp = audioMeta[i][1]
-          var timeStampDateObj = new Date(parseInt(timeStamp))
+          const timeStamp = audioMeta[i][1]
+          const timeStampDateObj = new Date(parseInt(timeStamp))
 
           audioInfo[timeStamp] = {
 
@@ -282,7 +282,8 @@ exports.audio = {
       length: {
         samples: dbAudioObj.capture_sample_count,
         timeInMs: dbAudio.Format
-          ? Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate) : null
+          ? Math.round(1000 * dbAudioObj.capture_sample_count / dbAudio.Format.sample_rate)
+          : null
       },
       format: {
         fileType: dbAudio.Format ? dbAudio.Format.mime : null,
@@ -297,7 +298,7 @@ exports.audio = {
   strArrToJSArr: (str, delimA, delimB) => {
     if ((str == null) || (str.length === 0)) { return [] }
     try {
-      var rtrnArr = []; var arr = str.split(delimA)
+      const rtrnArr = []; const arr = str.split(delimA)
       if (arr.length > 0) {
         for (const i in arr) {
           rtrnArr.push(arr[i].split(delimB))
@@ -326,7 +327,7 @@ exports.audio = {
 
 }
 
-var mimeTypeFromAudioCodec = function (audioCodec) {
+function mimeTypeFromAudioCodec (audioCodec) {
   if (audioCodec.toLowerCase() === 'aac') {
     return 'audio/mp4'
   } else if (audioCodec.toLowerCase() === 'opus') {

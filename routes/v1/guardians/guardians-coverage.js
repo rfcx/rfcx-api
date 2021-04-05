@@ -1,14 +1,14 @@
-var express = require('express')
-var router = express.Router()
+const express = require('express')
+const router = express.Router()
 const SensationsService = require('../../../services/legacy/sensations/sensations-service')
 const executeService = require('../../../services/execute-service')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 
 router.route('/:guardian_id/coverage')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    var serviceReq = {
+    const serviceReq = {
       guardian_id: req.params.guardian_id,
       starting_after: req.query.starting_after,
       ending_before: req.query.ending_before,

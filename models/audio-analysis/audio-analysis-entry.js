@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var AudioAnalysisEntry = sequelize.define('AudioAnalysisEntry', { }, {
+  const AudioAnalysisEntry = sequelize.define('AudioAnalysisEntry', { }, {
     indexes: [
     ],
     tableName: 'AudioAnalysisEntry'

@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var Location = sequelize.define('Location', {
+  const Location = sequelize.define('Location', {
     guid: {
       type: DataTypes.UUID,
       allowNull: false,

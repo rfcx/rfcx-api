@@ -9,6 +9,7 @@ async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
   const completedMigrations = await sequelize.query(`SELECT * FROM ${table}`, { type: Sequelize.QueryTypes.SELECT })
 
   for (const name in completedMigrations) {
+    // eslint-disable-next-line no-prototype-builtins
     if (completedMigrations.hasOwnProperty(name)) {
       const index = migrations.indexOf(completedMigrations[name].name)
       if (index !== -1) {

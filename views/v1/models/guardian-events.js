@@ -1,19 +1,19 @@
-var Promise = require('bluebird')
-var token = require('../../../utils/internal-rfcx/token.js').token
+const Promise = require('bluebird')
+const token = require('../../../utils/internal-rfcx/token.js').token
 function getAllViews () { return require('../../../views/v1') }
 
 exports.models = {
 
   guardianEvents: function (req, res, dbRows, PARENT_GUID) {
-    var views = getAllViews()
+    const views = getAllViews()
 
     if (!Array.isArray(dbRows)) { dbRows = [dbRows] }
 
-    var jsonArray = []; var jsonRowsByGuid = {}; var dbRowsByGuid = {}
+    const jsonArray = []; const jsonRowsByGuid = {}; const dbRowsByGuid = {}
 
     return new Promise(function (resolve, reject) {
       for (const i in dbRows) {
-        var thisRow = dbRows[i]; var thisGuid = thisRow.guid
+        const thisRow = dbRows[i]; const thisGuid = thisRow.guid
 
         if (thisRow.Audio.analyzed_at != null) {
           dbRowsByGuid[thisGuid] = thisRow
@@ -64,7 +64,7 @@ exports.models = {
             only_allow_access_to: ['^/v1/events/' + thisGuid + '.mp3$']
           }).then(function (tokenInfo) {
             try {
-              var thisRow = dbRowsByGuid[tokenInfo.reference_tag]; var thisGuid = thisRow.guid
+              const thisRow = dbRowsByGuid[tokenInfo.reference_tag]; let thisGuid = thisRow.guid
 
               jsonRowsByGuid[thisGuid].url =
                       req.rfcx.api_url_domain + '/v1/events/' + thisGuid + '.mp3' +
@@ -103,11 +103,11 @@ exports.models = {
   guardianEventsLite: function (req, res, dbRows, PARENT_GUID) {
     if (!Array.isArray(dbRows)) { dbRows = [dbRows] }
 
-    var jsonArray = []; var jsonRowsByGuid = {}; var dbRowsByGuid = {}
+    const jsonArray = []; const jsonRowsByGuid = {}; const dbRowsByGuid = {}
 
     return new Promise(function (resolve, reject) {
       for (const i in dbRows) {
-        var thisRow = dbRows[i]; var thisGuid = thisRow.guid
+        const thisRow = dbRows[i]; const thisGuid = thisRow.guid
 
         if (thisRow.begins_at_analysis != null) {
           dbRowsByGuid[thisGuid] = thisRow

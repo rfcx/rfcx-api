@@ -1,9 +1,9 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors.js')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 
 router.route('/:site_id/audio')
@@ -12,8 +12,8 @@ router.route('/:site_id/audio')
       .findOne({
         where: { guid: req.params.site_id }
       }).then(function (dbSite) {
-        var dbQuery = { site_id: dbSite.id }
-        var dateClmn = 'measured_at'
+        const dbQuery = { site_id: dbSite.id }
+        const dateClmn = 'measured_at'
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {} }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gt] = req.rfcx.starting_after }

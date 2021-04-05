@@ -1,6 +1,6 @@
-var sequelize = require('sequelize')
-var Converter = require('../../utils/converter/converter')
-var models = require('../../models')
+const sequelize = require('sequelize')
+const Converter = require('../../utils/converter/converter')
+const models = require('../../models')
 const userService = require('../users/users-service-legacy')
 
 function validateCreateParams (params) {

@@ -1,4 +1,4 @@
-var exports
+let exports
 if (process.env.FIREBASE_ENABLED !== 'true') {
   exports = {}
 } else {

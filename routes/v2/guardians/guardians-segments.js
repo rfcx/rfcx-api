@@ -1,19 +1,19 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var httpError = require('../../../utils/http-errors.js')
-var sequelize = require('sequelize')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const httpError = require('../../../utils/http-errors.js')
+const sequelize = require('sequelize')
 
-var msgSegUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
-var smsTwilio = require('../../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
-var sbdRockBlock = require('../../../utils/rfcx-guardian/guardian-sbd-rockblock.js').sbdRockBlock
+const msgSegUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
+const smsTwilio = require('../../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
+const sbdRockBlock = require('../../../utils/rfcx-guardian/guardian-sbd-rockblock.js').sbdRockBlock
 
 router.route('/segments/sms')
   .post(function (req, res) {
     if (smsTwilio.validateIncomingMessage(req)) {
       console.log('Incoming Twilio message validated...')
 
-      var segObj = msgSegUtils.parseMsgSegment(req.body.Body, 'sms', req.body.From)
+      const segObj = msgSegUtils.parseMsgSegment(req.body.Body, 'sms', req.body.From)
 
       models.GuardianMetaSegmentsReceived
         .findOrCreate({
@@ -122,7 +122,7 @@ router.route('/segments/sbd')
 
       //      console.log(req.body)
 
-      var segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'hex'), 'sbd', req.body.imei)
+      const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'hex'), 'sbd', req.body.imei)
 
       console.log('' + segObj.segment_body)
 

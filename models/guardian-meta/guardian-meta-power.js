@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaPower = sequelize.define('GuardianMetaPower', {
+  const GuardianMetaPower = sequelize.define('GuardianMetaPower', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

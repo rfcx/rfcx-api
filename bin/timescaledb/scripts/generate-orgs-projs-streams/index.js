@@ -20,7 +20,7 @@ function getUserIds () {
     input: fs.createReadStream(path.join(__dirname, '../../seeds/02-users.sql'))
   })
   return new Promise((resolve, reject) => {
-    var userIds = []
+    const userIds = []
     lineReader
       .on('line', (line) => {
         try {

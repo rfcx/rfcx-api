@@ -1,9 +1,9 @@
-var models = require('../../models')
-var fs = require('fs')
-var saveMeta = require('../../utils/rfcx-mqtt/mqtt-save-meta.js').saveMeta
-var smsMessages = require('../../utils/rfcx-guardian/guardian-sms-database.js').messages
-var hash = require('../../utils/misc/hash.js').hash
-var Promise = require('bluebird')
+const models = require('../../models')
+const fs = require('fs')
+const saveMeta = require('../../utils/rfcx-mqtt/mqtt-save-meta.js').saveMeta
+const smsMessages = require('../../utils/rfcx-guardian/guardian-sms-database.js').messages
+const hash = require('../../utils/misc/hash.js').hash
+const Promise = require('bluebird')
 const moment = require('moment-timezone')
 
 exports.checkInDatabase = {
@@ -157,14 +157,14 @@ exports.checkInDatabase = {
   },
 
   updateDbMetaAssetsExchangeLog: function (checkInObj) {
-    var guardianId = checkInObj.db.dbGuardian.id
+    const guardianId = checkInObj.db.dbGuardian.id
     // arrays of return values for checkin response json
-    var metaReturnArray = []; var purgedReturnArray = []; var unconfirmedReturnArray = []; var receivedReturnArray = []; var receivedIdArray = []
+    const metaReturnArray = []; const purgedReturnArray = []; const unconfirmedReturnArray = []; const receivedReturnArray = []; const receivedIdArray = []
 
     const proms = []
     // create meta asset entries in database
     if (checkInObj.json.meta_ids != null) {
-      for (var i = 0; i < checkInObj.json.meta_ids.length; i++) {
+      for (let i = 0; i < checkInObj.json.meta_ids.length; i++) {
         const prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
           where: {
             guardian_id: guardianId,
@@ -179,8 +179,8 @@ exports.checkInDatabase = {
     return Promise.all(proms)
       .then(() => {
         // parse list of purged assets from guardian, delete them from database and return list
-        var dbMetaPurgedAssets = []
-        var metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
+        const dbMetaPurgedAssets = []
+        const metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
         for (const asstInd in metaPurgedAssets) {
           if (metaPurgedAssets[asstInd][1] != null) {
             dbMetaPurgedAssets.push({
@@ -194,7 +194,7 @@ exports.checkInDatabase = {
         // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
         const promsExchLogs = []
         if (checkInObj.json.checkins_to_verify != null) {
-          for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+          for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
             const prom = models.GuardianMetaAssetExchangeLog.findOne({
               where: {
                 guardian_id: guardianId,
@@ -226,7 +226,7 @@ exports.checkInDatabase = {
       })
       .then(() => {
         if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
-          for (var i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+          for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
             if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
               unconfirmedReturnArray.push({ type: 'audio', id: checkInObj.json.checkins_to_verify[i] })
             }
@@ -244,21 +244,21 @@ exports.checkInDatabase = {
   },
 
   syncGuardianPrefs: function (checkInObj) {
-    var prefsReturnArray = []
+    let prefsReturnArray = []
 
     if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: '', vals: {} } }
     if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = '' }
     if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {} }
 
-    var prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' }
-    var prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }
+    const prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' }
+    const prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }
     for (const prefKey in prefsJson.vals) { prefsJson.cnt++ } // eslint-disable-line no-unused-vars
 
     // retrieve, sort and take checksum of prefs rows for this guardian in the database
     return models.GuardianSoftwarePrefs.findAll({
       where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
     }).then((dbPrefs) => {
-      var prefsBlobArr = []
+      const prefsBlobArr = []
       if (dbPrefs.length > 0) {
         for (const prefRow in dbPrefs) {
           prefsBlobArr.push([dbPrefs[prefRow].pref_key, dbPrefs[prefRow].pref_value].join('*'))
@@ -292,7 +292,7 @@ exports.checkInDatabase = {
                 return models.GuardianSoftwarePrefs.findAll({
                   where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
                 }).then((dbPrefs) => {
-                  var prefsBlobArr = []
+                  const prefsBlobArr = []
                   if (dbPrefs.length > 0) {
                     for (const prefRow in dbPrefs) {
                       prefsBlobArr.push([dbPrefs[prefRow].pref_key, dbPrefs[prefRow].pref_value].join('*'))
@@ -642,7 +642,7 @@ exports.checkInDatabase = {
 function strArrToJSArr (str, delimA, delimB) {
   if ((str == null) || (str.length === 0)) { return [] }
   try {
-    var rtrnArr = []; var arr = str.split(delimA)
+    const rtrnArr = []; const arr = str.split(delimA)
     if (arr.length > 0) { for (const i in arr) { rtrnArr.push(arr[i].split(delimB)) } return rtrnArr } else { return [] }
   } catch (e) {
     console.log(e); return []

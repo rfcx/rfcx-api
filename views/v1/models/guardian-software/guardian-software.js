@@ -3,10 +3,10 @@ exports.models = {
   guardianSoftware: function (req, res, dbSoftware) {
     if (!Array.isArray(dbSoftware)) { dbSoftware = [dbSoftware] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbSoftware) {
-      var dbRow = dbSoftware[i]
+      const dbRow = dbSoftware[i]
 
       if (dbRow.CurrentVersion != null) {
         jsonArray.push({

@@ -1,9 +1,9 @@
-var crypto = require('crypto')
-var Promise = require('bluebird')
-var csprng = require('csprng')
-var sha = require('sha.js')
-var fs = require('fs')
-var pfs = Promise.promisifyAll(require('fs'))
+const crypto = require('crypto')
+const Promise = require('bluebird')
+const csprng = require('csprng')
+const sha = require('sha.js')
+const fs = require('fs')
+const pfs = Promise.promisifyAll(require('fs'))
 
 // TODO Change to module.exports to be able to import a specific function only
 // e.g. const { randomHash } = require('utils/hash.js')
@@ -48,7 +48,7 @@ exports.hash = {
         resolve(null)
       })
     }
-    var self = this
+    const self = this
     // else return a promise that resolves to a hash of the file
     return pfs.readFileAsync(filePath)
       .then(function (data) {
@@ -87,7 +87,7 @@ exports.hash = {
    * @api private
    */
   hashedCredentials: function (salt, secret) {
-    var sha256 = sha('sha256')
+    const sha256 = sha('sha256')
     return sha256.update(salt + secret, 'utf8').digest('hex')
   }
 

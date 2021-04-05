@@ -1,18 +1,18 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var passport = require('passport')
-var httpError = require('../../../utils/http-errors.js')
-var Promise = require('bluebird')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const passport = require('passport')
+const httpError = require('../../../utils/http-errors.js')
+const Promise = require('bluebird')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var ApiConverter = require('../../../utils/api-converter')
+const ApiConverter = require('../../../utils/api-converter')
 
 router.route('/training-sets')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('training-set', req)
+    const converter = new ApiConverter('training-set', req)
 
-    var body = req.body
+    const body = req.body
 
     if (!body.name) {
       return httpError(req, res, 400, null, 'Request does not contain set name')
@@ -22,7 +22,7 @@ router.route('/training-sets')
       return httpError(req, res, 400, null, 'Request does not contain event value')
     }
 
-    var dataObj = {
+    const dataObj = {
       name: body.name,
       event_value: body.event_value
     }
@@ -45,7 +45,7 @@ router.route('/training-sets')
     // dataObj.event_value = dbGuardianAudioEventValue.id;
 
     // then create Training Set model and two Audio Collections models: one for Training Set and one for Test Set
-    var promises = []
+    const promises = []
     promises.push(models.AudioAnalysisTrainingSet
       .findOrCreate({
         where: { guid: body.guid },
@@ -81,7 +81,7 @@ router.route('/training-sets')
         return views.models.audioAnalysisTrainingSet(req, res, dbAudioAnalysisTrainingSet, this.trainingCollection, this.testCollection)
       })
       .then(function (data) {
-        var api = converter.cloneSequelizeToApi(data)
+        const api = converter.cloneSequelizeToApi(data)
         api.data.id = this.guid
         res.status(200).json(api)
       })
@@ -93,7 +93,7 @@ router.route('/training-sets')
 
 router.route('/training-sets')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('training-set', req)
+    const converter = new ApiConverter('training-set', req)
 
     return models.AudioAnalysisTrainingSet
       .findAll({
@@ -103,7 +103,7 @@ router.route('/training-sets')
         return views.models.audioAnalysisTrainingSets(req, res, dbAudioAnalysisTrainingSets)
       })
       .then(function (data) {
-        var api = converter.cloneSequelizeToApi(data)
+        const api = converter.cloneSequelizeToApi(data)
         res.status(200).json(api)
       })
       .catch(function (err) {
@@ -114,7 +114,7 @@ router.route('/training-sets')
 
 router.route('/training-sets/:id')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('training-set', req)
+    const converter = new ApiConverter('training-set', req)
 
     return models.AudioAnalysisTrainingSet
       .findOne({
@@ -124,7 +124,7 @@ router.route('/training-sets/:id')
       .bind({})
       .then(function (dbAudioAnalysisTrainingSet) {
         this.dbAudioAnalysisTrainingSet = dbAudioAnalysisTrainingSet
-        var promises = []
+        const promises = []
         promises.push(dbAudioAnalysisTrainingSet.TrainingSet.getGuardianAudios())
         promises.push(dbAudioAnalysisTrainingSet.TestSet.getGuardianAudios())
         return Promise.all(promises)
@@ -133,7 +133,7 @@ router.route('/training-sets/:id')
         return views.models.audioAnalysisTrainingSet(req, res, this.dbAudioAnalysisTrainingSet, data[0], data[1])
       })
       .then(function (data) {
-        var api = converter.cloneSequelizeToApi(data)
+        const api = converter.cloneSequelizeToApi(data)
 
         api.data.id = this.dbAudioAnalysisTrainingSet.guid
         api.links.self += this.dbAudioAnalysisTrainingSet.guid

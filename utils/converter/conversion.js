@@ -1,4 +1,4 @@
-var timeUtils = require('../misc/time')
+const timeUtils = require('../misc/time')
 const moment = require('moment-timezone')
 
 module.exports = class Conversion {
@@ -28,7 +28,7 @@ module.exports = class Conversion {
       return this.value
     }
 
-    for (var executeValidation of this.conversions) {
+    for (const executeValidation of this.conversions) {
       executeValidation()
     }
 
@@ -340,7 +340,7 @@ module.exports = class Conversion {
   isValidTimezone () {
     if (moment.tz.zone(this.src[this.property]) === null) {
       return this.throwError(`${this.src[this.property]} is not valid timezone`)
-    };
+    }
     return this
   }
 

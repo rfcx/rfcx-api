@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var HealthCheck = sequelize.define('HealthCheck', {
+  const HealthCheck = sequelize.define('HealthCheck', {
   }, {
     tableName: 'HealthCheck'
   })
