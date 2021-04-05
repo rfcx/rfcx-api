@@ -40,6 +40,12 @@ const Converter = require('../../../utils/converter/converter')
  *         in: query
  *         type: int
  *         default: 0
+ *       - name: sort
+ *         description: Order the results (comma-separated list of fields, prefix "-" for descending)
+ *         in: query
+ *         type: string
+ *         example: name
+ *         default: -updated_at
  *       - name: fields
  *         description: Customize included fields and relations
  *         in: query
@@ -62,7 +68,8 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Invalid query parameters
  */
 module.exports = (req, res) => {
-  const readableBy = req.rfcx.auth_token_info.id
+  const user = req.rfcx.auth_token_info
+  const readableBy = user.is_super || user.has_system_role ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('keyword').optional().toString()
   converter.convert('created_by').optional().toString()
@@ -70,11 +77,12 @@ module.exports = (req, res) => {
   converter.convert('only_deleted').optional().toBoolean()
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
+  converter.convert('sort').optional().toString()
   converter.convert('fields').optional().toArray()
 
   return converter.validate()
     .then(async params => {
-      const { keyword, onlyPublic, onlyDeleted, limit, offset, fields } = params
+      const { keyword, onlyPublic, onlyDeleted, limit, offset, sort, fields } = params
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = readableBy
@@ -88,6 +96,7 @@ module.exports = (req, res) => {
         onlyDeleted,
         limit,
         offset,
+        sort,
         fields
       }
       const organizationsData = await organizationsService.query(filters, options)

@@ -35,14 +35,17 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Organization not found
  */
 module.exports = (req, res) => {
+  const user = req.rfcx.auth_token_info
+  const updatableBy = user.is_super || user.has_system_role ? undefined : user.id
   const id = req.params.id
+  const options = { updatableBy }
+
   const converter = new Converter(req.body, {}, true)
   converter.convert('name').optional().toString()
   converter.convert('is_public').optional().toBoolean()
-  const options = { updatableBy: req.rfcx.auth_token_info.id }
 
   return converter.validate()
-    .then(params => organizationsService.update(id, params, options))
+    .then((params) => organizationsService.update(id, params, options))
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed updating organization'))
 }

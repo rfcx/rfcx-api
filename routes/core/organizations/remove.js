@@ -24,10 +24,10 @@ const organizationsService = require('../../../services/organizations')
  *         description: Organization not found
  */
 module.exports = (req, res) => {
+  const user = req.rfcx.auth_token_info
+  const deletableBy = user.is_super || user.has_system_role ? undefined : user.id
   const id = req.params.id
-  const options = {
-    deletableBy: req.rfcx.auth_token_info.id
-  }
+  const options = { deletableBy }
   return organizationsService.remove(id, options)
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting organization'))
