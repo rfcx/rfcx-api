@@ -34,4 +34,73 @@ describe('GET /', () => {
     expect(response.body[0].name).toBe(stream.name)
     expect(response.body[0].latitude).toBe(stream.latitude)
   })
+
+  test('multiple results', async () => {
+    await models.Stream.create({ id: 'guard1', name: 'GU01', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
+    await models.Stream.create({ id: 'guard2', name: 'GU02', latitude: 10.2, longitude: 101.2, createdById: seedValues.primaryUserId })
+    await models.Stream.create({ id: 'guard3', name: 'GU03', latitude: 10.3, longitude: 101.3, createdById: seedValues.primaryUserId })
+
+    const response = await request(app).get('/')
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
+  })
+
+  test('sorted results', async () => {
+    const stream1 = await models.Stream.create({ id: 'guard1', name: 'GU01', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
+    const stream2 = await models.Stream.create({ id: 'guard2', name: 'GU02', latitude: 10.2, longitude: 101.2, createdById: seedValues.primaryUserId })
+
+    const response = await request(app).get('/').query({ sort: 'updated_at' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body[0].id).toBe(stream1.id)
+    expect(response.body[1].id).toBe(stream2.id)
+  })
+
+  test('reverse sorted results', async () => {
+    const stream1 = await models.Stream.create({ id: 'guard1', name: 'GU01', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
+    const stream2 = await models.Stream.create({ id: 'guard2', name: 'GU02', latitude: 10.2, longitude: 101.2, createdById: seedValues.primaryUserId })
+
+    const response = await request(app).get('/').query({ sort: '-updated_at' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body[0].id).toBe(stream2.id)
+    expect(response.body[1].id).toBe(stream1.id)
+  })
+
+  test('readable by stream guest', async () => {
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
+    await models.Stream.create(stream)
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: stream.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${stream.id}`)
+
+    expect(response.statusCode).toBe(200)
+  })
+
+  test('readable by project guest', async () => {
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other Project' }
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
+    await models.Project.create(project)
+    await models.Stream.create(stream)
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${stream.id}`)
+
+    expect(response.statusCode).toBe(200)
+  })
+
+  test('readable by organization guest', async () => {
+    const organization = { id: 'o789o', createdById: seedValues.otherUserId, name: 'Other Org' }
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, organization_id: organization.id, name: 'Other Project' }
+    const stream = { id: 'x456y', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
+    await models.Organization.create(organization)
+    await models.Project.create(project)
+    await models.Stream.create(stream)
+    await models.UserOrganizationRole.create({ user_id: seedValues.primaryUserId, organization_id: organization.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get(`/${stream.id}`)
+
+    expect(response.statusCode).toBe(200)
+  })
 })
