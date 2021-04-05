@@ -1,6 +1,7 @@
 ## 1.0.18 (???)
 
 ### Features
+* **core:** Detection endpoints use classifier output mappings.
 * **core:** Stream assets are no longer stored in Core.
 
 

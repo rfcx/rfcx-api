@@ -64,9 +64,11 @@ async function seed (models) {
   await models.RolePermission.create({ role_id: roleMember, permission: 'R' })
   await models.RolePermission.create({ role_id: roleMember, permission: 'U' })
   await models.RolePermission.create({ role_id: roleGuest, permission: 'R' })
+  await models.ClassificationSource.create({ id: 1, value: 'unknown' })
+  await models.ClassificationType.create({ id: 1, value: 'unknown' })
 }
 
-const truncateOrder = ['Annotation', 'Detection', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'Stream', 'Project', 'Organization']
+const truncateOrder = ['Event', 'Annotation', 'Detection', 'ClassifierActiveProject', 'ClassifierActiveStream', 'ClassifierDeployment', 'ClassifierEventStrategy', 'ClassifierOutput', 'Classifier', 'EventStrategy', 'ClassificationAlternativeName', 'Classification', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'StreamSegment', 'StreamSourceFile', 'Stream', 'Project', 'Organization']
 
 async function truncate (models) {
   return await Promise.all(
@@ -81,6 +83,7 @@ function expressApp () {
   app.use(express.json())
   app.use(express.urlencoded({ extended: false }))
   app.use((req, res, next) => {
+    req.user = { roles: [] }
     req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail } }
     req.rfcx.auth_token_info.owner_id = primaryUserId // TODO remove
     next()
