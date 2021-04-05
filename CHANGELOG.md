@@ -3,6 +3,13 @@
 ### Features
 * **core:** Stream assets are no longer stored in Core.
 
+
+## 1.0.17-hotfix.3 (2021-04-02)
+
+### Bug Fixes
+* **legacy:** Check for duplicate audio files in /v1/guardians/:id/checkins endpoint
+
+
 ## 1.0.17-hotfix.2 (2021-03-27)
 
 ### Bug Fixes
