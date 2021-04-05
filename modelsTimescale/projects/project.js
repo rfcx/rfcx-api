@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = function (sequelize, DataTypes) {
   const Project = sequelize.define('Project', {
     id: {
@@ -48,13 +50,6 @@ module.exports = function (sequelize, DataTypes) {
     full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'is_partner', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'is_public', 'external_id']
   }
-  Project.include = function (options = {}) {
-    const defaults = {
-      as: 'project',
-      attributes: Project.attributes.lite,
-      required: true
-    }
-    return { model: Project, ...defaults, ...options }
-  }
+  Project.include = includeBuilder(Project, 'project', Project.attributes.lite)
   return Project
 }

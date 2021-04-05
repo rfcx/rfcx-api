@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = function (sequelize, DataTypes) {
   const Stream = sequelize.define('Stream', {
     id: {
@@ -88,8 +90,5 @@ module.exports = function (sequelize, DataTypes) {
     full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'external_id', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'is_public']
   }
-  Stream.include = function (as = 'stream', attributes = Stream.attributes.lite, required = true) {
-    return { model: Stream, as, attributes, required }
-  }
-  return Stream
+  Stream.include = includeBuilder(Stream, 'stream', Stream.attributes.lite)
 }

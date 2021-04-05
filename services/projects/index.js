@@ -6,7 +6,8 @@ const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 
 const availableIncludes = [
-  User.include('created_by'), Organization.include({ required: false })
+  User.include({ as: 'created_by' }),
+  Organization.include({ required: false })
 ]
 
 /**

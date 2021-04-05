@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = (sequelize, DataTypes) => {
   const ClassifierOutput = sequelize.define('ClassifierOutput', {
     id: {
@@ -35,8 +37,6 @@ module.exports = (sequelize, DataTypes) => {
     full: ['classification_id', 'output_class_name', 'ignore_threshold'],
     lite: ['classification_id', 'output_class_name', 'ignore_threshold']
   }
-  ClassifierOutput.include = function (as = 'classifier_output', attributes = ClassifierOutput.attributes.lite, required = true) {
-    return { model: ClassifierOutput, as, attributes, required }
-  }
+  ClassifierOutput.include = includeBuilder(ClassifierOutput, 'classifier_output', ClassifierOutput.attributes.lite)
   return ClassifierOutput
 }

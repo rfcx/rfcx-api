@@ -5,7 +5,7 @@ const { randomId } = require('../../utils/misc/hash')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 
-const availableIncludes = [User.include('created_by')]
+const availableIncludes = [User.include({ as: 'created_by' })]
 
 /**
  * Create an organization
