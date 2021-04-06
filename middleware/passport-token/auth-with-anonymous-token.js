@@ -1,7 +1,7 @@
-var verboseLogging = (process.env.NODE_ENV !== 'production')
-var models = require('../../models')
-var hash = require('../../utils/misc/hash.js').hash
-var regex = require('../../utils/misc/regex.js')
+const verboseLogging = (process.env.NODE_ENV !== 'production')
+const models = require('../../models')
+const hash = require('../../utils/misc/hash.js').hash
+const regex = require('../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   models.AnonymousToken

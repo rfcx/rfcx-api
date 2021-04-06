@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaCPU: function (req, res, dbMeta, modelInfo) {
     if (!Array.isArray(dbMeta)) { dbMeta = [dbMeta] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbMeta) {
-      var dbRow = dbMeta[i]
+      const dbRow = dbMeta[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,

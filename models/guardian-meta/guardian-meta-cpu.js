@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaCPU = sequelize.define('GuardianMetaCPU', {
+  const GuardianMetaCPU = sequelize.define('GuardianMetaCPU', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

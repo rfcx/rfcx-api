@@ -1,7 +1,7 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 
 router.route('/:guardian_id/audio/uploads')
@@ -10,7 +10,7 @@ router.route('/:guardian_id/audio/uploads')
       .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function (dbGuardian) {
-        var uploadInfo = {
+        const uploadInfo = {
           measured_at: (req.body.measured_at != null) ? new Date(req.body.measured_at) : null,
           url: (req.body.url != null) ? req.body.url : null
         }

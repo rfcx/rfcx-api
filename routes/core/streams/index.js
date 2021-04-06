@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
     params.id = params.id || hash.randomString(12).toLowerCase()
     params.created_by_id = userId
     await usersFusedService.ensureUserSyncedFromToken(req)
-    var project
+    let project
     if (params.project_id) {
       project = await projectsService.getById(params.project_id)
     }
@@ -84,7 +84,7 @@ router.post('/', async (req, res) => {
     stream = await streamsService.create(params, { joinRelations: true })
     if (arbimonService.isEnabled && source !== 'arbimon') {
       const idToken = req.headers.authorization
-      var arbimonSite = await arbimonService.createSite(stream.toJSON(), idToken)
+      const arbimonSite = await arbimonService.createSite(stream.toJSON(), idToken)
       stream = await streamsService.update(stream, { external_id: arbimonSite.site_id }, { joinRelations: true })
     }
     res.location(`/streams/${stream.id}`).status(201).json(streamsService.formatStream(stream))
@@ -160,7 +160,7 @@ router.post('/', async (req, res) => {
  *         in: query
  *         type: string
  *         example: is_public,-updated_at
- *            
+ *
  *     responses:
  *       200:
  *         description: List of streams objects

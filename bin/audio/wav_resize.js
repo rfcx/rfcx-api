@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
-var args = process.argv.slice(2)
+const args = process.argv.slice(2)
 
-var fs = require('fs')
-var wav = require('wav')
-var FileWriter = wav.FileWriter
+const fs = require('fs')
+const wav = require('wav')
+const FileWriter = wav.FileWriter
 
-var flattenedSampleRate = args[0]
-var inputFilePath = args[1]
-var outputFilePath = args[2]
+const flattenedSampleRate = args[0]
+const inputFilePath = args[1]
+const outputFilePath = args[2]
 
-var inputChannels = 1
+const inputChannels = 1
 
-var inputWavFile = fs.createReadStream(inputFilePath)
+const inputWavFile = fs.createReadStream(inputFilePath)
 // var inputWavReader = new wav.Reader()
 
-var outputFileStream = new FileWriter(outputFilePath, { sampleRate: parseInt(flattenedSampleRate), channels: inputChannels })
+const outputFileStream = new FileWriter(outputFilePath, { sampleRate: parseInt(flattenedSampleRate), channels: inputChannels })
 
 inputWavFile.pipe(outputFileStream)

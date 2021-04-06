@@ -1,9 +1,9 @@
-var models = require('../../models')
+const models = require('../../models')
 
 exports.saveMeta = {
 
   CPU: function (metaCPU, guardianId, checkInId) {
-    var dbMetaCPU = []
+    const dbMetaCPU = []
 
     for (const cpuInd in metaCPU) {
       dbMetaCPU.push({
@@ -22,7 +22,7 @@ exports.saveMeta = {
   },
 
   Battery: function (metaBattery, guardianId, checkInId) {
-    var dbMetaBattery = []
+    const dbMetaBattery = []
 
     for (const battInd in metaBattery) {
       dbMetaBattery.push({
@@ -41,7 +41,7 @@ exports.saveMeta = {
   },
 
   Power: function (metaPower, guardianId, checkInId) {
-    var dbMetaPower = []
+    const dbMetaPower = []
 
     for (const pwrInd in metaPower) {
       dbMetaPower.push({
@@ -60,7 +60,7 @@ exports.saveMeta = {
   },
 
   Network: function (metaNetwork, guardianId, checkInId) {
-    var dbMetaNetwork = []
+    const dbMetaNetwork = []
 
     for (const ntwkInd in metaNetwork) {
       dbMetaNetwork.push({
@@ -80,7 +80,7 @@ exports.saveMeta = {
   },
 
   DataTransfer: function (metaDataTransfer, guardianId, checkInId) {
-    var dbMetaDataTransfer = []
+    const dbMetaDataTransfer = []
 
     for (const dtInd in metaDataTransfer) {
       dbMetaDataTransfer.push({
@@ -102,7 +102,7 @@ exports.saveMeta = {
   },
 
   Offline: function (metaOffline, guardianId, checkInId) {
-    var dbMetaOffline = []
+    const dbMetaOffline = []
 
     for (const offlInd in metaOffline) {
       dbMetaOffline.push({
@@ -121,7 +121,7 @@ exports.saveMeta = {
   },
 
   LightMeter: function (metaLightMeter, guardianId, checkInId) {
-    var dbMetaLightMeter = []
+    const dbMetaLightMeter = []
 
     for (const lmInd in metaLightMeter) {
       dbMetaLightMeter.push({
@@ -139,10 +139,10 @@ exports.saveMeta = {
   },
 
   Accelerometer: function (metaAccelerometer, guardianId, checkInId) {
-    var dbMetaAccelerometer = []
+    const dbMetaAccelerometer = []
 
     for (const acInd in metaAccelerometer) {
-      var xyzVals = metaAccelerometer[acInd][1].split(',')
+      const xyzVals = metaAccelerometer[acInd][1].split(',')
       dbMetaAccelerometer.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
@@ -161,7 +161,7 @@ exports.saveMeta = {
   },
 
   GeoLocation: function (metaLocation, guardianId, checkInId) {
-    var dbMetaGeoLocation = []
+    const dbMetaGeoLocation = []
 
     for (const locInd in metaLocation) {
       if (metaLocation[locInd][1] != null) {
@@ -183,7 +183,7 @@ exports.saveMeta = {
   },
 
   DiskUsage: function (metaDiskUsage, guardianId, checkInId) {
-    var diskUsage = { internal: {}, external: {} }
+    const diskUsage = { internal: {}, external: {} }
     for (const duInd in metaDiskUsage) {
       diskUsage[metaDiskUsage[duInd][0]] = {
         measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
@@ -220,7 +220,7 @@ exports.saveMeta = {
   },
 
   RebootEvents: function (rebootEvents, guardianId, checkInId) {
-    var dbMetaRebootEvents = []
+    const dbMetaRebootEvents = []
 
     for (const rebootEvntInd in rebootEvents) {
       dbMetaRebootEvents.push({
@@ -237,7 +237,7 @@ exports.saveMeta = {
   },
 
   SoftwareRoleVersion: function (roleArr, guardianId) {
-    var roleVersions = {}
+    const roleVersions = {}
     for (const vInd in roleArr) {
       roleVersions[roleArr[vInd][0]] = roleArr[vInd][1]
       models.GuardianSoftware

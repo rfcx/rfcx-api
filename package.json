@@ -14,11 +14,9 @@
     "start:mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
-    "test": "eslint \"**/*\" && jest",
-    "test-coverage": "jest --coverage",
+    "test": "eslint \"**/*.js\" && jest",
     "jest": "jest",
-    "lint": "eslint \"**/*\"",
-    "lint:fix": "eslint --fix \"**/*\""
+    "lint": "eslint \"**/*.js\""
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.5.0",
@@ -83,7 +81,7 @@
     "eslint": "^7.21.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jest": "^24.1.5",
+    "eslint-plugin-jest": "^24.3.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "faux-knox": "0.1.16",

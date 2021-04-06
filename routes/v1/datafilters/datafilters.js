@@ -1,22 +1,22 @@
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var passport = require('passport')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var ApiConverter = require('../../../utils/api-converter')
-var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
-var models = require('../../../models')
-var flipCoin = require('../../../utils/misc/rand.js').flipCoin
-var sqlUtils = require('../../../utils/misc/sql')
-var csvUtils = require('../../../utils/misc/csv')
-var datafiltersService = require('../../../services/datafilters/datafilters-service')
+const ApiConverter = require('../../../utils/api-converter')
+const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+const models = require('../../../models')
+const flipCoin = require('../../../utils/misc/rand.js').flipCoin
+const sqlUtils = require('../../../utils/misc/sql')
+const csvUtils = require('../../../utils/misc/csv')
+const datafiltersService = require('../../../services/datafilters/datafilters-service')
 
-var condAdd = sqlUtils.condAdd
+const condAdd = sqlUtils.condAdd
 
 function filter (filterOpts) {
   // the WHERE 1=1 allows us to add new conditions always with AND otherwise we have to make sure that a previous
   // condition was met that inserted the WHERE clause
-  var sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
+  let sql = 'SELECT DISTINCT a.guid FROM GuardianAudio a LEFT JOIN GuardianAudioTags t on a.id=t.audio_id' +
          ' INNER JOIN GuardianSites s ON a.site_id=s.id where 1=1'
 
   // filter out files annotated by user
@@ -61,8 +61,8 @@ function processResults (promise, req, res) {
 }
 
 function extractAudioGuids (data) {
-  var arr = []
-  for (var i = 0; i < data.length; i++) {
+  const arr = []
+  for (let i = 0; i < data.length; i++) {
     arr.push(data[i].guid)
   }
   return arr
@@ -98,9 +98,9 @@ function processError (err, req, res) {
 }
 
 function combineFilterOpts (req) {
-  var body = req.body
+  const body = req.body
 
-  var filterOpts = {
+  const filterOpts = {
     limit: parseInt(body.limit) || 1,
     hasLabels: body.hasLabels || false
   }
@@ -156,7 +156,7 @@ function combineFilterOpts (req) {
 
 router.route('/csv/:tagValue')
   .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var filterOpts = combineFilterOpts(req)
+    const filterOpts = combineFilterOpts(req)
 
     filter(filterOpts)
       .bind({})
@@ -183,9 +183,9 @@ router.route('/csv/:tagValue')
 
 router.route('/labelling/:tagValue?')
   .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var body = req.body
+    const body = req.body
 
-    var filterOpts = combineFilterOpts(req)
+    const filterOpts = combineFilterOpts(req)
 
     filter(filterOpts).bind({})
       .then(function (guids) {
@@ -226,9 +226,9 @@ router.route('/labelling/:tagValue?')
 
 router.route('/')
   .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('datafilter', req)
-    var filterOpts = converter.mapApiToPojo(req.body)
-    var promise = filter(filterOpts)
+    const converter = new ApiConverter('datafilter', req)
+    const filterOpts = converter.mapApiToPojo(req.body)
+    const promise = filter(filterOpts)
     processResults(promise, req, res)
   })
 module.exports = router

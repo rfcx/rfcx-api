@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaNetwork: function (req, res, dbNetwork, modelInfo) {
     if (!Array.isArray(dbNetwork)) { dbNetwork = [dbNetwork] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbNetwork) {
-      var dbRow = dbNetwork[i]
+      const dbRow = dbNetwork[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,

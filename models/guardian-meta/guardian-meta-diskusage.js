@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaDiskUsage = sequelize.define('GuardianMetaDiskUsage', {
+  const GuardianMetaDiskUsage = sequelize.define('GuardianMetaDiskUsage', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

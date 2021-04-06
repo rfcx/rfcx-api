@@ -1,15 +1,15 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var token = require('../../../utils/internal-rfcx/token.js').token
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const token = require('../../../utils/internal-rfcx/token.js').token
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors.js')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 
 router.route('/login')
   .post(function (req, res) {
-    var userInput = {
+    const userInput = {
       pswd: (req.body.password != null) ? req.body.password.toLowerCase() : null
     }
 

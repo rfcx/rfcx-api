@@ -1,16 +1,16 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var ApiConverter = require('../../../utils/api-converter')
-var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
-var Promise = require('bluebird')
-var sqlUtils = require('../../../utils/misc/sql')
-var httpError = require('../../../utils/http-errors.js')
-var urls = require('../../../utils/misc/urls')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const ApiConverter = require('../../../utils/api-converter')
+const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+const Promise = require('bluebird')
+const sqlUtils = require('../../../utils/misc/sql')
+const httpError = require('../../../utils/http-errors.js')
+const urls = require('../../../utils/misc/urls')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 
 function createOrUpdateTag (tag) {
   return models.GuardianAudio
@@ -46,8 +46,8 @@ function createOrUpdateTag (tag) {
         .then(function (dbExistingTags) {
           // if user has already classified this file, then remove all previous tags
           if (dbExistingTags.length) {
-            var promises = []
-            for (var i = 0; i < dbExistingTags.length; i++) {
+            const promises = []
+            for (let i = 0; i < dbExistingTags.length; i++) {
               promises.push(dbExistingTags[i].destroy())
             }
             return Promise.all(promises)
@@ -63,13 +63,13 @@ function createOrUpdateTag (tag) {
 }
 
 function processOne (req, res) {
-  var guid = req.body.data.attributes.audioId
+  const guid = req.body.data.attributes.audioId
   req.body.data.attributes.taggedByUser = req.rfcx.auth_token_info.owner_id
-  var converter = new ApiConverter('tag', req)
-  var dbTag = converter.mapApiToSequelize(req.body)
+  const converter = new ApiConverter('tag', req)
+  const dbTag = converter.mapApiToSequelize(req.body)
   dbTag.audio_id = guid
   createOrUpdateTag(dbTag).then(function (dbTag) {
-    var apiTag = converter.mapSequelizeToApi(dbTag)
+    const apiTag = converter.mapSequelizeToApi(dbTag)
     res.status(201).json(apiTag)
     return dbTag
   }).catch(function (err) {
@@ -82,21 +82,21 @@ function processOne (req, res) {
 }
 
 function processMany (req, res) {
-  var promises = []
-  var converter = new ApiConverter('tag', req)
+  const promises = []
+  const converter = new ApiConverter('tag', req)
   if (!Array.isArray(req.body.data.attributes)) {
     res.status(400).json({ msg: 'Attributes must be an array!' })
   }
 
   // iterate through all classifications inside `list` attribute
-  for (var i = 0; i < req.body.data.attributes.length; i++) {
-    var dbTag = converter.mapApiToSequelize(req.body.data.attributes[i])
+  for (let i = 0; i < req.body.data.attributes.length; i++) {
+    const dbTag = converter.mapApiToSequelize(req.body.data.attributes[i])
     dbTag.tagged_by_user = req.rfcx.auth_token_info.owner_id
     promises.push(createOrUpdateTag(dbTag))
   }
   Promise.all(promises)
     .then(function (dbTags) {
-      var api = { type: 'tags' }
+      const api = { type: 'tags' }
       api.data = dbTags.map(function (dbTag) {
         return converter.mapSequelizeToApi(dbTag.dataValues)
       })
@@ -128,11 +128,11 @@ router.route('/')
 
 router.route('/audio/:audio_guid')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var opts = {
+    const opts = {
       audioGuid: req.params.audio_guid
     }
 
-    var sql = 'SELECT t.begins_at_offset, t.ends_at_offset, t.confidence, t.tagged_by_user as user, t.tagged_by_model as model, t.type, ' +
+    const sql = 'SELECT t.begins_at_offset, t.ends_at_offset, t.confidence, t.tagged_by_user as user, t.tagged_by_model as model, t.type, ' +
                 'CASE WHEN u.id=t.tagged_by_user THEN u.email ' +
                 'WHEN m.id=t.tagged_by_model THEN m.shortname ' +
                 'END as annotator ' +
@@ -158,13 +158,13 @@ router.route('/audio/:audio_guid')
 
 router.route('/labels')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('labels', req)
+    const converter = new ApiConverter('labels', req)
 
-    var sql = "SELECT DISTINCT value FROM GuardianAudioTags where type='label'"
+    const sql = "SELECT DISTINCT value FROM GuardianAudioTags where type='label'"
 
     return models.sequelize.query(sql, { type: models.sequelize.QueryTypes.SELECT })
       .then(function (data) {
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           labels: data
         })
         api.links.self = urls.getApiUrl(req) + '/tags/labels'
@@ -178,13 +178,13 @@ router.route('/labels')
 
 router.route('/users')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('users', req)
+    const converter = new ApiConverter('users', req)
 
-    var sql = "SELECT DISTINCT u.email, u.username, u.type, u.guid FROM GuardianAudioTags t INNER JOIN Users u on u.id=t.tagged_by_user where t.type='label'"
+    const sql = "SELECT DISTINCT u.email, u.username, u.type, u.guid FROM GuardianAudioTags t INNER JOIN Users u on u.id=t.tagged_by_user where t.type='label'"
 
     return models.sequelize.query(sql, { type: models.sequelize.QueryTypes.SELECT })
       .then(function (data) {
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           users: data
         })
         api.links.self = urls.getApiUrl(req) + '/tags/users'
@@ -198,13 +198,13 @@ router.route('/users')
 
 router.route('/models')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('models', req)
+    const converter = new ApiConverter('models', req)
 
-    var sql = "SELECT DISTINCT m.shortname, m.guid FROM GuardianAudioTags t INNER JOIN AudioAnalysisModels m on m.id=t.tagged_by_model where t.type='classification'"
+    const sql = "SELECT DISTINCT m.shortname, m.guid FROM GuardianAudioTags t INNER JOIN AudioAnalysisModels m on m.id=t.tagged_by_model where t.type='classification'"
 
     return models.sequelize.query(sql, { type: models.sequelize.QueryTypes.SELECT })
       .then(function (data) {
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           models: data
         })
         api.links.self = urls.getApiUrl(req) + '/tags/models'
@@ -218,16 +218,16 @@ router.route('/models')
 
 router.route('/annotators')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('annotators', req)
+    const converter = new ApiConverter('annotators', req)
 
-    var sqlUsers = "SELECT DISTINCT u.email, u.username, u.type, u.guid FROM GuardianAudioTags t INNER JOIN Users u on u.id=t.tagged_by_user where t.type='label'"
-    var sqlModels = "SELECT DISTINCT m.shortname, m.guid FROM GuardianAudioTags t INNER JOIN AudioAnalysisModels m on m.id=t.tagged_by_model where t.type='classification'"
+    const sqlUsers = "SELECT DISTINCT u.email, u.username, u.type, u.guid FROM GuardianAudioTags t INNER JOIN Users u on u.id=t.tagged_by_user where t.type='label'"
+    const sqlModels = "SELECT DISTINCT m.shortname, m.guid FROM GuardianAudioTags t INNER JOIN AudioAnalysisModels m on m.id=t.tagged_by_model where t.type='classification'"
 
     return models.sequelize.query(sqlUsers, { type: models.sequelize.QueryTypes.SELECT })
       .then(function (dataUsers) {
         return models.sequelize.query(sqlModels, { type: models.sequelize.QueryTypes.SELECT })
           .then(function (dataModels) {
-            var api = converter.mapSequelizeToApi({
+            const api = converter.mapSequelizeToApi({
               users: dataUsers,
               models: dataModels
             })
@@ -243,14 +243,14 @@ router.route('/annotators')
 
 router.route('/:tag_id')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('tag', req)
+    const converter = new ApiConverter('tag', req)
 
     models.GuardianAudioTag
       .findOne({
         where: { guid: req.params.tag_id },
         include: [models.User]
       }).then(function (dbTag) {
-        var api = converter.mapSequelizeToApi(dbTag)
+        const api = converter.mapSequelizeToApi(dbTag)
         api.data.attributes.taggedByUser = dbTag.User.guid
         delete api.data.attributes.User
         res.status(200).json(api)
@@ -263,9 +263,9 @@ router.route('/:tag_id')
 
 router.route('/classified/byannotator')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    var converter = new ApiConverter('tags', req)
+    const converter = new ApiConverter('tags', req)
 
-    var body = req.body
+    const body = req.body
 
     if (!body.annotatorGuid || !body.annotatorGuid.length) {
       return httpError(req, res, 400, null, 'Request does not contain user guid')
@@ -317,7 +317,7 @@ router.route('/classified/byannotator')
 
     function combineQuery (audioGuids) {
       return new Promise(function (resolve) {
-        var opts = {
+        const opts = {
           // set to user by default
           annotatorType: body.annotatorType || 'user',
           annotatorGuid: body.annotatorGuid,
@@ -326,7 +326,7 @@ router.route('/classified/byannotator')
           value: body.value
         }
 
-        var sql = 'SELECT a.guid, t.begins_at_offset, t.ends_at_offset, ROUND(AVG(t.confidence)) as confidence from GuardianAudioTags t '
+        let sql = 'SELECT a.guid, t.begins_at_offset, t.ends_at_offset, ROUND(AVG(t.confidence)) as confidence from GuardianAudioTags t '
 
         sql = sqlUtils.condAdd(sql, opts.annotatorType === 'user', 'INNER JOIN Users u ON u.guid=:annotatorGuid ')
         sql = sqlUtils.condAdd(sql, opts.annotatorType === 'model', 'INNER JOIN AudioAnalysisModels u ON u.guid=:annotatorGuid ')
@@ -354,7 +354,7 @@ router.route('/classified/byannotator')
           return views.models.countTagsByGuid(req, res, dbTags, data.audioGuids)
         })
         .then(function (dbTagsParsed) {
-          var api = converter.cloneSequelizeToApi({
+          const api = converter.cloneSequelizeToApi({
             tags: dbTagsParsed
           })
 

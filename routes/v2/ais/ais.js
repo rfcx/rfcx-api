@@ -1,5 +1,5 @@
 const express = require('express')
-var router = express.Router()
+const router = express.Router()
 const passport = require('passport')
 const httpError = require('../../../utils/http-errors.js')
 const ValidationError = require('../../../utils/converter/validation-error')
@@ -9,10 +9,10 @@ const Converter = require('../../../utils/converter/converter')
 const aiService = require('../../../services/legacy/ai/ai-service')
 const audioService = require('../../../services/audio/audio-service')
 const aws = require('../../../utils/external/aws.js').aws()
-var sequelize = require('sequelize')
+const sequelize = require('sequelize')
 const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
-var path = require('path')
+const path = require('path')
 
 router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin', 'systemUser']), function (req, res) {
@@ -219,7 +219,7 @@ router.route('/:guid/download')
         return aiService.downloadAIFile(opts)
       })
       .then(() => {
-        var sourceFilePath = `${opts.filePath}/${opts.fileName}`
+        const sourceFilePath = `${opts.filePath}/${opts.fileName}`
         return fileUtil.serveFile(res, sourceFilePath, opts.fileName, 'application/x-gzip, application/octet-stream', false)
       })
       .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))

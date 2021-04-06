@@ -1,15 +1,15 @@
-var Promise = require('bluebird')
+const Promise = require('bluebird')
 
-var urls = require('../../../utils/misc/urls')
+const urls = require('../../../utils/misc/urls')
 
 exports.models = {
 
   DataFilterAudioGuidToJson: function (req, res, data) {
     function convertLabelsToRows (labels) {
-      var rows = {}
+      const rows = {}
       labels.forEach(function (label) {
-        var guid = label.guid
-        var duration = label.duration
+        const guid = label.guid
+        const duration = label.duration
         // extract all audio guids
         if (rows[guid] === undefined) {
           rows[guid] = {}
@@ -26,7 +26,7 @@ exports.models = {
     }
 
     return new Promise(function (resolve, reject) {
-      var result = {
+      const result = {
         data: {
           type: 'datafilter',
           attributes: {}

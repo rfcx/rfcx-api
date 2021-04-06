@@ -1,14 +1,14 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var checkInHelpers = require('../../../utils/rfcx-checkin')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const checkInHelpers = require('../../../utils/rfcx-checkin')
 const queueForPrediction = require('../../../utils/rfcx-analysis/queue-for-prediction')
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
+const httpError = require('../../../utils/http-errors.js')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var Promise = require('bluebird')
-var sequelize = require('sequelize')
+const Promise = require('bluebird')
+const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
 const SensationsService = require('../../../services/legacy/sensations/sensations-service')
@@ -16,7 +16,7 @@ const SensationsService = require('../../../services/legacy/sensations/sensation
 router.route('/:guardian_id/checkins')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
     // template for json return... to be populated as we progress
-    var returnJson = {
+    const returnJson = {
       checkin_id: null, // unique guid of the check-in
       audio: [], // array of audio files successfully ingested
       screenshots: [], // array of screenshot images successfully ingested
@@ -97,11 +97,11 @@ router.route('/:guardian_id/checkins')
       })
       .then(function () {
         // parse, review and save sms messages
-        var messageInfo = checkInHelpers.messages.info(this.json.messages, this.dbGuardian.id, this.dbCheckIn.id,
+        const messageInfo = checkInHelpers.messages.info(this.json.messages, this.dbGuardian.id, this.dbCheckIn.id,
           this.json.timezone_offset)
-        var proms = []
+        const proms = []
         for (const msgInfoInd in messageInfo) {
-          var prom = checkInHelpers.messages
+          const prom = checkInHelpers.messages
             .save(messageInfo[msgInfoInd])
             .then(function (rtrnMessageInfo) {
               return returnJson.messages.push({ id: rtrnMessageInfo.android_id, guid: rtrnMessageInfo.guid })
@@ -112,11 +112,11 @@ router.route('/:guardian_id/checkins')
       })
       .then(function () {
         // parse, review and save screenshots
-        var screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(this.json.screenshots, '|', '*'),
+        const screenShotInfo = checkInHelpers.screenshots.info(req.files.screenshot, strArrToJSArr(this.json.screenshots, '|', '*'),
           this.dbGuardian.id, this.dbGuardian.guid, this.dbCheckIn.id)
-        var proms = []
+        const proms = []
         for (const screenShotInfoInd in screenShotInfo) {
-          var prom = checkInHelpers.screenshots
+          const prom = checkInHelpers.screenshots
             .save(screenShotInfo[screenShotInfoInd])
             .then(function (rtrnScreenShotInfo) {
               return returnJson.screenshots.push({ id: rtrnScreenShotInfo.origin_id, guid: rtrnScreenShotInfo.screenshot_id })
@@ -126,13 +126,13 @@ router.route('/:guardian_id/checkins')
         return Promise.all(proms)
       })
       .then(function () {
-        var self = this
+        const self = this
         // parse, review and save audio
-        var audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio, '|', '*'), this.dbGuardian, this.dbCheckIn)
-        var proms = []
+        const audioInfo = checkInHelpers.audio.info(req.files.audio, req.rfcx.api_url_domain, strArrToJSArr(this.json.audio, '|', '*'), this.dbGuardian, this.dbCheckIn)
+        const proms = []
         for (const audioInfoInd in audioInfo) {
           const info = audioInfo[audioInfoInd]
-          var prom = checkInHelpers.audio
+          const prom = checkInHelpers.audio
             .processUpload(info)
             .bind({})
             .then(function () {
@@ -196,8 +196,8 @@ router.route('/:guardian_id/checkins')
       .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function (dbGuardian) {
-        var dbQuery = { guardian_id: dbGuardian.id }
-        var dateClmn = 'measured_at'
+        const dbQuery = { guardian_id: dbGuardian.id }
+        const dateClmn = 'measured_at'
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {} }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gt] = req.rfcx.starting_after }
@@ -229,7 +229,7 @@ router.route('/:guardian_id/checkins')
 module.exports = router
 
 function timeStampToDate (timeStamp, legacytimeZoneOffset) {
-  var asDate = null
+  let asDate = null
 
   // PLEASE MODIFY LATER WHEN WE NO LONGER NEED TO SUPPORT LEGACY TIMESTAMPS !!!!!
   if (('' + timeStamp).indexOf(':') > -1) {

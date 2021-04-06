@@ -1,13 +1,13 @@
-var Promise = require('bluebird')
-var cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
-var mqttInputData = require('../../utils/rfcx-mqtt/mqtt-input-data.js').mqttInputData
-var checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInDatabase
-var checkInAssets = require('../../utils/rfcx-mqtt/mqtt-checkin-assets.js').checkInAssets
-var mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
-var guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
-var mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
-var queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
-var SensationsService = require('../../services/legacy/sensations/sensations-service')
+const Promise = require('bluebird')
+const cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
+const mqttInputData = require('../../utils/rfcx-mqtt/mqtt-input-data.js').mqttInputData
+const checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInDatabase
+const checkInAssets = require('../../utils/rfcx-mqtt/mqtt-checkin-assets.js').checkInAssets
+const mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
+const guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
+const mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
+const queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
+const SensationsService = require('../../services/legacy/sensations/sensations-service')
 
 function onMessageCheckin (data, messageId) {
   // cached file garbage collection... only do garbage collection ~1% of the time

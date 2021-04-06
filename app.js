@@ -28,10 +28,12 @@ app.use(metricsMiddleware)
 const routeMiddleware = require('./middleware/route')
 const { authenticate } = require('./middleware/authorization/authorization')
 
-const versionedRoutes = process.env.DEV_CORE_ONLY === 'true' ? {} : {
-  v1: require('./routes/v1/routes'),
-  v2: require('./routes/v2/routes')
-}
+const versionedRoutes = process.env.DEV_CORE_ONLY === 'true'
+  ? {}
+  : {
+      v1: require('./routes/v1/routes'),
+      v2: require('./routes/v2/routes')
+    }
 for (const apiVersion in versionedRoutes) {
   app.use(`/${apiVersion}`, routeMiddleware)
 }

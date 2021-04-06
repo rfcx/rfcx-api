@@ -1,4 +1,4 @@
-var Promise = require('bluebird')
+const Promise = require('bluebird')
 
 exports.models = {
 
@@ -7,15 +7,16 @@ exports.models = {
       try {
         if (Array.isArray(dbGuardianAudioCollection)) { dbGuardianAudioCollection = dbGuardianAudioCollection[0] }
 
-        var json = {
+        const json = {
           audios: []
         }
 
-        for (var i = 0; i < dbGuardianAudioCollection.GuardianAudios.length; i++) {
-          var dbRow = dbGuardianAudioCollection.GuardianAudios[i]
+        for (let i = 0; i < dbGuardianAudioCollection.GuardianAudios.length; i++) {
+          const dbRow = dbGuardianAudioCollection.GuardianAudios[i]
 
-          var note = (dbRow.GuardianAudioCollectionsRelation && dbRow.GuardianAudioCollectionsRelation.note)
-            ? dbRow.GuardianAudioCollectionsRelation.note : null
+          const note = (dbRow.GuardianAudioCollectionsRelation && dbRow.GuardianAudioCollectionsRelation.note)
+            ? dbRow.GuardianAudioCollectionsRelation.note
+            : null
 
           json.audios.push({
             guid: dbRow.guid,

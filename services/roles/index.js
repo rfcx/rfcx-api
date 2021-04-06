@@ -103,10 +103,12 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   if (!Object.keys(hierarchy).includes(itemName)) {
     throw new Error(`RolesService: invalid value for "itemName" parameter: "${itemName}"`)
   }
-  let item = await (isId ? hierarchy[itemName].model.findOne({
-    where: { id: itemOrId },
-    paranoid: false
-  }) : Promise.resolve(itemOrId))
+  let item = await (isId
+    ? hierarchy[itemName].model.findOne({
+      where: { id: itemOrId },
+      paranoid: false
+    })
+    : Promise.resolve(itemOrId))
   if (!item) {
     throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
   }
@@ -115,7 +117,7 @@ async function getPermissions (userOrId, itemOrId, itemName) {
     return [CREATE, READ, UPDATE, DELETE]
   }
 
-  var permissions = []
+  let permissions = []
   let currentLevel = hierarchy[itemName]
   while (currentLevel) {
     // try to find role for requested item

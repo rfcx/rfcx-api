@@ -8,8 +8,8 @@ module.exports = {
   getSortFields: function (sort) {
     const sortList = []
     const sortItems = sort.split(',')
-    sortItems.forEach( item => {
-      if(item.startsWith('-')) {
+    sortItems.forEach(item => {
+      if (item.startsWith('-')) {
         sortList.push([item.substring(1), 'DESC'])
       } else {
         sortList.push([item, 'ASC'])

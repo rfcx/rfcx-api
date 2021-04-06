@@ -1,7 +1,7 @@
 /* eslint camelcase: "off" */
-var Promise = require('bluebird')
-var hash = require('../../utils/misc/hash.js').hash
-var models = require('../../models')
+const Promise = require('bluebird')
+const hash = require('../../utils/misc/hash.js').hash
+const models = require('../../models')
 
 exports.token = {
 
@@ -46,25 +46,25 @@ exports.token = {
    * @api private
    */
   createToken: function (whatKindOfToken, options) {
-    var // validate inputs and set certain defaults
+    const // validate inputs and set certain defaults
       token_length = ((options.token_length == null) ? 40 : options.token_length)
-    var reference_tag = ((options.reference_tag == null) ? null : options.reference_tag)
-    var owner_primary_key = ((options.owner_primary_key == null) ? null : options.owner_primary_key)
-    var token_type = ((options.token_type == null) ? null : options.token_type)
-    var only_allow_access_to = ((options.only_allow_access_to == null) ? null : ((!Array.isArray(options.only_allow_access_to)) ? [options.only_allow_access_to] : options.only_allow_access_to))
-    var created_by = ((options.created_by == null) ? null : options.created_by)
-    var created_for = ((options.created_for == null) ? null : options.created_for) // only for registration tokens
-    var allowed_redemptions = ((options.allowed_redemptions == null) ? null : options.allowed_redemptions) // only for registration tokens
-    var allow_garbage_collection = ((options.allow_garbage_collection == null) ? false : options.allow_garbage_collection)
+    const reference_tag = ((options.reference_tag == null) ? null : options.reference_tag)
+    const owner_primary_key = ((options.owner_primary_key == null) ? null : options.owner_primary_key)
+    const token_type = ((options.token_type == null) ? null : options.token_type)
+    const only_allow_access_to = ((options.only_allow_access_to == null) ? null : ((!Array.isArray(options.only_allow_access_to)) ? [options.only_allow_access_to] : options.only_allow_access_to))
+    const created_by = ((options.created_by == null) ? null : options.created_by)
+    const created_for = ((options.created_for == null) ? null : options.created_for) // only for registration tokens
+    const allowed_redemptions = ((options.allowed_redemptions == null) ? null : options.allowed_redemptions) // only for registration tokens
+    const allow_garbage_collection = ((options.allow_garbage_collection == null) ? false : options.allow_garbage_collection)
 
-    var minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration))
-    var expires_at = new Date((new Date()).valueOf() + (1000 * 60 * minutes_until_expiration))
+    const minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration))
+    const expires_at = new Date((new Date()).valueOf() + (1000 * 60 * minutes_until_expiration))
 
-    var token = ((options.use_this_token_value == null) ? hash.randomString(token_length) : options.use_this_token_value)
-    var salt = hash.randomHash(320)
-    var tokenHash = hash.hashedCredentials(salt, token)
+    const token = ((options.use_this_token_value == null) ? hash.randomString(token_length) : options.use_this_token_value)
+    const salt = hash.randomHash(320)
+    const tokenHash = hash.hashedCredentials(salt, token)
 
-    var output_token = {
+    const output_token = {
       reference_tag: reference_tag,
       owner_primary_key: owner_primary_key,
       token_type: token_type,
@@ -78,7 +78,7 @@ exports.token = {
     }
 
     // build generic token (type-specific attributes to be added later)
-    var dbTokenAttributes = {
+    const dbTokenAttributes = {
       type: token_type,
       auth_token_salt: salt,
       auth_token_hash: tokenHash,
