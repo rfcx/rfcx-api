@@ -158,7 +158,7 @@ router.post('/:id/detections', function (req, res) {
       }
 
       const detections = params.transformedArray.map(d => ({ ...d, streamId }))
-      createDetectionsService.create(detections)
+      await createDetectionsService.create(detections)
       return res.sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))

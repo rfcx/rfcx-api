@@ -1,4 +1,5 @@
 const classifierService = require('../classifiers')
+const { Op } = require('sequelize')
 
 async function addClassifiers (rawDetections) {
   // Extract all classifier ids
@@ -8,7 +9,7 @@ async function addClassifiers (rawDetections) {
   const queryOptions = { fields: ['id', 'external_id', 'name', 'version', 'outputs'] }
   const classifiersUsingIds = (await classifierService.query({ ids: unknownIds.filter(id => !isNaN(id)) }, queryOptions)).results
   const classifiersUsingExternalIds = (await classifierService.query({ externalIds: unknownIds }, queryOptions)).results
-  const classifiersUsingNameAndVersions = (await classifierService.query({ or: unknownIds.map(x => x.split('-v')).filter(x => x.length === 2).map(([name, version]) => ({ name, version })) }, queryOptions)).results
+  const classifiersUsingNameAndVersions = (await classifierService.query({ [Op.or]: unknownIds.map(x => x.toString().split('-v')).filter(x => x.length === 2).map(([name, version]) => ({ name, version })) }, queryOptions)).results
 
   // Create a mapping from unknown id to classifier
   const classifierMapping = {}
@@ -20,7 +21,7 @@ async function addClassifiers (rawDetections) {
         classifier = classifiersUsingNameAndVersions.find(({ name, version }) => `${name}-v${version}` === unknownId)
       }
     }
-    classifierMapping[unknownId] = classifier.toJSON()
+    classifierMapping[unknownId] = classifier
   }
 
   return rawDetections.map(detection => ({ ...detection, classifier: classifierMapping[detection.classifier] }))
@@ -52,9 +53,12 @@ async function build (rawDetections) {
   const savableDetections = validDetections.filter(detection => detection.confidence > detection.output.ignore_threshold)
 
   const detections = savableDetections.map(detection => ({
-    ...detection,
+    streamId: detection.streamId,
     classificationId: detection.output.classification_id,
-    classifierId: detection.classifier.id
+    classifierId: detection.classifier.id,
+    start: detection.start,
+    end: detection.end,
+    confidence: detection.confidence
   }))
 
   return { detections, classifierIds }
