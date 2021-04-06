@@ -2,8 +2,9 @@ const build = require('./create.build')
 const classifierService = require('../classifiers')
 const { Detection } = require('../../modelsTimescale/index')
 
-async function create (rawDetections, streamId) {
-  const { detections, classifierIds } = await build(rawDetections, streamId)
+async function create (rawDetections) {
+  // Find dependent ids, filter rows
+  const { detections, classifierIds } = await build(rawDetections)
 
   // Save the detections
   await bulkCreate(detections)

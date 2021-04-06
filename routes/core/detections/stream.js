@@ -157,7 +157,8 @@ router.post('/:id/detections', function (req, res) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
 
-      createDetections(params.transformedArray, streamId)
+      const detections = params.transformedArray.map(d => ({ ...d, streamId }))
+      createDetectionsService.create(detections)
       return res.sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))
