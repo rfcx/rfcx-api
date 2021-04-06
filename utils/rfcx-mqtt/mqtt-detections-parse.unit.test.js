@@ -1,4 +1,4 @@
-const { parse } = require('./mqtt-detections')
+const { parse } = require('./mqtt-detections-parse')
 const ValidationError = require('../converter/validation-error')
 
 test('throw on missing data and wrong type data', () => {

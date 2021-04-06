@@ -1,8 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const detectionsService = require('../../../services/detections')
-const build = require('../../../services/detections/build')
-const classifierService = require('../../../services/classifiers')
+const detectionsService = require('../../../services/detections/create')
 const Converter = require('../../../utils/converter/converter')
 const { hasRole } = require('../../../middleware/authorization/authorization')
 
@@ -58,13 +56,7 @@ router.post('/detections', hasRole(['systemUser']), function (req, res) {
         }
       })
 
-      const { detections } = await build(expandedDetections, streamId)
-
-      // Save the detections
-      await detectionsService.create(detections)
-
-      // Mark classifiers as updated
-      await classifierService.update(classifierId, null, { last_executed_at: new Date() })
+      await detectionsService.create(expandedDetections, streamId)
 
       return res.sendStatus(201)
     })
