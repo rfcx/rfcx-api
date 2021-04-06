@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var AudioAnalysisState = sequelize.define('AudioAnalysisState', {
+  const AudioAnalysisState = sequelize.define('AudioAnalysisState', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,

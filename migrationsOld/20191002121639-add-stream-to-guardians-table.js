@@ -2,7 +2,7 @@
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-    var sqlAddColumnModel =
+    const sqlAddColumnModel =
       'ALTER TABLE `Guardians` ADD COLUMN `stream` INTEGER DEFAULT NULL, ' +
       'ADD CONSTRAINT stream FOREIGN KEY (`stream`) REFERENCES `Streams`(`id`) ' +
       'ON UPDATE CASCADE ON DELETE RESTRICT'
@@ -15,7 +15,7 @@ module.exports = {
   },
 
   down: function (migration, DataTypes, done) {
-    var sqlAddColumnModel =
+    const sqlAddColumnModel =
       'ALTER TABLE `Guardians` DROP FOREIGN KEY stream, DROP COLUMN stream'
 
     migration.sequelize.query(sqlAddColumnModel, {

@@ -38,15 +38,18 @@ function findOrCreateS3Client (bucketName) {
 }
 
 exports.aws = function () {
-  var that = {
+  // TODO looks like this should be a class instead of "that" pattern
+  const that = {
 
     s3: function (bucketName) {
       return findOrCreateS3Client(bucketName)
     },
 
     s3SignedUrl: function (bucketName, filePath, linkExpirationInMinutes) {
-      return (useAWSMocks()) ? 's3-mock-signed-url' : findOrCreateS3Client(bucketName)
-        .signedUrl(filePath, new Date((new Date()).valueOf() + (1000 * 60 * linkExpirationInMinutes)))
+      return (useAWSMocks())
+        ? 's3-mock-signed-url'
+        : findOrCreateS3Client(bucketName)
+          .signedUrl(filePath, new Date((new Date()).valueOf() + (1000 * 60 * linkExpirationInMinutes)))
     },
 
     s3ConfirmSave: function (s3Res, savePath) {

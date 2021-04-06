@@ -1,30 +1,30 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var guid = require('../../../utils/misc/guid.js')
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors.js')
+const guid = require('../../../utils/misc/guid.js')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var Promise = require('bluebird')
-var ApiConverter = require('../../../utils/api-converter')
+const Promise = require('bluebird')
+const ApiConverter = require('../../../utils/api-converter')
 const Converter = require('../../../utils/converter/converter')
-var aws = require('../../../utils/external/aws.js').aws()
-var moment = require('moment')
-var eventsService = require('../../../services/legacy/events/events-service')
-var eventValueService = require('../../../services/legacy/events/event-value-service')
-var eventTypeService = require('../../../services/legacy/events/event-type-service')
-var sequelize = require('sequelize')
-var ValidationError = require('../../../utils/converter/validation-error')
-var EmptyResultError = require('../../../utils/converter/empty-result-error')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
-var firebaseService = require('../../../services/firebase/firebase-service')
-var guardianGroupService = require('../../../services/guardians/guardian-group-service')
+const aws = require('../../../utils/external/aws.js').aws()
+const moment = require('moment')
+const eventsService = require('../../../services/legacy/events/events-service')
+const eventValueService = require('../../../services/legacy/events/event-value-service')
+const eventTypeService = require('../../../services/legacy/events/event-type-service')
+const sequelize = require('sequelize')
+const ValidationError = require('../../../utils/converter/validation-error')
+const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const firebaseService = require('../../../services/firebase/firebase-service')
+const guardianGroupService = require('../../../services/guardians/guardian-group-service')
 
 router.route('/event')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
-    var contentType = req.rfcx.content_type
-    var isFile = false
+    const contentType = req.rfcx.content_type
+    let isFile = false
     if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
       isFile = true
     }
@@ -80,8 +80,8 @@ router.route('/event/datatable')
 
 router.route('/stats/guardian')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    var contentType = req.rfcx.content_type
-    var isFile = false
+    const contentType = req.rfcx.content_type
+    let isFile = false
     if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
       isFile = true
     }
@@ -123,7 +123,7 @@ router.route('/stats/weekly')
       req.query = {}
     }
 
-    var dateStr = moment().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss')
+    const dateStr = moment().subtract(7, 'days').format('YYYY-MM-DD HH:mm:ss')
     req.query.starting_after = dateStr
 
     return eventsService.processStatsByDates(req, res)
@@ -135,7 +135,7 @@ router.route('/stats/monthly')
       req.query = {}
     }
 
-    var dateStr = moment().subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss')
+    const dateStr = moment().subtract(1, 'month').format('YYYY-MM-DD HH:mm:ss')
     req.query.starting_after = dateStr
 
     return eventsService.processStatsByDates(req, res)
@@ -147,7 +147,7 @@ router.route('/stats/half-year')
       req.query = {}
     }
 
-    var dateStr = moment().subtract(6, 'month').format('YYYY-MM-DD HH:mm:ss')
+    const dateStr = moment().subtract(6, 'month').format('YYYY-MM-DD HH:mm:ss')
     req.query.starting_after = dateStr
 
     return eventsService.processStatsByDates(req, res)
@@ -159,7 +159,7 @@ router.route('/stats/year')
       req.query = {}
     }
 
-    var dateStr = moment().subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss')
+    const dateStr = moment().subtract(1, 'year').format('YYYY-MM-DD HH:mm:ss')
     req.query.starting_after = dateStr
 
     return eventsService.processStatsByDates(req, res)
@@ -167,9 +167,9 @@ router.route('/stats/year')
 
 router.route('/tuning')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('event', req)
+    const converter = new ApiConverter('event', req)
 
-    var opts = {
+    const opts = {
       type: req.query.type,
       modelGuid: req.query.modelGuid,
       minWindows: parseInt(req.query.minWindows),
@@ -178,7 +178,7 @@ router.route('/tuning')
       dateTo: req.query.dateTo
     }
 
-    var sql = 'SELECT g.shortname, a.guid as audio_guid, a.measured_at, count(t.audio_id) as count, avg(t.confidence) as prob, s.timezone_offset, s.timezone FROM GuardianAudioTags t ' +
+    const sql = 'SELECT g.shortname, a.guid as audio_guid, a.measured_at, count(t.audio_id) as count, avg(t.confidence) as prob, s.timezone_offset, s.timezone FROM GuardianAudioTags t ' +
       'INNER JOIN AudioAnalysisModels m on m.guid=:modelGuid ' +
       'INNER JOIN GuardianAudio a on audio_id=a.id ' +
       'INNER JOIN GuardianSites s on site_id=s.id ' +
@@ -191,7 +191,7 @@ router.route('/tuning')
     models.sequelize.query(sql,
       { replacements: opts, type: models.sequelize.QueryTypes.SELECT })
       .then(function (data) {
-        var apiEvent = converter.cloneSequelizeToApi(data)
+        const apiEvent = converter.cloneSequelizeToApi(data)
         res.status(200).json(apiEvent)
       })
       .catch(function (err) {
@@ -276,11 +276,11 @@ router.route('/:guid')
 
 router.route('/')
   .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiSystem']), function (req, res) {
-    var converter = new ApiConverter('event', req)
+    const converter = new ApiConverter('event', req)
 
-    var body = req.body
+    const body = req.body
 
-    var attrs = {
+    const attrs = {
       confidence: body.confidence,
       windows: body.windows,
       audio_id: body.audio_id,
@@ -299,9 +299,9 @@ router.route('/')
     }
 
     function checkAttrValidity () {
-      var missingAttrs = ''
+      let missingAttrs = ''
 
-      for (var key in attrs) {
+      for (const key in attrs) {
         if (attrs.hasOwnProperty(key)) { // eslint-disable-line no-prototype-builtins
           if (key === 'begins_at' || key === 'ends_at') {
             continue
@@ -318,7 +318,7 @@ router.route('/')
       }
     }
 
-    var attrsValidity = checkAttrValidity()
+    const attrsValidity = checkAttrValidity()
     if (!attrsValidity.status) {
       return httpError(req, res, 400, null, attrsValidity.missingAttrsStr)
     }
@@ -326,7 +326,7 @@ router.route('/')
       return httpError(req, res, 400, null, 'Guardian Audio Event guid has incorrect format')
     }
 
-    var promises = []
+    const promises = []
 
     promises.push(models.GuardianAudio.findOne({
       where: { guid: attrs.audio_id },
@@ -434,7 +434,7 @@ router.route('/')
         }
       })
       .then(function (data) {
-        var apiEvent = converter.mapSequelizeToApi(data)
+        const apiEvent = converter.mapSequelizeToApi(data)
         res.status(200).json(apiEvent)
         return data
       })
@@ -483,7 +483,7 @@ router.route('/')
         return true
       })
       .then(function () {
-        var msg = {
+        const msg = {
           type: this.type,
           detected: this.value,
           guardian: this.guardian,
@@ -495,7 +495,7 @@ router.route('/')
 
         // currently we only send out alerts.
         // Todo: this needs to be replaced by a general alert handler that allows for more configuration.
-        var excludedGuardians = []
+        const excludedGuardians = []
         if (!excludedGuardians.includes(this.guardian_id)) {
           const topic = 'rfcx-detection-alerts-' + this.dbSite.guid
           aws.createTopic(topic)
@@ -530,7 +530,7 @@ router.route('/:event_id/review')
         if (dbEvent.length < 1) {
           httpError(req, res, 404, 'database')
         } else {
-          var reviewerInput = {
+          const reviewerInput = {
             classification: (req.body.classification != null) ? req.body.classification.toLowerCase() : null,
             begins_at: (req.body.begins_at != null) ? new Date(req.body.begins_at) : null,
             duration: (req.body.duration != null) ? parseInt(req.body.duration) : null,

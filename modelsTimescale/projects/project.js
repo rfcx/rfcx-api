@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = function (sequelize, DataTypes) {
   const Project = sequelize.define('Project', {
     id: {
@@ -13,32 +15,31 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    is_public: {
+    isPublic: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
     },
-    organization_id: {
+    organizationId: {
       type: DataTypes.STRING(12),
       allowNull: true
     },
-    created_by_id: {
+    createdById: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    external_id: {
+    externalId: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    is_partner: {
+    isPartner: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
     }
   }, {
     paranoid: true,
-    timestamps: true,
-    deletedAt: 'deleted_at'
+    underscored: true
   })
   Project.associate = function (models) {
     Project.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
@@ -49,8 +50,6 @@ module.exports = function (sequelize, DataTypes) {
     full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'is_partner', 'created_at', 'updated_at'],
     lite: ['id', 'name', 'is_public', 'external_id']
   }
-  Project.include = function (as = 'project', attributes = Project.attributes.lite, required = true) {
-    return { model: Project, as, attributes, required }
-  }
+  Project.include = includeBuilder(Project, 'project', Project.attributes.lite)
   return Project
 }

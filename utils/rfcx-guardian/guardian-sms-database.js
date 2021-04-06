@@ -1,9 +1,9 @@
-var models = require('../../models')
+const models = require('../../models')
 
 exports.messages = {
 
   info: function (jsonMessages, guardianId, checkInId) {
-    var messageInfo = {}
+    const messageInfo = {}
     if (Array.isArray(jsonMessages)) {
       for (const msgInd in jsonMessages) {
         messageInfo[jsonMessages[msgInd].android_id] = {

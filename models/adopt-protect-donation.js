@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var AdoptProtectDonation = sequelize.define('AdoptProtectDonation', {
+  const AdoptProtectDonation = sequelize.define('AdoptProtectDonation', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,

@@ -1,16 +1,16 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const httpError = require('../../../utils/http-errors.js')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var PerceptionsAiService = require('../../../services/legacy/perceptions/perceptions-ai-service')
-var ValidationError = require('../../../utils/converter/validation-error')
-var ApiConverter = require('../../../utils/api-converter')
-var urls = require('../../../utils/misc/urls')
-var sequelize = require('sequelize')
-var guidService = require('../../../utils/misc/guid.js')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const PerceptionsAiService = require('../../../services/legacy/perceptions/perceptions-ai-service')
+const ValidationError = require('../../../utils/converter/validation-error')
+const ApiConverter = require('../../../utils/api-converter')
+const urls = require('../../../utils/misc/urls')
+const sequelize = require('sequelize')
+const guidService = require('../../../utils/misc/guid.js')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 
 /**
  * Takes guid and ai attributes and creates AI
@@ -19,9 +19,9 @@ var hasRole = require('../../../middleware/authorization/authorization').hasRole
  * @param {*} res - response object
  */
 function processAiCreation (guid, req, res) {
-  var converter = new ApiConverter('ai', req)
+  const converter = new ApiConverter('ai', req)
 
-  var params = {
+  const params = {
     minimal_detected_windows: req.body.minimal_detected_windows,
     minimal_detection_confidence: req.body.minimal_detection_confidence,
     shortname: req.body.shortname,
@@ -37,8 +37,8 @@ function processAiCreation (guid, req, res) {
 
   PerceptionsAiService.createAi(params)
     .then(ai => {
-      var outputData = PerceptionsAiService.formatAi(ai)
-      var api = converter.mapSequelizeToApi({
+      const outputData = PerceptionsAiService.formatAi(ai)
+      const api = converter.mapSequelizeToApi({
         ai: outputData
       })
       api.links.self = urls.getApiUrl(req) + '/perceptions/ai'
@@ -51,17 +51,17 @@ function processAiCreation (guid, req, res) {
 
 router.route('/ai')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
-    var converter = new ApiConverter('ai', req)
+    const converter = new ApiConverter('ai', req)
 
     return models.AudioAnalysisModel
       .findAll({
         include: [{ all: true }]
       })
       .then(function (data) {
-        var outputData = data.map((ai) => {
+        const outputData = data.map((ai) => {
           return PerceptionsAiService.formatAi(ai)
         })
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           ai: outputData
         })
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai'
@@ -75,13 +75,13 @@ router.route('/ai')
 
 router.route('/ai/:id/precision/events')
   .get(passport.authenticate('token', { session: false }), (req, res) => {
-    var converter = new ApiConverter('ai', req)
+    const converter = new ApiConverter('ai', req)
 
     PerceptionsAiService
       .findAi(req.params.id)
       .then(PerceptionsAiService.getEventsPrecisionForAI)
       .then((data) => {
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           data: data
         })
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id + '/precision/events'
@@ -93,13 +93,13 @@ router.route('/ai/:id/precision/events')
 
 router.route('/ai/:id')
   .get(passport.authenticate('token', { session: false }), (req, res) => {
-    var converter = new ApiConverter('ai', req)
+    const converter = new ApiConverter('ai', req)
 
     PerceptionsAiService
       .findAi(req.params.id)
       .then(PerceptionsAiService.formatAi)
       .then((data) => {
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           ai: data
         })
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id
@@ -121,9 +121,9 @@ router.route('/ai/:guid')
 
 router.route('/ai/:id')
   .put(passport.authenticate('token', { session: false }), (req, res) => {
-    var converter = new ApiConverter('ai', req)
+    const converter = new ApiConverter('ai', req)
 
-    var params = {
+    const params = {
       event_type: req.body.event_type,
       event_value: req.body.event_value,
       minimal_detection_confidence: req.body.minimal_detection_confidence,
@@ -140,7 +140,7 @@ router.route('/ai/:id')
       })
       .then(PerceptionsAiService.formatAi)
       .then((data) => {
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           ai: data
         })
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id

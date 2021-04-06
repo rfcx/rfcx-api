@@ -1,14 +1,14 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var passport = require('passport')
-var httpError = require('../../../utils/http-errors.js')
-var Promise = require('bluebird')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const passport = require('passport')
+const httpError = require('../../../utils/http-errors.js')
+const Promise = require('bluebird')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var ApiConverter = require('../../../utils/api-converter')
-var datafiltersService = require('../../../services/datafilters/datafilters-service')
-var csvUtils = require('../../../utils/misc/csv')
+const ApiConverter = require('../../../utils/api-converter')
+const datafiltersService = require('../../../services/datafilters/datafilters-service')
+const csvUtils = require('../../../utils/misc/csv')
 
 function filterExcludedGuids (originalArray, foundedArray) {
   return originalArray.filter(function (item) {
@@ -18,9 +18,9 @@ function filterExcludedGuids (originalArray, foundedArray) {
 
 router.route('/audio-collections/by-guids')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('audio-collection', req)
+    const converter = new ApiConverter('audio-collection', req)
 
-    var body = req.body
+    const body = req.body
 
     if (!body.audios || !body.audios.length) {
       return httpError(req, res, 400, null, 'Request does not contain audio guids')
@@ -55,7 +55,7 @@ router.route('/audio-collections/by-guids')
           }
        }
      */
-    var audioDataObj = {}
+    const audioDataObj = {}
     body.audios.forEach(function (audio) {
       audioDataObj[audio.guid] = {
         note: audio.note,
@@ -65,7 +65,7 @@ router.route('/audio-collections/by-guids')
     })
 
     // get array of all audio guids
-    var audioGuids = Object.keys(audioDataObj)
+    const audioGuids = Object.keys(audioDataObj)
 
     return models.GuardianAudio
       // first of all check if audio files with given guids exist
@@ -82,7 +82,7 @@ router.route('/audio-collections/by-guids')
         this.dbAudio = dbAudio
 
         // get array of all founded audios
-        var guids = dbAudio.map(function (item) {
+        const guids = dbAudio.map(function (item) {
           return item.guid
         })
 
@@ -103,9 +103,9 @@ router.route('/audio-collections/by-guids')
       })
       .then(function (dbGuardianAudios) {
         // variable to store new audio file position
-        var currentIndex = 0
+        let currentIndex = 0
         // variable to store all existing audio guids
-        var existingAudioGuids = []
+        const existingAudioGuids = []
         // go through all existing audio files, collect their guids and calculate the latest position
         dbGuardianAudios.forEach(function (item) {
           existingAudioGuids.push(item.guid)
@@ -113,13 +113,13 @@ router.route('/audio-collections/by-guids')
             currentIndex = item.GuardianAudioCollectionsRelation.position + 1
           }
         })
-        var promises = []
+        const promises = []
         this.dbAudio.forEach(function (audio) {
           // if file need to be deleted, then create delete promise
           if (audioDataObj[audio.guid].delete) {
             promises.push(this.dbGuardianAudioCollection.removeGuardianAudio(audio))
           } else if (existingAudioGuids.indexOf(audio.guid) !== -1) {
-            var obj = {}
+            const obj = {}
             if (audioDataObj[audio.guid].note !== undefined) {
               obj.note = audioDataObj[audio.guid].note
             }
@@ -149,7 +149,7 @@ router.route('/audio-collections/by-guids')
         return views.models.guardianAudioCollection(req, res, dbGuardianAudioCollection)
       })
       .then(function (data) {
-        var api = converter.cloneSequelizeToApi(data)
+        const api = converter.cloneSequelizeToApi(data)
 
         api.data.id = this.dbGuardianAudioCollection.guid
         api.data.attributes.excluded = this.excluded.length ? this.excluded : null
@@ -164,7 +164,7 @@ router.route('/audio-collections/by-guids')
 
 router.route('/audio-collections/:id')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('audio-collection', req)
+    const converter = new ApiConverter('audio-collection', req)
 
     return models.GuardianAudioCollection
       .findOne({
@@ -177,7 +177,7 @@ router.route('/audio-collections/:id')
         return views.models.guardianAudioCollection(req, res, dbGuardianAudioCollection)
       })
       .then(function (data) {
-        var api = converter.cloneSequelizeToApi(data)
+        const api = converter.cloneSequelizeToApi(data)
 
         api.data.id = this.dbGuardianAudioCollection.guid
         api.links.self += this.dbGuardianAudioCollection.guid

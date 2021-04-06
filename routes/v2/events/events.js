@@ -1,5 +1,5 @@
 const express = require('express')
-var router = express.Router()
+const router = express.Router()
 const path = require('path')
 const passport = require('passport')
 const httpError = require('../../../utils/http-errors.js')
@@ -17,10 +17,8 @@ const hasRole = require('../../../middleware/authorization/authorization').hasRo
 const Converter = require('../../../utils/converter/converter')
 const sequelize = require('sequelize')
 const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'
+const earthRangerService = earthRangerEnabled ? require('../../../services/earthranger') : {}
 const moment = require('moment')
-if (earthRangerEnabled) {
-  var earthRangerService = require('../../../services/earthranger')
-}
 
 function query (req, res) {
   return eventsServiceNeo4j.queryData(req)

@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var FilterPreset = sequelize.define('FilterPreset', {
+  const FilterPreset = sequelize.define('FilterPreset', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

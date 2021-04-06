@@ -3,9 +3,9 @@ console.log('----------------------------------\nRFCX | main-mqtt started')
 // check that all required env vars are set
 require('../config/inspector')
 
-var appId = 'rfcx-api-mqtt'
+const appId = 'rfcx-api-mqtt'
 
-var app = require('../app-mqtt.js')
+const app = require('../app-mqtt.js')
 const guidService = require('../utils/misc/guid.js')
 
 console.log('RFCX | Starting server')
@@ -68,8 +68,8 @@ if (process && process.pid) {
   console.log('pid', process.pid)
 }
 
-var mqttCheckInRouter = require('../utils/rfcx-mqtt/mqtt-checkin-router.js').mqttCheckInRouter
-var pingRouter = require('../utils/rfcx-guardian/router-ping.js').pingRouter
+const mqttCheckInRouter = require('../utils/rfcx-mqtt/mqtt-checkin-router.js').mqttCheckInRouter
+const pingRouter = require('../utils/rfcx-guardian/router-ping.js').pingRouter
 
 app.mqtt.on('message', (topic, data) => {
   let messageId = guidService.generate()

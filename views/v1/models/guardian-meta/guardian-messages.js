@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaMessages: function (req, res, dbMessages, modelInfo) {
     if (!Array.isArray(dbMessages)) { dbMessages = [dbMessages] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbMessages) {
-      var dbRow = dbMessages[i]
+      const dbRow = dbMessages[i]
 
       jsonArray.push({
         guid: dbRow.guid,

@@ -1,16 +1,16 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var passport = require('passport')
-var httpError = require('../../../utils/http-errors.js')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const passport = require('passport')
+const httpError = require('../../../utils/http-errors.js')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var sequelize = require('sequelize')
+const sequelize = require('sequelize')
 
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)
 router.route('/:guardian_id/software/:software_role')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var softwareRole = req.params.software_role
+    const softwareRole = req.params.software_role
 
     models.Guardian
       .findOne({
@@ -26,7 +26,7 @@ router.route('/:guardian_id/software/:software_role')
         return dbGuardian
       })
       .then(function (dbGuardian) {
-        var dbQuery = {
+        const dbQuery = {
           is_available: true
         }
         if (softwareRole === 'all') {
@@ -58,10 +58,10 @@ module.exports = router
 function viewSoftwareJson (dbSoftware) {
   if (!Array.isArray(dbSoftware)) { dbSoftware = [dbSoftware] }
 
-  var jsonArray = []
+  const jsonArray = []
 
   for (const i in dbSoftware) {
-    var dbRow = dbSoftware[i]
+    const dbRow = dbSoftware[i]
 
     if (dbRow.CurrentVersion != null) {
       jsonArray.push({

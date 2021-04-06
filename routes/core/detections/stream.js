@@ -6,7 +6,6 @@ const { hasPermission, READ, UPDATE, STREAM } = require('../../../services/roles
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { getUserRolesFromToken } = require('../../../services/auth0/auth0-service')
 
 /**
  * @swagger
@@ -77,8 +76,11 @@ router.get('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
-      if (!getUserRolesFromToken(req.user).includes('systemUser') &&
-        !(await hasPermission(READ, user, streamId, STREAM))) {
+      if (user.has_system_role) {
+        return true
+      }
+      const allowed = await hasPermission(READ, user, streamId, STREAM)
+      if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
       return undefined
@@ -152,8 +154,11 @@ router.post('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
-      if (!getUserRolesFromToken(req.user).includes('systemUser') &&
-        !(await hasPermission(UPDATE, user, streamId, STREAM))) {
+      if (user.has_system_role) {
+        return true
+      }
+      const allowed = await hasPermission(UPDATE, user, streamId, STREAM)
+      if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
 

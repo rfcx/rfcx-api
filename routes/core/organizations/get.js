@@ -16,6 +16,10 @@ const Converter = require('../../../utils/converter/converter')
  *         in: path
  *         required: true
  *         type: string
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: Success
@@ -29,14 +33,13 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Organization not found
  */
 module.exports = (req, res) => {
+  const user = req.rfcx.auth_token_info
+  const readableBy = user.is_super || user.has_system_role ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
   return converter.validate()
     .then(params => {
-      const options = {
-        readableBy: req.rfcx.auth_token_info.owner_id,
-        fields: params.fields
-      }
+      const options = { ...params, readableBy }
       return organizationsService.get(req.params.id, options)
     })
     .then(organization => res.json(organization))

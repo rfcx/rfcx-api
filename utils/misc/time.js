@@ -1,4 +1,4 @@
-var time = {
+const time = {
   /**
    * We round the time so that all times only have 0 or 500 miliseconds - our quantum of time
    * @returns {moment} quantified time

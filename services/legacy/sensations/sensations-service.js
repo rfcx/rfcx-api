@@ -1,8 +1,8 @@
-var sequelize = require('sequelize')
-var Converter = require('../../../utils/converter/converter')
-var SensationsRepository = require('./sensations-repository')
+const sequelize = require('sequelize')
+const Converter = require('../../../utils/converter/converter')
+const SensationsRepository = require('./sensations-repository')
 const ValidationError = require('../../../utils/converter/validation-error')
-var models = require('../../../models')
+const models = require('../../../models')
 const moment = require('moment-timezone')
 
 function createSensations (params) {
@@ -36,7 +36,7 @@ function createSensations (params) {
 }
 
 function createSensationsFromGuardianAudio (audioGuid) {
-  var params = {}
+  const params = {}
 
   return models.GuardianAudio.findOne({ where: { guid: audioGuid } }).then(guardianAudio => {
     params.starting_after = moment.tz(guardianAudio.measured_at.valueOf(), 'UTC').toISOString()
@@ -45,8 +45,8 @@ function createSensationsFromGuardianAudio (audioGuid) {
     params.data_id = guardianAudio.id
     return models.GuardianAudioFormat.findOne({ where: { id: guardianAudio.format_id } })
   }).then(audioFormat => {
-    var lengthInMs = Math.floor((params.capture_sample_count / audioFormat.sample_rate) * 1000)
-    var endingBefore = moment.tz(params.starting_after, 'UTC')
+    const lengthInMs = Math.floor((params.capture_sample_count / audioFormat.sample_rate) * 1000)
+    const endingBefore = moment.tz(params.starting_after, 'UTC')
     endingBefore.milliseconds(endingBefore.milliseconds() + lengthInMs)
     params.ending_before = endingBefore.toISOString()
     return models.Guardian.findOne({ where: { id: params.source_id } })

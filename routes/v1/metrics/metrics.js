@@ -1,6 +1,6 @@
 const express = require('express')
 const metricsService = require('../../../services/metrics/metrics-service')
-var router = express.Router()
+const router = express.Router()
 
 router.route('/')
   .get((req, res) => {

@@ -1,5 +1,5 @@
-var Promise = require('bluebird')
-var models = require('../../../models')
+const Promise = require('bluebird')
+const models = require('../../../models')
 function getAllQueryHelpers () { return require('../../../utils/rfcx-query') }
 
 exports.guardianStatusMeta = {
@@ -7,7 +7,7 @@ exports.guardianStatusMeta = {
   allTotalDataTransfer: function (guardianId, realTimeOffsetInMinutes) {
     return new Promise(function (resolve, reject) {
       try {
-        var queryHelpers = getAllQueryHelpers()
+        const queryHelpers = getAllQueryHelpers()
 
         queryHelpers.guardianStatusMeta.singleTotalDataTransfer(guardianId, 3, realTimeOffsetInMinutes).then(function (data3hours) {
           queryHelpers.guardianStatusMeta.singleTotalDataTransfer(guardianId, 6, realTimeOffsetInMinutes).then(function (data6hours) {
@@ -30,7 +30,7 @@ exports.guardianStatusMeta = {
   singleTotalDataTransfer: function (guardianId, intervalInHours, realTimeOffsetInMinutes) {
     return new Promise(function (resolve, reject) {
       try {
-        var dbWhere = { guardian_id: guardianId, ended_at: {} }
+        const dbWhere = { guardian_id: guardianId, ended_at: {} }
         dbWhere.ended_at[models.Sequelize.Op.lt] = new Date((new Date()).valueOf() - (parseInt(realTimeOffsetInMinutes) * 60000))
         dbWhere.ended_at[models.Sequelize.Op.gt] = new Date((new Date()).valueOf() - (parseInt(intervalInHours) * 3600000) - (parseInt(realTimeOffsetInMinutes) * 60000))
 

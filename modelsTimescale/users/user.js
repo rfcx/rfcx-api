@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
     guid: {
@@ -37,8 +39,6 @@ module.exports = function (sequelize, DataTypes) {
     full: ['firstname', 'lastname', 'picture', 'username', 'email', 'guid'],
     lite: ['firstname', 'lastname', 'email', 'picture']
   }
-  User.include = function (as = 'user', attributes = User.attributes.lite, required = true) {
-    return { model: User, as, attributes, required }
-  }
+  User.include = includeBuilder(User, 'user', User.attributes.lite)
   return User
 }

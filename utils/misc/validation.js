@@ -1,8 +1,8 @@
 function findMissingAttributes (obj, attributes) {
-  var missing = []
+  const missing = []
 
-  for (var i = 0; i < attributes.length; i++) {
-    var attr = attributes[i]
+  for (let i = 0; i < attributes.length; i++) {
+    const attr = attributes[i]
     if (!Object.prototype.hasOwnProperty.call(obj, attr)) {
       missing.push(attr)
     }
@@ -10,13 +10,13 @@ function findMissingAttributes (obj, attributes) {
   return missing
 }
 
-var validation = {
+const validation = {
 
   assertAttributesExist: function (obj, attributes) {
-    var missing = findMissingAttributes(obj, attributes)
+    const missing = findMissingAttributes(obj, attributes)
 
     if (missing.length > 0) {
-      var msg = 'Please provide the following attributes: '
+      let msg = 'Please provide the following attributes: '
       msg += missing.join(', ')
       throw new Error(msg)
     }

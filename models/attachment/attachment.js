@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var Attachment = sequelize.define('Attachment', {
+  const Attachment = sequelize.define('Attachment', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

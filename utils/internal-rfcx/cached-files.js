@@ -1,12 +1,12 @@
-var fs = require('fs')
+const fs = require('fs')
 
 exports.cachedFiles = {
 
   cacheDirectoryGarbageCollection: function () {
-    var maxAgeInMinutes = 20
+    const maxAgeInMinutes = 20
 
-    var tmpDir = process.env.CACHE_DIRECTORY
-    var subDir = 'uploads'
+    const tmpDir = process.env.CACHE_DIRECTORY
+    const subDir = 'uploads'
 
     if (fs.existsSync(tmpDir + '/' + subDir)) {
       fs.readdir(tmpDir + '/' + subDir, function (err, dirName) {

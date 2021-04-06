@@ -12,7 +12,7 @@ beforeEach(async () => {
 })
 
 async function commonSetup () {
-  const stream = { id: 'abc', name: 'my stream', created_by_id: seedValues.primaryUserId }
+  const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
   await models.Stream.create(stream)
   const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
   await models.Classification.create(classification)
