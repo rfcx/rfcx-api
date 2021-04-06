@@ -56,7 +56,7 @@ router.post('/detections', hasRole(['systemUser']), function (req, res) {
         }
       })
 
-      await detectionsService.create(expandedDetections, streamId)
+      await detectionsService.create(expandedDetections)
 
       return res.sendStatus(201)
     })
