@@ -1,5 +1,5 @@
-var Promise = require('bluebird')
-var models = require('../../../models')
+const Promise = require('bluebird')
+const models = require('../../../models')
 function getAllQueryHelpers () { return require('../../../utils/rfcx-query') }
 
 exports.guardianStatusAudio = {
@@ -7,7 +7,7 @@ exports.guardianStatusAudio = {
   allCoverage: function (guardianId, realTimeOffsetInMinutes) {
     return new Promise(function (resolve, reject) {
       try {
-        var queryHelpers = getAllQueryHelpers()
+        const queryHelpers = getAllQueryHelpers()
 
         return queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 3, realTimeOffsetInMinutes).then(function (coverage3hours) {
           return queryHelpers.guardianStatusAudio.singleCoverage(guardianId, 6, realTimeOffsetInMinutes).then(function (coverage6hours) {
@@ -32,7 +32,7 @@ exports.guardianStatusAudio = {
   singleCoverage: function (guardianId, intervalInHours, realTimeOffsetInMinutes) {
     return new Promise(function (resolve, reject) {
       try {
-        var dbWhere = { guardian_id: guardianId, measured_at: {} }
+        const dbWhere = { guardian_id: guardianId, measured_at: {} }
         dbWhere.measured_at[models.Sequelize.Op.lt] = new Date((new Date()).valueOf() - (parseInt(realTimeOffsetInMinutes) * 60000))
         dbWhere.measured_at[models.Sequelize.Op.gt] = new Date((new Date()).valueOf() - (parseInt(intervalInHours) * 3600000) - (parseInt(realTimeOffsetInMinutes) * 60000))
 

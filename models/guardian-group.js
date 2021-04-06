@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianGroup = sequelize.define('GuardianGroup', {
+  const GuardianGroup = sequelize.define('GuardianGroup', {
     shortname: {
       type: DataTypes.STRING,
       allowNull: false,

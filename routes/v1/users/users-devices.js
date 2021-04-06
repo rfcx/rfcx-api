@@ -1,8 +1,8 @@
-var express = require('express')
-var router = express.Router()
-var httpError = require('../../../utils/http-errors.js')
-var ValidationError = require('../../../utils/converter/validation-error')
-var Converter = require('../../../utils/converter/converter')
+const express = require('express')
+const router = express.Router()
+const httpError = require('../../../utils/http-errors.js')
+const ValidationError = require('../../../utils/converter/validation-error')
+const Converter = require('../../../utils/converter/converter')
 
 router.route('/:user_id/device/register')
   .post((req, res) => {

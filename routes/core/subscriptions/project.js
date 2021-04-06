@@ -100,8 +100,9 @@ router.delete('/:id/subscriptions', hasProjectPermission('R'), function (req, re
 
   return params.validate()
     .then(async () => {
+      let subscriptionType
       if (convertedParams.subscription) {
-        var subscriptionType = await subscriptionsService.getTypeByIdOrName(convertedParams.subscription)
+        subscriptionType = await subscriptionsService.getTypeByIdOrName(convertedParams.subscription)
       }
       await subscriptionsService.removeSubscription(userId, subscriptionType ? subscriptionType.id : null, projectId, 'project')
       return res.sendStatus(200)

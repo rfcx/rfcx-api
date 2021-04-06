@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-var args = process.argv.slice(2)
-var token = require('../../utils/internal-rfcx/token.js').token
+const args = process.argv.slice(2)
+const token = require('../../utils/internal-rfcx/token.js').token
 
 // this outputs a tab separated list of tokens, and saves them to the database
 
-var howManyTokens = ((args[args.indexOf('--how_many')] === ('--how_many')) ? parseInt(args[args.indexOf('--how_many') + 1]) : 1)
-var finalParams = {}
-var possibleParams = [
+const howManyTokens = ((args[args.indexOf('--how_many')] === ('--how_many')) ? parseInt(args[args.indexOf('--how_many') + 1]) : 1)
+const finalParams = {}
+const possibleParams = [
   ['what_kind_of_token', 'string'],
   ['use_this_token_value', 'string'],
   ['token_length', 'integer'],
@@ -30,7 +30,7 @@ for (i in possibleParams) {
   }
 }
 
-var rtrnTokens = []
+const rtrnTokens = []
 console.log('')
 
 for (var i = 0; i < howManyTokens; i++) {
@@ -44,7 +44,7 @@ for (var i = 0; i < howManyTokens; i++) {
           expires_at: tkn.token_expires_at.toISOString()
         })
         if (rtrnTokens.length == howManyTokens) {
-          for (var j = 0; j < howManyTokens; j++) {
+          for (let j = 0; j < howManyTokens; j++) {
             console.log('token/' + rtrnTokens[j].guid)
             console.log(rtrnTokens[j].token)
           }
@@ -72,7 +72,7 @@ for (var i = 0; i < howManyTokens; i++) {
           expires_at: tkn.token_expires_at.toISOString()
         })
         if (rtrnTokens.length == howManyTokens) {
-          for (var j = 0; j < howManyTokens; j++) {
+          for (let j = 0; j < howManyTokens; j++) {
             console.log(rtrnTokens[j].code)
           }
           console.log('')
@@ -89,7 +89,7 @@ for (var i = 0; i < howManyTokens; i++) {
           expires_at: tkn.token_expires_at.toISOString()
         })
         if (rtrnTokens.length == howManyTokens) {
-          for (var j = 0; j < howManyTokens; j++) {
+          for (let j = 0; j < howManyTokens; j++) {
             console.log(rtrnTokens[j].guid + '\t' + rtrnTokens[j].token + '\t' + rtrnTokens[j].expires_at)
           }
           console.log('')

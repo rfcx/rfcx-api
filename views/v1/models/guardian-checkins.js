@@ -1,18 +1,19 @@
-var Promise = require('bluebird')
+const Promise = require('bluebird')
 function getAllViews () { return require('../../../views/v1') }
 
 exports.models = {
 
   guardianCheckIns: function (req, res, dbRows, PARENT_GUID) {
-    var views = getAllViews()
+    const views = getAllViews()
 
     if (!Array.isArray(dbRows)) { dbRows = [dbRows] }
 
-    var jsonArray = []; var jsonRowsByGuid = {}; var dbRowsByGuid = {}
+    const jsonArray = []; const jsonRowsByGuid = {}; const dbRowsByGuid = {}
 
     return new Promise(function (resolve, reject) {
       for (const i in dbRows) {
-        var thisRow = dbRows[i]; var thisGuid = thisRow.guid
+        const thisRow = dbRows[i]
+        let thisGuid = thisRow.guid
 
         dbRowsByGuid[thisGuid] = thisRow
 

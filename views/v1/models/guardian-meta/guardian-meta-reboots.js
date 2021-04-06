@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaReboots: function (req, res, dbReboots, modelInfo) {
     if (!Array.isArray(dbReboots)) { dbReboots = [dbReboots] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbReboots) {
-      var dbRow = dbReboots[i]
+      const dbRow = dbReboots[i]
 
       jsonArray.push({
         completed_at: dbRow.completed_at

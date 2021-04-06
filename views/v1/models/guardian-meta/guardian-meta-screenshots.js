@@ -1,15 +1,15 @@
-var aws = require('../../../../utils/external/aws.js').aws()
-var assetUtils = require('../../../../utils/internal-rfcx/asset-utils.js').assetUtils
+const aws = require('../../../../utils/external/aws.js').aws()
+const assetUtils = require('../../../../utils/internal-rfcx/asset-utils.js').assetUtils
 
 exports.models = {
 
   guardianMetaScreenshots: function (req, res, dbScreenshots) {
     if (!Array.isArray(dbScreenshots)) { dbScreenshots = [dbScreenshots] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbScreenshots) {
-      var dbRow = dbScreenshots[i]
+      const dbRow = dbScreenshots[i]
 
       jsonArray.push({
         guid: dbRow.guid,
@@ -23,10 +23,10 @@ exports.models = {
   },
 
   guardianMetaScreenshotFile: function (req, res, dbRows) {
-    var dbRow = dbRows
+    const dbRow = dbRows
 
     // auto-generate the asset filepath if it's not stored in the url column
-    var metaStoragePath = (dbRow.url == null)
+    const metaStoragePath = (dbRow.url == null)
       ? assetUtils.getGuardianAssetStoragePath('screenshots', dbRow.captured_at, dbRow.Guardian.guid, 'png')
       : dbRow.url.substr(dbRow.url.indexOf('://') + 3 + process.env.ASSET_BUCKET_AUDIO.length)
 
@@ -36,7 +36,7 @@ exports.models = {
       // this next line may not be necessary
       result.resume()
 
-      var contentLength = parseInt(result.headers['content-length'])
+      const contentLength = parseInt(result.headers['content-length'])
 
       res.writeHead(200, {
         'Content-Length': contentLength,

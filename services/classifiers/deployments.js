@@ -15,7 +15,6 @@ async function get (id) {
   return deployment
 }
 
-
 /**
  * Gets classifier deployments based on input params
  * @param {*} filters
@@ -25,7 +24,7 @@ async function get (id) {
  * @param {string} filters.end
  * @param {string} filter.type
  */
-async function query(filters) {
+async function query (filters) {
   const condition = {}
 
   if (filters.platform) {
@@ -79,7 +78,7 @@ async function query(filters) {
  * @param {number} id
  * @param {boolean} deployed
  */
-async function update(id, deployed) {
+async function update (id, deployed) {
   const deployment = await get(id)
   await deployment.update({ deployed: deployed })
 }

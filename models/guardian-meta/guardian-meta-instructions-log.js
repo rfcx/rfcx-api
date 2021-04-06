@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaInstructionsLog = sequelize.define('GuardianMetaInstructionsLog', {
+  const GuardianMetaInstructionsLog = sequelize.define('GuardianMetaInstructionsLog', {
     instr_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

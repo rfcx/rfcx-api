@@ -1,12 +1,12 @@
-var models = require('../../models')
-var hash = require('../../utils/misc/hash.js').hash
-var regex = require('../../utils/misc/regex.js')
+const models = require('../../models')
+const hash = require('../../utils/misc/hash.js').hash
+const regex = require('../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   // The input 'token' (invite code) is actually the guid and token, concatenated.
   // These two should be the same length, so we break the token in half and use each part.
-  var inviteGuid = token.substr(0, Math.floor(token.length / 2)).toLowerCase()
-  var inviteToken = token.substr(Math.floor(token.length / 2)).toLowerCase()
+  const inviteGuid = token.substr(0, Math.floor(token.length / 2)).toLowerCase()
+  const inviteToken = token.substr(Math.floor(token.length / 2)).toLowerCase()
 
   models.RegistrationToken
     .findOne({

@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var Guardian = sequelize.define('Guardian', {
+  const Guardian = sequelize.define('Guardian', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,

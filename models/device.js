@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var Device = sequelize.define('Device', {
+  const Device = sequelize.define('Device', {
     firebaseToken: {
       type: DataTypes.STRING,
       allowNull: false,

@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianAudioTag = sequelize.define('GuardianAudioTag', {
+  const GuardianAudioTag = sequelize.define('GuardianAudioTag', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

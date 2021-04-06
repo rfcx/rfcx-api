@@ -1,11 +1,11 @@
 console.log('----------------------------------\nRFCX | sync-sql started')
-var exec = require('child_process').exec
-var fs = require('fs')
-var path = require('path')
-var argv = require('minimist')(process.argv.slice(2))
+const exec = require('child_process').exec
+const fs = require('fs')
+const path = require('path')
+const argv = require('minimist')(process.argv.slice(2))
 
 // MySQL by default
-var databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql'
+const databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql'
 
 // Explanation:
 // 1. Load the environment variables from env_vars.js (if exists)
@@ -14,8 +14,8 @@ var databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql'
 // 4. Run migrations
 
 if (fs.existsSync(path.join(__dirname, '/../config/env_vars.js'))) {
-  var env = require(path.join(__dirname, '/../config/env_vars.js')).env
-  for (var i in env) { process.env[i] = env[i] }
+  const env = require(path.join(__dirname, '/../config/env_vars.js')).env
+  for (const i in env) { process.env[i] = env[i] }
 }
 
 console.log(`RFCX | Initializing sequelize for ${databaseType}`)
@@ -27,9 +27,9 @@ function initializeSequelize () {
   const models = require('../' + modelsPath)
 
   console.log('RFCX | Creating config params: started')
-  var configJsonFile = path.join(__dirname, '/../config/config.json')
+  const configJsonFile = path.join(__dirname, '/../config/config.json')
 
-  var sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
+  const sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
 
   const dbUsername = databaseType === 'timescale' ? process.env.POSTGRES_USER : process.env.DB_USERNAME
   const dbPassword = databaseType === 'timescale' ? process.env.POSTGRES_PASSWORD : process.env.DB_PASSWORD

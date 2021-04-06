@@ -1,22 +1,22 @@
-var fs = require('fs')
-var Promise = require('bluebird')
-var models = require('../../models')
-var hash = require('../../utils/misc/hash.js').hash
-var aws = require('../../utils/external/aws.js').aws()
-var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
+const fs = require('fs')
+const Promise = require('bluebird')
+const models = require('../../models')
+const hash = require('../../utils/misc/hash.js').hash
+const aws = require('../../utils/external/aws.js').aws()
+const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 
 exports.screenshots = {
 
   info: function (screenShotFiles, screenShotMeta, guardianId, guardianGuid, checkInId) {
-    var screenShotInfo = {}
+    const screenShotInfo = {}
 
     if (screenShotFiles) {
       // make sure the screenshot files parameter is an array
       if (!Array.isArray(screenShotFiles)) { screenShotFiles = [screenShotFiles] }
 
       for (const i in screenShotFiles) {
-        var timeStamp = screenShotFiles[i].originalname.substr(0, screenShotFiles[i].originalname.lastIndexOf('.png'))
-        var timeStampDateObj = new Date(parseInt(timeStamp))
+        const timeStamp = screenShotFiles[i].originalname.substr(0, screenShotFiles[i].originalname.lastIndexOf('.png'))
+        const timeStampDateObj = new Date(parseInt(timeStamp))
 
         screenShotInfo[timeStamp] = {
           guardian_id: guardianId,

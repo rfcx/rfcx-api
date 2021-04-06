@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianGroupRelation = sequelize.define('GuardianGroupRelation', {}, {
+  const GuardianGroupRelation = sequelize.define('GuardianGroupRelation', {}, {
     tableName: 'GuardianGroupRelations'
   })
 

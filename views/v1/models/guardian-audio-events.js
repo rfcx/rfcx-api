@@ -2,10 +2,10 @@ const Promise = require('bluebird')
 const moment = require('moment-timezone')
 
 function extractLabelValues (dbAudioEvents) {
-  var arr = []
+  const arr = []
 
   dbAudioEvents.forEach(function (item) {
-    var value = item.Value.value
+    const value = item.Value.value
     if (arr.indexOf(value) === -1) {
       arr.push(value)
     }
@@ -15,18 +15,18 @@ function extractLabelValues (dbAudioEvents) {
 }
 
 function countEventsByGuardians (dbAudioEvents) {
-  var json = {
+  const json = {
     guardians: {}
   }
 
-  for (var i = 0; i < dbAudioEvents.length; i++) {
-    var dbRow = dbAudioEvents[i]
+  for (let i = 0; i < dbAudioEvents.length; i++) {
+    const dbRow = dbAudioEvents[i]
 
     if (!dbRow.audio_guid || !dbRow.guardian_guid) {
       continue
     }
 
-    var dbGuardianGuid = dbRow.guardian_guid
+    const dbGuardianGuid = dbRow.guardian_guid
 
     if (!json.guardians[dbGuardianGuid]) {
       json.guardians[dbGuardianGuid] = {
@@ -40,8 +40,8 @@ function countEventsByGuardians (dbAudioEvents) {
       }
     }
 
-    var guardian = json.guardians[dbGuardianGuid]
-    var value = dbRow.event_value
+    const guardian = json.guardians[dbGuardianGuid]
+    const value = dbRow.event_value
 
     if (!guardian.events[value]) {
       guardian.events[value] = 0
@@ -55,7 +55,7 @@ function countEventsByGuardians (dbAudioEvents) {
 }
 
 function countEventsByDates (dbAudioEvents) {
-  var json = {
+  const json = {
     dates: {}
   }
 
@@ -64,14 +64,14 @@ function countEventsByDates (dbAudioEvents) {
   })
 
   dbAudioEvents.forEach(function (event) {
-    var dateStr = moment.tz(event.begins_at, event.site_timezone).format('MM/DD/YYYY')
+    const dateStr = moment.tz(event.begins_at, event.site_timezone).format('MM/DD/YYYY')
 
     if (!json.dates[dateStr]) {
       json.dates[dateStr] = {}
     }
 
-    var value = event.event_value
-    var dateObj = json.dates[dateStr]
+    const value = event.event_value
+    const dateObj = json.dates[dateStr]
 
     if (!dateObj[value]) {
       dateObj[value] = 0
@@ -100,12 +100,12 @@ exports.models = {
       try {
         if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        var json = {
+        const json = {
           events: []
         }
 
-        for (var i = 0; i < dbAudioEvents.length; i++) {
-          var dbRow = dbAudioEvents[i]
+        for (let i = 0; i < dbAudioEvents.length; i++) {
+          const dbRow = dbAudioEvents[i]
 
           json.events.push({
             event_guid: dbRow.guid,
@@ -176,11 +176,11 @@ exports.models = {
       try {
         if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        var csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence,guardian_guid,guardian_shortname,' +
+        let csv = 'event_guid,audio_guid,meta_url,latitude,longitude,begins_at,ends_at,type,value,confidence,guardian_guid,guardian_shortname,' +
                    'site,reviewer_confirmed,reviewer_guid\r\n'
 
-        for (var i = 0; i < dbAudioEvents.length; i++) {
-          var dbRow = dbAudioEvents[i]
+        for (let i = 0; i < dbAudioEvents.length; i++) {
+          const dbRow = dbAudioEvents[i]
 
           csv += dbRow.guid + ','
           csv += dbRow.audio_guid + ','
@@ -211,9 +211,9 @@ exports.models = {
       try {
         if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        var csv = 'guardian_guid,shortname,latitude,longitude,'
+        let csv = 'guardian_guid,shortname,latitude,longitude,'
 
-        var labelValues = extractLabelValues(dbAudioEvents)
+        const labelValues = extractLabelValues(dbAudioEvents)
 
         labelValues.forEach(function (value) {
           csv += value + ','
@@ -222,7 +222,7 @@ exports.models = {
         csv = csv.slice(0, -1)
         csv += '\r\n'
 
-        var arr = countEventsByGuardians(dbAudioEvents)
+        const arr = countEventsByGuardians(dbAudioEvents)
 
         arr.forEach(function (item) {
           csv += item.guid + ','
@@ -252,9 +252,9 @@ exports.models = {
       try {
         if (!Array.isArray(dbAudioEvents)) { dbAudioEvents = [dbAudioEvents] }
 
-        var csv = 'date,'
+        let csv = 'date,'
 
-        var labelValues = extractLabelValues(dbAudioEvents)
+        const labelValues = extractLabelValues(dbAudioEvents)
 
         labelValues.forEach(function (value) {
           csv += value + ','
@@ -263,11 +263,11 @@ exports.models = {
         csv = csv.slice(0, -1)
         csv += '\r\n'
 
-        var json = countEventsByDates(dbAudioEvents)
+        const json = countEventsByDates(dbAudioEvents)
 
-        for (var key in json) {
+        for (const key in json) {
           if (json.hasOwnProperty(key)) { // eslint-disable-line no-prototype-builtins
-            var item = json[key]
+            const item = json[key]
 
             csv += key + ','
 

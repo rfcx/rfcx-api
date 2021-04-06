@@ -1,10 +1,10 @@
-var models = require('../../models')
-var sqlUtils = require('../../utils/misc/sql')
+const models = require('../../models')
+const sqlUtils = require('../../utils/misc/sql')
 
-var condAdd = sqlUtils.condAdd
+const condAdd = sqlUtils.condAdd
 
 function getLabelsData (filterOpts) {
-  var sql = 'SELECT a.guid, t.begins_at_offset, t.ends_at_offset, (t.ends_at_offset - t.begins_at_offset) as duration, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where 1=1 '
+  let sql = 'SELECT a.guid, t.begins_at_offset, t.ends_at_offset, (t.ends_at_offset - t.begins_at_offset) as duration, ROUND(AVG(t.confidence)) as confidence FROM GuardianAudioTags t LEFT JOIN GuardianAudio a on a.id=t.audio_id where 1=1 '
 
   sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType')
   sql = condAdd(sql, filterOpts.tagValues, ' and t.value in (:tagValues)')

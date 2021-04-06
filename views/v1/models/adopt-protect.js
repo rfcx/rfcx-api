@@ -3,12 +3,12 @@ exports.models = {
   adoptProtectDonations: function (req, res, dbAdoptProtectDonations) {
     if (!Array.isArray(dbAdoptProtectDonations)) { dbAdoptProtectDonations = [dbAdoptProtectDonations] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbAdoptProtectDonations) {
-      var dbRow = dbAdoptProtectDonations[i]
+      const dbRow = dbAdoptProtectDonations[i]
 
-      var adoptProtectDonation = {
+      const adoptProtectDonation = {
         guid: dbRow.guid,
         donor_name: dbRow.donor_name,
         donor_email: dbRow.donor_email,
@@ -18,12 +18,14 @@ exports.models = {
         donation_currency: dbRow.donation_currency,
         area_hectares: dbRow.area_hectares,
         area_polygon: (dbRow.area_polygon == null) ? null : JSON.parse(dbRow.area_polygon),
-        area_site: (dbRow.AreaSite == null) ? null : {
-          guid: dbRow.AreaSite.guid,
-          name: dbRow.AreaSite.name,
-          description: dbRow.AreaSite.description,
-          timezone: dbRow.AreaSite.timezone
-        },
+        area_site: (dbRow.AreaSite == null)
+          ? null
+          : {
+              guid: dbRow.AreaSite.guid,
+              name: dbRow.AreaSite.name,
+              description: dbRow.AreaSite.description,
+              timezone: dbRow.AreaSite.timezone
+            },
         area_stream: {
           urls: {
             audio: '/v1/guardians/96a9956ef249/audio.json?order=ascending&limit=3'

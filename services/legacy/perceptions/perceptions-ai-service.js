@@ -1,10 +1,10 @@
-var Converter = require('../../../utils/converter/converter')
-var CognitionService = require('../cognitions/cognitions-service')
-var models = require('../../../models')
-var aws = require('../../../utils/external/aws').aws()
-var ValidationError = require('../../../utils/converter/validation-error')
-var Promise = require('bluebird')
-var sequelize = require('sequelize')
+const Converter = require('../../../utils/converter/converter')
+const CognitionService = require('../cognitions/cognitions-service')
+const models = require('../../../models')
+const aws = require('../../../utils/external/aws').aws()
+const ValidationError = require('../../../utils/converter/validation-error')
+const Promise = require('bluebird')
+const sequelize = require('sequelize')
 
 function uploadToS3 (localPath, s3Path) {
   return new Promise(function (resolve, reject) {
@@ -40,7 +40,7 @@ module.exports = {
       })
   },
   aiExists: function (params) {
-    var transformedParams = {}
+    const transformedParams = {}
     params = new Converter(params, transformedParams)
 
     params.convert('guid').toString()
@@ -54,7 +54,7 @@ module.exports = {
     })
   },
   createAiDb: function (params) {
-    var transformedArgs = { method_name: 'v3', audio_sample_rate: 12000 }
+    const transformedArgs = { method_name: 'v3', audio_sample_rate: 12000 }
     params = new Converter(params, transformedArgs)
 
     // required probability
@@ -92,7 +92,7 @@ module.exports = {
     params.convert('guid').toString()
 
     return params.validate().then(transformedParams => {
-      var uploads = []
+      const uploads = []
 
       uploads.push(uploadToS3(transformedParams.model, `/${transformedParams.guid}/definition.json`))
       uploads.push(uploadToS3(transformedParams.weights, `/${transformedParams.guid}/weights.h5`))
@@ -103,7 +103,7 @@ module.exports = {
   },
 
   updateAi: function (ai, params) {
-    var transformedParams = {}
+    const transformedParams = {}
     params = new Converter(params, transformedParams)
     params.convert('event_type').optional().toString()
     params.convert('event_value').optional().toString()

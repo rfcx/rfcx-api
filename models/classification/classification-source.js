@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var ClassificationSource = sequelize.define('ClassificationSource', {
+  const ClassificationSource = sequelize.define('ClassificationSource', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,

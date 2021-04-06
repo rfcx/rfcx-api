@@ -71,7 +71,7 @@ router.get('/streams/:attrs', async function (req, res) {
     const stream = await streamsService.getById(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
     const roles = auth0Service.getUserRolesFromToken(req.user)
-    var allowed
+    let allowed
     if ((roles || []).includes('systemUser')) {
       allowed = true
     } else {
