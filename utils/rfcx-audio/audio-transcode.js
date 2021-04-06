@@ -1,8 +1,8 @@
-var Promise = require('bluebird')
-var ffmpeg = require('fluent-ffmpeg')
-var fs = require('fs')
+const Promise = require('bluebird')
+const ffmpeg = require('fluent-ffmpeg')
+const fs = require('fs')
 
-var audioFormatSettings = {
+const audioFormatSettings = {
 
   mp3: {
     extension: 'mp3',
@@ -76,17 +76,17 @@ exports.audioUtils = {
       try {
         fs.stat(inputParams.sourceFilePath, function (statErr, fileStat) {
           if (statErr == null) {
-            var transcodedFilePath = inputParams.sourceFilePath.substr(0, inputParams.sourceFilePath.lastIndexOf('.')) + '_.' + audioFormat
+            const transcodedFilePath = inputParams.sourceFilePath.substr(0, inputParams.sourceFilePath.lastIndexOf('.')) + '_.' + audioFormat
 
-            var ffmpegInputOptions = getInputOptions(audioFormat, inputParams.enhanced)
+            const ffmpegInputOptions = getInputOptions(audioFormat, inputParams.enhanced)
 
-            var copyCodecInsteadOfTranscode = (inputParams.copyCodecInsteadOfTranscode == null) ? false : inputParams.copyCodecInsteadOfTranscode
+            const copyCodecInsteadOfTranscode = (inputParams.copyCodecInsteadOfTranscode == null) ? false : inputParams.copyCodecInsteadOfTranscode
 
-            var ffmpegOutputOptions = []
+            const ffmpegOutputOptions = []
             if (inputParams.clipOffset != null) { ffmpegOutputOptions.push('-ss ' + inputParams.clipOffset) }
             if (inputParams.clipDuration != null) { ffmpegOutputOptions.push('-t ' + inputParams.clipDuration) }
 
-            var preOutputOpts = []
+            let preOutputOpts = []
             if (inputParams.sampleRate > (0.8 * audioFormatSettings[audioFormat].maxValues.sampleRate)) {
               inputParams.sampleRate = audioFormatSettings[audioFormat].maxValues.sampleRate
               preOutputOpts = getOutputOptions(audioFormat, inputParams.enhanced, true)
@@ -132,19 +132,19 @@ exports.audioUtils = {
 }
 
 function getInputOptions (format, isEnhanced) {
-  var enhancedInputOptions = [
+  const enhancedInputOptions = [
   ]
-  var inputOptions = (isEnhanced) ? enhancedInputOptions : []
+  const inputOptions = (isEnhanced) ? enhancedInputOptions : []
   for (const i in audioFormatSettings[format].inputOptions) { inputOptions.push(audioFormatSettings[format].inputOptions[i]) }
   return inputOptions
 }
 
 function getOutputOptions (format, isEnhanced, useMaxValues) {
-  var enhancedOutputOptions = [
+  const enhancedOutputOptions = [
     '-filter_complex', '[0:a][1:a]amerge=inputs=2[aout]',
     '-map', '[aout]'
   ]
-  var outputOptions = (isEnhanced) ? enhancedOutputOptions : []
+  const outputOptions = (isEnhanced) ? enhancedOutputOptions : []
 
   if (useMaxValues) {
     for (const i in audioFormatSettings[format].maxValues.maxOutputOptions) { outputOptions.push(audioFormatSettings[format].maxValues.maxOutputOptions[i]) }

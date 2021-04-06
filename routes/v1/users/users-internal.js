@@ -1,12 +1,12 @@
-var express = require('express')
-var router = express.Router()
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
+const express = require('express')
+const router = express.Router()
+const httpError = require('../../../utils/http-errors.js')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var ValidationError = require('../../../utils/converter/validation-error')
-var auth0Service = require('../../../services/auth0/auth0-service')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
-var Converter = require('../../../utils/converter/converter')
+const ValidationError = require('../../../utils/converter/validation-error')
+const auth0Service = require('../../../services/auth0/auth0-service')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const Converter = require('../../../utils/converter/converter')
 
 router.route('/auth0/export-link')
   .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {

@@ -1,8 +1,8 @@
 
-var regex = {
+const regex = {
 
   regExIndexOf: function (stringToMatch, regExMatchArray) {
-    for (var i in regExMatchArray) {
+    for (const i in regExMatchArray) {
       if (stringToMatch.toString().match(regExMatchArray[i])) {
         return i
       }

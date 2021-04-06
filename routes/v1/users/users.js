@@ -1,26 +1,26 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var hash = require('../../../utils/misc/hash')
-var token = require('../../../utils/internal-rfcx/token.js').token
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
-var moment = require('moment')
-var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const hash = require('../../../utils/misc/hash')
+const token = require('../../../utils/internal-rfcx/token.js').token
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors')
+const passport = require('passport')
+const moment = require('moment')
+const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 const executeService = require('../../../services/execute-service')
 const mailService = require('../../../services/mail/mail-service')
-var ValidationError = require('../../../utils/converter/validation-error')
-var ForbiddenError = require('../../../utils/converter/forbidden-error')
-var usersService = require('../../../services/users/users-service-legacy')
-var sitesService = require('../../../services/sites/sites-service')
-var auth0Service = require('../../../services/auth0/auth0-service')
-var tokensService = require('../../../services/tokens/tokens-service')
-var sequelize = require('sequelize')
-var ApiConverter = require('../../../utils/api-converter')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
-var Converter = require('../../../utils/converter/converter')
+const ValidationError = require('../../../utils/converter/validation-error')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const usersService = require('../../../services/users/users-service-legacy')
+const sitesService = require('../../../services/sites/sites-service')
+const auth0Service = require('../../../services/auth0/auth0-service')
+const tokensService = require('../../../services/tokens/tokens-service')
+const sequelize = require('sequelize')
+const ApiConverter = require('../../../utils/api-converter')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const Converter = require('../../../utils/converter/converter')
 const path = require('path')
 const fileUtil = require('../../../utils/misc/file')
 
@@ -42,12 +42,12 @@ function removeExpiredResetPasswordTokens () {
 
 router.route('/login')
   .post(function (req, res) {
-    var userInput = {
+    const userInput = {
       email: (req.body.email != null) ? req.body.email.toLowerCase() : null,
       pswd: req.body.password
     }
 
-    var loginExpirationInMinutes = 1440 // 1 day (24 hours)
+    let loginExpirationInMinutes = 1440 // 1 day (24 hours)
     if ((req.body.extended_expiration != null) && (parseInt(req.body.extended_expiration) === 1)) {
       loginExpirationInMinutes = 5760 // 4 days
     }
@@ -128,14 +128,14 @@ router.route('/request-access/app')
 
 router.route('/register')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
-    var userInput = {
+    const userInput = {
       type: ((req.body.type == null) ? 'unspecified' : req.body.type.toLowerCase()),
       firstname: req.body.firstname || '',
       lastname: req.body.lastname || '',
       email: req.body.email.toLowerCase(),
       pswd: req.body.password
     }
-    var loginExpirationInMinutes = 1440
+    const loginExpirationInMinutes = 1440
 
     models.User
       .findOrCreate({
@@ -151,7 +151,7 @@ router.route('/register')
           dbUser.firstname = userInput.firstname
           dbUser.lastname = userInput.lastname
 
-          var passwordSalt = hash.randomHash(320)
+          const passwordSalt = hash.randomHash(320)
           dbUser.auth_password_salt = passwordSalt
           dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, userInput.pswd)
           dbUser.auth_password_updated_at = new Date()
@@ -214,9 +214,9 @@ router.route('/send-reset-password-link')
       .then(function (token) {
         dbToken = token
         // send an email to user with link to change password
-        var url = process.env.CONSOLE_BASE_URL + 'reset-password?token=' + dbToken.guid
-        var text = 'To reset your RFCx account password click the following link: ' + url +
-          ' If you didn\'t request a password change, you can ignore this message.'
+        const url = process.env.CONSOLE_BASE_URL + 'reset-password?token=' + dbToken.guid
+        const text = 'To reset your RFCx account password click the following link: ' + url +
+                    ' If you didn\'t request a password change, you can ignore this message.'
         return mailService.sendTextMail({
           email_address: req.body.email,
           recipient_name: dbUser.firstname || 'RFCx User',
@@ -275,7 +275,7 @@ router.route('/reset-password')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         // encrypt user's new password and save it
-        var passwordSalt = hash.randomHash(320)
+        const passwordSalt = hash.randomHash(320)
         dbUser.auth_password_salt = passwordSalt
         dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, req.body.password)
         dbUser.auth_password_updated_at = new Date()
@@ -338,7 +338,7 @@ router.route('/change-password')
           httpError(req, res, 403, null, 'Password is incorrect.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
-        var passwordSalt = hash.randomHash(320)
+        const passwordSalt = hash.randomHash(320)
         dbUser.auth_password_salt = passwordSalt
         dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, req.body.newPassword)
         dbUser.auth_password_updated_at = new Date()
@@ -1255,13 +1255,13 @@ router.route('/:user_id')
 
 router.route('/')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('user', req)
+    const converter = new ApiConverter('user', req)
 
     usersService
       .getAllUsers()
       .then(usersService.formatUsers)
       .then((users) => {
-        var data = converter.cloneSequelizeToApi({
+        const data = converter.cloneSequelizeToApi({
           users: users
         })
         res.status(200).json(data)

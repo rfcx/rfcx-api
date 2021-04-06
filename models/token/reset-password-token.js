@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var ResetPasswordToken = sequelize.define('ResetPasswordToken', {
+  const ResetPasswordToken = sequelize.define('ResetPasswordToken', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

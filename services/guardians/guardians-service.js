@@ -1,7 +1,7 @@
 const models = require('../../models')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const Promise = require('bluebird')
-var hash = require('../../utils/misc/hash')
+const hash = require('../../utils/misc/hash')
 
 function getGuardianByGuid (guid, ignoreMissing) {
   return models.Guardian
@@ -36,17 +36,19 @@ function formatGuardian (guardian) {
     is_visible: guardian.is_visible,
     user: guardian.User
       ? {
-        firstname: guardian.User.firstname,
-        lastname: guardian.User.lastname,
-        guid: guardian.User.guid,
-        email: guardian.User.email
-      } : null,
+          firstname: guardian.User.firstname,
+          lastname: guardian.User.lastname,
+          guid: guardian.User.guid,
+          email: guardian.User.email
+        }
+      : null,
     site: guardian.Site
       ? {
-        guid: guardian.Site.guid,
-        name: guardian.Site.name,
-        timezone: guardian.Site.timezone
-      } : null
+          guid: guardian.Site.guid,
+          name: guardian.Site.name,
+          timezone: guardian.Site.timezone
+        }
+      : null
   }
   return guardianFormatted
 }
@@ -65,10 +67,11 @@ function formatGuardianPublic (guardian) {
     longitude: guardian.longitude,
     site: guardian.Site
       ? {
-        guid: guardian.Site.guid,
-        name: guardian.Site.name,
-        timezone: guardian.Site.timezone
-      } : null
+          guid: guardian.Site.guid,
+          name: guardian.Site.name,
+          timezone: guardian.Site.timezone
+        }
+      : null
   }
 }
 

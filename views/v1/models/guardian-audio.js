@@ -1,25 +1,25 @@
-var Promise = require('bluebird')
-var exec = require('child_process').exec
+const Promise = require('bluebird')
+const exec = require('child_process').exec
 const moment = require('moment-timezone')
-var fs = require('fs')
-var hash = require('../../../utils/misc/hash')
-var token = require('../../../utils/internal-rfcx/token.js').token
-var audioUtils = require('../../../utils/rfcx-audio').audioUtils
-var assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
-var validation = require('../../../utils/misc/validation.js')
+const fs = require('fs')
+const hash = require('../../../utils/misc/hash')
+const token = require('../../../utils/internal-rfcx/token').token
+const audioUtils = require('../../../utils/rfcx-audio').audioUtils
+const assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
+const validation = require('../../../utils/misc/validation.js')
 
 exports.models = {
 
   guardianAudioFile: function (req, res, dbRow) {
-    var outputFileExtension = req.rfcx.content_type
-    var outputFileName = dbRow.guid + '.' + outputFileExtension
-    var isOutputEnhanced = (outputFileExtension === 'mp3')
+    const outputFileExtension = req.rfcx.content_type
+    const outputFileName = dbRow.guid + '.' + outputFileExtension
+    const isOutputEnhanced = (outputFileExtension === 'mp3')
 
-    var clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate)
-    var queryParams = parsePermittedQueryParams(req.query, clipDurationFull)
+    const clipDurationFull = (dbRow.capture_sample_count / dbRow.Format.sample_rate)
+    const queryParams = parsePermittedQueryParams(req.query, clipDurationFull)
 
     // auto-generate the asset filepath if it's not stored in the url column
-    var audioStorageUrl = (dbRow.url == null)
+    const audioStorageUrl = (dbRow.url == null)
       ? 's3://' + process.env.ASSET_BUCKET_AUDIO + assetUtils.getGuardianAssetStoragePath('audio', dbRow.measured_at, dbRow.Guardian.guid, dbRow.Format.file_extension)
       : dbRow.url
 
@@ -64,10 +64,10 @@ exports.models = {
 
   guardianAudioAmplitude: function (req, res, dbRow) {
     return new Promise(function (resolve, reject) {
-      var queryParams = parsePermittedQueryParams(req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate))
+      const queryParams = parsePermittedQueryParams(req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate))
 
       // auto-generate the asset filepath if it's not stored in the url column
-      var audioStorageUrl = (dbRow.url == null)
+      const audioStorageUrl = (dbRow.url == null)
         ? 's3://' + process.env.ASSET_BUCKET_AUDIO + assetUtils.getGuardianAssetStoragePath('audio', dbRow.measured_at, dbRow.Guardian.guid, dbRow.Format.file_extension)
         : dbRow.url
 
@@ -80,11 +80,11 @@ exports.models = {
             clipDuration: queryParams.clipDuration,
             sourceFilePath: sourceFilePath
           }).then(function (outputFilePath) {
-            var amplitudeType = 'RMS'
+            const amplitudeType = 'RMS'
 
-            var soxExec = ''
+            let soxExec = ''
 
-            for (var i = 0; i < (queryParams.clipDuration / queryParams.amplitudeWindowDuration); i++) {
+            for (let i = 0; i < (queryParams.clipDuration / queryParams.amplitudeWindowDuration); i++) {
               if (i > 0) { soxExec += ' && ' }
               soxExec += 'echo "$(' + process.env.SOX_PATH + ' ' + outputFilePath + ' -n trim ' + (queryParams.amplitudeWindowDuration * i) + ' ' + queryParams.amplitudeWindowDuration + ' stat 2>&1)"' +
                 ' | grep "' + amplitudeType + "\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'"
@@ -95,9 +95,9 @@ exports.models = {
               if (err) { console.log(err) }
               fs.unlink(outputFilePath, function (e) { if (e) { console.log(e) } })
 
-              var allStringAmplitudes = stdout.trim().split('\n')
-              var allAmplitudes = []
-              for (var i = 0; i < allStringAmplitudes.length; i++) {
+              const allStringAmplitudes = stdout.trim().split('\n')
+              const allAmplitudes = []
+              for (let i = 0; i < allStringAmplitudes.length; i++) {
                 allAmplitudes.push(parseFloat(allStringAmplitudes[i]))
               }
 
@@ -123,18 +123,18 @@ exports.models = {
   },
 
   guardianAudioSpectrogram: function (req, res, dbRow) {
-    var tmpFilePath = process.env.CACHE_DIRECTORY + 'ffmpeg/' + hash.randomString(32)
+    const tmpFilePath = process.env.CACHE_DIRECTORY + 'ffmpeg/' + hash.randomString(32)
 
-    var queryParams = parsePermittedQueryParams(req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate))
+    const queryParams = parsePermittedQueryParams(req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate))
 
     // auto-generate the asset filepath if it's not stored in the url column
-    var audioStorageUrl = (dbRow.url == null)
+    const audioStorageUrl = (dbRow.url == null)
       ? 's3://' + process.env.ASSET_BUCKET_AUDIO + assetUtils.getGuardianAssetStoragePath('audio', dbRow.measured_at, dbRow.Guardian.guid, dbRow.Format.file_extension)
       : dbRow.url
 
     audioUtils.cacheSourceAudio(audioStorageUrl)
       .then(function ({ sourceFilePath }) {
-        var ffmpegSox =
+        const ffmpegSox =
           process.env.FFMPEG_PATH +
           ' -i ' + sourceFilePath + ' -loglevel panic -nostdin' +
           ' -ac 1 -ar ' + dbRow.Format.sample_rate +
@@ -147,11 +147,11 @@ exports.models = {
           ' -w ' + queryParams.specWindowFunc + ' -z ' + queryParams.specZaxis + ' -s' +
           ' -d ' + queryParams.clipDuration
 
-        var imageMagick = ((queryParams.specRotate === 0) || (process.env.IMAGEMAGICK_PATH == null))
+        const imageMagick = ((queryParams.specRotate === 0) || (process.env.IMAGEMAGICK_PATH == null))
           ? `cp ${tmpFilePath}-sox.png ${tmpFilePath}-rotated.png`
           : `${process.env.IMAGEMAGICK_PATH} ${tmpFilePath}-sox.png -rotate ${queryParams.specRotate} ${tmpFilePath}-rotated.png`
 
-        var pngCrush = (process.env.PNGCRUSH_PATH == null)
+        const pngCrush = (process.env.PNGCRUSH_PATH == null)
           ? `cp ${tmpFilePath}-rotated.png ${tmpFilePath}-final.png`
           : `${process.env.PNGCRUSH_PATH} ${tmpFilePath}-rotated.png ${tmpFilePath}-final.png`
 
@@ -272,19 +272,19 @@ exports.models = {
         reject(new Error('The returned labels were fewer than 1'))
       }
 
-      var last = -2000
-      var expectedLength = 2000
+      let last = -2000
+      const expectedLength = 2000
 
-      for (var i = 0; i < labels.length; i++) {
-        var current = labels[i].begins_at
-        var length = current - last
+      for (let i = 0; i < labels.length; i++) {
+        const current = labels[i].begins_at
+        const length = current - last
         if (length !== expectedLength) {
           reject(new Error('The length of windows should be two thousand miliseconds but was ' + length))
         }
         last = current
       }
 
-      var labelValues = labels.map(function (label) {
+      const labelValues = labels.map(function (label) {
         return label.label
       })
 
@@ -294,17 +294,17 @@ exports.models = {
 
   transformCreateAudioRequestToModel: function (reqObj) {
     return Promise.resolve().then(function () {
-      var requiredAttributes = ['site_id', 'guardian_id', 'measured_at', 'size', 'sha1_checksum', 'format_id', 'capture_sample_count']
+      const requiredAttributes = ['site_id', 'guardian_id', 'measured_at', 'size', 'sha1_checksum', 'format_id', 'capture_sample_count']
       validation.assertAttributesExist(reqObj, requiredAttributes)
 
       console.info('assertions correct')
 
       // default
-      var modelObj = {}
+      const modelObj = {}
 
       // copy attributes to make sure that the request doesn't set columns we don't want it to set
-      for (var i = 0; i < requiredAttributes.length; i++) {
-        var attr = requiredAttributes[i]
+      for (let i = 0; i < requiredAttributes.length; i++) {
+        const attr = requiredAttributes[i]
         modelObj[attr] = reqObj[attr]
       }
 
@@ -319,34 +319,34 @@ exports.models = {
 function parsePermittedQueryParams (queryParams, clipDurationFull) {
   // Spectrogram Image Dimensions & Rotation
 
-  var specWidth = (queryParams.width == null) ? 2048 : parseInt(queryParams.width)
+  let specWidth = (queryParams.width == null) ? 2048 : parseInt(queryParams.width)
   if (specWidth > 4096) { specWidth = 4096 } else if (specWidth < 1) { specWidth = 1 }
 
-  var specHeight = (queryParams.height == null) ? 512 : parseInt(queryParams.height)
+  let specHeight = (queryParams.height == null) ? 512 : parseInt(queryParams.height)
   if (specHeight > 1024) { specHeight = 1024 } else if (specHeight < 1) { specHeight = 1 }
 
-  var specRotate = (queryParams.rotate == null) ? 0 : parseInt(queryParams.rotate)
+  let specRotate = (queryParams.rotate == null) ? 0 : parseInt(queryParams.rotate)
   if ((specRotate !== 90) && (specRotate !== 180) && (specRotate !== 270)) { specRotate = 0 }
 
   // Spectrogram SOX Customization Parameters
 
-  var specZaxis = (queryParams.z_axis == null) ? 95 : parseInt(queryParams.z_axis)
+  let specZaxis = (queryParams.z_axis == null) ? 95 : parseInt(queryParams.z_axis)
   if (specZaxis > 180) { specZaxis = 180 } else if (specZaxis < 20) { specZaxis = 20 }
 
-  var specWindowFunc = (queryParams.window_function == null) ? 'dolph' : queryParams.window_function.trim().toLowerCase()
+  let specWindowFunc = (queryParams.window_function == null) ? 'dolph' : queryParams.window_function.trim().toLowerCase()
   if (['dolph', 'hann', 'hamming', 'bartlett', 'rectangular', 'kaiser'].indexOf(specWindowFunc) < 0) { specWindowFunc = 'dolph' }
 
   // Amplitude Analysis Customization Parameters
 
-  var amplitudeWindowDuration = (queryParams.window_duration == null) ? 500 : parseInt(queryParams.window_duration)
+  let amplitudeWindowDuration = (queryParams.window_duration == null) ? 500 : parseInt(queryParams.window_duration)
   if ([250, 500, 1000, 2000].indexOf(amplitudeWindowDuration) < 0) { amplitudeWindowDuration = 500 }
 
   // Audio Clipping Parameters
 
-  var clipOffset = (queryParams.offset == null) ? 0 : (parseInt(queryParams.offset) / 1000)
+  let clipOffset = (queryParams.offset == null) ? 0 : (parseInt(queryParams.offset) / 1000)
   if (clipOffset > clipDurationFull) { clipOffset = 0 } else if (clipOffset < 0) { clipOffset = 0 }
 
-  var clipDuration = (queryParams.duration == null) ? clipDurationFull : (parseInt(queryParams.duration) / 1000)
+  let clipDuration = (queryParams.duration == null) ? clipDurationFull : (parseInt(queryParams.duration) / 1000)
   if ((clipOffset + clipDuration) > clipDurationFull) { clipDuration = (clipDurationFull - clipOffset) } else if (clipDuration < 0) { clipDuration = (clipDurationFull - clipOffset) }
 
   return {

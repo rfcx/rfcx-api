@@ -1,9 +1,9 @@
-var Promise = require('bluebird')
+const Promise = require('bluebird')
 const fs = require('fs')
 const path = require('path')
 const moment = require('moment-timezone')
-var EmptyResultError = require('../../../utils/converter/empty-result-error')
-var sqlUtils = require('../../../utils/misc/sql')
+const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const sqlUtils = require('../../../utils/misc/sql')
 const neo4j = require('../../../utils/neo4j')
 const firebaseService = require('../../firebase/firebase-service')
 const guardianGroupService = require('../../guardians/guardian-group-service')
@@ -543,7 +543,7 @@ function sendNotificationsForEvent (data) {
 
 function sendSNSForEvent (data) {
   if (moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
-    var msg = {
+    const msg = {
       type: data.type || 'alert',
       detected: data.value,
       guardian: data.guardian_shortname,
@@ -720,7 +720,7 @@ function generateTextGridContent (tempPath, reviews) {
     const filePath = path.join(tempPath, `${item.audioGuid}.textgrid`)
     const textGridStr = textGridService.prepareTextGrid(item)
     const prom = new Promise((resolve, reject) => {
-      var stream = fs.createWriteStream(filePath)
+      const stream = fs.createWriteStream(filePath)
       stream.once('open', function (fd) {
         stream.write(textGridStr)
         stream.end()

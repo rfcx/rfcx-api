@@ -1,17 +1,17 @@
-var express = require('express')
-var router = express.Router()
-var passport = require('passport')
+const express = require('express')
+const router = express.Router()
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var httpError = require('../../../utils/http-errors')
-var ValidationError = require('../../../utils/converter/validation-error')
-var usersService = require('../../../services/users/users-service-legacy')
-var filterPresetsService = require('../../../services/filter-presets/filter-presets')
-var sequelize = require('sequelize')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const httpError = require('../../../utils/http-errors')
+const ValidationError = require('../../../utils/converter/validation-error')
+const usersService = require('../../../services/users/users-service-legacy')
+const filterPresetsService = require('../../../services/filter-presets/filter-presets')
+const sequelize = require('sequelize')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 
 router.route('/')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    var serviceParams = {
+    const serviceParams = {
       name: req.body.name,
       type: req.body.type || null,
       json: req.body.json
@@ -43,7 +43,7 @@ router.route('/')
 
 router.route('/:guid')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    var serviceParams = {
+    const serviceParams = {
       json: req.body.json
     }
 

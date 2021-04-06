@@ -1,6 +1,6 @@
-var hooks = require('hooks')
+const hooks = require('hooks')
 
-var stash = {}
+const stash = {}
 
 // hook to retrieve session on a login
 hooks.after('Authentication > Retrieve Token > Example 1', function (transaction) {

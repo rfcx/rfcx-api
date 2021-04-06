@@ -1,12 +1,12 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var passport = require('passport')
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const passport = require('passport')
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors.js')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var sequelize = require('sequelize')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const sequelize = require('sequelize')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 
 router.route('/:guid/software')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
@@ -50,10 +50,10 @@ router.route('/:guid/software')
 // (primarily for guardians who are checking for updates)
 router.route('/:guardian_id/software/:software_role')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var softwareRole = req.params.software_role
+    const softwareRole = req.params.software_role
 
-    var inquiringGuardianBattery = parseInt(req.query.battery)
-    var inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
+    const inquiringGuardianBattery = parseInt(req.query.battery)
+    const inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
 
     models.Guardian
       .findOne({
@@ -104,7 +104,7 @@ router.route('/:guardian_id/software/:software_role')
         })
       })
       .then(function (dbGuardianMetaBattery) {
-        var dbQuery = {
+        const dbQuery = {
           is_available: true
         }
         if (softwareRole === 'all') {

@@ -1,36 +1,36 @@
-var fs = require('fs')
-var zlib = require('zlib')
-var hash = require('../../utils/misc/hash')
-var aws = require('../../utils/external/aws.js').aws()
-var assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
-var Promise = require('bluebird')
-var guardianMsgParsingUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
+const fs = require('fs')
+const zlib = require('zlib')
+const hash = require('../../utils/misc/hash')
+const aws = require('../../utils/external/aws.js').aws()
+const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
+const Promise = require('bluebird')
+const guardianMsgParsingUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 
 exports.mqttInputData = {
 
   parseCheckInInput: function (mqttData) {
     return new Promise(function (resolve, reject) {
       try {
-        var metaLength = 12
-        var jsonBlobLength = parseInt(mqttData.toString('utf8', 0, metaLength))
-        var audioFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength, metaLength + jsonBlobLength + metaLength))
-        var screenShotFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength))
-        var logFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength))
-        var photoFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength))
-        var videoFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength + metaLength))
+        const metaLength = 12
+        const jsonBlobLength = parseInt(mqttData.toString('utf8', 0, metaLength))
+        const audioFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength, metaLength + jsonBlobLength + metaLength))
+        const screenShotFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength))
+        const logFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength))
+        const photoFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength))
+        const videoFileLength = parseInt(mqttData.toString('utf8', metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength + metaLength))
 
-        var audioFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength)
-        var screenShotFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength)
-        var logFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength)
-        var photoFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileBuffer + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength)
-        var videoFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileBuffer + metaLength + photoFileBuffer + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength + metaLength + videoFileLength)
+        const audioFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength)
+        const screenShotFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength)
+        const logFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength)
+        const photoFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileBuffer + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength)
+        const videoFileBuffer = mqttData.slice(metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileBuffer + metaLength + photoFileBuffer + metaLength, metaLength + jsonBlobLength + metaLength + audioFileLength + metaLength + screenShotFileLength + metaLength + logFileLength + metaLength + photoFileLength + metaLength + videoFileLength)
 
         zlib.gunzip(mqttData.slice(metaLength, metaLength + jsonBlobLength), function (jsonError, jsonBuffer) {
           if (jsonError) {
             reject(jsonError)
           }
 
-          var checkInObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null)
+          const checkInObj = guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null)
 
           // Adding support for differently structured guardian JSON blobs, which don't support auth.
           // This supports guardian software deployed before May 2020.
@@ -95,14 +95,14 @@ exports.mqttInputData = {
 
 }
 
-var saveAssetFileToS3 = function (assetType, checkInObj) {
+function saveAssetFileToS3 (assetType, checkInObj) {
   return new Promise(function (resolve, reject) {
     try {
       if (checkInObj[assetType].filePath == null) {
         resolve(checkInObj)
       } else {
-        var s3Path = assetUtils.getGuardianAssetStoragePath(assetType, new Date(parseInt(checkInObj[assetType].metaArr[1])), checkInObj.json.guardian.guid, checkInObj[assetType].metaArr[2])
-        var s3Bucket = (assetType === 'audio') ? process.env.ASSET_BUCKET_AUDIO : process.env.ASSET_BUCKET_META
+        const s3Path = assetUtils.getGuardianAssetStoragePath(assetType, new Date(parseInt(checkInObj[assetType].metaArr[1])), checkInObj.json.guardian.guid, checkInObj[assetType].metaArr[2])
+        const s3Bucket = (assetType === 'audio') ? process.env.ASSET_BUCKET_AUDIO : process.env.ASSET_BUCKET_META
 
         aws.s3(s3Bucket).putFile(checkInObj[assetType].filePath, s3Path, function (s3SaveErr, s3Res) {
           try { s3Res.resume() } catch (resumeErr) { console.log(resumeErr) }
@@ -121,13 +121,13 @@ var saveAssetFileToS3 = function (assetType, checkInObj) {
   })
 }
 
-var cacheFileBufferToFile = function (fileBuffer, isGZipped, fileSha1Hash, fileExtension) {
+function cacheFileBufferToFile (fileBuffer, isGZipped, fileSha1Hash, fileExtension) {
   return new Promise(function (resolve, reject) {
     try {
       if (fileBuffer.length === 0) {
         resolve(null)
       } else {
-        var tmpFilePath = process.env.CACHE_DIRECTORY + 'uploads/' + hash.randomString(36) + '.' + fileExtension + (isGZipped ? '.gz' : '')
+        const tmpFilePath = process.env.CACHE_DIRECTORY + 'uploads/' + hash.randomString(36) + '.' + fileExtension + (isGZipped ? '.gz' : '')
 
         fs.writeFile(tmpFilePath, fileBuffer, 'binary', function (errWriteFile) {
           if (errWriteFile) { console.log(errWriteFile); reject(new Error(errWriteFile)) } else {
@@ -140,8 +140,8 @@ var cacheFileBufferToFile = function (fileBuffer, isGZipped, fileSha1Hash, fileE
                 }
               } else {
                 try {
-                  var tmpFilePathUnZipped = process.env.CACHE_DIRECTORY + 'uploads/' + hash.randomString(36) + '.' + fileExtension
-                  var unZipStream = fs.createWriteStream(tmpFilePathUnZipped)
+                  const tmpFilePathUnZipped = process.env.CACHE_DIRECTORY + 'uploads/' + hash.randomString(36) + '.' + fileExtension
+                  const unZipStream = fs.createWriteStream(tmpFilePathUnZipped)
                   unZipStream.on('close', function () {
                     fs.unlink(tmpFilePath, () => { })
                     if ((fileSha1Hash == null) || (fileSha1Hash === hash.fileSha1(tmpFilePathUnZipped))) {
@@ -166,7 +166,7 @@ var cacheFileBufferToFile = function (fileBuffer, isGZipped, fileSha1Hash, fileE
 function strArrToJSArr (str, delimA, delimB) {
   if ((str == null) || (str.length === 0)) { return [] }
   try {
-    var rtrnArr = []; var arr = str.split(delimA)
+    const rtrnArr = []; const arr = str.split(delimA)
     if (arr.length > 0) {
       for (const i in arr) {
         rtrnArr.push(arr[i].split(delimB))

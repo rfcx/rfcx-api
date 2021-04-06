@@ -2,6 +2,12 @@ const includeBuilder = require('../../utils/sequelize/include-builder')
 
 module.exports = function (sequelize, DataTypes) {
   const Classification = sequelize.define('Classification', {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true
+    },
     value: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -42,7 +48,7 @@ module.exports = function (sequelize, DataTypes) {
     Classification.belongsToMany(models.Annotation, { as: 'reference_annotations', through: 'classification_references', timestamps: false })
   }
   Classification.attributes = {
-    full: ['value', 'title', 'image', 'description', 'frequency_min', 'frequency_max'],
+    full: ['id', 'value', 'title', 'image', 'description', 'frequency_min', 'frequency_max'],
     lite: ['value', 'title', 'image']
   }
   Classification.include = includeBuilder(Classification, 'classification', Classification.attributes.lite)

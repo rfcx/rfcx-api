@@ -1,9 +1,9 @@
-var models = require('../../../models')
-var sequelize = require('sequelize')
-var Promise = require('bluebird')
+const models = require('../../../models')
+const sequelize = require('sequelize')
+const Promise = require('bluebird')
 const moment = require('moment-timezone')
-var ValidationError = require('../../../utils/converter/validation-error')
-var sqlUtils = require('../../../utils/misc/sql')
+const ValidationError = require('../../../utils/converter/validation-error')
+const sqlUtils = require('../../../utils/misc/sql')
 const guardianGroupService = require('../../guardians/guardian-group-service')
 const views = require('../../../views/v1')
 
@@ -92,8 +92,11 @@ function prepareOpts (req) {
     guardians: req.query.guardians ? (Array.isArray(req.query.guardians) ? req.query.guardians : [req.query.guardians]) : undefined,
     guardianGroups: req.query.guardian_groups ? (Array.isArray(req.query.guardian_groups) ? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
     models: req.query.models ? (Array.isArray(req.query.models) ? req.query.models : [req.query.models]) : undefined,
-    excludedGuardians: req.query.excluded_guardians ? (Array.isArray(req.query.excluded_guardians)
-      ? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
+    excludedGuardians: req.query.excluded_guardians
+      ? (Array.isArray(req.query.excluded_guardians)
+          ? req.query.excluded_guardians
+          : [req.query.excluded_guardians])
+      : undefined,
     weekdays: req.query.weekdays !== undefined ? (Array.isArray(req.query.weekdays) ? req.query.weekdays : [req.query.weekdays]) : undefined,
     showExperimental: req.query.showExperimental !== undefined ? (req.query.showExperimental === 'true') : undefined,
     omitFalsePositives: req.query.omit_false_positives !== undefined ? (req.query.omit_false_positives === 'true') : true,
@@ -299,8 +302,8 @@ function filterEventsWithTz (opts, events) {
 }
 
 function processStatsByDates (req, res) {
-  var contentType = req.rfcx.content_type
-  var isFile = false
+  const contentType = req.rfcx.content_type
+  let isFile = false
   if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
     isFile = true
   }

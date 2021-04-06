@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const auth0Service = require('../../../services/auth0/auth0-service')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/segments')
 const { parseFileNameAttrs, checkAttrsValidity, gluedDateToISO, getFile } = require('../../../services/streams/segment-file-utils')

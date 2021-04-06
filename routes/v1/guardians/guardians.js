@@ -1,24 +1,24 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var hash = require('../../../utils/misc/hash')
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
-var Promise = require('bluebird')
-var sequelize = require('sequelize')
-var ValidationError = require('../../../utils/converter/validation-error')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const hash = require('../../../utils/misc/hash')
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors')
+const passport = require('passport')
+const Promise = require('bluebird')
+const sequelize = require('sequelize')
+const ValidationError = require('../../../utils/converter/validation-error')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const siteService = require('../../../services/sites/sites-service')
 const userService = require('../../../services/users/users-service-legacy')
 const guardiansService = require('../../../services/guardians/guardians-service')
 const streamsService = require('../../../services/streams')
 const arbimonService = require('../../../services/arbimon')
-var Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter/converter')
 
 router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    var sitesQuery = {}
+    const sitesQuery = {}
 
     return Promise.resolve()
       .then(() => {
@@ -62,9 +62,9 @@ router.route('/')
         if (dbGuardian) {
           this.dbGuardian = dbGuardian
           if (req.query.last_audio !== undefined && req.query.last_audio.toString() === 'true') {
-            var proms = []
+            const proms = []
             dbGuardian.forEach(function (guardian) {
-              var prom = models.GuardianAudio
+              const prom = models.GuardianAudio
                 .findOne({
                   order: [['measured_at', 'DESC']],
                   include: [{
@@ -89,7 +89,7 @@ router.route('/')
         if (dbAudios && dbAudios.length) {
           dbAudios.forEach(function (dbAudio) {
             if (dbAudio) {
-              var guardian = this.dbGuardian.find(function (guardian) {
+              const guardian = this.dbGuardian.find(function (guardian) {
                 return guardian.id === dbAudio.guardian_id
               })
               if (guardian) {
@@ -113,7 +113,7 @@ router.route('/')
 
 router.route('/admin')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'guardiansSitesAdmin']), (req, res) => {
-    var sitesQuery = {}
+    const sitesQuery = {}
 
     if (req.query.sites) {
       sitesQuery.guid = { [models.Sequelize.Op.in]: req.query.sites }
@@ -144,9 +144,9 @@ router.route('/admin')
         if (dbGuardian) {
           this.dbGuardian = dbGuardian
           if (req.query.last_audio !== undefined && req.query.last_audio.toString() === 'true') {
-            var proms = []
+            const proms = []
             dbGuardian.forEach(function (guardian) {
-              var prom = models.GuardianAudio
+              const prom = models.GuardianAudio
                 .findOne({
                   order: [['measured_at', 'DESC']],
                   include: [{
@@ -171,7 +171,7 @@ router.route('/admin')
         if (dbAudios && dbAudios.length) {
           dbAudios.forEach(function (dbAudio) {
             if (dbAudio) {
-              var guardian = this.dbGuardian.find(function (guardian) {
+              const guardian = this.dbGuardian.find(function (guardian) {
                 return guardian.id === dbAudio.guardian_id
               })
               if (guardian) {
@@ -274,10 +274,10 @@ router.route('/register')
           )
           return true
         } else {
-          var tokenSalt = hash.randomHash(320)
+          const tokenSalt = hash.randomHash(320)
           const siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'derc' // "RFCx lab" (derc) by default
           const site = await siteService.getSiteByGuid(siteGuid)
-          let params = {
+          const params = {
             guid: transformedParams.guid,
             shortname: transformedParams.shortname ? transformedParams.shortname : `_${transformedParams.guid.substr(0, 4)}`,
             latitude: 0,

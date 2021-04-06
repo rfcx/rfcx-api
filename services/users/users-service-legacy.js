@@ -1,8 +1,8 @@
-var models = require('../../models')
-var sequelize = require('sequelize')
-var Converter = require('../../utils/converter/converter')
-var Promise = require('bluebird')
-var sitesService = require('../sites/sites-service')
+const models = require('../../models')
+const sequelize = require('sequelize')
+const Converter = require('../../utils/converter/converter')
+const Promise = require('bluebird')
+const sitesService = require('../sites/sites-service')
 const hash = require('../../utils/misc/hash')
 const guid = require('../../utils/misc/guid')
 const sensationsService = require('../legacy/sensations/sensations-service')
@@ -11,8 +11,8 @@ const ValidationError = require('../../utils/converter/validation-error')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const sqlUtils = require('../../utils/misc/sql')
 const s3Service = require('../legacy/s3/s3-service')
-var probe = require('probe-image-size')
-var fs = require('fs')
+const probe = require('probe-image-size')
+const fs = require('fs')
 const path = require('path')
 
 const unsubscriptionSalt = 'you_will_never_guess_this_salt'
@@ -183,7 +183,7 @@ function validateSiteRelationsParams (params) {
   params = new Converter(params)
   params.convert('sites').toArray()
   return params.validate()
-};
+}
 
 function getAllSitesByGuids (sites) {
   const proms = []
@@ -484,7 +484,7 @@ function checkUserPicture (files) {
     if (!allowedExtensions.includes(file.extension.toLowerCase())) {
       return reject(new ValidationError(`Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`))
     }
-    var input = fs.createReadStream(file.path)
+    const input = fs.createReadStream(file.path)
     probe(input)
       .then(result => {
         if (result.width > 2000 || result.height > 2000) {

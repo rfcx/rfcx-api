@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var UserLocation = sequelize.define('UserLocation', {
+  const UserLocation = sequelize.define('UserLocation', {
     latitude: {
       type: DataTypes.DOUBLE,
       allowNull: false,

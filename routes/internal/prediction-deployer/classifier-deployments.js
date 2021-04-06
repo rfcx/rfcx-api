@@ -28,7 +28,7 @@ router.get('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) =>
 
 /**
  * @swagger
- * 
+ *
  * /internal/prediction-deployer/classifier-deployments
  *   get:
  *     summary: Get classifier deployments information
@@ -88,7 +88,7 @@ router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
 
 /**
  * @swagger
- * 
+ *
  * /internal/prediction-deployer/classifier-deployments/{id}
  *   patch:
  *     summary: Update the deployed status of given classifier id

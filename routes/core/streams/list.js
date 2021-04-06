@@ -1,11 +1,8 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 const streamsService = require('../../../services/streams')
 const usersService = require('../../../services/users/fused')
-const { randomId } = require('../../../utils/misc/hash')
 const Converter = require('../../../utils/converter/converter')
 const { Stream } = require('../../../modelsTimescale')
-const arbimonService = require('../../../services/arbimon')
 
 /**
  * @swagger

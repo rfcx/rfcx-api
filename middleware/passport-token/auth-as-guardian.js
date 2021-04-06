@@ -1,10 +1,10 @@
-var verboseLogging = (process.env.NODE_ENV !== 'production')
-var models = require('../../models')
-var hash = require('../../utils/misc/hash')
-var regex = require('../../utils/misc/regex.js')
+const verboseLogging = (process.env.NODE_ENV !== 'production')
+const models = require('../../models')
+const hash = require('../../utils/misc/hash')
+const regex = require('../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
-  var onlyAllowAccessTo = [
+  const onlyAllowAccessTo = [
     '^/v1/guardians/' + authUser.guid + '/checkins$',
     '^/v1/guardians/' + authUser.guid + '/software/[a-z]+$',
     '^/v2/guardians/' + authUser.guid + '/software/[a-z]+$',

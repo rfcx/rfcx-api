@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaDiskUsage: function (req, res, dbDiskUsage, modelInfo) {
     if (!Array.isArray(dbDiskUsage)) { dbDiskUsage = [dbDiskUsage] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbDiskUsage) {
-      var dbRow = dbDiskUsage[i]
+      const dbRow = dbDiskUsage[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,

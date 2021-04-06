@@ -1,5 +1,5 @@
-var Promise = require('bluebird')
-var fs = require('fs')
+const Promise = require('bluebird')
+const fs = require('fs')
 
 exports.audioUtils = {
 
