@@ -1,10 +1,10 @@
 const models = require('../../../models')
 const express = require('express')
 const router = express.Router()
-const hash = require('../../../utils/misc/hash.js').hash
+const hash = require('../../../utils/misc/hash')
 const token = require('../../../utils/internal-rfcx/token.js').token
 const views = require('../../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const httpError = require('../../../utils/http-errors')
 const passport = require('passport')
 const moment = require('moment')
 const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
@@ -216,7 +216,7 @@ router.route('/send-reset-password-link')
         // send an email to user with link to change password
         const url = process.env.CONSOLE_BASE_URL + 'reset-password?token=' + dbToken.guid
         const text = 'To reset your RFCx account password click the following link: ' + url +
-                   ' If you didn\'t request a password change, you can ignore this message.'
+                    ' If you didn\'t request a password change, you can ignore this message.'
         return mailService.sendTextMail({
           email_address: req.body.email,
           recipient_name: dbUser.firstname || 'RFCx User',
@@ -1249,7 +1249,7 @@ router.route('/:user_id')
         if (err) { res.status(500).json({ msg: 'failed to update user' }) }
       })
     // } else {
-      // res.status(401).json({msg:"not allowed to edit another user's profile"});
+    // res.status(401).json({msg:"not allowed to edit another user's profile"});
     // }
   })
 

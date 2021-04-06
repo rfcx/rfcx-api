@@ -26,9 +26,9 @@ const streamSegmentService = require('../../../services/streams/segments')
  *         description: Stream not found
  */
 router.delete('/:uuid', (req, res) => {
-  return streamSegmentService.getById(req.params.uuid)
+  return streamSegmentService.get(req.params.uuid)
     .then(async (streamSegment) => {
-      const stream = await streamsService.getById(streamSegment.stream_id)
+      const stream = await streamsService.get(streamSegment.stream_id)
       await streamSegmentService.remove(streamSegment)
       await streamsService.refreshStreamStartEnd(stream) // refresh start and end columns of releated stream
       res.sendStatus(204)

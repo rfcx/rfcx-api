@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = function (sequelize, DataTypes) {
   const Classification = sequelize.define('Classification', {
     id: {
@@ -49,8 +51,6 @@ module.exports = function (sequelize, DataTypes) {
     full: ['id', 'value', 'title', 'image', 'description', 'frequency_min', 'frequency_max'],
     lite: ['value', 'title', 'image']
   }
-  Classification.include = function (as = 'classification', attributes = Classification.attributes.lite, required = true) {
-    return { model: Classification, as, attributes, required }
-  }
+  Classification.include = includeBuilder(Classification, 'classification', Classification.attributes.lite)
   return Classification
 }

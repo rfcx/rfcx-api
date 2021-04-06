@@ -2,7 +2,7 @@ const Promise = require('bluebird')
 const models = require('../../models')
 const fs = require('fs')
 const zlib = require('zlib')
-const hash = require('../../utils/misc/hash.js').hash
+const hash = require('../../utils/misc/hash')
 const aws = require('../../utils/external/aws.js').aws()
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
@@ -91,7 +91,7 @@ exports.audio = {
         fs.createReadStream(audioInfo.uploadLocalPath)
           .pipe(zlib.createGunzip())
           .pipe(audioInfo.unZipStream)
-          // when the output stream closes, proceed asynchronously...
+        // when the output stream closes, proceed asynchronously...
         audioInfo.unZipStream.on('close', function () {
           // calculate checksum of unzipped file
           audioInfo.sha1Hash = hash.fileSha1(audioInfo.unzipLocalPath)

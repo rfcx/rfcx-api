@@ -31,7 +31,7 @@ const { hasProjectPermission } = require('../../../middleware/authorization/role
 
 router.post('/:id/subscriptions', hasProjectPermission('R'), function (req, res) {
   const projectId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('subscription').toString()
@@ -67,7 +67,7 @@ router.post('/:id/subscriptions', hasProjectPermission('R'), function (req, res)
 
 router.get('/:id/subscriptions', hasProjectPermission('R'), async function (req, res) {
   try {
-    return res.json(await subscriptionsService.query(req.rfcx.auth_token_info.owner_id, req.params.id, 'project'))
+    return res.json(await subscriptionsService.query(req.rfcx.auth_token_info.id, req.params.id, 'project'))
   } catch (e) {
     httpErrorHandler(req, res, 'Failed getting project subscriptions.')(e)
   }
@@ -93,7 +93,7 @@ router.get('/:id/subscriptions', hasProjectPermission('R'), async function (req,
  */
 router.delete('/:id/subscriptions', hasProjectPermission('R'), function (req, res) {
   const projectId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('subscription').optional().toString()

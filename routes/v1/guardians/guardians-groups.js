@@ -9,7 +9,7 @@ const hasRole = require('../../../middleware/authorization/authorization').hasRo
 const sequelize = require('sequelize')
 const Converter = require('../../../utils/converter/converter')
 const Promise = require('bluebird')
-const hash = require('../../../utils/misc/hash.js').hash
+const hash = require('../../../utils/misc/hash')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 

@@ -1,5 +1,5 @@
 const models = require('../../modelsTimescale')
-const usersFusedService = require('../users/fused')
+const usersService = require('../users/fused')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 
 const ORGANIZATION = 'organization'
@@ -96,7 +96,7 @@ async function hasPermission (type, userId, itemOrId, itemName) {
 async function getPermissions (userOrId, itemOrId, itemName) {
   const isId = typeof itemOrId === 'string'
   const userIsPrimitive = ['string', 'number'].includes(typeof userOrId)
-  const userId = userIsPrimitive ? userOrId : userOrId.owner_id
+  const userId = userIsPrimitive ? userOrId : userOrId.id
   if (isId && !itemName) {
     throw new Error('RolesService: getPermissions: missing required parameter "itemName"')
   }
@@ -112,7 +112,7 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   if (!item) {
     throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
   }
-  const user = await (userIsPrimitive ? usersFusedService.getByParams({ id: userId }) : Promise.resolve(userOrId))
+  const user = await (userIsPrimitive ? usersService.getByParams({ id: userId }) : Promise.resolve(userOrId))
   if (user.is_super || item.created_by_id === userId) {
     return [CREATE, READ, UPDATE, DELETE]
   }

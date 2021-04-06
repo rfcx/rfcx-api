@@ -1,6 +1,6 @@
 const fs = require('fs')
 const zlib = require('zlib')
-const hash = require('../../utils/misc/hash.js').hash
+const hash = require('../../utils/misc/hash')
 const aws = require('../../utils/external/aws.js').aws()
 const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 const Promise = require('bluebird')
@@ -35,7 +35,7 @@ exports.mqttInputData = {
           // Adding support for differently structured guardian JSON blobs, which don't support auth.
           // This supports guardian software deployed before May 2020.
           // THIS SHOULD BE REMOVED when those guardians are taken offline.
-          if (checkInObj.json.guardian == null) { checkInObj.json.guardian = { } }
+          if (checkInObj.json.guardian == null) { checkInObj.json.guardian = {} }
           if (checkInObj.json.guardian_guid != null) {
             checkInObj.json.guardian.guid = checkInObj.json.guardian_guid
           }
@@ -143,7 +143,7 @@ function cacheFileBufferToFile (fileBuffer, isGZipped, fileSha1Hash, fileExtensi
                   const tmpFilePathUnZipped = process.env.CACHE_DIRECTORY + 'uploads/' + hash.randomString(36) + '.' + fileExtension
                   const unZipStream = fs.createWriteStream(tmpFilePathUnZipped)
                   unZipStream.on('close', function () {
-                    fs.unlink(tmpFilePath, () => {})
+                    fs.unlink(tmpFilePath, () => { })
                     if ((fileSha1Hash == null) || (fileSha1Hash === hash.fileSha1(tmpFilePathUnZipped))) {
                       resolve(tmpFilePathUnZipped)
                     } else {

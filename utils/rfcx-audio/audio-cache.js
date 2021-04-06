@@ -1,6 +1,6 @@
 const Promise = require('bluebird')
 const fs = require('fs')
-const hash = require('../../utils/misc/hash.js').hash
+const hash = require('../../utils/misc/hash')
 const aws = require('../../utils/external/aws.js').aws()
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 

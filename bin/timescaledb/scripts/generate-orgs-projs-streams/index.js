@@ -1,7 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const util = require('util')
-const hash = require('../../../../utils/misc/hash').hash
+const { randomId } = require('../../../../utils/misc/hash')
 const words = require('./vocabulary')
 
 const orgStream = fs.createWriteStream(path.join(__dirname, '05-organizations.sql'), { flags: 'w' })
@@ -29,7 +29,7 @@ function getUserIds () {
           if (!isNaN(id)) {
             userIds.push(id)
           }
-        } catch (e) {}
+        } catch (e) { }
       })
       .on('close', () => {
         resolve(userIds)
@@ -57,7 +57,7 @@ function generateOrganizations (userId) {
   const ids = []
   let sql = ''
   for (let i = 0; i < orgsPerUser; i++) {
-    const id = hash.randomString(12)
+    const id = randomId()
     const name = getRandomWords(3)
     const isPublic = getRandomBoolean()
     sql += `INSERT INTO public.organizations(id, name, is_public, created_by_id, created_at, updated_at, deleted_at) VALUES ('${id}', '${name}', ${isPublic}, ${userId}, '2020-01-01T00:00:00.000Z', '2020-01-01T00:00:00.000Z', null);\n`
@@ -72,7 +72,7 @@ function generateProjects (userId, organizationIds) {
   let sql = ''
   const orgIds = [null, ...organizationIds]
   for (let i = 0; i < projsPerUser; i++) {
-    const id = hash.randomString(12)
+    const id = randomId()
     const name = getRandomWords(3)
     const isPublic = getRandomBoolean()
     const parent = getRandomArrItem(orgIds)
@@ -88,7 +88,7 @@ function generateStreams (userId, projectIds) {
   let sql = ''
   const projIds = [null, ...projectIds]
   for (let i = 0; i < streamsPerUser; i++) {
-    const id = hash.randomString(12)
+    const id = randomId()
     const name = getRandomWords(3)
     const isPublic = getRandomBoolean()
     const parent = getRandomArrItem(projIds)

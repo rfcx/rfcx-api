@@ -4,7 +4,6 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
 const Converter = require('../../../utils/converter/converter')
 const classificationsService = require('../../../services/classifications')
 const eventsService = require('../../../services/events')
-const auth0Service = require('../../../services/auth0/auth0-service')
 const streamsService = require('../../../services/streams')
 const notificationsService = require('../../../services/events/notifications')
 
@@ -140,7 +139,7 @@ router.post('/', authenticatedWithRoles('systemUser'), async function (req, res)
  *         description: Invalid query parameters
  */
 router.get('/', (req, res) => {
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const userIsSuper = req.rfcx.auth_token_info.is_super
   const converter = new Converter(req.query, {})
   converter.convert('start').toMomentUtc()
@@ -206,15 +205,15 @@ router.get('/', (req, res) => {
  */
 router.get('/:id', (req, res) => {
   const id = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const userIsSuper = req.rfcx.auth_token_info.is_super
-  const userIsSystem = auth0Service.getUserRolesFromToken(req.user).includes('systemUser')
+  const hasSystemRole = req.rfcx.auth_token_info.has_system_role
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
   return converter.validate()
     .then(params => {
       const options = {
-        readableBy: userIsSuper || userIsSystem ? undefined : userId,
+        readableBy: userIsSuper || hasSystemRole ? undefined : userId,
         fields: params.fields
       }
       return eventsService.get(id, options)

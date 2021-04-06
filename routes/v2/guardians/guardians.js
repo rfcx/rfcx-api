@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const hash = require('../../../utils/misc/hash.js').hash
-const httpError = require('../../../utils/http-errors.js')
+const hash = require('../../../utils/misc/hash')
+const httpError = require('../../../utils/http-errors')
 const passport = require('passport')
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
@@ -111,7 +111,7 @@ router.route('/register')
           longitude: 0,
           altitude: 0
         }, idToken)
-        await streamsService.update(dbStream, { external_id: arbimonSite.site_id })
+        await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
       }
 
       res.status(200).json({

@@ -27,9 +27,9 @@ const streamSourceFileService = require('../../../services/streams/source-files'
  *         description: Stream not found
  */
 router.delete('/:uuid', hasRole(['systemUser']), (req, res) => {
-  return streamSourceFileService.getById(req.params.uuid)
+  return streamSourceFileService.get(req.params.uuid)
     .then(async (streamSourceFile) => {
-      const stream = await streamsService.getById(streamSourceFile.stream_id)
+      const stream = await streamsService.get(streamSourceFile.stream_id)
       await streamSourceFileService.remove(streamSourceFile)
       return streamsService.refreshStreamMaxSampleRate(stream)
     })

@@ -1,6 +1,4 @@
-// var Promise = require('bluebird')
-// var zlib = require('zlib')
-const hash = require('../../utils/misc/hash.js').hash
+const hash = require('../../utils/misc/hash')
 const checkInHelpers = require('../../utils/rfcx-checkin')
 const pingRouter = require('../../utils/rfcx-guardian/router-ping.js').pingRouter
 const guidService = require('../../utils/misc/guid.js')
@@ -15,21 +13,21 @@ exports.guardianMsgParsingUtils = {
       json: inputJsonObj,
 
       // db objects
-      db: { },
+      db: {},
 
       // general msg meta
       meta: {
-        guardian: { },
+        guardian: {},
         allow_without_auth_token: false,
         startTime: new Date()
       },
 
       // asset meta
-      audio: { },
-      screenshots: { },
-      logs: { },
-      photos: { },
-      videos: { },
+      audio: {},
+      screenshots: {},
+      logs: {},
+      photos: {},
+      videos: {},
 
       // return cmd obj
       rtrn: {

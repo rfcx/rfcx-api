@@ -7,7 +7,7 @@ const ValidationError = require('../../utils/converter/validation-error')
 const audioUtils = require('../../utils/rfcx-audio').audioUtils
 const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 const mathUtil = require('../../utils/misc/math')
-const hash = require('../../utils/misc/hash').hash
+const hash = require('../../utils/misc/hash')
 const storageService = process.env.PLATFORM === 'google' ? require('../storage/google') : require('../storage/amazon')
 
 const possibleWindowFuncs = ['dolph', 'hann', 'hamming', 'bartlett', 'rectangular', 'kaiser']

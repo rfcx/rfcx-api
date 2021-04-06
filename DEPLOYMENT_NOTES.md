@@ -3,6 +3,7 @@
 ## v1.0.18
 
 - Run `npm run sync-timescale` to apply migrations (deletes the stream_assets table)
+- Expect some errors from Explorer due to removal of `is_deleted`, `is_public`, and `created_by=collaborators` on `GET /streams`
 
 ## v1.0.16
 

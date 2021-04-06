@@ -119,7 +119,7 @@ router.get('/', (req, res) => {
 
   return params.validate()
     .then(async () => {
-      const createdBy = convertedParams.created_by === 'me' ? user.owner_id : undefined // TODO: handler username or guid case
+      const createdBy = convertedParams.created_by === 'me' ? user.id : undefined // TODO: handler username or guid case
       const streamId = convertedParams.stream_id
       if (streamId) {
         const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
