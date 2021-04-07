@@ -1,6 +1,6 @@
-let exports
+let exportApps
 if (process.env.FIREBASE_ENABLED !== 'true') {
-  exports = {}
+  exportApps = {}
 } else {
   const admin = require('firebase-admin')
 
@@ -19,10 +19,10 @@ if (process.env.FIREBASE_ENABLED !== 'true') {
   const rangerApp = admin.initializeApp({ credential: rangerAppCert }, 'rangerApp')
   const playerApp = admin.initializeApp({ credential: playerAppCert }, 'playerApp')
 
-  exports = {
+  exportApps = {
     rangerApp,
     playerApp
   }
 }
 
-module.exports = exports
+module.exports = exportApps
