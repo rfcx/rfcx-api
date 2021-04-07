@@ -55,7 +55,7 @@ router.post('/:streamId/stream-source-files', hasRole(['systemUser']), function 
 
   return params.validate()
     .then(async () => {
-      const stream = await streamsService.getById(streamId)
+      const stream = await streamsService.get(streamId)
       convertedParams.stream_id = streamId
       if (convertedParams.meta && Object.keys(convertedParams.meta).length !== 0 && convertedParams.meta.constructor === Object) {
         convertedParams.meta = JSON.stringify(convertedParams.meta)
@@ -155,7 +155,7 @@ router.get('/:id/stream-source-files', function (req, res) {
       return streamSourceFileService.query(filters, options)
     })
     .then(data => {
-      res.header('Total-Items', data.total).json(data.results)
+      return res.header('Total-Items', data.total).json(data.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream source files'))
 })

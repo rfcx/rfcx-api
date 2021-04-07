@@ -1,43 +1,43 @@
 exports.env = {
 
-  NODE_ENV: "development",
+  NODE_ENV: 'development',
 
   // PLATFORM: "amazon", // "amazon" or "google"
 
-  CACHE_DIRECTORY: process.cwd()+"/tmp/",
+  CACHE_DIRECTORY: process.cwd() + '/tmp/',
 
-  FFMPEG_PATH: "/usr/bin/ffmpeg",
-  SOX_PATH: "/usr/bin/sox",
-  IMAGEMAGICK_PATH: "/usr/bin/convert",
-  PNGCRUSH_PATH: "/usr/bin/pngcrush",
+  FFMPEG_PATH: '/usr/bin/ffmpeg',
+  SOX_PATH: '/usr/bin/sox',
+  IMAGEMAGICK_PATH: '/usr/bin/convert',
+  PNGCRUSH_PATH: '/usr/bin/pngcrush',
 
   // if PLATFORM is set to "amazon"
-  AWS_ACCESS_KEY_ID: "",
-  AWS_SECRET_KEY: "",
-  AWS_REGION_ID: "",
-  AWS_ACCOUNT_ID: "",
+  AWS_ACCESS_KEY_ID: '',
+  AWS_SECRET_KEY: '',
+  AWS_REGION_ID: '',
+  AWS_ACCOUNT_ID: '',
 
   // if PLATFORM is set to "google"
   // GOOGLE_APPLICATION_CREDENTIALS: "./config/service-account.json",
   // PUBSUB_ENABLED: 'true',
 
   AWS_QUEUE_CONCURRENCY: 10,
-  BUCKET_ANALYSIS: "rfcx-analysis",
+  BUCKET_ANALYSIS: 'rfcx-analysis',
 
-  ASSET_BUCKET_AUDIO: "rfcx-guardian-ark-development",
-  ASSET_BUCKET_META: "rfcx-guardian-meta-development",
-  ASSET_BUCKET_ZIP: "rfcx-zip",
-  ASSET_BUCKET_REPORT: "rfcx-report-development",
-  ASSET_BUCKET_ATTACHMENT: "rfcx-attachment-development",
-  ASSET_BUCKET_AI: "rfcx-ai-staging",
-  ASSET_URLBASE: "http://localhost:8080/v1/assets",
+  ASSET_BUCKET_AUDIO: 'rfcx-guardian-ark-development',
+  ASSET_BUCKET_META: 'rfcx-guardian-meta-development',
+  ASSET_BUCKET_ZIP: 'rfcx-zip',
+  ASSET_BUCKET_REPORT: 'rfcx-report-development',
+  ASSET_BUCKET_ATTACHMENT: 'rfcx-attachment-development',
+  ASSET_BUCKET_AI: 'rfcx-ai-staging',
+  ASSET_URLBASE: 'http://localhost:8080/v1/assets',
 
-  PLAYER_PASSCODES: "0000,1111",
+  PLAYER_PASSCODES: '0000,1111',
 
-  DB_HOSTNAME: "127.0.0.1",
-  DB_NAME: "rfcx_api",
-  DB_USERNAME: "root",
-  DB_PASSWORD: "test",
+  DB_HOSTNAME: '127.0.0.1',
+  DB_NAME: 'rfcx_api',
+  DB_USERNAME: 'root',
+  DB_PASSWORD: 'test',
   DB_PORT: 3306,
 
   /// Neo4j database is required for endpoints related to legacy AIs, events, tags, sensations.
@@ -47,20 +47,20 @@ exports.env = {
   // NEO4J_USER: "",
   // NEO4J_PASSWORD: "",
 
-  POSTGRES_PORT: "5432",
-  POSTGRES_HOSTNAME: "127.0.0.1",
-  POSTGRES_SSL_ENABLED: "false",
-  POSTGRES_DB: "postgres",
-  POSTGRES_USER: "postgres",
-  POSTGRES_PASSWORD: "test",
+  POSTGRES_PORT: '5432',
+  POSTGRES_HOSTNAME: '127.0.0.1',
+  POSTGRES_SSL_ENABLED: 'false',
+  POSTGRES_DB: 'postgres',
+  POSTGRES_USER: 'postgres',
+  POSTGRES_PASSWORD: 'test',
 
-  SQS_PERCEPTION_BATCH: "rfcx-perception-batch",
+  SQS_PERCEPTION_BATCH: 'rfcx-perception-batch',
 
-  MANDRILL_KEY: "",
+  MANDRILL_KEY: '',
 
-  MAILCHIMP_KEY: "",
-  MAILCHIMP_API_URL: "",
-  MAILCHIMP_APP_WAITING_LIST: "",
+  MAILCHIMP_KEY: '',
+  MAILCHIMP_API_URL: '',
+  MAILCHIMP_APP_WAITING_LIST: '',
 
   SEQUELIZE_VERBOSE: false,
 
@@ -70,17 +70,17 @@ exports.env = {
 
   MEDIA_API_BASE_URL: 'https://media-api.rfcx.org/',
 
-  NODE_LOG_LEVEL: "info", // error, warn, info, debug
+  NODE_LOG_LEVEL: 'info', // error, warn, info, debug
 
-  AUTH0_DOMAIN: "rfcx.eu.auth0.com",
-  AUTH0_EXTENSION_URL: "",
-  AUTH0_CLIENT_ID: "",
-  AUTH0_CLIENT_SECRET: "",
-  AUTH0_AUTHZ_AUDIENCE: "urn:auth0-authz-api",
-  AUTH0_CLOUD_AUDIENCE: "https://rfcx.org",
-  AUTH0_DEFAULT_DB_CONNECTION: "",
+  AUTH0_DOMAIN: 'rfcx.eu.auth0.com',
+  AUTH0_EXTENSION_URL: '',
+  AUTH0_CLIENT_ID: '',
+  AUTH0_CLIENT_SECRET: '',
+  AUTH0_AUTHZ_AUDIENCE: 'urn:auth0-authz-api',
+  AUTH0_CLOUD_AUDIENCE: 'https://rfcx.org',
+  AUTH0_DEFAULT_DB_CONNECTION: '',
 
-  MQTT_BROKER_HOST: "mqtt.rfcx.org",
+  MQTT_BROKER_HOST: 'mqtt.rfcx.org',
 
   /// When `REDIS_ENABLED` is set to `true` then the other Redis env vars are required.
   // REDIS_ENABLED: "true"
@@ -95,18 +95,18 @@ exports.env = {
   // FIREBASE_PRIVATE_KEY_PLAYER_APP: "",
   // FIREBASE_CLIENT_EMAIL_PLAYER_APP: "",
 
-  STRIPE_SECRET_KEY: "",
-  CLASSY_CLIENT_ID: "",
-  CLASSY_CLIENT_SECRET: "",
+  STRIPE_SECRET_KEY: '',
+  CLASSY_CLIENT_ID: '',
+  CLASSY_CLIENT_SECRET: '',
 
   // TWILIO_ACCOUNT_SID: "", // required for sending and receiving requests to/from Twilio on the REST api
   // TWILIO_AUTH_TOKEN: "", // required for sending and receiving requests to/from Twilio on the REST api
 
-  RECAPTCHA_V3_SECRET_KEY: "",
+  RECAPTCHA_V3_SECRET_KEY: '',
 
-  GUARDIAN_BROKER_HOSTNAME: "", // environment mqtt hostname for checkins/pings
-  GUARDIAN_API_SMS_ADDRESS: "", // environment SMS Twilio Phone Number for SMS-based interaction with the Guardians
-  GUARDIAN_KEYSTORE_PASSPHRASE: "", // passphrase which is used to access the certificate keystore for mqtt broker secure connections
+  GUARDIAN_BROKER_HOSTNAME: '', // environment mqtt hostname for checkins/pings
+  GUARDIAN_API_SMS_ADDRESS: '', // environment SMS Twilio Phone Number for SMS-based interaction with the Guardians
+  GUARDIAN_KEYSTORE_PASSPHRASE: '' // passphrase which is used to access the certificate keystore for mqtt broker secure connections
 
   /// Enabling ingest service features will push guardian audio to the ingest service
   // INGEST_SERVICE_ENABLED: 'false',

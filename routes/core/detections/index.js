@@ -77,7 +77,7 @@ router.get('/', (req, res) => {
       const streamIds = convertedParams.streams
       const minConfidence = convertedParams.min_confidence
       const { start, end, classifications, limit, offset } = convertedParams
-      const allowedStreams = streamIds ? await roleService.getAccessibleObjectsIDs(user.owner_id, 'stream', streamIds) : undefined
+      const allowedStreams = streamIds ? await roleService.getAccessibleObjectsIDs(user.id, 'stream', streamIds) : undefined
       const result = await detectionsService.query(start, end, allowedStreams, classifications, minConfidence, limit, offset, user)
       return res.json(result)
     })

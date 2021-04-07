@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const usersFusedService = require('../../../services/users/fused')
 const projectsService = require('../../../services/projects')
 const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger
@@ -42,7 +42,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *       404:
  *         description: Stream not found
  */
-router.patch('/projects/:externalId', (req, res) => {
+router.patch('/projects/:externalId', ensureUserSynced, (req, res) => {
   const user = req.rfcx.auth_token_info
   const projectId = req.params.externalId
   const convertedParams = {}
@@ -52,8 +52,7 @@ router.patch('/projects/:externalId', (req, res) => {
   params.convert('is_public').optional().toBoolean()
 
   return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
-    .then(() => projectsService.getByExternalId(projectId))
+    .then(() => projectsService.get({ external_id: projectId }))
     .then(async project => {
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, project, rolesService.PROJECT)
       if (!allowed) {

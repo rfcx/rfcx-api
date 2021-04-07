@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaVideo = sequelize.define('GuardianMetaVideo', {
+  const GuardianMetaVideo = sequelize.define('GuardianMetaVideo', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4

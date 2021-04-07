@@ -1,56 +1,25 @@
 # API Deployment Notes
 
+## v1.0.18
+
+- Run `npm run sync-timescale` to apply migrations (deletes the stream_assets table)
+- Expect some errors from Explorer due to removal of `is_deleted`, `is_public`, and `created_by=collaborators` on `GET /streams`
+
 ## v1.0.16
 
 - Run `npm run sync-timescale` to apply the following migrations:
   - `20210223000000-update-indexes-and-constraints-for-source-files`
   - `20210305141400-change-active-to-deployed-and-add-platform-on-classifier-deployments`
 
-## v1.0.12
-
-_None_
-
-## v1.0.11
-
-_None_
-
-## v1.0.10
-
-_None_
-
-## v1.0.9
-
-_None_
-
 ## v1.0.8
 
 - Add `MEDIA_CACHE_ENABLED` env var and set it to true
-
-## v1.0.7
-
-_None_
 
 ## v1.0.6
 
 - Create rows in `classifier_outputs` for every classifier currently in production
 - Run `npm run sync-timescale` to apply the following migrations:
   - `20210211170430-add-ignore-threshold-on-classifier-output`
-
-## v1.0.5
-
-_None_
-
-## v1.0.4
-
-_None_
-
-## v1.0.3
-
-_None_
-
-## v1.0.2
-
-_None_
 
 ## v1.0.1
 

@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaMemory = sequelize.define('GuardianMetaMemory', {
+  const GuardianMetaMemory = sequelize.define('GuardianMetaMemory', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

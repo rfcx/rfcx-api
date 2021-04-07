@@ -6,7 +6,7 @@ const mandrillClient = new mandrill.Mandrill(process.env.MANDRILL_KEY)
 
 module.exports = {
   subsribeToList: function (listId, email) {
-    var options = {
+    const options = {
       method: 'POST',
       url: `${process.env.MAILCHIMP_API_URL}/lists/${listId}/members`,
       auth: {
@@ -27,7 +27,7 @@ module.exports = {
   },
   sendMail: function (email, name, subject, message) {
     return new Promise(function (resolve, reject) {
-      var msg = {
+      const msg = {
         text: message,
         subject: subject,
         from_email: 'contact@rfcx.org',

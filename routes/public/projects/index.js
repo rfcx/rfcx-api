@@ -64,7 +64,7 @@ router.get('/', (req, res) => {
       const projectsData = await projectsService.query(convertedParams, {
         attributes: ['id', 'name', 'description']
       })
-      var { projects, count } = projectsData
+      let { projects, count } = projectsData
       projects = projects.map(p => p.toJSON())
       if (convertedParams.include_location) {
         await Promise.all(

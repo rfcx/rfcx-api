@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianAudioEventValueHighLevelKey = sequelize.define('GuardianAudioEventValueHighLevelKey', {
+  const GuardianAudioEventValueHighLevelKey = sequelize.define('GuardianAudioEventValueHighLevelKey', {
     value: {
       type: DataTypes.STRING,
       allowNull: false,

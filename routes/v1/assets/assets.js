@@ -1,7 +1,7 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
@@ -20,7 +20,7 @@ router.route('/audio/:audio_id')
           return res.status(404).json({ msg: 'Audio with given guid not found.' })
         }
 
-        var audioFileExtensions = ['m4a', 'mp3', 'flac', 'opus', 'wav']
+        const audioFileExtensions = ['m4a', 'mp3', 'flac', 'opus', 'wav']
 
         if (audioFileExtensions.indexOf(req.rfcx.content_type) >= 0) {
           views.models.guardianAudioFile(req, res, dbAudio)

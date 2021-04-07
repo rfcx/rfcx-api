@@ -91,15 +91,18 @@ function removeSubscription (userId, subscriptionTypeId, itemId, itemModelName) 
 /**
  * Returns list of subscriptions for specified user and item.
  * If subscriptionTypeId is null, removes all subscriptions for specified user and item
- * @param {string} userId user id
+ * @param {string|null} userId user id
  * @param {string} itemId item id
  * @param {string} itemModelName item model name (e.g. stream, project, organization)
  */
 function query (userId, itemId, itemModelName) {
+  if (!userId && !itemId) {
+    throw new ValidaionError('Either userId or itemId must be set for subscriptions query.')
+  }
   const { model, columnName } = _getModel(itemModelName)
   return model.findAll({
     where: {
-      user_id: userId,
+      ...userId ? { user_id: userId } : {},
       ...itemId && { [columnName]: itemId }
     },
     include: subscriptionIncludes[itemModelName]

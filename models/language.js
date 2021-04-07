@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var Language = sequelize.define('Language', {
+  const Language = sequelize.define('Language', {
     id: {
       primaryKey: true,
       type: DataTypes.STRING,

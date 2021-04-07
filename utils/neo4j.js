@@ -1,5 +1,5 @@
 // Returns a Neo4j driver when NEO4J_ENABLED is set, else returns a fake driver object
-var driver
+let driver
 if (process.env.NEO4J_ENABLED !== 'true') {
   driver = {
     session: () => {

@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var AudioAnalysisModel = sequelize.define('AudioAnalysisModel', {
+  const AudioAnalysisModel = sequelize.define('AudioAnalysisModel', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

@@ -1,21 +1,21 @@
-var Promise = require('bluebird')
-var models = require('../../models')
+const Promise = require('bluebird')
+const models = require('../../models')
 
 exports.mqttInstructions = {
 
   updateReceivedGuardianInstructions: function (checkInObj) {
     return new Promise(function (resolve, reject) {
       try {
-        if (checkInObj.instructions == null) { checkInObj.instructions = {} };
+        if (checkInObj.instructions == null) { checkInObj.instructions = {} }
         if ((checkInObj.json.instructions != null) && (checkInObj.json.instructions.received != null)) {
           if (checkInObj.json.instructions.received.length === 0) {
             resolve(checkInObj)
           } else {
-            for (var i = 0; i < checkInObj.json.instructions.received.length; i++) {
+            for (let i = 0; i < checkInObj.json.instructions.received.length; i++) {
               if (checkInObj.json.instructions.received[i].id != null) {
                 // cache instruction info
-                var recId = checkInObj.json.instructions.received[i].id
-                if (checkInObj.instructions[recId] == null) { checkInObj.instructions[recId] = {} };
+                const recId = checkInObj.json.instructions.received[i].id
+                if (checkInObj.instructions[recId] == null) { checkInObj.instructions[recId] = {} }
                 checkInObj.instructions[recId].received_at = new Date(parseInt(checkInObj.json.instructions.received[i].received_at))
 
                 models.GuardianMetaInstructionsQueue.findOne({
@@ -48,16 +48,16 @@ exports.mqttInstructions = {
   updateExecutedGuardianInstructions: function (checkInObj) {
     return new Promise(function (resolve, reject) {
       try {
-        if (checkInObj.instructions == null) { checkInObj.instructions = {} };
+        if (checkInObj.instructions == null) { checkInObj.instructions = {} }
         if ((checkInObj.json.instructions != null) && (checkInObj.json.instructions.executed != null)) {
           if (checkInObj.json.instructions.executed.length === 0) {
             resolve(checkInObj)
           } else {
-            for (var i = 0; i < checkInObj.json.instructions.executed.length; i++) {
+            for (let i = 0; i < checkInObj.json.instructions.executed.length; i++) {
               if (checkInObj.json.instructions.executed[i].id != null) {
                 // cache instruction info
-                var execId = checkInObj.json.instructions.executed[i].id
-                if (checkInObj.instructions[execId] == null) { checkInObj.instructions[execId] = {} };
+                const execId = checkInObj.json.instructions.executed[i].id
+                if (checkInObj.instructions[execId] == null) { checkInObj.instructions[execId] = {} }
                 checkInObj.instructions[execId].executed_at = new Date(parseInt(checkInObj.json.instructions.executed[i].executed_at))
                 checkInObj.instructions[execId].received_at = new Date(parseInt(checkInObj.json.instructions.executed[i].received_at))
                 checkInObj.instructions[execId].response = checkInObj.json.instructions.executed[i].response
@@ -116,7 +116,7 @@ exports.mqttInstructions = {
   updateAndDispatchGuardianInstructions: function (checkInObj) {
     return new Promise(function (resolve, reject) {
       try {
-        var rtrnInstructions = []; var blockedInstructions = []
+        const rtrnInstructions = []; const blockedInstructions = []
         if (checkInObj.json.instructions != null) {
           if ((checkInObj.json.instructions.received != null) && (checkInObj.json.instructions.received.length > 0)) {
             for (let i = 0; i < checkInObj.json.instructions.received.length; i++) {

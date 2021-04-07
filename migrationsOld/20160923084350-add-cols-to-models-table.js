@@ -2,12 +2,12 @@
 
 module.exports = {
   up: function (migration, DataTypes, done) {
-    var sqlAddColumnType = 'ALTER TABLE `AudioAnalysisModels`' +
+    const sqlAddColumnType = 'ALTER TABLE `AudioAnalysisModels`' +
       ' ADD COLUMN `event_type` INTEGER DEFAULT NULL' +
       ', ADD FOREIGN KEY (`event_type`) REFERENCES `GuardianAudioEventTypes`(`id`)' +
       ' ON UPDATE CASCADE ON DELETE RESTRICT'
 
-    var sqlAddColumnValue = 'ALTER TABLE `AudioAnalysisModels`' +
+    const sqlAddColumnValue = 'ALTER TABLE `AudioAnalysisModels`' +
       ' ADD COLUMN `event_value` INTEGER DEFAULT NULL' +
       ', ADD FOREIGN KEY (`event_value`) REFERENCES `GuardianAudioEventValues`(`id`)' +
       ' ON UPDATE CASCADE ON DELETE RESTRICT'

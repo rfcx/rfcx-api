@@ -25,7 +25,7 @@ module.exports = class Converter {
     return Promise.resolve()
       .then(() => {
         const exceptions = []
-        for (var conversion of this.conversions) {
+        for (const conversion of this.conversions) {
           try {
             conversion.execute()
           } catch (e) {

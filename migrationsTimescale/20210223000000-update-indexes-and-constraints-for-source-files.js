@@ -1,9 +1,8 @@
 'use strict'
 module.exports = {
-  async up (queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction()
+  up: (queryInterface, Sequelize) => {
     const type = queryInterface.sequelize.QueryTypes.RAW
-    try {
+    return queryInterface.sequelize.transaction(async transaction => {
       await queryInterface.sequelize.query(
         'ALTER TABLE public.stream_segments DROP CONSTRAINT IF EXISTS stream_segments_stream_source_file_id_fkey;',
         { type, transaction }
@@ -33,16 +32,11 @@ module.exports = {
         'ALTER TABLE stream_source_files ADD CONSTRAINT stream_source_files_stream_id_and_sha_unique UNIQUE USING INDEX stream_source_files_stream_id_and_sha;',
         { type, transaction }
       )
-      await transaction.commit()
-    } catch (err) {
-      await transaction.rollback()
-      throw err
-    }
+    })
   },
-  async down (queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction()
+  down: (queryInterface, Sequelize) => {
     const type = queryInterface.sequelize.QueryTypes.RAW
-    try {
+    return queryInterface.sequelize.transaction(async transaction => {
       await queryInterface.sequelize.query(
         'ALTER TABLE stream_source_files DROP CONSTRAINT IF EXISTS stream_source_files_stream_id_and_sha_unique;',
         { type, transaction }
@@ -60,17 +54,13 @@ module.exports = {
         { type, transaction }
       )
       await queryInterface.sequelize.query(
-        `ALTER TABLE public.stream_segments
+          `ALTER TABLE public.stream_segments
         ADD CONSTRAINT stream_segments_stream_source_file_id_fkey FOREIGN KEY (stream_source_file_id)
         REFERENCES public.stream_source_files (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION;`,
-        { type, transaction }
+          { type, transaction }
       )
-      await transaction.commit()
-    } catch (err) {
-      await transaction.rollback()
-      throw err
-    }
+    })
   }
 }

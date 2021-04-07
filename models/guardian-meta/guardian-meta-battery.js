@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaBattery = sequelize.define('GuardianMetaBattery', {
+  const GuardianMetaBattery = sequelize.define('GuardianMetaBattery', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

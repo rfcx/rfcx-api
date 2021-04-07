@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaDateTimeOffset = sequelize.define('GuardianMetaDateTimeOffset', {
+  const GuardianMetaDateTimeOffset = sequelize.define('GuardianMetaDateTimeOffset', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

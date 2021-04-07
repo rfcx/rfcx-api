@@ -1,8 +1,8 @@
-var models = require('../../models')
-var sequelize = require('sequelize')
-var Converter = require('../../utils/converter/converter')
-var Promise = require('bluebird')
-var ValidationError = require('../../utils/converter/validation-error')
+const models = require('../../models')
+const sequelize = require('sequelize')
+const Converter = require('../../utils/converter/converter')
+const Promise = require('bluebird')
+const ValidationError = require('../../utils/converter/validation-error')
 const eventValueService = require('../legacy/events/event-value-service')
 const eventTypeService = require('../legacy/events/event-type-service')
 const siteService = require('../sites/sites-service')
@@ -253,18 +253,24 @@ function formatGroup (group, extended) {
     description: group.description
   }
   if (extended) {
-    data.guardians = group.Guardians ? group.Guardians.map((guardian) => {
-      return {
-        guid: guardian.guid,
-        name: guardian.shortname
-      }
-    }) : []
-    data.event_values = group.GuardianAudioEventValues ? group.GuardianAudioEventValues.map((eventValue) => {
-      return eventValue.value
-    }) : []
-    data.event_types = group.GuardianAudioEventTypes ? group.GuardianAudioEventTypes.map((eventType) => {
-      return eventType.value
-    }) : []
+    data.guardians = group.Guardians
+      ? group.Guardians.map((guardian) => {
+        return {
+          guid: guardian.guid,
+          name: guardian.shortname
+        }
+      })
+      : []
+    data.event_values = group.GuardianAudioEventValues
+      ? group.GuardianAudioEventValues.map((eventValue) => {
+        return eventValue.value
+      })
+      : []
+    data.event_types = group.GuardianAudioEventTypes
+      ? group.GuardianAudioEventTypes.map((eventType) => {
+        return eventType.value
+      })
+      : []
     data.site = group.Site ? group.Site.guid : null
   }
   return data
@@ -295,7 +301,7 @@ function validateGuardiansRelationsParams (data) {
   params.convert('guardians').toArray()
 
   return params.validate()
-};
+}
 
 function clearGuardiansRelationsForGroup (group) {
   return models.GuardianGroupRelation.destroy({ where: { guardian_group_id: group.id } })
@@ -317,7 +323,7 @@ function validateGuardianGroupEventValuesRelationsParams (data) {
   params.convert('event_values').toArray()
 
   return params.validate()
-};
+}
 
 function validateGuardianGroupEventTypesRelationsParams (data) {
   const transformedParams = {}
@@ -326,7 +332,7 @@ function validateGuardianGroupEventTypesRelationsParams (data) {
   params.convert('event_types').toArray()
 
   return params.validate()
-};
+}
 
 function clearGuardianGroupEventValuesRelationsForGroup (group) {
   return models.GuardianGroupGuardianAudioEventValueRelation.destroy({ where: { guardian_group_id: group.id } })

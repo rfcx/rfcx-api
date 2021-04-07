@@ -14,11 +14,9 @@
     "start:mqtt": "node bin/setup.js; node bin/main-mqtt.js;",
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
-    "test": "eslint \"**/*\" && jest",
-    "test-coverage": "jest --coverage",
+    "test": "eslint \"**/*.js\" && jest",
     "jest": "jest",
-    "lint": "eslint \"**/*\"",
-    "lint:fix": "eslint --fix \"**/*\""
+    "lint": "eslint \"**/*.js\""
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.5.0",
@@ -73,6 +71,7 @@
     "swagger-ui-express": "^4.1.4",
     "togeojson": "^0.16.0",
     "twilio": "3.54.1",
+    "tz-lookup": "^6.1.25",
     "uuid": "^8.3.2",
     "wav": "1.0.2",
     "winston": "3.3.3",
@@ -82,19 +81,15 @@
     "eslint": "^7.21.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jest": "^24.1.5",
+    "eslint-plugin-jest": "^24.3.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "faux-knox": "0.1.16",
-    "husky": "^4.2.5",
     "jest": "^26.0.1",
     "minimist": "1.2.5",
     "s3": "4.4.0",
-    "sequelize-cli": "5.5.1"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run jest"
-    }
+    "sequelize-cli": "5.5.1",
+    "sqlite3": "^5.0.2",
+    "supertest": "^6.1.3"
   }
 }

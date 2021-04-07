@@ -1,6 +1,6 @@
-var Promise = require('bluebird')
-var querystring = require('querystring')
-var zlib = require('zlib')
+const Promise = require('bluebird')
+const querystring = require('querystring')
+const zlib = require('zlib')
 
 exports.gzip = {
 

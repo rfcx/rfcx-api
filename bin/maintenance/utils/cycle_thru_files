@@ -1,33 +1,33 @@
 #!/usr/bin/env node
-var args = process.argv.slice(2)
+const args = process.argv.slice(2)
 
-var fs = require('fs')
-var { syncExec } = require('child_process')
+const fs = require('fs')
+const { syncExec } = require('child_process')
 
 if (fs.existsSync(__dirname + '/../../../config/env_vars.js')) {
-  var env = require(__dirname + '/../../../config/env_vars.js').env
+  const env = require(__dirname + '/../../../config/env_vars.js').env
   for (i in env) { process.env[i] = env[i] }
 }
 
-var ENV = ((args[args.indexOf('--env')] === ('--env')) ? args[args.indexOf('--env') + 1] : process.env.NODE_ENV)
-var JSON_FILE = ((args[args.indexOf('--json')] === ('--json')) ? args[args.indexOf('--json') + 1] : null)
+const ENV = ((args[args.indexOf('--env')] === ('--env')) ? args[args.indexOf('--env') + 1] : process.env.NODE_ENV)
+const JSON_FILE = ((args[args.indexOf('--json')] === ('--json')) ? args[args.indexOf('--json') + 1] : null)
 
-var allS3Keys = JSON.parse(fs.readFileSync(JSON_FILE))
+const allS3Keys = JSON.parse(fs.readFileSync(JSON_FILE))
 
 console.log('number of files: ' + parseInt(allS3Keys.length))
 
 for (i in allS3Keys) {
-  var count = (parseInt(i) + 1)
-  var query_cmd = __dirname + '/../utils/check_database_entry s3://' + process.env.ASSET_BUCKET_AUDIO + '/' + allS3Keys[i]
-  var query_result = syncExec(query_cmd).stdout.split('*')
-  var query_count = parseInt(query_result[0].trim())
-  var query_guid = query_result[1].trim()
+  const count = (parseInt(i) + 1)
+  const query_cmd = __dirname + '/../utils/check_database_entry s3://' + process.env.ASSET_BUCKET_AUDIO + '/' + allS3Keys[i]
+  const query_result = syncExec(query_cmd).stdout.split('*')
+  const query_count = parseInt(query_result[0].trim())
+  const query_guid = query_result[1].trim()
   if (query_count === 1) {
     console.log(count + ') GOOD: ' + allS3Keys[i])
   } else {
     process.stdout.write(count + ') NOT FOUND... DELETING...  ')
-    var delete_cmd = __dirname + '/../utils/delete_s3_object --bucket ' + process.env.ASSET_BUCKET_AUDIO + ' --key ' + allS3Keys[i]
-    var delete_result = syncExec(delete_cmd)
+    const delete_cmd = __dirname + '/../utils/delete_s3_object --bucket ' + process.env.ASSET_BUCKET_AUDIO + ' --key ' + allS3Keys[i]
+    const delete_result = syncExec(delete_cmd)
     console.log('DELETED: ' + delete_result.stdout)
   }
 }

@@ -1,5 +1,5 @@
-var Promise = require('bluebird')
-var models = require('../../../models')
+const Promise = require('bluebird')
+const models = require('../../../models')
 
 exports.guardianStatusCheckIns = {
 
