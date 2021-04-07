@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var RegistrationToken = sequelize.define('RegistrationToken', {
+  const RegistrationToken = sequelize.define('RegistrationToken', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,

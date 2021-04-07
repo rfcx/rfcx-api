@@ -149,7 +149,7 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
       }
       const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
 
-      const createdById = req.rfcx.auth_token_info.owner_id
+      const createdById = req.rfcx.auth_token_info.id
       const classifier = {
         name: transformedParams.name,
         version: transformedParams.version,
@@ -204,7 +204,7 @@ router.patch('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function 
   params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
 
-  const createdById = req.rfcx.auth_token_info.owner_id
+  const createdById = req.rfcx.auth_token_info.id
   params.validate()
     .then(() => {
       return service.update(id, createdById, transformedParams)

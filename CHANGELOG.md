@@ -1,3 +1,17 @@
+## 1.0.18 (???)
+
+### Features
+* **core:** Detection endpoints use classifier output mappings.
+* **core:** Stream assets are no longer stored in Core.
+* **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
+
+
+## 1.0.17-hotfix.3 (2021-04-02)
+
+### Bug Fixes
+* **legacy:** Check for duplicate audio files in /v1/guardians/:id/checkins endpoint
+
+
 ## 1.0.17-hotfix.2 (2021-03-27)
 
 ### Bug Fixes

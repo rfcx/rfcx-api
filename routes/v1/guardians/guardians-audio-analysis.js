@@ -1,12 +1,12 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var httpError = require('../../../utils/http-errors.js')
-var assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const httpError = require('../../../utils/http-errors.js')
+const assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 
-var analysisUtils = require('../../../utils/rfcx-analysis/analysis-queue.js').analysisUtils
+const analysisUtils = require('../../../utils/rfcx-analysis/analysis-queue.js').analysisUtils
 
 function processAudios (req, res, dbAudio, audioGuids, modelGuid) {
   if (dbAudio.length < 1) {
@@ -14,7 +14,7 @@ function processAudios (req, res, dbAudio, audioGuids, modelGuid) {
     return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
   } else {
     if (!Array.isArray(dbAudio)) { dbAudio = [dbAudio] }
-    var batch = []
+    const batch = []
     for (const i in dbAudio) {
       batch.push({
         audio_guid: dbAudio[i].guid,
@@ -40,19 +40,19 @@ router.route('/:guardian_id/audio/analysis')
         where: { guid: req.params.guardian_id }
       })
       .then(function (dbGuardian) {
-        var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : 'DESC'
+        const dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : 'DESC'
 
-        var dbQuery = {
+        const dbQuery = {
           site_id: dbGuardian.site_id,
           guardian_id: dbGuardian.id,
           format_id: { [models.Sequelize.Op.not]: null }
         }
-        var dateClmn = 'measured_at'
+        const dateClmn = 'measured_at'
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {} }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gte] = req.rfcx.starting_after }
 
-        var createdClmn = 'created_at'
+        const createdClmn = 'created_at'
         if ((req.query.created_before != null) || (req.query.created_after != null)) {
           dbQuery[createdClmn] = {}
         }
@@ -67,8 +67,8 @@ router.route('/:guardian_id/audio/analysis')
           dbQuery.check_in_id = null
         }
 
-        var modelGuid = req.query.model_id
-        var audioGuids = []
+        const modelGuid = req.query.model_id
+        const audioGuids = []
 
         return models.GuardianAudio
           .findAll({
@@ -115,15 +115,15 @@ router.route('/sites/:site_id/audio/analysis')
         where: { guid: req.params.site_id }
       })
       .then(function (dbSite) {
-        var dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : 'DESC'
+        const dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : 'DESC'
 
-        var dbQuery = { site_id: dbSite.id }
-        var dateClmn = 'measured_at'
+        const dbQuery = { site_id: dbSite.id }
+        const dateClmn = 'measured_at'
         if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {} }
         if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before }
         if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gte] = req.rfcx.starting_after }
 
-        var createdClmn = 'created_at'
+        const createdClmn = 'created_at'
         if ((req.query.created_before != null) || (req.query.created_after != null)) {
           dbQuery[createdClmn] = {}
         }
@@ -138,8 +138,8 @@ router.route('/sites/:site_id/audio/analysis')
           dbQuery.check_in_id = null
         }
 
-        var modelGuid = req.query.model_id
-        var audioGuids = []
+        const modelGuid = req.query.model_id
+        const audioGuids = []
 
         return models.GuardianAudio
           .findAll({
@@ -170,7 +170,7 @@ router.route('/sites/:site_id/audio/analysis')
 
 router.route('/audio/analysis')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
-    var audioGuids = []
+    const audioGuids = []
     return models.GuardianAudio
       .findAll({
         where: { guid: { [models.Sequelize.Op.in]: req.body.guids } },

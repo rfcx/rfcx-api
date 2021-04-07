@@ -3,8 +3,8 @@ exports.models = {
   generateValueArrayAverages: function (valueArrays, modelInfo) {
     for (const i in modelInfo.dbToJsonMap) {
       if (i !== modelInfo.timeStampColumn) {
-        for (var j = 0; j < (valueArrays.length - 1); j++) {
-          for (var k = 0; k < valueArrays[j].values[modelInfo.dbToJsonMap[i]].length; k++) {
+        for (let j = 0; j < (valueArrays.length - 1); j++) {
+          for (let k = 0; k < valueArrays[j].values[modelInfo.dbToJsonMap[i]].length; k++) {
             valueArrays[j].averages[modelInfo.dbToJsonMap[i]] = (valueArrays[j].averages[modelInfo.dbToJsonMap[i]] == null) ? valueArrays[j].values[modelInfo.dbToJsonMap[i]][k] : valueArrays[j].averages[modelInfo.dbToJsonMap[i]] + valueArrays[j].values[modelInfo.dbToJsonMap[i]][k]
           }
           valueArrays[j].averages[modelInfo.dbToJsonMap[i]] = (valueArrays[j].averages[modelInfo.dbToJsonMap[i]] != null) ? valueArrays[j].averages[modelInfo.dbToJsonMap[i]] / valueArrays[j].values[modelInfo.dbToJsonMap[i]].length : valueArrays[j].averages[modelInfo.dbToJsonMap[i]] = valueArrays[j - 1].averages[modelInfo.dbToJsonMap[i]]
@@ -17,7 +17,7 @@ exports.models = {
   },
 
   populateValueArrays: function (valueArrays, dbMetaRow, modelInfo) {
-    for (var j = 0; j < (valueArrays.length - 1); j++) {
+    for (let j = 0; j < (valueArrays.length - 1); j++) {
       if ((dbMetaRow[modelInfo.timeStampColumn].valueOf() >= valueArrays[j].timestamp.valueOf()) &&
           (dbMetaRow[modelInfo.timeStampColumn].valueOf() < valueArrays[j + 1].timestamp.valueOf())
       ) {
@@ -33,11 +33,11 @@ exports.models = {
   },
 
   constructValueArrays: function (arrayLength, dbMeta, modelInfo) {
-    var valueArrays = []
-    var startDateTime = dbMeta[0][modelInfo.timeStampColumn].valueOf()
-    var endDateTime = dbMeta[dbMeta.length - 1][modelInfo.timeStampColumn].valueOf()
-    var timeInterval = Math.floor((endDateTime - startDateTime) / arrayLength)
-    for (var i = 0; i <= arrayLength; i++) {
+    const valueArrays = []
+    const startDateTime = dbMeta[0][modelInfo.timeStampColumn].valueOf()
+    const endDateTime = dbMeta[dbMeta.length - 1][modelInfo.timeStampColumn].valueOf()
+    const timeInterval = Math.floor((endDateTime - startDateTime) / arrayLength)
+    for (let i = 0; i <= arrayLength; i++) {
       valueArrays[i] = {
         timestamp: new Date(startDateTime + (i * timeInterval))/* +Math.round(timeInterval/2) */,
         values: { },
@@ -54,11 +54,11 @@ exports.models = {
   },
 
   finalizeValueArraysForOutput: function (valueArrays, modelInfo) {
-    var outputJson = []
+    const outputJson = []
 
-    for (var i = 0; i < valueArrays.length; i++) {
+    for (let i = 0; i < valueArrays.length; i++) {
       if (valueArrays[i] != null) {
-        var asJson = {}
+        const asJson = {}
         asJson[modelInfo.dbToJsonMap[modelInfo.timeStampColumn]] = valueArrays[i].timestamp
         for (const j in modelInfo.dbToJsonMap) {
           if (j !== modelInfo.timeStampColumn) {
@@ -73,12 +73,12 @@ exports.models = {
   },
 
   guardianMeta: function (req, res, dbMeta, modelInfo) {
-    var outputJson = []
+    let outputJson = []
 
     if (!Array.isArray(dbMeta)) { dbMeta = [dbMeta] }
 
     if (dbMeta.length > 0) {
-      var valueArrays = this.constructValueArrays(req.rfcx.limit, dbMeta, modelInfo)
+      let valueArrays = this.constructValueArrays(req.rfcx.limit, dbMeta, modelInfo)
 
       for (const i in dbMeta) {
         valueArrays = this.populateValueArrays(valueArrays, dbMeta[i], modelInfo)

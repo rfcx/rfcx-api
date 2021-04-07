@@ -1,5 +1,5 @@
-var mandrill = require('mandrill-api/mandrill')
-var Promise = require('bluebird')
+const mandrill = require('mandrill-api/mandrill')
+const Promise = require('bluebird')
 
 exports.mandrill = function () {
   return {
@@ -77,8 +77,8 @@ exports.mandrill = function () {
     },
 
     sendMessage: function (messageOptions) {
-      var client = this.client()
-      var message = this.buildMessage(messageOptions)
+      const client = this.client()
+      const message = this.buildMessage(messageOptions)
       return new Promise(function (resolve, reject) {
         client.messages.send({
           message: message

@@ -1,14 +1,14 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var ApiConverter = require('../../../utils/api-converter')
-var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
-var passport = require('passport')
-var sqlUtils = require('../../../utils/misc/sql')
-var Promise = require('bluebird')
-var urls = require('../../../utils/misc/urls')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors.js')
+const ApiConverter = require('../../../utils/api-converter')
+const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+const passport = require('passport')
+const sqlUtils = require('../../../utils/misc/sql')
+const Promise = require('bluebird')
+const urls = require('../../../utils/misc/urls')
 
 function getModel (req) {
   if (req.query.model_guid) {
@@ -43,7 +43,7 @@ router.route('/methods')
 
 router.route('/models')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('audioAnalysisModel', req)
+    const converter = new ApiConverter('audioAnalysisModel', req)
 
     models.AudioAnalysisModel
       .findAll({
@@ -53,7 +53,7 @@ router.route('/models')
         if (dbAnalysisModels.length < 1) {
           httpError(req, res, 404, 'database')
         } else {
-          var api = { type: 'audioAnalysisModels' }
+          const api = { type: 'audioAnalysisModels' }
           api.data = dbAnalysisModels.map(function (dbAnalysisModel) {
             return converter.mapSequelizeToApi(dbAnalysisModel.dataValues)
           })
@@ -70,9 +70,9 @@ router.route('/models')
 
 router.route('/models/unclassified_by_users')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('unclassified', req)
+    const converter = new ApiConverter('unclassified', req)
 
-    var sql; var opts = {
+    let sql; const opts = {
       tagValue: 'chainsaw'
     }
 
@@ -96,7 +96,7 @@ router.route('/models/unclassified_by_users')
         )
       })
       .then(function (data) {
-        var api = converter.mapSequelizeToApi({
+        const api = converter.mapSequelizeToApi({
           events: data
         })
 
@@ -112,9 +112,9 @@ router.route('/models/unclassified_by_users')
 
 router.route('/models/precision')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('precision', req)
+    const converter = new ApiConverter('precision', req)
 
-    var sql; var opts = {
+    let sql; const opts = {
       tagValue: 'chainsaw'
     }
 
@@ -147,7 +147,7 @@ router.route('/models/precision')
             }
           })
 
-          var api = converter.mapSequelizeToApi({
+          const api = converter.mapSequelizeToApi({
             events: data
           })
 
@@ -164,9 +164,9 @@ router.route('/models/precision')
 
 router.route('/models/recall')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('recall', req)
+    const converter = new ApiConverter('recall', req)
 
-    var sql; var opts = {
+    let sql; const opts = {
       tagValue: 'chainsaw'
     }
 
@@ -199,7 +199,7 @@ router.route('/models/recall')
             }
           })
 
-          var api = converter.mapSequelizeToApi({
+          const api = converter.mapSequelizeToApi({
             events: data
           })
 
@@ -216,7 +216,7 @@ router.route('/models/recall')
 
 router.route('/models/:id')
   .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    var converter = new ApiConverter('audioAnalysisModel', req)
+    const converter = new ApiConverter('audioAnalysisModel', req)
 
     models.AudioAnalysisModel
       .findOne({
@@ -240,7 +240,7 @@ router.route('/models/:id')
             dbAnalysisModel.event_value = dbAnalysisModel.GuardianAudioEventValue.value
           }
 
-          var api = converter.mapSequelizeToApi(dbAnalysisModel.dataValues)
+          const api = converter.mapSequelizeToApi(dbAnalysisModel.dataValues)
           // correct self link
           api.links.self = urls.getApiUrl(req) + '/analysis/models/' + req.params.id
           res.status(200).json(api)

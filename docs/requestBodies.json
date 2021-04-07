@@ -317,11 +317,6 @@
   "Stream": {
     "type": "object",
     "properties": {
-      "id": {
-        "type": "string",
-        "description": "Stream identifier",
-        "example": "xu82jDgX49"
-      },
       "name": {
         "type": "string",
         "description": "Stream name",
@@ -337,6 +332,11 @@
         "description": "Stream coordinate for longitude",
         "example": 125.912
       },
+      "altitude": {
+        "type": "integer",
+        "description": "Altitude in meters",
+        "example": 100
+      },
       "description": {
         "type": "string",
         "description": "Stream description",
@@ -351,16 +351,6 @@
         "type": "string",
         "description": "A project id",
         "example": "qwe2jDgX49"
-      },
-      "project_external_id": {
-        "type": "integer",
-        "description": "An external project id",
-        "example": 1051
-      },
-      "external_id": {
-        "type": "integer",
-        "description": "An external stream id",
-        "example": 4551
       }
     },
     "required": [
@@ -394,11 +384,6 @@
         "type": "boolean",
         "description": "Whether stream is public",
         "example": false
-      },
-      "restore": {
-        "type": "boolean",
-        "description": "Restore previously deleted stream",
-        "example": true
       }
     },
     "required": [
@@ -435,21 +420,6 @@
       }
     },
     "required": []
-  },
-  "StreamAsset": {
-    "type": "object",
-    "properties": {
-      "type": {
-        "type": "string",
-        "description": "Type of asset, maximum 16 characters",
-        "examples": ["deploymentphoto", "donatelink"]
-      },
-      "url": {
-        "type": "string",
-        "description": "Location of the file (publicly accessible)",
-        "example": "https://any.storage.provider/path/filename.jpg"
-      }
-    }
   },
   "StreamSourceFile": {
     "type": "object",
@@ -615,25 +585,5 @@
     "required": [
       "name"
     ]
-  },
-  "ProjectPatchArbimon": {
-    "type": "object",
-    "properties": {
-      "name": {
-        "type": "string",
-        "description": "Project name",
-        "example": "My Project 1"
-      },
-      "description": {
-        "type": "string",
-        "description": "Project description",
-        "example": "Project 1 description"
-      },
-      "is_public": {
-        "type": "boolean",
-        "description": "Whether project is public (default false)",
-        "default": "false"
-      }
-    }
   }
 }

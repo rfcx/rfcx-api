@@ -1,4 +1,4 @@
-var models = require('../../models')
+const models = require('../../models')
 
 function findUserTokens (user) {
   return models.UserToken

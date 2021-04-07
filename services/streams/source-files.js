@@ -25,7 +25,7 @@ const streamSourceFileBaseInclude = [
  * @param {*} opts additional function params
  * @returns {*} source file model item
  */
-function getById (id, opts = {}) {
+function get (id, opts = {}) {
   return StreamSourceFile
     .findOne({
       where: { id },
@@ -162,7 +162,7 @@ function checkForDuplicates (stream_id, sha1_checksum, filename) { // eslint-dis
 }
 
 /**
- * Finds or creates model items for AudioCodec, AudioFileFormat, SampleRate, ChannelLayout based on input value
+ * Finds or creates model items for AudioCodec, AudioFileFormat based on input value
  * Returns objcet with model item ids
  * @param {*} data object with values
  * @returns {*} object with mappings between attribute keys and ids
@@ -206,7 +206,7 @@ function format (streamSourceFile) {
 }
 
 module.exports = {
-  getById,
+  get,
   create,
   query,
   remove,

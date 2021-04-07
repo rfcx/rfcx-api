@@ -1,10 +1,10 @@
-var verboseLogging = (process.env.NODE_ENV !== 'production')
-var models = require('../../models')
-var hash = require('../../utils/misc/hash.js').hash
-var regex = require('../../utils/misc/regex.js')
+const verboseLogging = (process.env.NODE_ENV !== 'production')
+const models = require('../../models')
+const hash = require('../../utils/misc/hash')
+const regex = require('../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
-  var onlyAllowAccessTo = [
+  const onlyAllowAccessTo = [
     '^/v1/guardians/' + authUser.guid + '/checkins$',
     '^/v1/guardians/' + authUser.guid + '/software/[a-z]+$',
     '^/v2/guardians/' + authUser.guid + '/software/[a-z]+$',
@@ -19,7 +19,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
       if (dbGuardian == null) {
         return done(null, false, { message: "this guardian doesn't exist in the database" })
       } else if ((dbGuardian.auth_token_hash === hash.hashedCredentials(dbGuardian.auth_token_salt, token)) &&
-                (regex.regExIndexOf(requestFullUrl.pathname, onlyAllowAccessTo) > -1)
+        (regex.regExIndexOf(requestFullUrl.pathname, onlyAllowAccessTo) > -1)
       ) {
         req.rfcx.auth_token_info = {
           type: 'guardian',

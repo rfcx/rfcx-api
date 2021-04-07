@@ -9,6 +9,7 @@ async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
   const completedMigrations = await sequelize.query(`SELECT * FROM ${table}`, { type: Sequelize.QueryTypes.SELECT })
 
   for (const name in completedMigrations) {
+    // eslint-disable-next-line no-prototype-builtins
     if (completedMigrations.hasOwnProperty(name)) {
       const index = migrations.indexOf(completedMigrations[name].name)
       if (index !== -1) {
@@ -64,9 +65,11 @@ async function seed (models) {
   await models.RolePermission.create({ role_id: roleMember, permission: 'R' })
   await models.RolePermission.create({ role_id: roleMember, permission: 'U' })
   await models.RolePermission.create({ role_id: roleGuest, permission: 'R' })
+  await models.ClassificationSource.create({ id: 1, value: 'unknown' })
+  await models.ClassificationType.create({ id: 1, value: 'unknown' })
 }
 
-const truncateOrder = ['Annotation', 'Detection', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'Stream', 'Project', 'Organization']
+const truncateOrder = ['Event', 'Annotation', 'Detection', 'ClassifierActiveProject', 'ClassifierActiveStream', 'ClassifierDeployment', 'ClassifierEventStrategy', 'ClassifierOutput', 'Classifier', 'EventStrategy', 'ClassificationAlternativeName', 'Classification', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'StreamSegment', 'StreamSourceFile', 'Stream', 'Project', 'Organization']
 
 async function truncate (models) {
   return await Promise.all(
@@ -76,12 +79,13 @@ async function truncate (models) {
   )
 }
 
-function expressApp () {
+function expressApp (userAdditions = {}) {
   const app = express()
   app.use(express.json())
   app.use(express.urlencoded({ extended: false }))
   app.use((req, res, next) => {
-    req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail } }
+    req.user = { roles: [] }
+    req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail, ...userAdditions } }
     req.rfcx.auth_token_info.owner_id = primaryUserId // TODO remove
     next()
   })

@@ -1,16 +1,16 @@
-var Promise = require('bluebird')
+const Promise = require('bluebird')
 
 exports.models = {
 
   audioAnalysisTrainingSet: function (req, res, dbAudioAnalysisTrainingSet, trainingSet, testSet) {
     return new Promise(function (resolve, reject) {
       function getCollectionData (collection, collectionAudios) {
-        var data = {
+        const data = {
           guid: collection.guid,
           audios: []
         }
-        for (var i = 0; i < collectionAudios.length; i++) {
-          var item = collectionAudios[i]
+        for (let i = 0; i < collectionAudios.length; i++) {
+          const item = collectionAudios[i]
           data.audios.push({
             guid: item.guid,
             note: item.GuardianAudioCollectionsRelation.note,
@@ -20,7 +20,7 @@ exports.models = {
         return data
       }
       try {
-        var json = {
+        const json = {
           name: dbAudioAnalysisTrainingSet.name,
           // eventValue: dbAudioAnalysisTrainingSet.GuardianAudioEventValue.value,
           eventValue: dbAudioAnalysisTrainingSet.event_value,
@@ -40,12 +40,12 @@ exports.models = {
       try {
         if (!Array.isArray(dbAudioAnalysisTrainingSets)) { dbAudioAnalysisTrainingSets = [dbAudioAnalysisTrainingSets] }
 
-        var json = {
+        const json = {
           trainingSets: []
         }
 
-        for (var i = 0; i < dbAudioAnalysisTrainingSets.length; i++) {
-          var dbRow = dbAudioAnalysisTrainingSets[i]
+        for (let i = 0; i < dbAudioAnalysisTrainingSets.length; i++) {
+          const dbRow = dbAudioAnalysisTrainingSets[i]
           json.trainingSets.push({
             name: dbRow.name,
             guid: dbRow.guid

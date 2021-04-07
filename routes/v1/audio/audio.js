@@ -1,27 +1,27 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var passport = require('passport')
-var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
-var httpError = require('../../../utils/http-errors.js')
-var Promise = require('bluebird')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const passport = require('passport')
+const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+const httpError = require('../../../utils/http-errors.js')
+const Promise = require('bluebird')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var ApiConverter = require('../../../utils/api-converter')
-var urls = require('../../../utils/misc/urls')
-var sequelize = require('sequelize')
-var sqlUtils = require('../../../utils/misc/sql')
-var condAdd = sqlUtils.condAdd
-var SensationsService = require('../../../services/legacy/sensations/sensations-service')
-var AudioService = require('../../../services/audio/audio-service')
-var S3Service = require('../../../services/legacy/s3/s3-service')
-var pd = require('parallel-download')
-var archiver = require('archiver')
-var moment = require('moment')
-var path = require('path')
-var fs = require('fs')
-var aws = require('../../../utils/external/aws.js').aws()
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const ApiConverter = require('../../../utils/api-converter')
+const urls = require('../../../utils/misc/urls')
+const sequelize = require('sequelize')
+const sqlUtils = require('../../../utils/misc/sql')
+const condAdd = sqlUtils.condAdd
+const SensationsService = require('../../../services/legacy/sensations/sensations-service')
+const AudioService = require('../../../services/audio/audio-service')
+const S3Service = require('../../../services/legacy/s3/s3-service')
+const pd = require('parallel-download')
+const archiver = require('archiver')
+const moment = require('moment')
+const path = require('path')
+const fs = require('fs')
+const aws = require('../../../utils/external/aws.js').aws()
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const archiveUtil = require('../../../utils/misc/archive')
 const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
@@ -33,7 +33,7 @@ const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 
 function filter (req) {
-  var order = 'measured_at ASC'
+  let order = 'measured_at ASC'
 
   if (req.query.order && ['ASC', 'DESC', 'RAND'].indexOf(req.query.order.toUpperCase()) !== -1) {
     if (req.query.order === 'RAND') {
@@ -43,9 +43,9 @@ function filter (req) {
     }
   }
 
-  var mainClasuse = {}
-  var siteClause = {}
-  var guardianClause = {}
+  const mainClasuse = {}
+  const siteClause = {}
+  const guardianClause = {}
 
   if (req.query.siteGuid) {
     siteClause.guid = req.query.siteGuid
@@ -111,14 +111,14 @@ router.route('/')
 
 router.route('/filter')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('audio', req)
+    const converter = new ApiConverter('audio', req)
 
     filter(req)
       .then(function (dbAudio) {
         return views.models.guardianAudioJson(req, res, dbAudio)
       })
       .then(function (audioJson) {
-        var api = converter.cloneSequelizeToApi({ audios: audioJson })
+        const api = converter.cloneSequelizeToApi({ audios: audioJson })
         api.links.self = urls.getBaseUrl(req) + req.originalUrl
         res.status(200).json(api)
       })
@@ -131,17 +131,17 @@ router.route('/filter')
 router.route('/download/zip')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
     // download mp3 if anything else is not specified
-    var extension = req.query.extension || 'mp3'
+    const extension = req.query.extension || 'mp3'
 
     if (['mp3', 'opus', 'm4a'].indexOf(extension) === -1) {
       res.status(500).json({ msg: 'Specified files extension is not allowed. Available: "mp3", "opus" and "m4a"' })
     }
 
-    var zipFilename = moment().format('MMDDYYYY_HHmmss') + '_audios.zip'
-    var zipPath = path.join(process.env.CACHE_DIRECTORY, 'zip', zipFilename)
+    const zipFilename = moment().format('MMDDYYYY_HHmmss') + '_audios.zip'
+    const zipPath = path.join(process.env.CACHE_DIRECTORY, 'zip', zipFilename)
 
-    var output = fs.createWriteStream(zipPath)
-    var archive = archiver('zip', {
+    const output = fs.createWriteStream(zipPath)
+    const archive = archiver('zip', {
       zlib: { level: 9 }
     })
     archive.pipe(output)
@@ -193,9 +193,9 @@ router.route('/download/zip')
 
 router.route('/filter/by-tags')
   .get(passport.authenticate('token', { session: false }), function (req, res) {
-    var converter = new ApiConverter('audio', req)
+    const converter = new ApiConverter('audio', req)
 
-    var filterOpts = {}
+    const filterOpts = {}
 
     if (req.query.limit) {
       filterOpts.limit = parseInt(req.query.limit)
@@ -229,7 +229,7 @@ router.route('/filter/by-tags')
       filterOpts.minCount = parseInt(req.query.minCount)
     }
 
-    var sql = 'SELECT DISTINCT a.id as audioId, a.guid, count(a.id) as count FROM GuardianAudio a ' +
+    let sql = 'SELECT DISTINCT a.id as audioId, a.guid, count(a.id) as count FROM GuardianAudio a ' +
                 'LEFT JOIN GuardianAudioTags t on a.id=t.audio_id '
 
     sql = condAdd(sql, filterOpts.userGuid, ' INNER JOIN Users u on u.id = t.tagged_by_user')
@@ -251,11 +251,11 @@ router.route('/filter/by-tags')
       { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
     )
       .then(function (dbAudio) {
-        var guids = dbAudio.map(function (item) {
+        const guids = dbAudio.map(function (item) {
           return item.guid
         })
 
-        var api = converter.cloneSequelizeToApi({ audios: guids })
+        const api = converter.cloneSequelizeToApi({ audios: guids })
         api.links.self = urls.getBaseUrl(req) + req.originalUrl
 
         res.status(200).json(api)
@@ -381,7 +381,7 @@ router.route('/:audio_id/labels')
     // this is a greatest n per group for the greatest count of labels applied to each window
     // it uses the id of the tag as a tiebreaker in case that equally many votes are cast
     // for two or more labels
-    var sql = `SELECT c1.begins_at, c1.label, c1.votes FROM
+    const sql = `SELECT c1.begins_at, c1.label, c1.votes FROM
         (SELECT t.begins_at, t.value as label, count(t.value) as votes, min(t.id) as tagId from GuardianAudioTags t
         INNER JOIN GuardianAudio a ON t.audio_id=a.id
         where t.type='label'
@@ -397,7 +397,7 @@ router.route('/:audio_id/labels')
         WHERE c2.begins_at IS NULL
         ORDER BY c1.begins_at ASC`
 
-    var filter = {
+    const filter = {
       audio_id: req.params.audio_id
     }
 

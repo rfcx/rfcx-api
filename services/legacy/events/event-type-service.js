@@ -1,6 +1,6 @@
-var models = require('../../../models')
-var sequelize = require('sequelize')
-var Promise = require('bluebird')
+const models = require('../../../models')
+const sequelize = require('sequelize')
+const Promise = require('bluebird')
 
 function getAllGuardianAudioEventTypesByValues (values) {
   const proms = [];

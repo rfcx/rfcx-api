@@ -1,10 +1,10 @@
-var Promise = require('bluebird')
-var models = require('../../models')
+const Promise = require('bluebird')
+const models = require('../../models')
 
 exports.messages = {
 
   info: function (jsonMessages, guardianId, checkInId, timezoneOffset) {
-    var messageInfo = {}
+    const messageInfo = {}
     if (Array.isArray(jsonMessages)) {
       for (const msgInd in jsonMessages) {
         messageInfo[jsonMessages[msgInd].android_id] = {

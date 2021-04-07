@@ -1,9 +1,9 @@
-var Promise = require('bluebird')
+const Promise = require('bluebird')
 const fs = require('fs')
 const path = require('path')
 const moment = require('moment-timezone')
-var EmptyResultError = require('../../../utils/converter/empty-result-error')
-var sqlUtils = require('../../../utils/misc/sql')
+const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const sqlUtils = require('../../../utils/misc/sql')
 const neo4j = require('../../../utils/neo4j')
 const firebaseService = require('../../firebase/firebase-service')
 const guardianGroupService = require('../../guardians/guardian-group-service')
@@ -11,7 +11,7 @@ const userService = require('../../users/users-service-legacy')
 const textGridService = require('../../textgrid/textgrid-service')
 const mailService = require('../../mail/mail-service')
 const aws = require('../../../utils/external/aws.js').aws()
-const hash = require('../../../utils/misc/hash.js').hash
+const hash = require('../../../utils/misc/hash')
 const annotationsService = require('../../annotations')
 const classificationService = require('../../classifications')
 
@@ -272,14 +272,14 @@ function queryData (req) {
 
 function getEventByGuid (guid) {
   const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai) ' +
-              'MATCH (evs)-[:classifies]->(lb:label) ' +
-              'OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) ' +
-              'WITH ev, evs, ai, lb, aw ' +
-              'OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review {latest: true}) ' +
-              'WITH ev, evs, ai, lb, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows ' +
-              'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) ' +
-              'WITH ev, evs, ai, lb, windows, CASE WHEN COUNT(re) > 0 THEN COLLECT({firstname: user.firstname, lastname: user.lastname, guid: user.guid, email: user.email, pictureUrl: user.pictureUrl, created: re.created, unreliable: re.unreliable, confirmed: re.confirmed, latest: re.latest}) ELSE [] END as re ' +
-              'RETURN ev as event, ai as ai, lb.value as value, lb.label as label, windows, re as review '
+    'MATCH (evs)-[:classifies]->(lb:label) ' +
+    'OPTIONAL MATCH (evs)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow) ' +
+    'WITH ev, evs, ai, lb, aw ' +
+    'OPTIONAL MATCH (aw:audioWindow)-[:has_review]->(rew:review {latest: true}) ' +
+    'WITH ev, evs, ai, lb, COLLECT({guid: aw.guid, start: aw.start, end: aw.end, confidence: aw.confidence, confirmed: rew.confirmed}) as windows ' +
+    'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]->(user:user) ' +
+    'WITH ev, evs, ai, lb, windows, CASE WHEN COUNT(re) > 0 THEN COLLECT({firstname: user.firstname, lastname: user.lastname, guid: user.guid, email: user.email, pictureUrl: user.pictureUrl, created: re.created, unreliable: re.unreliable, confirmed: re.confirmed, latest: re.latest}) ELSE [] END as re ' +
+    'RETURN ev as event, ai as ai, lb.value as value, lb.label as label, windows, re as review '
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, { guid }))
@@ -420,8 +420,8 @@ function getAiModelsForReviews (req) {
 
 function queryWindowsForEvent (eventGuid) {
   const query = 'MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(:eventSet)-[:relates_to]->(:audioWindowSet)-[:contains]->(aw:audioWindow) ' +
-              'OPTIONAL MATCH (aw)-[:has_review]->(re:review) WHERE re.latest = true ' +
-              'RETURN aw, re.confirmed as confirmed ORDER BY aw.start'
+    'OPTIONAL MATCH (aw)-[:has_review]->(re:review) WHERE re.latest = true ' +
+    'RETURN aw, re.confirmed as confirmed ORDER BY aw.start'
 
   const session = neo4j.session()
   const resultPromise = session.run(query, { eventGuid })
@@ -438,8 +438,8 @@ function queryWindowsForEvent (eventGuid) {
 
 function getEventInfoByGuid (eventGuid) {
   const query = 'MATCH (ev:event {guid: {eventGuid}})<-[:contains]-(evs:eventSet)<-[:has_eventSet]-(ai:ai) ' +
-              'MATCH (evs)-[:classifies]->(lb:label) ' +
-              'RETURN ev as event, ai as ai, lb as label'
+    'MATCH (evs)-[:classifies]->(lb:label) ' +
+    'RETURN ev as event, ai as ai, lb as label'
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, { eventGuid }))
@@ -543,7 +543,7 @@ function sendNotificationsForEvent (data) {
 
 function sendSNSForEvent (data) {
   if (moment.tz('UTC').diff(moment.tz(data.measured_at, 'UTC'), 'hours') < 2) {
-    var msg = {
+    const msg = {
       type: data.type || 'alert',
       detected: data.value,
       guardian: data.guardian_shortname,
@@ -565,10 +565,10 @@ function sendSNSForEvent (data) {
 
 function clearPreviousReviewOfUser (guid, user) {
   const query = 'MATCH (ev:event {guid: {guid}}) ' +
-              'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
-              'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]-(user) ' +
-              'DETACH DELETE re ' +
-              'RETURN ev as event'
+    'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
+    'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]-(user) ' +
+    'DETACH DELETE re ' +
+    'RETURN ev as event'
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, {
@@ -590,9 +590,9 @@ function clearPreviousReviewOfUser (guid, user) {
 
 function clearLatestReview (guid) {
   const query = 'MATCH (ev:event {guid: {guid}}) ' +
-              'OPTIONAL MATCH (ev)-[has_review]->(re:review { latest: true }) ' +
-              'SET re.latest = null ' +
-              'RETURN ev as event'
+    'OPTIONAL MATCH (ev)-[has_review]->(re:review { latest: true }) ' +
+    'SET re.latest = null ' +
+    'RETURN ev as event'
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, { guid }))
@@ -610,8 +610,8 @@ function clearLatestReview (guid) {
 
 function reviewEvent (guid, confirmed, user, timestamp, unreliable) {
   const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:classifies]->(val:label), (user:user {guid: {userGuid}, email: {userEmail}})' +
-              'MERGE (ev)-[:has_review]->(:review { latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
-              'RETURN ev as event, val.value as value'
+    'MERGE (ev)-[:has_review]->(:review { latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
+    'RETURN ev as event, val.value as value'
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, {
@@ -638,10 +638,10 @@ function reviewEvent (guid, confirmed, user, timestamp, unreliable) {
 
 function clearPreviousAudioWindowsReviewOfUser (guid, user) {
   const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet) ' +
-              'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
-              'OPTIONAL MATCH (aws)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review)<-[:created]-(user) ' +
-              'DETACH DELETE re ' +
-              'RETURN ev as event'
+    'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
+    'OPTIONAL MATCH (aws)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review)<-[:created]-(user) ' +
+    'DETACH DELETE re ' +
+    'RETURN ev as event'
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, {
@@ -663,9 +663,9 @@ function clearPreviousAudioWindowsReviewOfUser (guid, user) {
 
 function clearLatestAudioWindowsReview (guid) {
   const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)' +
-              'OPTIONAL MATCH (aw)-[:has_review]->(re:review) ' +
-              'SET re.latest = null ' +
-              'RETURN ev as event'
+    'OPTIONAL MATCH (aw)-[:has_review]->(re:review) ' +
+    'SET re.latest = null ' +
+    'RETURN ev as event'
 
   const session = neo4j.session()
   const resultPromise = Promise.resolve(session.run(query, { guid }))
@@ -686,9 +686,9 @@ function reviewAudioWindows (windowsData, user, timestamp, unreliable) {
   const proms = []
   windowsData.forEach((item) => {
     const query = 'MATCH (aw:audioWindow {guid: {guid}}) ' +
-                'MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
-                'MERGE (aw)-[:has_review]->(:review {latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
-                'RETURN aw as audioWindow'
+      'MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
+      'MERGE (aw)-[:has_review]->(:review {latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
+      'RETURN aw as audioWindow'
 
     const resultPromise = Promise.resolve(session.run(query, {
       guid: item.guid,
@@ -720,7 +720,7 @@ function generateTextGridContent (tempPath, reviews) {
     const filePath = path.join(tempPath, `${item.audioGuid}.textgrid`)
     const textGridStr = textGridService.prepareTextGrid(item)
     const prom = new Promise((resolve, reject) => {
-      var stream = fs.createWriteStream(filePath)
+      const stream = fs.createWriteStream(filePath)
       stream.once('open', function (fd) {
         stream.write(textGridStr)
         stream.end()

@@ -1,5 +1,5 @@
 const express = require('express')
-var router = express.Router()
+const router = express.Router()
 const sequelize = require('sequelize')
 const moment = require('moment-timezone')
 const passport = require('passport')

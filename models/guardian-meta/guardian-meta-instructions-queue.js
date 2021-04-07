@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaInstructionsQueue = sequelize.define('GuardianMetaInstructionsQueue', {
+  const GuardianMetaInstructionsQueue = sequelize.define('GuardianMetaInstructionsQueue', {
     queued_at: {
       type: DataTypes.DATE(3),
       allowNull: true,

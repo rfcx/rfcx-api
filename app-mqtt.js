@@ -5,9 +5,9 @@ if (process.env.NODE_ENV === 'production') {
   require('newrelic')
 }
 
-var app = { http: null, mqtt: null }
+const app = { http: null, mqtt: null }
 
-var mqtt = require('mqtt')
+const mqtt = require('mqtt')
 
 app.mqtt = mqtt.connect({
   clientId: 'rfcx-api-mqtt-development' + process.env.NODE_ENV + Math.random().toString(16).substr(2, 8),
@@ -23,11 +23,11 @@ app.mqtt = mqtt.connect({
   debug: true
 })
 
-var express = require('express')
-var passport = require('passport')
-var cors = require('cors')
-var bodyParser = require('body-parser')
-var multer = require('multer')
+const express = require('express')
+const passport = require('passport')
+const cors = require('cors')
+const bodyParser = require('body-parser')
+const multer = require('multer')
 
 app.http = express()
 app.http.set('title', 'rfcx-api-mqtt')
