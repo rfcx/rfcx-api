@@ -39,9 +39,7 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyCreate
 
   const classificationCondition = classifications === undefined
     ? {}
-    : {
-        value: { [models.Sequelize.Op.or]: classifications }
-      }
+    : { value: { [models.Sequelize.Op.or]: classifications } }
 
   // TODO: if minConfidence is undefined, get it from event strategy
   condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
@@ -113,11 +111,37 @@ function create (detections) {
     })))
 }
 
+/**
+ * Get a list of detections
+ * @param {string} start
+ * @param {string} end
+ * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
+ * @param {string | string[]} projetcs Project id or list of project ids
+ * @param {string | string[]} classifications Classification or list of classifications
+ * @param {number} minConfidence Minimum confidence to query detections
+ * @param {boolean} isReviewed
+ * @param {boolean} isPositive
+ * @param {number} limit Maximum number to get detections
+ * @param {number} offset Number of resuls to skip
+ * @returns {Detection[]} Detections
+ */
+async function reviewQuery (start, end, streamIdOrIds, projetcs, classifications, minConfidence, isReviewed, isPositive, limit, offset) {
+  const sql =
+    `SELECT * FROM detections
+      LEFT JOIN annotations ON detections.start = annotations.start
+      AND detections.end = annotations.end
+      AND detections.stream_id = annotations.stream_id
+      AND detections.classification_id = annotations.classification_id
+    `
+  return models.sequelize.query(sql, { type: models.sequelize.QueryTypes.SELECT })
+}
+
 const DEFAULT_IGNORE_THRESHOLD = 0.5
 
 module.exports = {
   query,
   timeAggregatedQuery,
+  reviewQuery,
   create,
   DEFAULT_IGNORE_THRESHOLD
 }
