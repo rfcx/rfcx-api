@@ -1,5 +1,5 @@
-var Promise = require('bluebird')
-var models = require('../../models')
+const Promise = require('bluebird')
+const models = require('../../models')
 
 exports.healthCheck = {
 
@@ -20,7 +20,7 @@ exports.healthCheck = {
   },
 
   httpResponse: function (req, res) {
-    var rtrnJson = { healthy: null }
+    const rtrnJson = { healthy: null }
     if (req.query.headers === '1') { rtrnJson.http_headers = {}; for (const i in req.headers) { rtrnJson.http_headers[i] = req.headers[i] } }
 
     this.dbCheck()

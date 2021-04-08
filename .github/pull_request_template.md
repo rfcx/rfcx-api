@@ -1,13 +1,13 @@
 ## ✅ DoD
 
-- [x] Resolves [CS-XXX](https://jira.rfcx.org/browse/CS-XXX)
-- [ ] API docs updated (_or_ n/a)
-- [ ] Release notes updated (_or_ n/a)
-- [ ] Deployment notes updated (_or_ n/a)
-- [ ] Unit tests added (_or_ n/a)
-- [ ] DB migrations tested (_or_ n/a)
+- [x] Resolves [CE-XXX](https://jira.rfcx.org/browse/CE-XXX)
+- [ ] API docs updated na
+- [ ] Release notes updated na
+- [ ] Deployment notes updated na
+- [ ] Unit or integration tests added na
+- [ ] DB migrations tested na
 
-_(use n/a when API docs (Release notes, etc) do not need to be updated)_
+_(use na when API docs (Release notes, etc) do not need to be updated)_
 
 ## 📝 Summary
 

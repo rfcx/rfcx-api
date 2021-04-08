@@ -1,30 +1,30 @@
 #!/usr/bin/env node
-var args = process.argv.slice(2)
+const args = process.argv.slice(2)
 
-var exec = require('child_process').exec
-var fs = require('fs')
+const exec = require('child_process').exec
+const fs = require('fs')
 
 if (fs.existsSync(__dirname + '/../../config/env_vars.js')) {
-  var env = require(__dirname + '/../../config/env_vars.js').env
+  const env = require(__dirname + '/../../config/env_vars.js').env
   for (i in env) { process.env[i] = env[i] }
 }
 
 process.env.NODE_ENV = 'production' // could also be staging...
 
-var models = require(__dirname + '/../../models')
-var token = require(__dirname + '/../../utils/internal-rfcx/token.js').token
-var aws = require(__dirname + '/../../utils/external/aws.js').aws()
+const models = require(__dirname + '/../../models')
+const token = require(__dirname + '/../../utils/internal-rfcx/token.js').token
+const aws = require(__dirname + '/../../utils/external/aws.js').aws()
 
 if (args[0] == null) {
   console.log('You must provide a mode (tsv/open) as arguments.')
 } else {
-  var query_limit = 5000
+  const query_limit = 5000
 
-  var minimum_duration = 1500
+  const minimum_duration = 1500
 
-  var used_audio = []
+  const used_audio = []
 
-  var classifications = {
+  const classifications = {
     invalidated: 'no_alert',
     chainsaw: 'chainsaw',
     car: 'car',
@@ -55,17 +55,17 @@ if (args[0] == null) {
 
       for (dbEvntInd in dbEvents) {
         if (dbEvents[dbEvntInd].Audio != null) {
-          var begins_at =
+          const begins_at =
                     (dbEvents[dbEvntInd].begins_at_reviewer == null) ? dbEvents[dbEvntInd].begins_at_analysis : dbEvents[dbEvntInd].begins_at_reviewer
-          var begins_orig =
+          const begins_orig =
                     (begins_at.valueOf() - dbEvents[dbEvntInd].Audio.measured_at.valueOf())
-          var begins_full =
+          const begins_full =
                     begins_orig
-          var begins_sample =
+          const begins_sample =
                     Math.round(begins_orig * dbEvents[dbEvntInd].Audio.capture_sample_rate / 1000)
-          var duration_full =
+          const duration_full =
                     (dbEvents[dbEvntInd].duration_reviewer == null) ? dbEvents[dbEvntInd].duration_analysis : dbEvents[dbEvntInd].duration_reviewer
-          var ends_sample =
+          const ends_sample =
                     Math.round((begins_full + duration_full) * dbEvents[dbEvntInd].Audio.capture_sample_rate / 1000)
 
           if ((begins_full <= 75000) && (begins_full > 1) && (duration_full >= minimum_duration)) {
@@ -116,7 +116,7 @@ if (args[0] == null) {
 }
 
 function shuffle (array) {
-  var currentIndex = array.length; var temporaryValue; var randomIndex
+  let currentIndex = array.length; let temporaryValue; let randomIndex
 
   // While there remain elements to shuffle...
   while (currentIndex !== 0) {

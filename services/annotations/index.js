@@ -40,10 +40,11 @@ async function defaultQueryOptions (filters, options = {}) {
       [models.Sequelize.Op.in]: streamIds
     }
   }
-  const classificationCondition = filters.classifications === undefined ? {}
+  const classificationCondition = filters.classifications === undefined
+    ? {}
     : {
-      value: { [models.Sequelize.Op.or]: filters.classifications }
-    }
+        value: { [models.Sequelize.Op.or]: filters.classifications }
+      }
   const include = [{
     as: 'classification',
     model: models.Classification,

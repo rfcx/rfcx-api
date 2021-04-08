@@ -1,6 +1,6 @@
-var httpError = require('../../utils/http-errors')
-var auth0Service = require('../../services/auth0/auth0-service')
-var passport = require('passport')
+const httpError = require('../../utils/http-errors')
+const auth0Service = require('../../services/auth0/auth0-service')
+const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
 passport.use('jwt', require('../passport-jwt').JwtStrategy)
 passport.use('jwt-custom', require('../passport-jwt').JwtStrategyCustom)
@@ -31,12 +31,12 @@ function hasRole (expectedRoles) {
     if (expectedRoles.length === 0 || req.user.userType !== 'auth0') { return next() }
     if (!req.user) { return res.sendStatus(403) }
     const roles = auth0Service.getUserRolesFromToken(req.user)
-    var allowed = expectedRoles.some((role) => {
+    const allowed = expectedRoles.some((role) => {
       return roles.indexOf(role) !== -1
     })
     return allowed ? next() : res.sendStatus(403)
   }
-};
+}
 
 /**
  * Creates an array of middleware that checks the user is authenticated

@@ -1,27 +1,27 @@
 #!/usr/bin/env node
 
-var stringLength = 12
+const stringLength = 12
 
-var reps = 4
+const reps = 4
 
 function randomStr () {
-  var str = ''
-  var key = '0123456789abcdef'// ;ghijklmnopqrstuvwxyz';
+  let str = ''
+  const key = '0123456789abcdef'// ;ghijklmnopqrstuvwxyz';
 
-  for (var i = 0; i < stringLength; i++) { str += key.charAt(Math.floor(Math.random() * key.length)) }
+  for (let i = 0; i < stringLength; i++) { str += key.charAt(Math.floor(Math.random() * key.length)) }
 
   return str
 }
 
-var sum = 0
+let sum = 0
 
-for (var i = 1; i <= reps; i++) {
-  var arr = []
+for (let i = 1; i <= reps; i++) {
+  const arr = []
 
-  var start = Math.round((new Date()).valueOf() / 1000)
+  const start = Math.round((new Date()).valueOf() / 1000)
 
   do {
-    var s = randomStr()
+    const s = randomStr()
     if (arr.indexOf(s) > -1) { break }
     arr.push(s)
   }

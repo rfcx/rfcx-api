@@ -1,6 +1,6 @@
-var Converter = require('../../../utils/converter/converter')
-var models = require('../../../models')
-var Promise = require('bluebird')
+const Converter = require('../../../utils/converter/converter')
+const models = require('../../../models')
+const Promise = require('bluebird')
 
 module.exports = {
   createCognitionTypeValue: function (params) {
@@ -14,7 +14,7 @@ module.exports = {
   },
 
   createCognitionType: function (params) {
-    var transformedParams = {}
+    const transformedParams = {}
     params = new Converter(params, transformedParams)
     params.convert('event_type').toString()
 
@@ -31,7 +31,7 @@ module.exports = {
   },
 
   createCognitionValue: function (params) {
-    var transformedParams = {}
+    const transformedParams = {}
     params = new Converter(params, transformedParams)
     params.convert('event_value').toString()
 

@@ -11,7 +11,7 @@ function getDetections () {
     input: fs.createReadStream(path.join(__dirname, '../../seeds/50-detections.sql'))
   })
   return new Promise((resolve, reject) => {
-    var streams = {}
+    const streams = {}
     lineReader
       .on('line', (line) => {
         try {
@@ -80,7 +80,7 @@ function getClassifiers () {
     input: fs.createReadStream(path.join(__dirname, '../../seeds/44-classifier-event-strategies.sql'))
   })
   return new Promise((resolve, reject) => {
-    var classifiers = {}
+    const classifiers = {}
     lineReader
       .on('line', (line) => {
         try {
@@ -123,7 +123,7 @@ function closeFiles () {
 }
 
 async function main () {
-  var streams = await getDetections()
+  const streams = await getDetections()
   sortDetections(streams)
   mergeDetections(streams)
   const classifiers = await getClassifiers()

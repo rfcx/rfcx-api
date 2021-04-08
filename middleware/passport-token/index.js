@@ -1,6 +1,6 @@
-var TokenStrategy = require('passport-accesstoken').Strategy
+const TokenStrategy = require('passport-accesstoken').Strategy
 
-var authenticateAs = {
+const authenticateAs = {
   Guardian: require('./auth-as-guardian.js').authenticateAs,
   User: require('./auth-as-user.js').authenticateAs,
   RegistrationToken: require('./auth-with-registration-token.js').authenticateAs,
@@ -18,7 +18,7 @@ exports.TokenStrategy =
     }, function (req, token, done) {
       // parses auth_user from req.rfcx...
       // the way this is being done should probably be consolidated or re-considered
-      var authUser = { type: null, guid: null }
+      const authUser = { type: null, guid: null }
       for (const i in req.rfcx.auth_user) {
         if ((req.rfcx.auth_user[i] != null) && (req.rfcx.auth_user[i].indexOf('/') > 0)) {
           authUser.type = req.rfcx.auth_user[i].split('/')[0].toLowerCase()

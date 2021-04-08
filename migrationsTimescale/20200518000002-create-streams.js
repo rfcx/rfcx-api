@@ -64,41 +64,43 @@ module.exports = {
       }
     })
       .then(() => {
-        return Promise.all([
-          queryInterface.addConstraint('streams', {
-            type: 'CHECK',
-            fields: ['latitude'],
-            where: {
-              latitude: {
-                [Sequelize.Op.and]: {
-                  [Sequelize.Op.gte]: -90,
-                  [Sequelize.Op.lte]: 90
-                }
+        return queryInterface.addConstraint('streams', {
+          type: 'CHECK',
+          fields: ['latitude'],
+          where: {
+            latitude: {
+              [Sequelize.Op.and]: {
+                [Sequelize.Op.gte]: -90,
+                [Sequelize.Op.lte]: 90
               }
             }
-          }),
-          queryInterface.addConstraint('streams', {
-            type: 'CHECK',
-            fields: ['longitude'],
-            where: {
-              longitude: {
-                [Sequelize.Op.and]: {
-                  [Sequelize.Op.gte]: -180,
-                  [Sequelize.Op.lte]: 180
-                }
+          }
+        })
+      })
+      .then(() => {
+        return queryInterface.addConstraint('streams', {
+          type: 'CHECK',
+          fields: ['longitude'],
+          where: {
+            longitude: {
+              [Sequelize.Op.and]: {
+                [Sequelize.Op.gte]: -180,
+                [Sequelize.Op.lte]: 180
               }
             }
-          }),
-          queryInterface.addConstraint('streams', {
-            type: 'CHECK',
-            fields: ['max_sample_rate'],
-            where: {
-              max_sample_rate: {
-                [Sequelize.Op.gt]: 0
-              }
+          }
+        })
+      })
+      .then(() => {
+        return queryInterface.addConstraint('streams', {
+          type: 'CHECK',
+          fields: ['max_sample_rate'],
+          where: {
+            max_sample_rate: {
+              [Sequelize.Op.gt]: 0
             }
-          })
-        ])
+          }
+        })
       })
   },
   down: (queryInterface, Sequelize) => {

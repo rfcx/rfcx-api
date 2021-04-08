@@ -1,4 +1,4 @@
-var { runExec } = require('../../utils/misc/shell')
+const { runExec } = require('../../utils/misc/shell')
 const models = require('../../modelsTimescale')
 const Promise = require('bluebird')
 const path = require('path')
@@ -7,7 +7,7 @@ const ValidationError = require('../../utils/converter/validation-error')
 const audioUtils = require('../../utils/rfcx-audio').audioUtils
 const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 const mathUtil = require('../../utils/misc/math')
-const hash = require('../../utils/misc/hash').hash
+const hash = require('../../utils/misc/hash')
 const storageService = process.env.PLATFORM === 'google' ? require('../storage/google') : require('../storage/amazon')
 
 const possibleWindowFuncs = ['dolph', 'hann', 'hamming', 'bartlett', 'rectangular', 'kaiser']
@@ -46,20 +46,26 @@ function parseFileNameAttrs (req) {
     const clipStr = findStartsWith('r')
     resolve({
       streamId: nameArr[0],
-      time: timeStr ? {
-        starts: timeStr.split('.')[0],
-        ends: timeStr.split('.')[1]
-      } : undefined,
-      clip: clipStr && clipStr !== 'full' ? {
-        bottom: clipStr.split('.')[0],
-        top: clipStr.split('.')[1]
-      } : 'full',
+      time: timeStr
+        ? {
+            starts: timeStr.split('.')[0],
+            ends: timeStr.split('.')[1]
+          }
+        : undefined,
+      clip: clipStr && clipStr !== 'full'
+        ? {
+            bottom: clipStr.split('.')[0],
+            top: clipStr.split('.')[1]
+          }
+        : 'full',
       gain: findStartsWith('g') || '1',
       fileType: findStartsWith('f'),
-      dimensions: dimensionsStr ? {
-        x: dimensionsStr.split('.')[0],
-        y: dimensionsStr.split('.')[1]
-      } : undefined,
+      dimensions: dimensionsStr
+        ? {
+            x: dimensionsStr.split('.')[0],
+            y: dimensionsStr.split('.')[1]
+          }
+        : undefined,
       windowFunc: findStartsWith('w') || 'dolph',
       monochrome: findStartsWith('m') || 'false',
       zAxis: findStartsWith('z') || '120',
@@ -174,7 +180,8 @@ function downloadSegments (segments) {
   for (const segment of segments) {
     const ts = moment.tz(segment.start, 'UTC')
     const segmentExtension = segment.file_extension && segment.file_extension.value
-      ? segment.file_extension.value : path.extname(segment.stream_source_file.filename)
+      ? segment.file_extension.value
+      : path.extname(segment.stream_source_file.filename)
     const remotePath = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
     segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
     downloadProms.push(storageService.download(INGEST_BUCKET, remotePath, segment.sourceFilePath))
@@ -186,10 +193,11 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   let command = `${FFMPEG_PATH} `
   const complexFilter = []
   segments.forEach((segment, ind) => {
+    let startSilsenceMs
     if (ind === 0 && starts < segment.start) {
       // when requested time range starts earlier than first segment
       // add empty sound at the start
-      var startSilsenceMs = segment.start - starts
+      startSilsenceMs = segment.start - starts
     }
     let endSilenceMs = 0
     const nextSegment = segments[ind + 1]
@@ -228,8 +236,9 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
       command += `-t ${durationMs}ms ` // how much time in duration we should have
     }
     command += `-i ${segment.sourceFilePath} `
+    let sampleRate
     try {
-      var sampleRate = segment.stream_source_file.sample_rate
+      sampleRate = segment.stream_source_file.sample_rate
     } catch (e) {
       console.error(`Could not get sampleRate for segment "${segment.id}"`)
     }
@@ -332,8 +341,8 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
 
   const audioFilename = `${filename}.${extension}`
   const audioFilePath = `${tmpDir}${audioFilename}`
-  var spectrogramFilename = `${filename}.${spectrogramExtension}`
-  var spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
+  let spectrogramFilename = `${filename}.${spectrogramExtension}`
+  let spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
 
   await downloadSegments(segments)
   await convertAudio(segments, start, end, attrs, audioFilePath)
@@ -349,9 +358,7 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
       }
     }
   }
-  if (MEDIA_CACHE_ENABLED) {
-    var { audioFilePathCached, spectrogramFilePathCached } = await cloneFiles(audioFilePath, attrs.fileType === 'spec' ? spectrogramFilePath : null)
-  }
+  const { audioFilePathCached, spectrogramFilePathCached } = MEDIA_CACHE_ENABLED ? await cloneFiles(audioFilePath, attrs.fileType === 'spec' ? spectrogramFilePath : null) : {}
   if (attrs.fileType === 'spec') {
     await audioUtils.serveAudioFromFile(res, spectrogramFilePath, spectrogramFilename, `image/${reqContentType}`, !!req.query.inline, additionalHeaders)
   } else {

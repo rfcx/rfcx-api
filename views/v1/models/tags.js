@@ -1,10 +1,10 @@
-var Promise = require('bluebird')
-var urls = require('../../../utils/misc/urls')
+const Promise = require('bluebird')
+const urls = require('../../../utils/misc/urls')
 
 exports.models = {
 
   groupTagsByCreator: function (req, res, dbRows) {
-    var result = {
+    const result = {
       data: {
         type: 'tags',
         attributes: {
@@ -41,7 +41,7 @@ exports.models = {
   countTagsByGuid: function (req, res, dbRows, inputGuids) {
     return new Promise(function (resolve, reject) {
       try {
-        var json = {}
+        const json = {}
 
         if (!Array.isArray(inputGuids)) { inputGuids = [inputGuids] }
         // set classified attribute to false by default for all input guids
@@ -51,7 +51,7 @@ exports.models = {
 
         // change classified to true for guids which has tags
         dbRows.forEach(function (row) {
-          var guid = row.guid
+          const guid = row.guid
           json[guid].push({
             begins_at_offset: row.begins_at_offset,
             ends_at_offset: row.ends_at_offset,

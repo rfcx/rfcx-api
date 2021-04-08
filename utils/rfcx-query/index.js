@@ -1,8 +1,8 @@
 'use strict'
 
-var fs = require('fs')
-var path = require('path')
-var helpers = {}
+const fs = require('fs')
+const path = require('path')
+const helpers = {}
 
 fs.readdirSync(__dirname).filter(function (file) {
   return (file.indexOf('.') !== 0) && (file !== 'index.js') && !fs.statSync(path.join(__dirname, file)).isDirectory()
@@ -39,7 +39,7 @@ fs.readdirSync(__dirname).filter(function (file) {
 module.exports = helpers
 
 function importHelperFile (filePath) {
-  var helperFile = require(filePath)
+  const helperFile = require(filePath)
   Object.keys(helperFile).forEach(function (typeKey) {
     if (helpers[typeKey] == null) { helpers[typeKey] = {} }
     Object.keys(helperFile[typeKey]).forEach(function (helperKey) {

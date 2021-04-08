@@ -1,3 +1,12 @@
+## 1.0.18 (???)
+
+### Features
+* **core:** Detection endpoints use classifier output mappings.
+* **core:** Stream assets are no longer stored in Core.
+* **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
+* **guardian:** Save detections sent over MQTT
+
+
 ## 1.0.17-hotfix.3 (2021-04-02)
 
 ### Bug Fixes

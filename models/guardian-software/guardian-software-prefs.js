@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianSoftwarePrefs = sequelize.define('GuardianSoftwarePrefs', {
+  const GuardianSoftwarePrefs = sequelize.define('GuardianSoftwarePrefs', {
 
     pref_key: {
       type: DataTypes.STRING,

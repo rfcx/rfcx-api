@@ -2,7 +2,7 @@
 
 module.exports = {
   up: function (queryInterface, Sequelize, done) {
-    var sqlAddColumnModel = 'ALTER TABLE `Reports`' +
+    const sqlAddColumnModel = 'ALTER TABLE `Reports`' +
     ' ADD COLUMN `value` INTEGER DEFAULT NULL' +
     ', ADD FOREIGN KEY (`value`) REFERENCES `GuardianAudioEventValues`(`id`)' +
     ' ON UPDATE CASCADE ON DELETE RESTRICT;'

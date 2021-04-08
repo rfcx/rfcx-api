@@ -74,7 +74,7 @@ function query (attrs, opts = {}) {
  * @param {*} opts additional function params
  * @returns {*} segment model item
  */
-function getById (id, opts = {}) {
+function get (id, opts = {}) {
   return models.StreamSegment
     .findOne({
       where: { id },
@@ -219,7 +219,7 @@ function format (data) {
 
 module.exports = {
   query,
-  getById,
+  get,
   create,
   remove,
   findOrCreateRelationships,

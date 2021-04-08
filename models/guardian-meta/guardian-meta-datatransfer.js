@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaDataTransfer = sequelize.define('GuardianMetaDataTransfer', {
+  const GuardianMetaDataTransfer = sequelize.define('GuardianMetaDataTransfer', {
     started_at: {
       type: DataTypes.DATE(3),
       validate: {

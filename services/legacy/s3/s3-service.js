@@ -1,8 +1,8 @@
 // TODO: replace with services/storage/amazon
 
-var Promise = require('bluebird')
-var fs = require('fs')
-var aws = require('../../../utils/external/aws').aws()
+const Promise = require('bluebird')
+const fs = require('fs')
+const aws = require('../../../utils/external/aws').aws()
 
 /**
  * Uploads file to S3 storage
@@ -76,8 +76,8 @@ function headObject (s3Path, bucket, dontRejectIfEmpty) {
 function getObject (localPath, filename, bucket) {
   return new Promise((resolve, reject) => {
     try {
-      var s3Path = filename
-      var sourceFilePath = `${localPath}/${filename}`
+      const s3Path = filename
+      const sourceFilePath = `${localPath}/${filename}`
       // First of all, check that file exists
       aws.s3(bucket)
         .headFile(s3Path, (err, data) => {

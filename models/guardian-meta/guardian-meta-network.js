@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaNetwork = sequelize.define('GuardianMetaNetwork', {
+  const GuardianMetaNetwork = sequelize.define('GuardianMetaNetwork', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

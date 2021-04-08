@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = (sequelize, DataTypes) => {
   const ClassifierEventStrategy = sequelize.define('ClassifierEventStrategy', {
     id: {
@@ -36,8 +38,6 @@ module.exports = (sequelize, DataTypes) => {
     full: ['event_strategy_id', 'active', 'parameters', 'last_executed_at'],
     lite: ['event_strategy_id', 'active']
   }
-  ClassifierEventStrategy.include = function (as = 'classifier_event_strategy', attributes = ClassifierEventStrategy.attributes.lite, required = true) {
-    return { model: ClassifierEventStrategy, as, attributes, required }
-  }
+  ClassifierEventStrategy.include = includeBuilder(ClassifierEventStrategy, 'classifier_event_strategy', ClassifierEventStrategy.attributes.lite)
   return ClassifierEventStrategy
 }

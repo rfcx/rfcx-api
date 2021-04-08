@@ -32,26 +32,25 @@ module.exports = {
       }
     })
       .then(() => {
-        return Promise.all([
-          queryInterface.addConstraint('classifiers', {
-            type: 'CHECK',
-            fields: ['min_confidence'],
-            where: {
-              min_confidence: {
-                [Sequelize.Op.gte]: 0
-              }
+        return queryInterface.addConstraint('classifiers', {
+          type: 'CHECK',
+          fields: ['min_confidence'],
+          where: {
+            min_confidence: {
+              [Sequelize.Op.gte]: 0
             }
-          }),
-          queryInterface.addConstraint('classifiers', {
-            type: 'CHECK',
-            fields: ['min_windows_count'],
-            where: {
-              min_windows_count: {
-                [Sequelize.Op.gt]: 0
-              }
+          }
+        })
+      }).then(() => {
+        return queryInterface.addConstraint('classifiers', {
+          type: 'CHECK',
+          fields: ['min_windows_count'],
+          where: {
+            min_windows_count: {
+              [Sequelize.Op.gt]: 0
             }
-          })
-        ])
+          }
+        })
       })
   },
   down: (queryInterface, Sequelize) => {

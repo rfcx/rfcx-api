@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianEvent = sequelize.define('GuardianEvent', {
+  const GuardianEvent = sequelize.define('GuardianEvent', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

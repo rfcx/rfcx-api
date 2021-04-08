@@ -1,6 +1,6 @@
-var Promise = require('bluebird')
-var ffmpeg = require('fluent-ffmpeg')
-var aws = require('../../utils/external/aws.js').aws()
+const Promise = require('bluebird')
+const ffmpeg = require('fluent-ffmpeg')
+const aws = require('../../utils/external/aws.js').aws()
 const fs = require('fs')
 
 exports.audio = {

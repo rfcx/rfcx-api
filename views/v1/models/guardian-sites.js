@@ -3,16 +3,16 @@ function getAllViews () { return require('../../../views/v1') }
 exports.models = {
 
   guardianSites: function (req, res, dbSites, extended) {
-    var views = getAllViews()
+    const views = getAllViews()
 
     if (!Array.isArray(dbSites)) { dbSites = [dbSites] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbSites) {
-      var dbRow = dbSites[i]
+      const dbRow = dbSites[i]
 
-      var guardianSite = {
+      const guardianSite = {
         guid: dbRow.guid,
         name: dbRow.name,
         description: dbRow.description,

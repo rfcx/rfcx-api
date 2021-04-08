@@ -6,8 +6,8 @@ const availableIncludes = [
   // Get the classifier through classifier_event_strategies (including the fields of c_e_s and classifier_output)
   {
     ...Classifier.include('classifiers'),
-    through: ClassifierEventStrategy.include('classifier_event_strategy', ClassifierEventStrategy.attributes.full.filter(a => a !== 'event_strategy_id')),
-    include: ClassifierOutput.include('outputs', ClassifierOutput.attributes.lite, false)
+    through: ClassifierEventStrategy.include({ attributes: ClassifierEventStrategy.attributes.full.filter(a => a !== 'event_strategy_id') }),
+    include: ClassifierOutput.include({ as: 'outputs', required: false })
   }
 ]
 

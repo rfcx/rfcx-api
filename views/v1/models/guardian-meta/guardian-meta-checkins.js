@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaCheckIns: function (req, res, dbCheckIns, modelInfo) {
     if (!Array.isArray(dbCheckIns)) { dbCheckIns = [dbCheckIns] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbCheckIns) {
-      var dbRow = dbCheckIns[i]
+      const dbRow = dbCheckIns[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,

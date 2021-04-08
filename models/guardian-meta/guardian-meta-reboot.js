@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaReboot = sequelize.define('GuardianMetaReboot', {
+  const GuardianMetaReboot = sequelize.define('GuardianMetaReboot', {
     completed_at: {
       type: DataTypes.DATE(3),
       validate: {

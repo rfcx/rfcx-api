@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaSoftwareVersion = sequelize.define('GuardianMetaSoftwareVersion', {
+  const GuardianMetaSoftwareVersion = sequelize.define('GuardianMetaSoftwareVersion', {
 
     last_checkin_at: {
       type: DataTypes.DATE(3),

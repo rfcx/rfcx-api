@@ -1,25 +1,25 @@
-var Promise = require('bluebird')
-var token = require('../../utils/internal-rfcx/token.js').token
-var aws = require('../../utils/external/aws.js').aws()
-var models = require('../../models')
+const Promise = require('bluebird')
+const token = require('../../utils/internal-rfcx/token.js').token
+const aws = require('../../utils/external/aws.js').aws()
+const models = require('../../models')
 const moment = require('moment-timezone')
 
 function snsPublishAsync (queueName, options, tokenInfo, dbAnalysisModel) {
   return new Promise(function (resolve, reject) {
-    var apiUrlDomain = options.api_url_domain
+    const apiUrlDomain = options.api_url_domain
 
-    var audioS3Bucket = options.audio_s3_bucket
-    var audioS3Path = options.audio_s3_path
-    var audioSha1Checksum = options.audio_sha1_checksum
-    var analysisModelUrl = dbAnalysisModel.model_download_url
-    var analysisModelGuid = dbAnalysisModel.guid
-    var analysisModelSha1Checksum = dbAnalysisModel.model_sha1_checksum
+    const audioS3Bucket = options.audio_s3_bucket
+    const audioS3Path = options.audio_s3_path
+    const audioSha1Checksum = options.audio_sha1_checksum
+    const analysisModelUrl = dbAnalysisModel.model_download_url
+    const analysisModelGuid = dbAnalysisModel.guid
+    const analysisModelSha1Checksum = dbAnalysisModel.model_sha1_checksum
 
-    var apiTokenGuid = tokenInfo.token_guid
-    var apiToken = tokenInfo.token
-    var apiTokenExpiresAt = tokenInfo.token_expires_at
-    var apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf() - (new Date()).valueOf()) / 60000)
-    var apiWriteBackEndpoint = '/v1/audio/' + options.audio_guid + '/tags'
+    const apiTokenGuid = tokenInfo.token_guid
+    const apiToken = tokenInfo.token
+    const apiTokenExpiresAt = tokenInfo.token_expires_at
+    const apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf() - (new Date()).valueOf()) / 60000)
+    const apiWriteBackEndpoint = '/v1/audio/' + options.audio_guid + '/tags'
 
     aws.sns().publish({
       TopicArn: aws.snsTopicArn(queueName),
@@ -64,8 +64,8 @@ exports.analysisUtils = {
   queueForCognitionAnalysis: function (queueName, event, cognitionParams, options) {
     return new Promise(function (resolve, reject) {
       try {
-        var apiWriteBackEndpoint = '/v1/events'
-        var apiUrlDomain = options.api_url_domain
+        const apiWriteBackEndpoint = '/v1/events'
+        const apiUrlDomain = options.api_url_domain
 
         token.createAnonymousToken({
           token_type: queueName,
@@ -73,9 +73,9 @@ exports.analysisUtils = {
           allow_garbage_collection: true,
           only_allow_access_to: ['^' + apiWriteBackEndpoint + '$']
         }).then(function (tokenInfo) {
-          var apiTokenGuid = tokenInfo.token_guid
-          var apiToken = tokenInfo.token
-          var apiTokenExpiresAt = tokenInfo.token_expires_at
+          const apiTokenGuid = tokenInfo.token_guid
+          const apiToken = tokenInfo.token
+          const apiTokenExpiresAt = tokenInfo.token_expires_at
 
           aws.sns().publish({
             TopicArn: aws.snsTopicArn(queueName),
@@ -131,15 +131,15 @@ exports.analysisUtils = {
             reject(new Error('failed to find analysis model'))
           } else {
             try {
-              var apiWriteBackEndpoint = '/v1/audio/' + options.audio_guid + '/tags'
-              var apiUrlDomain = options.api_url_domain
+              const apiWriteBackEndpoint = '/v1/audio/' + options.audio_guid + '/tags'
+              const apiUrlDomain = options.api_url_domain
 
-              var audioS3Bucket = options.audio_s3_bucket
-              var audioS3Path = options.audio_s3_path
-              var audioSha1Checksum = options.audio_sha1_checksum
+              const audioS3Bucket = options.audio_s3_bucket
+              const audioS3Path = options.audio_s3_path
+              const audioSha1Checksum = options.audio_sha1_checksum
 
-              var analysisModelUrl = dbAnalysisModel.model_download_url
-              var analysisModelSha1Checksum = dbAnalysisModel.model_sha1_checksum
+              const analysisModelUrl = dbAnalysisModel.model_download_url
+              const analysisModelSha1Checksum = dbAnalysisModel.model_sha1_checksum
 
               return token.createAnonymousToken({
                 token_type: 'audio-analysis-queue',
@@ -147,10 +147,10 @@ exports.analysisUtils = {
                 allow_garbage_collection: true,
                 only_allow_access_to: ['^' + apiWriteBackEndpoint + '$']
               }).then(function (tokenInfo) {
-                var apiTokenGuid = tokenInfo.token_guid
-                var apiToken = tokenInfo.token
-                var apiTokenExpiresAt = tokenInfo.token_expires_at
-                var apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf() - (new Date()).valueOf()) / 60000)
+                const apiTokenGuid = tokenInfo.token_guid
+                const apiToken = tokenInfo.token
+                const apiTokenExpiresAt = tokenInfo.token_expires_at
+                const apiTokenMinutesUntilExpiration = Math.round((tokenInfo.token_expires_at.valueOf() - (new Date()).valueOf()) / 60000)
 
                 return aws.sns().publish({
                   TopicArn: aws.snsTopicArn(queueName),
@@ -206,7 +206,7 @@ exports.analysisUtils = {
             console.log('failed to find analysis model')
             reject(new Error())
           } else {
-            var endpointAccess = '/v1/audio/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/tags'
+            const endpointAccess = '/v1/audio/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/tags'
 
             return token.createAnonymousToken({
               token_type: 'audio-analysis-queue',

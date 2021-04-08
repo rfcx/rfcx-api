@@ -1,7 +1,7 @@
-var mqttPingProcess = require('../../utils/rfcx-mqtt/mqtt-ping-process.js').mqttPingProcess
-var checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInDatabase
-var mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
-var guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
+const mqttPingProcess = require('../../utils/rfcx-mqtt/mqtt-ping-process.js').mqttPingProcess
+const checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInDatabase
+const mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
+const guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
 
 function onMessagePing (pingObj, messageId) {
   return checkInDatabase.getDbGuardian(pingObj)

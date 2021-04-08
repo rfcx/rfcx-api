@@ -1,4 +1,4 @@
-var Converter = require('../../utils/converter/converter')
+const Converter = require('../../utils/converter/converter')
 const Promise = require('bluebird')
 const mailing = require('./mailchimp-wrapper')
 const fs = require('fs')
@@ -6,7 +6,7 @@ const path = require('path')
 const handlebars = require('handlebars')
 
 function sendTextMail (serviceRequest) {
-  var params = {}
+  const params = {}
   serviceRequest = new Converter(serviceRequest, params)
   serviceRequest.convert('email_address').toString()
   serviceRequest.convert('recipient_name').optional().default('').toString()
@@ -20,7 +20,7 @@ function sendTextMail (serviceRequest) {
 }
 
 function sendMessage (serviceRequest) {
-  var params = {}
+  const params = {}
   serviceRequest = new Converter(serviceRequest, params)
   serviceRequest.convert('text').optional().default('').toString()
   serviceRequest.convert('html').optional().default('').toString()
@@ -39,7 +39,7 @@ function sendMessage (serviceRequest) {
 }
 
 function sendEmail (serviceRequest) {
-  var params = {}
+  const params = {}
   serviceRequest = new Converter(serviceRequest, params)
   serviceRequest.convert('text').optional().default('').toString()
   serviceRequest.convert('html').optional().default('').toString()
@@ -82,8 +82,19 @@ function getDetectionAlertHtml () {
   })
 }
 
+function getEventAlertHtml () {
+  return new Promise((resolve, reject) => {
+    try {
+      const source = fs.readFileSync(path.join(__dirname, '../../views/email/event-alert.handlebars'), 'utf8')
+      resolve(source)
+    } catch (e) {
+      reject(e)
+    }
+  })
+}
+
 function registerToAppWaitingList (serviceRequest) {
-  var params = {}
+  const params = {}
   serviceRequest = new Converter(serviceRequest, params)
 
   serviceRequest.convert('email_address').toString()
@@ -102,5 +113,6 @@ module.exports = {
   sendMessage,
   sendEmail,
   renderContactFormEmail,
-  getDetectionAlertHtml
+  getDetectionAlertHtml,
+  getEventAlertHtml
 }

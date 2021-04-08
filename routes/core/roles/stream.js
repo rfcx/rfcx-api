@@ -72,7 +72,7 @@ router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const stream = await streamsService.getById(streamId, { joinRelations: true })
+      const stream = await streamsService.get(streamId)
       const user = await usersFusedService.getByEmail(convertedParams.email)
       await usersFusedService.ensureUserSynced(user)
       if (stream.created_by_id === user.id) {
