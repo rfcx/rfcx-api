@@ -54,7 +54,7 @@ function query (filters, options = {}) {
 
   const attributes = options.fields && options.fields.length > 0 ? ClassifierDeployment.attributes.full.filter(a => options.fields.includes(a)) : ClassifierDeployment.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
-  const order = getSortFields(options.sort || '-updated_at')
+  const order = getSortFields(options.sort || '-start')
 
   return pagedQuery(ClassifierDeployment, {
     where,

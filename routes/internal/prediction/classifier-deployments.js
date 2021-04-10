@@ -62,7 +62,7 @@ router.get('/classifier-deployments/:id', (req, res) => {
  *         description: Name of field to sorted / "-" for DESC default for ASC
  *         in: query
  *         type: string
- *         default: -updated_at
+ *         default: -start
  *       - name: fields
  *         description: Customize included fields and relations
  *         in: query
@@ -87,7 +87,7 @@ router.get('/classifier-deployments', (req, res) => {
   converter.convert('deployed').optional().toBoolean()
   converter.convert('start').optional().toMomentUtc()
   converter.convert('end').optional().toMomentUtc()
-  converter.convert('sort').default('-updated_at').toString()
+  converter.convert('sort').default('-start').toString()
   converter.convert('fields').optional().toArray()
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
