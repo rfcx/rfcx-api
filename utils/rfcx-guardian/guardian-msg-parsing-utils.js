@@ -1,35 +1,33 @@
-// var Promise = require('bluebird')
-// var zlib = require('zlib')
-var hash = require('../../utils/misc/hash.js').hash
-var checkInHelpers = require('../../utils/rfcx-checkin')
-var pingRouter = require('../../utils/rfcx-guardian/router-ping.js').pingRouter
+const hash = require('../../utils/misc/hash')
+const checkInHelpers = require('../../utils/rfcx-checkin')
+const pingRouter = require('../../utils/rfcx-guardian/router-ping.js').pingRouter
 const guidService = require('../../utils/misc/guid.js')
-var smsTwilio = require('../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
+const smsTwilio = require('../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
 
 exports.guardianMsgParsingUtils = {
 
   constructGuardianMsgObj: function (inputJsonObj, guardianId, guardianToken) {
-    var msgObj = {
+    const msgObj = {
 
       // input msg json
       json: inputJsonObj,
 
       // db objects
-      db: { },
+      db: {},
 
       // general msg meta
       meta: {
-        guardian: { },
+        guardian: {},
         allow_without_auth_token: false,
         startTime: new Date()
       },
 
       // asset meta
-      audio: { },
-      screenshots: { },
-      logs: { },
-      photos: { },
-      videos: { },
+      audio: {},
+      screenshots: {},
+      logs: {},
+      photos: {},
+      videos: {},
 
       // return cmd obj
       rtrn: {
@@ -60,7 +58,7 @@ exports.guardianMsgParsingUtils = {
   },
 
   msgSegmentConstants: function () {
-    var obj = {
+    const obj = {
       lengths: {
         maxFullSeg: { sms: 160, sbd: 340 },
         grpGuid: 4,
@@ -86,32 +84,32 @@ exports.guardianMsgParsingUtils = {
   },
 
   generateSegmentGroupGuid: function () {
-    var groupGuidLength = this.msgSegmentConstants().lengths.grpGuid
-    var str = ''
-    var key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    for (var i = 0; i < groupGuidLength; i++) { str += key.charAt(Math.floor(Math.random() * key.length)) }
+    const groupGuidLength = this.msgSegmentConstants().lengths.grpGuid
+    let str = ''
+    const key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    for (let i = 0; i < groupGuidLength; i++) { str += key.charAt(Math.floor(Math.random() * key.length)) }
     return str
   },
 
   generateSegmentId: function (idNum) {
-    var segmentIdLength = this.msgSegmentConstants().lengths.segId
-    var zeroes = ''
-    for (var i = 0; i < segmentIdLength; i++) { zeroes += '0' }
+    const segmentIdLength = this.msgSegmentConstants().lengths.segId
+    let zeroes = ''
+    for (let i = 0; i < segmentIdLength; i++) { zeroes += '0' }
     return (zeroes + idNum.toString(16)).slice(0 - segmentIdLength)
   },
 
   constructSegmentsGroupForQueue: function (guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer) {
-    var msgGzipStr = msgJsonGzippedBuffer.toString('base64')
-    var groupGuid = this.generateSegmentGroupGuid()
-    var msgSegLengths = this.msgSegmentConstants().lengths
-    var fullMsgChecksumSnippet = hash.hashData(JSON.stringify(msgJsonObj)).substr(0, msgSegLengths.chkSumSnip)
-    var segments = []
+    let msgGzipStr = msgJsonGzippedBuffer.toString('base64')
+    const groupGuid = this.generateSegmentGroupGuid()
+    const msgSegLengths = this.msgSegmentConstants().lengths
+    const fullMsgChecksumSnippet = hash.hashData(JSON.stringify(msgJsonObj)).substr(0, msgSegLengths.chkSumSnip)
+    const segments = []
 
-    var segIdDec = 0
-    var segHeader = ''
-    var segHeaderZero = groupGuid + this.generateSegmentId(segIdDec) + guardianGuid + guardianPinCode + msgType + fullMsgChecksumSnippet
-    var segBodyLength = 0
-    var segBodyLengthZero = msgSegLengths.maxFullSeg[apiProtocol] - segHeaderZero.length - msgSegLengths.segId
+    let segIdDec = 0
+    let segHeader = ''
+    const segHeaderZero = groupGuid + this.generateSegmentId(segIdDec) + guardianGuid + guardianPinCode + msgType + fullMsgChecksumSnippet
+    let segBodyLength = 0
+    const segBodyLengthZero = msgSegLengths.maxFullSeg[apiProtocol] - segHeaderZero.length - msgSegLengths.segId
 
     segments.push(msgGzipStr.substring(0, segBodyLengthZero))
     msgGzipStr = msgGzipStr.substring(segBodyLengthZero)
@@ -134,9 +132,9 @@ exports.guardianMsgParsingUtils = {
   },
 
   parseMsgSegment: function (segPayload, segProtocol, originAddress) {
-    var sliceAt = this.msgSegmentConstants().sliceAt
+    const sliceAt = this.msgSegmentConstants().sliceAt
 
-    var segObj = {
+    const segObj = {
       group_guid: slicePayload(segPayload, segProtocol, 'group_guid', sliceAt, true),
       segment_id: parseInt(slicePayload(segPayload, segProtocol, 'segment_id', sliceAt, true), 16),
       segment_body: slicePayload(segPayload, segProtocol, 'segment_id', sliceAt, false),
@@ -157,8 +155,8 @@ exports.guardianMsgParsingUtils = {
   },
 
   assembleReceivedSegments: function (dbSegs, dbSegGrp, guardianGuid, guardianPinCode) {
-    var concatSegs = ''
-    for (var i = 0; i < dbSegs.length; i++) { concatSegs += dbSegs[i].body }
+    let concatSegs = ''
+    for (let i = 0; i < dbSegs.length; i++) { concatSegs += dbSegs[i].body }
 
     checkInHelpers.gzip.unZipJson(encodeURIComponent(concatSegs)).bind({})
       .then(function (jsonObj) {
@@ -166,19 +164,19 @@ exports.guardianMsgParsingUtils = {
           if (hash.hashData(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) === dbSegGrp.checksum_snippet) {
             let messageId = guidService.generate()
 
-            var pingObj = getPingObj(jsonObj, guardianGuid, null)
+            const pingObj = getPingObj(jsonObj, guardianGuid, null)
             pingObj.meta.allow_without_auth_token = true
 
             pingRouter.onMessagePing(pingObj, messageId)
               .then((result) => {
                 if (JSON.stringify(result.obj).length > 2) {
-                  var segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, 'cmd', dbSegGrp.protocol, result.obj, result.gzip)
+                  const segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, 'cmd', dbSegGrp.protocol, result.obj, result.gzip)
 
-                  for (var i = 0; i < segsForQueue.length; i++) {
+                  for (let i = 0; i < segsForQueue.length; i++) {
                     smsTwilio.sendSms(segsForQueue[i], dbSegs[0].origin_address)
                   }
                 }
-                for (var k = 0; k < dbSegs.length; k++) { dbSegs[k].destroy() }
+                for (let k = 0; k < dbSegs.length; k++) { dbSegs[k].destroy() }
                 dbSegGrp.destroy()
 
                 console.log('sms ping message processed', messageId)
@@ -203,7 +201,7 @@ function constructSegmentsGroup (guardianGuid, guardianPinCode, msgType, apiProt
 }
 
 function slicePayload (segPayload, segProtocol, keyName, sliceAtVals, hasFiniteLength) {
-  var sliceAt = (hasFiniteLength) ? [sliceAtVals[keyName][0], sliceAtVals[keyName][1]] : [(sliceAtVals[keyName][0] + sliceAtVals[keyName][1])]
+  const sliceAt = (hasFiniteLength) ? [sliceAtVals[keyName][0], sliceAtVals[keyName][1]] : [(sliceAtVals[keyName][0] + sliceAtVals[keyName][1])]
   if (segProtocol === 'sms') {
     // return sliced string
     return (sliceAt.length > 1) ? segPayload.substr(sliceAt[0], sliceAt[1]) : segPayload.substr(sliceAt[0])

@@ -33,7 +33,7 @@ async function get (id) {
  * @param {number} options.limit
  * @param {number} options.offset
  */
-function query (filters, options = {}) {
+async function query (filters, options = {}) {
   const where = {}
 
   if (filters.platform) {
@@ -71,10 +71,9 @@ function query (filters, options = {}) {
  * @param {number} id
  * @param {ClassifierDeployment} deployment
  */
-async function update (id, deployment) {
-  await ClassifierDeployment.update(deployment, {
-    where: { id }
-  })
+async function update (id, deployed) {
+  const deployment = await get(id)
+  await deployment.update({ deployed: deployed })
 }
 
 module.exports = {

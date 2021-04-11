@@ -1,9 +1,7 @@
 const models = require('../../models')
 const modelsTimescale = require('../../modelsTimescale')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
-if (redisEnabled) {
-  var redis = require('../../utils/redis')
-}
+const redis = redisEnabled ? require('../../utils/redis') : {}
 
 function calcStatus (status, start) {
   return {
@@ -51,7 +49,7 @@ async function redisConnected () {
 }
 
 async function check (req, res) {
-  var rtrnJson = {
+  const rtrnJson = {
     status: false,
     mysql: false,
     timescaledb: false,

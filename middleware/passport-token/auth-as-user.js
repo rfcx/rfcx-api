@@ -1,7 +1,7 @@
-var verboseLogging = (process.env.NODE_ENV !== 'production')
-var models = require('../../models')
-var hash = require('../../utils/misc/hash.js').hash
-var regex = require('../../utils/misc/regex.js')
+const verboseLogging = (process.env.NODE_ENV !== 'production')
+const models = require('../../models')
+const hash = require('../../utils/misc/hash')
+const regex = require('../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   // TO DO
@@ -16,7 +16,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
         done(null, false, { message: 'this user has no access tokens' })
         return null
       } else {
-        for (var i in dbUser.Token) {
+        for (const i in dbUser.Token) {
           if (dbUser.Token.hasOwnProperty(i)) { // eslint-disable-line no-prototype-builtins
             if (dbUser.Token[i].auth_token_expires_at.valueOf() <= new Date()) {
               dbUser.Token[i]
@@ -28,8 +28,8 @@ exports.authenticateAs = function (req, token, done, authUser) {
                   console.log('failed to delete expired user token | ' + err)
                 })
             } else if ((dbUser.Token[i].auth_token_hash === hash.hashedCredentials(dbUser.Token[i].auth_token_salt, token)) &&
-                     ((dbUser.Token[i].only_allow_access_to == null) ||
-                     (regex.regExIndexOf(req.rfcx.url_path, JSON.parse(dbUser.Token[i].only_allow_access_to)) > -1))) {
+              ((dbUser.Token[i].only_allow_access_to == null) ||
+                (regex.regExIndexOf(req.rfcx.url_path, JSON.parse(dbUser.Token[i].only_allow_access_to)) > -1))) {
               req.rfcx.auth_token_info = {
                 type: 'user',
                 id: dbUser.Token[i].id,

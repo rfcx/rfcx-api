@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaOffline = sequelize.define('GuardianMetaOffline', {
+  const GuardianMetaOffline = sequelize.define('GuardianMetaOffline', {
     ended_at: {
       type: DataTypes.DATE(3),
       validate: {

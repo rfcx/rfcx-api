@@ -1,22 +1,20 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var httpError = require('../../../utils/http-errors.js')
-var Converter = require('../../../utils/converter/converter')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const httpError = require('../../../utils/http-errors.js')
+const Converter = require('../../../utils/converter/converter')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const generator = require('generate-password')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
-if (redisEnabled) {
-  var redis = require('../../../utils/redis')
-}
+const redis = redisEnabled ? require('../../../utils/redis') : {}
 const ValidationError = require('../../../utils/converter/validation-error')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 
 router.route('/:shortlink_id')
   .get(function (req, res) {
-    var linkId = req.params.shortlink_id; var linkDelim = linkId.indexOf('+')
-    var linkPre = (linkDelim > 0) ? linkId.substr(0, linkDelim) : null
+    let linkId = req.params.shortlink_id; const linkDelim = linkId.indexOf('+')
+    const linkPre = (linkDelim > 0) ? linkId.substr(0, linkDelim) : null
     linkId = (linkDelim > 0) ? linkId.substr(1 + linkDelim) : linkId
 
     if (linkPre === 'ap') {
@@ -34,9 +32,7 @@ router.route('/:shortlink_id')
 
           console.log("redirecting client to: '" + dbShortLink.url + "'")
           res.redirect(301, dbShortLink.url)
-        }).catch(function (err) { // eslint-disable-line handle-callback-err
-          // console.log("failed to return site | "+err);
-          // if (!!err) { res.status(500).json({msg:"failed to return site"}); }
+        }).catch(function () {
           res.status(200).json({ shortlink: req.params.shortlink_id })
         })
     }
@@ -126,7 +122,8 @@ router.route('/')
       })
       .then(function (hash) {
         const url = `${process.env.REST_PROTOCOL}://${process.env.REST_HOST_SHORT}${(transformedParams.type !== 'const')
-         ? '/s' : ''}/${hash}`
+         ? '/s'
+: ''}/${hash}`
         res.status(200).send(url)
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))

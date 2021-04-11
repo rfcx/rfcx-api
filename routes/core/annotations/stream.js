@@ -3,8 +3,8 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
-const usersFusedService = require('../../../services/users/fused')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger
@@ -126,9 +126,9 @@ router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
  *       404:
  *         description: Stream not found
  */
-router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
+router.post('/:id/annotations', ensureUserSynced, hasStreamPermission('U'), function (req, res) {
   const streamId = req.params.id
-  const userId = req.rfcx.auth_token_info.owner_id
+  const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('start').toMomentUtc()
@@ -140,7 +140,6 @@ router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   params.convert('is_positive').toBoolean().default(true)
 
   return params.validate()
-    .then(() => usersFusedService.ensureUserSyncedFromToken(req))
     .then(() => classificationService.getId(convertedParams.classification))
     .then(classificationId => {
       const { start, end, frequency_min, frequency_max, is_manual, is_positive } = convertedParams // eslint-disable-line camelcase

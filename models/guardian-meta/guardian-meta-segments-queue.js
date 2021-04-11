@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaSegmentsQueue = sequelize.define('GuardianMetaSegmentsQueue', {
+  const GuardianMetaSegmentsQueue = sequelize.define('GuardianMetaSegmentsQueue', {
 
     group_guid: {
       type: DataTypes.STRING,

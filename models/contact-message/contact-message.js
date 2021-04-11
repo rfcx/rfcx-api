@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var ContactMessage = sequelize.define('ContactMessage', {
+  const ContactMessage = sequelize.define('ContactMessage', {
     email: {
       type: DataTypes.STRING,
       allowNull: true,

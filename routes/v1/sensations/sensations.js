@@ -1,16 +1,16 @@
-var express = require('express')
-var router = express.Router()
-var passport = require('passport')
+const express = require('express')
+const router = express.Router()
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
-var httpError = require('../../../utils/http-errors')
-var sensationsService = require('../../../services/legacy/sensations/sensations-service')
-var ValidationError = require('../../../utils/converter/validation-error')
+const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+const httpError = require('../../../utils/http-errors')
+const sensationsService = require('../../../services/legacy/sensations/sensations-service')
+const ValidationError = require('../../../utils/converter/validation-error')
 
 router.route('/')
   .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
     // map HTTP params to service params
-    var serviceParams = {
+    const serviceParams = {
       source_type: req.body.source_type,
       source_id: req.body.source_id,
       data_type: req.body.data_type,

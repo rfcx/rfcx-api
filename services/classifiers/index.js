@@ -1,7 +1,8 @@
 const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
+const pagedQuery = require('../../utils/db/paged-query')
 
-const baseInclude = [
+const availableIncludes = [
   {
     model: models.ClassifierDeployment,
     as: 'deployments',
@@ -40,7 +41,7 @@ function get (id, opts = {}) {
     .findOne({
       where: { id },
       attributes: models.Classifier.attributes.full,
-      include: opts && opts.joinRelations ? baseInclude : []
+      include: opts && opts.joinRelations ? availableIncludes : []
     })
     .then(classifier => {
       if (!classifier) {
@@ -59,42 +60,45 @@ function get (id, opts = {}) {
     })
 }
 
-function getIdByExternalId (externalId) {
-  return models.Classifier
-    .findOne({
-      where: { external_id: externalId },
-      attributes: ['id']
-    }).then(item => {
-      if (!item) {
-        throw new EmptyResultError('Classifier with given external id not found.')
-      }
-      return item.id
-    })
-}
-
 /**
- * Given a set of uuid, returns their ids as an object map
- * @param {Array<String>} externalIds An array of classifier external ids
- * @returns {Promise<Object>} Object that maps external ids to ids
+ * Get a list of classifiers matching the conditions
+ * @param {*} filters Classifier attributes to filter
+ * @param {string} filters.keyword Where keyword is found (in the classifier name)
+ * @param {number} filters.createdBy Where created by the given user id
+ * @param {number[]} filters.ids Where the identifier is matched in the array
+ * @param {string[]} filters.externalIds Where the external identifier is matched in the array
+ * @param {*} options Query options
+ * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {number} options.limit Maximum results to include
+ * @param {number} options.offset Number of results to skip
  */
-function getIdsByExternalIds (externalIds) {
-  // TODO make more efficient by performing a single query
-  return Promise.all(externalIds.map(uuid => getIdByExternalId(uuid)))
-    .then(ids => {
-      // Combine 2 arrays into a map
-      const mapping = {}
-      for (let i = 0; i < ids.length; i++) {
-        mapping[externalIds[i]] = ids[i]
-      }
-      return mapping
-    })
-}
+async function query (filters, options = {}) {
+  const where = {}
 
-function query (attrs, opts = {}) {
-  return models.Classifier.findAll({
-    limit: attrs.limit,
-    offset: attrs.offset,
-    attributes: models.Classifier.attributes.lite
+  if (filters.keyword) {
+    where.name = {
+      [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
+    }
+  }
+  if (filters.createdBy) {
+    where.created_by_id = filters.createdBy
+  }
+  if (filters.ids) {
+    where.id = filters.ids
+  }
+  if (filters.externalIds) {
+    where.external_id = filters.externalIds
+  }
+
+  const attributes = options.fields && options.fields.length > 0 ? models.Classifier.attributes.full.filter(a => options.fields.includes(a)) : models.Classifier.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+
+  return pagedQuery(models.Classifier, {
+    where,
+    attributes,
+    include,
+    limit: options.limit,
+    offset: options.offset
   })
 }
 
@@ -262,7 +266,6 @@ async function updateActiveProjects (update, transaction) {
 
 module.exports = {
   get,
-  getIdsByExternalIds,
   query,
   create,
   update

@@ -1,14 +1,14 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors.js')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
-var Promise = require('bluebird')
-var sequelize = require('sequelize')
-var ForbiddenError = require('../../../utils/converter/forbidden-error')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const Promise = require('bluebird')
+const sequelize = require('sequelize')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const userService = require('../../../services/users/users-service-legacy')
 
 router.route('/:site_id/guardians')
@@ -72,7 +72,7 @@ router.route('/:site_id/guardians')
         if (req.query.last_audio) {
           const proms = []
           this.dbGuardians.forEach(function (guardian) {
-            var prom = models.GuardianAudio
+            const prom = models.GuardianAudio
               .findOne({
                 order: [['measured_at', 'DESC']],
                 include: [{

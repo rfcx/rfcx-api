@@ -1,23 +1,24 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var hash = require('../../../utils/misc/hash.js').hash
-var views = require('../../../views/v1')
-var httpError = require('../../../utils/http-errors.js')
-var passport = require('passport')
-var Promise = require('bluebird')
-var sequelize = require('sequelize')
-var ValidationError = require('../../../utils/converter/validation-error')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const hash = require('../../../utils/misc/hash')
+const views = require('../../../views/v1')
+const httpError = require('../../../utils/http-errors')
+const passport = require('passport')
+const Promise = require('bluebird')
+const sequelize = require('sequelize')
+const ValidationError = require('../../../utils/converter/validation-error')
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const siteService = require('../../../services/sites/sites-service')
 const userService = require('../../../services/users/users-service-legacy')
 const guardiansService = require('../../../services/guardians/guardians-service')
 const streamsService = require('../../../services/streams')
-var Converter = require('../../../utils/converter/converter')
+const arbimonService = require('../../../services/arbimon')
+const Converter = require('../../../utils/converter/converter')
 
 router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    var sitesQuery = {}
+    const sitesQuery = {}
 
     return Promise.resolve()
       .then(() => {
@@ -61,9 +62,9 @@ router.route('/')
         if (dbGuardian) {
           this.dbGuardian = dbGuardian
           if (req.query.last_audio !== undefined && req.query.last_audio.toString() === 'true') {
-            var proms = []
+            const proms = []
             dbGuardian.forEach(function (guardian) {
-              var prom = models.GuardianAudio
+              const prom = models.GuardianAudio
                 .findOne({
                   order: [['measured_at', 'DESC']],
                   include: [{
@@ -88,7 +89,7 @@ router.route('/')
         if (dbAudios && dbAudios.length) {
           dbAudios.forEach(function (dbAudio) {
             if (dbAudio) {
-              var guardian = this.dbGuardian.find(function (guardian) {
+              const guardian = this.dbGuardian.find(function (guardian) {
                 return guardian.id === dbAudio.guardian_id
               })
               if (guardian) {
@@ -112,7 +113,7 @@ router.route('/')
 
 router.route('/admin')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'guardiansSitesAdmin']), (req, res) => {
-    var sitesQuery = {}
+    const sitesQuery = {}
 
     if (req.query.sites) {
       sitesQuery.guid = { [models.Sequelize.Op.in]: req.query.sites }
@@ -143,9 +144,9 @@ router.route('/admin')
         if (dbGuardian) {
           this.dbGuardian = dbGuardian
           if (req.query.last_audio !== undefined && req.query.last_audio.toString() === 'true') {
-            var proms = []
+            const proms = []
             dbGuardian.forEach(function (guardian) {
-              var prom = models.GuardianAudio
+              const prom = models.GuardianAudio
                 .findOne({
                   order: [['measured_at', 'DESC']],
                   include: [{
@@ -170,7 +171,7 @@ router.route('/admin')
         if (dbAudios && dbAudios.length) {
           dbAudios.forEach(function (dbAudio) {
             if (dbAudio) {
-              var guardian = this.dbGuardian.find(function (guardian) {
+              const guardian = this.dbGuardian.find(function (guardian) {
                 return guardian.id === dbAudio.guardian_id
               })
               if (guardian) {
@@ -264,76 +265,46 @@ router.route('/register')
 
     params.validate()
       .then(() => {
-        return models.Guardian
-          .findOrCreate({
-            where: {
-              guid: transformedParams.guid,
-              shortname: transformedParams.shortname ? transformedParams.shortname : `_${transformedParams.guid.substr(0, 4)}`,
-              latitude: 0,
-              longitude: 0
-            }
-          })
+        return models.Guardian.findOne({ where: { guid: transformedParams.guid } })
       })
-      .spread((dbGuardian, created) => {
-        if (!created) {
+      .then(async (guardian) => {
+        if (guardian) {
           res.status(200).json(
-            views.models.guardian(req, res, dbGuardian)
+            views.models.guardian(req, res, guardian)
           )
           return true
         } else {
-          var tokenSalt = hash.randomHash(320)
-          dbGuardian.auth_token_salt = tokenSalt
-          dbGuardian.auth_token_hash = hash.hashedCredentials(tokenSalt, transformedParams.token)
-          dbGuardian.auth_token_updated_at = new Date()
+          const tokenSalt = hash.randomHash(320)
+          const siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'derc' // "RFCx lab" (derc) by default
+          const site = await siteService.getSiteByGuid(siteGuid)
+          const params = {
+            guid: transformedParams.guid,
+            shortname: transformedParams.shortname ? transformedParams.shortname : `_${transformedParams.guid.substr(0, 4)}`,
+            latitude: 0,
+            longitude: 0,
+            auth_token_salt: tokenSalt,
+            auth_token_hash: hash.hashedCredentials(tokenSalt, transformedParams.token),
+            auth_token_updated_at: new Date(),
+            site_id: site.id
+          }
+          if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
+            params.creator = req.rfcx.auth_token_info.owner_id
+            params.is_private = true
+          }
+          const dbGuardian = await models.Guardian.create(params)
+          const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
 
-          return dbGuardian.save()
-            .bind({})
-            .then((dbGuardian) => {
-              this.dbGuardian = dbGuardian
-              const siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'derc' // "RFCx lab" (derc) by default
-              return siteService.getSiteByGuid(siteGuid)
-            })
-            .then((site) => {
-              this.dbGuardian.site_id = site.id
-              return this.dbGuardian.save()
-            })
-            .then((dbGuardian) => {
-              if (req.rfcx.auth_token_info && req.rfcx.auth_token_info.userType === 'auth0') {
-                return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-                  .then((user) => {
-                    dbGuardian.creator = user.id
-                    dbGuardian.is_private = true
-                    return dbGuardian.save()
-                  })
-              } else {
-                return this.dbGuardian
-              };
-            })
-            .then((dbGuardian) => {
-              const visibility = dbGuardian.is_private ? 'private' : 'public'
-              return models.StreamVisibility
-                .findOrCreate({
-                  where: { value: visibility },
-                  defaults: { value: visibility }
-                })
-                .spread((dbVisibility) => {
-                  const opts = {
-                    guid: dbGuardian.guid,
-                    name: dbGuardian.shortname,
-                    site: dbGuardian.site_id,
-                    created_by: dbGuardian.creator,
-                    visibility: dbVisibility.id
-                  }
-                  if (dbGuardian.creator) {
-                    opts.created_by = dbGuardian.creator
-                  }
-                  return models.Stream
-                    .create(opts)
-                })
-            })
-            .then(() => {
-              res.status(200).json(views.models.guardian(req, res, this.dbGuardian))
-            })
+          if (arbimonService.isEnabled && req.headers.authorization) {
+            const idToken = req.headers.authorization
+            const arbimonSite = await arbimonService.createSite({
+              ...dbStream.toJSON(),
+              latitude: 0,
+              longitude: 0,
+              altitude: 0
+            }, idToken)
+            await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
+          }
+          res.status(200).json(views.models.guardian(req, res, dbGuardian))
         }
       })
       .catch(sequelize.ValidationError, e => {
@@ -369,9 +340,9 @@ router.route('/:guid')
       })
       .then(async (guardian) => {
         try {
-          const stream = await streamsService.getById(guardian.guid)
+          const stream = await streamsService.get(guardian.guid)
           if (stream) {
-            await streamsService.update(stream, {
+            await streamsService.update(stream.id, {
               name: guardian.shortname
             })
           }

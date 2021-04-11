@@ -8,13 +8,13 @@ function toKML (path, callback) {
   fs.createReadStream(path)
     .pipe(unzip.Parse())
     .on('entry', function (entry) {
-      var fileName = entry.path
+      const fileName = entry.path
       if (fileName.indexOf('.kml') === -1) {
         entry.autodrain()
         return
       }
 
-      var data = ''
+      let data = ''
       entry.on('error', function (err) {
         callback(err)
       })
@@ -27,7 +27,7 @@ function toKML (path, callback) {
       })
     })
     .on('error', callback)
-};
+}
 
 function toGeoJSON (path, isKML) {
   return new Promise((resolve, reject) => {
@@ -41,7 +41,7 @@ function toGeoJSON (path, isKML) {
         }
       })
     } else {
-      var kml = xmldom.parseFromString(fs.readFileSync(path, 'utf8'))
+      const kml = xmldom.parseFromString(fs.readFileSync(path, 'utf8'))
       if (!kml) {
         reject() // eslint-disable-line prefer-promise-reject-errors
       } else {
@@ -50,7 +50,7 @@ function toGeoJSON (path, isKML) {
       }
     }
   })
-};
+}
 
 module.exports = {
   toKML,

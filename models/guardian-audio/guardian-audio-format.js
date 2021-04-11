@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianAudioFormat = sequelize.define('GuardianAudioFormat', {
+  const GuardianAudioFormat = sequelize.define('GuardianAudioFormat', {
     codec: {
       type: DataTypes.STRING,
       allowNull: false,

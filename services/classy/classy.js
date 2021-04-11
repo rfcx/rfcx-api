@@ -3,7 +3,7 @@ const Promise = require('bluebird')
 
 function requestAccessToken (client_id, client_secret) { // eslint-disable-line camelcase
   return new Promise((resolve, reject) => {
-    var options = {
+    const options = {
       method: 'POST',
       url: 'https://api.classy.org/oauth2/auth',
       headers: {
@@ -45,7 +45,7 @@ function saveCampaignTransaction (campaignId, memberInfo, items, offlinePaymentI
   }
 
   return new Promise((resolve, reject) => {
-    var options = {
+    const options = {
       method: 'POST',
       url: `https://api.classy.org/2.0/campaigns/${campaignId}/transactions`,
       headers: {

@@ -50,7 +50,7 @@ router.get('/streams/statistics/uploads', async function (req, res) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_id = user.id
       const data = await streamsStatisticsService.getUploads(convertedParams)
       return res.json(data)
     })
@@ -102,7 +102,7 @@ router.get('/streams/statistics/annotations', async function (req, res) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_id = user.id
       const data = await streamsStatisticsService.getAnnotations(convertedParams)
       return res.json(data)
     })
@@ -154,7 +154,7 @@ router.get('/streams/statistics/detections', async function (req, res) {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      convertedParams.current_user_id = user.owner_id
+      convertedParams.current_user_id = user.id
       const data = await streamsStatisticsService.getDetections(convertedParams)
       return res.json(data)
     })

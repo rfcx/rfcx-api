@@ -1,5 +1,5 @@
 const express = require('express')
-var router = express.Router()
+const router = express.Router()
 const passport = require('passport')
 const httpError = require('../../../utils/http-errors.js')
 const ValidationError = require('../../../utils/converter/validation-error')
@@ -7,7 +7,7 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 const aiService = require('../../../services/legacy/ai/ai-service')
-var sequelize = require('sequelize')
+const sequelize = require('sequelize')
 
 /**
  * Syncronizes MySQL GuardianAudioEventValues and GuardianAudioEventValueHighLevelKeys with :label and :highLevelKey:

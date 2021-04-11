@@ -3,12 +3,12 @@ exports.models = {
   guardian: function (req, res, dbGuardian) {
     if (!Array.isArray(dbGuardian)) { dbGuardian = [dbGuardian] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbGuardian) {
-      var dbRow = dbGuardian[i]
+      const dbRow = dbGuardian[i]
 
-      var guardian = {
+      const guardian = {
         guid: dbRow.guid,
         shortname: dbRow.shortname,
         is_certified: dbRow.is_certified,
@@ -35,10 +35,12 @@ exports.models = {
         },
         last_sync: dbRow.last_sync ? dbRow.last_sync : null,
         battery_percent: dbRow.battery_percent ? dbRow.battery_percent : null,
-        site: dbRow.Site ? {
-          guid: dbRow.Site.guid,
-          name: dbRow.Site.name
-        } : null,
+        site: dbRow.Site
+          ? {
+              guid: dbRow.Site.guid,
+              name: dbRow.Site.name
+            }
+          : null,
         last_audio: dbRow.last_audio ? dbRow.last_audio : null,
         notes: dbRow.notes || null
       }
@@ -51,12 +53,12 @@ exports.models = {
   guardianPublicInfo: function (dbGuardian) {
     if (!Array.isArray(dbGuardian)) { dbGuardian = [dbGuardian] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbGuardian) {
-      var dbRow = dbGuardian[i]
+      const dbRow = dbGuardian[i]
 
-      var guardian = {
+      const guardian = {
         guid: dbRow.guid,
         shortname: dbRow.shortname,
         site_name: dbRow.Site.name,

@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaAssetExchangeLog = sequelize.define('GuardianMetaAssetExchangeLog', {
+  const GuardianMetaAssetExchangeLog = sequelize.define('GuardianMetaAssetExchangeLog', {
     asset_type: {
       type: DataTypes.STRING,
       allowNull: true,

@@ -50,8 +50,8 @@ router.post('/:streamId/stream-segments', hasRole(['systemUser']), function (req
 
   return params.validate()
     .then(async () => {
-      const stream = await streamsService.getById(streamId)
-      await streamSourceFileService.getById(convertedParams.stream_source_file_id) // we call this function to ensure that source file with given id exists
+      const stream = await streamsService.get(streamId)
+      await streamSourceFileService.get(convertedParams.stream_source_file_id) // we call this function to ensure that source file with given id exists
       convertedParams.stream_id = streamId
       await streamSegmentService.findOrCreateRelationships(convertedParams)
       const streamSegment = await streamSegmentService.create(convertedParams, { joinRelations: true })

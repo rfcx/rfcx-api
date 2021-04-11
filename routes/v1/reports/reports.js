@@ -1,11 +1,11 @@
-var models = require('../../../models')
-var express = require('express')
-var router = express.Router()
-var sequelize = require('sequelize')
-var passport = require('passport')
+const models = require('../../../models')
+const express = require('express')
+const router = express.Router()
+const sequelize = require('sequelize')
+const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
 const path = require('path')
-var hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const reportsService = require('../../../services/reports/reports-service')
 const attachmentService = require('../../../services/attachment/attachment-service')
 const usersService = require('../../../services/users/users-service-legacy')

@@ -1,8 +1,8 @@
 'use strict'
 
-var fs = require('fs')
-var path = require('path')
-var views = {}
+const fs = require('fs')
+const path = require('path')
+const views = {}
 
 fs.readdirSync(__dirname).filter(function (file) {
   return (file.indexOf('.') !== 0) && (file !== 'index.js') && !fs.statSync(path.join(__dirname, file)).isDirectory()
@@ -39,7 +39,7 @@ fs.readdirSync(__dirname).filter(function (file) {
 module.exports = views
 
 function importRfcxViewFile (filePath) {
-  var viewFile = require(filePath)
+  const viewFile = require(filePath)
   Object.keys(viewFile).forEach(function (typeKey) {
     if (views[typeKey] == null) { views[typeKey] = {} }
     Object.keys(viewFile[typeKey]).forEach(function (viewKey) {
