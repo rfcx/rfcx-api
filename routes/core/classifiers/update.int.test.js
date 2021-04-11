@@ -100,4 +100,49 @@ describe('PATCH /classifiers/:id', () => {
     const newDeployment = deployments.find(d => d.status === 30)
     expect(newDeployment.deployment_parameters).toBeNull()
   })
+
+  test('update classifier keeps existing status', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, created_by_id: seedValues.otherUserId, model_runner: 'tf2', model_url: '' }
+    const deployment = { classifier_id: classifier.id, deployment_parameters: 'hello=world', status: 20, start: new Date(), created_by_id: seedValues.otherUserId }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    const requestBody = { deployment_parameters: 'foo=bar' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+    const deployments = await models.ClassifierDeployment.findAll({ order: ['status'] })
+    const newDeployment = deployments.find(d => d.deployment_parameters === 'foo=bar')
+    expect(newDeployment.status).toBe(20)
+  })
+
+  test('update classifier with empty status', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, created_by_id: seedValues.otherUserId, model_runner: 'tf2', model_url: '' }
+    const deployment = { classifier_id: classifier.id, deployment_parameters: 'hello=world', status: 20, start: new Date(), created_by_id: seedValues.otherUserId }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    const requestBody = { status: '', deployment_parameters: 'foo=bar' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+  })
+
+  test('update classifier with new deployment parameters and status', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, created_by_id: seedValues.otherUserId, model_runner: 'tf2', model_url: '' }
+    const deployment = { classifier_id: classifier.id, deployment_parameters: 'hello=world', status: 20, start: new Date(), created_by_id: seedValues.otherUserId }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    const requestBody = { status: 30, deployment_parameters: 'foo=bar' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+    const deployments = await models.ClassifierDeployment.findAll({ order: ['status'] })
+    const newDeployment = deployments.find(d => d.status === 30)
+    expect(newDeployment.deployment_parameters).toBe(requestBody.deployment_parameters)
+  })
 })
