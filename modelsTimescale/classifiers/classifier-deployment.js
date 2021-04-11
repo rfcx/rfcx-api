@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true
     },
-    classifier_id: {
+    classifierId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     end: { // when this deployment should end
       type: DataTypes.DATE(3)
     },
-    created_by_id: { // who initiated the deployment
+    createdById: { // who initiated the deployment
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -35,11 +35,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'aws'
     },
-    deployment_parameters: { // prediction service parameters specific to the deployment (e.g. step seconds)
+    deploymentParameters: { // prediction service parameters specific to the deployment (e.g. step seconds)
       type: DataTypes.STRING
     }
   }, {
-    timestamps: false
+    timestamps: false,
+    underscored: true
   })
   ClassifierDeployment.associate = function (models) {
     ClassifierDeployment.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
