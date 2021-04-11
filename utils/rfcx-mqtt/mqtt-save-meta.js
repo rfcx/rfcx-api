@@ -1,4 +1,6 @@
 const models = require('../../models')
+const { parse: parseDetections } = require('./mqtt-detections-parse')
+const detectionsService = require('../../services/detections/create')
 
 exports.saveMeta = {
 
@@ -438,6 +440,12 @@ exports.saveMeta = {
       proms.push(prom)
     }
     return Promise.all(proms)
+  },
+
+  Detections: function (payload, guardianId) {
+    const detections = parseDetections(payload)
+    const expandedDetections = detections.map(d => ({ streamId: guardianId, ...d }))
+    return detectionsService.create(expandedDetections)
   }
 
 }

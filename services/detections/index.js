@@ -101,23 +101,10 @@ async function timeAggregatedQuery (start, end, streamId, streamsOnlyCreatedBy, 
     .then(detections => detections.map(propertyToFloat(aggregatedValueAttribute)))
 }
 
-function create (detections) {
-  return models.Detection.bulkCreate(
-    detections.map(d => ({
-      stream_id: d.streamId,
-      classification_id: d.classificationId,
-      classifier_id: d.classifierId,
-      start: d.start,
-      end: d.end,
-      confidence: d.confidence
-    })))
-}
-
 const DEFAULT_IGNORE_THRESHOLD = 0.5
 
 module.exports = {
   query,
   timeAggregatedQuery,
-  create,
   DEFAULT_IGNORE_THRESHOLD
 }
