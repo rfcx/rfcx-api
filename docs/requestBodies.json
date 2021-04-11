@@ -144,6 +144,15 @@
       }
     ]
   },
+  "ClassifierDeployment": {
+    "type": "object",
+    "properties": {
+      "deployed": {
+        "type": "boolean",
+        "description": "Status of the deployment (true means that the model is deployed and should be active)"
+      }
+    }
+  },
   "Detection": {
     "type": "object",
     "properties": {
