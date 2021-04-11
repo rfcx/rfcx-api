@@ -15,17 +15,17 @@ const availableIncludes = [
   },
   {
     model: models.User,
-    as: 'createdBy',
+    as: 'created_by',
     attributes: models.User.attributes.lite
   },
   {
     model: models.Stream,
-    as: 'activeStreams',
+    as: 'active_streams',
     attributes: models.Stream.attributes.lite
   },
   {
     model: models.Project,
-    as: 'activeProjects',
+    as: 'active_projects',
     attributes: models.Project.attributes.lite
   }
 ]
