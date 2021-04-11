@@ -122,7 +122,7 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
   const params = new Converter(req.body, transformedParams, true)
   params.convert('name').toString()
   params.convert('version').toInt()
-  params.convert('externalId').optional().toString()
+  params.convert('external_id').optional().toString()
   params.convert('classification_values').toArray()
   params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
