@@ -202,13 +202,12 @@ function constructSegmentsGroup (guardianGuid, guardianPinCode, msgType, apiProt
 
 function slicePayload (segPayload, segProtocol, keyName, sliceAtVals, hasFiniteLength) {
   const sliceAt = (hasFiniteLength) ? [sliceAtVals[keyName][0], sliceAtVals[keyName][1]] : [(sliceAtVals[keyName][0] + sliceAtVals[keyName][1])]
-  const segPayloadStr = ''+segPayload;
+  const segPayloadStr = '' + segPayload
   if (segProtocol === 'sms') {
     // return sliced string
     return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
   } else if (segProtocol === 'sbd') {
     // return sliced byte buffer
-//    return (sliceAt.length > 1) ? segPayload.slice(sliceAt[0], sliceAt[1]) : segPayload.slice(sliceAt[0])
     return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
   }
   return null
