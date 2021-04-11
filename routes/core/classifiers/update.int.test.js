@@ -165,23 +165,6 @@ describe('PATCH /classifiers/:id', () => {
     expect(classifierActiveStream.streamId).toBe(requestBody.active_streams)
   })
 
-  test('update empty active streams', async () => {
-    console.warn = jest.fn()
-    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
-    const stream = { id: 'bar-xyz-1234', name: 'test', isPublic: true, createdById: seedValues.otherUserId }
-    const activeStream = { streamId: stream.id, classifierId: classifier.id }
-    await models.Classifier.create(classifier)
-    await models.Stream.create(stream)
-    await models.ClassifierActiveStream.create(activeStream)
-    const requestBody = { active_streams: '' }
-
-    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
-
-    expect(response.statusCode).toBe(200)
-    const activeStreams = await models.ClassifierActiveStream.findAll()
-    expect(activeStreams.length).toBe(0)
-  })
-
   test('update active project', async () => {
     console.warn = jest.fn()
     const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
@@ -197,22 +180,5 @@ describe('PATCH /classifiers/:id', () => {
     expect(activeProjects.length).toBe(1)
     const classifierActiveProject = activeProjects.find(s => s.classifierId === classifier.id)
     expect(classifierActiveProject.projectId).toBe(requestBody.active_projects)
-  })
-
-  test('update empty active projects', async () => {
-    console.warn = jest.fn()
-    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
-    const project = { id: 'bar-xyz-1234', name: 'test', isPublic: true, createdById: seedValues.otherUserId }
-    const activeProject = { projectId: project.id, classifierId: classifier.id }
-    await models.Classifier.create(classifier)
-    await models.Project.create(project)
-    await models.ClassifierActiveProject.create(activeProject)
-    const requestBody = { active_projects: '' }
-
-    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
-
-    expect(response.statusCode).toBe(200)
-    const activeProjects = await models.ClassifierActiveProject.findAll()
-    expect(activeProjects.length).toBe(0)
   })
 })
