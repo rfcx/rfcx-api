@@ -119,10 +119,10 @@ router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req,
  */
 router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const transformedParams = {}
-  const params = new Converter(req.body, transformedParams)
+  const params = new Converter(req.body, transformedParams, true)
   params.convert('name').toString()
   params.convert('version').toInt()
-  params.convert('external_id').optional().toString()
+  params.convert('externalId').optional().toString()
   params.convert('classification_values').toArray()
   params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
@@ -153,12 +153,12 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
       const classifier = {
         name: transformedParams.name,
         version: transformedParams.version,
-        externalId: transformedParams.external_id,
+        externalId: transformedParams.externalId,
         modelUrl,
         createdById,
         outputs,
-        activeProjects: transformedParams.active_projects,
-        activeStreams: transformedParams.active_streams
+        activeProjects: transformedParams.activeProjects,
+        activeStreams: transformedParams.activeStreams
       }
       return service.create(classifier)
     })
@@ -200,21 +200,20 @@ router.patch('/:id', function (req, res) {
     return res.sendStatus(403)
   }
 
-  const transformedParams = {}
-  const params = new Converter(req.body, transformedParams)
+  const params = new Converter(req.body, {}, true)
   params.convert('name').optional().toString()
   params.convert('version').optional().toInt()
   params.convert('external_id').optional().toString()
   params.convert('status').optional().toInt()
   params.convert('platform').optional().toString().default('aws')
   params.convert('deployment_parameters').optional().toString({ emptyStringToNull: true })
-  params.convert('active_projects').optional().toArray()
-  params.convert('active_streams').optional().toArray()
+  params.convert('active_projects').optional().toArray({ toEmptyArray: true })
+  params.convert('active_streams').optional().toArray({ toEmptyArray: true })
 
   const createdById = req.rfcx.auth_token_info.id
   params.validate()
-    .then(() => {
-      return service.update(id, createdById, transformedParams)
+    .then((params) => {
+      return service.update(id, createdById, params)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))

@@ -279,9 +279,11 @@ module.exports = class Conversion {
     return this
   }
 
-  toArray () {
+  toArray (options = {}) {
     this.conversions.push(() => {
-      if (!Array.isArray(this.value)) {
+      if (options.toEmptyArray && this.value === '') {
+        this.value = []
+      } else if (!Array.isArray(this.value)) {
         this.value = [this.value]
       }
     })
