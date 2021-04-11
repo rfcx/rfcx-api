@@ -1,16 +1,17 @@
 module.exports = (sequelize, DataTypes) => {
   const ClassifierActiveProject = sequelize.define('ClassifierActiveProject', {
-    classifier_id: {
+    classifierId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    project_id: {
+    projectId: {
       type: DataTypes.STRING(12),
       allowNull: false,
       primaryKey: true
     }
   }, {
+    underscored: true,
     timestamps: false
   })
   ClassifierActiveProject.associate = function (models) {
