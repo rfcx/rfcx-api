@@ -66,7 +66,7 @@ module.exports = (req, res) => {
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
         try {
           const arbimonProject = await arbimonService.createProject(project, req.headers.authorization)
-          project.external_id = arbimonProject.project_id
+          project.externalId = arbimonProject.project_id
         } catch (error) {
           console.error(`Error creating project in Arbimon (project: ${project.id})`)
         }
