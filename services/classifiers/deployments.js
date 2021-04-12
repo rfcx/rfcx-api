@@ -1,7 +1,7 @@
 const { EmptyResultError } = require('../../utils/errors')
 const { Classifier, ClassifierDeployment, Sequelize } = require('../../modelsTimescale')
 const pagedQuery = require('../../utils/db/paged-query')
-const { getSortFields } = require('../../utils/sort')
+const { getSortFields } = require('../../utils/sequelize/sort')
 
 const availableIncludes = [
   Classifier.include()
