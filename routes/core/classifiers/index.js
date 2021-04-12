@@ -207,8 +207,8 @@ router.patch('/:id', function (req, res) {
   params.convert('status').optional().toInt()
   params.convert('platform').optional().toString().default('aws')
   params.convert('deployment_parameters').optional().toString({ emptyStringToNull: true })
-  params.convert('active_projects').optional().toArray({ toEmptyArray: true })
-  params.convert('active_streams').optional().toArray({ toEmptyArray: true })
+  params.convert('active_projects').optional().toArray()
+  params.convert('active_streams').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.id
   params.validate()
