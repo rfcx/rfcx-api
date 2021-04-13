@@ -270,10 +270,10 @@ function ensureStreamExistsForGuardian (dbGuardian) {
   }
   const defaults = {
     name: dbGuardian.shortname,
-    is_public: !dbGuardian.is_private,
+    isPublic: !dbGuardian.is_private,
     ...dbGuardian.latitude && { latitude: dbGuardian.latitude },
     ...dbGuardian.longitude && { longitude: dbGuardian.longitude },
-    created_by_id: dbGuardian.creator ? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
+    createdById: dbGuardian.creator ? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
   }
   return Stream.findOrCreate({ where, defaults })
     .spread((dbStream) => {
