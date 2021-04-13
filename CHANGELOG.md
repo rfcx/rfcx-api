@@ -1,3 +1,9 @@
+## 1.0.17-hotfix.4 (2021-04-13)
+
+### Features
+* **guardian:** Save detections sent over MQTT
+
+
 ## 1.0.17-hotfix.3 (2021-04-02)
 
 ### Bug Fixes
