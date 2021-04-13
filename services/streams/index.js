@@ -68,9 +68,10 @@ function create (stream, options = {}) {
  * @param {string} filters.keyword Where keyword is found (in the stream name)
  * @param {string[]} filters.projects Where belongs to one of the projects (array of project ids)
  * @param {string[]} filters.organizations Where belongs to one of the organizations (array of organization ids)
- * @param {string|number} filters.start Having audio (segments) after start (iso or unix)
- * @param {string|number} filters.end Having audio (segments) before end (iso or unix)
+ * @param {string|number} filters.start Having audio (segments) after start (moment)
+ * @param {string|number} filters.end Having audio (segments) before end (moment)
  * @param {number} filters.createdBy Where created by the given user id
+ * @param {string|number} filters.updatedAfter Where created by the given user id
  * @param {*} options Query options
  * @param {number} options.readableBy Include only streams readable by the given user id
  * @param {boolean} options.onlyPublic Include only public streams
@@ -91,37 +92,37 @@ async function query (filters, options = {}) {
   }
   if (filters.organizations) {
     const projectIds = await projectsService.query({ organizations: filters.organizations }, { fields: ['id'] })
-    where.project_id = {
+    where.projectId = {
       [Sequelize.Op.in]: projectIds
     }
   }
   if (filters.projects) {
-    where.project_id = {
+    where.projectId = {
       [Sequelize.Op.in]: filters.projects
     }
   }
   if (filters.start) {
     where.start = {
-      [Sequelize.Op.gte]: filters.start
+      [Sequelize.Op.gte]: filters.start.toDate()
     }
   }
   if (filters.end) {
     where.end = {
-      [Sequelize.Op.lt]: filters.end
+      [Sequelize.Op.lt]: filters.end.toDate()
     }
   }
   if (filters.createdBy) {
-    where.created_by_id = filters.createdBy
+    where.createdById = filters.createdBy
   }
-  if (filters.updated_after) {
+  if (filters.updatedAfter) {
     where.updated_at = {
-      [Sequelize.Op.gte]: filters.updated_after
+      [Sequelize.Op.gte]: filters.updatedAfter.toDate()
     }
   }
 
   // Options (change behaviour - mix with care)
   if (options.onlyPublic) {
-    where.is_public = true
+    where.isPublic = true
   } else {
     if (options.readableBy) {
       where.id = {
@@ -129,7 +130,7 @@ async function query (filters, options = {}) {
       }
     }
     if (options.onlyDeleted) {
-      where.deleted_at = {
+      where.deletedAt = {
         [Sequelize.Op.ne]: null
       }
     }
@@ -270,10 +271,10 @@ function ensureStreamExistsForGuardian (dbGuardian) {
   }
   const defaults = {
     name: dbGuardian.shortname,
-    is_public: !dbGuardian.is_private,
+    isPublic: !dbGuardian.is_private,
     ...dbGuardian.latitude && { latitude: dbGuardian.latitude },
     ...dbGuardian.longitude && { longitude: dbGuardian.longitude },
-    created_by_id: dbGuardian.creator ? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
+    createdById: dbGuardian.creator ? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
   }
   return Stream.findOrCreate({ where, defaults })
     .spread((dbStream) => {

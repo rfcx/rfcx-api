@@ -1,6 +1,6 @@
 const routes = require('.')
 const models = require('../../../modelsTimescale')
-const { migrate, truncate, expressApp, seed } = require('../../../utils/sequelize/testing')
+const { migrate, truncate, expressApp, seed, seedValues } = require('../../../utils/sequelize/testing')
 const request = require('supertest')
 
 const app = expressApp()
@@ -30,6 +30,7 @@ describe('POST /streams', () => {
     const id = response.header.location.replace('/streams/', '')
     const stream = await models.Stream.findByPk(id)
     expect(stream.name).toBe(requestBody.name)
+    expect(stream.createdById).toBe(seedValues.primaryUserId)
   })
 
   test('missing name', async () => {
