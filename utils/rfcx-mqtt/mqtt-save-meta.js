@@ -447,7 +447,6 @@ exports.saveMeta = {
     try {
       detections = parseDetections(payload)
     } catch (error) {
-      console.warn(error)
       return Promise.resolve()
     }
     const expandedDetections = detections.map(d => ({ streamId: guardianId, ...d }))
