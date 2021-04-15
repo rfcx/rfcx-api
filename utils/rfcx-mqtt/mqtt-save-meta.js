@@ -443,7 +443,16 @@ exports.saveMeta = {
   },
 
   Detections: function (payload, guardianId) {
-    const detections = parseDetections(payload)
+    let detections
+    try {
+      detections = parseDetections(payload)
+    } catch (error) {
+      return Promise.resolve()
+    }
+    // TODO remove temporary logging to debug satellite guardians
+    if (detections.length > 0) {
+      console.log(`found ${detections.length} detections in payload from ${guardianId}`)
+    }
     const expandedDetections = detections.map(d => ({ streamId: guardianId, ...d }))
     return detectionsService.create(expandedDetections)
   }
