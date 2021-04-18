@@ -608,6 +608,53 @@ function clearLatestReview (guid) {
   })
 }
 
+function createEvent (event) {
+  const createdAt = Date.now()
+  const eventUuid = event.id
+  const classificationValue = event.classification.value
+  const measuredAt = moment(event.start).valueOf()
+  const latitude = event.stream.latitude
+  const longitude = event.stream.longitude
+  const streamId = event.stream.id
+  const streamName = event.stream.name
+
+  // Unable to determine these values from timescale
+  const aiGuid = '' // TODO
+  const site = 'tembe'
+  const siteTimezone = ''
+
+  let query = `MATCH (ai:ai {guid: {aiGuid} })-[:classifies]->(lb:label {value: {classificationValue}})
+    MERGE (ai)-[:has_audioWindowSet]-(aws:audioWindowSet {createdAt: {createdAt}})-[:classifies]->(lb)
+    MERGE (ai)-[:has_eventSet]-(evs:eventSet {createdAt: {createdAt}}})-[:classifies]->(lb)
+    CREATE (ev: event {guid: {eventUuid}, audioMeasuredAt: {measuredAt}, 
+       latitude: {latitude}, longitude: {longitude},
+       guardianGuid: {streamId}, guardianShortname: {streamName},
+       siteGuid: {site}, siteTimezone: {siteTimezone}, createdAt: {createdAt}})
+    MERGE (evs)-[:contains]->(ev) `
+
+  // for (let i = 0; i < detections.length; i++) {
+  //   const detection = detections[i]
+  //   query += `CREATE (w${i}:audioWindow {guid: '${uuid.v4()}', createdAt: {createdAt}, confidence: ${detection.confidence},
+  //      start: ${moment(detection.start).valueOf()}, end: ${moment(detection.end).valueOf()} })
+  //      MERGE (aws)-[:contains]->(w${i}) `
+  // }
+
+  query += 'MERGE (evs)-[:relates_to]->(aws) '
+  query += 'RETURN ev as event, aws as audio_window_set'
+
+  const params = { eventUuid, measuredAt, createdAt, aiGuid, classificationValue, streamId, streamName, latitude, longitude, site, siteTimezone }
+
+  const session = neo4j.session()
+  const result = session.run(query, params)
+  session.close()
+
+  if (!result.records || !result.records.length) {
+    throw new EmptyResultError(`Failed to create audio windows in Neo4j. Missing label "${classificationValue}"?`)
+  }
+
+  return eventUuid
+}
+
 function reviewEvent (guid, confirmed, user, timestamp, unreliable) {
   const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:classifies]->(val:label), (user:user {guid: {userGuid}, email: {userEmail}})' +
     'MERGE (ev)-[:has_review]->(:review { latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
@@ -824,6 +871,7 @@ module.exports = {
   clearPreviousAudioWindowsReviewOfUser,
   clearLatestReview,
   clearLatestAudioWindowsReview,
+  createEvent,
   reviewEvent,
   reviewAudioWindows,
   generateTextGridContent,

@@ -1,12 +1,11 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+const { ValidationError } = require('../../../utils/http-errors')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
 const classificationsService = require('../../../services/classifications')
 const eventsService = require('../../../services/events')
-const streamsService = require('../../../services/streams')
-const notificationsService = require('../../../services/events/notifications')
-
+const createEvent = require('../../../services/events/create')
 /**
  * @swagger
  *
@@ -36,36 +35,33 @@ const notificationsService = require('../../../services/events/notifications')
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', authenticatedWithRoles('systemUser'), async function (req, res) {
-  try {
-    const converter = new Converter(req.body, {}, true)
-    converter.convert('stream').toString()
-    converter.convert('classification').toString()
-    converter.convert('classifier_event_strategy').toInt()
-    converter.convert('start').toMomentUtc()
-    converter.convert('end').toMomentUtc()
+router.post('/', authenticatedWithRoles('systemUser'), function (req, res, next) {
+  const converter = new Converter(req.body, {}, true)
+  converter.convert('stream').toString()
+  converter.convert('classification').toString()
+  converter.convert('classifier_event_strategy').toInt()
+  converter.convert('start').toMomentUtc()
+  converter.convert('end').toMomentUtc()
 
-    const params = await converter.validate()
-    const { classifierEventStrategy, ...otherParams } = params
-    const streamId = params.stream
-    const stream = await streamsService.getById(streamId, { joinRelations: true })
-    const classification = await classificationsService.get(params.classification)
-    const eventData = {
-      ...otherParams,
+  converter.validate().then(async (params) => {
+    const { classifierEventStrategy: classifierEventStrategyId, stream: streamId, start, end } = params
+    let classification
+    try {
+      classification = await classificationsService.get(params.classification)
+    } catch (err) {
+      console.warn()
+      return next(new ValidationError('Classification not found'))
+    }
+    const event = {
       classificationId: classification.id,
       streamId,
-      classifierEventStrategyId: classifierEventStrategy
+      classifierEventStrategyId,
+      start,
+      end
     }
-    const event = await eventsService.create(eventData)
-    try {
-      await notificationsService.notifyAboutEvent({ ...event.toJSON(), stream, classification })
-    } catch (err) {
-      console.error('Failed notifying about event:', err.message)
-    }
-    res.location(`/events/${event.id}`).sendStatus(201)
-  } catch (e) {
-    httpErrorHandler(req, res, 'Failed creating event')(e)
-  }
+    const eventId = await createEvent(event)
+    res.location(`/events/${eventId}`).sendStatus(201)
+  }).catch(httpErrorHandler(req, res, 'Failed creating event'))
 })
 
 /**
