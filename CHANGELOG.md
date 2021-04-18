@@ -11,6 +11,12 @@
 * **core:** update PATCH /classifier endpoint to save previous `deployment_parameters` configuration when given only status change ([CE-344](https://jira.rfcx.org/browse/CE-344))
 
 
+## 1.0.17-hotfix.4 (2021-04-13)
+
+### Features
+* **guardian:** Save detections sent over MQTT
+
+
 ## 1.0.17-hotfix.3 (2021-04-02)
 
 ### Bug Fixes
