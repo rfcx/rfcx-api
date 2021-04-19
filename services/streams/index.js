@@ -186,13 +186,14 @@ async function query (filters, options = {}) {
  * @throws EmptyResultError when stream not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
  */
-async function update (id, stream, options = {}) {
+async function update (id, stream, options = {}, individual = false) {
   if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
   const fullStream = { ...stream, ...computedAdditions(stream) }
   return Stream.update(fullStream, {
-    where: { id }
+    where: { id },
+    individualHooks: individual
   })
 }
 
@@ -204,11 +205,11 @@ async function update (id, stream, options = {}) {
  * @param {boolean} options.force Remove from the database (not soft-delete)
  * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
  */
-async function remove (id, options = {}) {
+async function remove (id, options = {}, individual = false) {
   if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
-  return Stream.destroy({ where: { id }, force: options.force })
+  return Stream.destroy({ where: { id }, force: options.force, individualHooks: individual })
 }
 
 /**
