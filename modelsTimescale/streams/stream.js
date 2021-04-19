@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = function (sequelize, DataTypes) {
   const Stream = sequelize.define('Stream', {
     id: {
@@ -21,7 +23,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.DATE(3),
       allowNull: true
     },
-    is_public: {
+    isPublic: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false
@@ -60,25 +62,26 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.REAL,
       allowNull: true
     },
-    max_sample_rate: {
+    maxSampleRate: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    project_id: {
+    projectId: {
       type: DataTypes.STRING(12),
       allowNull: true
     },
-    created_by_id: {
+    createdById: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    external_id: {
+    externalId: {
       type: DataTypes.INTEGER,
       allowNull: true
     }
   }, {
     paranoid: true,
     timestamps: true,
+    underscored: true,
     deletedAt: 'deleted_at',
     hooks: {
       afterCreate: async (stream, option) => {
@@ -121,11 +124,9 @@ module.exports = function (sequelize, DataTypes) {
     Stream.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   Stream.attributes = {
-    full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'project_id', 'created_by_id', 'external_id', 'created_at', 'updated_at'],
-    lite: ['id', 'name', 'start', 'end', 'is_public']
+    full: ['id', 'name', 'description', 'start', 'end', 'is_public', 'latitude', 'longitude', 'altitude', 'max_sample_rate', 'external_id', 'created_at', 'updated_at'],
+    lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'is_public']
   }
-  Stream.include = function (as = 'stream', attributes = Stream.attributes.lite, required = true) {
-    return { model: Stream, as, attributes, required }
-  }
+  Stream.include = includeBuilder(Stream, 'stream', Stream.attributes.lite)
   return Stream
 }

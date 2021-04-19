@@ -1,7 +1,7 @@
-var urls = require('./misc/urls')
+const urls = require('./misc/urls')
 
-var SequelizeApiConverter = function (type, req, selfProperty) {
-  var converter = this
+const SequelizeApiConverter = function (type, req, selfProperty) {
+  const converter = this
 
   converter.type = type
   converter.collection = type.replace(/([A-Z])/g, function (m) { return 's/' + m.toLowerCase() }) + 's'
@@ -22,7 +22,7 @@ var SequelizeApiConverter = function (type, req, selfProperty) {
   }
 
   function createApiObj (id, attrs) {
-    var api = {
+    const api = {
       data: {
         id: id,
         type: converter.type,
@@ -44,9 +44,9 @@ var SequelizeApiConverter = function (type, req, selfProperty) {
       // we are accessing a sequelized object
       obj = obj.dataValues
     }
-    var id = obj.guid
-    var api = createApiObj(id)
-    for (var key in obj) {
+    const id = obj.guid
+    const api = createApiObj(id)
+    for (const key in obj) {
       if (obj.hasOwnProperty(key)) { // eslint-disable-line no-prototype-builtins
         if (key === 'id' || key === 'updated_at' || key === 'created_at' || key === 'guid') {
           continue
@@ -55,7 +55,7 @@ var SequelizeApiConverter = function (type, req, selfProperty) {
         if ((obj[key] === Object(obj[key])) && ('dataValues' in obj[key])) {
           continue
         }
-        var transformedKey = transform(key)
+        const transformedKey = transform(key)
         api.data.attributes[transformedKey] = obj[key]
       }
     }
@@ -68,7 +68,7 @@ var SequelizeApiConverter = function (type, req, selfProperty) {
   }
 
   function cloneSequelizeToApi (attrs) {
-    var obj = createApiObj(null, attrs)
+    const obj = createApiObj(null, attrs)
     delete obj.data.id
     return obj
   }
@@ -77,14 +77,14 @@ var SequelizeApiConverter = function (type, req, selfProperty) {
     if (transform == null) {
       transform = identityTransform
     }
-    var db = {}
+    const db = {}
 
     db.guid = obj.data.id
     db.type = obj.data.type
 
-    for (var key in obj.data.attributes) {
+    for (const key in obj.data.attributes) {
       if (obj.data.attributes.hasOwnProperty(key)) { // eslint-disable-line no-prototype-builtins
-        var transformedKey = transform(key)
+        const transformedKey = transform(key)
         db[transformedKey] = obj.data.attributes[key]
       }
     }

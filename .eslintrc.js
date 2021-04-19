@@ -5,8 +5,9 @@ module.exports = {
     jest: true
   },
   extends: [
-    'standard',
-    'plugin:promise/recommended'
+    'eslint:recommended',
+    'plugin:jest/recommended',
+    'standard'
   ],
   parserOptions: {
     ecmaVersion: 12,

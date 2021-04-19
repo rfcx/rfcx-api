@@ -1,9 +1,11 @@
 const { Organization, Sequelize, User } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError } = require('../../utils/errors')
 const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
-const { hash } = require('../../utils/misc/hash.js')
+const { randomId } = require('../../utils/misc/hash')
 const pagedQuery = require('../../utils/db/paged-query')
-const availableIncludes = [User.include('created_by')]
+const { getSortFields } = require('../../utils/sequelize/sort')
+
+const availableIncludes = [User.include({ as: 'created_by' })]
 
 /**
  * Create an organization
@@ -19,7 +21,7 @@ async function create (organization, options = {}) {
   }
 
   if (!organization.id) {
-    organization.id = hash.randomString(12)
+    organization.id = randomId()
   }
   return Organization.create(organization).catch(error => {
     if (error instanceof Sequelize.UniqueConstraintError && error.fields.name) {
@@ -64,6 +66,7 @@ async function get (id, options = {}) {
  * @param {boolean} options.onlyPublic Include only public organizations
  * @param {boolean} options.onlyDeleted Include only deleted organizations
  * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {string} options.sort Order the results by one or more columns
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
@@ -81,26 +84,30 @@ async function query (filters, options = {}) {
   }
 
   // Options (change behaviour - mix with care)
-  if (options.readableBy) {
-    where.id = {
-      [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, ORGANIZATION)
-    }
-  }
   if (options.onlyPublic) {
     where.is_public = true
-  }
-  if (options.onlyDeleted) {
-    where.deleted_at = {
-      [Sequelize.Op.ne]: null
+  } else {
+    if (options.readableBy) {
+      where.id = {
+        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, ORGANIZATION)
+      }
+    }
+    if (options.onlyDeleted) {
+      where.deleted_at = {
+        [Sequelize.Op.ne]: null
+      }
     }
   }
+
   const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const order = getSortFields(options.sort || '-updated_at')
 
   return pagedQuery(Organization, {
     where,
     attributes,
     include,
+    order,
     limit: options.limit,
     offset: options.offset,
     paranoid: options.onlyDeleted !== true
@@ -111,8 +118,8 @@ async function query (filters, options = {}) {
  * Update organization
  * @param {string} id
  * @param {Organization} organization Organization
- * @param {*} options Additional restore options
- * @param {number} options.updatableBy Include only if organization is updatable by the given user id
+ * @param {*} options
+ * @param {number} options.updatableBy Update only if organization is updatable by the given user id
  * @throws EmptyResultError when organization not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the organization
  */

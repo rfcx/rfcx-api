@@ -7,7 +7,7 @@ const MS_IN_HR = 10800000
 async function getStreams (attrs) {
   let streams
   if (attrs.stream_id) { // if client requested single id, request only it
-    const stream = await streamsService.getById(attrs.stream_id)
+    const stream = await streamsService.get(attrs.stream_id)
     streams = [stream]
   } else {
     const streamsData = await streamsService.query(attrs)

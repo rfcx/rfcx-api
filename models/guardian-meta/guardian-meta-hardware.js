@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaHardware = sequelize.define('GuardianMetaHardware', {
+  const GuardianMetaHardware = sequelize.define('GuardianMetaHardware', {
 
     phone_imei: {
       type: DataTypes.STRING,

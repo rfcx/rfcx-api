@@ -1,28 +1,28 @@
-var Promise = require('bluebird')
-var fs = require('fs')
-var hash = require('../../utils/misc/hash.js').hash
-var aws = require('../../utils/external/aws.js').aws()
-var EmptyResultError = require('../../utils/converter/empty-result-error')
+const Promise = require('bluebird')
+const fs = require('fs')
+const hash = require('../../utils/misc/hash')
+const aws = require('../../utils/external/aws.js').aws()
+const EmptyResultError = require('../../utils/converter/empty-result-error')
 
 exports.audioUtils = {
 
   cacheSourceAudio: function (s3Url) {
     return new Promise(function (resolve, reject) {
       try {
-        var s3NoProtocol = s3Url.substr(s3Url.indexOf('://') + 3)
-        var s3Bucket = s3NoProtocol.substr(0, s3NoProtocol.indexOf('/'))
-        var s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf('/'))
+        const s3NoProtocol = s3Url.substr(s3Url.indexOf('://') + 3)
+        const s3Bucket = s3NoProtocol.substr(0, s3NoProtocol.indexOf('/'))
+        const s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf('/'))
 
-        var hashName = hash.randomString(32)
-        var audioFileExtension = s3Path.substr(1 + s3Path.lastIndexOf('.'))
-        var sourceFilePath = process.env.CACHE_DIRECTORY + 'ffmpeg/' + hashName + '.' + audioFileExtension
+        const hashName = hash.randomString(32)
+        const audioFileExtension = s3Path.substr(1 + s3Path.lastIndexOf('.'))
+        const sourceFilePath = process.env.CACHE_DIRECTORY + 'ffmpeg/' + hashName + '.' + audioFileExtension
 
         aws.s3(s3Bucket).get(s3Path)
           .on('response', function (s3Res) {
             if (s3Res && s3Res.statusCode === 404) {
               return reject(new EmptyResultError(s3Res.statusMessage || 'File not found.'))
             }
-            var tempWriteStream = fs.createWriteStream(sourceFilePath)
+            const tempWriteStream = fs.createWriteStream(sourceFilePath)
             tempWriteStream.on('error', function (err) { console.log(err) })
             s3Res.on('data', function (data) { tempWriteStream.write(data) })
             s3Res.on('end', function () { tempWriteStream.end() })

@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaDataTransfer: function (req, res, dbDataTransfer, modelInfo) {
     if (!Array.isArray(dbDataTransfer)) { dbDataTransfer = [dbDataTransfer] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbDataTransfer) {
-      var dbRow = dbDataTransfer[i]
+      const dbRow = dbDataTransfer[i]
 
       jsonArray.push({
         started_at: dbRow.started_at,

@@ -4,7 +4,7 @@ const guid = require('../../utils/misc/guid')
 const generator = require('generate-password')
 
 // a local storage for tokens
-var tokens = {
+const tokens = {
   standard: null,
   auth: null,
   client: null
@@ -45,7 +45,7 @@ async function checkToken (type, requestFunc) {
 
 function requestTokenFromAuth0 (audience) {
   return new Promise((resolve, reject) => {
-    var options = {
+    const options = {
       method: 'POST',
       url: `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
       headers: { 'content-type': 'application/json' },
@@ -465,7 +465,7 @@ function getUserRoles (token, userGuid) {
 
 function sendChangePasswordEmail (token, email) {
   return new Promise((resolve, reject) => {
-    var options = {
+    const options = {
       method: 'POST',
       url: `https://${process.env.AUTH0_DOMAIN}/dbconnections/change_password`,
       headers: { 'content-type': 'application/json' },

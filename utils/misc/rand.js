@@ -1,5 +1,5 @@
 
-var rand = {
+const rand = {
 
   /**
    * "Flips a coin" to get random result

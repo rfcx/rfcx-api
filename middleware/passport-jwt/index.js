@@ -5,6 +5,7 @@ const userService = require('../../services/users/users-service-legacy')
 const usersFusedService = require('../../services/users/fused')
 const guid = require('../../utils/misc/guid')
 const sequelize = require('sequelize')
+const { getUserRolesFromToken } = require('../../services/auth0/auth0-service')
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()
 
@@ -28,11 +29,13 @@ const optsCustom = Object.assign({}, baseOpts, { issuer: `https://${process.env.
 
 function combineUserData (jwtPayload, user) {
   return Object.assign({}, jwtPayload, {
+    id: user.id,
     guid: user.guid,
     type: 'user',
     owner_id: user.id,
     owner_guid: user.guid,
-    is_super: !!user.is_super
+    is_super: !!user.is_super,
+    has_system_role: getUserRolesFromToken(user).includes('systemUser')
   })
 }
 

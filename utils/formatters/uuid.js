@@ -13,9 +13,9 @@ function slugToUuid (slug) {
 }
 
 function uuidToSlug (uuid) {
-  var bytes = parse(uuid)
-  var base64 = (Buffer.from(bytes)).toString('base64')
-  var slug = base64
+  const bytes = parse(uuid)
+  const base64 = (Buffer.from(bytes)).toString('base64')
+  const slug = base64
     .replace(/\+/g, '-') // Replace + with - (see RFC 4648, sec. 5)
     .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
     .substring(0, 22) // Drop '==' padding

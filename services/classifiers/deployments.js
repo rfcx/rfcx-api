@@ -1,6 +1,11 @@
-const EmptyResultError = require('../../utils/converter/empty-result-error')
-const models = require('../../modelsTimescale')
-const moment = require('moment')
+const { EmptyResultError } = require('../../utils/errors')
+const { Classifier, ClassifierDeployment, Sequelize } = require('../../modelsTimescale')
+const pagedQuery = require('../../utils/db/paged-query')
+const { getSortFields } = require('../../utils/sequelize/sort')
+
+const availableIncludes = [
+  Classifier.include()
+]
 
 /**
  * Gets classifier deployment from
@@ -8,78 +13,65 @@ const moment = require('moment')
  * @throws EmptyResultError when classifier not found
  */
 async function get (id) {
-  const deployment = await models.ClassifierDeployment.findOne({ where: { id } })
+  const deployment = await ClassifierDeployment.findOne({ where: { id } })
   if (!deployment) {
     throw new EmptyResultError('Classifier deployment information with given id not found.')
   }
   return deployment
 }
 
-
 /**
  * Gets classifier deployments based on input params
  * @param {*} filters
  * @param {string} filters.platform
  * @param {boolean} filters.deployed
- * @param {string} filter.start
- * @param {string} filters.end
- * @param {string} filter.type
+ * @param {Date|Moment} filter.start
+ * @param {Date|Moment} filters.end
+ * @param {*} options
+ * @param {string[]} options.fields
+ * @param {string} options.sort
+ * @param {number} options.limit
+ * @param {number} options.offset
  */
-async function query(filters) {
-  const condition = {}
+async function query (filters, options = {}) {
+  const where = {}
 
   if (filters.platform) {
-    condition.platform = filters.platform
+    where.platform = filters.platform
   }
 
   if (filters.deployed !== undefined) {
-    condition.deployed = filters.deployed
+    where.deployed = filters.deployed
   }
 
   if (filters.start) {
-    condition.start = { [models.Sequelize.Op.gte]: moment.utc(filters.start).valueOf() }
+    where.start = { [Sequelize.Op.gte]: filters.start }
   }
 
   if (filters.end) {
-    condition.end = { [models.Sequelize.Op.lte]: moment.utc(filters.end).valueOf() }
+    where.end = { [Sequelize.Op.lte]: filters.end }
   }
 
-  const query = {
-    where: condition,
-    attributes: ['id', 'deployed', 'status', 'start', 'end', 'platform', 'deployment_parameters'],
-    include: {
-      model: models.Classifier,
-      as: 'classifier',
-      attributes: ['id', 'name']
-    }
-  }
+  const attributes = options.fields && options.fields.length > 0 ? ClassifierDeployment.attributes.full.filter(a => options.fields.includes(a)) : ClassifierDeployment.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const order = getSortFields(options.sort || '-start')
 
-  if (filters.type && filters.type === 'only_last') {
-    query.order = [['id', 'DESC']]
-  }
-
-  const deployments = await models.ClassifierDeployment.findAll(query)
-
-  if (filters.type) {
-    const filteredDeployments = []
-    for (const deployment of deployments) {
-      const idx = filteredDeployments.findIndex(d => d.classifier.id === deployment.classifier.id)
-      if (idx < 0) {
-        filteredDeployments.push(deployment)
-      }
-    }
-    return filteredDeployments
-  }
-
-  return deployments
+  return pagedQuery(ClassifierDeployment, {
+    where,
+    attributes,
+    include,
+    order,
+    limit: options.limit,
+    offset: options.offset
+  })
 }
 
 /**
- * Update classifier deployment deployed status by id
+ * Update classifier deployment
  * @param {number} id
- * @param {boolean} deployed
+ * @param {ClassifierDeployment} deployment
  */
-async function update(id, deployed) {
+async function update (id, deployed) {
   const deployment = await get(id)
   await deployment.update({ deployed: deployed })
 }

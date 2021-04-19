@@ -3,12 +3,12 @@ exports.models = {
   users: function (req, res, dbUser) {
     if (!Array.isArray(dbUser)) { dbUser = [dbUser] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbUser) {
-      var dbRow = dbUser[i]
+      const dbRow = dbUser[i]
 
-      var user = {
+      const user = {
         guid: dbRow.guid,
         type: dbRow.type,
         username: dbRow.username,
@@ -30,12 +30,12 @@ exports.models = {
   usersPublic: function (req, res, dbUser) {
     if (!Array.isArray(dbUser)) { dbUser = [dbUser] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbUser) {
-      var dbRow = dbUser[i]
+      const dbRow = dbUser[i]
 
-      var user = {
+      const user = {
         guid: dbRow.guid,
         username: dbRow.username,
         email: dbRow.email

@@ -9,6 +9,7 @@ async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
   const completedMigrations = await sequelize.query(`SELECT * FROM ${table}`, { type: Sequelize.QueryTypes.SELECT })
 
   for (const name in completedMigrations) {
+    // eslint-disable-next-line no-prototype-builtins
     if (completedMigrations.hasOwnProperty(name)) {
       const index = migrations.indexOf(completedMigrations[name].name)
       if (index !== -1) {
@@ -45,14 +46,15 @@ const primaryUserId = 1
 const primaryUserGuid = 'abc123'
 const primaryUserEmail = 'jb@astonmartin.com'
 const otherUserId = 2
+const otherUserGuid = 'def456'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
-const seedValues = { primaryUserId, primaryUserGuid, primaryUserEmail, otherUserId, roleAdmin, roleMember, roleGuest }
+const seedValues = { primaryUserId, primaryUserGuid, primaryUserEmail, otherUserId, otherUserGuid, roleAdmin, roleMember, roleGuest }
 
 async function seed (models) {
   await models.User.create({ id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: 'James', lastname: 'Bond', email: primaryUserEmail })
-  await models.User.create({ id: otherUserId, guid: 'def456', username: 'em', firstname: 'Eve', lastname: 'Moneypenny', email: 'em@astonmartin.com' })
+  await models.User.create({ id: otherUserId, guid: otherUserGuid, username: 'em', firstname: 'Eve', lastname: 'Moneypenny', email: 'em@astonmartin.com' })
   await models.Role.create({ id: roleAdmin, name: 'Admin' })
   await models.Role.create({ id: roleMember, name: 'Member' })
   await models.Role.create({ id: roleGuest, name: 'Guest' })
@@ -78,13 +80,13 @@ async function truncate (models) {
   )
 }
 
-function expressApp () {
+function expressApp (userAdditions = {}) {
   const app = express()
   app.use(express.json())
   app.use(express.urlencoded({ extended: false }))
   app.use((req, res, next) => {
     req.user = { roles: [] }
-    req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail } }
+    req.rfcx = { auth_token_info: { id: primaryUserId, guid: primaryUserGuid, email: primaryUserEmail, ...userAdditions } }
     req.rfcx.auth_token_info.owner_id = primaryUserId // TODO remove
     next()
   })

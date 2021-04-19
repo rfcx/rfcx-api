@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianAudioEventReasonForCreation = sequelize.define('GuardianAudioEventReasonForCreation', {
+  const GuardianAudioEventReasonForCreation = sequelize.define('GuardianAudioEventReasonForCreation', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,

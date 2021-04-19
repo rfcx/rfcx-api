@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaPower: function (req, res, dbPower, modelInfo) {
     if (!Array.isArray(dbPower)) { dbPower = [dbPower] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbPower) {
-      var dbRow = dbPower[i]
+      const dbRow = dbPower[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,

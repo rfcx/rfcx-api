@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var ShortLink = sequelize.define('ShortLink', {
+  const ShortLink = sequelize.define('ShortLink', {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,

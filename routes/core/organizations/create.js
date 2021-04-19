@@ -32,16 +32,15 @@ const Converter = require('../../../utils/converter/converter')
  *         description: Invalid query parameters
  */
 module.exports = function (req, res) {
-  const createdById = req.rfcx.auth_token_info.owner_id
-  const convertedParams = {}
-  const converter = new Converter(req.body, convertedParams, true)
+  const createdById = req.rfcx.auth_token_info.id
+  const converter = new Converter(req.body, {}, true)
   converter.convert('name').toString()
   converter.convert('is_public').default(false).toBoolean()
 
   return converter.validate()
-    .then(() => {
+    .then((params) => {
       const organization = {
-        ...convertedParams,
+        ...params,
         createdById
       }
       return organizationsService.create(organization)

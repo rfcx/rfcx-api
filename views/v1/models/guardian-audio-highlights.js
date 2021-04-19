@@ -3,12 +3,12 @@ exports.models = {
   guardianAudioHighlights: function (req, res, dbAudioHighlights) {
     if (!Array.isArray(dbAudioHighlights)) { dbAudioHighlights = [dbAudioHighlights] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbAudioHighlights) {
-      var dbRow = dbAudioHighlights[i]
+      const dbRow = dbAudioHighlights[i]
 
-      var guardianAudioHighlight = {
+      const guardianAudioHighlight = {
         guid: dbRow.guid,
         type: dbRow.type,
         shortname: dbRow.label,

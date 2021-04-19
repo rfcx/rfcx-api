@@ -1,9 +1,11 @@
-var models = require('../../models')
+const models = require('../../models')
+const { parse: parseDetections } = require('./mqtt-detections-parse')
+const detectionsService = require('../../services/detections/create')
 
 exports.saveMeta = {
 
   CPU: function (metaCPU, guardianId, checkInId) {
-    var dbMetaCPU = []
+    const dbMetaCPU = []
 
     for (const cpuInd in metaCPU) {
       if ((parseInt(metaCPU[cpuInd][1]) <= 100) && (parseInt(metaCPU[cpuInd][1]) >= 0) &&
@@ -23,7 +25,7 @@ exports.saveMeta = {
   },
 
   Battery: function (metaBattery, guardianId, checkInId) {
-    var dbMetaBattery = []
+    const dbMetaBattery = []
 
     for (const battInd in metaBattery) {
       dbMetaBattery.push({
@@ -41,7 +43,7 @@ exports.saveMeta = {
   },
 
   Network: function (metaNetwork, guardianId, checkInId) {
-    var dbMetaNetwork = []
+    const dbMetaNetwork = []
 
     for (const ntwkInd in metaNetwork) {
       dbMetaNetwork.push({
@@ -58,7 +60,7 @@ exports.saveMeta = {
   },
 
   DataTransfer: function (metaDataTransfer, guardianId, checkInId) {
-    var dbMetaDataTransfer = []
+    const dbMetaDataTransfer = []
 
     for (const dtInd in metaDataTransfer) {
       dbMetaDataTransfer.push({
@@ -77,7 +79,7 @@ exports.saveMeta = {
   },
 
   LightMeter: function (metaLightMeter, guardianId, checkInId) {
-    var dbMetaLightMeter = []
+    const dbMetaLightMeter = []
 
     for (const lmInd in metaLightMeter) {
       dbMetaLightMeter.push({
@@ -92,10 +94,10 @@ exports.saveMeta = {
   },
 
   Accelerometer: function (metaAccelerometer, guardianId, checkInId) {
-    var dbMetaAccelerometer = []
+    const dbMetaAccelerometer = []
 
     for (const acInd in metaAccelerometer) {
-      var xyzVals = metaAccelerometer[acInd][1].split(',')
+      const xyzVals = metaAccelerometer[acInd][1].split(',')
       dbMetaAccelerometer.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
@@ -111,12 +113,12 @@ exports.saveMeta = {
   },
 
   GeoPosition: function (metaPosition, guardianId, checkInId) {
-    var dbMetaGeoPosition = []
+    const dbMetaGeoPosition = []
 
     for (const locInd in metaPosition) {
       if (metaPosition[locInd][1] != null) {
-        var latLng = metaPosition[locInd][1].split(',')
-        var accAlt = metaPosition[locInd][2].split(',')
+        const latLng = metaPosition[locInd][1].split(',')
+        const accAlt = metaPosition[locInd][2].split(',')
         dbMetaGeoPosition.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
@@ -160,7 +162,7 @@ exports.saveMeta = {
   },
 
   DateTimeOffset: function (metaDateTimeOffset, guardianId, checkInId) {
-    var dbMetaDateTimeOffset = []
+    const dbMetaDateTimeOffset = []
 
     for (const dtoInd in metaDateTimeOffset) {
       if (metaDateTimeOffset[dtoInd][2] != null) {
@@ -179,7 +181,7 @@ exports.saveMeta = {
   },
 
   MqttBrokerConnection: function (metaBrokerConnection, guardianId, checkInId) {
-    var dbMetaBrokerConnection = []
+    const dbMetaBrokerConnection = []
 
     for (const brkrInd in metaBrokerConnection) {
       if (metaBrokerConnection[brkrInd][3] != null) {
@@ -198,7 +200,7 @@ exports.saveMeta = {
   },
 
   Storage: function (metaDiskUsage, guardianId, checkInId) {
-    var diskUsage = { internal: {}, external: {} }
+    const diskUsage = { internal: {}, external: {} }
 
     for (const duInd in metaDiskUsage) {
       diskUsage[metaDiskUsage[duInd][0]] = {
@@ -208,7 +210,7 @@ exports.saveMeta = {
       }
     }
 
-    var dbMetaDiskUsage = []
+    const dbMetaDiskUsage = []
     if ((metaDiskUsage.length > 0) && (diskUsage.internal.measured_at != null)) {
       dbMetaDiskUsage.push({
         guardian_id: guardianId,
@@ -224,7 +226,7 @@ exports.saveMeta = {
   },
 
   Memory: function (metaMemory, guardianId, checkInId) {
-    var memory = { system: {} }
+    const memory = { system: {} }
 
     for (const mInd in metaMemory) {
       memory[metaMemory[mInd][0]] = {
@@ -234,7 +236,7 @@ exports.saveMeta = {
         minimum: parseInt(metaMemory[mInd][4])
       }
     }
-    var dbMetaMemory = []
+    const dbMetaMemory = []
     if ((metaMemory.length > 0) && (memory.system.measured_at != null)) {
       dbMetaMemory.push({
         guardian_id: guardianId,
@@ -251,11 +253,11 @@ exports.saveMeta = {
   },
 
   SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
-    var sntnlPwrEntries = { }
+    const sntnlPwrEntries = { }
 
     for (const duInd in metaSntnlPwr) {
-      var sysInpBatt = metaSntnlPwr[duInd][0] + ''
-      var timeStamp = metaSntnlPwr[duInd][1] + ''
+      const sysInpBatt = metaSntnlPwr[duInd][0] + ''
+      const timeStamp = metaSntnlPwr[duInd][1] + ''
 
       if (sntnlPwrEntries[timeStamp] == null) {
         sntnlPwrEntries[timeStamp] = {
@@ -282,7 +284,7 @@ exports.saveMeta = {
       }
     }
 
-    var dbMetaSentinelPower = []
+    const dbMetaSentinelPower = []
 
     for (const sntPwrInd in sntnlPwrEntries) {
       if (parseInt(sntPwrInd) > 0) {
@@ -309,7 +311,7 @@ exports.saveMeta = {
   },
 
   SentinelSensor: function (sensorTag, metaSntnlSnsr, guardianId, checkInId) {
-    var dbMetaSentinelSensor = []
+    const dbMetaSentinelSensor = []
 
     for (const sntInd in metaSntnlSnsr) {
       if (metaSntnlSnsr[sntInd][0] === sensorTag) {
@@ -347,8 +349,8 @@ exports.saveMeta = {
   },
 
   CheckInStatus: function (metaCheckInStatus, guardianId, measuredAt) {
-    var dbMetaCheckInStatus = []
-    var dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) }
+    const dbMetaCheckInStatus = []
+    const dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) }
 
     for (const vInd in metaCheckInStatus) {
       dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_count'] = parseInt(metaCheckInStatus[vInd][1])
@@ -379,7 +381,7 @@ exports.saveMeta = {
   },
 
   RebootEvents: function (rebootEvents, guardianId, checkInId) {
-    var dbMetaRebootEvents = []
+    const dbMetaRebootEvents = []
 
     for (const rebootEvntInd in rebootEvents) {
       dbMetaRebootEvents.push({
@@ -393,7 +395,7 @@ exports.saveMeta = {
   },
 
   SoftwareRoleVersion: function (roleArr, guardianId) {
-    var roleVersions = {}
+    const roleVersions = {}
     const proms = []
     for (const vInd in roleArr) {
       roleVersions[roleArr[vInd][0]] = roleArr[vInd][1]
@@ -438,6 +440,21 @@ exports.saveMeta = {
       proms.push(prom)
     }
     return Promise.all(proms)
+  },
+
+  Detections: function (payload, guardianId) {
+    let detections
+    try {
+      detections = parseDetections(payload)
+    } catch (error) {
+      return Promise.resolve()
+    }
+    // TODO remove temporary logging to debug satellite guardians
+    if (detections.length > 0) {
+      console.log(`found ${detections.length} detections in payload from ${guardianId}`)
+    }
+    const expandedDetections = detections.map(d => ({ streamId: guardianId, ...d }))
+    return detectionsService.create(expandedDetections)
   }
 
 }

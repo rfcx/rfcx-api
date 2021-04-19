@@ -39,11 +39,11 @@ function isValidItem (item, type) {
       return item.length === 3 && _strIsInt(item[0]) && _strIsInt(item[1]) && _str(item[2])
     case 'accelerometer':
       try {
-        var xyz = item[1].split(',')
+        const xyz = item[1].split(',')
+        return item.length === 3 && _strIsInt(item[0]) && _strIsNumber(xyz[0]) && _strIsNumber(xyz[1]) && _strIsNumber(xyz[2]) && _strIsInt(item[2])
       } catch (e) {
         return false
       }
-      return item.length === 3 && _strIsInt(item[0]) && _strIsNumber(xyz[0]) && _strIsNumber(xyz[1]) && _strIsNumber(xyz[2]) && _strIsInt(item[2])
     case 'disk_usage':
       return item.length === 4 && _str(item[0]) && _strIsInt(item[1]) && _strIsInt(item[2]) && _strIsInt(item[3])
     case 'location':

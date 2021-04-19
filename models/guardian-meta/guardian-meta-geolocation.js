@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  var GuardianMetaGeoLocation = sequelize.define('GuardianMetaGeoLocation', {
+  const GuardianMetaGeoLocation = sequelize.define('GuardianMetaGeoLocation', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {

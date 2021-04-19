@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var GuardianSoftwareVersion = sequelize.define('GuardianSoftwareVersion', {
+  const GuardianSoftwareVersion = sequelize.define('GuardianSoftwareVersion', {
     version: {
       type: DataTypes.STRING,
       allowNull: false,

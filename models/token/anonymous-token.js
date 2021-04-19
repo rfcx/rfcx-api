@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var AnonymousToken = sequelize.define('AnonymousToken', {
+  const AnonymousToken = sequelize.define('AnonymousToken', {
     guid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

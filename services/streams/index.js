@@ -1,80 +1,61 @@
-const models = require('../../modelsTimescale')
-const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
+const { Stream, Project, User, StreamSegment, StreamSourceFile, Sequelize } = require('../../modelsTimescale')
+const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
-const rolesService = require('../roles')
-const { getSortFields } = require('../../utils/sort')
+const projectsService = require('../projects')
+const { getAccessibleObjectsIDs, hasPermission, STREAM, READ, UPDATE, DELETE } = require('../roles')
+const pagedQuery = require('../../utils/db/paged-query')
+const { getSortFields } = require('../../utils/sequelize/sort')
 
-const streamBaseInclude = [
-  {
-    model: models.User,
-    as: 'created_by',
-    attributes: models.User.attributes.lite
-  },
-  {
-    model: models.Project,
-    as: 'project',
-    attributes: models.Project.attributes.lite
-  }
+const availableIncludes = [
+  User.include({ as: 'created_by' }),
+  Project.include({ required: false })
 ]
 
-/**
- * Searches for stream model with given params
- * @param {object} params
- * @param {*} opts additional function params
- * @returns {*} stream model item
- */
-function getByParams (where, opts = {}) {
-  return models.Stream
-    .findOne({
-      where,
-      attributes: models.Stream.attributes.full,
-      include: opts && opts.joinRelations ? streamBaseInclude : [],
-      paranoid: !opts.includeDeleted
-    })
-    .then(item => {
-      if (!item) {
-        throw new EmptyResultError('Stream with given id not found.')
-      }
-      return item
-    })
-}
-
-/**
- * Searches for stream model with given id
- * @param {string} id
- * @param {*} opts additional function params
- * @returns {*} stream model item
- */
-function getById (id, opts = {}) {
-  return getByParams({ id }, opts)
-}
-
-/**
- * Searches for stream model with given external_id
- * @param {string} id external stream id
- * @param {*} opts additional function params
- * @returns {*} stream model item
- */
-function getByExternalId (id, opts = {}) {
-  return getByParams({ external_id: id }, opts)
-}
-
-/**
- * Creates stream item
- * @param {*} data stream attributes
- * @param {*} opts additional function params
- * @param {boolean} opts.joinRelations whether to include joined tables in returned object
- * @returns {*} stream model item
- */
-function create (data, opts = {}) {
-  if (!data) {
-    throw new ValidationError('Cannot create stream with empty object.')
+function computedAdditions (stream) {
+  const additions = {}
+  if (stream.latitude && stream.longitude) {
+    const country = crg.get_country(stream.latitude, stream.longitude)
+    if (country) {
+      additions.countryName = country.name
+    }
   }
-  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id } = data // eslint-disable-line camelcase
-  return models.Stream
-    .create({ id, name, description, start, end, is_public, latitude, longitude, altitude, created_by_id, external_id, project_id })
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
+  return additions
+}
+
+/**
+ * Get a single stream by id or where clause
+ * @param {string|object} idOrWhere id or where condition
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if organization is accessible to the given user id
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to all)
+ * @returns {Stream} stream model item
+ * @throws EmptyResultError when organization not found
+ * @throws ForbiddenError when `readableBy` user does not have read permission on the organization
+ */
+async function get (idOrWhere, options = {}) {
+  const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
+  const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.full
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
+
+  const stream = await Stream.findOne({ where, attributes, include, paranoid: false })
+
+  if (!stream) {
+    throw new EmptyResultError('Stream not found')
+  }
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, stream.id, STREAM))) {
+    throw new ForbiddenError()
+  }
+  return stream
+}
+
+/**
+ * Create a stream
+ * @param {Stream} stream
+ * @param {*} options
+ */
+function create (stream, options = {}) {
+  const fullStream = { ...stream, ...computedAdditions(stream) }
+  return Stream.create(fullStream)
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
       throw new ValidationError('Cannot create stream with provided data.')
@@ -82,207 +63,166 @@ function create (data, opts = {}) {
 }
 
 /**
- * Returns list of streams with total number filtered by specified attributes
- * @param {*} attrs stream attributes
- * @param {*} opts additional function params
+ * Get a list of streams matching the filters
+ * @param {*} filters Stream attributes
+ * @param {string} filters.keyword Where keyword is found (in the stream name)
+ * @param {string[]} filters.projects Where belongs to one of the projects (array of project ids)
+ * @param {string[]} filters.organizations Where belongs to one of the organizations (array of organization ids)
+ * @param {string|number} filters.start Having audio (segments) after start (moment)
+ * @param {string|number} filters.end Having audio (segments) before end (moment)
+ * @param {number} filters.createdBy Where created by the given user id
+ * @param {string|number} filters.updatedAfter Where created by the given user id
+ * @param {*} options Query options
+ * @param {number} options.readableBy Include only streams readable by the given user id
+ * @param {boolean} options.onlyPublic Include only public streams
+ * @param {boolean} options.onlyDeleted Include only deleted streams
+ * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {string} options.sort Order the results by one or more columns
+ * @param {number} options.limit Maximum results to include
+ * @param {number} options.offset Number of results to skip
  */
-async function query (attrs, opts = {}) {
+async function query (filters, options = {}) {
   const where = {}
-  let order = []
-  if (attrs.start !== undefined) {
-    where.start = {
-      [models.Sequelize.Op.gte]: attrs.start
-    }
-  }
-  if (attrs.end !== undefined) {
-    where.end = {
-      [models.Sequelize.Op.lt]: attrs.end
-    }
-  }
 
-  if (attrs.keyword) {
+  // Filters (restrict results - can use multiple filters safely)
+  if (filters.keyword) {
     where.name = {
-      [models.Sequelize.Op.iLike]: `%${attrs.keyword}%`
+      [Sequelize.Op.iLike]: `%${filters.keyword}%`
     }
   }
-
-  if (attrs.is_public !== undefined) {
-    where.is_public = attrs.is_public
-  }
-
-  if (attrs.created_by === 'me') {
-    where.created_by_id = attrs.current_user_id
-  } else if (attrs.created_by === 'collaborators') {
-    where.created_by_id = { [models.Sequelize.Op.not]: attrs.current_user_id }
-  }
-
-  if (!attrs.current_user_is_super) {
-    if (attrs.is_public === true) {
-      where.is_public = true
-    } else {
-      const ids = await rolesService.getAccessibleObjectsIDs(attrs.current_user_id, rolesService.STREAM)
-      where.id = {
-        [models.Sequelize.Op.in]: ids
-      }
+  if (filters.organizations) {
+    const projectIds = await projectsService.query({ organizations: filters.organizations }, { fields: ['id'] })
+    where.projectId = {
+      [Sequelize.Op.in]: projectIds
     }
   }
-
-  if (attrs.is_deleted === true) { // user can get only personal deleted streams
-    where.created_by_id = attrs.current_user_id
-    where.deleted_at = {
-      [models.Sequelize.Op.ne]: null
+  if (filters.projects) {
+    where.projectId = {
+      [Sequelize.Op.in]: filters.projects
     }
   }
-
-  if (attrs.projects) {
-    where.project_id = {
-      [models.Sequelize.Op.in]: attrs.projects
+  if (filters.start) {
+    where.start = {
+      [Sequelize.Op.gte]: filters.start.toDate()
     }
   }
-
-  if (attrs.updated_after) {
+  if (filters.end) {
+    where.end = {
+      [Sequelize.Op.lt]: filters.end.toDate()
+    }
+  }
+  if (filters.createdBy) {
+    where.createdById = filters.createdBy
+  }
+  if (filters.updatedAfter) {
     where.updated_at = {
-      [models.Sequelize.Op.gte]: attrs.updated_after
+      [Sequelize.Op.gte]: filters.updatedAfter.toDate()
     }
   }
 
-  let streamInclude = streamBaseInclude
-  if (attrs.organizations) {
-    const projectInclude = {
-      model: models.Project,
-      as: 'project',
-      attributes: models.Project.attributes.lite,
-      where: {
-        organization_id: {
-          [models.Sequelize.Op.in]: attrs.organizations
-        }
+  // Options (change behaviour - mix with care)
+  if (options.onlyPublic) {
+    where.isPublic = true
+  } else {
+    if (options.readableBy) {
+      where.id = {
+        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, STREAM)
       }
     }
-    streamInclude = [streamBaseInclude.find(i => i.as === 'created_by'), projectInclude]
-    opts.joinRelations = true
+    if (options.onlyDeleted) {
+      where.deletedAt = {
+        [Sequelize.Op.ne]: null
+      }
+    }
   }
 
-  if (attrs.sort) {
-    order = getSortFields(attrs.sort)
-  }
+  const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const order = getSortFields(options.sort || '-updated_at')
 
-  const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
-  return models.Stream[method]({
+  const streamsData = await pagedQuery(Stream, {
     where,
-    limit: attrs.limit,
-    offset: attrs.offset,
-    attributes: models.Stream.attributes.full,
-    include: opts.joinRelations ? streamInclude : [],
-    paranoid: attrs.is_deleted !== true,
-    order: order
+    attributes,
+    include,
+    order,
+    limit: options.limit,
+    offset: options.offset,
+    paranoid: options.onlyDeleted !== true
   })
-    .then((data) => {
-      return {
-        count: method === 'findAndCountAll' ? data.count : data.length,
-        streams: method === 'findAndCountAll' ? data.rows : data
+
+  // TODO move country into the table and perform lookup once on create/update
+  // TODO avoid language-specific data in results (return country code instead of name)
+  streamsData.results = streamsData.results.map(stream => {
+    if (stream.latitude && stream.longitude) {
+      const country = crg.get_country(stream.latitude, stream.longitude)
+      if (country) {
+        return { ...stream.toJSON(), country_name: country.name } // eslint-disable-line camelcase
       }
-    })
-}
-
-/**
- * Updates existing stream item
- * @param {*} stream stream model item
- * @param {*} data attributes to update
- * @param {string} data.name
- * @param {string} data.description
- * @param {boolean} data.is_public
- * @param {string} data.start
- * @param {string} data.end
- * @param {float} data.latitude
- * @param {float} data.longitude
- * @param {float} data.altitude
- * @param {integer} data.max_sample_rate
- * @param {integer} data.project_id
- * @param {integer} data.external_id
- * @param {integer} data.project_external_id
- * @param {*} opts additional function params
- * @param {boolean} opts.joinRelations whether join related tables or not
- * @returns {*} stream model item
- */
-function update (stream, data, opts = {}) {
-  const attrs = ['name', 'description', 'is_public', 'start', 'end', 'latitude', 'longitude',
-    'altitude', 'max_sample_rate', 'project_id', 'external_id', 'project_external_id']
-  attrs.forEach((attr) => {
-    if (data[attr] !== undefined) {
-      stream[attr] = data[attr]
     }
+    return stream
   })
-  return stream
-    .save()
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
-    .catch((e) => {
-      console.error('Streams service -> update -> error', e)
-      throw new ValidationError('Cannot update stream with provided data.')
-    })
+
+  return streamsData
 }
 
 /**
- * Deletes stream (soft or hard)
- * @param {*} stream stream model item
- * @param {*} opts
- * @param {boolean} force
+ * Update stream
+ * @param {string} id
+ * @param {Stream} stream
+ * @param {string} stream.name
+ * @param {string} stream.description
+ * @param {boolean} stream.is_public
+ * @param {string} stream.start
+ * @param {string} stream.end
+ * @param {float} stream.latitude
+ * @param {float} stream.longitude
+ * @param {float} stream.altitude
+ * @param {integer} stream.max_sample_rate
+ * @param {integer} stream.project_id
+ * @param {integer} stream.external_id
+ * @param {integer} stream.project_external_id
+ * @param {*} options
+ * @param {number} options.updatableBy Update only if stream is updatable by the given user id
+ * @throws EmptyResultError when stream not found
+ * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
  */
-function del (stream, opts = {}) {
-  return stream.destroy({
-    ...opts.force !== undefined ? { force: opts.force } : {}
+async function update (id, stream, options = {}) {
+  if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, id, STREAM))) {
+    throw new ForbiddenError()
+  }
+  const fullStream = { ...stream, ...computedAdditions(stream) }
+  return Stream.update(fullStream, {
+    where: { id }
   })
-    .catch((e) => {
-      console.error('Streams service -> delete -> error', e)
-      throw new ValidationError('Cannot delete stream.')
-    })
 }
 
 /**
- * Restored deleted stream
- * @param {*} stream stream model item
+ * Delete stream
+ * @param {string} id
+ * @param {*} options Additional delete options
+ * @param {number} options.deletableBy Perform only if organization is deletable by the given user id
+ * @param {boolean} options.force Remove from the database (not soft-delete)
+ * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
  */
-function restore (stream) {
-  return stream.restore()
-    .catch((e) => {
-      console.error('Streams service -> restore -> error', e)
-      throw new ValidationError('Cannot restore stream.')
-    })
+async function remove (id, options = {}) {
+  if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, STREAM))) {
+    throw new ForbiddenError()
+  }
+  return Stream.destroy({ where: { id }, force: options.force })
 }
 
-function formatStream (stream, permissions) {
-  const { id, name, description, start, end, is_public, latitude, longitude, altitude, created_at, updated_at, max_sample_rate, external_id, project } = stream // eslint-disable-line camelcase
-  let country_name = null // eslint-disable-line camelcase
-  if (latitude && longitude) {
-    const country = crg.get_country(latitude, longitude)
-    if (country) {
-      country_name = country.name // eslint-disable-line camelcase
-    }
+/**
+ * Restore deleted stream
+ * @param {string} id
+ * @param {*} options Additional restore options
+ * @param {number} options.deletableBy Perform only if organization is deletable by the given user id
+ * @throws ForbiddenError when `deletableBy` user does not have delete permission on the organization
+ */
+async function restore (id, options = {}) {
+  if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, STREAM))) {
+    throw new ForbiddenError()
   }
-  return {
-    id,
-    name,
-    description,
-    start,
-    end,
-    is_public,
-    created_at,
-    created_by: stream.created_by || null,
-    updated_at,
-    max_sample_rate,
-    latitude,
-    longitude,
-    altitude,
-    country_name,
-    external_id,
-    project: project || null,
-    ...permissions && { permissions }
-  }
-}
-
-function formatStreams (data) {
-  return data.map((item) => {
-    return formatStream(item.stream, item.permissions)
-  })
+  return Stream.restore({ where: { id } })
 }
 
 /**
@@ -291,7 +231,7 @@ function formatStreams (data) {
  */
 async function refreshStreamMaxSampleRate (stream) {
   const where = { stream_id: stream.id }
-  let max_sample_rate = await models.StreamSourceFile.max('sample_rate', { where }) // eslint-disable-line camelcase
+  let max_sample_rate = await StreamSourceFile.max('sample_rate', { where }) // eslint-disable-line camelcase
   max_sample_rate = max_sample_rate || null // eslint-disable-line camelcase
   return update(stream, { max_sample_rate })
 }
@@ -312,8 +252,8 @@ async function refreshStreamStartEnd (stream, segment) {
     }
   } else {
     const where = { stream_id: stream.id }
-    upd.start = await models.StreamSegment.min('start', { where })
-    upd.end = await models.StreamSegment.max('end', { where })
+    upd.start = await StreamSegment.min('start', { where })
+    upd.end = await StreamSegment.max('end', { where })
     if (upd.start === 0) {
       upd.start = null
     }
@@ -324,27 +264,26 @@ async function refreshStreamStartEnd (stream, segment) {
   return update(stream, upd)
 }
 
+// TODO move to guardian-related area (not part of Core)
 function ensureStreamExistsForGuardian (dbGuardian) {
   const where = {
     id: dbGuardian.guid
   }
   const defaults = {
     name: dbGuardian.shortname,
-    is_public: !dbGuardian.is_private,
+    isPublic: !dbGuardian.is_private,
     ...dbGuardian.latitude && { latitude: dbGuardian.latitude },
     ...dbGuardian.longitude && { longitude: dbGuardian.longitude },
-    created_by_id: dbGuardian.creator ? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
+    createdById: dbGuardian.creator ? dbGuardian.creator : 1 // Streams must have creator, so Topher will be their creator
   }
-  return models.Stream.findOrCreate({ where, defaults })
+  return Stream.findOrCreate({ where, defaults })
     .spread((dbStream) => {
       return dbStream
     })
 }
 
 async function getPublicStreamIds () {
-  return (await query({
-    is_public: true
-  })).streams.map(d => d.id)
+  return (await query({ is_public: true })).streams.map(d => d.id)
 }
 
 /**
@@ -355,17 +294,17 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
   // Only my streams or my collaborators
   if (createdBy !== undefined) {
     return (await query({
-      current_user_id: user.owner_id,
+      current_user_id: user.id,
       created_by: createdBy
     })).streams.map(d => d.id)
   }
 
   // Get my streams and my collaborators
   const s1 = await query({
-    current_user_id: user.owner_id
+    current_user_id: user.id
   })
   const s2 = await query({
-    current_user_id: user.owner_id,
+    current_user_id: user.id,
     created_by: 'collaborators',
     current_user_is_super: user.is_super
   })
@@ -377,16 +316,12 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
 }
 
 module.exports = {
-  getByParams,
-  getById,
-  getByExternalId,
+  get,
   create,
   query,
   update,
-  del,
+  remove,
   restore,
-  formatStream,
-  formatStreams,
   refreshStreamMaxSampleRate,
   refreshStreamStartEnd,
   ensureStreamExistsForGuardian,

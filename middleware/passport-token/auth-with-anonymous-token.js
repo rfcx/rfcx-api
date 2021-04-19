@@ -1,7 +1,7 @@
-var verboseLogging = (process.env.NODE_ENV !== 'production')
-var models = require('../../models')
-var hash = require('../../utils/misc/hash.js').hash
-var regex = require('../../utils/misc/regex.js')
+const verboseLogging = (process.env.NODE_ENV !== 'production')
+const models = require('../../models')
+const hash = require('../../utils/misc/hash')
+const regex = require('../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   models.AnonymousToken
@@ -20,9 +20,9 @@ exports.authenticateAs = function (req, token, done, authUser) {
           return done(null, false, { message: 'token is expired' })
         })
       } else if ((dbToken.auth_token_hash === hash.hashedCredentials(dbToken.auth_token_salt, token)) &&
-                ((dbToken.only_allow_access_to == null) ||
-                    (regex.regExIndexOf(req.rfcx.url_path, JSON.parse(dbToken.only_allow_access_to)) > -1)
-                )
+        ((dbToken.only_allow_access_to == null) ||
+          (regex.regExIndexOf(req.rfcx.url_path, JSON.parse(dbToken.only_allow_access_to)) > -1)
+        )
       ) {
         req.rfcx.auth_token_info = {
           type: 'anonymous',

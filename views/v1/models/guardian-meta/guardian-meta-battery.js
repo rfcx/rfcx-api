@@ -3,10 +3,10 @@ exports.models = {
   guardianMetaBattery: function (req, res, dbBattery, modelInfo) {
     if (!Array.isArray(dbBattery)) { dbBattery = [dbBattery] }
 
-    var jsonArray = []
+    const jsonArray = []
 
     for (const i in dbBattery) {
-      var dbRow = dbBattery[i]
+      const dbRow = dbBattery[i]
 
       jsonArray.push({
         measured_at: dbRow.measured_at,
