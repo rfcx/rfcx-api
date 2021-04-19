@@ -212,8 +212,9 @@ function update (stream, data, opts = {}) {
       stream[attr] = data[attr]
     }
   })
+  const transaction = opts.transaction || null
   return stream
-    .save()
+    .save({ transaction })
     .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamBaseInclude }) : item })
     .catch((e) => {
       console.error('Streams service -> update -> error', e)
@@ -286,42 +287,28 @@ function formatStreams (data) {
 }
 
 /**
- * Finds max sample rate value of stream source files belonging to stream and updates max_sample_rate attribute of the stream
- * @param {*} stream stream model item
+ * Refreshes stream's max sample_rate, start and end based on input params
+ * @param {*} stream
+ * @param {*} params
+ * @param {number} params.sampleRate
+ * @param {string} params.start
+ * @param {string} params.end
+ * @param {*} opts
+ * @param {*} opts.transaction
  */
-async function refreshStreamMaxSampleRate (stream) {
-  const where = { stream_id: stream.id }
-  let max_sample_rate = await models.StreamSourceFile.max('sample_rate', { where }) // eslint-disable-line camelcase
-  max_sample_rate = max_sample_rate || null // eslint-disable-line camelcase
-  return update(stream, { max_sample_rate })
-}
-
-/**
- * Refreshes stream's start and end points based on provided segment or by searching for first and last segments
- * @param {*} stream stream model item
- * @param {*} segment (optional) stream segment model item
- */
-async function refreshStreamStartEnd (stream, segment) {
+async function refreshStreamBoundVars (stream, params, opts = {}) {
   const upd = {}
-  if (segment) {
-    if (segment.start < stream.start || !stream.start) {
-      upd.start = segment.start
-    }
-    if (segment.end > stream.end || !stream.end) {
-      upd.end = segment.end
-    }
-  } else {
-    const where = { stream_id: stream.id }
-    upd.start = await models.StreamSegment.min('start', { where })
-    upd.end = await models.StreamSegment.max('end', { where })
-    if (upd.start === 0) {
-      upd.start = null
-    }
-    if (upd.end === 0) {
-      upd.end = null
-    }
+  const transaction = opts.transaction || null
+  if (params.start && (params.start < stream.start || !stream.start)) {
+    upd.start = params.start
   }
-  return update(stream, upd)
+  if (params.end && (params.end > stream.end || !stream.end)) {
+    upd.end = params.end
+  }
+  if (params.sampleRate && params.sampleRate > stream.max_sample_rate) {
+    upd.max_sample_rate = params.sampleRate
+  }
+  return update(stream, upd, { transaction })
 }
 
 function ensureStreamExistsForGuardian (dbGuardian) {
@@ -387,8 +374,7 @@ module.exports = {
   restore,
   formatStream,
   formatStreams,
-  refreshStreamMaxSampleRate,
-  refreshStreamStartEnd,
+  refreshStreamBoundVars,
   ensureStreamExistsForGuardian,
   getPublicStreamIds,
   getAccessibleStreamIds

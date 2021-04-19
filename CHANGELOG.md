@@ -1,3 +1,10 @@
+## 1.0.17-hotfix.5 (2021-04-20)
+
+### Features
+* **internal:** Add united endpoint for stream_source_file and stream_segment creation ([CE-469](https://jira.rfcx.org/browse/CE-469))
+* **core:** Delete unused stream_source_file and stream_segment endpoints ([CE-469](https://jira.rfcx.org/browse/CE-469))
+
+
 ## 1.0.17-hotfix.4 (2021-04-13)
 
 ### Features

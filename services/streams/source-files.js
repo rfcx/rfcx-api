@@ -55,7 +55,8 @@ async function create (data, opts = {}) {
   const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data) // eslint-disable-line camelcase
   const where = { stream_id, sha1_checksum }
   const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
-  return StreamSourceFile.findOrCreate({ where, defaults })
+  const transaction = opts.transaction || null
+  return StreamSourceFile.findOrCreate({ where, defaults, transaction })
     .spread((item, created) => {
       if (!created) {
         throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
@@ -181,6 +182,18 @@ async function findOrCreateRelationships (data) {
   return result
 }
 
+/**
+ * Checks for meta attributes and stringifies them if it is as an object. If it's not an object, deletes it.
+ * @param {*} params
+ */
+function transformMetaAttr (params) {
+  if (params.meta && Object.keys(params.meta).length !== 0 && params.meta.constructor === Object) {
+    params.meta = JSON.stringify(params.meta)
+  } else {
+    delete params.meta
+  }
+}
+
 function format (streamSourceFile) {
   const { id, stream, filename, audio_file_format, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec, sha1_checksum, meta } = streamSourceFile // eslint-disable-line camelcase
   let parsedMeta
@@ -212,5 +225,6 @@ module.exports = {
   remove,
   checkForDuplicates,
   findOrCreateRelationships,
+  transformMetaAttr,
   format
 }
