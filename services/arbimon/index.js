@@ -30,8 +30,8 @@ function createSite (stream, idToken) {
   if (!body.altitude) {
     body.altitude = 0
   }
-  if (stream.project && stream.project.id) {
-    body.project_external_id = stream.project.id
+  if (stream.projectId) {
+    body.project_external_id = stream.projectId
   }
   const options = {
     method: 'POST',
