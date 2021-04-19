@@ -20,9 +20,9 @@ async function commonSetup () {
   await models.Stream.create(stream)
   const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
   await models.Classification.create(classification)
-  const classifier = { id: 3, external_id: 'cccddd', name: 'chainsaw model', version: 1, created_by_id: seedValues.otherUserId, model_runner: 'tf2', model_url: 's3://something' }
+  const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
   await models.Classifier.create(classifier)
-  const classifierOutput = { classifier_id: classifier.id, classification_id: classification.id, output_class_name: 'chnsw', ignore_threshold: 0.1 }
+  const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'chnsw', ignoreThreshold: 0.1 }
   await models.ClassifierOutput.create(classifierOutput)
   return { stream, classification, classifier, classifierOutput }
 }
@@ -31,8 +31,8 @@ describe('POST /streams/:id/detections', () => {
   test('success', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const requestBody = [
-      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.output_class_name, confidence: classifierOutput.ignore_threshold + 0.05 },
-      { start: '2021-03-15T00:00:05Z', end: '2021-03-15T00:00:10Z', classifier: classifier.id.toString(), classification: classifierOutput.output_class_name, confidence: classifierOutput.ignore_threshold + 0.15 }
+      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold + 0.05 },
+      { start: '2021-03-15T00:00:05Z', end: '2021-03-15T00:00:10Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold + 0.15 }
     ]
 
     const response = await request(app).post(`/${stream.id}/detections`).send(requestBody)
@@ -45,7 +45,7 @@ describe('POST /streams/:id/detections', () => {
   test('success on legacy external id', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const requestBody = [
-      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.external_id, classification: classifierOutput.output_class_name, confidence: classifierOutput.ignore_threshold + 0.05 }
+      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.externalId, classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold + 0.05 }
     ]
 
     const response = await request(app).post(`/${stream.id}/detections`).send(requestBody)
@@ -58,8 +58,8 @@ describe('POST /streams/:id/detections', () => {
   test('skip detections below threshold', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const requestBody = [
-      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.output_class_name, confidence: classifierOutput.ignore_threshold + 0.05 },
-      { start: '2021-03-15T00:00:05Z', end: '2021-03-15T00:00:10Z', classifier: classifier.id.toString(), classification: classifierOutput.output_class_name, confidence: classifierOutput.ignore_threshold - 0.05 }
+      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold + 0.05 },
+      { start: '2021-03-15T00:00:05Z', end: '2021-03-15T00:00:10Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold - 0.05 }
     ]
 
     const response = await request(app).post(`/${stream.id}/detections`).send(requestBody)
@@ -73,7 +73,7 @@ describe('POST /streams/:id/detections', () => {
     console.warn = jest.fn()
     const { stream, classifierOutput } = await commonSetup()
     const requestBody = [
-      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: 'unknown', classification: classifierOutput.output_class_name, confidence: classifierOutput.ignore_threshold + 0.05 }
+      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: 'unknown', classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold + 0.05 }
     ]
 
     const response = await request(app).post(`/${stream.id}/detections`).send(requestBody)
