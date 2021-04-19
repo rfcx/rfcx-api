@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = (sequelize, DataTypes) => {
   const EventStrategy = sequelize.define('EventStrategy', {
     id: {
@@ -18,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING
     }
   }, {
-    underscored: true
+    underscored: true,
+    timestamps: false
   })
   EventStrategy.associate = function (models) {
     EventStrategy.belongsToMany(models.Classifier, { as: 'classifiers', through: 'classifier_event_strategies', timestamps: false })
@@ -27,5 +30,6 @@ module.exports = (sequelize, DataTypes) => {
     full: ['id', 'name', 'function_name', 'function_parameters'],
     lite: ['id', 'name']
   }
+  EventStrategy.include = includeBuilder(EventStrategy, 'event_strategy', EventStrategy.attributes.lite)
   return EventStrategy
 }

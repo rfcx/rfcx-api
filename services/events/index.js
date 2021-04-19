@@ -39,11 +39,10 @@ function forceIncludeForWhere (includes, associationAs) {
   return [...includes, extraInclude]
 }
 
-async function create (eventData) {
+function create (eventData) {
   return Event.create(eventData)
     .then((event) => {
-      event.id = uuidToSlug(event.id)
-      return event
+      return uuidToSlug(event.id)
     })
     .catch((e) => {
       console.error(e)

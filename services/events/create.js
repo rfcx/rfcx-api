@@ -7,8 +7,8 @@ const legacyEventsService = require('../legacy/events/events-service-neo4j')
 async function create (eventData) {
   const eventId = await eventsService.create(eventData)
   eventData.id = eventId
-  const stream = await streamsService.getById(eventData.streamId)
-  const classification = await classificationsService.getById(eventData.classificationId)
+  const stream = await streamsService.get(eventData.streamId)
+  const classification = await classificationsService.get(eventData.classificationId)
   const eventWithStreamAndClassification = { ...eventData, stream, classification }
   try {
     await notificationsService.notifyAboutEvent(eventWithStreamAndClassification)
@@ -22,6 +22,7 @@ async function create (eventData) {
       console.error('Failed creating legacy event:', err.message)
     }
   }
+  return eventId
 }
 
 module.exports = create
