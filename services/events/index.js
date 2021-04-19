@@ -6,28 +6,14 @@ const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../rol
 const pagedQuery = require('../../utils/db/paged-query')
 
 const availableIncludes = [
-  Stream.include(), Classification.include(),
-  // TODO replace with include when CS-143 part 1 is merged
-  {
-    as: 'classifier_event_strategy',
-    model: ClassifierEventStrategy,
-    attributes: ClassifierEventStrategy.attributes.lite,
-    required: true,
+  Stream.include(),
+  Classification.include(),
+  ClassifierEventStrategy.include({
     include: [
-      {
-        as: 'classifier',
-        model: Classifier,
-        attributes: Classifier.attributes.lite,
-        required: true
-      },
-      {
-        as: 'event_strategy',
-        model: EventStrategy,
-        attributes: EventStrategy.attributes.lite,
-        required: true
-      }
+      Classifier.include(),
+      EventStrategy.include()
     ]
-  }
+  })
 ]
 
 function forceIncludeForWhere (includes, associationAs) {
