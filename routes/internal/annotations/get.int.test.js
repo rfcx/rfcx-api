@@ -78,4 +78,21 @@ describe('GET /internal/annotations', () => {
     expect(response.statusCode).toBe(200)
     expect(response.body).toEqual([])
   })
+
+  test('get detectons intergrate with empty annotations', async () => {
+    const { stream, classification, classifier } = await commonSetup()
+    const detection = { stream_id: stream.id, classifier_id: classifier.id, classification_id: classification.id, start: '2020-05-02T00:01:00.000Z', end: '2020-05-02T00:02:00.000Z', confidence: 0.9 }
+    await models.Detection.create(detection)
+
+    const requestQuery = { start: '2020-01-01T00:00:00.000Z', end: '2021-01-01T00:00:00.000Z' }
+
+    const response = await request(app).get('/').query(requestQuery)
+
+    const detections = await models.Detection.findAll()
+
+    console.log(response)
+
+    expect(response.statusCode).toBe(200)
+    expect(detections.length).toBe(1)
+  })
 })
