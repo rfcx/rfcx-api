@@ -1,10 +1,10 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const Converter = require('../../../utils/converter/converter')
-const detectionsService = require('../../../services/detections')
+const reviewsService = require('../../../services/detections/reviews')
 
 /**
  * @swagger
- * /internal/annotations
+ * /internal/ai-hub
  *   get:
  *     summary: Get list of detections integrate with annotations
  *     description: -
@@ -55,9 +55,9 @@ module.exports = (req, res) => {
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
-  converter.convert('stream_ids').optional().toArray()
-  converter.convert('project_ids').optional().toArray()
-  converter.convert('classifier_ids').optional().toArray()
+  converter.convert('streams').optional().toArray()
+  converter.convert('projects').optional().toArray()
+  converter.convert('classifiers').optional().toArray()
   converter.convert('classifications').optional().toArray()
   converter.convert('min_confidence').optional().toFloat()
   converter.convert('is_reviewed').optional().toBoolean()
@@ -67,10 +67,8 @@ module.exports = (req, res) => {
 
   converter.validate()
     .then(async (params) => {
-      const results = await detectionsService.reviewQuery({ ...params }, user)
+      const results = await reviewsService.query({ ...params }, user)
       return res.json(results)
     })
-    .catch((e) => {
-      httpErrorHandler(req, res, 'Failed getting annotations')(e)
-    })
+    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
 }
