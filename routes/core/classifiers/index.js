@@ -119,7 +119,7 @@ router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req,
  */
 router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const transformedParams = {}
-  const params = new Converter(req.body, transformedParams)
+  const params = new Converter(req.body, transformedParams, true)
   params.convert('name').toString()
   params.convert('version').toInt()
   params.convert('external_id').optional().toString()
@@ -153,12 +153,12 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
       const classifier = {
         name: transformedParams.name,
         version: transformedParams.version,
-        externalId: transformedParams.external_id,
+        externalId: transformedParams.externalId,
         modelUrl,
         createdById,
         outputs,
-        activeProjects: transformedParams.active_projects,
-        activeStreams: transformedParams.active_streams
+        activeProjects: transformedParams.activeProjects,
+        activeStreams: transformedParams.activeStreams
       }
       return service.create(classifier)
     })
@@ -192,22 +192,28 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
  *       400:
  *         description: Invalid query parameters
  */
-router.patch('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
-  const transformedParams = {}
+router.patch('/:id', function (req, res) {
   const id = req.params.id
-  const params = new Converter(req.body, transformedParams)
+
+  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+    console.warn(`WARN: PATCH /classifiers/${id} Forbidden`)
+    return res.sendStatus(403)
+  }
+
+  const params = new Converter(req.body, {}, true)
   params.convert('name').optional().toString()
   params.convert('version').optional().toInt()
   params.convert('external_id').optional().toString()
   params.convert('status').optional().toInt()
-  params.convert('deployment_parameters').optional().toString()
+  params.convert('platform').optional().toString().default('aws')
+  params.convert('deployment_parameters').optional().toString({ emptyStringToNull: true })
   params.convert('active_projects').optional().toArray()
   params.convert('active_streams').optional().toArray()
 
   const createdById = req.rfcx.auth_token_info.id
   params.validate()
-    .then(() => {
-      return service.update(id, createdById, transformedParams)
+    .then((params) => {
+      return service.update(id, createdById, params)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))

@@ -1,16 +1,17 @@
 module.exports = (sequelize, DataTypes) => {
   const ClassifierActiveStream = sequelize.define('ClassifierActiveStream', {
-    classifier_id: {
+    classifierId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
-    stream_id: {
+    streamId: {
       type: DataTypes.STRING(12),
       allowNull: false,
       primaryKey: true
     }
   }, {
+    underscored: true,
     timestamps: false
   })
   ClassifierActiveStream.associate = function (models) {

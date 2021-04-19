@@ -8,25 +8,25 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true
     },
-    classifier_id: {
+    classifierId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    classification_id: {
+    classificationId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    output_class_name: {
+    outputClassName: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    ignore_threshold: {
+    ignoreThreshold: {
       type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: 0.5
     }
-  },
-  {
+  }, {
+    underscored: true,
     timestamps: false
   })
   ClassifierOutput.associate = function (models) {

@@ -8,11 +8,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true
     },
-    classifier_id: {
+    classifierId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    event_strategy_id: {
+    eventStrategyId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -24,10 +24,11 @@ module.exports = (sequelize, DataTypes) => {
     parameters: {
       type: DataTypes.STRING
     },
-    last_executed_at: {
+    lastExecutedAt: {
       type: DataTypes.DATE(3)
     }
   }, {
+    underscored: true,
     timestamps: false
   })
   ClassifierEventStrategy.associate = function (models) {

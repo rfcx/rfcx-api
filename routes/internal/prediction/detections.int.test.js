@@ -21,9 +21,9 @@ async function commonSetup () {
   await models.Stream.create(stream)
   const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
   await models.Classification.create(classification)
-  const classifier = { id: 3, external_id: 'cccddd', name: 'chainsaw model', version: 1, created_by_id: seedValues.otherUserId, model_runner: 'tf2', model_url: 's3://something' }
+  const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
   await models.Classifier.create(classifier)
-  const classifierOutput = { classifier_id: classifier.id, classification_id: classification.id, output_class_name: 'chnsw', ignore_threshold: 0.1 }
+  const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'chnsw', ignoreThreshold: 0.1 }
   await models.ClassifierOutput.create(classifierOutput)
   return { stream, classification, classifier, classifierOutput }
 }
@@ -34,7 +34,7 @@ describe('POST /internal/prediction/detections', () => {
     const requestBody = {
       stream_id: stream.id,
       classifier_id: classifier.id.toString(),
-      classification: classifierOutput.output_class_name,
+      classification: classifierOutput.outputClassName,
       start: '2021-03-15T00:00:00Z',
       end: '2021-03-15T00:00:05Z',
       confidences: [0.99, 0.98, 0.97, 0.001, 0.00001, 0.47],
@@ -45,7 +45,7 @@ describe('POST /internal/prediction/detections', () => {
 
     expect(response.statusCode).toBe(201)
     const detections = await models.Detection.findAll({ order: ['start'] })
-    expect(detections.length).toBe(requestBody.confidences.filter(c => c > classifierOutput.ignore_threshold).length)
+    expect(detections.length).toBe(requestBody.confidences.filter(c => c > classifierOutput.ignoreThreshold).length)
     expect(detections[0].start).toEqual(moment(requestBody.start).toDate())
     expect(detections[0].confidence).toBe(requestBody.confidences[0])
     expect(detections[1].start).toEqual(moment(requestBody.start).add(requestBody.step, 's').toDate())
