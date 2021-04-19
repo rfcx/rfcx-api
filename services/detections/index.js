@@ -176,7 +176,7 @@ async function reviewQuery (opts, user) {
       SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
       SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
       SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
-      SUM(CASE WHEN a.created_by_id = 1 AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
+      SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
       FROM detections d
       JOIN streams s ON d.stream_id = s.id
       JOIN classifications c ON d.classification_id = c.id
