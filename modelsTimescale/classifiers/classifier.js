@@ -16,24 +16,26 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    external_id: {
+    externalId: {
       type: DataTypes.STRING
     },
-    created_by_id: {
+    createdById: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    model_runner: {
+    modelRunner: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    model_url: {
+    modelUrl: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    last_executed_at: {
+    lastExecutedAt: {
       type: DataTypes.DATE(3)
     }
+  }, {
+    underscored: true
   })
   Classifier.associate = function (models) {
     Classifier.hasMany(models.ClassifierDeployment, { as: 'deployments', foreignKey: 'classifier_id' })

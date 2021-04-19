@@ -231,9 +231,13 @@ module.exports = class Conversion {
     return this
   }
 
-  toString () {
+  toString (options = {}) {
     this.conversions.push(() => {
-      this.value = this.value.toString()
+      if (options.emptyStringToNull && this.value === '') {
+        this.value = null
+      } else {
+        this.value = this.value.toString()
+      }
     })
     return this
   }
@@ -275,7 +279,7 @@ module.exports = class Conversion {
     return this
   }
 
-  toArray () {
+  toArray (options = {}) {
     this.conversions.push(() => {
       if (!Array.isArray(this.value)) {
         this.value = [this.value]
