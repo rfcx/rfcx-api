@@ -14,15 +14,13 @@ module.exports = {
     require('./explorer/stream-classifications')
   ],
   prediction: [
+    require('./prediction/classifier-deployments'),
     require('./prediction/detections'),
     require('./prediction/indices')
   ],
   arbimon: [
     require('./arbimon/stream'),
     require('./arbimon/project')
-  ],
-  'prediction-deployer': [
-    require('./prediction-deployer/classifier-deployments')
   ],
   annotations: [
     require('./annotations')

@@ -173,4 +173,73 @@ describe('GET /streams', () => {
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(3)
   })
+
+  test('filter by keyword', async () => {
+    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
+    await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(app).get('/').query({ keyword: 'creek' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].name).toEqual(expect.stringContaining('creek'))
+    expect(response.body[1].name).toEqual(expect.stringContaining('creek'))
+  })
+
+  test('filter by project', async () => {
+    const project1 = { id: 'pq1', createdById: seedValues.primaryUserId, name: 'PQ1' }
+    const project2 = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
+    await models.Project.create(project1)
+    await models.Project.create(project2)
+    await models.Stream.create({ id: 'ab1', projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 'ab2', projectId: project2.id, createdById: seedValues.primaryUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 'ab3', createdById: seedValues.primaryUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(app).get('/').query({ projects: project2.id })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].id).toBe('ab2')
+  })
+
+  test('filter by multiple projects', async () => {
+    const project1 = { id: 'pq1', createdById: seedValues.primaryUserId, name: 'PQ1' }
+    const project2 = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
+    await models.Project.create(project1)
+    await models.Project.create(project2)
+    await models.Stream.create({ id: 'ab1', projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 'ab2', projectId: project2.id, createdById: seedValues.primaryUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 'ab3', createdById: seedValues.primaryUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(app).get('/').query({ projects: [project1.id, project2.id] })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body.map(p => p.id).sort()).toEqual(['ab1', 'ab2'])
+  })
+
+  test('filter by created by', async () => {
+    await models.Stream.create({ id: 'public1', createdById: seedValues.otherUserId, isPublic: true, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 'public2', createdById: seedValues.primaryUserId, isPublic: true, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+
+    const response = await request(app).get('/').query({ only_public: true, created_by: seedValues.otherUserGuid })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].id).toBe('public1')
+  })
+
+  test('filter by updated after', async () => {
+    await models.Stream.create({ id: 's1', createdById: seedValues.primaryUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.primaryUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.sequelize.query('UPDATE streams SET updated_at = \'2020-12-01 00:10:20\' WHERE id = \'s1\'')
+
+    const response = await request(app).get('/').query({ updated_after: '2021-01-01T00:00:00Z' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].id).toBe('s2')
+  })
 })

@@ -107,14 +107,14 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async params => {
-      const { keyword, organizations, projects, start, end, onlyPublic, onlyDeleted, limit, offset, sort, fields } = params
+      const { keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields } = params
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = readableBy
       } else if (createdBy) {
         createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
-      const filters = { keyword, organizations, projects, start, end, createdBy }
+      const filters = { keyword, organizations, projects, start, end, createdBy, updatedAfter }
       const options = {
         readableBy,
         onlyPublic,

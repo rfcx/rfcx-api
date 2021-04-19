@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 let exportApps
 if (process.env.FIREBASE_ENABLED !== 'true') {
   exportApps = {}
+=======
+if (process.env.FIREBASE_ENABLED !== 'true') {
+  module.exports = {}
+>>>>>>> develop
 } else {
   const admin = require('firebase-admin')
 
@@ -19,10 +24,17 @@ if (process.env.FIREBASE_ENABLED !== 'true') {
   const rangerApp = admin.initializeApp({ credential: rangerAppCert }, 'rangerApp')
   const playerApp = admin.initializeApp({ credential: playerAppCert }, 'playerApp')
 
+<<<<<<< HEAD
   exportApps = {
+=======
+  module.exports = {
+>>>>>>> develop
     rangerApp,
     playerApp
   }
 }
+<<<<<<< HEAD
 
 module.exports = exportApps
+=======
+>>>>>>> develop
