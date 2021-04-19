@@ -100,7 +100,7 @@ module.exports = function (sequelize, DataTypes) {
   })
 
   async function updateMinMaxLatLng (stream) {
-    const projectId = stream.project_id
+    const projectId = stream.projectId
     if (projectId != null) {
       const allStreamsInProject = await sequelize.models.Stream.findAll({ where: { project_id: projectId } })
       const allLat = allStreamsInProject.map((stream) => { return stream.latitude })
