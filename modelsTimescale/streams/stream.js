@@ -93,7 +93,7 @@ module.exports = function (sequelize, DataTypes) {
         }
       },
       afterDestroy: async (stream, option) => {
-        await updateMinMaxLatLngFromDestroy(stream)
+        await updateMinMaxLatLngFromUpdate(stream)
       }
     }
   })
@@ -124,38 +124,17 @@ module.exports = function (sequelize, DataTypes) {
   async function updateMinMaxLatLngFromUpdate (stream) {
     const projectId = stream.projectId
     if (projectId !== null) {
-      const allStreamsInProject = await sequelize.models.Stream.findAll({ where: { projectId } })
-      const allLat = allStreamsInProject.map((stream) => stream.latitude)
-      const allLng = allStreamsInProject.map((stream) => stream.longitude)
-      const update = {
-        minLatitude: Math.min(...allLat),
-        minLongitude: Math.min(...allLng),
-        maxLatitude: Math.max(...allLat),
-        maxLongitude: Math.max(...allLng)
-      }
-      await sequelize.models.Project.update(update, { where: { id: projectId } })
-    }
-  }
-
-  async function updateMinMaxLatLngFromDestroy (stream) {
-    const projectId = stream.projectId
-    if (projectId !== null) {
-      const allStreamsInProject = await sequelize.models.Stream.findAll({ where: { projectId } })
-      const update = {
-        minLatitude: null,
-        minLongitude: null,
-        maxLatitude: null,
-        maxLongitude: null
-      }
-      if (allStreamsInProject.length > 0) {
-        const allLat = allStreamsInProject.map((stream) => stream.latitude)
-        const allLng = allStreamsInProject.map((stream) => stream.longitude)
-
-        update.minLatitude = Math.min(...allLat)
-        update.minLongitude = Math.min(...allLng)
-        update.maxLatitude = Math.max(...allLat)
-        update.maxLongitude = Math.max(...allLng)
-      }
+      const update = await sequelize.models.Stream.findAll({
+        plain: true,
+        raw: true,
+        attributes: [
+          [sequelize.fn('min', sequelize.col('latitude')), 'minLatitude'],
+          [sequelize.fn('max', sequelize.col('latitude')), 'maxLatitude'],
+          [sequelize.fn('min', sequelize.col('longitude')), 'minLongitude'],
+          [sequelize.fn('max', sequelize.col('longitude')), 'maxLongitude']
+        ],
+        where: { projectId }
+      })
       await sequelize.models.Project.update(update, { where: { id: projectId } })
     }
   }
