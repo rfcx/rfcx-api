@@ -64,7 +64,7 @@ module.exports = function (sequelize, DataTypes) {
   }
   Project.attributes = {
     full: ['id', 'name', 'is_public', 'created_by_id', 'organization_id', 'external_id', 'is_partner', 'created_at', 'updated_at', 'min_latitude', 'min_longitude', 'max_latitude', 'max_longitude'],
-    lite: ['id', 'name', 'is_public', 'external_id', 'min_latitude', 'min_longitude', 'max_latitude', 'max_longitude']
+    lite: ['id', 'name', 'is_public', 'external_id']
   }
   Project.include = includeBuilder(Project, 'project', Project.attributes.lite)
   return Project
