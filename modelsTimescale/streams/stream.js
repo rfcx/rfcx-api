@@ -89,11 +89,11 @@ module.exports = function (sequelize, DataTypes) {
       },
       afterUpdate: async (stream, option) => {
         if (stream.latitude !== stream._previousDataValues.latitude || stream.longitude !== stream._previousDataValues.longitude) {
-          await updateMinMaxLatLngFromUpdate(stream)
+          await updateMinMaxLatLngFromUpdate(stream.projectId)
         }
       },
       afterDestroy: async (stream, option) => {
-        await updateMinMaxLatLngFromUpdate(stream)
+        await updateMinMaxLatLngFromUpdate(stream.projectId)
       }
     }
   })
@@ -121,8 +121,7 @@ module.exports = function (sequelize, DataTypes) {
     }
   }
 
-  async function updateMinMaxLatLngFromUpdate (stream) {
-    const projectId = stream.projectId
+  async function updateMinMaxLatLngFromUpdate (projectId) {
     if (projectId !== null) {
       const update = await sequelize.models.Stream.findAll({
         plain: true,
