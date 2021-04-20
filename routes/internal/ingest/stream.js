@@ -27,6 +27,11 @@ const moment = require('moment')
  *     responses:
  *       201:
  *         description: Created
+ *         headers:
+ *           Location:
+ *             description: Path of the created resource (e.g. `/stream-source-files/xyz123`)
+ *             schema:
+ *               type: string
  *       400:
  *         description: Invalid query parameters
  */
@@ -88,7 +93,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           }, transaction)
 
           await transaction.commit()
-          return res.sendStatus(201)
+          return res.location(`/stream-source-files/${streamSourceFile.id}`).sendStatus(201)
         })
         .catch((err) => {
           transaction.rollback()
