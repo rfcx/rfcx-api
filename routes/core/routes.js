@@ -17,6 +17,9 @@ module.exports = {
   events: [
     require('./events')
   ],
+  'stream-source-files': [
+    require('./stream-source-files')
+  ],
   organizations: [
     require('./organizations')
   ],
