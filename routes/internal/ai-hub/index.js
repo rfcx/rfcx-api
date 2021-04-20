@@ -1,5 +1,5 @@
 const router = require('express').Router()
 
-router.get('/', require('./get'))
+router.get('/reviews', require('./get'))
 
 module.exports = router

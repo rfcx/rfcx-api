@@ -6,6 +6,7 @@
 * **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
 * **guardian:** Save detections sent over MQTT/SMS/SBD
 * **internal:** Refactor /prediction-deployer/classifier-deployments endpoints to /prediction/classifier-deployments endpoints
+* **internal:** GET /interna/ai-hub/reviews endpoints for getting detections left join with annotations
 
 
 ## 1.0.17-hotfix.4 (2021-04-13)

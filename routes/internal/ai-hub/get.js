@@ -4,7 +4,7 @@ const reviewsService = require('../../../services/detections/reviews')
 
 /**
  * @swagger
- * /internal/ai-hub
+ * /internal/ai-hub/reviews
  *   get:
  *     summary: Get list of detections integrate with annotations
  *     description: -

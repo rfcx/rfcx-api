@@ -23,6 +23,6 @@ module.exports = {
     require('./arbimon/project')
   ],
   'ai-hub': [
-    require('./annotations')
+    require('./ai-hub')
   ]
 }
