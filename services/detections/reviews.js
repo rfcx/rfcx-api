@@ -70,7 +70,7 @@ async function query (filters, options) {
 
   const sql = `SELECT d.start, d.end, d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
     d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) "classifier.name", (clf.version) "classifier.version",
-    d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id", (s.external_id) "stream.external_id", d.confidence,
+    d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id", d.confidence,
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
     SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
@@ -82,7 +82,7 @@ async function query (filters, options) {
     LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start >= a.start AND d.end <= a.end
     WHERE ${conditions.join(' AND ')}
     GROUP BY d.start, d.end, d.classification_id, c.value, c.title, d.classifier_id, clf.name, clf.version, clf.external_id,
-    d.stream_id, s.name, s.project_id, s.external_id, d.confidence
+    d.stream_id, s.name, s.project_id, d.confidence
     LIMIT $limit
     OFFSET $offset`
   const results = await models.sequelize.query(sql, {
