@@ -58,22 +58,18 @@ async function query (filters, options) {
 
   if (isPositive) {
     conditions.push('a.is_positive')
-  }
-
-  if (isPositive === false) {
+  } else if (isPositive === false) {
     conditions.push('NOT a.is_positive')
   }
 
   if (isReviewed) {
     conditions.push('a.is_positive IS NOT null')
-  }
-
-  if (isReviewed === false) {
+  } else if (isReviewed === false) {
     conditions.push('a.is_positive IS null')
   }
 
-  const sql = `SELECT d.start, d.end, d.classification_id, (c.value) classification_value, (c.title) classification_title,
-    d.classifier_id, (clf.external_id) classifier_external_id, (clf.name) classifier_name, (clf.version) classifier_version,
+  const sql = `SELECT d.start, d.end, d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
+    d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) classifier_name, (clf.version) classifier_version,
     d.stream_id, (s.name) stream_name, d.confidence,
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
@@ -88,7 +84,13 @@ async function query (filters, options) {
     GROUP BY d.start, d.end, d.classification_id, c.value, c.title, d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, d.confidence
     LIMIT $limit
     OFFSET $offset`
-  const results = await models.sequelize.query(sql, { bind, type: models.sequelize.QueryTypes.SELECT })
+  const results = await models.sequelize.query(sql, {
+    bind,
+    nest: true,
+    type: models.sequelize.QueryTypes.SELECT
+  })
+
+  console.log(results)
 
   return results.map(review => {
     const total = Number(review.total)
