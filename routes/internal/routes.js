@@ -14,7 +14,7 @@ module.exports = {
     require('./explorer/stream-classifications')
   ],
   ingest: [
-    require('./ingest/stream'),
+    require('./ingest/stream')
   ],
   prediction: [
     require('./prediction/classifier-deployments'),

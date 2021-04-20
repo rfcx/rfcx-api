@@ -186,7 +186,7 @@ async function findOrCreateRelationships (data) {
  * Checks for meta attributes and stringifies them if it is as an object. If it's not an object, deletes it.
  * @param {*} params
  */
- function transformMetaAttr (params) {
+function transformMetaAttr (params) {
   if (params.meta && Object.keys(params.meta).length !== 0 && params.meta.constructor === Object) {
     params.meta = JSON.stringify(params.meta)
   } else {

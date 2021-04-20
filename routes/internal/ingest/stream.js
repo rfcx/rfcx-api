@@ -76,7 +76,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           const streamSourceFile = await streamSourceFileService.create(sfParams, { transaction })
 
           // Set missing stream_segment attributes and create a db row
-          for (let segParams of segConverter.transformedArray) {
+          for (const segParams of segConverter.transformedArray) {
             segParams.stream_id = streamId
             segParams.stream_source_file_id = streamSourceFile.id
             await streamSegmentService.findOrCreateRelationships(segParams)
@@ -100,7 +100,6 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           httpErrorHandler(req, res, 'Failed creating stream source file and segments')(err)
         })
     })
-
 })
 
 module.exports = router
