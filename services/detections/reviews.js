@@ -104,9 +104,9 @@ async function query (filters, options) {
       number_of_reviewed: total,
       number_of_positive: positive,
       number_of_negative: total - positive,
-      me_reviewed: review.me_positive === 0 || review.me_negative === 0,
-      me_positive: review.me_positive !== 0 && review.me_negative === 0,
-      me_negative: review.me_negative !== 0 && review.me_positive === 0
+      me_reviewed: review.me_positive > 0 || review.me_negative > 0,
+      me_positive: review.me_positive > 0,
+      me_negative: review.me_negative > 0
     }
   })
 }
