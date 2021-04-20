@@ -88,7 +88,7 @@ module.exports = function (sequelize, DataTypes) {
         await updateMinMaxLatLngFromCreate(stream)
       },
       afterUpdate: async (stream, option) => {
-        if (stream.latitude != stream._previousDataValues.latitude || stream.longitude != stream._previousDataValues.longitude) {
+        if (stream.latitude !== stream._previousDataValues.latitude || stream.longitude !== stream._previousDataValues.longitude) {
           await updateMinMaxLatLng(stream)
         }
       },
@@ -98,7 +98,7 @@ module.exports = function (sequelize, DataTypes) {
     }
   })
 
-  async function updateMinMaxLatLngFromCreate(stream) {
+  async function updateMinMaxLatLngFromCreate (stream) {
     const projectId = stream.projectId
     if (projectId != null) {
       const project = await sequelize.models.Project.findByPk(projectId)
@@ -120,7 +120,7 @@ module.exports = function (sequelize, DataTypes) {
         newMinMaxLatLng.maxLatitude = (stream.latitude > project.maxLatitude ? stream.latitude : project.maxLatitude)
         newMinMaxLatLng.maxLongitude = (stream.longitude > project.maxLongitude ? stream.longitude : project.maxLongitude)
 
-        if (oldMinMaxLatLng != newMinMaxLatLng) {
+        if (oldMinMaxLatLng !== newMinMaxLatLng) {
           await sequelize.models.Project.update(newMinMaxLatLng, { where: { id: projectId } })
         }
       } else {
@@ -129,13 +129,13 @@ module.exports = function (sequelize, DataTypes) {
     }
   }
 
-  async function updateMinMaxLatLng(stream) {
+  async function updateMinMaxLatLng (stream) {
     const projectId = stream.projectId
     if (projectId != null) {
       const allStreamsInProject = await sequelize.models.Stream.findAll({ where: { projectId: projectId } })
       const allLat = allStreamsInProject.map((stream) => { return stream.latitude })
       const allLng = allStreamsInProject.map((stream) => { return stream.longitude })
-      
+
       await sequelize.models.Project.update({
         minLatitude: Math.min(...allLat),
         minLongitude: Math.min(...allLng),
