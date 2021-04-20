@@ -69,8 +69,8 @@ async function query (filters, options) {
   }
 
   const sql = `SELECT d.start, d.end, d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
-    d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) classifier_name, (clf.version) classifier_version,
-    d.stream_id, (s.name) stream_name, d.confidence,
+    d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) "classifier.name", (clf.version) "classifier.version",
+    d.stream_id "streams.id", (s.name) "streams.name", (s.project_id) "streams.project_id", (s.external_id) "streams.external_id", d.confidence,
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
     SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
@@ -81,7 +81,8 @@ async function query (filters, options) {
     JOIN classifiers clf ON d.classifier_id = clf.id
     LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start >= a.start AND d.end <= a.end
     WHERE ${conditions.join(' AND ')}
-    GROUP BY d.start, d.end, d.classification_id, c.value, c.title, d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, d.confidence
+    GROUP BY d.start, d.end, d.classification_id, c.value, c.title, d.classifier_id, clf.name, clf.version, clf.external_id,
+    d.stream_id, s.name, s.project_id, s.external_id, d.confidence
     LIMIT $limit
     OFFSET $offset`
   const results = await models.sequelize.query(sql, {
@@ -90,29 +91,15 @@ async function query (filters, options) {
     type: models.sequelize.QueryTypes.SELECT
   })
 
-  console.log(results)
-
   return results.map(review => {
     const total = Number(review.total)
     const positive = Number(review.number_of_positive)
     return {
       start: review.start,
       end: review.end,
-      stream: {
-        id: review.stream_id,
-        name: review.stream_name
-      },
-      classifier: {
-        id: review.classifier_id,
-        external_id: review.classifier_external_id,
-        name: review.classifier_name,
-        version: review.classifier_version
-      },
-      classification: {
-        id: review.classification_id,
-        value: review.classification_value,
-        title: review.classification_title
-      },
+      stream: review.streams,
+      classifier: review.classifier,
+      classification: review.classification,
       confidence: review.confidence,
       number_of_reviewed: total,
       number_of_positive: positive,
