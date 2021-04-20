@@ -4,9 +4,13 @@
 * **core:** Detection endpoints use classifier output mappings.
 * **core:** Stream assets are no longer stored in Core.
 * **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
+* **core:** Fix project id not be sent to Arbimon and cause site creation on wrong project
 * **guardian:** Save detections sent over MQTT/SMS/SBD
 * **internal:** Refactor /prediction-deployer/classifier-deployments endpoints to /prediction/classifier-deployments endpoints
 * **internal:** GET /interna/ai-hub/reviews endpoints for getting detections left join with annotations
+
+### Bug Fixes
+* **core:** update PATCH /classifier endpoint to save previous `deployment_parameters` configuration when given only status change ([CE-344](https://jira.rfcx.org/browse/CE-344))
 
 
 ## 1.0.17-hotfix.4 (2021-04-13)
