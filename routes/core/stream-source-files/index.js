@@ -31,7 +31,6 @@ router.delete('/:uuid', hasRole(['systemUser']), (req, res) => {
     .then(async (streamSourceFile) => {
       const stream = await streamsService.get(streamSourceFile.stream_id)
       await streamSourceFileService.remove(streamSourceFile)
-      return streamsService.refreshStreamMaxSampleRate(stream)
     })
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream source file'))
