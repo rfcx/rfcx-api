@@ -70,7 +70,7 @@ async function query (filters, options) {
 
   const sql = `SELECT d.start, d.end, d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
     d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) "classifier.name", (clf.version) "classifier.version",
-    d.stream_id "streams.id", (s.name) "streams.name", (s.project_id) "streams.project_id", (s.external_id) "streams.external_id", d.confidence,
+    d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id", (s.external_id) "stream.external_id", d.confidence,
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
     SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
@@ -91,13 +91,15 @@ async function query (filters, options) {
     type: models.sequelize.QueryTypes.SELECT
   })
 
+  console.log(results)
+
   return results.map(review => {
     const total = Number(review.total)
     const positive = Number(review.number_of_positive)
     return {
       start: review.start,
       end: review.end,
-      stream: review.streams,
+      stream: review.stream,
       classifier: review.classifier,
       classification: review.classification,
       confidence: review.confidence,
