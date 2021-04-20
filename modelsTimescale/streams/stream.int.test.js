@@ -72,7 +72,7 @@ test('updated stream extends bounds', async () => {
 
   // Act / When
   const newStream1latitude = 11.1
-  await models.Stream.update({ latitude: newStream1latitude }, { where: { id: stream1.id } })
+  await models.Stream.update({ latitude: newStream1latitude }, { where: { id: stream1.id }, individualHooks: true })
 
   // Assert / Then
   const updatedProject = await models.Project.findByPk(project.id)

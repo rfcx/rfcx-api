@@ -85,10 +85,12 @@ module.exports = function (sequelize, DataTypes) {
     deletedAt: 'deleted_at',
     hooks: {
       afterCreate: async (stream, option) => {
-        await updateMinMaxLatLng(stream)
+        await updateMinMaxLatLngFromCreate(stream)
       },
       afterUpdate: async (stream, option) => {
-        await updateMinMaxLatLng(stream)
+        if (stream.latitude != stream._previousDataValues.latitude || stream.longitude != stream._previousDataValues.longitude) {
+          await updateMinMaxLatLng(stream)
+        }
       },
       afterDestroy: async (stream, option) => {
         await updateMinMaxLatLng(stream)
@@ -96,13 +98,44 @@ module.exports = function (sequelize, DataTypes) {
     }
   })
 
-  async function updateMinMaxLatLng (stream) {
+  async function updateMinMaxLatLngFromCreate(stream) {
+    const projectId = stream.projectId
+    if (projectId != null) {
+      const project = await sequelize.models.Project.findByPk(projectId)
+      const newMinMaxLatLng = {
+        minLatitude: stream.latitude,
+        minLongitude: stream.longitude,
+        maxLatitude: stream.latitude,
+        maxLongitude: stream.longitude
+      }
+      if (project.minLatitude && project.minLongitude && project.maxLatitude && project.maxLongitude) {
+        const oldMinMaxLatLng = {
+          minLatitude: project.minLatitude,
+          minLongitude: project.minLongitude,
+          maxLatitude: project.maxLatitude,
+          maxLongitude: project.maxLongitude
+        }
+        newMinMaxLatLng.minLatitude = (stream.latitude < project.minLatitude ? stream.latitude : project.minLatitude)
+        newMinMaxLatLng.minLongitude = (stream.longitude < project.minLongitude ? stream.longitude : project.minLongitude)
+        newMinMaxLatLng.maxLatitude = (stream.latitude > project.maxLatitude ? stream.latitude : project.maxLatitude)
+        newMinMaxLatLng.maxLongitude = (stream.longitude > project.maxLongitude ? stream.longitude : project.maxLongitude)
+
+        if (oldMinMaxLatLng != newMinMaxLatLng) {
+          await sequelize.models.Project.update(newMinMaxLatLng, { where: { id: projectId } })
+        }
+      } else {
+        await sequelize.models.Project.update(newMinMaxLatLng, { where: { id: projectId } })
+      }
+    }
+  }
+
+  async function updateMinMaxLatLng(stream) {
     const projectId = stream.projectId
     if (projectId != null) {
       const allStreamsInProject = await sequelize.models.Stream.findAll({ where: { projectId: projectId } })
       const allLat = allStreamsInProject.map((stream) => { return stream.latitude })
       const allLng = allStreamsInProject.map((stream) => { return stream.longitude })
-      // update lat lng
+      
       await sequelize.models.Project.update({
         minLatitude: Math.min(...allLat),
         minLongitude: Math.min(...allLng),
