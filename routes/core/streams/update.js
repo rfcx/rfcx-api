@@ -54,7 +54,7 @@ module.exports = (req, res) => {
   converter.convert('altitude').optional().toFloat()
 
   converter.validate()
-    .then((params) => streamsService.update(id, params, options, true))
+    .then((params) => streamsService.update(id, params, options))
     .then(async () => {
       // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {

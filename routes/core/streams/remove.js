@@ -30,7 +30,7 @@ module.exports = (req, res) => {
   const deletableBy = user.is_super || user.has_system_role ? undefined : user.id
   const id = req.params.id
   const options = { deletableBy }
-  return streamsService.remove(id, options, true)
+  return streamsService.remove(id, options)
     .then(async () => {
       // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
