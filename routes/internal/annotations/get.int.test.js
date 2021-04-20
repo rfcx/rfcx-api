@@ -88,9 +88,7 @@ describe('GET /internal/annotations', () => {
 
     const response = await request(app).get('/').query(requestQuery)
 
-    const detections = await models.Detection.findAll()
-
     expect(response.statusCode).toBe(200)
-    expect(detections.length).toBe(1)
+    expect(response.body.length).toBe(1)
   })
 })

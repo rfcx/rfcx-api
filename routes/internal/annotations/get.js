@@ -51,7 +51,7 @@ const reviewsService = require('../../../services/detections/reviews')
  *         description: Success
  */
 module.exports = (req, res) => {
-  const user = req.rfcx.auth_token_info
+  const userId = req.rfcx.auth_token_info.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
@@ -67,7 +67,9 @@ module.exports = (req, res) => {
 
   converter.validate()
     .then(async (params) => {
-      const results = await reviewsService.query({ ...params }, user)
+      const { limit, offset, ...filters } = params
+      const options = { limit, offset, userId }
+      const results = await reviewsService.query(filters, options)
       return res.json(results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))

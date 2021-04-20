@@ -2,81 +2,93 @@ const models = require('../../modelsTimescale')
 
 /**
  * Get a list of detections integrate with annotations
- * @param {string} start
- * @param {string} end
- * @param {string | string[]} streams Stream id or list of stream ids
- * @param {string | string[]} projects Project id or list of project ids
- * @param {string | string[]} classifiers Classifier id or list of classifier ids
- * @param {string | string[]} classifications Classification or list of classifications
- * @param {number} minConfidence Minimum confidence to query detections
- * @param {boolean} isReviewed
- * @param {boolean} isPositive
- * @param {number} limit Maximum number to get detections
- * @param {number} offset Number of resuls to skip
- * @param {object} user
+ * @param {*} filters
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {string | string[]} filters.streams Stream id or list of stream ids
+ * @param {string | string[]} filters.projects Project id or list of project ids
+ * @param {string | string[]} filters.classifiers Classifier id or list of classifier ids
+ * @param {string | string[]} filters.classifications Classification or list of classifications
+ * @param {number} filters.minConfidence Minimum confidence to query detections
+ * @param {boolean} filters.isReviewed
+ * @param {boolean} filters.isPositive
+ * @param {*} options
+ * @param {number} options.limit Maximum number to get detections
+ * @param {number} options.offset Number of resuls to skip
+ * @param {number} options.userId User to check for review status
  * @returns {Detection[]} Detections
  */
-async function query (opts, user) {
-  const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive, limit, offset } = opts
-  let conditions = 'WHERE d.start > $start AND d.end < $end'
-  const userId = user.id
+async function query (filters, options) {
+  const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive } = filters
+
+  const conditions = [
+    'd.start >= $start',
+    'd.start < $end'
+  ]
+  const bind = {
+    start: start.toISOString(),
+    end: end.toISOString(),
+    ...options
+  }
 
   if (streams) {
-    conditions = conditions + ' AND d.stream_id = ANY($streams)'
+    conditions.push('d.stream_id = ANY($streams)')
+    bind.streams = streams
   }
 
   if (projects) {
-    conditions = conditions + ' AND s.project_id = ANY($projects)'
+    conditions.push('s.project_id = ANY($projects)')
+    bind.projects = projects
   }
 
   if (classifiers) {
-    conditions = conditions + ' AND d.classifier_id = ANY($classifiers)'
+    conditions.push('d.classifier_id = ANY($classifiers)')
+    bind.classifiers = classifiers
   }
 
   if (classifications) {
-    conditions = conditions + ' AND c.value = ANY($classifications)'
+    conditions.push('c.value = ANY($classifications)')
+    bind.classifications = classifications
   }
 
   if (minConfidence) {
-    conditions = conditions + ' AND d.confidence >= $minConfidence'
+    conditions.push('d.confidence >= $minConfidence')
+    bind.minConfidence = minConfidence
   }
 
   if (isPositive) {
-    conditions = conditions + ' AND a.is_positive'
+    conditions.push('a.is_positive')
   }
 
   if (isPositive === false) {
-    conditions = conditions + ' AND NOT a.is_positive'
+    conditions.push('NOT a.is_positive')
   }
 
   if (isReviewed) {
-    conditions = conditions + ' AND a.is_positive IS NOT null'
+    conditions.push('a.is_positive IS NOT null')
   }
 
   if (isReviewed === false) {
-    conditions = conditions + ' AND a.is_positive IS null'
+    conditions.push('a.is_positive IS null')
   }
 
-  const sql =
-      `
-        SELECT d.start, d.end, d.classification_id, (c.value) classification_value, (c.title) classification_title,
-        d.classifier_id, (clf.external_id) classifier_external_id, (clf.name) classifier_name, (clf.version) classifier_version,
-        d.stream_id, (s.name) stream_name, d.confidence,
-        SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
-        SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
-        SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
-        SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
-        FROM detections d
-        JOIN streams s ON d.stream_id = s.id
-        JOIN classifications c ON d.classification_id = c.id
-        JOIN classifiers clf ON d.classifier_id = clf.id
-        LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start >= a.start AND d.end <= a.end
-        ${conditions}
-        GROUP BY d.start, d.end, d.classification_id, c.value, c.title, d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, d.confidence
-        LIMIT $limit
-        OFFSET $offset
-      `
-  const results = await models.sequelize.query(sql, { bind: { start, end, streams, projects, classifiers, classifications, minConfidence, limit, offset, userId }, type: models.sequelize.QueryTypes.SELECT })
+  const sql = `SELECT d.start, d.end, d.classification_id, (c.value) classification_value, (c.title) classification_title,
+    d.classifier_id, (clf.external_id) classifier_external_id, (clf.name) classifier_name, (clf.version) classifier_version,
+    d.stream_id, (s.name) stream_name, d.confidence,
+    SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
+    SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
+    FROM detections d
+    JOIN streams s ON d.stream_id = s.id
+    JOIN classifications c ON d.classification_id = c.id
+    JOIN classifiers clf ON d.classifier_id = clf.id
+    LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start >= a.start AND d.end <= a.end
+    WHERE ${conditions.join(' AND ')}
+    GROUP BY d.start, d.end, d.classification_id, c.value, c.title, d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, d.confidence
+    LIMIT $limit
+    OFFSET $offset`
+  const results = await models.sequelize.query(sql, { bind, type: models.sequelize.QueryTypes.SELECT })
 
   return results.map(review => {
     const total = Number(review.total)
