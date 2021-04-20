@@ -69,6 +69,7 @@ async function query (filters, options) {
   }
 
   const sql = `SELECT d.start, d.end, d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
+    (c.frequency_min) "classification.frequency_min", (c.frequency_max) "classification.frequency_max",
     d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) "classifier.name", (clf.version) "classifier.version",
     d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id", d.confidence,
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
@@ -81,8 +82,8 @@ async function query (filters, options) {
     JOIN classifiers clf ON d.classifier_id = clf.id
     LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start >= a.start AND d.end <= a.end
     WHERE ${conditions.join(' AND ')}
-    GROUP BY d.start, d.end, d.classification_id, c.value, c.title, d.classifier_id, clf.name, clf.version, clf.external_id,
-    d.stream_id, s.name, s.project_id, d.confidence
+    GROUP BY d.start, d.end, d.classification_id, c.value, c.title, c.frequency_min, c.frequency_max,
+    d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, s.project_id, d.confidence
     LIMIT $limit
     OFFSET $offset`
   const results = await models.sequelize.query(sql, {
