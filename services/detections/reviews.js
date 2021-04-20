@@ -91,8 +91,6 @@ async function query (filters, options) {
     type: models.sequelize.QueryTypes.SELECT
   })
 
-  console.log(results)
-
   return results.map(review => {
     const total = Number(review.total)
     const positive = Number(review.number_of_positive)
