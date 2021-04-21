@@ -3,11 +3,18 @@ const streamsService = require('../streams')
 const classificationsService = require('../classifications')
 const notificationsService = require('./notifications')
 const legacyEventsService = require('../legacy/events/events-service-neo4j')
+const { ValidationError } = require('../../utils/errors')
 
 async function create (eventData) {
+  let stream
+  try {
+    stream = await streamsService.get(eventData.streamId)
+  } catch (err) {
+    throw new ValidationError('Stream not found')
+  }
+
   const eventId = await eventsService.create(eventData)
   eventData.id = eventId
-  const stream = await streamsService.get(eventData.streamId)
   const classification = await classificationsService.get(eventData.classificationId)
   const eventWithStreamAndClassification = { ...eventData, stream, classification }
   try {

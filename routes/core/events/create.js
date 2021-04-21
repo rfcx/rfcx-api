@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { ValidationError } = require('../../../utils/http-errors')
+const { ValidationError } = require('../../../utils/errors')
 const Converter = require('../../../utils/converter/converter')
 const classificationsService = require('../../../services/classifications')
 const createEvent = require('../../../services/events/create')
@@ -47,8 +47,7 @@ module.exports = function (req, res, next) {
     try {
       classification = await classificationsService.get(params.classification)
     } catch (err) {
-      console.warn()
-      return next(new ValidationError('Classification not found'))
+      throw new ValidationError('Classification not found')
     }
     const event = {
       classificationId: classification.id,
