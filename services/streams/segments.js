@@ -124,13 +124,13 @@ function remove (segment) {
  * @param {*} data object with values
  * @returns {*} object with mappings between attribute keys and ids
  */
-async function findOrCreateRelationships (data) {
+async function findOrCreateRelationships (data, opts = {}) {
   const arr = [
     { modelName: 'FileExtension', objKey: 'file_extension' }
   ]
   for (const item of arr) {
     const where = { value: data[item.objKey] }
-    const modelItem = await findOrCreateItem(models[item.modelName], where, where)
+    const modelItem = await findOrCreateItem(models[item.modelName], where, where, opts)
     data[`${item.objKey}_id`] = modelItem.id
   }
 }

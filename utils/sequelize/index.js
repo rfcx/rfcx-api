@@ -1,5 +1,6 @@
-function findOrCreateItem (model, where, defaults) {
-  return model.findOrCreate({ where, defaults })
+function findOrCreateItem (model, where, defaults, opts = {}) {
+  const transaction = opts.transaction || null
+  return model.findOrCreate({ where, defaults, transaction })
     .spread((item, created) => {
       return item
     })

@@ -69,7 +69,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           const sfParams = await sfConverter.validate() // validate stream_source_file attributes
           await segConverter.validate() // validate stream_segment[] attributes
 
-          const stream = await streamsService.get(streamId)
+          const stream = await streamsService.get(streamId, { transaction })
           // Set missing stream_source_file attributes and create a db row
           sfParams.stream_id = streamId
           streamSourceFileService.transformMetaAttr(sfParams)
@@ -79,7 +79,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           for (const segParams of segConverter.transformedArray) {
             segParams.stream_id = streamId
             segParams.stream_source_file_id = streamSourceFile.id
-            await streamSegmentService.findOrCreateRelationships(segParams)
+            await streamSegmentService.findOrCreateRelationships(segParams, { transaction })
             await streamSegmentService.create(segParams, { transaction })
           }
 
@@ -90,7 +90,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             start: minStart.toDate(),
             end: maxEnd.toDate(),
             sampleRate: streamSourceFile.sample_rate
-          }, transaction)
+          }, { transaction })
 
           await transaction.commit()
           return res.location(`/stream-source-files/${streamSourceFile.id}`).sendStatus(201)
