@@ -94,9 +94,9 @@ function expressApp (userAdditions = {}) {
 }
 
 function muteConsole () {
-  ['log', 'info', 'warn', 'error'].forEach((f) => [
+  ['log', 'info', 'warn', 'error'].forEach((f) => {
     console[f] = function () {}
-  ])
+  })
 }
 
 module.exports = { migrate, seed, seedValues, truncate, expressApp, muteConsole }
