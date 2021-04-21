@@ -234,7 +234,7 @@ describe('GET /internal/ai-hub/detections', () => {
     await models.Annotation.create(annotation2)
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00', is_positive: true }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
