@@ -16,9 +16,9 @@ async function commonSetup () {
   await models.Stream.create(stream)
   const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
   await models.Classification.create(classification)
-  const classifier = { id: 3, external_id: 'cccddd', name: 'chainsaw', version: 5, created_by_id: seedValues.otherUserId, model_runner: 'tf2', model_url: 's3://something' }
+  const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw', version: 5, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
   await models.Classifier.create(classifier)
-  const classifierOutput = { classifier_id: classifier.id, classification_id: classification.id, output_class_name: 'ch', ignore_threshold: 0.1 }
+  const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'ch', ignoreThreshold: 0.1 }
   await models.ClassifierOutput.create(classifierOutput)
   return { stream, classification, classifier, classifierOutput }
 }
@@ -29,7 +29,7 @@ describe('MQTT save meta', () => {
     const start = 1420070745567
     const step = 1000
     const confidencesRaw = ',,,0.98,,,,,,,,,,,,0.98,,,,0.95,,,,,,,,,,,0.90,,,,,0.97,,,,,,,,,,0.96,,,,,,'
-    const input = `${classifierOutput.output_class_name}*${classifier.name}-v${classifier.version}*${start}*${step}*${confidencesRaw}`
+    const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step}*${confidencesRaw}`
 
     await Detections(input, stream.id)
 
