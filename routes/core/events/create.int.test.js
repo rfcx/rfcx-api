@@ -22,11 +22,11 @@ describe('POST /events', () => {
     await models.Stream.create(stream)
     const classification = { id: 1, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
     await models.Classification.create(classification)
-    const classifier = { id: 2, name: 'chainsaw', version: 2, created_by_id: seedValues.otherUserId, model_runner: 'tf2', model_url: 'unknown' }
+    const classifier = { id: 2, name: 'chainsaw', version: 2, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 'unknown' }
     await models.Classifier.create(classifier)
     const eventStrategy = { id: 3, name: 'something', functionName: 'test' }
     await models.EventStrategy.create(eventStrategy)
-    const classifierEventStrategy = { id: 4, classifier_id: classifier.id, event_strategy_id: eventStrategy.id }
+    const classifierEventStrategy = { id: 4, classifierId: classifier.id, eventStrategyId: eventStrategy.id }
     await models.ClassifierEventStrategy.create(classifierEventStrategy)
     const requestBody = {
       stream: stream.id,
