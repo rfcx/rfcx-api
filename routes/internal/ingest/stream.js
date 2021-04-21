@@ -86,7 +86,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           // Refresh stream max_sample rate, start adn end if needed
           const minStart = moment.min(segConverter.transformedArray.map(s => s.start))
           const maxEnd = moment.max(segConverter.transformedArray.map(s => s.end))
-          await streamsService.refreshStreamBoundVars(stream, {
+          await streamsService.refreshStreamBoundVars(stream.toJSON(), {
             start: minStart.toDate(),
             end: maxEnd.toDate(),
             sampleRate: streamSourceFile.sample_rate

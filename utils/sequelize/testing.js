@@ -70,7 +70,7 @@ async function seed (models) {
   await models.ClassificationType.create({ id: 1, value: 'unknown' })
 }
 
-const truncateOrder = ['Event', 'Annotation', 'Detection', 'ClassifierActiveProject', 'ClassifierActiveStream', 'ClassifierDeployment', 'ClassifierEventStrategy', 'ClassifierOutput', 'Classifier', 'EventStrategy', 'ClassificationAlternativeName', 'Classification', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'StreamSegment', 'StreamSourceFile', 'Stream', 'Project', 'Organization']
+const truncateOrder = ['Event', 'Annotation', 'Detection', 'ClassifierActiveProject', 'ClassifierActiveStream', 'ClassifierDeployment', 'ClassifierEventStrategy', 'ClassifierOutput', 'Classifier', 'EventStrategy', 'ClassificationAlternativeName', 'Classification', 'UserStreamRole', 'UserProjectRole', 'UserOrganizationRole', 'StreamSegment', 'StreamSourceFile', 'AudioFileFormat', 'AudioCodec', 'FileExtension', 'Stream', 'Project', 'Organization']
 
 async function truncate (models) {
   return await Promise.all(
@@ -93,4 +93,10 @@ function expressApp (userAdditions = {}) {
   return app
 }
 
-module.exports = { migrate, seed, seedValues, truncate, expressApp }
+function muteConsole () {
+  ['log', 'info', 'warn', 'error'].forEach((f) => [
+    console[f] = function () {}
+  ])
+}
+
+module.exports = { migrate, seed, seedValues, truncate, expressApp, muteConsole }
