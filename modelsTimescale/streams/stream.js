@@ -100,42 +100,44 @@ module.exports = function (sequelize, DataTypes) {
 
   async function updateMinMaxLatLngFromCreate (stream) {
     const projectId = stream.projectId
-    if (projectId !== null) {
-      const project = await sequelize.models.Project.findByPk(projectId)
-      const update = {}
-      if (project.minLatitude === null || stream.latitude < project.minLatitude) {
-        update.minLatitude = stream.latitude
-      }
-      if (project.maxLatitude === null || stream.latitude > project.maxLatitude) {
-        update.maxLatitude = stream.latitude
-      }
-      if (project.minLongitude === null || stream.longitude < project.minLongitude) {
-        update.minLongitude = stream.longitude
-      }
-      if (project.maxLongitude === null || stream.longitude > project.maxLongitude) {
-        update.maxLongitude = stream.longitude
-      }
-      if (Object.keys(update).length > 0) {
-        await sequelize.models.Project.update(update, { where: { id: projectId } })
-      }
+    if (!projectId) {
+      return
+    }
+    const project = await sequelize.models.Project.findByPk(projectId)
+    const update = {}
+    if (project.minLatitude === null || stream.latitude < project.minLatitude) {
+      update.minLatitude = stream.latitude
+    }
+    if (project.maxLatitude === null || stream.latitude > project.maxLatitude) {
+      update.maxLatitude = stream.latitude
+    }
+    if (project.minLongitude === null || stream.longitude < project.minLongitude) {
+      update.minLongitude = stream.longitude
+    }
+    if (project.maxLongitude === null || stream.longitude > project.maxLongitude) {
+      update.maxLongitude = stream.longitude
+    }
+    if (Object.keys(update).length > 0) {
+      await sequelize.models.Project.update(update, { where: { id: projectId } })
     }
   }
 
   async function updateMinMaxLatLngFromUpdate (projectId) {
-    if (projectId !== null) {
-      const update = await sequelize.models.Stream.findAll({
-        plain: true,
-        raw: true,
-        attributes: [
-          [sequelize.fn('min', sequelize.col('latitude')), 'minLatitude'],
-          [sequelize.fn('max', sequelize.col('latitude')), 'maxLatitude'],
-          [sequelize.fn('min', sequelize.col('longitude')), 'minLongitude'],
-          [sequelize.fn('max', sequelize.col('longitude')), 'maxLongitude']
-        ],
-        where: { projectId }
-      })
-      await sequelize.models.Project.update(update, { where: { id: projectId } })
+    if (!projectId) {
+      return
     }
+    const update = await sequelize.models.Stream.findAll({
+      plain: true,
+      raw: true,
+      attributes: [
+        [sequelize.fn('min', sequelize.col('latitude')), 'minLatitude'],
+        [sequelize.fn('max', sequelize.col('latitude')), 'maxLatitude'],
+        [sequelize.fn('min', sequelize.col('longitude')), 'minLongitude'],
+        [sequelize.fn('max', sequelize.col('longitude')), 'maxLongitude']
+      ],
+      where: { projectId }
+    })
+    await sequelize.models.Project.update(update, { where: { id: projectId } })
   }
 
   Stream.associate = function (models) {
