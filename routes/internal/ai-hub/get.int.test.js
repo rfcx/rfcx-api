@@ -25,11 +25,11 @@ async function commonSetup () {
   return { stream, classification, classifier }
 }
 
-describe('GET /internal/ai-hub/reviews', () => {
+describe('GET /internal/ai-hub/detections', () => {
   test('bad request', async () => {
     console.warn = jest.fn()
 
-    const response = await request(app).get('/reviews')
+    const response = await request(app).get('/detections')
 
     expect(response.statusCode).toBe(400)
   })
@@ -38,7 +38,7 @@ describe('GET /internal/ai-hub/reviews', () => {
     console.warn = jest.fn()
     const requestQuery = { start: 'abc', end: '2020-02-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(400)
   })
@@ -47,7 +47,7 @@ describe('GET /internal/ai-hub/reviews', () => {
     console.warn = jest.fn()
     const requestQuery = { start: '2020-01-01T00:00:00', end: 'abc' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(400)
   })
@@ -56,7 +56,7 @@ describe('GET /internal/ai-hub/reviews', () => {
     console.warn = jest.fn()
     const requestQuery = { start: '12345', end: '2020-02-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
   })
@@ -65,7 +65,7 @@ describe('GET /internal/ai-hub/reviews', () => {
     console.warn = jest.fn()
     const requestQuery = { start: '2020-01-01T00:00:00', end: '12345' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
   })
@@ -73,7 +73,7 @@ describe('GET /internal/ai-hub/reviews', () => {
   test('no result', async () => {
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2020-02-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body).toEqual([])
@@ -86,7 +86,7 @@ describe('GET /internal/ai-hub/reviews', () => {
 
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
@@ -106,7 +106,7 @@ describe('GET /internal/ai-hub/reviews', () => {
 
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
@@ -127,7 +127,7 @@ describe('GET /internal/ai-hub/reviews', () => {
 
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
@@ -148,7 +148,7 @@ describe('GET /internal/ai-hub/reviews', () => {
 
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
@@ -168,7 +168,7 @@ describe('GET /internal/ai-hub/reviews', () => {
 
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00' }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
@@ -189,7 +189,7 @@ describe('GET /internal/ai-hub/reviews', () => {
 
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00', min_confidence: 0.8 }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
@@ -210,7 +210,7 @@ describe('GET /internal/ai-hub/reviews', () => {
     await models.Annotation.create(annotation2)
     const requestQuery = { start: '2020-01-01T00:00:00', end: '2021-01-01T00:00:00', is_reviewed: true }
 
-    const response = await request(app).get('/reviews').query(requestQuery)
+    const response = await request(app).get('/detections').query(requestQuery)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(2)
