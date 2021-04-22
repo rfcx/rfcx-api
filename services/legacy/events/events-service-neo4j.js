@@ -625,8 +625,8 @@ function createEvent (event) {
 
   let query = `MATCH (ai:ai {guid: {aiGuid} })-[:classifies]->(lb:label {value: {classificationValue}})
     MERGE (ai)-[:has_audioWindowSet]-(aws:audioWindowSet {createdAt: {createdAt}})-[:classifies]->(lb)
-    MERGE (ai)-[:has_eventSet]-(evs:eventSet {createdAt: {createdAt}}})-[:classifies]->(lb)
-    CREATE (ev: event {guid: {eventUuid}, audioMeasuredAt: {measuredAt}, 
+    MERGE (ai)-[:has_eventSet]-(evs:eventSet {createdAt: {createdAt}})-[:classifies]->(lb)
+    CREATE (ev:event {guid: {eventUuid}, audioMeasuredAt: {measuredAt}, 
        latitude: {latitude}, longitude: {longitude},
        guardianGuid: {streamId}, guardianShortname: {streamName},
        siteGuid: {site}, siteTimezone: {siteTimezone}, createdAt: {createdAt}})
