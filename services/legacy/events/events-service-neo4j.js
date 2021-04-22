@@ -623,24 +623,15 @@ function createEvent (event) {
   const site = 'tembe'
   const siteTimezone = ''
 
-  let query = `MATCH (ai:ai {guid: {aiGuid} })-[:classifies]->(lb:label {value: {classificationValue}})
+  const query = `MATCH (ai:ai {guid: {aiGuid} })-[:classifies]->(lb:label {value: {classificationValue}})
     MERGE (ai)-[:has_audioWindowSet]-(aws:audioWindowSet {createdAt: {createdAt}})-[:classifies]->(lb)
     MERGE (ai)-[:has_eventSet]-(evs:eventSet {createdAt: {createdAt}})-[:classifies]->(lb)
-    CREATE (ev:event {guid: {eventUuid}, audioMeasuredAt: {measuredAt}, 
+    CREATE (ev:event {guid: {eventUuid}, audioMeasuredAt: {measuredAt}, audioGuid: '',
        latitude: {latitude}, longitude: {longitude},
        guardianGuid: {streamId}, guardianShortname: {streamName},
        siteGuid: {site}, siteTimezone: {siteTimezone}, createdAt: {createdAt}})
-    MERGE (evs)-[:contains]->(ev) `
-
-  // for (let i = 0; i < detections.length; i++) {
-  //   const detection = detections[i]
-  //   query += `CREATE (w${i}:audioWindow {guid: '${uuid.v4()}', createdAt: {createdAt}, confidence: ${detection.confidence},
-  //      start: ${moment(detection.start).valueOf()}, end: ${moment(detection.end).valueOf()} })
-  //      MERGE (aws)-[:contains]->(w${i}) `
-  // }
-
-  query += 'MERGE (evs)-[:relates_to]->(aws) '
-  query += 'RETURN ev as event, aws as audio_window_set'
+    MERGE (evs)-[:contains]->(ev) MERGE (evs)-[:relates_to]->(aws)
+    RETURN ev as event, aws as audio_window_set`
 
   const params = { eventUuid, measuredAt, createdAt, aiGuid, classificationValue, streamId, streamName, latitude, longitude, site, siteTimezone }
 
