@@ -171,7 +171,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
   })
 
   test('returns 404 for a missing stream', async () => {
-    const response = await request(app).get(`/streams/random/permissions`).send()
+    const response = await request(app).get('/streams/random/permissions').send()
     expect(response.statusCode).toBe(404)
   })
 })
