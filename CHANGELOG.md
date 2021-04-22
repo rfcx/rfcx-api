@@ -12,6 +12,7 @@
 
 ### Bug Fixes
 * **core:** update PATCH /classifier endpoint to save previous `deployment_parameters` configuration when given only status change ([CE-344](https://jira.rfcx.org/browse/CE-344))
+* **media:** Add additional check for overlapping segments in assets
 
 
 ## 1.0.17-hotfix.4 (2021-04-13)
