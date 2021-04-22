@@ -51,11 +51,12 @@ async function create (data, opts = {}) {
     throw new ValidationError('Cannot create source file with empty object.')
   }
   const { stream_id, filename, duration, sample_count, sample_rate, channels_count, bit_rate, sha1_checksum, meta } = data // eslint-disable-line camelcase
-  await checkForDuplicates(stream_id, sha1_checksum, filename)
-  const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data) // eslint-disable-line camelcase
+  await checkForDuplicates(stream_id, sha1_checksum, filename, opts)
+  const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data, opts) // eslint-disable-line camelcase
   const where = { stream_id, sha1_checksum }
   const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
-  return StreamSourceFile.findOrCreate({ where, defaults })
+  const transaction = opts.transaction || null
+  return StreamSourceFile.findOrCreate({ where, defaults, transaction })
     .spread((item, created) => {
       if (!created) {
         throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
@@ -147,10 +148,11 @@ function remove (streamSourceFile) {
  * @param {*} sha1_checksum
  * @returns {boolean} returns false if no duplicates, throws ValidationError if exists
  */
-function checkForDuplicates (stream_id, sha1_checksum, filename) { // eslint-disable-line camelcase
+function checkForDuplicates (stream_id, sha1_checksum, filename, opts = {}) { // eslint-disable-line camelcase
   // check for duplicate source file files in this stream
+  const transaction = opts.transaction || null
   return StreamSourceFile
-    .findAll({ where: { stream_id, sha1_checksum } }) // eslint-disable-line camelcase
+    .findAll({ where: { stream_id, sha1_checksum }, transaction }) // eslint-disable-line camelcase
     .then((existingStreamSourceFiles) => {
       if (existingStreamSourceFiles && existingStreamSourceFiles.length) {
         const sameFile = existingStreamSourceFiles.find(x => x.filename === filename)
@@ -167,7 +169,7 @@ function checkForDuplicates (stream_id, sha1_checksum, filename) { // eslint-dis
  * @param {*} data object with values
  * @returns {*} object with mappings between attribute keys and ids
  */
-async function findOrCreateRelationships (data) {
+async function findOrCreateRelationships (data, opts = {}) {
   const arr = [
     { model: AudioCodec, objKey: 'audio_codec' },
     { model: AudioFileFormat, objKey: 'audio_file_format' }
@@ -175,10 +177,22 @@ async function findOrCreateRelationships (data) {
   const result = {}
   for (const item of arr) {
     const where = { value: data[item.objKey] }
-    const modelItem = await findOrCreateItem(item.model, where, where)
+    const modelItem = await findOrCreateItem(item.model, where, where, opts)
     result[`${item.objKey}_id`] = modelItem.id
   }
   return result
+}
+
+/**
+ * Checks for meta attributes and stringifies them if it is as an object. If it's not an object, deletes it.
+ * @param {*} params
+ */
+function transformMetaAttr (params) {
+  if (params.meta && Object.keys(params.meta).length !== 0 && params.meta.constructor === Object) {
+    params.meta = JSON.stringify(params.meta)
+  } else {
+    delete params.meta
+  }
 }
 
 function format (streamSourceFile) {
@@ -212,5 +226,6 @@ module.exports = {
   remove,
   checkForDuplicates,
   findOrCreateRelationships,
+  transformMetaAttr,
   format
 }

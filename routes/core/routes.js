@@ -20,9 +20,6 @@ module.exports = {
   'stream-source-files': [
     require('./stream-source-files')
   ],
-  'stream-segments': [
-    require('./stream-segments')
-  ],
   organizations: [
     require('./organizations')
   ],

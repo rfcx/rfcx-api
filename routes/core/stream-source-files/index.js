@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { hasRole } = require('../../../middleware/authorization/authorization')
-const streamsService = require('../../../services/streams')
 const streamSourceFileService = require('../../../services/streams/source-files')
 
 /**
@@ -29,9 +28,7 @@ const streamSourceFileService = require('../../../services/streams/source-files'
 router.delete('/:uuid', hasRole(['systemUser']), (req, res) => {
   return streamSourceFileService.get(req.params.uuid)
     .then(async (streamSourceFile) => {
-      const stream = await streamsService.get(streamSourceFile.stream_id)
       await streamSourceFileService.remove(streamSourceFile)
-      return streamsService.refreshStreamMaxSampleRate(stream)
     })
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream source file'))
