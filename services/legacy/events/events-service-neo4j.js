@@ -618,10 +618,10 @@ function createEvent (event) {
   const streamId = event.stream.id
   const streamName = event.stream.name
 
-  // Unable to determine these values from timescale
-  const aiGuid = '' // TODO
+  // TODO: Unable to determine these values from timescale
+  const aiGuid = '843cb81d-03b9-07e1-5184-931c95265213'
   const site = 'tembe'
-  const siteTimezone = ''
+  const siteTimezone = 'America/Belem'
 
   const query = `MATCH (ai:ai {guid: {aiGuid} })-[:classifies]->(lb:label {value: {classificationValue}})
     MERGE (ai)-[:has_audioWindowSet]-(aws:audioWindowSet {createdAt: {createdAt}})-[:classifies]->(lb)
