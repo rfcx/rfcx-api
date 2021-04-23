@@ -18,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING
     }
   }, {
-    underscored: true
+    underscored: true,
+    timestamps: false
   })
   EventStrategy.associate = function (models) {
     EventStrategy.belongsToMany(models.Classifier, { as: 'classifiers', through: 'classifier_event_strategies', timestamps: false })
