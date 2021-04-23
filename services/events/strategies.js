@@ -5,7 +5,7 @@ const { EmptyResultError } = require('../../utils/errors')
 const availableIncludes = [
   // Get the classifier through classifier_event_strategies (including the fields of c_e_s and classifier_output)
   {
-    ...Classifier.include('classifiers'),
+    ...Classifier.include({ as: 'classifiers' }),
     through: ClassifierEventStrategy.include({ attributes: ClassifierEventStrategy.attributes.full.filter(a => a !== 'event_strategy_id') }),
     include: ClassifierOutput.include({ as: 'outputs', required: false })
   }
