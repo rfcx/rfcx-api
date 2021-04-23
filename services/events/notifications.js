@@ -51,7 +51,7 @@ function splitSubscriptions (subscriptions) {
  * @param {*} event.classification
  * @param {string} event.classification.title
  */
-async function notifyAboutEvent (event) {
+async function notify (event) {
   // TODO: update function logic when we will have organization and stream subscriptions
   if (event.stream && event.stream.project) {
     const subs = await query(null, event.stream.project.id, 'project')
@@ -123,5 +123,5 @@ function sendPushNotifications (users, data) {
 }
 
 module.exports = {
-  notifyAboutEvent
+  notify
 }

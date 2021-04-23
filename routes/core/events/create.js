@@ -2,7 +2,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { ValidationError } = require('../../../utils/errors')
 const Converter = require('../../../utils/converter/converter')
 const classificationsService = require('../../../services/classifications')
-const createEvent = require('../../../services/events/create')
+const createEventAndNotify = require('../../../services/events/create-and-notify')
 
 /**
  * @swagger
@@ -42,21 +42,7 @@ module.exports = function (req, res, next) {
   converter.convert('end').toMomentUtc()
 
   converter.validate().then(async (params) => {
-    const { classifierEventStrategy: classifierEventStrategyId, stream: streamId, start, end } = params
-    let classification
-    try {
-      classification = await classificationsService.get(params.classification)
-    } catch (err) {
-      throw new ValidationError('Classification not found')
-    }
-    const event = {
-      classificationId: classification.id,
-      streamId,
-      classifierEventStrategyId,
-      start,
-      end
-    }
-    const eventId = await createEvent(event)
+    const eventId = await createEventAndNotify(params)
     res.location(`/events/${eventId}`).sendStatus(201)
   }).catch(httpErrorHandler(req, res, 'Failed creating event'))
 }
