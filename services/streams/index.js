@@ -284,7 +284,7 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
     return (await query({
       current_user_id: user.id,
       created_by: createdBy
-    })).streams.map(d => d.id)
+    })).results.map(d => d.id)
   }
 
   // Get my streams and my collaborators
@@ -297,8 +297,8 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
     current_user_is_super: user.is_super
   })
   const streamIds = [...new Set([
-    ...s1.streams.map(d => d.id),
-    ...s2.streams.map(d => d.id)
+    ...s1.results.map(d => d.id),
+    ...s2.results.map(d => d.id)
   ])]
   return streamIds
 }
