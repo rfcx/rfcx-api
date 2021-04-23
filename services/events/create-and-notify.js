@@ -7,18 +7,10 @@ const { ValidationError } = require('../../utils/errors')
 
 async function createAndNotify (eventData) {
   // Validate
-  let stream
-  try {
-    stream = await streamsService.get(eventData.stream)
-  } catch (err) {
-    throw new ValidationError('Stream not found')
-  }
-  let classification
-  try {
-    classification = await classificationsService.get(eventData.classification)
-  } catch (err) {
-    throw new ValidationError('Classification not found')
-  }
+  const stream = await streamsService.get(eventData.stream)
+    .catch(() => { throw new ValidationError('Stream not found') })
+  const classification = await classificationsService.get(eventData.classification)
+    .catch(() => { throw new ValidationError('Classification not found') })
 
   // Create
   const event = {
