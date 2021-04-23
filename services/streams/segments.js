@@ -100,8 +100,9 @@ function create (data, opts = {}) {
     throw new ValidationError('Cannot create stream segment with empty object.')
   }
   const { id, stream_id, start, end, sample_count, stream_source_file_id, file_extension_id } = data // eslint-disable-line camelcase
+  const transaction = opts.transaction || null
   return models.StreamSegment
-    .create({ id, stream_id, start, end, sample_count, stream_source_file_id, file_extension_id })
+    .create({ id, stream_id, start, end, sample_count, stream_source_file_id, file_extension_id }, { transaction })
     .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamSegmentBaseInclude }) : item })
     .catch((e) => {
       console.error('Stream segment service -> create -> error', e)
@@ -123,13 +124,13 @@ function remove (segment) {
  * @param {*} data object with values
  * @returns {*} object with mappings between attribute keys and ids
  */
-async function findOrCreateRelationships (data) {
+async function findOrCreateRelationships (data, opts = {}) {
   const arr = [
     { modelName: 'FileExtension', objKey: 'file_extension' }
   ]
   for (const item of arr) {
     const where = { value: data[item.objKey] }
-    const modelItem = await findOrCreateItem(models[item.modelName], where, where)
+    const modelItem = await findOrCreateItem(models[item.modelName], where, where, opts)
     data[`${item.objKey}_id`] = modelItem.id
   }
 }

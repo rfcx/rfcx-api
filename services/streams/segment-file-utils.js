@@ -230,11 +230,15 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
       durationMs = segmentDuration - seekMs - (segment.end - ends)
     }
     if (seekMs) {
+      if (seekMs > segmentDuration) {
+        seekMs = segmentDuration
+      }
       command += `-ss ${seekMs}ms ` // how many ms we should skip
     }
-    if (durationMs) {
-      command += `-t ${durationMs}ms ` // how much time in duration we should have
+    if (durationMs < 0) {
+      durationMs = 0
     }
+    command += `-t ${durationMs}ms ` // how much time in duration we should have
     command += `-i ${segment.sourceFilePath} `
     let sampleRate
     try {
