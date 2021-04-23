@@ -14,8 +14,7 @@ const querySelect =
     'Guardian.guid AS guardian_guid, Guardian.shortname AS guardian_shortname, ' +
     'Guardian.latitude AS latitude, Guardian.longitude AS longitude, ' +
     'Format.codec as codec, Format.mime as mime, Format.file_extension as file_extension, Format.sample_rate as sample_rate, ' +
-    'Format.is_vbr as vbr, Format.target_bit_rate as target_bit_rate, ' +
-    'COUNT(DISTINCT GuardianAudioBox.id) as audio_box_count '
+    'Format.is_vbr as vbr, Format.target_bit_rate as target_bit_rate '
 
 const countSelect =
   'SELECT COUNT(*) as total '
@@ -23,8 +22,7 @@ const countSelect =
 const queryJoins =
   'LEFT JOIN Guardians AS Guardian ON GuardianAudio.guardian_id = Guardian.id ' +
   'LEFT JOIN GuardianSites AS Site ON GuardianAudio.site_id = Site.id ' +
-  'LEFT JOIN GuardianAudioFormats AS Format ON GuardianAudio.format_id = Format.id ' +
-  'LEFT JOIN GuardianAudioBoxes AS GuardianAudioBox ON GuardianAudio.id = GuardianAudioBox.audio_id '
+  'LEFT JOIN GuardianAudioFormats AS Format ON GuardianAudio.format_id = Format.id '
 
 /**
  * weekdays[] is an array with numbers [0, 1, 2, 3, 4, 5, 6]
@@ -50,6 +48,9 @@ function prepareOpts (req) {
         break
       case 'measured_at':
         order = 'GuardianAudio.measured_at'
+        break
+      case 'measured_at_local':
+        order = 'GuardianAudio.measured_at_local'
         break
       default:
         order = 'GuardianAudio.measured_at'
@@ -133,7 +134,7 @@ function queryData (req) {
 
       const sqlCount = `${countSelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams}`
 
-      let sqlQuery = `${querySelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams} GROUP BY GuardianAudio.id`
+      let sqlQuery = `${querySelect} FROM GuardianAudio AS GuardianAudio ${queryJoins} WHERE 1=1 ${queryParams} `
       sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' ORDER BY ' + opts.order + ' ' + opts.dir)
       sqlQuery = sqlUtils.condAdd(sqlQuery, opts.limit, ' LIMIT ' + opts.limit)
       sqlQuery = sqlUtils.condAdd(sqlQuery, opts.order, ' OFFSET ' + opts.offset)
