@@ -451,7 +451,7 @@ exports.saveMeta = {
     }
     // TODO remove temporary logging to debug satellite guardians
     if (detections.length > 0) {
-      console.log(`found ${detections.length} detections in payload from ${guardianId}`)
+      console.log(`found ${detections.length} detections in payload from ${guardianId}: ${payload}`)
     }
     const expandedDetections = detections.map(d => ({ streamId: guardianId, ...d }))
     return detectionsService.create(expandedDetections)

@@ -1,66 +1,8 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const streamsService = require('../../../services/streams')
-const streamSourceFileService = require('../../../services/streams/source-files')
 const streamSegmentService = require('../../../services/streams/segments')
 const Converter = require('../../../utils/converter/converter')
-const { hasRole } = require('../../../middleware/authorization/authorization')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
-
-/**
- * @swagger
- *
- * /streams/{id}/stream-segments:
- *   post:
- *     summary: Create a stream segment
- *     tags:
- *       - stream-segments
- *     requestBody:
- *       description: StreamSegment object
- *       required: true
- *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             $ref: '#/components/requestBodies/StreamSegment'
- *         application/json:
- *           schema:
- *             $ref: '#/components/requestBodies/StreamSegment'
- *     responses:
- *       201:
- *         description: Created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/StreamSegment'
- *       400:
- *         description: Invalid query parameters
- */
-
-router.post('/:streamId/stream-segments', hasRole(['systemUser']), function (req, res) {
-  const streamId = req.params.streamId
-  const convertedParams = {}
-  const params = new Converter(req.body, convertedParams)
-
-  params.convert('id').optional().toString()
-  params.convert('stream_source_file_id').toString()
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('sample_count').toInt().minimum(1)
-  params.convert('file_extension').toString()
-
-  return params.validate()
-    .then(async () => {
-      const stream = await streamsService.get(streamId)
-      await streamSourceFileService.get(convertedParams.stream_source_file_id) // we call this function to ensure that source file with given id exists
-      convertedParams.stream_id = streamId
-      await streamSegmentService.findOrCreateRelationships(convertedParams)
-      const streamSegment = await streamSegmentService.create(convertedParams, { joinRelations: true })
-      await streamsService.refreshStreamStartEnd(stream, streamSegment) // refresh start and end columns of releated stream
-      await streamSegment.reload() // reload segment model to apply stream model updates
-      return res.status(201).json(streamSegmentService.format(streamSegment))
-    })
-    .catch(httpErrorHandler(req, res, 'Failed creating stream segment'))
-})
 
 /**
  * @swagger

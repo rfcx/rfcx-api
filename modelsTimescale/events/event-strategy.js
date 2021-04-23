@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = (sequelize, DataTypes) => {
   const EventStrategy = sequelize.define('EventStrategy', {
     id: {
@@ -28,5 +30,6 @@ module.exports = (sequelize, DataTypes) => {
     full: ['id', 'name', 'function_name', 'function_parameters'],
     lite: ['id', 'name']
   }
+  EventStrategy.include = includeBuilder(EventStrategy, 'event_strategy', EventStrategy.attributes.lite)
   return EventStrategy
 }

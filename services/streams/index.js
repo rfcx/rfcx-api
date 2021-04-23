@@ -1,4 +1,4 @@
-const { Stream, Project, User, StreamSegment, StreamSourceFile, Sequelize } = require('../../modelsTimescale')
+const { Stream, Project, User, Sequelize } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
@@ -36,8 +36,9 @@ async function get (idOrWhere, options = {}) {
   const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.full
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
+  const transaction = options.transaction || null
 
-  const stream = await Stream.findOne({ where, attributes, include, paranoid: false })
+  const stream = await Stream.findOne({ where, attributes, include, paranoid: false, transaction })
 
   if (!stream) {
     throw new EmptyResultError('Stream not found')
@@ -191,8 +192,10 @@ async function update (id, stream, options = {}) {
     throw new ForbiddenError()
   }
   const fullStream = { ...stream, ...computedAdditions(stream) }
+  const transaction = options.transaction || null
   return Stream.update(fullStream, {
-    where: { id }
+    where: { id },
+    transaction
   })
 }
 
@@ -226,42 +229,27 @@ async function restore (id, options = {}) {
 }
 
 /**
- * Finds max sample rate value of stream source files belonging to stream and updates max_sample_rate attribute of the stream
- * @param {*} stream stream model item
+* Refreshes stream's max sample_rate, start and end based on input params
+ * @param {*} stream
+ * @param {*} params
+ * @param {number} params.sampleRate
+ * @param {string} params.start
+ * @param {string} params.end
+ * @param {*} opts
+ * @param {*} opts.transaction
  */
-async function refreshStreamMaxSampleRate (stream) {
-  const where = { stream_id: stream.id }
-  let max_sample_rate = await StreamSourceFile.max('sample_rate', { where }) // eslint-disable-line camelcase
-  max_sample_rate = max_sample_rate || null // eslint-disable-line camelcase
-  return update(stream, { max_sample_rate })
-}
-
-/**
- * Refreshes stream's start and end points based on provided segment or by searching for first and last segments
- * @param {*} stream stream model item
- * @param {*} segment (optional) stream segment model item
- */
-async function refreshStreamStartEnd (stream, segment) {
+async function refreshStreamBoundVars (stream, params, options = {}) {
   const upd = {}
-  if (segment) {
-    if (segment.start < stream.start || !stream.start) {
-      upd.start = segment.start
-    }
-    if (segment.end > stream.end || !stream.end) {
-      upd.end = segment.end
-    }
-  } else {
-    const where = { stream_id: stream.id }
-    upd.start = await StreamSegment.min('start', { where })
-    upd.end = await StreamSegment.max('end', { where })
-    if (upd.start === 0) {
-      upd.start = null
-    }
-    if (upd.end === 0) {
-      upd.end = null
-    }
+  if (params.start && (params.start < stream.start || !stream.start)) {
+    upd.start = params.start
   }
-  return update(stream, upd)
+  if (params.end && (params.end > stream.end || !stream.end)) {
+    upd.end = params.end
+  }
+  if (params.sampleRate && (params.sampleRate > stream.max_sample_rate || !stream.max_sample_rate)) {
+    upd.maxSampleRate = params.sampleRate
+  }
+  return update(stream.id, upd, options)
 }
 
 // TODO move to guardian-related area (not part of Core)
@@ -296,7 +284,7 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
     return (await query({
       current_user_id: user.id,
       created_by: createdBy
-    })).streams.map(d => d.id)
+    })).results.map(d => d.id)
   }
 
   // Get my streams and my collaborators
@@ -309,8 +297,8 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
     current_user_is_super: user.is_super
   })
   const streamIds = [...new Set([
-    ...s1.streams.map(d => d.id),
-    ...s2.streams.map(d => d.id)
+    ...s1.results.map(d => d.id),
+    ...s2.results.map(d => d.id)
   ])]
   return streamIds
 }
@@ -322,8 +310,7 @@ module.exports = {
   update,
   remove,
   restore,
-  refreshStreamMaxSampleRate,
-  refreshStreamStartEnd,
+  refreshStreamBoundVars,
   ensureStreamExistsForGuardian,
   getPublicStreamIds,
   getAccessibleStreamIds

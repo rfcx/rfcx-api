@@ -35,7 +35,7 @@ function combineUserData (jwtPayload, user) {
     owner_id: user.id,
     owner_guid: user.guid,
     is_super: !!user.is_super,
-    has_system_role: getUserRolesFromToken(user).includes('systemUser')
+    has_system_role: getUserRolesFromToken(jwtPayload).includes('systemUser')
   })
 }
 
