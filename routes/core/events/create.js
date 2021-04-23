@@ -1,7 +1,5 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { ValidationError } = require('../../../utils/errors')
 const Converter = require('../../../utils/converter/converter')
-const classificationsService = require('../../../services/classifications')
 const createEventAndNotify = require('../../../services/events/create-and-notify')
 
 /**
