@@ -80,7 +80,7 @@ async function query (filters, options) {
     JOIN streams s ON d.stream_id = s.id
     JOIN classifications c ON d.classification_id = c.id
     JOIN classifiers clf ON d.classifier_id = clf.id
-    LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start >= a.start AND d.end <= a.end
+    LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start = a.start AND d.end = a.end
     WHERE ${conditions.join(' AND ')}
     GROUP BY d.start, d.end, d.classification_id, c.value, c.title, c.frequency_min, c.frequency_max,
     d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, s.project_id, d.confidence
