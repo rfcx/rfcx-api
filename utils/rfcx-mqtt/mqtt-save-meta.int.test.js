@@ -30,6 +30,7 @@ describe('MQTT save meta', () => {
     const step = 1000
     const confidencesRaw = ',,,0.98,,,,,,,,,,,,0.98,,,,0.95,,,,,,,,,,,0.90,,,,,0.97,,,,,,,,,,0.96,,,,,,'
     const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step}*${confidencesRaw}`
+    console.log = jest.fn()
 
     await Detections(input, stream.id)
 
