@@ -7,6 +7,7 @@ const { sequelize, Sequelize: { QueryTypes } } = require('../../../../modelsTime
  * @param {string} parameters.end Include detections starting before
  * @param {number} parameters.classifier Specify the classifier (by id)
  * @param {number} parameters.minConfidence Include detections with a confidence greater or equal to
+ * @param {number} parameters.minCount Include results where the count is greater or equal to
  * @param {number} parameters.limit Max results (page size)
  * @param {number} parameters.offset Skip results (page items offset)
  * @returns
@@ -17,6 +18,7 @@ function query (parameters) {
     FROM detections
     WHERE start >= $start and start < $end and classifier_id = $classifier and confidence >= $minConfidence
     GROUP BY stream_id, classification_id
+    HAVING count > $minCount
     LIMIT $limit OFFSET $offset
   `
   const bind = { ...parameters, start: parameters.start.toISOString(), end: parameters.end.toISOString() }

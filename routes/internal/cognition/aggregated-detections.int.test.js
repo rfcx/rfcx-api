@@ -81,7 +81,7 @@ async function commonSetup () {
 }
 
 describe('GET /internal/cognition/aggregated-detections', () => {
-  test('multiple rows', async () => {
+  test('returns count, min_start, max_end', async () => {
     const { classification, classifier, streamIds } = await commonSetup()
     const query = {
       start: '2021-04-14T00:00:00Z',
@@ -96,5 +96,34 @@ describe('GET /internal/cognition/aggregated-detections', () => {
     expect(response.body.length).toBe(streamIds.length)
     expect(response.body[0].classification_id).toBe(classification.id)
     expect(Object.keys(response.body[0])).toEqual(expect.arrayContaining(['count', 'min_start', 'max_end']))
+  })
+
+  test('minimum confidence', async () => {
+    const { classifier } = await commonSetup()
+    const query = {
+      start: '2021-04-14T00:00:00Z',
+      end: '2021-04-21T23:59:59Z',
+      classifier: classifier.id,
+      min_confidence: 0.99
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.body.find(x => x.stream_id === '3fqoc4okv9en').count).toBe(2)
+  })
+
+  test('minimum count', async () => {
+    const { classifier } = await commonSetup()
+    const query = {
+      start: '2021-04-14T00:00:00Z',
+      end: '2021-04-21T23:59:59Z',
+      classifier: classifier.id,
+      min_confidence: 0.95,
+      min_count: 10
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.body.length).toBe(1)
   })
 })
