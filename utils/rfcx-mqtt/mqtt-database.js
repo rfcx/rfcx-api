@@ -136,7 +136,7 @@ exports.checkInDatabase = {
       saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition, '|', '*'), guardianId, checkInId),
       saveMeta.DateTimeOffset(strArrToJSArr(checkInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
       saveMeta.MqttBrokerConnection(strArrToJSArr(checkInObj.json.broker_connections, '|', '*'), guardianId, checkInId),
-      saveMeta.Detections(checkInObj.json.detections, checkInObj.json.guardian.guid),
+      saveMeta.Detections(checkInObj.json.detections ? checkInObj.json.detections.split('|') : [], checkInObj.json.guardian.guid),
 
       saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots, '|', '*'), guardianId, checkInId),
       saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software, '|', '*'), guardianId),

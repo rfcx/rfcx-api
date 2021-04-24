@@ -442,21 +442,28 @@ exports.saveMeta = {
     return Promise.all(proms)
   },
 
-  Detections: function (payload, guardianId) {
+  Detections: function (payloadArr, guardianId) {
     // TODO remove temporary logging to debug satellite guardians
-    console.log(`${guardianId}: detections payload: ${payload}`)
-    let detections
-    try {
-      detections = parseDetections(payload)
-    } catch (error) {
-      return Promise.resolve()
+    console.log(`${guardianId}: detections payload: ${payloadArr.join('|')}`)
+
+    const expandedDetections = []
+    for (const payload of payloadArr) {
+      let detections
+      try {
+        detections = parseDetections(payload)
+      } catch (error) {
+        continue
+      }
+      expandedDetections.push(...detections.map(d => ({ streamId: guardianId, ...d })))
     }
-    // TODO remove temporary logging to debug satellite guardians
-    if (detections.length > 0) {
-      console.log(`${guardianId}: detections payload: found ${detections.length}`)
+
+    if (expandedDetections.length > 0) {
+      // TODO remove temporary logging to debug satellite guardians
+      console.log(`${guardianId}: detections payload: saving ${expandedDetections.length} detections`)
+
+      return detectionsService.create(expandedDetections)
     }
-    const expandedDetections = detections.map(d => ({ streamId: guardianId, ...d }))
-    return detectionsService.create(expandedDetections)
+    return Promise.resolve()
   }
 
 }
