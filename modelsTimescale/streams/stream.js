@@ -88,7 +88,10 @@ module.exports = function (sequelize, DataTypes) {
         await updateMinMaxLatLngFromCreate(stream)
       },
       afterUpdate: async (stream, option) => {
-        if (stream.latitude !== stream._previousDataValues.latitude || stream.longitude !== stream._previousDataValues.longitude) {
+        if (stream.projectId !== stream._previousDataValues.projectId) {
+          await updateMinMaxLatLngFromUpdate(stream.projectId)
+          await updateMinMaxLatLngFromUpdate(stream._previousDataValues.projectId)
+        } else if (stream.latitude !== stream._previousDataValues.latitude || stream.longitude !== stream._previousDataValues.longitude) {
           await updateMinMaxLatLngFromUpdate(stream.projectId)
         }
       },
