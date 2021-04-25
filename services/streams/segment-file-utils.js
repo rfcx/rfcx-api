@@ -217,7 +217,7 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
       // cut first segment at the start
       seekMs = starts - segment.start
     }
-    let durationMs = 0
+    let durationMs
     const segmentDuration = segment.end - segment.start
     if (ind < (segments.length - 1) && nextSegment && (nextSegment.start - segment.end) < 0) {
       // when there is an overlap between current and next segment
@@ -230,9 +230,15 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
       durationMs = segmentDuration - seekMs - (segment.end - ends)
     }
     if (seekMs) {
+      if (seekMs > segmentDuration) {
+        seekMs = segmentDuration
+      }
       command += `-ss ${seekMs}ms ` // how many ms we should skip
     }
-    if (durationMs) {
+    if (durationMs < 0) {
+      durationMs = 0
+    }
+    if (durationMs !== undefined) {
       command += `-t ${durationMs}ms ` // how much time in duration we should have
     }
     command += `-i ${segment.sourceFilePath} `

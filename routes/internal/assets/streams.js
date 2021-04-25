@@ -72,7 +72,7 @@ router.get('/streams/:attrs', function (req, res) {
     if (req.rfcx.auth_token_info.has_system_role) {
       allowed = true
     } else {
-      allowed = await rolesService.hasPermission(rolesService.READ, req.rfcx.auth_token_info, stream, rolesService.STREAM)
+      allowed = await rolesService.hasPermission(rolesService.READ, req.rfcx.auth_token_info.owner_id, stream, rolesService.STREAM)
     }
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to access this stream.')
