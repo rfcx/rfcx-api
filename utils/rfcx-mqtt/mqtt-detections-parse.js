@@ -4,14 +4,17 @@ const ValidationError = require('../converter/validation-error')
 function parse (input) {
   const parseRegex = /(?<classification>[a-zA-Z_]+)\*(?<classifier>[a-zA-Z0-9_-]+)\*(?<timestamp>[0-9]+)\*(?<step>[0-9]+)\*(?<confidences>([0-9]*\.[0-9]+)?(,([0-9]*\.[0-9]+)?)+)$/g
   const result = parseRegex.exec(input)
-
   if (result === null) {
     throw new ValidationError('Format not recognized')
   }
 
   const { classification, classifier, confidences } = result.groups
   const timestampMs = parseInt(result.groups.timestamp)
-  const stepMs = parseInt(result.groups.step)
+  let stepMs = parseInt(result.groups.step)
+  // First round of satellite guardians have incorrect step
+  if (stepMs > 100000) {
+    stepMs = stepMs / 1000
+  }
 
   return confidences.split(',').map((x, i) => {
     if (x === '') return undefined

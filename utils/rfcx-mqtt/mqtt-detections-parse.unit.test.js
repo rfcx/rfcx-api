@@ -1,5 +1,6 @@
 const { parse } = require('./mqtt-detections-parse')
 const ValidationError = require('../converter/validation-error')
+const moment = require('moment')
 
 test('throw on missing data and wrong type data', () => {
   expect(() => parse('*b*1420070745567*1000*0.9,0.9')).toThrow(ValidationError)
@@ -50,4 +51,14 @@ test('success with multiple detections', () => {
   const result = parse(raw)
 
   expect(result.length).toBe(6)
+})
+
+test('incorrect step (from tembe guardians)', () => {
+  const raw = 'chainsaw*chainsaw-v5*1619211870411*975000*,,,,,,,,,0.99,,,,,0.96,,,,0.99,0.98,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.99,0.98,,,0.97,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
+  const firstResultOffsetMs = 9 * 975
+  const firstResultTimestamp = moment(1619211870411 + firstResultOffsetMs)
+
+  const result = parse(raw)
+
+  expect(result[0].start.toISOString()).toBe(firstResultTimestamp.toISOString())
 })
