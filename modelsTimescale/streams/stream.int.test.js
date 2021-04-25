@@ -120,6 +120,34 @@ test('updated stream same lat lng', async () => {
   expect(updatedProject.minLongitude).toBe(stream.longitude)
 })
 
+test('updated stream to another project', async () => {
+  // Arrange / Given
+  const project1 = { id: 'pq1', createdById: seedValues.primaryUserId, name: 'PQ1' }
+  await models.Project.create(project1)
+  const project2 = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
+  await models.Project.create(project2)
+  const stream1 = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  await models.Stream.create(stream1)
+  const stream2 = { id: 'ab2', latitude: 9.1, longitude: 99.1, projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB02' }
+  await models.Stream.create(stream2)
+
+  // Act / When
+  await models.Stream.update({ projectId: project2.id }, { where: { id: stream1.id }, individualHooks: true })
+
+  // Assert / Then
+  const updatedProject = await models.Project.findByPk(project2.id)
+  expect(updatedProject.maxLatitude).toBe(stream1.latitude)
+  expect(updatedProject.minLatitude).toBe(stream1.latitude)
+  expect(updatedProject.maxLongitude).toBe(stream1.longitude)
+  expect(updatedProject.minLongitude).toBe(stream1.longitude)
+
+  const previousProject = await models.Project.findByPk(project1.id)
+  expect(previousProject.maxLatitude).toBe(stream2.latitude)
+  expect(previousProject.minLatitude).toBe(stream2.latitude)
+  expect(previousProject.maxLongitude).toBe(stream2.longitude)
+  expect(previousProject.minLongitude).toBe(stream2.longitude)
+})
+
 test('remove stream', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
