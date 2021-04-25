@@ -1,16 +1,26 @@
 ## 1.0.18 (???)
 
 ### Features
+* **internal:** GET /interna/ai-hub/reviews endpoints for getting detections left join with annotations
+
+
+## 1.0.18 (???)
+
+### Features
 * **core:** Detection endpoints use classifier output mappings.
 * **core:** Stream assets are no longer stored in Core.
 * **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
 * **core:** Fix project id not be sent to Arbimon and cause site creation on wrong project
+* **core:** Create event endpoint supports saving to neo4j for Tembe project
+* **core:** Delete unused stream_source_file and stream_segment endpoints ([CE-469](https://jira.rfcx.org/browse/CE-469))
 * **guardian:** Save detections sent over MQTT/SMS/SBD
 * **internal:** Refactor /prediction-deployer/classifier-deployments endpoints to /prediction/classifier-deployments endpoints
-* **internal:** GET /interna/ai-hub/reviews endpoints for getting detections left join with annotations
+* **internal:** Add united endpoint for stream_source_file and stream_segment creation ([CE-469](https://jira.rfcx.org/browse/CE-469))
+* **internal:** Add stream permissions endpoint
 
 ### Bug Fixes
 * **core:** update PATCH /classifier endpoint to save previous `deployment_parameters` configuration when given only status change ([CE-344](https://jira.rfcx.org/browse/CE-344))
+* **media:** Add additional check for overlapping segments in assets
 
 
 ## 1.0.17-hotfix.4 (2021-04-13)

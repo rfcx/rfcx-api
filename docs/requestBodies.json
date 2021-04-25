@@ -507,11 +507,6 @@
         "description": "Stream Segment id",
         "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
       },
-      "stream_source_file_id": {
-        "type": "uuid",
-        "description": "Stream source file id",
-        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
-      },
       "start": {
         "type": "date",
         "example": "2020-05-12T07:30:21.500Z"
@@ -532,12 +527,26 @@
       }
     },
     "required": [
-      "stream_source_file_id",
       "start",
       "end",
       "sample_count",
       "file_extension"
     ]
+  },
+  "Ingestion": {
+    "type": "object",
+    "properties": {
+      "stream_source_file": {
+        "type": "object",
+        "$ref": "#/components/requestBodies/StreamSourceFile"
+      },
+      "stream_segments": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/requestBodies/StreamSegment"
+        }
+      }
+    }
   },
   "Organization": {
     "type": "object",

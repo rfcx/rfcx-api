@@ -8,7 +8,8 @@ const env = process.env.NODE_ENV || 'development'
 
 const options = env === 'test'
   ? {
-      dialect: 'sqlite'
+      dialect: 'sqlite',
+      logging: false
     }
   : {
       dialect: 'mysql',

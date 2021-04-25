@@ -2,10 +2,11 @@ const models = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const includedRelationReducer = require('../../utils/formatters/included-relations')
 
-function get (value) {
+function get (idOrValue) {
+  const where = { [Number.isInteger(idOrValue) ? 'id' : 'value']: idOrValue }
   return models.Classification
     .findOne({
-      where: { value },
+      where,
       include: [
         {
           model: models.ClassificationType,

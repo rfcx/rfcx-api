@@ -2,71 +2,9 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
-const classificationsService = require('../../../services/classifications')
 const eventsService = require('../../../services/events')
-const streamsService = require('../../../services/streams')
-const notificationsService = require('../../../services/events/notifications')
 
-/**
- * @swagger
- *
- * /events:
- *   post:
- *     summary: Create an event
- *     tags:
- *       - events
- *     requestBody:
- *       description: Event object
- *       required: true
- *       content:
- *         application/x-www-form-urlencoded:
- *           schema:
- *             $ref: '#/components/requestBodies/Event'
- *         application/json:
- *           schema:
- *             $ref: '#/components/requestBodies/Event'
- *     responses:
- *       201:
- *         description: Created
- *         headers:
- *           Location:
- *             description: Path of the created resource (e.g. `/events/xyz123`)
- *             schema:
- *               type: string
- *       400:
- *         description: Invalid query parameters
- */
-router.post('/', authenticatedWithRoles('systemUser'), async function (req, res) {
-  try {
-    const converter = new Converter(req.body, {}, true)
-    converter.convert('stream').toString()
-    converter.convert('classification').toString()
-    converter.convert('classifier_event_strategy').toInt()
-    converter.convert('start').toMomentUtc()
-    converter.convert('end').toMomentUtc()
-
-    const params = await converter.validate()
-    const { classifierEventStrategy, ...otherParams } = params
-    const streamId = params.stream
-    const stream = await streamsService.getById(streamId, { joinRelations: true })
-    const classification = await classificationsService.get(params.classification)
-    const eventData = {
-      ...otherParams,
-      classificationId: classification.id,
-      streamId,
-      classifierEventStrategyId: classifierEventStrategy
-    }
-    const event = await eventsService.create(eventData)
-    try {
-      await notificationsService.notifyAboutEvent({ ...event.toJSON(), stream, classification })
-    } catch (err) {
-      console.error('Failed notifying about event:', err.message)
-    }
-    res.location(`/events/${event.id}`).sendStatus(201)
-  } catch (e) {
-    httpErrorHandler(req, res, 'Failed creating event')(e)
-  }
-})
+router.post('/', authenticatedWithRoles('systemUser'), require('./create'))
 
 /**
  * @swagger
