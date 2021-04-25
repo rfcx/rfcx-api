@@ -443,6 +443,7 @@ exports.saveMeta = {
   },
 
   Detections: function (payloadArr, guardianId) {
+    if (payloadArr.length === 0) return
     // TODO remove temporary logging to debug satellite guardians
     console.log(`${guardianId}: detections payload: ${payloadArr.join('|')}`)
 
