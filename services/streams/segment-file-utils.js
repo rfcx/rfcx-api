@@ -175,14 +175,18 @@ function getSoxFriendlyHeight (y) {
   return mathUtil.isPowerOfTwo(y - 1) ? y : (mathUtil.ceilPowerOfTwo(y) + 1)
 }
 
+function getSegmentRemotePath (segment) {
+  const ts = moment.tz(segment.start, 'UTC')
+  const segmentExtension = segment.file_extension && segment.file_extension.value
+    ? segment.file_extension.value
+    : path.extname(segment.stream_source_file.filename)
+  return `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
+}
+
 function downloadSegments (segments) {
   const downloadProms = []
   for (const segment of segments) {
-    const ts = moment.tz(segment.start, 'UTC')
-    const segmentExtension = segment.file_extension && segment.file_extension.value
-      ? segment.file_extension.value
-      : path.extname(segment.stream_source_file.filename)
-    const remotePath = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
+    const remotePath = getSegmentRemotePath(segment)
     segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
     downloadProms.push(storageService.download(INGEST_BUCKET, remotePath, segment.sourceFilePath))
   }
@@ -460,5 +464,6 @@ module.exports = {
   getFile,
   deleteFilesForStream,
   gluedDateToISO,
-  convertAudio
+  convertAudio,
+  getSegmentRemotePath
 }

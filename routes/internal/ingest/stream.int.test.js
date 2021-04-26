@@ -49,7 +49,8 @@ async function commonSetup () {
         start: '2021-04-18T12:12:00.000Z',
         end: '2021-04-18T12:13:00.000Z',
         sample_count: 3840000,
-        file_extension: '.flac'
+        file_extension: '.flac',
+        file_size: 200000
       }
     ]
   }
@@ -91,7 +92,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
 
     const requestBody = { ...testPayload }
     requestBody.stream_segments.push(
-      { id: '877408a7-6579-4de0-8c29-bddda0968f87', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac' }
+      { id: '877408a7-6579-4de0-8c29-bddda0968f87', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
     )
 
     const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -114,15 +115,15 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
 
     const requestBody = { ...testPayload }
     requestBody.stream_segments.push(
-      { id: '877408a7-6579-4de0-8c29-bddda0968f01', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f02', start: '2021-04-18T12:14:00.000Z', end: '2021-04-18T12:15:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f03', start: '2021-04-18T12:15:00.000Z', end: '2021-04-18T12:16:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f04', start: '2021-04-18T12:16:00.000Z', end: '2021-04-18T12:17:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f05', start: '2021-04-18T12:17:00.000Z', end: '2021-04-18T12:18:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f06', start: '2021-04-18T12:18:00.000Z', end: '2021-04-18T12:19:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f07', start: '2021-04-18T12:19:00.000Z', end: '2021-04-18T12:20:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f08', start: '2021-04-18T12:20:00.000Z', end: '2021-04-18T12:21:00.000Z', sample_count: 3840000, file_extension: '.flac' },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f09', start: '2021-04-18T12:21:00.000Z', end: '2021-04-18T12:22:00.000Z', sample_count: 3840000, file_extension: '.flac' }
+      { id: '877408a7-6579-4de0-8c29-bddda0968f01', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f02', start: '2021-04-18T12:14:00.000Z', end: '2021-04-18T12:15:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f03', start: '2021-04-18T12:15:00.000Z', end: '2021-04-18T12:16:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f04', start: '2021-04-18T12:16:00.000Z', end: '2021-04-18T12:17:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f05', start: '2021-04-18T12:17:00.000Z', end: '2021-04-18T12:18:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f06', start: '2021-04-18T12:18:00.000Z', end: '2021-04-18T12:19:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f07', start: '2021-04-18T12:19:00.000Z', end: '2021-04-18T12:20:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f08', start: '2021-04-18T12:20:00.000Z', end: '2021-04-18T12:21:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { id: '877408a7-6579-4de0-8c29-bddda0968f09', start: '2021-04-18T12:21:00.000Z', end: '2021-04-18T12:22:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
     )
 
     const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
