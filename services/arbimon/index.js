@@ -162,7 +162,6 @@ async function createRecordingsFromSegments (segments, opts) {
   const recordings = await Promise.all(segments.map((segment) => {
     return matchSegmentToRecording(segment, opts)
   }))
-  console.log('\n\nrecordings', recordings, '\n\n')
   return createRecordings(recordings)
 }
 
