@@ -36,5 +36,5 @@ module.exports = (req, res) => {
       const results = await reviewsService.query(filters, options)
       return res.json(results)
     })
-    .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
+    .catch(httpErrorHandler(req, res, 'Failed getting detections'))
 }

@@ -20,6 +20,7 @@ const models = require('../../modelsTimescale')
  */
 async function query (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive } = filters
+  const { userId, ...opts } = options
 
   const conditions = [
     'd.start >= $start',
@@ -28,7 +29,7 @@ async function query (filters, options) {
   const bind = {
     start: start.toISOString(),
     end: end.toISOString(),
-    ...options
+    ...opts
   }
 
   if (streams) {
@@ -56,6 +57,7 @@ async function query (filters, options) {
     bind.minConfidence = minConfidence
   }
 
+  // TODO: Find another way to filter with is_positive and is_reviewed
   if (isPositive) {
     conditions.push('a.is_positive')
   } else if (isPositive === false) {
@@ -68,48 +70,82 @@ async function query (filters, options) {
     conditions.push('a.is_positive IS null')
   }
 
-  const sql = `SELECT d.start, d.end, d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
-    (c.frequency_min) "classification.frequency_min", (c.frequency_max) "classification.frequency_max",
+  const detectionsSql = `
+    SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
     d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) "classifier.name", (clf.version) "classifier.version",
-    d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id", d.confidence,
-    SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) total,
-    SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) number_of_positive,
-    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
-    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
+    d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
+    (c.frequency_min) "classification.frequency_min", (c.frequency_max) "classification.frequency_max"
     FROM detections d
     JOIN streams s ON d.stream_id = s.id
     JOIN classifications c ON d.classification_id = c.id
     JOIN classifiers clf ON d.classifier_id = clf.id
-    LEFT JOIN annotations a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start = a.start AND d.end = a.end
     WHERE ${conditions.join(' AND ')}
-    GROUP BY d.start, d.end, d.classification_id, c.value, c.title, c.frequency_min, c.frequency_max,
-    d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, s.project_id, d.confidence
+    ORDER BY d.start
     LIMIT $limit
-    OFFSET $offset`
-  const results = await models.sequelize.query(sql, {
-    bind,
-    nest: true,
-    type: models.sequelize.QueryTypes.SELECT
-  })
+    OFFSET $offset
+  `
+  const detections = await models.sequelize.query(detectionsSql, { bind, nest: true, type: models.sequelize.QueryTypes.SELECT })
 
-  return results.map(review => {
-    const total = Number(review.total)
-    const positive = Number(review.number_of_positive)
-    return {
-      start: review.start,
-      end: review.end,
-      stream: review.stream,
-      classifier: review.classifier,
-      classification: review.classification,
-      confidence: review.confidence,
-      number_of_reviewed: total,
-      number_of_positive: positive,
-      number_of_negative: total - positive,
-      me_reviewed: review.me_positive > 0 || review.me_negative > 0,
-      me_positive: review.me_positive > 0,
-      me_negative: review.me_negative > 0
+  if (detections.length === 0) {
+    return []
+  }
+
+  const annotationBind = {
+    start: detections[0].start,
+    end: detections[detections.length - 1].start,
+    userId
+  }
+
+  const annotationConditions = [
+    'a.start >= $start',
+    'a.start <= $end'
+  ]
+
+  if (classifications) {
+    annotationConditions.push('a.classification_id = ANY($classifications)')
+    annotationBind.classifications = classifications
+  }
+
+  if (streams) {
+    annotationConditions.push('a.stream_id = ANY($streams)')
+    annotationBind.streams = streams
+  }
+
+  const annotationsSql = `
+    SELECT a.start, a.end, a.classification_id, a.stream_id,
+    COUNT(1) total,
+    SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) positive,
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
+    FROM annotations a
+    WHERE ${annotationConditions.join(' AND ')}
+    GROUP BY a.start, a.end, a.classification_id, a.stream_id
+    ORDER BY a.start;
+  `
+  const annotations = await models.sequelize.query(annotationsSql, { bind: annotationBind, type: models.sequelize.QueryTypes.SELECT })
+
+  for (const d of detections) {
+    const matchAnnotation = annotations.find(a => {
+      const dStart = new Date(d.start)
+      const aStart = new Date(a.start)
+      return (dStart.toISOString() === aStart.toISOString()) && (d.classification.id === a.classification_id) && (d.stream.id === a.stream_id)
+    })
+    d.review = {
+      total: 0,
+      positive: 0,
+      negative: 0,
+      my: null
     }
-  })
+    if (matchAnnotation) {
+      const my = matchAnnotation.me_positive > 0 ? 'positive' : matchAnnotation.me_negative > 0 ? 'negative' : null
+      d.review.total = matchAnnotation.total
+      d.review.positive = matchAnnotation.positive
+      d.review.negative = matchAnnotation.total - matchAnnotation.positive
+      d.review.my = my
+    }
+  }
+
+  return detections
 }
 
 module.exports = {
