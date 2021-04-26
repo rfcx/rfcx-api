@@ -138,9 +138,9 @@ async function query (filters, options) {
     }
     if (matchAnnotation) {
       const my = matchAnnotation.me_positive > 0 ? 'positive' : matchAnnotation.me_negative > 0 ? 'negative' : null
-      d.review.total = matchAnnotation.total
-      d.review.positive = matchAnnotation.positive
-      d.review.negative = matchAnnotation.total - matchAnnotation.positive
+      d.review.total = Number(matchAnnotation.total)
+      d.review.positive = Number(matchAnnotation.positive)
+      d.review.negative = d.review.total - d.review.positive
       d.review.my = my
     }
   }
