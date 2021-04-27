@@ -5,7 +5,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
  * @swagger
- * /internal/ai-hub/reviews
+ * /internal/ai-hub/detections
  *   get:
  *     summary: Get list of detections integrate with annotations
  *     description: -
