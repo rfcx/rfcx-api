@@ -154,10 +154,12 @@ router.post('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
+      var allowed
       if (user.has_system_role) {
-        return true
+        allowed = true
+      } else {
+        allowed = await hasPermission(UPDATE, user, streamId, STREAM)
       }
-      const allowed = await hasPermission(UPDATE, user, streamId, STREAM)
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this stream.')
       }
