@@ -11,9 +11,58 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *     description: -
  *     tags:
  *       - internal
+ *     parameters:
+ *       - name: start
+ *         description: Limit to a start date on or after (iso8601 or epoch)
+ *         in: query
+ *         required: true
+ *         type: string
+ *         example: 2020-01-01T00:00:00.000Z
+ *       - name: end
+ *         description: Limit to a start date before (iso8601 or epoch)
+ *         in: query
+ *         required: true
+ *         type: string
+ *         example: 2020-12-31T00:00:00.000Z
+ *       - name: streams
+ *         description: List of stream ids to limit results
+ *         in: query
+ *         type: array|string
+ *       - name: projects
+ *         description: List of project ids to limit results
+ *         in: query
+ *         type: array|string
+ *       - name: classifiers
+ *         description: List of classifiers ids
+ *         in: query
+ *         type: array|string
+ *       - name: classifications
+ *         description: List of clasification values
+ *         in: query
+ *         type: array|string
+ *       - name: min_confidence
+ *         description: Return results above a minimum confidence
+ *         in: query
+ *         type: float
+ *         example: 0.95
+ *       - name: limit
+ *         description: Maximum number of results to return
+ *         in: query
+ *         type: int
+ *         default: 100
+ *       - name: offset
+ *         description: Number of results to skip
+ *         in: query
+ *         type: int
+ *         default: 0
  *     responses:
  *       200:
- *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/DetectionsAIHub'
  */
 module.exports = (req, res) => {
   const userId = req.rfcx.auth_token_info.id
@@ -36,11 +85,11 @@ module.exports = (req, res) => {
       const options = { limit, offset, userId }
 
       if (typeof filters.isReviewed === 'boolean') {
-        return httpErrorHandler(req, res)(new ForbiddenError('Filter by `is_reviewed` is not yet implement'))
+        throw new ForbiddenError('Filter by `is_reviewed` is not yet implement')
       }
 
       if (typeof filters.isPositive === 'boolean') {
-        return httpErrorHandler(req, res)(new ForbiddenError('Filter by `is_positive` is not yet implement'))
+        throw new ForbiddenError('Filter by `is_positive` is not yet implement')
       }
 
       const results = await reviewsService.query(filters, options)
