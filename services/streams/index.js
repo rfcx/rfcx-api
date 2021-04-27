@@ -195,6 +195,7 @@ async function update (id, stream, options = {}) {
   const transaction = options.transaction || null
   return Stream.update(fullStream, {
     where: { id },
+    individualHooks: true, // force use afterUpdate hook
     transaction
   })
 }
@@ -211,7 +212,7 @@ async function remove (id, options = {}) {
   if (options.deletableBy && !(await hasPermission(DELETE, options.deletableBy, id, STREAM))) {
     throw new ForbiddenError()
   }
-  return Stream.destroy({ where: { id }, force: options.force })
+  return Stream.destroy({ where: { id }, force: options.force, individualHooks: true })
 }
 
 /**
