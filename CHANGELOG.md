@@ -1,12 +1,6 @@
 ## 1.0.18 (???)
 
 ### Features
-* **internal:** GET /interna/ai-hub/reviews endpoints for getting detections left join with annotations
-
-
-## 1.0.18 (???)
-
-### Features
 * **core:** Detection endpoints use classifier output mappings.
 * **core:** Stream assets are no longer stored in Core.
 * **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
@@ -17,6 +11,7 @@
 * **internal:** Refactor /prediction-deployer/classifier-deployments endpoints to /prediction/classifier-deployments endpoints
 * **internal:** Add united endpoint for stream_source_file and stream_segment creation ([CE-469](https://jira.rfcx.org/browse/CE-469))
 * **internal:** Add stream permissions endpoint
+* **internal:** GET /interna/ai-hub/reviews endpoints for getting detections left join with annotations
 
 ### Bug Fixes
 * **core:** update PATCH /classifier endpoint to save previous `deployment_parameters` configuration when given only status change ([CE-344](https://jira.rfcx.org/browse/CE-344))
