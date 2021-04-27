@@ -1,4 +1,4 @@
-## 1.0.18 (???)
+## 1.0.18 (2021-04-28)
 
 ### Features
 * **core:** Detection endpoints use classifier output mappings.
