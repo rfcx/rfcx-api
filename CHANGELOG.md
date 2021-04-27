@@ -1,10 +1,11 @@
-## 1.0.18 (???)
+## 1.0.18 (2021-04-28)
 
 ### Features
 * **core:** Detection endpoints use classifier output mappings.
 * **core:** Stream assets are no longer stored in Core.
 * **core:** Send emails and push notifications on event creation ([CE-59](https://jira.rfcx.org/browse/CE-59))
 * **core:** Fix project id not be sent to Arbimon and cause site creation on wrong project
+* **core:** Add Min/Max Latitude/Longitude attributes to project
 * **core:** Create event endpoint supports saving to neo4j for Tembe project
 * **core:** Delete unused stream_source_file and stream_segment endpoints ([CE-469](https://jira.rfcx.org/browse/CE-469))
 * **guardian:** Save detections sent over MQTT/SMS/SBD
