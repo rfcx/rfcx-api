@@ -5,6 +5,7 @@ const { rpErrorMatcher } = require('../../utils/http-error-handler')
 const { getSegmentRemotePath } = require('../streams/segment-file-utils')
 const { StreamSegment, StreamSourceFile, AudioCodec, FileExtension } = require('../../modelsTimescale')
 const { getClientToken } = require('../auth0/auth0-service')
+const { EmptyResultError } = require('../../utils/errors')
 
 const isEnabled = `${process.env.ARBIMON_ENABLED}` === 'true'
 
@@ -101,7 +102,6 @@ function deleteSite (id, idToken) {
 
   return rp(options).catch(e => { throw rpErrorMatcher(e) })
 }
-
 
 function matchSegmentToRecording (segment, opts = {}) {
   const transaction = opts.transaction || null

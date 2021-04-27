@@ -175,11 +175,13 @@ function getSoxFriendlyHeight (y) {
   return mathUtil.isPowerOfTwo(y - 1) ? y : (mathUtil.ceilPowerOfTwo(y) + 1)
 }
 
+function getSegmentExtension (segment) {
+  return segment.file_extension && segment.file_extension.value ? segment.file_extension.value : path.extname(segment.stream_source_file.filename)
+}
+
 function getSegmentRemotePath (segment) {
   const ts = moment.tz(segment.start, 'UTC')
-  const segmentExtension = segment.file_extension && segment.file_extension.value
-    ? segment.file_extension.value
-    : path.extname(segment.stream_source_file.filename)
+  const segmentExtension = getSegmentExtension(segment)
   return `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
 }
 
@@ -187,6 +189,7 @@ function downloadSegments (segments) {
   const downloadProms = []
   for (const segment of segments) {
     const remotePath = getSegmentRemotePath(segment)
+    const segmentExtension = getSegmentExtension(segment)
     segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
     downloadProms.push(storageService.download(INGEST_BUCKET, remotePath, segment.sourceFilePath))
   }
