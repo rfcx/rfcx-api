@@ -8,6 +8,7 @@ const { hasRole } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const moment = require('moment')
+const arbimonService = require('../../../services/arbimon')
 
 /**
  * @swagger
@@ -61,6 +62,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
   segConverter.convert('end').toMomentUtc()
   segConverter.convert('sample_count').toInt().minimum(1)
   segConverter.convert('file_extension').toString()
+  segConverter.convert('file_size').toInt()
 
   sequelize.transaction()
     .then((transaction) => {
@@ -75,12 +77,14 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           streamSourceFileService.transformMetaAttr(sfParams)
           const streamSourceFile = await streamSourceFileService.create(sfParams, { transaction })
 
+          const segments = []
           // Set missing stream_segment attributes and create a db row
           for (const segParams of segConverter.transformedArray) {
             segParams.stream_id = streamId
             segParams.stream_source_file_id = streamSourceFile.id
             await streamSegmentService.findOrCreateRelationships(segParams, { transaction })
-            await streamSegmentService.create(segParams, { transaction })
+            const segment = await streamSegmentService.create(segParams, { transaction })
+            segments.push({ ...segment.toJSON(), file_size: segParams.file_size })
           }
 
           // Refresh stream max_sample rate, start adn end if needed
@@ -91,6 +95,10 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             end: maxEnd.toDate(),
             sampleRate: streamSourceFile.sample_rate
           }, { transaction })
+
+          if (arbimonService.isEnabled) {
+            await arbimonService.createRecordingsFromSegments(segments, { transaction })
+          }
 
           await transaction.commit()
           return res.location(`/stream-source-files/${streamSourceFile.id}`).sendStatus(201)

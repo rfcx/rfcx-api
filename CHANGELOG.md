@@ -1,4 +1,4 @@
-## 1.0.18 (???)
+## 1.0.18 (2021-04-28)
 
 ### Features
 * **core:** Detection endpoints use classifier output mappings.
@@ -11,6 +11,7 @@
 * **guardian:** Save detections sent over MQTT/SMS/SBD
 * **internal:** Refactor /prediction-deployer/classifier-deployments endpoints to /prediction/classifier-deployments endpoints
 * **internal:** Add united endpoint for stream_source_file and stream_segment creation ([CE-469](https://jira.rfcx.org/browse/CE-469))
+* **internal:** Call Arbimon recordings endpoint from united endpoint of stream_source_file and stream_segment creation ([CE-469](https://jira.rfcx.org/browse/CE-469))
 * **internal:** Add stream permissions endpoint
 * **internal:** GET /interna/ai-hub/reviews endpoints for getting detections left join with annotations
 
