@@ -394,7 +394,11 @@
             "items": {
               "type": "string"
             },
-            "example": ["O", "W", "R"]
+            "example": [
+              "O",
+              "W",
+              "R"
+            ]
           }
         }
       }
@@ -436,7 +440,11 @@
             "items": {
               "type": "string"
             },
-            "example": ["O", "W", "R"]
+            "example": [
+              "O",
+              "W",
+              "R"
+            ]
           }
         }
       }
@@ -743,21 +751,21 @@
         },
         "example": [
           {
-              "streamName": "City bells",
-              "recentUploads": [
-                  {
-                      "month": "May",
-                      "value": 1
-                  },
-                  {
-                      "month": "Jun",
-                      "value": 2
-                  },
-                  {
-                      "month": "Jul",
-                      "value": 0
-                  }
-              ]
+            "streamName": "City bells",
+            "recentUploads": [
+              {
+                "month": "May",
+                "value": 1
+              },
+              {
+                "month": "Jun",
+                "value": 2
+              },
+              {
+                "month": "Jul",
+                "value": 0
+              }
+            ]
           }
         ]
       },
@@ -792,16 +800,16 @@
             "value": 5
           },
           {
-              "name": "Aonyx capensis",
-              "value": 4
+            "name": "Aonyx capensis",
+            "value": 4
           },
           {
-              "name": "Orcinus orca",
-              "value": 3
+            "name": "Orcinus orca",
+            "value": 3
           },
           {
-              "name": "Bunopithecus hoolock",
-              "value": 3
+            "name": "Bunopithecus hoolock",
+            "value": 3
           }
         ]
       },
@@ -945,6 +953,58 @@
       },
       "subscription_type": {
         "$ref": "#/components/schemas/SubscriptionTypeLite"
+      }
+    }
+  },
+  "DetectionsAIHub": {
+    "properties": {
+      "start": {
+        "type": "date",
+        "example": "2020-07-24T00:00:16.000Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-07-24T00:00:18.000Z"
+      },
+      "confidence": {
+        "type": "float",
+        "example": 0.25542380778346574
+      },
+      "stream": {
+        "type": "object",
+        "example": {
+          "id": "LilSjZJkRK06",
+          "name": "Topher test public",
+          "project_id": "bbbbbbbbbbb6"
+        },
+        "classifier": {
+          "type": "object",
+          "example": {
+            "id": 1,
+            "external_id": "e890e406-4855-4401-9705-5e6158ba9040",
+            "name": "everything",
+            "version": 1
+          }
+        },
+        "classification": {
+          "type": "object",
+          "example": {
+            "id": 268,
+            "value": "porosus",
+            "title": "Crocodylus porosus",
+            "frequency_min": null,
+            "frequency_max": null
+          }
+        },
+        "review": {
+          "type": "object",
+          "example": {
+            "total": 2,
+            "positive": 2,
+            "negative": 0,
+            "my": null
+          }
+        }
       }
     }
   }
