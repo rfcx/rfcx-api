@@ -79,6 +79,7 @@ router.post('/', authenticatedWithRoles('systemUser'), require('./create'))
 router.get('/', (req, res) => {
   const userId = req.rfcx.auth_token_info.id
   const userIsSuper = req.rfcx.auth_token_info.is_super
+  const hasSystemRole = req.rfcx.auth_token_info.has_system_role
   const converter = new Converter(req.query, {})
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
@@ -100,7 +101,7 @@ router.get('/', (req, res) => {
         classifierIds: params.classifiers
       }
       const options = {
-        readableBy: userIsSuper ? undefined : userId,
+        readableBy: userIsSuper || hasSystemRole ? undefined : userId,
         limit: params.limit,
         offset: params.offset,
         descending: params.descending,
