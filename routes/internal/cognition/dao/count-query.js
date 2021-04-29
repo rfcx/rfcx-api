@@ -18,7 +18,7 @@ function query (parameters) {
     FROM detections
     WHERE start >= $start and start < $end and classifier_id = $classifier and confidence >= $minConfidence
     GROUP BY stream_id, classification_id
-    HAVING count > $minCount
+    HAVING count(1) >= $minCount
     LIMIT $limit OFFSET $offset
   `
   const bind = { ...parameters, start: parameters.start.toISOString(), end: parameters.end.toISOString() }

@@ -63,7 +63,7 @@ const countQuery = require('./dao/count-query')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', (req, res) => {
+router.get('/aggregated-detections', (req, res) => {
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
