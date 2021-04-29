@@ -66,6 +66,10 @@ async function query (filters, options) {
     where.stream_id = {
       [Sequelize.Op.in]: streamIds
     }
+  } else if (filters.streamIds) {
+    where.stream_id = {
+      [Sequelize.Op.in]: filters.streamIds
+    }
   }
   if (filters.classificationValues) {
     where['$classification.value$'] = { [Sequelize.Op.or]: filters.classificationValues }
