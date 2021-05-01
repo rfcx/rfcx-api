@@ -90,7 +90,7 @@ describe('GET /internal/cognition/aggregated-detections', () => {
       min_confidence: 0.95
     }
 
-    const response = await request(app).get('/').query(query)
+    const response = await request(app).get('/aggregated-detections').query(query)
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(streamIds.length)
@@ -107,7 +107,7 @@ describe('GET /internal/cognition/aggregated-detections', () => {
       min_confidence: 0.99
     }
 
-    const response = await request(app).get('/').query(query)
+    const response = await request(app).get('/aggregated-detections').query(query)
 
     expect(response.body.find(x => x.stream_id === '3fqoc4okv9en').count).toBe(2)
   })
@@ -122,7 +122,7 @@ describe('GET /internal/cognition/aggregated-detections', () => {
       min_count: 10
     }
 
-    const response = await request(app).get('/').query(query)
+    const response = await request(app).get('/aggregated-detections').query(query)
 
     expect(response.body.length).toBe(1)
   })
