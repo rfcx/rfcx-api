@@ -5,6 +5,7 @@ const Converter = require('../../../utils/converter/converter')
 const eventsService = require('../../../services/events')
 
 router.post('/', authenticatedWithRoles('systemUser'), require('./create'))
+router.patch('/:id', authenticatedWithRoles('systemUser'), require('./update'))
 
 /**
  * @swagger
