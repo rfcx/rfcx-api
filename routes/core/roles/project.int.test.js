@@ -56,7 +56,7 @@ describe('PUT /projects/:id/users', () => {
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
-    await models.User.create({ email: 'john@doe.com', guid: 'test'})
+    await models.User.create({ email: 'john@doe.com', guid: 'test' })
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
@@ -87,9 +87,9 @@ describe('DELETE /projects/:id/users', () => {
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
-  
+
     const response = await request(app).delete(`/${project.id}/users`).send(requestBody)
-  
+
     expect(response.statusCode).toBe(200)
   })
 })
