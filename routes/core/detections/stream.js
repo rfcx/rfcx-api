@@ -76,16 +76,10 @@ router.get('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
-      if (user.has_system_role) {
-        return true
+      if (!user.has_system_role && !await hasPermission(READ, user, streamId, STREAM)) {
+        throw new ForbiddenError('You do not have permission to read this stream')
       }
-      const allowed = await hasPermission(READ, user, streamId, STREAM)
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
-      }
-      return undefined
-    })
-    .then(async () => {
+
       const { start, end, classifications, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
       const result = await detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset, user)
@@ -154,14 +148,8 @@ router.post('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
-      var allowed
-      if (user.has_system_role) {
-        allowed = true
-      } else {
-        allowed = await hasPermission(UPDATE, user, streamId, STREAM)
-      }
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
+      if (!user.has_system_role && !await hasPermission(UPDATE, user, streamId, STREAM)) {
+        throw new ForbiddenError('You do not have permission to update this stream')
       }
 
       const detections = params.transformedArray.map(d => ({ ...d, streamId }))
