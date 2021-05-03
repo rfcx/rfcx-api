@@ -1,3 +1,8 @@
+## 1.0.19 (2021-05-xx)
+
+### Features
+* **core:** Endpoints for adding getting and deleting project permission.
+
 ## 1.0.18 (2021-04-28)
 
 ### Features
