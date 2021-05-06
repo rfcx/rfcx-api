@@ -1,4 +1,10 @@
-## 1.0.19 (2021-XX-XX)
+## 1.0.20 (2021-XX-XX)
+
+### Bug Fixes
+
+* **legacy:** Create or update stream on guardian update; Send guardian updates to Arbimon ([CE-565](https://jira.rfcx.org/browse/CE-565))
+
+## 1.0.19 (2021-05-06)
 
 ### Features
 * **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
