@@ -1,3 +1,16 @@
+## 1.0.19 (???)
+
+### Features
+
+* **core:** Add PATCH /event/:id endpoint
+* **internal:** Add Cognition Service endpoint for getting aggregated detections
+
+### Bug Fixes
+
+* **core:** Get events not supporting streams parameter correctly
+* **core:** Get event strategies endpoint failure to return
+
+
 ## 1.0.18 (2021-04-28)
 
 ### Features

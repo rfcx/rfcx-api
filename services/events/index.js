@@ -2,7 +2,7 @@ const moment = require('moment')
 const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream } = require('../../modelsTimescale')
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../utils/errors')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
-const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
+const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 
 const availableIncludes = [
@@ -66,6 +66,10 @@ async function query (filters, options) {
     where.stream_id = {
       [Sequelize.Op.in]: streamIds
     }
+  } else if (filters.streamIds) {
+    where.stream_id = {
+      [Sequelize.Op.in]: filters.streamIds
+    }
   }
   if (filters.classificationValues) {
     where['$classification.value$'] = { [Sequelize.Op.or]: filters.classificationValues }
@@ -114,7 +118,7 @@ async function get (id, options = {}) {
   })
 
   if (!event) {
-    throw new EmptyResultError('Event with given id not found.')
+    throw new EmptyResultError('Event with given id not found')
   }
 
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, event.stream_id, STREAM))) {
@@ -122,6 +126,36 @@ async function get (id, options = {}) {
   }
 
   return format(event)
+}
+
+/**
+ * Update event
+ * @param {string} id
+ * @param {Event} event Event
+ * @param {*} options
+ * @param {number} options.updatableBy Update only if event is updatable by the given user id
+ * @throws EmptyResultError when event not found
+ * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
+ */
+async function update (id, event, options = {}) {
+  if (!isUuid(id)) {
+    try {
+      id = slugToUuid(id)
+    } catch {
+      throw new ValidationError('Invalid event identifier')
+    }
+  }
+  const existingEvent = await Event.findByPk(id)
+  if (options.updatableBy && !(await hasPermission(UPDATE, options.updatableBy, existingEvent.streamId, STREAM))) {
+    throw new ForbiddenError()
+  }
+  // TODO if the start is changed then Timescale requires delete and insert
+  const result = await Event.update(event, {
+    where: { id }
+  })
+  if (result[0] === 0) {
+    throw new EmptyResultError('Event with given id not found')
+  }
 }
 
 function format (event) {
@@ -135,5 +169,6 @@ function format (event) {
 module.exports = {
   create,
   query,
-  get
+  get,
+  update
 }

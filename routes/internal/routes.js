@@ -2,6 +2,9 @@ module.exports = {
   assets: [
     require('./assets/streams')
   ],
+  cognition: [
+    require('./cognition/aggregated-detections')
+  ],
   cron: [
     require('./cron/streams')
   ],
