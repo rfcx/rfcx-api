@@ -1,7 +1,7 @@
-## 1.0.19 (???)
+## 1.0.19 (2021-XX-XX)
 
 ### Features
-
+* **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
 * **core:** Add PATCH /event/:id endpoint
 * **internal:** Add Cognition Service endpoint for getting aggregated detections
 
