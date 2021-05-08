@@ -58,7 +58,7 @@ router.patch('/projects/:externalId', ensureUserSynced, (req, res) => {
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to access this project.')
       }
-      return projectsService.update(project, convertedParams, { joinRelations: true })
+      return projectsService.update(project.id, convertedParams, { joinRelations: true })
     })
     .then(projectsService.formatProject)
     .then(json => res.json(json))
