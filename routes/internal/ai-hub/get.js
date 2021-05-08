@@ -5,10 +5,10 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
  * @swagger
- * /internal/ai-hub/detections
+ *
+ * /internal/ai-hub/detections:
  *   get:
  *     summary: Get list of detections integrate with annotations
- *     description: -
  *     tags:
  *       - internal
  *     parameters:
@@ -35,7 +35,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *       - name: classifiers
  *         description: List of classifiers ids
  *         in: query
- *         type: array|string
+ *         type: array|number
  *       - name: classifications
  *         description: List of clasification values
  *         in: query
@@ -57,6 +57,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         default: 0
  *     responses:
  *       200:
+ *         description: List of detections integrate with annotations object
  *         content:
  *           application/json:
  *             schema:
