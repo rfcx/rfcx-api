@@ -4,6 +4,7 @@
 * **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
 * **core:** Add PATCH /event/:id endpoint
 * **internal:** Add Cognition Service endpoint for getting aggregated detections
+* **internal:** Fix project name changed in Arbimon but not synced to Core API
 
 ### Bug Fixes
 
