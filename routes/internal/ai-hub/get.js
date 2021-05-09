@@ -37,7 +37,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         in: query
  *         type: array|number
  *       - name: classifications
- *         description: List of clasification values
+ *         description: List of classification values
  *         in: query
  *         type: array|string
  *       - name: min_confidence
