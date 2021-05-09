@@ -44,6 +44,13 @@ describe('GET /projects/:id/users', () => {
     const response = await request(app).get(`/${project.id}/users`)
 
     expect(response.statusCode).toBe(200)
+    expect(response.body[0].firstname).toBe("James")
+    expect(response.body[0].lastname).toBe("Bond")
+    expect(response.body[0].email).toBe("jb@astonmartin.com")
+    expect(response.body[0].role).toBe("Member")
+    expect(response.body[0].permissions[0]).toBe("C")
+    expect(response.body[0].permissions[1]).toBe("R")
+    expect(response.body[0].permissions[2]).toBe("U")
   })
 })
 
