@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const Converter = require('../../../utils/converter/converter')
 const strategiesService = require('../../../services/events/strategies')
 
@@ -42,20 +43,21 @@ const strategiesService = require('../../../services/events/strategies')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), async function (req, res) {
+router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const converter = new Converter(req.query, {}, true)
   converter.convert('function_name').optional()
   converter.convert('limit').optional().toInt().default(100)
   converter.convert('offset').optional().toInt().default(0)
   converter.convert('fields').optional().toArray()
 
-  const params = await converter.validate()
-  const { functionName, limit, offset, fields } = params
-  const filters = { functionName }
-  const options = { fields, limit, offset }
+  converter.validate().then(async (params) => {
+    const { functionName, limit, offset, fields } = params
+    const filters = { functionName }
+    const options = { fields, limit, offset }
 
-  const results = await strategiesService.query(filters, options)
-  res.json(results)
+    const results = await strategiesService.query(filters, options)
+    res.json(results)
+  }).catch(httpErrorHandler(req, res, 'Failed getting event strategies'))
 })
 
 /**
@@ -81,15 +83,15 @@ router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), async function
  *       404:
  *         description: Event strategy not found
 */
-router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), async function (req, res) {
+router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const id = req.params.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
 
-  const options = await converter.validate()
-
-  const result = await strategiesService.get(id, options)
-  res.json(result)
+  converter.validate().then(async (options) => {
+    const result = await strategiesService.get(id, options)
+    res.json(result)
+  }).catch(httpErrorHandler(req, res, 'Failed getting event strategy'))
 })
 
 module.exports = router

@@ -1,7 +1,17 @@
-## 1.0.19 (2021-05-xx)
+
+## 1.0.19 (2021-XX-XX)
 
 ### Features
+* **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
+* **core:** Add PATCH /event/:id endpoint
 * **core:** Endpoints for adding getting and deleting project permission.
+* **internal:** Add Cognition Service endpoint for getting aggregated detections
+
+### Bug Fixes
+
+* **core:** Get events not supporting streams parameter correctly
+* **core:** Get event strategies endpoint failure to return
+
 
 ## 1.0.18 (2021-04-28)
 
