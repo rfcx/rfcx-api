@@ -1,5 +1,5 @@
 
-## 1.0.19 (2021-XX-XX)
+## 1.0.19 (2021-05-10)
 
 ### Features
 * **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
