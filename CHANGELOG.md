@@ -1,15 +1,20 @@
-## 1.0.19 (2021-XX-XX)
+
+## 1.0.19 (2021-05-10)
 
 ### Features
 * **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
 * **core:** Add ability to filter streams/projects/organizations by permission ([CE-655](https://jira.rfcx.org/browse/CE-655))
 * **core:** Add PATCH /event/:id endpoint
+* **core:** Endpoints for adding getting and deleting project permission.
 * **internal:** Add Cognition Service endpoint for getting aggregated detections
 
 ### Bug Fixes
 
 * **core:** Get events not supporting streams parameter correctly
 * **core:** Get event strategies endpoint failure to return
+* **internal:** Fix GET /interna/ai-hub/reviews endpoints for annotations query by classification values ([CE-597](https://jira.rfcx.org/browse/CE-597))
+* **internal:** Fix project name changed in Arbimon but not synced to Core API
+* **legacy:** Create or update stream on guardian update; Send guardian updates to Arbimon ([CE-565](https://jira.rfcx.org/browse/CE-565))
 
 
 ## 1.0.18 (2021-04-28)
