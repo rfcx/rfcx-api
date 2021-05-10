@@ -11,6 +11,7 @@
 
 * **core:** Get events not supporting streams parameter correctly
 * **core:** Get event strategies endpoint failure to return
+* **internal:** Fix project name changed in Arbimon but not synced to Core API
 
 
 ## 1.0.18 (2021-04-28)
