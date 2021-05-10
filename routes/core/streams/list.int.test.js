@@ -1,6 +1,6 @@
 const routes = require('.')
 const models = require('../../../modelsTimescale')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../utils/sequelize/testing')
+const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../utils/sequelize/testing')
 const request = require('supertest')
 
 const app = expressApp()
@@ -8,6 +8,7 @@ const app = expressApp()
 app.use('/', routes)
 
 beforeAll(async () => {
+  muteConsole()
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
 })
@@ -241,5 +242,241 @@ describe('GET /streams', () => {
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
     expect(response.body[0].id).toBe('s2')
+  })
+
+  test('filter by C permission', async () => {
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4 })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+
+    const response = await request(app).get('/').query({ permission: 'C' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+  })
+
+  test('filter by R permission', async () => {
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4 })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+
+    const response = await request(app).get('/').query({ permission: 'R' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s1')).toBeTruthy()
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+  })
+
+  test('filter by R permission when other user has role too', async () => {
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4 })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.anotherUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+
+    const response = await request(app).get('/').query({ permission: 'R' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s1')).toBeTruthy()
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+  })
+
+  test('filter by R permission based on a project', async () => {
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other User Project' }
+    await models.Project.create(project)
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4, projectId: project.id })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get('/').query({ permission: 'R' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(4)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s1')).toBeTruthy()
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+    expect(ids.includes('s4')).toBeTruthy()
+  })
+
+  test('filter by R permission based on organization', async () => {
+    const organization = { id: 'o123o', createdById: seedValues.otherUserId, name: 'Other User Organization' }
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other User Project', organizationId: organization.id }
+    await models.Organization.create(organization)
+    await models.Project.create(project)
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4, projectId: project.id })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+    await models.UserOrganizationRole.create({ user_id: seedValues.primaryUserId, organization_id: organization.id, role_id: seedValues.roleGuest })
+
+    const response = await request(app).get('/').query({ permission: 'R' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(4)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s1')).toBeTruthy()
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+    expect(ids.includes('s4')).toBeTruthy()
+  })
+
+  test('filter by U permission', async () => {
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4 })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+
+    const response = await request(app).get('/').query({ permission: 'U' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+  })
+
+  test('filter by U permission based on a project', async () => {
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other User Project' }
+    await models.Project.create(project)
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4, projectId: project.id })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).get('/').query({ permission: 'U' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+    expect(ids.includes('s4')).toBeTruthy()
+  })
+
+  test('filter by U permission based on organization', async () => {
+    const organization = { id: 'o123o', createdById: seedValues.otherUserId, name: 'Other User Organization' }
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other User Project', organizationId: organization.id }
+    await models.Organization.create(organization)
+    await models.Project.create(project)
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4, projectId: project.id })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+    await models.UserOrganizationRole.create({ user_id: seedValues.primaryUserId, organization_id: organization.id, role_id: seedValues.roleMember })
+
+    const response = await request(app).get('/').query({ permission: 'U' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(3)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s2')).toBeTruthy()
+    expect(ids.includes('s3')).toBeTruthy()
+    expect(ids.includes('s4')).toBeTruthy()
+  })
+
+  test('filter by D permission', async () => {
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4 })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+
+    const response = await request(app).get('/').query({ permission: 'D' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].id).toBe('s3')
+  })
+
+  test('filter by D permission based on a project', async () => {
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other User Project' }
+    await models.Project.create(project)
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4, projectId: project.id })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+
+    const response = await request(app).get('/').query({ permission: 'D' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s3')).toBeTruthy()
+    expect(ids.includes('s4')).toBeTruthy()
+  })
+
+  test('filter by D permission based on organization', async () => {
+    const organization = { id: 'o123o', createdById: seedValues.otherUserId, name: 'Other User Organization' }
+    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other User Project', organizationId: organization.id }
+    await models.Organization.create(organization)
+    await models.Project.create(project)
+    await models.Stream.create({ id: 's1', createdById: seedValues.otherUserId, name: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ id: 's2', createdById: seedValues.otherUserId, name: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ id: 's3', createdById: seedValues.otherUserId, name: 'AB03', latitude: 10.3, longitude: 101.3 })
+    await models.Stream.create({ id: 's4', createdById: seedValues.otherUserId, name: 'AB04', latitude: 10.4, longitude: 101.4, projectId: project.id })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's1', role_id: seedValues.roleGuest })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's2', role_id: seedValues.roleMember })
+    await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: 's3', role_id: seedValues.roleAdmin })
+    await models.UserOrganizationRole.create({ user_id: seedValues.primaryUserId, organization_id: organization.id, role_id: seedValues.roleAdmin })
+
+    const response = await request(app).get('/').query({ permission: 'D' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    const ids = response.body.map(b => b.id)
+    expect(ids.includes('s3')).toBeTruthy()
+    expect(ids.includes('s4')).toBeTruthy()
+  })
+
+  test('respond with 400 error if permission has invalid value', async () => {
+    const response = await request(app).get('/').query({ permission: 'Q' })
+
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('Validation errors: Parameter \'permission\' should be one of these values: C, R, U, D.')
   })
 })
