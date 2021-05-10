@@ -167,31 +167,35 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string} userId The user for which the objects are accessible
  * @param {string} itemName Type of object:`STREAM` or `PROJECT` or `ORGANIZATION`
  * @param {string[]} inIds Subset of object ids to select from
+ * @param {string} permission Required permission "R" by default
  */
-async function getAccessibleObjectsIDs (userId, itemName, inIds) {
+async function getAccessibleObjectsIDs (userId, itemName, inIds = null, permission = READ) {
   const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
   const joins = [
-    `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id`
+    `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id AND ${itemName}r.user_id = ${userId}`,
+    `LEFT JOIN role_permissions ${itemName}perm ON ${itemName}r.role_id = ${itemName}perm.role_id`
   ]
   const wheres = [
-    `${itemName}r.user_id = :userId`,
-    `${itemName}.created_by_id = :userId`
+    `${itemName}.created_by_id = :userId`,
+    `${itemName}perm.permission = '${permission}'`
   ]
   if (itemName === STREAM) {
     joins.push(...[
       `LEFT JOIN projects project ON ${itemName}.project_id = project.id`,
-      'LEFT JOIN user_project_roles projectr ON project.id = projectr.project_id'
+      `LEFT JOIN user_project_roles projectr ON project.id = projectr.project_id AND projectr.user_id = ${userId}`,
+      'LEFT JOIN role_permissions projectperm ON projectr.role_id = projectperm.role_id'
     ])
-    wheres.push('projectr.user_id = :userId')
     wheres.push('project.created_by_id = :userId')
+    wheres.push(`projectperm.permission = '${permission}'`)
   }
   if (itemName === STREAM || itemName === PROJECT) {
     joins.push(...[
       'LEFT JOIN organizations organization ON project.organization_id = organization.id',
-      'LEFT JOIN user_organization_roles organizationr ON organization.id = organizationr.organization_id'
+      `LEFT JOIN user_organization_roles organizationr ON organization.id = organizationr.organization_id AND organizationr.user_id = ${userId}`,
+      'LEFT JOIN role_permissions organizationperm ON organizationr.role_id = organizationperm.role_id'
     ])
-    wheres.push('organizationr.user_id = :userId')
     wheres.push('organization.created_by_id = :userId')
+    wheres.push(`organizationperm.permission = '${permission}'`)
   }
   let sql = `${select} ${joins.join(' ')} WHERE (${wheres.join(' OR ')})`
   if (inIds && inIds.length) {

@@ -81,6 +81,7 @@ function create (stream, options = {}) {
  * @param {string} options.sort Order the results by one or more columns
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
+ * @param {string} options.permission Include only streams for which you have selected permission (only 'C', 'R', 'U', 'D' are available)
  */
 async function query (filters, options = {}) {
   const where = {}
@@ -127,7 +128,7 @@ async function query (filters, options = {}) {
   } else {
     if (options.readableBy) {
       where.id = {
-        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, STREAM)
+        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, STREAM, null, options.permission)
       }
     }
     if (options.onlyDeleted) {
@@ -272,7 +273,7 @@ function ensureStreamExistsForGuardian (dbGuardian) {
 }
 
 async function getPublicStreamIds () {
-  return (await query({ is_public: true })).streams.map(d => d.id)
+  return (await query({ is_public: true })).results.map(d => d.id)
 }
 
 /**

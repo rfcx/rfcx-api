@@ -2,6 +2,7 @@
 
 ### Features
 * **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
+* **core:** Add ability to filter streams/projects/organizations by permission ([CE-655](https://jira.rfcx.org/browse/CE-655))
 * **core:** Add PATCH /event/:id endpoint
 * **internal:** Add Cognition Service endpoint for getting aggregated detections
 
