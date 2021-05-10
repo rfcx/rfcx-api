@@ -10,6 +10,7 @@
 * **core:** Get events not supporting streams parameter correctly
 * **core:** Get event strategies endpoint failure to return
 * **internal:** Fix GET /interna/ai-hub/reviews endpoints for annotations query by classification values ([CE-597](https://jira.rfcx.org/browse/CE-597))
+* **internal:** Fix project name changed in Arbimon but not synced to Core API
 
 
 ## 1.0.18 (2021-04-28)
