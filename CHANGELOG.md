@@ -1,3 +1,8 @@
+## 1.0.20 (2021-??-??)
+
+### Features
+* **internal:** GET /interna/ai-hub/reviews endpoints getting the detections query by review/unreview/positive/negative status ([CE-385](https://jira.rfcx.org/browse/CE-385))
+
 
 ## 1.0.19 (2021-05-10)
 
