@@ -102,11 +102,12 @@ async function defaultQuery (filters, options) {
     SELECT a.start, a.end, a.classification_id, a.stream_id,
     COUNT(1) total,
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) positive,
-    CASE WHEN a.created_by_id = $userId THEN a.is_positive END my
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
     FROM annotations a
     JOIN classifications c ON a.classification_id = c.id
     WHERE ${annotationConditions.join(' AND ')}
-    GROUP BY a.start, a.end, a.classification_id, a.stream_id, a.created_by_id, a.is_positive
+    GROUP BY a.start, a.end, a.classification_id, a.stream_id
     ORDER BY a.start;
   `
   const annotations = await models.sequelize.query(annotationsSql, { bind: annotationBind, type: models.sequelize.QueryTypes.SELECT })
@@ -117,7 +118,7 @@ async function defaultQuery (filters, options) {
       const aStart = new Date(a.start)
       return (dStart.toISOString() === aStart.toISOString()) && (d.classification.id === a.classification_id) && (d.stream.id === a.stream_id)
     })
-    console.log(matchAnnotation)
+
     d.review = {
       total: 0,
       positive: 0,
@@ -128,7 +129,7 @@ async function defaultQuery (filters, options) {
       d.review.total = Number(matchAnnotation.total)
       d.review.positive = Number(matchAnnotation.positive)
       d.review.negative = d.review.total - d.review.positive
-      d.review.my = matchAnnotation.my
+      d.review.my = matchAnnotation.me_positive > 0 ? true : matchAnnotation.me_negative > 0 ? false : null
     }
   }
 
@@ -147,7 +148,8 @@ async function reviewQuery (filters, options) {
     (c.frequency_min) "classification.frequency_min", (c.frequency_max) "classification.frequency_max",
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) "review.total",
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) "review.positive",
-    CASE WHEN a.created_by_id = $userId THEN a.is_positive END "review.my"
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) "review.me_positive",
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) "review.me_negative"
     FROM detections d
     JOIN streams s ON d.stream_id = s.id
     JOIN classifications c ON d.classification_id = c.id
@@ -159,8 +161,7 @@ async function reviewQuery (filters, options) {
     ) as a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start = a.start AND d.end = a.end
     WHERE ${conditions.join(' AND ')}
     GROUP BY d.start, d.end, d.classification_id, c.value, c.title, c.frequency_min, c.frequency_max,
-    d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, s.project_id, d.confidence,
-    a.created_by_id, a.is_positive
+    d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, s.project_id, d.confidence
     LIMIT $limit
     OFFSET $offset
   `
@@ -170,6 +171,9 @@ async function reviewQuery (filters, options) {
     d.review.total = Number(d.review.total)
     d.review.positive = Number(d.review.positive)
     d.review.negative = d.review.total - d.review.positive
+    d.review.my = d.review.my = d.review.me_positive > 0 ? true : d.review.me_negative > 0 ? false : null
+    delete d.review.me_positive
+    delete d.review.me_negative
   })
   return detections
 }
