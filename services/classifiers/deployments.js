@@ -2,6 +2,7 @@ const { EmptyResultError } = require('../../utils/errors')
 const { Classifier, ClassifierDeployment, Sequelize } = require('../../modelsTimescale')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
+const models = require('../../modelsTimescale')
 
 const availableIncludes = [
   Classifier.include()
@@ -13,7 +14,11 @@ const availableIncludes = [
  * @throws EmptyResultError when classifier not found
  */
 async function get (id) {
-  const deployment = await ClassifierDeployment.findOne({ where: { id } })
+  const deployment = await ClassifierDeployment.findOne({ where: { id }, include: [{ model: models.Classifier, as: 'classifier', attributes: ['modelUrl'] }] }).then(deployment => {
+    const { classifier, ...deploymentObj } = deployment.toJSON()
+    deploymentObj.modelUrl = classifier.modelUrl
+    return deploymentObj
+  })
   if (!deployment) {
     throw new EmptyResultError('Classifier deployment information with given id not found.')
   }
