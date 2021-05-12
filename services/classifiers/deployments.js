@@ -14,7 +14,7 @@ const availableIncludes = [
  * @throws EmptyResultError when classifier not found
  */
 async function get (id) {
-  const deployment = await ClassifierDeployment.findOne({ where: { id }, include: [{ model: models.Classifier, as: 'classifier', attributes: ['modelUrl'] }] }).then(deployment => {
+  const deployment = await ClassifierDeployment.findOne({ where: { id }, include: [{ model: models.Classifier, as: 'classifier', attributes: ['modelUrl'] }], attributes: { exclude: ['classifier_id', 'created_by_id'] } }).then(deployment => {
     const { classifier, ...deploymentObj } = deployment.toJSON()
     deploymentObj.modelUrl = classifier.modelUrl
     return deploymentObj
