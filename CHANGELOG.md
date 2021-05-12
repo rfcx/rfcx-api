@@ -1,3 +1,8 @@
+## 1.0.20 (???)
+
+### Bug Fixes
+
+* **core:** Detections endpoint only returning public stream detections [CE-382](https://jira.rfcx.org/browse/CE-382)
 
 ## 1.0.19 (2021-05-10)
 
