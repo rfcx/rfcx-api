@@ -2,26 +2,42 @@ const { EmptyResultError } = require('../../utils/errors')
 const { Classifier, ClassifierDeployment, Sequelize } = require('../../modelsTimescale')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
-const models = require('../../modelsTimescale')
+const { toCamelObject } = require('../../utils/formatters/string-cases')
 
 const availableIncludes = [
   Classifier.include()
 ]
 
+const fullAvailableIncludes = [
+  {
+    model: Classifier,
+    as: 'classifier',
+    attributes: Classifier.attributes.full,
+    require: true
+  }
+]
+
 /**
  * Gets classifier deployment from
  * @param {integer} id
+ * @param {string[]} options.fields
  * @throws EmptyResultError when classifier not found
  */
-async function get (id) {
-  const deployment = await ClassifierDeployment.findOne({ where: { id }, include: [{ model: models.Classifier, as: 'classifier', attributes: ['modelUrl'] }], attributes: { exclude: ['classifier_id', 'created_by_id'] } }).then(deployment => {
-    const { classifier, ...deploymentObj } = deployment.toJSON()
-    deploymentObj.modelUrl = classifier.modelUrl
-    return deploymentObj
-  })
+async function get (id, options = {}) {
+  const where = { id }
+
+  const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierDeployment.attributes.full.filter(a => options.fields.includes(a)) : ClassifierDeployment.attributes.full
+  const attributes = { ...classifierAttributes, exclude: ['classifier_id', 'classifierId', 'created_by_id'] }
+  const include = options.fields && options.fields.length > 0 ? fullAvailableIncludes.filter(i => options.fields.includes(i.as)) : []
+
+  const deployment = await ClassifierDeployment.findOne({ where, attributes, include, raw: true, nest: true })
+
   if (!deployment) {
     throw new EmptyResultError('Classifier deployment information with given id not found.')
   }
+
+  deployment.classifier = toCamelObject(deployment.classifier, 1)
+
   return deployment
 }
 

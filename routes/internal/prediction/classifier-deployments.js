@@ -20,6 +20,10 @@ router.use(hasRole(['systemUser']))
  *         in: path
  *         required: true
  *         type: int
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: Classifier deployment object
@@ -30,8 +34,13 @@ router.use(hasRole(['systemUser']))
  */
 router.get('/classifier-deployments/:id', (req, res) => {
   const id = req.params.id
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('fields').optional().toArray()
 
-  return classifierDeploymentsService.get(id)
+  return converter.validate()
+    .then(async params => {
+      return classifierDeploymentsService.get(id, params)
+    })
     .then(deployments => res.json(deployments))
     .catch(httpErrorHandler(req, res, 'Failed to get deployment'))
 })
