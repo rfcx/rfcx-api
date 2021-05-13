@@ -102,7 +102,7 @@ async function query (filters, options) {
   ]
 
   if (classifications) {
-    annotationConditions.push('a.classification_id = ANY($classifications)')
+    annotationConditions.push('c.value = ANY($classifications)')
     annotationBind.classifications = classifications
   }
 
@@ -118,6 +118,7 @@ async function query (filters, options) {
     SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
     SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
     FROM annotations a
+    JOIN classifications c ON a.classification_id = c.id
     WHERE ${annotationConditions.join(' AND ')}
     GROUP BY a.start, a.end, a.classification_id, a.stream_id
     ORDER BY a.start;

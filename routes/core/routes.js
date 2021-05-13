@@ -25,7 +25,8 @@ module.exports = {
   ],
   projects: [
     require('./projects'),
-    require('./subscriptions/project')
+    require('./subscriptions/project'),
+    require('./roles/project')
   ],
   streams: [
     require('./streams'),

@@ -8,6 +8,8 @@ const passport = require('passport')
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
+const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const siteService = require('../../../services/sites/sites-service')
 const userService = require('../../../services/users/users-service-legacy')
@@ -339,14 +341,22 @@ router.route('/:guid')
         return guardiansService.updateGuardian(guardian, transformedParams)
       })
       .then(async (guardian) => {
-        try {
-          const stream = await streamsService.get(guardian.guid)
-          if (stream) {
-            await streamsService.update(stream.id, {
-              name: guardian.shortname
-            })
-          }
-        } catch (e) { }
+        const stream = await streamsService.ensureStreamExistsForGuardian(guardian)
+        await streamsService.update(stream.id, {
+          name: guardian.shortname,
+          latitude: transformedParams.latitude,
+          longitude: transformedParams.longitude,
+          is_public: transformedParams.is_visible
+        })
+        if (arbimonService.isEnabled) {
+          await arbimonService.updateSite({
+            id: stream.id,
+            name: transformedParams.shortname,
+            latitude: transformedParams.latitude,
+            longitude: transformedParams.longitude,
+            is_private: !transformedParams.is_visible
+          }, req.headers.authorization)
+        }
         return guardian
       })
       .then((guardian) => {
@@ -355,7 +365,9 @@ router.route('/:guid')
       .then(function (json) {
         res.status(200).send(json)
       })
+      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
       .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
       .catch(e => { httpError(req, res, 500, e, 'Error while updating the Guardian.') })
   })

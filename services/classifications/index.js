@@ -3,7 +3,7 @@ const EmptyResultError = require('../../utils/converter/empty-result-error')
 const includedRelationReducer = require('../../utils/formatters/included-relations')
 
 function get (idOrValue) {
-  const where = { [Number.isInteger(idOrValue) ? 'id' : 'value']: idOrValue }
+  const where = { [Number.isInteger(idOrValue) || /^\+?\d+$/.test(idOrValue) ? 'id' : 'value']: idOrValue }
   return models.Classification
     .findOne({
       where,

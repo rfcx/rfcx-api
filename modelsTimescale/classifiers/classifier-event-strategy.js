@@ -36,8 +36,8 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierEventStrategy.belongsTo(models.EventStrategy, { as: 'event_strategy', foreignKey: 'event_strategy_id' })
   }
   ClassifierEventStrategy.attributes = {
-    full: ['event_strategy_id', 'active', 'parameters', 'last_executed_at'],
-    lite: ['event_strategy_id', 'active']
+    full: ['id', 'event_strategy_id', 'active', 'parameters', 'last_executed_at'],
+    lite: ['id', 'event_strategy_id', 'active']
   }
   ClassifierEventStrategy.include = includeBuilder(ClassifierEventStrategy, 'classifier_event_strategy', ClassifierEventStrategy.attributes.lite)
   return ClassifierEventStrategy

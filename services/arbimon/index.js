@@ -135,6 +135,7 @@ function matchSegmentToRecording (segment, opts = {}) {
         bit_rate: data.stream_source_file.bit_rate,
         sample_rate: data.stream_source_file.sample_rate,
         sample_encoding: data.stream_source_file.audio_codec.value, // !!!
+        meta: data.stream_source_file.meta,
         precision: 0
       }
     })
