@@ -9,12 +9,7 @@ const availableIncludes = [
 ]
 
 const fullAvailableIncludes = [
-  {
-    model: Classifier,
-    as: 'classifier',
-    attributes: Classifier.attributes.full,
-    require: true
-  }
+  Classifier.include({ attributes: Classifier.attributes.full })
 ]
 
 /**

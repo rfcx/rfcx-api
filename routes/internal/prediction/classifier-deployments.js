@@ -38,7 +38,7 @@ router.get('/classifier-deployments/:id', (req, res) => {
   converter.convert('fields').optional().toArray()
 
   return converter.validate()
-    .then(async params => {
+    .then(params => {
       return classifierDeploymentsService.get(id, params)
     })
     .then(deployments => res.json(deployments))
