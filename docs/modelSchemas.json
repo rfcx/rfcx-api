@@ -1007,5 +1007,78 @@
         }
       }
     }
+  },
+  "ClassifierDeployment": {
+    "properties": {
+      "id": {
+        "type": "integer",
+        "example": 1
+      },
+      "deployed": {
+        "type": "boolean",
+        "example": false
+      },
+      "status": {
+        "type": "integer",
+        "example": 10
+      },
+      "start": {
+        "type": "string",
+        "example": "2021-05-12T07:33:27.000Z"
+      },
+      "end": {
+        "type": "string",
+        "example": "2022-05-12T07:33:27.000Z"
+      },
+      "createdById": {
+        "type": "integer",
+        "example": 3
+      },
+      "platform": {
+        "type": "string",
+        "example": "aws"
+      },
+      "deploymentParameters": {
+        "type": "string",
+        "example": "{AI_MIN_CONFIDENCE:0.8,AI_STEP_SECONDS:0.48,AI_MIN_WINDOWS_COUNT:4}"
+      },
+      "modelUrl": {
+        "type": "string",
+        "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
+      },
+      "classifier": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "gunshot"
+          },
+          "version": {
+            "type": "integer",
+            "example": 4
+          },
+          "externalId": {
+            "type": "string",
+            "example": "a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d"
+          },
+          "modelRunner": {
+            "type": "string",
+            "example": "tf2"
+          },
+          "modelUrl": {
+            "type": "string",
+            "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
+          },
+          "lastExecutedAt": {
+            "type": "string",
+            "example": "2020-10-22 21:30:14.376000"
+          }
+        }
+      }
+    }
   }
 }
