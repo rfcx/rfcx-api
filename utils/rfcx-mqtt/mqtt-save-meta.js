@@ -458,6 +458,13 @@ exports.saveMeta = {
       expandedDetections.push(...detections.map(d => ({ streamId: guardianId, ...d })))
     }
 
+    // Force first batch tembe guardians to use `-edge` for classifier name
+    for (const d of expandedDetections) {
+      if (d.classifier.startsWith('chainsaw-v')) {
+        d.classifier = d.classifier.replace('chainsaw', 'chainsaw-edge')
+      }
+    }
+
     if (expandedDetections.length > 0) {
       // TODO remove temporary logging to debug satellite guardians
       console.log(`${guardianId}: detections payload: saving ${expandedDetections.length} detections`)
