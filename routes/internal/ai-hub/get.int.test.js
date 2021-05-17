@@ -94,7 +94,7 @@ describe('GET /internal/ai-hub/detections', () => {
     expect(response.body.length).toBe(1)
     expect(response.body[0].review.total).toBe(0)
     expect(response.body[0].review.positive).toBe(0)
-    expect(response.body[0].review.my).toBe(null)
+    expect(response.body[0].review.me).toBe(null)
   })
 
   test('get detectons intergrate with annotations created by other user', async () => {
@@ -112,8 +112,7 @@ describe('GET /internal/ai-hub/detections', () => {
     expect(response.body.length).toBe(1)
     expect(response.body[0].review.total).toBe(1)
     expect(response.body[0].review.positive).toBe(1)
-    expect(response.body[0].review.negative).toBe(0)
-    expect(response.body[0].review.my).toBe(null)
+    expect(response.body[0].review.me).toBe(null)
   })
 
   test('get detectons intergrate with annotations created by current user', async () => {
@@ -131,8 +130,7 @@ describe('GET /internal/ai-hub/detections', () => {
     expect(response.body.length).toBe(1)
     expect(response.body[0].review.total).toBe(1)
     expect(response.body[0].review.positive).toBe(1)
-    expect(response.body[0].review.negative).toBe(0)
-    expect(response.body[0].review.my).toBe(true)
+    expect(response.body[0].review.me).toBe(true)
   })
 
   test('get detectons intergrate with annotations created by current user with negative', async () => {
@@ -148,7 +146,7 @@ describe('GET /internal/ai-hub/detections', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
-    expect(response.body[0].review.my).toBe(false)
+    expect(response.body[0].review.me).toBe(false)
   })
 
   test('get detectons intergrate with multiple user annotated', async () => {
@@ -168,8 +166,7 @@ describe('GET /internal/ai-hub/detections', () => {
     expect(response.body.length).toBe(1)
     expect(response.body[0].review.total).toBe(2)
     expect(response.body[0].review.positive).toBe(1)
-    expect(response.body[0].review.negative).toBe(1)
-    expect(response.body[0].review.my).toBe(true)
+    expect(response.body[0].review.me).toBe(true)
   })
 
   test('get detectons intergrate with annotations filter by min_confidence', async () => {
@@ -207,8 +204,7 @@ describe('GET /internal/ai-hub/detections', () => {
     expect(response.body.length).toBe(1)
     expect(response.body[0].review.total).toBe(0)
     expect(response.body[0].review.positive).toBe(0)
-    expect(response.body[0].review.negative).toBe(0)
-    expect(response.body[0].review.my).toBe(null)
+    expect(response.body[0].review.me).toBe(null)
   })
 
   test('get detectons intergrate with is_postive = true', async () => {
@@ -232,11 +228,9 @@ describe('GET /internal/ai-hub/detections', () => {
     expect(response.body.length).toBe(2)
     expect(response.body[0].review.total).toBe(1)
     expect(response.body[0].review.positive).toBe(1)
-    expect(response.body[0].review.negative).toBe(0)
-    expect(response.body[0].review.my).toBe(true)
+    expect(response.body[0].review.me).toBe(true)
     expect(response.body[1].review.total).toBe(1)
     expect(response.body[1].review.positive).toBe(1)
-    expect(response.body[1].review.negative).toBe(0)
-    expect(response.body[1].review.my).toBe(null)
+    expect(response.body[1].review.me).toBe(null)
   })
 })

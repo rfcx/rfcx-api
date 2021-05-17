@@ -102,8 +102,7 @@ async function defaultQuery (filters, options) {
     SELECT a.start, a.end, a.classification_id, a.stream_id,
     COUNT(1) total,
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) positive,
-    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) me_positive,
-    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) me_negative
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = true THEN 1 WHEN a.created_by_id = $userId AND a.is_positive = false THEN -1 ELSE 0 END) me
     FROM annotations a
     JOIN classifications c ON a.classification_id = c.id
     WHERE ${annotationConditions.join(' AND ')}
@@ -122,14 +121,13 @@ async function defaultQuery (filters, options) {
     d.review = {
       total: 0,
       positive: 0,
-      negative: 0,
-      my: null
+      me: null
     }
     if (matchAnnotation) {
       d.review.total = Number(matchAnnotation.total)
       d.review.positive = Number(matchAnnotation.positive)
-      d.review.negative = d.review.total - d.review.positive
-      d.review.my = matchAnnotation.me_positive > 0 ? true : matchAnnotation.me_negative > 0 ? false : null
+      const me = Number(matchAnnotation.me)
+      d.review.me = me === 0 ? null : me > 0
     }
   }
 
@@ -148,8 +146,7 @@ async function reviewQuery (filters, options) {
     (c.frequency_min) "classification.frequency_min", (c.frequency_max) "classification.frequency_max",
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) "review.total",
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) "review.positive",
-    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive then 1 ELSE 0 END) "review.me_positive",
-    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = false THEN 1 ELSE 0 END) "review.me_negative"
+    SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = true THEN 1 WHEN a.created_by_id = $userId AND a.is_positive = false THEN -1 ELSE 0 END) "review.me"
     FROM detections d
     JOIN streams s ON d.stream_id = s.id
     JOIN classifications c ON d.classification_id = c.id
@@ -165,15 +162,12 @@ async function reviewQuery (filters, options) {
     LIMIT $limit
     OFFSET $offset
   `
-
   const detections = await models.sequelize.query(sql, { bind, nest: true, type: models.sequelize.QueryTypes.SELECT })
   detections.forEach(d => {
     d.review.total = Number(d.review.total)
     d.review.positive = Number(d.review.positive)
-    d.review.negative = d.review.total - d.review.positive
-    d.review.my = d.review.my = d.review.me_positive > 0 ? true : d.review.me_negative > 0 ? false : null
-    delete d.review.me_positive
-    delete d.review.me_negative
+    const me = Number(d.review.me)
+    d.review.me = Number(me) === 0 ? null : me > 0
   })
   return detections
 }
