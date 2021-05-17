@@ -167,7 +167,7 @@ async function reviewQuery (filters, options) {
     d.review.total = Number(d.review.total)
     d.review.positive = Number(d.review.positive)
     const me = Number(d.review.me)
-    d.review.me = Number(me) === 0 ? null : me > 0
+    d.review.me = me === 0 ? null : me > 0
   })
   return detections
 }
