@@ -14,11 +14,11 @@ beforeEach(async () => {
 async function commonSetup () {
   const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
   await models.Stream.create(stream)
-  const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
+  const classification = { id: 6, value: 'vehicle', title: 'Vehicle', type_id: 1, source_id: 1 }
   await models.Classification.create(classification)
-  const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw', version: 5, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
+  const classifier = { id: 3, externalId: 'cccddd', name: 'vehicle', version: 5, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
   await models.Classifier.create(classifier)
-  const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'ch', ignoreThreshold: 0.1 }
+  const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'vh', ignoreThreshold: 0.1 }
   await models.ClassifierOutput.create(classifierOutput)
   return { stream, classification, classifier, classifierOutput }
 }
@@ -84,5 +84,20 @@ describe('MQTT save meta', () => {
     const detections = await models.Detection.findAll({ order: ['start'] })
     expect(detections.length).toBe(6)
     expect(detections[0].start).toEqual(moment(start + 3 * step).toDate())
+  })
+
+  test('payload with missing -edge in classifier name (chainsaw-v5)', async () => {
+    const { stream, classification } = await commonSetup()
+    const classifier = { id: 4, externalId: 'dddeee', name: 'chainsaw-edge', version: 5, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
+    await models.Classifier.create(classifier)
+    const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'ch', ignoreThreshold: 0.1 }
+    await models.ClassifierOutput.create(classifierOutput)
+    const input = `${classifierOutput.outputClassName}*chainsaw-v${classifier.version}*1420070745567*1000*0.98,`
+    console.log = jest.fn()
+
+    await Detections([input], stream.id)
+
+    const detections = await models.Detection.findAll({ order: ['start'] })
+    expect(detections.length).toBe(1)
   })
 })

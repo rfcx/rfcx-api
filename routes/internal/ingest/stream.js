@@ -62,7 +62,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
   segConverter.convert('end').toMomentUtc()
   segConverter.convert('sample_count').toInt().minimum(1)
   segConverter.convert('file_extension').toString()
-  segConverter.convert('file_size').toInt()
+  segConverter.convert('file_size').toInt().default(0)
 
   sequelize.transaction()
     .then((transaction) => {
