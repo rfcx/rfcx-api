@@ -54,6 +54,18 @@ router.get('/:value', function (req, res) {
  *         items:
  *           type: string
  *           example: species
+ *       - name: classifiers
+ *         description: Classifiers ids to filters classifications
+ *         in: query
+ *         type: array
+ *         items:
+ *           type: number
+ *           example: 1
+ *       - name: only_classifier
+ *         description: Filter only classifications which available on classifiers
+ *         in: query
+ *         type: boolean
+ *         example: true
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -77,18 +89,19 @@ router.get('/:value', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', function (req, res) {
-  const transformedParams = {}
-  const params = new Converter(req.query, transformedParams)
+  const converter = new Converter(req.query, {}, true)
 
-  params.convert('keyword').optional().toString()
-  params.convert('levels').optional().toArray()
-  params.convert('limit').default(100).toInt()
-  params.convert('offset').default(0).toInt()
+  converter.convert('keyword').optional().toString()
+  converter.convert('levels').optional().toArray()
+  converter.convert('classifiers').optional().toArray()
+  converter.convert('only_classifier').optional().toBoolean()
+  converter.convert('limit').default(100).toInt()
+  converter.convert('offset').default(0).toInt()
 
-  params.validate()
-    .then(() => {
-      const { keyword, levels, limit, offset } = transformedParams
-      return classificationService.queryByKeyword(keyword, levels, limit, offset)
+  converter.validate()
+    .then((params) => {
+      const { keyword, levels, classifiers, onlyClassifier, limit, offset } = params
+      return classificationService.queryByKeyword(keyword, levels, classifiers, onlyClassifier, limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))
