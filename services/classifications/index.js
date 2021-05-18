@@ -115,10 +115,6 @@ async function queryByKeyword (keyword, types, classifiers, onlyClassifier, limi
     }
   }
 
-  console.log('\n\n\n')
-  console.log('keyword', keyword)
-  console.log('\n\n\n')
-
   return await models.sequelize.query(sql, options)
     .reduce(includedRelationReducer('alternative_names'), [])
 }
