@@ -3,7 +3,7 @@
 ### Features
 * **internal:** GET /interna/ai-hub/reviews endpoints getting the detections query by review/unreview/positive/negative status ([CE-385](https://jira.rfcx.org/browse/CE-385))
 * **internal:** Update GET /internal/predictions/classifier-deployments to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
-
+* **core:** Update GET /classifications to be able to limit the query by classifiers ([CE-703](https://jira.rfcx.org/browse/CE-703))
 
 ## 1.0.19 (2021-05-13)
 
