@@ -135,11 +135,12 @@ async function getPermissions (userOrId, itemOrId, itemName) {
       break
     } else if (!itemRole && currentLevel.parent) {
       const parentColumnId = `${currentLevel.parent.toLowerCase()}_id`
+      const parentModelName = currentLevel.parent
       // if current item is not the first in level hierarchy, request its parent item
-      if (item[parentColumnId]) {
+      if (item[parentColumnId] || item[parentModelName]) {
         item = await hierarchy[currentLevel.parent].model.findOne({
           where: {
-            id: item[parentColumnId]
+            id: item[parentColumnId] || item[parentModelName].id
           },
           paranoid: false
         })
