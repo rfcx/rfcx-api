@@ -5,6 +5,13 @@
 * **internal:** Update GET /internal/predictions/classifier-deployments to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
 
 
+## 1.0.19-hotfix.0 (2021-05-19)
+
+### Bug Fixes
+
+* **core:** Fix issue in getPermissions function caused by missing attribute
+
+
 ## 1.0.19 (2021-05-13)
 
 ### Features
