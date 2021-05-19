@@ -55,17 +55,12 @@ router.get('/:value', function (req, res) {
  *           type: string
  *           example: species
  *       - name: classifiers
- *         description: Classifiers ids to filters classifications
+ *         description: Classifiers ids to filters classifications (giving '*' to get all).
  *         in: query
  *         type: array
  *         items:
  *           type: number
  *           example: 1
- *       - name: only_classifier
- *         description: Filter only classifications which available on classifiers
- *         in: query
- *         type: boolean
- *         example: true
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -94,14 +89,13 @@ router.get('/', function (req, res) {
   converter.convert('keyword').optional().toString()
   converter.convert('levels').optional().toArray()
   converter.convert('classifiers').optional().toArray()
-  converter.convert('only_classifier').optional().toBoolean()
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
 
   converter.validate()
     .then((params) => {
-      const { keyword, levels, classifiers, onlyClassifier, limit, offset } = params
-      return classificationService.queryByKeyword(keyword, levels, classifiers, onlyClassifier, limit, offset)
+      const { keyword, levels, classifiers, limit, offset } = params
+      return classificationService.queryByKeyword(keyword, levels, classifiers, limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))

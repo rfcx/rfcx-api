@@ -70,6 +70,7 @@ function getIds (values) {
 
 async function queryByClassifier (classifiers) {
   const where = {}
+  classifiers = classifiers.length === 1 && classifiers[0] === '*' ? '' : classifiers
   if (classifiers) {
     where.classifier_id = {
       [models.Sequelize.Op.in]: classifiers
@@ -81,8 +82,8 @@ async function queryByClassifier (classifiers) {
   return rawClassificationsIds.map(c => c.classification_id)
 }
 
-async function queryByKeyword (keyword, types, classifiers, onlyClassifier, limit, offset) {
-  const hasClassifierQuery = onlyClassifier || (Array.isArray(classifiers) && classifiers.length > 0)
+async function queryByKeyword (keyword, types, classifiers, limit, offset) {
+  const hasClassifierQuery = (Array.isArray(classifiers) && classifiers.length > 0)
 
   const columns = models.Classification.attributes.lite.map(col => `c.${col} AS ${col}`).join(', ')
   const typeColumns = models.ClassificationType.attributes.lite.map(col => `ct.${col} AS "type.${col}"`).join(', ')
