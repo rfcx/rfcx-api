@@ -34,40 +34,57 @@ function exists (Bucket, Key) {
 }
 
 async function listFiles (Bucket, path, StartAfter = null) {
-  console.log('listFiles', Bucket, path, StartAfter)
   const files = await s3Client.listObjectsV2({ Bucket, Prefix: path, StartAfter }).promise()
   return files.Contents
 }
 
-// async function listAllFiles (Bucket, path) {
-//   let allFiles = []
-//   let isLoading = true
-//   while (isLoading) {
-//     const lastKey = allFiles.length? allFiles[allFiles.length - 1].Key : null
-//     console.log('loop', lastKey)
-//     const files = await listFiles(Bucket, path, lastKey)
-//     if (!files.length) {
-//       isLoading = false
-//     } else {
-//       allFiles = allFiles.concat(files)
-//     }
-//   }
-//   return allFiles
-// }
-// setTimeout(() => {
-//   listAllFiles('pr-temp-bucket', 'TO32-Du7qWYHXopux')
-//     .then((files) => {
-//       console.log('\n\nfiles', files.length, '\n\n')
-//       const flacFiles = files.filter(f => f.Key.endsWith('.flac')).map(f => f.Key.replace('.flac', ''))
-//       const infoFiles = files.filter(f => f.Key.endsWith('.ingested')).map(f => f.Key.replace('.ingested', ''))
-//       console.log('\n\ncompare', flacFiles.length, infoFiles.length, '\n\n')
-//       const missingFiles = flacFiles.filter(f => !infoFiles.includes(f))
-//       console.log('\n\n', missingFiles, '\n\n')
-//     })
-//     .catch((err) => {
-//       console.log('err', err)
-//     })
-// }, 3000)
+async function listAllFiles (Bucket, path) {
+  let allFiles = []
+  let isLoading = true
+  while (isLoading) {
+    const lastKey = allFiles.length? allFiles[allFiles.length - 1].Key : null
+    // console.log('loop', lastKey)
+    const files = await listFiles(Bucket, path, lastKey)
+    if (!files.length) {
+      isLoading = false
+    } else {
+      allFiles = allFiles.concat(files)
+    }
+  }
+  return allFiles
+}
+
+setTimeout(() => {
+  listAllFiles('pr-temp-bucket', 'LU41-lz2YSHMvXQ8w/LU 41(FLAC)')
+    .then((files) => {
+      files = files.filter(f => f.Key.endsWith('.flac'))
+      let missing = files.filter(f => !ff.includes(f.Key.replace('LU41-lz2YSHMvXQ8w/LU 41(FLAC)/', '')))
+      const deleteNames = missing.map((file) => {
+          return { Key: file.Key.replace('.flac', '.failed') }
+        })
+      console.log('\n\ndeleteNames', deleteNames, '\n\n')
+      deleteNames.forEach((n) => {
+        deleteFiles('pr-temp-bucket', [n])
+      })
+      // console.log('\n\nmissing', missing, '\n\n')
+      // files = files.filter(f => f.Key.endsWith('.ingested'))
+      // const deleteNames = files.map((file) => {
+        //   return { Key: file.Key }
+        // })
+        // console.log('\n\ndeleteNames', deleteNames, '\n\n')
+        // deleteNames.forEach((n) => {
+          //   deleteFiles('pr-temp-bucket', [n])
+          // })
+      // const flacFiles = files.filter(f => f.Key.endsWith('.flac')).map(f => f.Key.replace('.flac', ''))
+      // const infoFiles = files.filter(f => f.Key.endsWith('.ingested')).map(f => f.Key.replace('.ingested', ''))
+      // console.log('\n\ncompare', flacFiles.length, infoFiles.length, '\n\n')
+      // const missingFiles = flacFiles.filter(f => !infoFiles.includes(f))
+      // console.log('\n\n', missingFiles, '\n\n')
+    })
+    .catch((err) => {
+      console.log('err', err)
+    })
+}, 3000)
 
 function getFilePath (file) {
   return file.Key
