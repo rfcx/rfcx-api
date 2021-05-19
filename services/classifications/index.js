@@ -94,24 +94,22 @@ async function queryByKeyword (keyword, types, classifiers, onlyClassifier, limi
     classificationIds = await queryByClassifier(classifiers)
   }
 
+  keyword = keyword === undefined ? '%%' : `%${keyword}%`
   if (hasClassifierQuery) {
-    keyword = keyword === undefined ? '' : keyword
-    classifierCondition = keyword ? 'AND c.id = ANY($classificationIds)' : 'OR c.id = ANY($classificationIds)'
-  } else {
-    keyword = keyword === undefined ? '%%' : `%${keyword}%`
+    classifierCondition = `AND c.id IN (${classificationIds.join(',')})`
   }
 
   const sql = `SELECT ${columns}, ${typeColumns}, ${nameColumns}
        FROM classifications c
        INNER JOIN classification_types ct ON c.type_id = ct.id ${typeCondition}
        LEFT JOIN classification_alternative_names can ON c.id = can.classification_id
-       WHERE c.title ILIKE $keyword OR can.name ILIKE $keyword ${classifierCondition}
+       WHERE (c.title ILIKE $keyword OR can.name ILIKE $keyword) ${classifierCondition}
        ORDER BY c.title, can."rank" LIMIT $limit OFFSET $offset`
   const options = {
     raw: true,
     nest: true,
     bind: {
-      keyword: keyword, classificationIds, types, limit, offset
+      keyword, types, limit, offset
     }
   }
 
