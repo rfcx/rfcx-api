@@ -3,7 +3,8 @@
 ### Features
 * **internal:** GET /interna/ai-hub/reviews endpoints getting the detections query by review/unreview/positive/negative status ([CE-385](https://jira.rfcx.org/browse/CE-385))
 * **internal:** Update GET /internal/predictions/classifier-deployments/:id to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
-* **internal:** Update Update GET /internal/predictions/classifier-deployments to return full attributes when given classifier fields
+* **internal:** Update GET /internal/predictions/classifier-deployments to return full attributes when given classifier fields
+* **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
 
 
 ## 1.0.19-hotfix.0 (2021-05-19)

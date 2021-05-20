@@ -66,6 +66,10 @@ const rolesService = require('../../../services/roles')
  *           enum:
  *             - me
  *             - collaborators
+ *       - name: classifications
+ *         description: Limit results to classification values
+ *         in: query
+ *         type: array
  *       - name: min_confidence
  *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
  *         in: query
@@ -107,6 +111,7 @@ router.get('/', (req, res) => {
   params.convert('stream_id').optional().toString()
   params.convert('streams_public').optional().toBoolean()
   params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
+  params.convert('classifications').optional().toArray()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
   params.convert('field').default('start').isEqualToAny(models.Detection.attributes.full)
@@ -124,11 +129,11 @@ router.get('/', (req, res) => {
           throw new ForbiddenError('You do not have permission to access this stream.')
         }
       }
-      const { start, end, interval, aggregate, field, descending, limit, offset } = convertedParams
+      const { start, end, classifications, interval, aggregate, field, descending, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
       const streamsOnlyCreatedBy = convertedParams.streams_created_by
       const streamsOnlyPublic = convertedParams.streams_public
-      return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, interval, aggregate, field, minConfidence, descending, limit, offset, user)
+      return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, interval, aggregate, field, minConfidence, descending, limit, offset, user)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
