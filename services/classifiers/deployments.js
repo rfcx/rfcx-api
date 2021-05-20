@@ -5,10 +5,6 @@ const { getSortFields } = require('../../utils/sequelize/sort')
 const { toCamelObject } = require('../../utils/formatters/string-cases')
 
 const availableIncludes = [
-  Classifier.include()
-]
-
-const fullAvailableIncludes = [
   Classifier.include({ attributes: Classifier.attributes.full })
 ]
 
@@ -23,7 +19,7 @@ async function get (id, options = {}) {
 
   const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierDeployment.attributes.full.filter(a => options.fields.includes(a)) : ClassifierDeployment.attributes.full
   const attributes = { ...classifierAttributes, exclude: ['classifier_id', 'classifierId', 'created_by_id'] }
-  const include = options.fields && options.fields.length > 0 ? fullAvailableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
 
   const deployment = await ClassifierDeployment.findOne({ where, attributes, include, raw: true, nest: true })
 
