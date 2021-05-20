@@ -89,29 +89,34 @@ async function queryByKeyword (keyword, types, classifiers, limit, offset) {
   const typeColumns = models.ClassificationType.attributes.lite.map(col => `ct.${col} AS "type.${col}"`).join(', ')
   const nameColumns = models.ClassificationAlternativeName.attributes.lite.map(col => `can.${col} AS "alternative_names.${col}"`).join(', ')
   const typeCondition = types === undefined ? '' : 'AND ct.value = ANY($types)'
-  let classifierCondition = ''
+  const conditions = []
   let classificationIds = []
   if (hasClassifierQuery) {
     classificationIds = await queryByClassifier(classifiers)
+    if (classificationIds.length === 0) return []
+    conditions.push(`c.id IN (${classificationIds.join(',')})`)
   }
 
-  keyword = keyword === undefined ? '%%' : `%${keyword}%`
-  if (hasClassifierQuery) {
-    classifierCondition = `AND c.id IN (${classificationIds.join(',')})`
+  let where = ''
+  const bind = { types, limit, offset }
+
+  if (keyword !== undefined || keyword !== '') {
+    conditions.push('(c.title ILIKE $keyword OR can.name ILIKE $keyword)')
+    bind.keyword = `%${keyword}%`
   }
+
+  if (conditions.length > 0) where = `WHERE ${conditions.join(' AND ')}`
 
   const sql = `SELECT ${columns}, ${typeColumns}, ${nameColumns}
        FROM classifications c
        INNER JOIN classification_types ct ON c.type_id = ct.id ${typeCondition}
        LEFT JOIN classification_alternative_names can ON c.id = can.classification_id
-       WHERE (c.title ILIKE $keyword OR can.name ILIKE $keyword) ${classifierCondition}
+       ${where}
        ORDER BY c.title, can."rank" LIMIT $limit OFFSET $offset`
   const options = {
     raw: true,
     nest: true,
-    bind: {
-      keyword, types, limit, offset
-    }
+    bind
   }
 
   return await models.sequelize.query(sql, options)
