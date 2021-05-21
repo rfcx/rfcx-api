@@ -2,8 +2,15 @@
 
 ### Features
 * **internal:** GET /interna/ai-hub/reviews endpoints getting the detections query by review/unreview/positive/negative status ([CE-385](https://jira.rfcx.org/browse/CE-385))
-* **internal:** Update GET /internal/predictions/classifier-deployments to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
+* **internal:** Update GET /internal/predictions/classifier-deployments/:id to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
+* **internal:** Update Update GET /internal/predictions/classifier-deployments to return full attributes when given classifier fields
 * **core:** Add recording filename to meta parameter for the Arbimon recording object ([CE-686](https://jira.rfcx.org/browse/CE-686))
+
+
+## 1.0.19-hotfix.0 (2021-05-19)
+
+### Bug Fixes
+* **core:** Fix issue in getPermissions function caused by missing attribute
 
 
 ## 1.0.19 (2021-05-13)
