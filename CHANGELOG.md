@@ -6,6 +6,10 @@
 * **internal:** Update Update GET /internal/predictions/classifier-deployments to return full attributes when given classifier fields
 * **core:** Add recording filename to meta parameter for the Arbimon recording object ([CE-686](https://jira.rfcx.org/browse/CE-686))
 
+### Bug Fixes
+
+* **core:** Detections endpoint only returning public stream detections [CE-382](https://jira.rfcx.org/browse/CE-382)
+
 
 ## 1.0.19-hotfix.0 (2021-05-19)
 
