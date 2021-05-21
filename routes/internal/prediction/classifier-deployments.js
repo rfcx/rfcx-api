@@ -14,16 +14,33 @@ router.use(hasRole(['systemUser']))
  *     summary: Get the classifier deployment by id
  *     tags:
  *       - internal
+ *     parameters:
+ *       - name: id
+ *         description: classifier deployment id
+ *         in: path
+ *         required: true
+ *         type: int
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
- *         description: Success
- *       404:
- *         Not found the classifier deployment with given id
+ *         description: Classifier deployment object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ClassifierDeployment'
  */
 router.get('/classifier-deployments/:id', (req, res) => {
   const id = req.params.id
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('fields').optional().toArray()
 
-  return classifierDeploymentsService.get(id)
+  return converter.validate()
+    .then(params => {
+      return classifierDeploymentsService.get(id, params)
+    })
     .then(deployments => res.json(deployments))
     .catch(httpErrorHandler(req, res, 'Failed to get deployment'))
 })

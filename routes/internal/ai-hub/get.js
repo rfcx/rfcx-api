@@ -1,7 +1,6 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const Converter = require('../../../utils/converter/converter')
 const reviewsService = require('../../../services/detections/reviews')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
  * @swagger
@@ -84,15 +83,6 @@ module.exports = (req, res) => {
     .then(async (params) => {
       const { limit, offset, ...filters } = params
       const options = { limit, offset, userId }
-
-      if (typeof filters.isReviewed === 'boolean') {
-        throw new ForbiddenError('Filter by `is_reviewed` is not yet implement')
-      }
-
-      if (typeof filters.isPositive === 'boolean') {
-        throw new ForbiddenError('Filter by `is_positive` is not yet implement')
-      }
-
       const results = await reviewsService.query(filters, options)
       return res.json(results)
     })

@@ -140,7 +140,7 @@ router.route('/:guid/trigger')
         res.status(200).send({ success: true })
       })
       .then(async () => {
-        if (earthRangerEnabled) {
+        if (earthRangerEnabled && eventData.event.siteGuid === 'osa') {
           try {
             await earthRangerService.createEvent({
               event_type: 'acoustic_detection',
@@ -156,6 +156,7 @@ router.route('/:guid/trigger')
               },
               priority: 100
             })
+            console.log(`An acoustic_detection with ${eventData.label.label} was created for ${guardian.shortname} in EarthRanger service.`)
           } catch (e) {
             console.error('Cannot send event to EarthRanger service', e.message)
           }
