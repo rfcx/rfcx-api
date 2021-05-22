@@ -54,7 +54,6 @@ exports.env = {
   POSTGRES_USER: 'postgres',
   POSTGRES_PASSWORD: 'test',
 
-  SQS_PERCEPTION_BATCH: 'rfcx-perception-batch',
 
   MANDRILL_KEY: '',
 
