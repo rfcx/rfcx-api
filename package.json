@@ -53,7 +53,6 @@
     "passport": "0.4.1",
     "passport-accesstoken": "0.1.0",
     "passport-jwt": "4.0.0",
-    "passport-local": "1.0.0",
     "pdfmake": "0.1.53",
     "pg": "6.4.2",
     "pg-hstore": "2.3.3",
