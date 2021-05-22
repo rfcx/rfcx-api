@@ -34,7 +34,6 @@
     "express-request-id": "1.4.1",
     "express-winston": "4.0.5",
     "firebase-admin": "6.1.0",
-    "fluent-ffmpeg": "2.1.2",
     "generate-password": "1.4.2",
     "handlebars": "4.0.12",
     "imagemagick": "0.1.3",
