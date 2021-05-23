@@ -93,8 +93,8 @@ function expressApp (userAdditions = {}) {
   return app
 }
 
-function muteConsole () {
-  ['log', 'info', 'warn', 'error'].forEach((f) => {
+function muteConsole (levels = ['log', 'info', 'warn', 'error']) {
+  (typeof levels === 'string' ? [levels] : levels).forEach((f) => {
     console[f] = function () {}
   })
 }
