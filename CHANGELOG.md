@@ -1,3 +1,8 @@
+## 1.0.20-hotfix.0 (2021-??-??)
+
+### Bug Fixes
+**internal:** PATCH /internal/prediction/classifier-deployments/:id not update the deployed status
+
 ## 1.0.20 (2021-05-21)
 
 ### Features
