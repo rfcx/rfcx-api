@@ -125,6 +125,15 @@ function matchSegmentToRecording (segment, opts = {}) {
       return segment
     })
     .then((data) => {
+      if (data && data.stream_source_file && data.stream_source_file.meta) {
+        try {
+          const parsedMeta = JSON.parse(data.stream_source_file.meta)
+          parsedMeta.filename = data.stream_source_file.filename
+          data.stream_source_file.meta = JSON.stringify(parsedMeta)
+        } catch (err) {
+          console.error(err)
+        }
+      }
       return {
         site_external_id: data.stream_id,
         uri: getSegmentRemotePath(data), // !!!
