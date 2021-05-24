@@ -69,7 +69,8 @@ const rolesService = require('../../../services/roles')
  *       - name: classifications
  *         description: Limit results to classification values
  *         in: query
- *         type: array
+ *         type: array|string
+ *         example: porosus
  *       - name: min_confidence
  *         description: Return results above a minimum confidence (by default will return above minimum confidence of the classifier)
  *         in: query
