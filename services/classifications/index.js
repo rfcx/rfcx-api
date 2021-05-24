@@ -105,7 +105,9 @@ async function queryByKeyword (keyword, types, classifiers, limit, offset) {
     bind.keyword = `%${keyword}%`
   }
 
-  if (conditions.length > 0) where = `WHERE ${conditions.join(' AND ')}`
+  if (conditions.length > 0) {
+    where = `WHERE ${conditions.join(' AND ')}`
+  }
 
   const sql = `SELECT ${columns}, ${typeColumns}, ${nameColumns}
        FROM classifications c
