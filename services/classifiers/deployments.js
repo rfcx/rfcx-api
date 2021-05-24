@@ -2,21 +2,33 @@ const { EmptyResultError } = require('../../utils/errors')
 const { Classifier, ClassifierDeployment, Sequelize } = require('../../modelsTimescale')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
+const { toCamelObject } = require('../../utils/formatters/string-cases')
 
 const availableIncludes = [
-  Classifier.include()
+  Classifier.include({ attributes: Classifier.attributes.full })
 ]
 
 /**
  * Gets classifier deployment from
  * @param {integer} id
+ * @param {string[]} options.fields
  * @throws EmptyResultError when classifier not found
  */
-async function get (id) {
-  const deployment = await ClassifierDeployment.findOne({ where: { id } })
+async function get (id, options = {}) {
+  const where = { id }
+
+  const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierDeployment.attributes.full.filter(a => options.fields.includes(a)) : ClassifierDeployment.attributes.full
+  const attributes = { ...classifierAttributes, exclude: ['classifier_id', 'classifierId', 'created_by_id'] }
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+
+  const deployment = await ClassifierDeployment.findOne({ where, attributes, include, raw: true, nest: true })
+
   if (!deployment) {
     throw new EmptyResultError('Classifier deployment information with given id not found.')
   }
+
+  deployment.classifier = toCamelObject(deployment.classifier, 1)
+
   return deployment
 }
 
@@ -71,9 +83,8 @@ async function query (filters, options = {}) {
  * @param {number} id
  * @param {ClassifierDeployment} deployment
  */
-async function update (id, deployed) {
-  const deployment = await get(id)
-  await deployment.update({ deployed: deployed })
+async function update (id, deployment) {
+  await ClassifierDeployment.update(deployment, { where: { id } })
 }
 
 module.exports = {

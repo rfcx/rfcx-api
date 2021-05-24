@@ -4,6 +4,7 @@ const classificationsService = require('../classifications')
 const { notify } = require('./notifications')
 const { createEvent: createLegacyEvent } = require('../legacy/events/events-service-neo4j')
 const { ValidationError } = require('../../utils/errors')
+const { slugToUuid } = require('../../utils/formatters/uuid')
 
 async function createAndNotify (eventData) {
   // Validate
@@ -23,7 +24,7 @@ async function createAndNotify (eventData) {
   const eventId = await create(event)
 
   // Notify
-  const eventWithStreamAndClassification = { id: eventId, ...event, stream, classification }
+  const eventWithStreamAndClassification = { id: slugToUuid(eventId), ...event, stream, classification }
   try {
     await notify(eventWithStreamAndClassification)
   } catch (err) {

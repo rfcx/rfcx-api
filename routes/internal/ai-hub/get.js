@@ -1,14 +1,13 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const Converter = require('../../../utils/converter/converter')
 const reviewsService = require('../../../services/detections/reviews')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
  * @swagger
- * /internal/ai-hub/detections
+ *
+ * /internal/ai-hub/detections:
  *   get:
  *     summary: Get list of detections integrate with annotations
- *     description: -
  *     tags:
  *       - internal
  *     parameters:
@@ -35,9 +34,9 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *       - name: classifiers
  *         description: List of classifiers ids
  *         in: query
- *         type: array|string
+ *         type: array|number
  *       - name: classifications
- *         description: List of clasification values
+ *         description: List of classification values
  *         in: query
  *         type: array|string
  *       - name: min_confidence
@@ -57,6 +56,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         default: 0
  *     responses:
  *       200:
+ *         description: List of detections integrate with annotations object
  *         content:
  *           application/json:
  *             schema:
@@ -83,15 +83,6 @@ module.exports = (req, res) => {
     .then(async (params) => {
       const { limit, offset, ...filters } = params
       const options = { limit, offset, userId }
-
-      if (typeof filters.isReviewed === 'boolean') {
-        throw new ForbiddenError('Filter by `is_reviewed` is not yet implement')
-      }
-
-      if (typeof filters.isPositive === 'boolean') {
-        throw new ForbiddenError('Filter by `is_positive` is not yet implement')
-      }
-
       const results = await reviewsService.query(filters, options)
       return res.json(results)
     })

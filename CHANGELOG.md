@@ -1,15 +1,42 @@
-## 1.0.19 (2021-XX-XX)
+## 1.0.20-hotfix.0 (2021-??-??)
+
+### Bug Fixes
+**internal:** PATCH /internal/prediction/classifier-deployments/:id not update the deployed status
+
+## 1.0.20 (2021-05-21)
+
+### Features
+* **internal:** GET /interna/ai-hub/reviews endpoints getting the detections query by review/unreview/positive/negative status ([CE-385](https://jira.rfcx.org/browse/CE-385))
+* **internal:** Update GET /internal/predictions/classifier-deployments/:id to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
+* **internal:** Update GET /internal/predictions/classifier-deployments to return full attributes when given classifier fields
+* **core:** Add recording filename to meta parameter for the Arbimon recording object ([CE-686](https://jira.rfcx.org/browse/CE-686))
+
+### Bug Fixes
+* **core:** Detections endpoint only returning public stream detections [CE-382](https://jira.rfcx.org/browse/CE-382)
+
+
+## 1.0.19-hotfix.0 (2021-05-19)
+
+### Bug Fixes
+* **core:** Fix issue in getPermissions function caused by missing attribute
+
+
+## 1.0.19 (2021-05-13)
 
 ### Features
 * **core:** Add meta parameter for the Arbimon recording object ([CE-495](https://jira.rfcx.org/browse/CE-495))
 * **core:** Add ability to filter streams/projects/organizations by permission ([CE-655](https://jira.rfcx.org/browse/CE-655))
 * **core:** Add PATCH /event/:id endpoint
+* **core:** Endpoints for adding getting and deleting project permission.
 * **internal:** Add Cognition Service endpoint for getting aggregated detections
 
 ### Bug Fixes
 
 * **core:** Get events not supporting streams parameter correctly
 * **core:** Get event strategies endpoint failure to return
+* **internal:** Fix GET /interna/ai-hub/reviews endpoints for annotations query by classification values ([CE-597](https://jira.rfcx.org/browse/CE-597))
+* **internal:** Fix project name changed in Arbimon but not synced to Core API
+* **legacy:** Create or update stream on guardian update; Send guardian updates to Arbimon ([CE-565](https://jira.rfcx.org/browse/CE-565))
 
 
 ## 1.0.18 (2021-04-28)
