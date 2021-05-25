@@ -20,7 +20,7 @@ function putObject (localPath, filename, bucket, acl) {
       })
     } else {
       aws.s3(bucket).putFile(localPath, filename, (err, res) => {
-        if (res) res.resume()
+        if (res) { res.resume() }
         if (err) { return reject(err) }
         return resolve()
       })

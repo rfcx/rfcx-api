@@ -17,7 +17,9 @@ function parse (input) {
   }
 
   return confidences.split(',').map((x, i) => {
-    if (x === '') return undefined
+    if (x === '') {
+      return undefined
+    }
     const start = moment(timestampMs + i * stepMs)
     const end = start.clone().add(stepMs, 'milliseconds')
     const confidence = parseFloat(x)
