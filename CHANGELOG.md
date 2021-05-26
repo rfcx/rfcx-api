@@ -1,3 +1,9 @@
+## 1.0.21 (2021-??-??)
+
+### Features
+* **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
+
+
 ## 1.0.20-hotfix.0 (2021-??-??)
 
 ### Bug Fixes
