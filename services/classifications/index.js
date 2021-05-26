@@ -90,9 +90,8 @@ async function queryByKeyword (keyword, types, classifiers, limit, offset) {
   const nameColumns = models.ClassificationAlternativeName.attributes.lite.map(col => `can.${col} AS "alternative_names.${col}"`).join(', ')
   const typeCondition = types === undefined ? '' : 'AND ct.value = ANY($types)'
   const conditions = []
-  let classificationIds = []
   if (hasClassifierQuery) {
-    classificationIds = await queryByClassifier(classifiers)
+    const classificationIds = await queryByClassifier(classifiers)
     if (classificationIds.length === 0) {
       return []
     }
