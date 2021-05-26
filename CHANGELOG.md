@@ -2,14 +2,17 @@
 
 ### Features
 * **core:** Update GET /classifications to be able to limit the classifications result by classifiers by classifiers ([CE-703](https://jira.rfcx.org/browse/CE-703))
+* **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
 
 ### Bug Fixes
 * **core:** POST /classifiers save correct external id
+
 
 ## 1.0.20-hotfix.0 (2021-??-??)
 
 ### Bug Fixes
 **internal:** PATCH /internal/prediction/classifier-deployments/:id not update the deployed status
+
 
 ## 1.0.20 (2021-05-21)
 
