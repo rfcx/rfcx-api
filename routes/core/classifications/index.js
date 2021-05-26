@@ -95,7 +95,8 @@ router.get('/', function (req, res) {
   converter.validate()
     .then((params) => {
       const { keyword, levels, classifiers, limit, offset } = params
-      return classificationService.queryByKeyword(keyword, levels, classifiers, limit, offset)
+      const allClassifiers = classifiers && classifiers.length === 1 && classifiers[0] === '*'
+      return classificationService.queryByKeyword(keyword, levels, allClassifiers, classifiers, limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))

@@ -68,9 +68,9 @@ function getIds (values) {
     })
 }
 
-async function queryByClassifier (classifiers) {
+async function queryClassificationIdsForClassifiers (allClassifiers, classifiers) {
   const where = {}
-  classifiers = classifiers.length === 1 && classifiers[0] === '*' ? '' : classifiers
+  classifiers = allClassifiers ? '' : classifiers
   if (classifiers) {
     where.classifier_id = {
       [models.Sequelize.Op.in]: classifiers
@@ -82,16 +82,14 @@ async function queryByClassifier (classifiers) {
   return rawClassificationsIds.map(c => c.classification_id)
 }
 
-async function queryByKeyword (keyword, types, classifiers, limit, offset) {
-  const hasClassifierQuery = (Array.isArray(classifiers) && classifiers.length > 0)
-
+async function queryByKeyword (keyword, types, allClassifiers, classifiers, limit, offset) {
   const columns = models.Classification.attributes.lite.map(col => `c.${col} AS ${col}`).join(', ')
   const typeColumns = models.ClassificationType.attributes.lite.map(col => `ct.${col} AS "type.${col}"`).join(', ')
   const nameColumns = models.ClassificationAlternativeName.attributes.lite.map(col => `can.${col} AS "alternative_names.${col}"`).join(', ')
   const typeCondition = types === undefined ? '' : 'AND ct.value = ANY($types)'
   const conditions = []
-  if (hasClassifierQuery) {
-    const classificationIds = await queryByClassifier(classifiers)
+  if (allClassifiers || classifiers) {
+    const classificationIds = await queryClassificationIdsForClassifiers(allClassifiers, classifiers)
     if (classificationIds.length === 0) {
       return []
     }
