@@ -98,7 +98,6 @@ async function queryByKeyword (keyword, types, classifiers, limit, offset) {
     conditions.push(`c.id IN (${classificationIds.join(',')})`)
   }
 
-  let where = ''
   const bind = { types, limit, offset }
 
   if (keyword !== undefined || keyword !== '') {
@@ -106,9 +105,7 @@ async function queryByKeyword (keyword, types, classifiers, limit, offset) {
     bind.keyword = `%${keyword}%`
   }
 
-  if (conditions.length > 0) {
-    where = `WHERE ${conditions.join(' AND ')}`
-  }
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
   const sql = `SELECT ${columns}, ${typeColumns}, ${nameColumns}
        FROM classifications c
