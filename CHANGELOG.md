@@ -1,3 +1,9 @@
+## 1.0.21 (2021-??-??)
+
+### Features
+* **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
+
+
 ## 1.0.20-hotfix.0 (2021-??-??)
 
 ### Bug Fixes
@@ -9,14 +15,10 @@
 * **internal:** GET /interna/ai-hub/reviews endpoints getting the detections query by review/unreview/positive/negative status ([CE-385](https://jira.rfcx.org/browse/CE-385))
 * **internal:** Update GET /internal/predictions/classifier-deployments/:id to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
 * **internal:** Update GET /internal/predictions/classifier-deployments to return full attributes when given classifier fields
-<<<<<<< HEAD
-* **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
-=======
 * **core:** Add recording filename to meta parameter for the Arbimon recording object ([CE-686](https://jira.rfcx.org/browse/CE-686))
 
 ### Bug Fixes
 * **core:** Detections endpoint only returning public stream detections [CE-382](https://jira.rfcx.org/browse/CE-382)
->>>>>>> origin/develop
 
 
 ## 1.0.19-hotfix.0 (2021-05-19)
