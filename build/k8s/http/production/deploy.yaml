@@ -71,8 +71,6 @@ spec:
             value: "/usr/bin/sox"
           - name: ASSET_BUCKET_ZIP
             value: "rfcx-zip"
-          - name: AWS_QUEUE_CONCURRENCY
-            value: "1000"
           - name: SEQUELIZE_VERBOSE
             value: "false"
           - name: EB_NODE_COMMAND
