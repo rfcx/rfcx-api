@@ -153,7 +153,7 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
       const classifier = {
         name: transformedParams.name,
         version: transformedParams.version,
-        externalId: transformedParams.externalId,
+        externalId: transformedParams.external_id,
         modelUrl,
         createdById,
         outputs,
