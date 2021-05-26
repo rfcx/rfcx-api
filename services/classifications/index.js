@@ -93,7 +93,9 @@ async function queryByKeyword (keyword, types, classifiers, limit, offset) {
   let classificationIds = []
   if (hasClassifierQuery) {
     classificationIds = await queryByClassifier(classifiers)
-    if (classificationIds.length === 0) return []
+    if (classificationIds.length === 0) {
+      return []
+    }
     conditions.push(`c.id IN (${classificationIds.join(',')})`)
   }
 
