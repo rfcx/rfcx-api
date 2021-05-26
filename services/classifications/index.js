@@ -70,8 +70,7 @@ function getIds (values) {
 
 async function queryClassificationIdsForClassifiers (allClassifiers, classifiers) {
   const where = {}
-  classifiers = allClassifiers ? '' : classifiers
-  if (classifiers) {
+  if (!allClassifiers) {
     where.classifier_id = {
       [models.Sequelize.Op.in]: classifiers
     }
