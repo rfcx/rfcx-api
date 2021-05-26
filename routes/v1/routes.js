@@ -5,7 +5,6 @@ module.exports = {
     require('./guardians/guardians-software'),
     require('./guardians/guardians-checkins'),
     require('./guardians/guardians-audio'),
-    require('./guardians/guardians-audio-analysis'),
     require('./guardians/guardians-audio-uploads'),
     require('./guardians/guardians-events'),
     require('./guardians/guardians-meta'),

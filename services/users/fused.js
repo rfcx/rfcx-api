@@ -77,7 +77,9 @@ async function ensureUserSyncedInTimescaleDB (user) {
 
   const defaults = { ...where };
   ['id', 'username', 'firstname', 'lastname', 'picture'].forEach((attr) => {
-    if (user[attr]) defaults[attr] = user[attr]
+    if (user[attr]) {
+      defaults[attr] = user[attr]
+    }
   })
 
   return User.findOrCreate({ where, defaults })

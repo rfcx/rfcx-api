@@ -26,7 +26,9 @@ function distribute (startTimestamp, endTimestamp, interval, groupInterval, data
   }
 
   const distributedAndGrouped = []
-  while (distributed.length) distributedAndGrouped.push(distributed.splice(0, groupSize))
+  while (distributed.length) {
+    distributedAndGrouped.push(distributed.splice(0, groupSize))
+  }
 
   return distributedAndGrouped
 }
