@@ -31,7 +31,6 @@ module.exports = (sequelize, DataTypes) => {
   })
   ClassifierOutput.associate = function (models) {
     ClassifierOutput.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
-    ClassifierOutput.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   ClassifierOutput.attributes = {
     full: ['classification_id', 'output_class_name', 'ignore_threshold'],
