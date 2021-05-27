@@ -3,11 +3,15 @@
 ### Features
 * **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
 
+### Performance Improvements
+* **legacy:** Do not generate anonymous token for audio json data; Reduce models which we include for GuardianAudio ([CE-795](https://jira.rfcx.org/browse/CE-795))
+
 
 ## 1.0.20-hotfix.0 (2021-??-??)
 
 ### Bug Fixes
 **internal:** PATCH /internal/prediction/classifier-deployments/:id not update the deployed status
+
 
 ## 1.0.20 (2021-05-21)
 

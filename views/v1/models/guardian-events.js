@@ -78,7 +78,7 @@ exports.models = {
                 jsonArray.push(jsonRowsByGuid[thisGuid])
                 if (jsonArray.length === dbRows.length) { resolve(jsonArray) }
               } else {
-                views.models.guardianAudioJson(req, res, thisRow.Audio, thisGuid)
+                views.models.guardianAudioJson(thisRow.Audio, thisGuid)
                   .then(function (audioJson) {
                     thisGuid = audioJson[0].PARENT_GUID
                     delete audioJson[0].PARENT_GUID

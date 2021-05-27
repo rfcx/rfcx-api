@@ -1,33 +1,33 @@
 const models = require('../../../models')
 const express = require('express')
 const router = express.Router()
-const views = require('../../../views/v1')
+// const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 const reportsService = require('../../../services/reports/reports-service')
 const attachmentService = require('../../../services/attachment/attachment-service')
 const audioService = require('../../../services/audio/audio-service')
+const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson, guardianAudioAmplitude } = require('../../../views/v1/models/guardian-audio').models
+const { guardianMetaScreenshotFile, guardianMetaScreenshots } = require('../../../views/v1/models/guardian-meta/guardian-meta-screenshots').models
 
 router.route('/audio/:audio_id')
   .get(function (req, res) {
     return models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },
-        include: [{ all: true }]
+        include: baseInclude
       }).then(function (dbAudio) {
         if (!dbAudio) {
           return res.status(404).json({ msg: 'Audio with given guid not found.' })
         }
-
         const audioFileExtensions = ['m4a', 'mp3', 'flac', 'opus', 'wav']
-
         if (audioFileExtensions.indexOf(req.rfcx.content_type) >= 0) {
-          views.models.guardianAudioFile(req, res, dbAudio)
+          guardianAudioFile(req, res, dbAudio)
         } else if (req.rfcx.content_type === 'png') {
-          views.models.guardianAudioSpectrogram(req, res, dbAudio)
+          guardianAudioSpectrogram(req, res, dbAudio)
         } else {
-          views.models.guardianAudioJson(req, res, dbAudio)
+          guardianAudioJson(dbAudio)
             .then(function (audioJson) {
               res.status(200).json(audioJson)
             })
@@ -45,13 +45,13 @@ router.route('/audio/amplitude/:audio_id')
     return models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },
-        include: [{ all: true }]
+        include: baseInclude
       }).then(function (dbAudio) {
         if (!dbAudio) {
           return res.status(404).json({ msg: 'Audio with given guid not found.' })
         }
 
-        views.models.guardianAudioAmplitude(req, res, dbAudio)
+        guardianAudioAmplitude(req, res, dbAudio)
           .then(function (audioAmplitudeJson) {
             res.status(200).json(audioAmplitudeJson)
           })
@@ -71,9 +71,9 @@ router.route('/screenshots/:screenshot_id')
         include: [{ all: true }]
       }).then(function (dbScreenshot) {
         if (req.rfcx.content_type === 'png') {
-          views.models.guardianMetaScreenshotFile(req, res, dbScreenshot)
+          guardianMetaScreenshotFile(req, res, dbScreenshot)
         } else {
-          res.status(200).json(views.models.guardianMetaScreenshots(req, res, dbScreenshot))
+          res.status(200).json(guardianMetaScreenshots(req, res, dbScreenshot))
         }
 
         return null
