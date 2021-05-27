@@ -29,7 +29,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     latitude: {
-      type: DataTypes.REAL,
+      type: DataTypes.DOUBLE,
       allowNull: true,
       validate: {
         isFloat: true,
@@ -44,7 +44,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     longitude: {
-      type: DataTypes.REAL,
+      type: DataTypes.DOUBLE,
       allowNull: true,
       validate: {
         isFloat: true,
@@ -59,7 +59,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     altitude: {
-      type: DataTypes.REAL,
+      type: DataTypes.DOUBLE,
       allowNull: true
     },
     maxSampleRate: {
