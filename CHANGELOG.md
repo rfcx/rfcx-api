@@ -6,6 +6,7 @@
 
 ### Bug Fixes
 * **core:** POST /classifiers save correct external id
+* **core:** Convert type of latitude, longitude and altitude back to DOUBLE to improve precision on the location ([CE-813](https://jira.rfcx.org/browse/CE-813))
 
 
 ## 1.0.20-hotfix.0 (2021-??-??)
