@@ -18,13 +18,13 @@ module.exports = {
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async t => {
-      await queryInterface.changeColumn('projects', 'min_latitude', 
+      await queryInterface.changeColumn('projects', 'min_latitude',
         { type: Sequelize.REAL }, { transaction: t })
-      await queryInterface.changeColumn('projects', 'max_latitude', 
+      await queryInterface.changeColumn('projects', 'max_latitude',
         { type: Sequelize.REAL }, { transaction: t })
-      await queryInterface.changeColumn('projects', 'min_longitude', 
+      await queryInterface.changeColumn('projects', 'min_longitude',
         { type: Sequelize.REAL }, { transaction: t })
-      await queryInterface.changeColumn('projects', 'max_longitude', 
+      await queryInterface.changeColumn('projects', 'max_longitude',
         { type: Sequelize.REAL }, { transaction: t })
       await queryInterface.changeColumn('streams', 'latitude',
         { type: Sequelize.REAL }, { transaction: t })
