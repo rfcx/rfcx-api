@@ -3,12 +3,30 @@ const exec = require('child_process').exec
 const moment = require('moment-timezone')
 const fs = require('fs')
 const hash = require('../../../utils/misc/hash')
-const token = require('../../../utils/internal-rfcx/token').token
 const audioUtils = require('../../../utils/rfcx-audio').audioUtils
 const assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
 const validation = require('../../../utils/misc/validation.js')
+const { GuardianSite, Guardian, GuardianAudioFormat } = require('../../../models')
 
 exports.models = {
+
+  baseInclude: [
+    {
+      model: GuardianSite,
+      as: 'Site',
+      attributes: ['guid', 'name', 'timezone', 'timezone_offset']
+    },
+    {
+      model: Guardian,
+      as: 'Guardian',
+      attributes: ['guid', 'shortname']
+    },
+    {
+      model: GuardianAudioFormat,
+      as: 'Format',
+      attributes: ['sample_rate', 'file_extension']
+    }
+  ],
 
   guardianAudioFile: function (req, res, dbRow) {
     const outputFileExtension = req.rfcx.content_type
@@ -180,91 +198,49 @@ exports.models = {
       })
   },
 
-  guardianAudioJson: function (req, res, dbRows, PARENT_GUID) {
-    if (!Array.isArray(dbRows)) {
-      dbRows = [dbRows]
+  guardianAudioJson: function (audios, parentGuid) {
+    if (!Array.isArray(audios)) {
+      audios = [audios]
     }
-
-    return new Promise(function (resolve, reject) {
-      if (!dbRows.length) {
-        resolve([])
+    const data = audios.map((audio) => {
+      const json = {
+        guid: audio.guid,
+        measured_at: audio.measured_at,
+        analyzed_at: audio.analyzed_at,
+        size: audio.size,
+        duration: null,
+        sample_rate: audio.Format ? audio.Format.sample_rate : null,
+        sha1_checksum: audio.sha1_checksum,
+        original_filename: audio.original_filename
+      }
+      if (audio.Format) {
+        json.duration = Math.round(1000 * audio.capture_sample_count / audio.Format.sample_rate)
+      }
+      if (audio.Site) {
+        json.site_guid = audio.Site.guid
+        json.timezone_offset = audio.Site.timezone_offset
+        json.timezone = audio.Site.timezone
+      }
+      if (audio.Guardian) {
+        json.guardian_guid = audio.Guardian.guid
+      }
+      if (audio.CheckIn) {
+        json.checkin_guid = audio.CheckIn.guid
+      }
+      if (parentGuid) {
+        json.PARENT_GUID = parentGuid
       }
 
-      const proms = []
-      const jsonArr = []
-
-      dbRows.forEach((thisRow) => {
-        const guid = thisRow.guid
-
-        const prom = token.createAnonymousToken({
-          reference_tag: guid,
-          token_type: 'audio-file',
-          minutes_until_expiration: 30,
-          created_by: null,
-          allow_garbage_collection: true,
-          only_allow_access_to: [
-            `^/v1/assets/audio/${guid}.m4a$`,
-            `^/v1/assets/audio/${guid}.mp3$`,
-            `^/v1/assets/audio/${guid}.opus$`,
-            `^/v1/assets/audio/${guid}.png$`
-          ]
-        })
-
-        proms.push(prom)
-      })
-
-      Promise.all(proms)
-        .then((tokens) => {
-          tokens.forEach((token, index) => {
-            const thisRow = dbRows[index]
-            const json = {
-              guid: thisRow.guid,
-              measured_at: thisRow.measured_at,
-              analyzed_at: thisRow.analyzed_at,
-              size: thisRow.size,
-              duration: null,
-              sample_rate: thisRow.Format ? thisRow.Format.sample_rate : null,
-              sha1_checksum: thisRow.sha1_checksum,
-              original_filename: thisRow.original_filename
-            }
-            if (thisRow.Format) {
-              json.duration = Math.round(1000 * thisRow.capture_sample_count / thisRow.Format.sample_rate)
-            }
-            if (thisRow.Site) {
-              json.site_guid = thisRow.Site.guid
-              json.timezone_offset = thisRow.Site.timezone_offset
-              json.timezone = thisRow.Site.timezone
-            }
-            if (thisRow.Guardian) {
-              json.guardian_guid = thisRow.Guardian.guid
-            }
-            if (thisRow.CheckIn) {
-              json.checkin_guid = thisRow.CheckIn.guid
-            }
-            if (PARENT_GUID) {
-              json.PARENT_GUID = PARENT_GUID
-            }
-
-            const urlBase = `${process.env.ASSET_URLBASE}/audio/${thisRow.guid}`
-            json.urls = {
-              m4a: `${urlBase}.m4a`,
-              mp3: `${urlBase}.mp3`,
-              opus: `${urlBase}.opus`,
-              png: `${urlBase}.png`
-            }
-
-            json.urls_expire_at = token.token_expires_at
-
-            jsonArr.push(json)
-          })
-
-          resolve(jsonArr)
-        })
-        .catch((err) => {
-          console.log('failed to create anonymous token | ' + err)
-          reject(new Error(err))
-        })
+      const urlBase = `${process.env.ASSET_URLBASE}/audio/${audio.guid}`
+      json.urls = {
+        m4a: `${urlBase}.m4a`,
+        mp3: `${urlBase}.mp3`,
+        opus: `${urlBase}.opus`,
+        png: `${urlBase}.png`
+      }
+      return json
     })
+    return Promise.resolve(data)
   },
   guardianAudioLabels: function (req, res, labels) {
     return new Promise(function (resolve, reject) {
