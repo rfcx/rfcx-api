@@ -14,6 +14,8 @@ module.exports = {
         { type: Sequelize.DOUBLE }, { transaction: t })
       await queryInterface.changeColumn('streams', 'longitude',
         { type: Sequelize.DOUBLE }, { transaction: t })
+      await queryInterface.changeColumn('streams', 'altitude',
+        { type: Sequelize.DOUBLE }, { transaction: t })
     })
   },
   down: (queryInterface, Sequelize) => {
@@ -29,6 +31,8 @@ module.exports = {
       await queryInterface.changeColumn('streams', 'latitude',
         { type: Sequelize.REAL }, { transaction: t })
       await queryInterface.changeColumn('streams', 'longitude',
+        { type: Sequelize.REAL }, { transaction: t })
+      await queryInterface.changeColumn('streams', 'altitude',
         { type: Sequelize.REAL }, { transaction: t })
     })
   }
