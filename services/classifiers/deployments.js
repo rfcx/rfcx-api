@@ -83,9 +83,8 @@ async function query (filters, options = {}) {
  * @param {number} id
  * @param {ClassifierDeployment} deployment
  */
-async function update (id, deployed) {
-  const deployment = await get(id)
-  await deployment.update({ deployed: deployed })
+async function update (id, deployment) {
+  await ClassifierDeployment.update(deployment, { where: { id } })
 }
 
 module.exports = {

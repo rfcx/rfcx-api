@@ -7,7 +7,9 @@ exports.guardianCommand = {
     return new Promise(function (resolve, reject) {
       try {
         for (const prop in checkInObj.rtrn.obj) {
-          if (!checkInObj.rtrn.obj.hasOwnProperty(prop)) continue // eslint-disable-line no-prototype-builtins
+          if (!checkInObj.rtrn.obj.hasOwnProperty(prop)) { // eslint-disable-line no-prototype-builtins
+            continue
+          }
           if ((Array.isArray(checkInObj.rtrn.obj[prop]) && (checkInObj.rtrn.obj[prop].length === 0)) ||
              (checkInObj.rtrn.obj[prop] == null)
           ) {
