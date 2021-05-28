@@ -1,7 +1,6 @@
 const models = require('../../../models')
 const express = require('express')
 const router = express.Router()
-const views = require('../../../views/v1')
 const passport = require('passport')
 const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
 const httpError = require('../../../utils/http-errors.js')
@@ -31,6 +30,7 @@ const boxesService = require('../../../services/audio/boxes-service')
 const Converter = require('../../../utils/converter/converter')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { baseInclude, guardianAudioJson, guardianAudioLabels } = require('../../../views/v1/models/guardian-audio').models
 
 function filter (req) {
   let order = 'measured_at ASC'
@@ -115,7 +115,7 @@ router.route('/filter')
 
     filter(req)
       .then(function (dbAudio) {
-        return views.models.guardianAudioJson(req, res, dbAudio)
+        return guardianAudioJson(dbAudio)
       })
       .then(function (audioJson) {
         const api = converter.cloneSequelizeToApi({ audios: audioJson })
@@ -324,9 +324,16 @@ router.route('/:audio_id')
     models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },
-        include: [{ all: true }]
+        include: [
+          ...baseInclude,
+          {
+            model: models.GuardianCheckIn,
+            as: 'CheckIn',
+            attributes: ['guid']
+          }
+        ]
       }).then(function (dbAudio) {
-        return views.models.guardianAudioJson(req, res, dbAudio)
+        return guardianAudioJson(dbAudio)
           .then(function (audioJson) {
             res.status(200).json(audioJson)
           })
@@ -404,7 +411,7 @@ router.route('/:audio_id/labels')
     models.sequelize.query(sql,
       { replacements: filter, type: models.sequelize.QueryTypes.SELECT }
     ).then(function (labels) {
-      return views.models.guardianAudioLabels(req, res, labels)
+      return guardianAudioLabels(req, res, labels)
         .then(function (labelsJson) {
           res.status(200).json(labelsJson)
         })
@@ -447,7 +454,7 @@ router.route('/nextafter/:audio_id')
         if (!dbAudio) {
           return httpError(req, res, 404, 'database')
         }
-        return views.models.guardianAudioJson(req, res, dbAudio)
+        return guardianAudioJson(dbAudio)
           .then(function (audioJson) {
             res.status(200).json(audioJson)
           })
@@ -491,7 +498,7 @@ router.route('/prevbefore/:audio_id')
         if (!dbAudio) {
           return httpError(req, res, 404, 'database')
         }
-        return views.models.guardianAudioJson(req, res, dbAudio)
+        return guardianAudioJson(dbAudio)
           .then(function (audioJson) {
             res.status(200).json(audioJson)
           })
