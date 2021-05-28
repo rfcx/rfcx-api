@@ -9,6 +9,7 @@
 
 ### Bug Fixes
 * **core:** POST /classifiers save correct external id
+* **core:** Handle saving enddate from different platform on new classifier deployment from PATCH /classifiers ([CE-808](https://jira.rfcx.org/browse/CE-808))
 
 
 ## 1.0.20-hotfix.0 (2021-??-??)
