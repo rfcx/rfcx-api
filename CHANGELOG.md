@@ -9,6 +9,7 @@
 
 ### Bug Fixes
 * **core:** POST /classifiers save correct external id
+* **core:** Convert type of latitude, longitude and altitude back to DOUBLE to improve precision on the location ([CE-813](https://jira.rfcx.org/browse/CE-813))
 * **core:** Handle saving enddate from different platform on new classifier deployment from PATCH /classifiers ([CE-808](https://jira.rfcx.org/browse/CE-808))
 
 
