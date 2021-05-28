@@ -1,5 +1,12 @@
 # API Deployment Notes
 
+## v1.0.21
+
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210523191500-create-classifier-index`
+  - `20210524175900-create-classifier-output-classifier-id-index`
+  - `20210527000001-convert-from-real-to-double-on-project-steam`
+
 ## v1.0.18
 
 - Run `npm run sync-timescale` to apply migrations (deletes the stream_assets table)

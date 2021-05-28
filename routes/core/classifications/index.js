@@ -54,6 +54,13 @@ router.get('/:value', function (req, res) {
  *         items:
  *           type: string
  *           example: species
+ *       - name: classifiers
+ *         description: Classifiers ids to filters classifications (giving '*' to get all).
+ *         in: query
+ *         type: array
+ *         items:
+ *           type: number
+ *           example: 1
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -77,18 +84,19 @@ router.get('/:value', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', function (req, res) {
-  const transformedParams = {}
-  const params = new Converter(req.query, transformedParams)
+  const converter = new Converter(req.query, {}, true)
 
-  params.convert('keyword').optional().toString()
-  params.convert('levels').optional().toArray()
-  params.convert('limit').default(100).toInt()
-  params.convert('offset').default(0).toInt()
+  converter.convert('keyword').optional().toString()
+  converter.convert('levels').optional().toArray()
+  converter.convert('classifiers').optional().toArray()
+  converter.convert('limit').default(100).toInt()
+  converter.convert('offset').default(0).toInt()
 
-  params.validate()
-    .then(() => {
-      const { keyword, levels, limit, offset } = transformedParams
-      return classificationService.queryByKeyword(keyword, levels, limit, offset)
+  converter.validate()
+    .then((params) => {
+      const { keyword, levels, classifiers, limit, offset } = params
+      const allClassifiers = classifiers && classifiers.length === 1 && classifiers[0] === '*'
+      return classificationService.queryByKeyword(keyword, levels, allClassifiers, classifiers, limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))
