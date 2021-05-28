@@ -1,7 +1,6 @@
 const models = require('../../../models')
 const express = require('express')
 const router = express.Router()
-// const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
