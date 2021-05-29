@@ -4,7 +4,7 @@ const streamsService = require('../../../services/streams')
 const streamSourceFileService = require('../../../services/streams/source-files')
 const streamSegmentService = require('../../../services/streams/segments')
 const { sequelize } = require('../../../modelsTimescale')
-const { hasRole } = require('../../../middleware/authorization/authorization')
+const { hasRole, authenticate } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const moment = require('moment')
@@ -37,7 +37,7 @@ const arbimonService = require('../../../services/arbimon')
  *         description: Invalid query parameters
  */
 
-router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['systemUser']), function (req, res) {
+router.post('/streams/:streamId/stream-source-files-and-segments', authenticate(), hasRole(['systemUser']), function (req, res) {
   const streamId = req.params.streamId
 
   const converter = new Converter(req.body, {})

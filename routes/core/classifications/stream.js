@@ -3,6 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const classificationsService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -43,7 +44,7 @@ const { hasStreamPermission } = require('../../../middleware/authorization/roles
  *         description: Stream not found
  */
 
-router.get('/:id/classifications', hasStreamPermission('R'), function (req, res) {
+router.get('/:id/classifications', authenticate(), hasStreamPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

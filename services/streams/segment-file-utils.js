@@ -41,11 +41,12 @@ function parseFileNameAttrs (req) {
       })
       return item ? item.slice(symb.length) : undefined
     }
+    const streamId = nameArr[0] && nameArr[0].length === 12 ? nameArr[0] : undefined
     const dimensionsStr = findStartsWith('d')
     const timeStr = findStartsWith('t')
     const clipStr = findStartsWith('r')
     resolve({
-      streamId: nameArr[0],
+      streamId,
       time: timeStr
         ? {
             starts: timeStr.split('.')[0],
@@ -457,8 +458,12 @@ function combineStandardFilename (attrs, req) {
   return filename
 }
 
-function gluedDateToISO (dateStr) {
-  return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').tz('UTC').toISOString()
+function gluedDateStrToMoment (dateStr) {
+  return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')
+}
+
+function gluedDateStrToISO (dateStr) {
+  return gluedDateStrToMoment(dateStr).toISOString()
 }
 
 module.exports = {
@@ -466,7 +471,8 @@ module.exports = {
   checkAttrsValidity,
   getFile,
   deleteFilesForStream,
-  gluedDateToISO,
+  gluedDateStrToMoment,
+  gluedDateStrToISO,
   convertAudio,
   getSegmentRemotePath
 }

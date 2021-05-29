@@ -3,9 +3,10 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity, gluedDateToISO, getFile } = require('../../../services/streams/segment-file-utils')
+const { parseFileNameAttrs, checkAttrsValidity, gluedDateStrToISO, getFile } = require('../../../services/streams/segment-file-utils')
 const rolesService = require('../../../services/roles')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
   Spectrogram format (fspec):
@@ -63,7 +64,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         description: Insufficient privileges
  */
 
-router.get('/streams/:attrs', function (req, res) {
+router.get('/streams/:attrs', authenticate(['jwt', 'jwt-custom', 'stream-token']), function (req, res) {
   parseFileNameAttrs(req).then(async (attrs) => {
     await checkAttrsValidity(req, attrs)
     const stream = await streamsService.get(attrs.streamId)
@@ -77,8 +78,8 @@ router.get('/streams/:attrs', function (req, res) {
     if (!allowed) {
       throw new ForbiddenError('You do not have permission to access this stream.')
     }
-    const start = gluedDateToISO(attrs.time.starts)
-    const end = gluedDateToISO(attrs.time.ends)
+    const start = gluedDateStrToISO(attrs.time.starts)
+    const end = gluedDateStrToISO(attrs.time.ends)
     const queryData = await streamSegmentService.query({ stream_id, start, end }, { joinRelations: true })
     const segments = queryData.streamSegments
     if (!segments.length) {

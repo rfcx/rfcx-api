@@ -7,6 +7,7 @@ const Converter = require('../../../utils/converter/converter')
 const { getIds } = require('../../../services/classifications')
 const { parseClassifierOutputMapping } = require('../../../services/classifiers/parsing')
 const { upload } = require('../../../services/classifiers/upload')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -32,7 +33,7 @@ const { upload } = require('../../../services/classifiers/upload')
  *       404:
  *         description: Not found
  */
-router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get('/:id', authenticate(), authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   return service.get(req.params.id, { joinRelations: true })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
@@ -69,7 +70,7 @@ router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (r
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get('/', authenticate(), authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.query, transformedParams)
   params.convert('limit').default(100).toInt()
@@ -117,7 +118,7 @@ router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req,
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/', authenticate(), authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.body, transformedParams, true)
   params.convert('name').toString()
@@ -192,7 +193,7 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
  *       400:
  *         description: Invalid query parameters
  */
-router.patch('/:id', function (req, res) {
+router.patch('/:id', authenticate(), function (req, res) {
   const id = req.params.id
 
   if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {

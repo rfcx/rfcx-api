@@ -6,6 +6,7 @@ const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const rolesService = require('../../../services/roles')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -27,7 +28,7 @@ const { hasStreamPermission } = require('../../../middleware/authorization/roles
  *                 $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
  */
 
-router.get('/:id/users', hasStreamPermission('U'), async function (req, res) {
+router.get('/:id/users', authenticate(), hasStreamPermission('U'), async function (req, res) {
   try {
     return res.json(await rolesService.getUsersForItem(req.params.id, rolesService.STREAM))
   } catch (e) {
@@ -63,7 +64,7 @@ router.get('/:id/users', hasStreamPermission('U'), async function (req, res) {
  *               $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
  */
 
-router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
+router.put('/:id/users', authenticate(), hasStreamPermission('U'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -104,7 +105,7 @@ router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
  *         description: OK
  */
 
-router.delete('/:id/users', hasStreamPermission('U'), function (req, res) {
+router.delete('/:id/users', authenticate(), hasStreamPermission('U'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

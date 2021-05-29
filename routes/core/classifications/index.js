@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const classificationService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -27,7 +28,7 @@ const Converter = require('../../../utils/converter/converter')
  *       404:
  *         description: Not found
  */
-router.get('/:value', function (req, res) {
+router.get('/:value', authenticate(), function (req, res) {
   return classificationService.get(req.params.value)
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classification'))
@@ -83,7 +84,7 @@ router.get('/:value', function (req, res) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', function (req, res) {
+router.get('/', authenticate(), function (req, res) {
   const converter = new Converter(req.query, {}, true)
 
   converter.convert('keyword').optional().toString()
@@ -128,7 +129,7 @@ router.get('/', function (req, res) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/:value/characteristics', function (req, res) {
+router.get('/:value/characteristics', authenticate(), function (req, res) {
   return classificationService.queryByParent(req.params.value, 'characteristic')
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting characteristics'))

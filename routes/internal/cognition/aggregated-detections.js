@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const Converter = require('../../../utils/converter/converter')
 const countQuery = require('./dao/count-query')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -63,7 +64,7 @@ const countQuery = require('./dao/count-query')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/aggregated-detections', (req, res) => {
+router.get('/aggregated-detections', authenticate(), (req, res) => {
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()

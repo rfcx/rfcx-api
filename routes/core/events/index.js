@@ -3,9 +3,10 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
 const eventsService = require('../../../services/events')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
-router.post('/', authenticatedWithRoles('systemUser'), require('./create'))
-router.patch('/:id', authenticatedWithRoles('systemUser'), require('./update'))
+router.post('/', authenticate(), authenticatedWithRoles('systemUser'), require('./create'))
+router.patch('/:id', authenticate(), authenticatedWithRoles('systemUser'), require('./update'))
 
 /**
  * @swagger
@@ -77,7 +78,7 @@ router.patch('/:id', authenticatedWithRoles('systemUser'), require('./update'))
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', (req, res) => {
+router.get('/', authenticate(), (req, res) => {
   const userId = req.rfcx.auth_token_info.id
   const userIsSuper = req.rfcx.auth_token_info.is_super
   const hasSystemRole = req.rfcx.auth_token_info.has_system_role
@@ -143,7 +144,7 @@ router.get('/', (req, res) => {
  *       404:
  *         description: Event not found
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', authenticate(), (req, res) => {
   const id = req.params.id
   const userId = req.rfcx.auth_token_info.id
   const userIsSuper = req.rfcx.auth_token_info.is_super

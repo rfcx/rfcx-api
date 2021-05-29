@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -17,7 +18,7 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
  *       403:
  *         description: Insufficient privileges
  */
-router.post('/streams/clear', authenticatedWithRoles('systemUser', 'streamsAdmin'), function (req, res) {
+router.post('/streams/clear', authenticate(), authenticatedWithRoles('systemUser', 'streamsAdmin'), function (req, res) {
   // Not yet implemented
   res.sendStatus(501)
 })

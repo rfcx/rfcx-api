@@ -5,6 +5,7 @@ const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const auth0Service = require('../../../services/auth0/auth0-service')
 const rolesService = require('../../../services/roles')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -56,7 +57,7 @@ const rolesService = require('../../../services/roles')
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/stream-source-files', function (req, res) {
+router.get('/:id/stream-source-files', authenticate(), function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const converter = new Converter(req.query, {}, true)

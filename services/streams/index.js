@@ -5,6 +5,7 @@ const projectsService = require('../projects')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, READ, UPDATE, DELETE } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
+const { hashedCredentials } = require('../../utils/misc/hash')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),
@@ -304,6 +305,11 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
   return streamIds
 }
 
+function getStreamRangeToken (stream, start, end) {
+  const STREAM_TOKEN_SALT = process.env.STREAM_TOKEN_SALT || 'random_string'
+  return hashedCredentials(STREAM_TOKEN_SALT, `${stream}_${start}_${end}`)
+}
+
 module.exports = {
   get,
   create,
@@ -314,5 +320,6 @@ module.exports = {
   refreshStreamBoundVars,
   ensureStreamExistsForGuardian,
   getPublicStreamIds,
-  getAccessibleStreamIds
+  getAccessibleStreamIds,
+  getStreamRangeToken
 }

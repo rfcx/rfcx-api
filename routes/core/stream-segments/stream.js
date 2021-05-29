@@ -3,6 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamSegmentService = require('../../../services/streams/segments')
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -57,7 +58,7 @@ const { hasStreamPermission } = require('../../../middleware/authorization/roles
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/stream-segments', hasStreamPermission('R'), function (req, res) {
+router.get('/:id/stream-segments', authenticate(), hasStreamPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

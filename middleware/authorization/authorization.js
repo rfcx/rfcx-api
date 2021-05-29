@@ -4,6 +4,7 @@ const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
 passport.use('jwt', require('../passport-jwt').JwtStrategy)
 passport.use('jwt-custom', require('../passport-jwt').JwtStrategyCustom)
+passport.use('stream-token', require('../passport-stream-token'))
 
 // Factory method to create a token type authorization middleware
 function requireTokenType (type) {
@@ -49,10 +50,10 @@ function authenticatedWithRoles (...roles) {
 }
 
 /**
- * Creates a middleware that checks the user is authenticated (with JWT)
+ * Creates a middleware that checks the user is authenticated (with JWT or stream-token)
  */
-function authenticate () {
-  return passport.authenticate(['jwt', 'jwt-custom'], { session: false })
+function authenticate (strategies = ['jwt', 'jwt-custom']) {
+  return passport.authenticate(strategies, { session: false })
 }
 
 /**

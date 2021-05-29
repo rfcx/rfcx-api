@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const indicesService = require('../../../services/indices')
 const Converter = require('../../../utils/converter/converter')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -34,7 +35,7 @@ const Converter = require('../../../utils/converter/converter')
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', function (req, res) {
+router.get('/', authenticate(), function (req, res) {
   const params = new Converter(req.query)
   params.convert('limit').default(100).toInt()
   params.convert('offset').default(0).toInt()

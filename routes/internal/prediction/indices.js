@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const indicesService = require('../../../services/indices')
 const indexValuesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
-const { hasRole } = require('../../../middleware/authorization/authorization')
+const { authenticate, hasRole } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -29,7 +29,7 @@ const { hasRole } = require('../../../middleware/authorization/authorization')
  *       404:
  *         description: Stream not found
  */
-router.post('/index-values', hasRole(['systemUser']), function (req, res) {
+router.post('/index-values', authenticate(), hasRole(['systemUser']), function (req, res) {
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('stream_id').toString()

@@ -6,6 +6,7 @@ const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
+const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -43,7 +44,7 @@ const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced'
  *       404:
  *         description: Stream not found
  */
-router.patch('/streams/:externalId', (req, res) => {
+router.patch('/streams/:externalId', authenticate(), (req, res) => {
   const user = req.rfcx.auth_token_info
   const externalId = req.params.externalId
   const convertedParams = {}
@@ -99,7 +100,7 @@ router.patch('/streams/:externalId', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.delete('/streams/:externalId', ensureUserSynced, (req, res) => {
+router.delete('/streams/:externalId', authenticate(), ensureUserSynced, (req, res) => {
   streamsService.get({ external_id: req.params.externalId })
     .then(async (stream) => {
       const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)
