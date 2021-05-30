@@ -1,9 +1,41 @@
-## 1.0.20 (2021-??-??)
+## 1.0.21 (2021-??-??)
+
+### Features
+* **core:** Update GET /classifications to be able to limit the classifications result by classifiers by classifiers ([CE-703](https://jira.rfcx.org/browse/CE-703))
+* **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
+* **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
+
+### Performance Improvements
+* **legacy:** Do not generate anonymous token for audio json data; Reduce models which we include for GuardianAudio ([CE-795](https://jira.rfcx.org/browse/CE-795))
+
+### Bug Fixes
+* **core:** POST /classifiers save correct external id
+* **core:** Convert type of latitude, longitude and altitude back to DOUBLE to improve precision on the location ([CE-813](https://jira.rfcx.org/browse/CE-813))
+* **core:** Handle saving enddate from different platform on new classifier deployment from PATCH /classifiers ([CE-808](https://jira.rfcx.org/browse/CE-808))
+
+
+## 1.0.20-hotfix.0 (2021-??-??)
+
+### Bug Fixes
+**internal:** PATCH /internal/prediction/classifier-deployments/:id not update the deployed status
+
+
+## 1.0.20 (2021-05-21)
 
 ### Features
 * **internal:** GET /interna/ai-hub/reviews endpoints getting the detections query by review/unreview/positive/negative status ([CE-385](https://jira.rfcx.org/browse/CE-385))
-* **internal:** Update GET /internal/predictions/classifier-deployments to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
-* **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
+* **internal:** Update GET /internal/predictions/classifier-deployments/:id to return model url ([CE-487](https://jira.rfcx.org/browse/CE-487))
+* **internal:** Update GET /internal/predictions/classifier-deployments to return full attributes when given classifier fields
+* **core:** Add recording filename to meta parameter for the Arbimon recording object ([CE-686](https://jira.rfcx.org/browse/CE-686))
+
+### Bug Fixes
+* **core:** Detections endpoint only returning public stream detections [CE-382](https://jira.rfcx.org/browse/CE-382)
+
+
+## 1.0.19-hotfix.0 (2021-05-19)
+
+### Bug Fixes
+* **core:** Fix issue in getPermissions function caused by missing attribute
 
 
 ## 1.0.19 (2021-05-13)

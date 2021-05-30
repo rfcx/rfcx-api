@@ -68,25 +68,55 @@ function getIds (values) {
     })
 }
 
-function queryByKeyword (keyword, types, limit, offset) {
+async function queryClassificationIdsForClassifiers (allClassifiers, classifiers) {
+  const where = {}
+  if (!allClassifiers) {
+    where.classifier_id = {
+      [models.Sequelize.Op.in]: classifiers
+    }
+  }
+
+  const rawClassificationsIds = await models.ClassifierOutput.findAll({ where, group: 'classification_id', attributes: ['classification_id'], raw: true })
+
+  return rawClassificationsIds.map(c => c.classification_id)
+}
+
+async function queryByKeyword (keyword, types, allClassifiers, classifiers, limit, offset) {
   const columns = models.Classification.attributes.lite.map(col => `c.${col} AS ${col}`).join(', ')
   const typeColumns = models.ClassificationType.attributes.lite.map(col => `ct.${col} AS "type.${col}"`).join(', ')
   const nameColumns = models.ClassificationAlternativeName.attributes.lite.map(col => `can.${col} AS "alternative_names.${col}"`).join(', ')
   const typeCondition = types === undefined ? '' : 'AND ct.value = ANY($types)'
+  const conditions = []
+  if (allClassifiers || classifiers) {
+    const classificationIds = await queryClassificationIdsForClassifiers(allClassifiers, classifiers)
+    if (classificationIds.length === 0) {
+      return []
+    }
+    conditions.push(`c.id IN (${classificationIds.join(',')})`)
+  }
+
+  const bind = { types, limit, offset }
+
+  if (keyword !== undefined || keyword !== '') {
+    conditions.push('(c.title ILIKE $keyword OR can.name ILIKE $keyword)')
+    bind.keyword = `%${keyword}%`
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
   const sql = `SELECT ${columns}, ${typeColumns}, ${nameColumns}
        FROM classifications c
        INNER JOIN classification_types ct ON c.type_id = ct.id ${typeCondition}
        LEFT JOIN classification_alternative_names can ON c.id = can.classification_id
-       WHERE c.title ILIKE $keyword OR can.name ILIKE $keyword
+       ${where}
        ORDER BY c.title, can."rank" LIMIT $limit OFFSET $offset`
   const options = {
     raw: true,
     nest: true,
-    bind: {
-      keyword: '%' + keyword + '%', types, limit, offset
-    }
+    bind
   }
-  return models.sequelize.query(sql, options)
+
+  return await models.sequelize.query(sql, options)
     .reduce(includedRelationReducer('alternative_names'), [])
 }
 

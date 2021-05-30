@@ -25,7 +25,6 @@ exports.env = {
   // MESSAGE_QUEUE_PREFIX: '',
   // MESSAGE_QUEUE_ENDPOINT: 'http://sqs:9324',
   
-  AWS_QUEUE_CONCURRENCY: 10,
   BUCKET_ANALYSIS: 'rfcx-analysis',
 
   ASSET_BUCKET_AUDIO: 'rfcx-guardian-ark-development',
@@ -58,7 +57,6 @@ exports.env = {
   POSTGRES_USER: 'postgres',
   POSTGRES_PASSWORD: 'test',
 
-  SQS_PERCEPTION_BATCH: 'rfcx-perception-batch',
 
   MANDRILL_KEY: '',
 
