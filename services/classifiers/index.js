@@ -178,11 +178,12 @@ async function update (id, createdBy, attrs) {
 }
 
 async function updateClassifierDeployment (update, transaction) {
-  // Search for current deployment
+  // Search for current deployment with given platform
   const existingDeployment = await models.ClassifierDeployment.findOne({
     where: {
       classifierId: update.id,
       start: { [models.Sequelize.Op.lt]: new Date() },
+      platform: update.platform,
       [models.Sequelize.Op.or]: [{ end: null }, { end: { [models.Sequelize.Op.gt]: new Date() } }]
     }
   })

@@ -29,7 +29,7 @@ test('single stream', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project)
-  const stream = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
 
   // Act / When
   await models.Stream.create(stream)
@@ -46,9 +46,9 @@ test('new stream extends bounds', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project)
-  const stream1 = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream1 = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
   await models.Stream.create(stream1)
-  const stream2 = { id: 'ab2', latitude: 9.1, longitude: 99.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
+  const stream2 = { id: 'ab2', latitude: 9.123444, longitude: 99.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
 
   // Act / When
   await models.Stream.create(stream2)
@@ -65,9 +65,9 @@ test('new stream same bounds', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project)
-  const stream1 = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream1 = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
   await models.Stream.create(stream1)
-  const stream2 = { id: 'ab2', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
+  const stream2 = { id: 'ab2', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
 
   // Act / When
   await models.Stream.create(stream2)
@@ -84,9 +84,9 @@ test('updated stream extends bounds', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project)
-  const stream1 = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream1 = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
   await models.Stream.create(stream1)
-  const stream2 = { id: 'ab2', latitude: 9.1, longitude: 99.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
+  const stream2 = { id: 'ab2', latitude: 9.123444, longitude: 99.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
   await models.Stream.create(stream2)
 
   // Act / When
@@ -105,11 +105,11 @@ test('updated stream same lat lng', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project)
-  const stream = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
   await models.Stream.create(stream)
 
   // Act / When
-  const newStreamlatitude = 10.1
+  const newStreamlatitude = 10.123444
   await models.Stream.update({ latitude: newStreamlatitude }, { where: { id: stream.id }, individualHooks: true })
 
   // Assert / Then
@@ -126,9 +126,9 @@ test('updated stream to another project', async () => {
   await models.Project.create(project1)
   const project2 = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project2)
-  const stream1 = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream1 = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB01' }
   await models.Stream.create(stream1)
-  const stream2 = { id: 'ab2', latitude: 9.1, longitude: 99.1, projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB02' }
+  const stream2 = { id: 'ab2', latitude: 9.123444, longitude: 99.123444, projectId: project1.id, createdById: seedValues.primaryUserId, name: 'AB02' }
   await models.Stream.create(stream2)
 
   // Act / When
@@ -152,9 +152,9 @@ test('remove stream', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project)
-  const stream1 = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream1 = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
   await models.Stream.create(stream1)
-  const stream2 = { id: 'ab2', latitude: 9.1, longitude: 99.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
+  const stream2 = { id: 'ab2', latitude: 9.123444, longitude: 99.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB02' }
   await models.Stream.create(stream2)
 
   // Act / When
@@ -172,7 +172,7 @@ test('remove the last stream in project', async () => {
   // Arrange / Given
   const project = { id: 'pq2', createdById: seedValues.primaryUserId, name: 'PQ2' }
   await models.Project.create(project)
-  const stream = { id: 'ab1', latitude: 10.1, longitude: 101.1, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
+  const stream = { id: 'ab1', latitude: 10.123444, longitude: 101.123444, projectId: project.id, createdById: seedValues.primaryUserId, name: 'AB01' }
   await models.Stream.create(stream)
 
   // Act / When
