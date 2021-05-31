@@ -17,8 +17,14 @@ const strategy = new TokenStrategy({
     return done(null, false)
   }
   req.rfcx.auth_token_info = {
-    is_super: true,
-    has_system_role: true
+    id: -1,
+    owner_id: -1,
+    has_stream_token: true,
+    stream_token: {
+      stream,
+      start,
+      end
+    }
   }
   done(null, req.rfcx.auth_token_info)
 })

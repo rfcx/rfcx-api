@@ -459,7 +459,7 @@ function combineStandardFilename (attrs, req) {
 }
 
 function gluedDateStrToMoment (dateStr) {
-  return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')
+  return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').utc()
 }
 
 function gluedDateStrToISO (dateStr) {

@@ -77,7 +77,7 @@ router.get('/:id/detections', authenticate(['jwt', 'jwt-custom', 'stream-token']
 
   params.validate()
     .then(async () => {
-      if (!user.has_system_role && !await hasPermission(READ, user, streamId, STREAM)) {
+      if (!user.has_system_role && !user.stream_token && !await hasPermission(READ, user, streamId, STREAM)) {
         throw new ForbiddenError('You do not have permission to read this stream')
       }
 
