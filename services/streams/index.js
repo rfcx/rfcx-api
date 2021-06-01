@@ -74,13 +74,14 @@ function create (stream, options = {}) {
  * @param {number} filters.createdBy Where created by the given user id
  * @param {string|number} filters.updatedAfter Where created by the given user id
  * @param {*} options Query options
- * @param {number} options.readableBy Include only streams readable by the given user id
  * @param {boolean} options.onlyPublic Include only public streams
  * @param {boolean} options.onlyDeleted Include only deleted streams
  * @param {string[]} options.fields Attributes and relations to include in results
  * @param {string} options.sort Order the results by one or more columns
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
+ * @param {string} options.permission Include only streams for which you have selected permission (only 'C', 'R', 'U', 'D' are available)
+ * @param {number} options.permissableBy Include only streams permissable by the given user id
  */
 async function query (filters, options = {}) {
   const where = {}
@@ -125,9 +126,9 @@ async function query (filters, options = {}) {
   if (options.onlyPublic) {
     where.isPublic = true
   } else {
-    if (options.readableBy) {
+    if (options.permissableBy) {
       where.id = {
-        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.readableBy, STREAM)
+        [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.permissableBy, STREAM, null, options.permission)
       }
     }
     if (options.onlyDeleted) {
@@ -272,7 +273,7 @@ function ensureStreamExistsForGuardian (dbGuardian) {
 }
 
 async function getPublicStreamIds () {
-  return (await query({ is_public: true })).streams.map(d => d.id)
+  return (await query({ is_public: true })).results.map(d => d.id)
 }
 
 /**

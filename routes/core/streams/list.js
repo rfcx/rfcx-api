@@ -3,6 +3,7 @@ const streamsService = require('../../../services/streams')
 const usersService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 const { Stream } = require('../../../modelsTimescale')
+const { CREATE, READ, UPDATE, DELETE } = require('../../../services/roles')
 
 /**
  * @swagger
@@ -70,6 +71,16 @@ const { Stream } = require('../../../modelsTimescale')
  *         description: Customize included fields and relations
  *         in: query
  *         type: array
+ *       - name: permissions
+ *         description: Return streams for which you have selected permission
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - "R"
+ *             - "U"
+ *             - "D"
+ *         default: ["R"]
  *     responses:
  *       200:
  *         description: List of streams objects
@@ -89,7 +100,7 @@ const { Stream } = require('../../../modelsTimescale')
  */
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
-  const readableBy = user.is_super || user.has_system_role ? undefined : user.id
+  const permissableBy = user.is_super || user.has_system_role ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('keyword').optional().toString()
   converter.convert('organizations').optional().toArray()
@@ -104,19 +115,20 @@ module.exports = (req, res) => {
   converter.convert('offset').default(0).toInt()
   converter.convert('sort').optional().toString()
   converter.convert('fields').optional().toArray()
+  converter.convert('permission').default(READ).toString().isEqualToAny([CREATE, READ, UPDATE, DELETE])
 
   return converter.validate()
     .then(async params => {
-      const { keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields } = params
+      const { keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields, permission } = params
       let createdBy = params.createdBy
       if (createdBy === 'me') {
-        createdBy = readableBy
+        createdBy = permissableBy
       } else if (createdBy) {
         createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
       const filters = { keyword, organizations, projects, start, end, createdBy, updatedAfter }
       const options = {
-        readableBy,
+        permissableBy,
         onlyPublic,
         onlyDeleted,
         limit,
@@ -125,7 +137,8 @@ module.exports = (req, res) => {
         // TODO remove this hack after fixing apps are using non-lite attributes
         fields: fields !== undefined
           ? fields
-          : [...Stream.attributes.full, 'created_by', 'project', 'permissions']
+          : [...Stream.attributes.full, 'created_by', 'project', 'permissions'],
+        permission
       }
       const streamsData = await streamsService.query(filters, options)
       return res.header('Total-Items', streamsData.total).json(streamsData.results)
