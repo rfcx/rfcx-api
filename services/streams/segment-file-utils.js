@@ -376,7 +376,7 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
   if (attrs.fileType === 'spec') {
     await audioUtils.serveAudioFromFile(res, spectrogramFilePath, spectrogramFilename, `image/${reqContentType}`, !!req.query.inline, additionalHeaders)
   } else {
-    await audioUtils.serveAudioFromFile(res, audioFilePath, audioFilename, audioUtils.formatSettings[attrs.fileType].mime, !!req.query.inline, additionalHeaders)
+    await audioUtils.serveAudioFromFile(res, audioFilePath, audioFilename, assetUtils.mimeTypeFromAudioCodec(attrs.fileType), !!req.query.inline, additionalHeaders)
   }
   if (MEDIA_CACHE_ENABLED) {
     const args = [
