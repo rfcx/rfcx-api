@@ -4,6 +4,7 @@
 * **core:** Update GET /classifications to be able to limit the classifications result by classifiers by classifiers ([CE-703](https://jira.rfcx.org/browse/CE-703))
 * **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
 * **core:** Add ability to filter streams/projects/organizations by permission ([CE-655](https://jira.rfcx.org/browse/CE-655))
+* **core:** Update GET /clustered-detections to be able to query the detections by giving multiple stream values ([CE-811](https://jira.rfcx.org/browse/CE-811))
 
 ### Performance Improvements
 * **legacy:** Do not generate anonymous token for audio json data; Reduce models which we include for GuardianAudio ([CE-795](https://jira.rfcx.org/browse/CE-795))
