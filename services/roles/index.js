@@ -170,7 +170,7 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string[]} inIds Subset of object ids to select from
  * @param {string} permission Required permission "R" by default
  */
-async function getAccessibleObjectsIDs (userId, itemName, inIds = null, permission = READ) {
+async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = READ) {
   const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
   const joins = [
     `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id AND ${itemName}r.user_id = ${userId}`,

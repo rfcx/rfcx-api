@@ -72,17 +72,14 @@ const { CREATE, READ, UPDATE, DELETE } = require('../../../services/roles')
  *         in: query
  *         type: array
  *       - name: permissions
- *         description: Return streams for which you have all selected permissions
+ *         description: Return streams for which you have selected permission
  *         in: query
  *         schema:
- *           type: array
- *           items:
- *             type: string
- *             enum:
- *               - "C"
- *               - "R"
- *               - "U"
- *               - "D"
+ *           type: string
+ *           enum:
+ *             - "R"
+ *             - "U"
+ *             - "D"
  *         default: ["R"]
  *     responses:
  *       200:
