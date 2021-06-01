@@ -50,10 +50,11 @@ const rolesService = require('../../../services/roles')
  *         in: query
  *         required: true
  *         type: string
- *       - name: stream_id
- *         description: Limit results to a selected stream
+ *       - name: streams
+ *         description: List of stream ids to limit results
  *         in: query
- *         type: string
+ *         type: array|string
+ *         example: xu82jDgX49
  *       - name: streams_public
  *         description: Limit results to public streams
  *         in: query
@@ -109,7 +110,7 @@ router.get('/', (req, res) => {
   const params = new Converter(req.query, convertedParams)
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
-  params.convert('stream_id').optional().toString()
+  params.convert('streams').optional().toArray()
   params.convert('streams_public').optional().toBoolean()
   params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('classifications').optional().toArray()
@@ -123,18 +124,11 @@ router.get('/', (req, res) => {
 
   return params.validate()
     .then(async () => {
-      const streamId = convertedParams.stream_id
-      if (streamId) {
-        const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
-        if (!allowed) {
-          throw new ForbiddenError('You do not have permission to access this stream.')
-        }
-      }
-      const { start, end, classifications, interval, aggregate, field, descending, limit, offset } = convertedParams
+      const { start, end, streams, classifications, interval, aggregate, field, descending, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
       const streamsOnlyCreatedBy = convertedParams.streams_created_by
       const streamsOnlyPublic = convertedParams.streams_public
-      return detectionsService.timeAggregatedQuery(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, interval, aggregate, field, minConfidence, descending, limit, offset, user)
+      return detectionsService.timeAggregatedQuery(start, end, streams, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, interval, aggregate, field, minConfidence, descending, limit, offset, user)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

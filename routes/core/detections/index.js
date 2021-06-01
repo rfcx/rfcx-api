@@ -77,9 +77,7 @@ router.get('/', (req, res) => {
       const streamIds = convertedParams.streams
       const minConfidence = convertedParams.min_confidence
       const { start, end, classifications, limit, offset } = convertedParams
-      // TODO: move streams permissions logic into the detections service
-      const allowedStreams = await roleService.getAccessibleObjectsIDs(user.id, 'stream', streamIds)
-      const result = await detectionsService.query(start, end, allowedStreams, classifications, minConfidence, limit, offset, user)
+      const result = await detectionsService.query(start, end, streamIds, classifications, minConfidence, limit, offset, user)
       return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
