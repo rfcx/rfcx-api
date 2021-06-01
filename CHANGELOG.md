@@ -5,8 +5,13 @@
 * **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
 * **core:** Implement new "stream-token" authorization strategy and apply it for stream assets and stream detections endpoints ([CE-225](https://jira.rfcx.org/browse/CE-225))
 
+### Performance Improvements
+* **legacy:** Do not generate anonymous token for audio json data; Reduce models which we include for GuardianAudio ([CE-795](https://jira.rfcx.org/browse/CE-795))
+
 ### Bug Fixes
 * **core:** POST /classifiers save correct external id
+* **core:** Convert type of latitude, longitude and altitude back to DOUBLE to improve precision on the location ([CE-813](https://jira.rfcx.org/browse/CE-813))
+* **core:** Handle saving enddate from different platform on new classifier deployment from PATCH /classifiers ([CE-808](https://jira.rfcx.org/browse/CE-808))
 
 
 ## 1.0.20-hotfix.0 (2021-??-??)
