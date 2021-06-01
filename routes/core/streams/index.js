@@ -4,7 +4,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
 
 router.post('/', authenticate(), ensureUserSynced, require('./create'))
 router.get('/', authenticate(), require('./list'))
-router.get('/:id', authenticate(), require('./get'))
+router.get('/:id', authenticate(['jwt', 'jwt-custom', 'stream-token']), require('./get'))
 router.patch('/:id', authenticate(), ensureUserSynced, require('./update'))
 router.delete('/:id', authenticate(), ensureUserSynced, require('./remove'))
 
