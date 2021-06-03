@@ -52,6 +52,10 @@ module.exports = function (sequelize, DataTypes) {
     maxLongitude: {
       type: DataTypes.DOUBLE,
       allowNull: true
+    },
+    preferredPlatform: {
+      type: DataTypes.STRING(3),
+      allowNull: true
     }
   }, {
     paranoid: true,
