@@ -91,6 +91,9 @@ function checkAttrsValidity (req, attrs) {
   if ((moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')).diff((moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')), 'minutes') > 15) {
     throw new ValidationError('Maximum range between start and end should be less than 15 minutes.')
   }
+  if (attrs.clip && attrs.clip.top && attrs.clip.bottom && parseInt(attrs.clip.top) <= parseInt(attrs.clip.bottom)) {
+    throw new ValidationError('Highpass frequency filter can not be greater or equal to lowpass')
+  }
   if (attrs.fileType === 'spec' && (req.rfcx.content_type !== 'png' && req.rfcx.content_type !== 'jpeg')) {
     throw new ValidationError('Unsupported file extension. Only png or jpeg are available for type spec')
   }
@@ -287,8 +290,13 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   if (attrs.gain !== undefined && parseFloat(attrs.gain) !== 1) {
     command += `,volume=${attrs.gain}`
   }
-  if (attrs.clip && attrs.clip !== 'full') {
-    command += `,highpass=f=${attrs.clip.bottom},lowpass=f=${attrs.clip.top}`
+  if (attrs.fileType !== 'spec' && attrs.clip && attrs.clip !== 'full') {
+    if (parseInt(attrs.clip.bottom)) {
+      command += `,highpass=f=${attrs.clip.bottom}`
+    }
+    if (parseInt(attrs.clip.top)) {
+      command += `,lowpass=f=${attrs.clip.top}`
+    }
   }
   command += `" -y -vn -ac 1 ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"; -ac 1 - single audio channel
   return runExec(command)
@@ -312,10 +320,15 @@ function renderSpectrogram (sourcePath, outputPath, monochrome, width, height, w
   return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram -r ${monochrome === 'true' ? '-lm' : '-h'} -o  ${outputPath} -x ${width} -y ${height} -w ${windowFunc} -z ${zAxis} -s`)
 }
 
+function hzToPx (height, sampleRate, hz) {
+  const maxHz = sampleRate / 2
+  return height * hz / maxHz
+}
+
 function cropSpectrogram (sourcePath, attrs, height) {
-  const factor = attrs.maxSampleRate / (attrs.clip.top - attrs.clip.bottom)
-  const yOffset = height - attrs.clip.top / attrs.maxSampleRate * height
-  return runExec(`${IMAGEMAGICK_PATH} ${sourcePath} -crop '${attrs.dimensions.x}x${height / factor}+0+${yOffset}' +repage ${sourcePath}`)
+  const topPx = hzToPx(height, attrs.maxSampleRate, attrs.clip.top)
+  const bottomPx = hzToPx(height, attrs.maxSampleRate, attrs.clip.bottom)
+  return runExec(`${IMAGEMAGICK_PATH} ${sourcePath} -crop '${attrs.dimensions.x}x${topPx - bottomPx}+0+${height - topPx}' +repage ${sourcePath}`)
 }
 
 function resizeSpectrogram (sourcePath, dimensions) {
