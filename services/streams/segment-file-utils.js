@@ -284,6 +284,9 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   if (attrs.gain !== undefined && parseFloat(attrs.gain) !== 1) {
     command += `,volume=${attrs.gain}`
   }
+  if (attrs.clip && attrs.clip !== 'full') {
+    command += `,highpass=f=${attrs.clip.bottom},lowpass=f=${attrs.clip.top}`
+  }
   command += `" -y -vn -ac 1 ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"; -ac 1 - single audio channel
   return runExec(command)
 }
@@ -291,7 +294,7 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
 async function makeSpectrogram (sourcePath, outputPath, filename, contentType, attrs) {
   const height = getSoxFriendlyHeight(attrs.dimensions.y)
   await renderSpectrogram(sourcePath, outputPath, attrs.monochrome, attrs.dimensions.x, height, attrs.windowFunc, attrs.zAxis)
-  if (attrs.clip !== 'full') {
+  if (attrs.clip && attrs.clip !== 'full') {
     await cropSpectrogram(outputPath, attrs, height)
   }
   await resizeSpectrogram(outputPath, attrs.dimensions)
