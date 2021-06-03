@@ -1,4 +1,7 @@
-/** Generic message queue */
+/**
+ * Generic message queue
+ * @class
+ * */
 class MessageQueue {
   /**
    * Create a message queue, injecting a client (e.g. SQS)
@@ -16,17 +19,50 @@ class MessageQueue {
   }
 
   /**
+   * Append a message to the queue
    *
    * @param {string} eventName
    * @param {*} message
    */
-  async enqueue (eventName, message) {
+  async publish (eventName, message) {
     const queue = this.queueName(eventName)
     try {
       await this.client.publish(queue, message)
     } catch (err) {
       console.error(`Message Queue: Failed to enqueue: ${err.message}`)
     }
+  }
+
+  /**
+   * Pull a message out of the queue
+   *
+   * @param {string} eventName
+   * @param {number} maxMessages Number of messages to dequeue
+   */
+  async consume (eventName, maxMessages) {
+    const queue = this.queueName(eventName)
+    return await this.client.consume(queue, maxMessages).catch(err => {
+      console.error(`Message Queue: Failed to dequeue: ${err.message}`)
+      return []
+    })
+  }
+
+  /**
+   * Callback from subscribing to a message queue, one call per message
+   * @async
+   * @callback MessageHandler
+   * @param {*} message
+   * @return {boolean} true if the message was handled successfully (and can be deleted from the queue)
+   */
+
+  /**
+   * Subscribe to receive messages from the queue
+   * @param {string} eventName
+   * @param {MessageHandler} messageHandler
+   */
+  subscribe (eventName, messageHandler) {
+    const queue = this.queueName(eventName)
+    this.client.subscribe(queue, messageHandler)
   }
 
   static isEnabled () { return process.env.MESSAGE_QUEUE_ENABLED === 'true' }

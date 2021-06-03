@@ -1,4 +1,5 @@
 const SQS = require('aws-sdk/clients/sqs')
+const { Consumer } = require('sqs-consumer')
 
 class SQSMessageQueueClient {
   /**
@@ -31,6 +32,31 @@ class SQSMessageQueueClient {
       QueueUrl: await this.queueUrl(queueName)
     }
     return this.sqs.sendMessage(payload).promise()
+  }
+
+  subscribe (queueName, messageHandler) {
+    const consumer = Consumer.create({
+      queueUrl: this.queueUrl(queueName),
+      batchSize: 10,
+      pollingWaitTimeMs: 1000,
+      handleMessage: async (message) => {
+        const body = JSON.parse(message.Body)
+        try {
+          await messageHandler(body)
+        } catch (e) {
+          console.error(e)
+          return false
+        }
+        return true
+      },
+      sqs: this.sqs
+    })
+
+    consumer.on(['error', 'processing_error', 'timeout_error'], (err) => {
+      console.error('Message Queue SQS consumer', err.message)
+    })
+
+    consumer.start()
   }
 }
 
