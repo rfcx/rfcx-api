@@ -123,6 +123,45 @@ describe('convertAudio', () => {
       })
     })
 
+    describe('frequency attribute', () => {
+      test('Should return correct command for single segment with r defined to 0.200.', () => {
+        const segments = [
+          { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
+        ]
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,highpass=f=0,lowpass=f=200" -y -vn -ac 1 /tmp/destination.opus'
+        segmentFileUtils.convertAudio(segments, 1100, 1900, { clip: { top: 200, bottom: 0 } }, '/tmp/destination.opus')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+      test('Should return correct command for single segment with r defined to 1500.3000.', () => {
+        const segments = [
+          { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
+        ]
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,highpass=f=1500,lowpass=f=3000" -y -vn -ac 1 /tmp/destination.opus'
+        segmentFileUtils.convertAudio(segments, 1100, 1900, { clip: { top: 3000, bottom: 1500 } }, '/tmp/destination.opus')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+      test('Should return correct command for single segment with r defined to 5000.24000.', () => {
+        const segments = [
+          { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
+        ]
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,highpass=f=5000,lowpass=f=24000" -y -vn -ac 1 /tmp/destination.opus'
+        segmentFileUtils.convertAudio(segments, 1100, 1900, { clip: { top: 24000, bottom: 5000 } }, '/tmp/destination.opus')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+      test('Should return correct command for single segment with r defined to 1500.3000 and gain defined to 1.5', () => {
+        const segments = [
+          { start: 1000, end: 2000, sourceFilePath: '/tmp/source.opus', stream_source_file: { sample_rate: 24000 } }
+        ]
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.opus -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,volume=1.5,highpass=f=1500,lowpass=f=3000" -y -vn -ac 1 /tmp/destination.opus'
+        segmentFileUtils.convertAudio(segments, 1100, 1900, { gain: 1.5, clip: { top: 3000, bottom: 1500 } }, '/tmp/destination.opus')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+    })
+
     describe('Time ranges', () => {
       test('Should return correct command for range which starts before segment and ends with segment', () => {
         const segments = [

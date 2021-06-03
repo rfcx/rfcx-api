@@ -100,6 +100,9 @@ function checkAttrsValidity (req, attrs) {
   if (attrs.fileType === 'spec' && (!attrs.dimensions || !attrs.dimensions.x || !attrs.dimensions.y)) {
     throw new ValidationError('"d" (dimensions) attribute is required and should have the following format: d100.200.')
   }
+  if (attrs.fileType === 'spec' && attrs.dimensions && attrs.dimensions.y > 1024) {
+    throw new ValidationError('Spectrogram height can not be greater than 1024px')
+  }
   if (attrs.fileType === 'spec' && attrs.windowFunc && !possibleWindowFuncs.includes(attrs.windowFunc)) {
     throw new ValidationError(`"w" unsupported window function. Possible values: ${possibleWindowFuncs.join(', ')}.`)
   }
