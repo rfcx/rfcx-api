@@ -178,9 +178,3 @@ Fix all fixable errors: `npm run lint:fix`
 Recommend developers to setup ESLint in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) is installed.
 
 
-## Deployment
-
-In an emergency, you can revert a deployment to a specific build like this (example for mqtt):
-```sh
-kubectl set image deployment api-mqtt-legacy api-mqtt-legacy=887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-mqtt_production:192 --namespace production
-```
