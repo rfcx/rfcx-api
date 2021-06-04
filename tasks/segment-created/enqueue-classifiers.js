@@ -1,5 +1,5 @@
 const moment = require('moment')
-const { Classifier, ClassifierDeployment, ClassifierActiveProject, ClassifierActiveStream, Sequelize: { Op }, sequelize } = require('../../modelsTimescale')
+const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../modelsTimescale')
 const streamService = require('../../services/streams')
 const projectService = require('../../services/projects')
 const ClassifierMessageQueue = require('./classifier-message-queue')
@@ -8,12 +8,12 @@ const defaultPlatform = 'aws'
 
 async function enqueueClassifiers (streamId, start) {
   // Find the preferred platform for the stream
-  const stream = await streamService.get(streamId, { fields: 'id,projectId' })
+  const stream = await streamService.get(streamId, { fields: ['id', 'project_id'] })
   let preferredPlatform = defaultPlatform
-  if (stream.projectId) {
-    const project = await projectService.get(stream.projectId, { fields: 'preferredPlatform' })
-    if (project.preferredPlatform) {
-      preferredPlatform = project.preferredPlatform
+  if (stream.project_id) {
+    const project = await projectService.get(stream.project_id, { fields: ['preferred_platform'] })
+    if (project.preferred_platform) {
+      preferredPlatform = project.preferred_platform
     }
   }
 
@@ -21,7 +21,7 @@ async function enqueueClassifiers (streamId, start) {
   const classifiers = await getActiveClassifiers(stream)
 
   // Select the platform for each classifier
-  const classifiersAndPlatforms = classifiers.map(classifier => selectPlatform(classifier, preferredPlatform))
+  const classifiersAndPlatforms = classifiers.map(classifier => ({ classifier: classifier.toJSON(), platform: selectPlatform(classifier, preferredPlatform) }))
 
   // Queue the prediction service
   await Promise.all(classifiersAndPlatforms.map(cp => enqueue(cp.platform, cp.classifier, streamId, start)))
@@ -40,15 +40,18 @@ async function getActiveClassifiers (stream) {
     {
       model: ClassifierDeployment,
       as: 'deployments',
-      required: true
+      required: true,
+      attributes: ['platform']
     },
     {
-      model: ClassifierActiveProject,
-      as: 'activeProject'
+      model: Project,
+      as: 'active_projects',
+      attributes: []
     },
     {
-      model: ClassifierActiveStream,
-      as: 'activeStream'
+      model: Stream,
+      as: 'active_streams',
+      attributes: []
     }]
 
   const where = {
@@ -57,13 +60,13 @@ async function getActiveClassifiers (stream) {
     '$deployments.end$': { [Op.or]: { [Op.is]: null, [Op.gt]: sequelize.literal('CURRENT_TIMESTAMP') } }
   }
 
-  if (stream.projectId) {
+  if (stream.project_id) {
     where[Op.or] = {
-      '$activeProject.projectId$': stream.projectId,
-      '$activeStream.streamId$': stream.id
+      '$active_projects.id$': stream.project_id,
+      '$active_streams.id$': stream.id
     }
   } else {
-    where['$activeStream.streamId$'] = stream.id
+    where['$active_streams.id$'] = stream.id
   }
 
   const options = {
