@@ -1,6 +1,8 @@
-# Building and deploying the API
+[Home](../README.md) | [Tasks](../tasks/README.md) | **[Build/Deployment](README.md)**
 
-## Development server
+# Building and Deploying the API
+
+## Development server on Kubernetes
 
 ### First time setup
 
