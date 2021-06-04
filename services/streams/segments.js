@@ -2,7 +2,7 @@ const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = re
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const MessageQueue = require('../../utils/message-queue')
-const { SEGMENT_CREATED } = require('../../utils/message-queue/events')
+const { SEGMENT_CREATED } = require('../../tasks/event-names')
 
 const availableIncludes = [
   Stream.include(),

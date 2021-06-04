@@ -1,4 +1,4 @@
-const { SEGMENT_CREATED } = require('../utils/message-queue/events')
+const { SEGMENT_CREATED } = require('./event-names')
 const segmentCreated = require('./segment-created')
 
 /**
