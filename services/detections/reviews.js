@@ -1,24 +1,46 @@
 const models = require('../../modelsTimescale')
+const roleService = require('../roles')
+const streamsService = require('../streams')
 
-function getConditionsAndBind (opts, start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive) {
+/**
+ * Get detections conditions and bind
+ * @param {*} options
+ * @param {number} options.limit Maximum number to get detections
+ * @param {number} options.offset Number of resuls to skip
+ * @param {User} options.user User to check for review status
+ * @param {string} start
+ * @param {string} end
+ * @param {string[] | undefined} streams Stream id or list of stream ids
+ * @param {string[] | undefined} projects Project id or list of project ids
+ * @param {string[] | undefined} classifiers Classifier id or list of classifier ids
+ * @param {string[] | undefined} classifications Classification or list of classifications
+ * @param {number} minConfidence Minimum confidence to query detections
+ * @param {boolean} isReviewed
+ * @param {boolean} isPositive
+ * @returns {Detection[]} Detections
+ */
+async function getConditionsAndBind (options, start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive) {
   const conditions = [
     'd.start >= $start',
     'd.start < $end'
   ]
+  const { user, ...opts } = options
   const bind = {
     start: start.toISOString(),
     end: end.toISOString(),
     ...opts
   }
 
-  if (streams) {
-    conditions.push('d.stream_id = ANY($streams)')
-    bind.streams = streams
+  if (projects) {
+    const allowedProjects = await roleService.getAccessibleObjectsIDs(user.id, 'project', projects)
+    conditions.push('s.project_id = ANY($projects)')
+    bind.projects = allowedProjects
   }
 
-  if (projects) {
-    conditions.push('s.project_id = ANY($projects)')
-    bind.projects = projects
+  if (streams || !projects) {
+    const allowedStreams = streams ? await roleService.getAccessibleObjectsIDs(user.id, 'stream', streams) : await streamsService.getAccessibleStreamIds(user)
+    conditions.push('d.stream_id = ANY($streams)')
+    bind.streams = allowedStreams
   }
 
   if (classifiers) {
@@ -53,9 +75,8 @@ function getConditionsAndBind (opts, start, end, streams, projects, classifiers,
 
 async function defaultQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence } = filters
-  const { userId, ...opts } = options
 
-  const { conditions, bind } = getConditionsAndBind(opts, start, end, streams, projects, classifiers, classifications, minConfidence)
+  const { conditions, bind } = getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
 
   const detectionsSql = `
     SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
@@ -80,7 +101,7 @@ async function defaultQuery (filters, options) {
   const annotationBind = {
     start: detections[0].start,
     end: detections[detections.length - 1].start,
-    userId
+    userId: options.user.id
   }
 
   const annotationConditions = [
@@ -177,17 +198,17 @@ async function reviewQuery (filters, options) {
  * @param {*} filters
  * @param {string} filters.start
  * @param {string} filters.end
- * @param {string | string[]} filters.streams Stream id or list of stream ids
- * @param {string | string[]} filters.projects Project id or list of project ids
- * @param {string | string[]} filters.classifiers Classifier id or list of classifier ids
- * @param {string | string[]} filters.classifications Classification or list of classifications
+ * @param {string[] | undefined} filters.streams Stream id or list of stream ids
+ * @param {string[] | undefined} filters.projects Project id or list of project ids
+ * @param {string[] | undefined} filters.classifiers Classifier id or list of classifier ids
+ * @param {string[] | undefined} filters.classifications Classification or list of classifications
  * @param {number} filters.minConfidence Minimum confidence to query detections
  * @param {boolean} filters.isReviewed
  * @param {boolean} filters.isPositive
  * @param {*} options
  * @param {number} options.limit Maximum number to get detections
  * @param {number} options.offset Number of resuls to skip
- * @param {number} options.userId User to check for review status
+ * @param {User} options.user User to check for review status
  * @returns {Detection[]} Detections
  */
 async function query (filters, options) {

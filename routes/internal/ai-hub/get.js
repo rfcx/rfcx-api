@@ -65,7 +65,7 @@ const reviewsService = require('../../../services/detections/reviews')
  *                 $ref: '#/components/schemas/DetectionsAIHub'
  */
 module.exports = (req, res) => {
-  const userId = req.rfcx.auth_token_info.id
+  const user = req.rfcx.auth_token_info
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
@@ -82,7 +82,7 @@ module.exports = (req, res) => {
   converter.validate()
     .then(async (params) => {
       const { limit, offset, ...filters } = params
-      const options = { limit, offset, userId }
+      const options = { limit, offset, user }
       const results = await reviewsService.query(filters, options)
       return res.json(results)
     })
