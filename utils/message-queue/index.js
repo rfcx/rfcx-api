@@ -26,25 +26,13 @@ class MessageQueue {
    */
   async publish (eventName, message) {
     const queue = this.queueName(eventName)
+
+    console.info(`Message Queue: ${queue}: Publishing`, message)
     try {
       await this.client.publish(queue, message)
     } catch (err) {
-      console.error(`Message Queue: Failed to enqueue: ${err.message}`)
+      console.error(`Message Queue: ${queue}: Failed to publish "${err.message}"`)
     }
-  }
-
-  /**
-   * Pull a message out of the queue
-   *
-   * @param {string} eventName
-   * @param {number} maxMessages Number of messages to dequeue
-   */
-  async consume (eventName, maxMessages) {
-    const queue = this.queueName(eventName)
-    return await this.client.consume(queue, maxMessages).catch(err => {
-      console.error(`Message Queue: Failed to dequeue: ${err.message}`)
-      return []
-    })
   }
 
   /**
@@ -62,7 +50,10 @@ class MessageQueue {
    */
   subscribe (eventName, messageHandler) {
     const queue = this.queueName(eventName)
-    this.client.subscribe(queue, messageHandler)
+    this.client.subscribe(queue, (message) => {
+      console.info(`Message Queue: ${queue}: Receiving`, message)
+      return messageHandler(message)
+    })
   }
 
   static isEnabled () { return process.env.MESSAGE_QUEUE_ENABLED === 'true' }

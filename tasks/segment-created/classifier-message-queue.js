@@ -11,8 +11,8 @@ class ClassifierMessageQueue extends MessageQueue {
    * @param {boolean} priority
    * @returns
    */
-  queueName (platform, classifier, priority) {
-    const platformPrefix = `${classifier.platform}-`
+  classifierQueueName (platform, classifier, priority) {
+    const platformPrefix = `${platform}-`
     const classifierIdentifier = `${classifier.name}-v${classifier.version}`
     const prioritySuffix = priority ? '-priority' : ''
     return `${platformPrefix}${classifierIdentifier}${prioritySuffix}`
@@ -27,22 +27,18 @@ class ClassifierMessageQueue extends MessageQueue {
    * @param {*} message
    */
   async publish (platform, classifier, priority, message) {
-    const queue = this.queueName(platform, classifier, priority)
-    try {
-      await this.client.publish(queue, message)
-    } catch (err) {
-      console.error(`Message Queue: Failed to enqueue: ${err.message}`)
-    }
+    const queue = this.classifierQueueName(platform, classifier, priority)
+    return super.publish(queue, message)
   }
 
   static default () {
-    if (!ClassifierMessageQueue.instance) {
-      const SQSClient = require('./sqs-client')
+    if (!ClassifierMessageQueue.cmqInstance) {
+      const SQSClient = require('../../utils/message-queue/sqs-client')
       const sqs = new SQSClient({ endpoint: process.env.MESSAGE_QUEUE_ENDPOINT })
-      const options = { queuePrefix: 'classifier-' }
-      ClassifierMessageQueue.instance = new ClassifierMessageQueue(sqs, options)
+      const options = { queuePrefix: 'classifier' }
+      ClassifierMessageQueue.cmqInstance = new ClassifierMessageQueue(sqs, options)
     }
-    return ClassifierMessageQueue.instance
+    return ClassifierMessageQueue.cmqInstance
   }
 }
 
