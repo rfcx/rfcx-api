@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "nodemon bin/main.js",
     "dev:core": "DEV_CORE_ONLY=true nodemon bin/main.js",
+    "dev:tasks": "nodemon bin/main-tasks.js",
     "start": "node bin/setup.js ; node bin/main.js",
     "start:mqtt": "node bin/setup.js ; node bin/main-mqtt.js",
     "start:tasks": "node bin/main-tasks.js",
