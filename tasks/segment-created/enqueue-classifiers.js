@@ -28,14 +28,6 @@ async function enqueueClassifiers (streamId, start) {
 }
 
 async function getActiveClassifiers (stream) {
-  // const sql = `select c.id, c.name, c.version, cd.platform from classifiers c
-  //       join classifier_deployments cd on c.id = cd.classifier_id
-  //       left join classifier_active_projects cap on c.id = cap.classifier_id
-  //       left join classifier_active_streams cas on c.id = cas.classifier_id
-  //   where cd.start <= now() and (cd."end" is null or cd."end" > now())
-  //     and cd.status in (20, 30)
-  //     and (cas.stream_id = ? or cap.project_id = ?)`
-
   const include = [
     {
       model: ClassifierDeployment,
