@@ -126,7 +126,7 @@ const db = {
   ReportAttachmentRelation: require('./report-attachment-relation')(sequelize, Sequelize),
   Report: require('./report')(sequelize, Sequelize),
   ShortLink: require('./shortlink')(sequelize, Sequelize),
-  SourceType: require('./source-type')(sequelize, Sequelize),
+  SourceType: require('./source-type')(sequelize, Sequelize)
 }
 
 Object.keys(db).forEach(function (modelName) {
