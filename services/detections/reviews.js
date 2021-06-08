@@ -76,7 +76,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
 async function defaultQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence } = filters
 
-  const { conditions, bind } = getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
+  const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
 
   const detectionsSql = `
     SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
@@ -158,7 +158,8 @@ async function defaultQuery (filters, options) {
 async function reviewQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive } = filters
 
-  const { conditions, bind } = getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive)
+  const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive)
+  bind.userId = options.user.id
 
   const sql = `
     SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
