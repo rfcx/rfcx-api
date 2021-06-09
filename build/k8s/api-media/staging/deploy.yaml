@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-media
+  namespace: staging
+spec:
+  selector:
+    matchLabels:
+      app: api-media
+  template:
+    metadata:
+      labels:
+        app: api-media
+    spec:
+      containers:
+      - name: api-media
+        image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_staging:latest
+        envFrom:
+        - secretRef:
+            name: api-secrets
+        env:
+          - name: NEW_RELIC_APP_NAME
+            value: "Staging Core API"
+          - name: NEW_RELIC_NO_CONFIG_FILE
+            value: "true"
+          - name: MAILCHIMP_API_URL
+            value: "https://us9.api.mailchimp.com/3.0/"
+          - name: NEW_RELIC_LOG_LEVEL
+            value: "warning"
+          - name: DB_PORT
+            value: "3306"
+          - name: ASSET_URLBASE
+            value: "https://staging-api.rfcx.org/v1/assets"
+          - name: HOME
+            value: "/tmp"
+          - name: CONSOLE_BASE_URL
+            value: "https://staging-console.rfcx.org/#/"
+          - name: PORT
+            value: "8081"
+          - name: NODE_ENV
+            value: "staging"
+          - name: SQS_PERCEPTION_BATCH
+            value: "rfcx-perception-batch"
+          - name: NODE_LOG_LEVEL
+            value: "info"
+          - name: PREDICTION_SERVICE_ENABLED
+            value: "true"
+          - name: AUTH0_DOMAIN
+            value: "rfcx.eu.auth0.com"
+          - name: AUTH0_CUSTOM_DOMAIN
+            value: "auth.rfcx.org"
+          - name: FFMPEG_PATH
+            value: "/usr/bin/ffmpeg"
+          - name: ASSET_BUCKET_AUDIO
+            value: "rfcx-guardian-ark-staging"
+          - name: NODE_HOME
+            value: "/opt/elasticbeanstalk/node-install/node-v6.10.0-linux-x64"
+          - name: WEBSOCKET_URL
+            value: "https://prometheus-yggdrasil.rfcx.org"
+          - name: ASSET_BUCKET_META
+            value: "rfcx-guardian-meta-staging"
+          - name: DASHBOARD_BASE_URL
+            value: "https://staging-dashboard.rfcx.org/#/"
+          - name: CACHE_DIRECTORY
+            value: "/tmp/rfcx-api/"
+          - name: SOX_PATH
+            value: "/usr/bin/sox"
+          - name: ASSET_BUCKET_ZIP
+            value: "rfcx-zip"
+          - name: AWS_QUEUE_CONCURRENCY
+            value: "10"
+          - name: SEQUELIZE_VERBOSE
+            value: "false"
+          - name: EB_NODE_COMMAND
+            value: "npm start"
+          - name: BUCKET_ANALYSIS
+            value: "rfcx-analysis"
+          - name: BUCKET_PERCEPTION
+            value: "rfcx-perception"
+          - name: IMAGEMAGICK_PATH
+            value: "/usr/bin/convert"
+          - name: REST_PROTOCOL
+            value: "https"
+          - name: REST_HOST
+            value: "staging-api.rfcx.org"
+          - name: REST_HOST_SHORT
+            value: "rf.cx"
+          - name: ASSET_BUCKET_REPORT
+            value: "rfcx-report-staging"
+          - name: PNGCRUSH_PATH
+            value: "/usr/bin/pngcrush"
+          - name: NEO4J_ENABLED
+            value: "true"
+          - name: ASSET_BUCKET_ATTACHMENT
+            value: "rfcx-attachment-staging"
+          - name: ASSET_BUCKET_AI
+            value: "rfcx-ai-dev"
+          - name: INGEST_BUCKET
+            value: "rfcx-streams-staging"
+          - name: STREAMS_CACHE_BUCKET
+            value: "rfcx-streams-cache-staging"
+          - name: MQTT_BROKER_HOST
+            value: "rabbitmq-http"
+          - name: MEDIA_API_BASE_URL
+            value: "https://staging-api.rfcx.org/"
+          - name: INGEST_SERVICE_BASE_URL
+            value: "https://staging-ingest.rfcx.org/"
+          - name: INGEST_SERVICE_ENABLED
+            value: "true"
+          - name: GUARDIAN_BROKER_HOSTNAME
+            value: "staging-api-mqtt.rfcx.org"
+          - name: GUARDIAN_API_SMS_ADDRESS
+            value: "+14154803657"
+          - name: REDIS_ENABLED
+            value: "true"
+        resources:
+          requests:
+            memory: "700Mi"
+            cpu: "600m"
+          limits:
+            memory: "700Mi"
+            cpu: "600m"
+        ports:
+        - containerPort: 8081
