@@ -18,7 +18,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
   First part of the filename is the stream id `LilSjZJkRK02`
   All following parameters are separated by _ and start with a single character that identifies the parameter type
     t  = start-end time range jointed with dot (custom format). includes milliseconds
-    r  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (NOT IMPLEMENTED YET)
+    r  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio
     g  = gain (volume) (int/float) 1 by default, which means 100% volume. 0 means no sound. 0.5 - 50% of volume 2 - double volume
     f  = file type (spec, wav, opus, flac, mp3)
     d  = dimension e.g. 200x512 (for file type spec only)
@@ -39,7 +39,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         description: First part of the filename is the stream id `LilSjZJkRK02`</br>
  *                      All following parameters are separated by _ and start with a single character that identifies the parameter type</br>
  *                      `t`  = start-end time range jointed with dot (custom format). includes milliseconds (e.g. `t20191227T134400000Z.20191227T134420000Z`)</br>
- *                      `r`  = (**NOT YET IMPLEMENTED**) frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (e,g, `rfull`)</br>
+ *                      `r`  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (e,g, `rfull`)</br>
  *                      `g`  = gain (volume) (int/float) `1` by default, which means 100% volume. `0` means no sound. `0.5` - 50% of volume. `2` - 200% volume (e,g, `g1`)</br>
  *                      `f`  = file type (spec, wav, opus, flac, mp3) (e.g. `fwav`)</br>
  *                      `d`  = dimension e.g. 200x512 (for file type spec only) (e.g. `d600.512`)</br>

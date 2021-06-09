@@ -1,4 +1,4 @@
-## 1.0.21 (2021-??-??)
+## 1.0.21 (2021-06-07)
 
 ### Features
 * **core:** Update GET /classifications to be able to limit the classifications result by classifiers by classifiers ([CE-703](https://jira.rfcx.org/browse/CE-703))
@@ -6,6 +6,8 @@
 * **core:** Implement new "stream-token" authorization strategy and apply it for stream assets and stream detections endpoints ([CE-225](https://jira.rfcx.org/browse/CE-225))
 * **core:** Add ability to filter streams/projects/organizations by permission ([CE-655](https://jira.rfcx.org/browse/CE-655))
 * **core:** Update GET /clustered-detections to be able to query the detections by giving multiple stream values ([CE-811](https://jira.rfcx.org/browse/CE-811))
+* **media:** Implement frequency clipping feature for spectrograms ([CE-227](https://jira.rfcx.org/browse/CE-227))
+* **media:** Implement frequency filtering feature for audios ([CE-227](https://jira.rfcx.org/browse/CE-227))
 
 ### Performance Improvements
 * **legacy:** Do not generate anonymous token for audio json data; Reduce models which we include for GuardianAudio ([CE-795](https://jira.rfcx.org/browse/CE-795))

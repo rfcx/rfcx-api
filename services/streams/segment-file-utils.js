@@ -92,6 +92,9 @@ function checkAttrsValidity (req, attrs) {
   if ((moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')).diff((moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')), 'minutes') > 15) {
     throw new ValidationError('Maximum range between start and end should be less than 15 minutes.')
   }
+  if (attrs.clip && attrs.clip.top && attrs.clip.bottom && parseInt(attrs.clip.top) <= parseInt(attrs.clip.bottom)) {
+    throw new ValidationError('Highpass frequency filter can not be greater or equal to lowpass')
+  }
   if (attrs.fileType === 'spec' && (req.rfcx.content_type !== 'png' && req.rfcx.content_type !== 'jpeg')) {
     throw new ValidationError('Unsupported file extension. Only png or jpeg are available for type spec')
   }
@@ -100,6 +103,9 @@ function checkAttrsValidity (req, attrs) {
   }
   if (attrs.fileType === 'spec' && (!attrs.dimensions || !attrs.dimensions.x || !attrs.dimensions.y)) {
     throw new ValidationError('"d" (dimensions) attribute is required and should have the following format: d100.200.')
+  }
+  if (attrs.fileType === 'spec' && attrs.dimensions && attrs.dimensions.y > 1024) {
+    throw new ValidationError('Spectrogram height can not be greater than 1024px')
   }
   if (attrs.fileType === 'spec' && attrs.windowFunc && !possibleWindowFuncs.includes(attrs.windowFunc)) {
     throw new ValidationError(`"w" unsupported window function. Possible values: ${possibleWindowFuncs.join(', ')}.`)
@@ -253,6 +259,9 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
     let sampleRate
     try {
       sampleRate = segment.stream_source_file.sample_rate
+      if (!attrs.maxSampleRate || attrs.maxSampleRate < sampleRate) {
+        attrs.maxSampleRate = sampleRate
+      }
     } catch (e) {
       console.error(`Could not get sampleRate for segment "${segment.id}"`)
     }
@@ -282,16 +291,49 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   if (attrs.gain !== undefined && parseFloat(attrs.gain) !== 1) {
     command += `,volume=${attrs.gain}`
   }
+  if (attrs.fileType !== 'spec' && attrs.clip && attrs.clip !== 'full') {
+    if (parseInt(attrs.clip.bottom)) {
+      command += `,highpass=f=${attrs.clip.bottom}`
+    }
+    if (parseInt(attrs.clip.top)) {
+      command += `,lowpass=f=${attrs.clip.top}`
+    }
+  }
   command += `" -y -vn -ac 1 ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"; -ac 1 - single audio channel
   return runExec(command)
 }
 
-function makeSpectrogram (sourcePath, outputPath, attrs) {
-  return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram -r ${attrs.monochrome === 'true' ? '-lm' : '-h'} -o  ${outputPath} -x ${attrs.dimensions.x} -y ${attrs.soxFriendlyHeight} -w ${attrs.windowFunc} -z ${attrs.zAxis} -s`)
+async function makeSpectrogram (sourcePath, outputPath, filename, contentType, attrs) {
+  const height = getSoxFriendlyHeight(attrs.dimensions.y)
+  await renderSpectrogram(sourcePath, outputPath, attrs.monochrome, attrs.dimensions.x, height, attrs.windowFunc, attrs.zAxis)
+  if (attrs.clip && attrs.clip !== 'full') {
+    await cropSpectrogram(outputPath, attrs, height)
+  }
+  await resizeSpectrogram(outputPath, attrs.dimensions)
+  if (contentType !== 'png') {
+    await convertSpectrogram(outputPath, { ...attrs, contentType })
+    filename = filename.replace('.png', `.${contentType}`)
+  }
+  return filename
+}
+
+function renderSpectrogram (sourcePath, outputPath, monochrome, width, height, windowFunc, zAxis) {
+  return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram -r ${monochrome === 'true' ? '-lm' : '-h'} -o  ${outputPath} -x ${width} -y ${height} -w ${windowFunc} -z ${zAxis} -s`)
+}
+
+function hzToPx (height, sampleRate, hz) {
+  const maxHz = sampleRate / 2
+  return height * hz / maxHz
+}
+
+function cropSpectrogram (sourcePath, attrs, height) {
+  const topPx = hzToPx(height, attrs.maxSampleRate, attrs.clip.top)
+  const bottomPx = hzToPx(height, attrs.maxSampleRate, attrs.clip.bottom)
+  return runExec(`${IMAGEMAGICK_PATH} ${sourcePath} -crop '${attrs.dimensions.x}x${topPx - bottomPx}+0+${height - topPx}' +repage ${sourcePath}`)
 }
 
 function resizeSpectrogram (sourcePath, dimensions) {
-  return runExec(`${IMAGEMAGICK_PATH} ${sourcePath} -sample '${dimensions.x}x${dimensions.y}!' ${sourcePath}`)
+  return runExec(`${IMAGEMAGICK_PATH} ${sourcePath} -resize '${dimensions.x}x${dimensions.y}!' ${sourcePath}`)
 }
 
 function convertSpectrogram (sourcePath, attrs) {
@@ -361,16 +403,8 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
   await downloadSegments(segments)
   await convertAudio(segments, start, end, attrs, audioFilePath)
   if (attrs.fileType === 'spec') {
-    const soxFriendlyHeight = getSoxFriendlyHeight(attrs.dimensions.y)
-    await makeSpectrogram(audioFilePath, spectrogramFilePath, { ...attrs, soxFriendlyHeight })
-    if (soxFriendlyHeight !== attrs.dimensions.y) { // if requested image height is not 1+2^n, then resize it back to requested height
-      await resizeSpectrogram(spectrogramFilePath, attrs.dimensions)
-      if (req.rfcx.content_type !== 'png') {
-        await convertSpectrogram(spectrogramFilePath, { ...attrs, contentType: reqContentType })
-        spectrogramFilename = `${filename}.${reqContentType}`
-        spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
-      }
-    }
+    spectrogramFilename = await makeSpectrogram(audioFilePath, spectrogramFilePath, spectrogramFilename, reqContentType, attrs)
+    spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
   }
   const { audioFilePathCached, spectrogramFilePathCached } = MEDIA_CACHE_ENABLED ? await cloneFiles(audioFilePath, attrs.fileType === 'spec' ? spectrogramFilePath : null) : {}
   if (attrs.fileType === 'spec') {
