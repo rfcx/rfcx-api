@@ -4,8 +4,45 @@ const streamsService = require('../../../services/streams')
 const usersFusedService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const rolesService = require('../../../services/roles')
+const { getPermissions, getUsersForItem, getByName, addRole, getUserRoleForItem, removeRole, STREAM } = require('../../../services/roles')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+
+/**
+ * @swagger
+ *
+ * /streams/{id}/permissions:
+ *   get:
+ *     summary: Get list of user permissions for a stream
+ *     tags:
+ *       - roles
+ *     parameters:
+ *       - name: id
+ *         description: Stream identifier
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: An array of permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *                 example: 'R'
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Stream not found
+ */
+ router.get('/:id/permissions', hasStreamPermission('R'), function (req, res) {
+  return getPermissions(req.rfcx.auth_token_info.owner_id, req.params.id, 'stream')
+    .then(async (permissions) => {
+      res.json(permissions)
+    })
+    .catch(httpErrorHandler(req, res, 'Failed getting stream permissions'))
+})
 
 /**
  * @swagger
@@ -29,7 +66,7 @@ const { hasStreamPermission } = require('../../../middleware/authorization/roles
 
 router.get('/:id/users', hasStreamPermission('U'), async function (req, res) {
   try {
-    return res.json(await rolesService.getUsersForItem(req.params.id, rolesService.STREAM))
+    return res.json(await getUsersForItem(req.params.id, STREAM))
   } catch (e) {
     httpErrorHandler(req, res, 'Failed getting stream permission.')(e)
   }
@@ -78,9 +115,9 @@ router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
       if (stream.created_by_id === user.id) {
         throw new ForbiddenError('You can not assign role to stream owner.')
       }
-      const role = await rolesService.getByName(convertedParams.role)
-      await rolesService.addRole(user.id, role.id, streamId, rolesService.STREAM)
-      return res.status(201).json(await rolesService.getUserRoleForItem(streamId, user.id, rolesService.STREAM))
+      const role = await getByName(convertedParams.role)
+      await addRole(user.id, role.id, streamId, STREAM)
+      return res.status(201).json(await getUserRoleForItem(streamId, user.id, STREAM))
     })
     .catch(httpErrorHandler(req, res, 'Failed adding stream role for user'))
 })
@@ -113,7 +150,7 @@ router.delete('/:id/users', hasStreamPermission('U'), function (req, res) {
   return params.validate()
     .then(async () => {
       const user = await usersFusedService.getByEmail(convertedParams.email)
-      await rolesService.removeRole(user.id, streamId, rolesService.STREAM)
+      await removeRole(user.id, streamId, STREAM)
       return res.sendStatus(200)
     })
     .catch(httpErrorHandler(req, res, 'Failed removing stream role.'))

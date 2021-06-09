@@ -1,3 +1,9 @@
+## 1.0.22 (2021-06-XX)
+
+### Features
+* **core:** Move /streams/{id}/permissions from Internal into Core ([CE-831](https://jira.rfcx.org/browse/CE-831))
+
+
 ## 1.0.21 (2021-06-07)
 
 ### Features
