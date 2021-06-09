@@ -1,5 +1,8 @@
 # API Deployment Notes
 
+## v1.0.22
+- Deploy Explorer updates from `bug/CE-831-upload-permissions` branch
+
 ## v1.0.21
 
 - Run `npm run sync-timescale` to apply the following migrations:
