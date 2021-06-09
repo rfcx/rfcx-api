@@ -2,6 +2,10 @@ const models = require('../../modelsTimescale')
 const roleService = require('../roles')
 const streamsService = require('../streams')
 
+function convertArrayToInSQLQuery (items) {
+  return items.map(x => "'" + x + "'").toString()
+}
+
 /**
  * Get detections conditions and bind
  * @param {*} options
@@ -31,26 +35,30 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
     ...opts
   }
 
+  const allowedItems = {}
+
   if (projects) {
     const allowedProjects = await roleService.getAccessibleObjectsIDs(user.id, 'project', projects)
-    conditions.push('s.project_id = ANY($projects)')
-    bind.projects = allowedProjects
+    allowedItems.allowedProjects = allowedProjects
+    if (allowedProjects.length > 0) {
+      conditions.push(`s.project_id IN(${convertArrayToInSQLQuery(allowedProjects)})`)
+    }
   }
 
   if (streams || !projects) {
-    const allowedStreams = streams ? await roleService.getAccessibleObjectsIDs(user.id, 'stream', streams) : await streamsService.getAccessibleStreamIds(user)
-    conditions.push('d.stream_id = ANY($streams)')
-    bind.streams = allowedStreams
+    const allowedStreams = await streamsService.getAccessibleStreamIds(user)
+    allowedItems.streams = streams ? streams.filter(s => allowedStreams.includes(s)) : allowedStreams
+    if (allowedItems.streams.length > 0) {
+      conditions.push(`d.stream_id IN(${convertArrayToInSQLQuery(allowedItems.streams)})`)
+    }
   }
 
   if (classifiers) {
-    conditions.push('d.classifier_id = ANY($classifiers)')
-    bind.classifiers = classifiers
+    conditions.push(`d.classifier_id IN(${convertArrayToInSQLQuery(classifiers)})`)
   }
 
   if (classifications) {
-    conditions.push('c.value = ANY($classifications)')
-    bind.classifications = classifications
+    conditions.push(`c.value IN(${convertArrayToInSQLQuery(classifications)})`)
   }
 
   if (minConfidence) {
@@ -70,13 +78,17 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
     conditions.push('a.is_positive IS null')
   }
 
-  return { conditions, bind }
+  return { conditions, bind, allowedItems }
 }
 
 async function defaultQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence } = filters
 
-  const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
+  const { conditions, bind, allowedItems } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
+
+  if ((streams && allowedItems.streams.length === 0) || (projects && allowedItems.projects.length === 0)) {
+    return []
+  }
 
   const detectionsSql = `
     SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
@@ -110,13 +122,11 @@ async function defaultQuery (filters, options) {
   ]
 
   if (classifications) {
-    annotationConditions.push('c.value = ANY($classifications)')
-    annotationBind.classifications = classifications
+    annotationConditions.push(`c.value IN(${convertArrayToInSQLQuery(classifications)})`)
   }
 
-  if (streams) {
-    annotationConditions.push('a.stream_id = ANY($streams)')
-    annotationBind.streams = streams
+  if (bind.streams && bind.streams.length > 0) {
+    annotationConditions.push(`a.stream_id IN(${convertArrayToInSQLQuery(bind.streams)})`)
   }
 
   const annotationsSql = `
