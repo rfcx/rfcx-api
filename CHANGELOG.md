@@ -3,7 +3,7 @@
 ### Bug Fixes
 * **internal:** GET /internal/ai-hub/detections rely on projects/streams user permission ([CE-810](https://jira.rfcx.org/browse/CE-810))
 
-## 1.0.21 (2021-??-??)
+## 1.0.21 (2021-06-07)
 
 ### Features
 * **core:** Update GET /classifications to be able to limit the classifications result by classifiers by classifiers ([CE-703](https://jira.rfcx.org/browse/CE-703))
