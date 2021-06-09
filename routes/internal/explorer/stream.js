@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const segmentService = require('../../../services/streams/segments')
-const { getPermissions } = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 

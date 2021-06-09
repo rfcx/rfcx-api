@@ -36,7 +36,7 @@ const { hasStreamPermission } = require('../../../middleware/authorization/roles
  *       404:
  *         description: Stream not found
  */
- router.get('/:id/permissions', hasStreamPermission('R'), function (req, res) {
+router.get('/:id/permissions', hasStreamPermission('R'), function (req, res) {
   return getPermissions(req.rfcx.auth_token_info.owner_id, req.params.id, 'stream')
     .then(async (permissions) => {
       res.json(permissions)
