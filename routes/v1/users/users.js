@@ -634,7 +634,6 @@ router.route('/auth0/create-user')
       .then((body) => {
         res.status(200).json(body)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
