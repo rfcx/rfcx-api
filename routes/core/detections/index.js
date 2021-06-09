@@ -2,7 +2,6 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const detectionsService = require('../../../services/detections')
 const Converter = require('../../../utils/converter/converter')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -60,7 +59,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticate(), (req, res) => {
+router.get('/', (req, res) => {
   const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const Converter = require('../../../utils/converter/converter')
-const { authenticate, hasRole } = require('../../../middleware/authorization/authorization')
+const { hasRole } = require('../../../middleware/authorization/authorization')
 const classifierDeploymentsService = require('../../../services/classifiers/deployments')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 
-router.use(authenticate(), hasRole(['systemUser']))
+router.use(hasRole(['systemUser']))
 
 /**
  * @swagger

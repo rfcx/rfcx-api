@@ -4,7 +4,6 @@ const streamsStatisticsService = require('../../../services/streams/statistics')
 const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -34,7 +33,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/uploads', authenticate(), async function (req, res) {
+router.get('/streams/statistics/uploads', async function (req, res) {
   const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -86,7 +85,7 @@ router.get('/streams/statistics/uploads', authenticate(), async function (req, r
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/annotations', authenticate(), async function (req, res) {
+router.get('/streams/statistics/annotations', async function (req, res) {
   const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -138,7 +137,7 @@ router.get('/streams/statistics/annotations', authenticate(), async function (re
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/statistics/detections', authenticate(), async function (req, res) {
+router.get('/streams/statistics/detections', async function (req, res) {
   const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)

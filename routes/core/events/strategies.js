@@ -3,7 +3,6 @@ const { authenticatedWithRoles } = require('../../../middleware/authorization/au
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const Converter = require('../../../utils/converter/converter')
 const strategiesService = require('../../../services/events/strategies')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -44,7 +43,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticate(), authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const converter = new Converter(req.query, {}, true)
   converter.convert('function_name').optional()
   converter.convert('limit').optional().toInt().default(100)
@@ -84,7 +83,7 @@ router.get('/', authenticate(), authenticatedWithRoles('rfcxUser', 'systemUser')
  *       404:
  *         description: Event strategy not found
 */
-router.get('/:id', authenticate(), authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
   const id = req.params.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()

@@ -6,7 +6,6 @@ const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
 const storageService = process.env.PLATFORM === 'google' ? require('../../../services/storage/google') : require('../../../services/storage/amazon')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -64,7 +63,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/streams/:id/indices/:index/heatmap', authenticate(), hasStreamPermission('R'), (req, res) => {
+router.get('/streams/:id/indices/:index/heatmap', hasStreamPermission('R'), (req, res) => {
   const streamId = req.params.id
   const index = req.params.index
 

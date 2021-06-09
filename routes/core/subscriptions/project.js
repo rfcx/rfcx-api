@@ -3,7 +3,6 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const Converter = require('../../../utils/converter/converter')
 const subscriptionsService = require('../../../services/subscriptions')
 const { hasProjectPermission } = require('../../../middleware/authorization/roles')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -30,7 +29,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *                 $ref: '#/components/schemas/Subscription'
  */
 
-router.post('/:id/subscriptions', authenticate(), hasProjectPermission('R'), function (req, res) {
+router.post('/:id/subscriptions', hasProjectPermission('R'), function (req, res) {
   const projectId = req.params.id
   const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}
@@ -66,7 +65,7 @@ router.post('/:id/subscriptions', authenticate(), hasProjectPermission('R'), fun
  *                 $ref: '#/components/schemas/Subscription'
  */
 
-router.get('/:id/subscriptions', authenticate(), hasProjectPermission('R'), async function (req, res) {
+router.get('/:id/subscriptions', hasProjectPermission('R'), async function (req, res) {
   try {
     return res.json(await subscriptionsService.query(req.rfcx.auth_token_info.id, req.params.id, 'project'))
   } catch (e) {
@@ -92,7 +91,7 @@ router.get('/:id/subscriptions', authenticate(), hasProjectPermission('R'), asyn
  *       200:
  *         description: OK
  */
-router.delete('/:id/subscriptions', authenticate(), hasProjectPermission('R'), function (req, res) {
+router.delete('/:id/subscriptions', hasProjectPermission('R'), function (req, res) {
   const projectId = req.params.id
   const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}

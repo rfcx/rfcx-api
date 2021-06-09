@@ -26,6 +26,7 @@ const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
 app.use(metricsMiddleware)
 
 const routeMiddleware = require('./middleware/route')
+const { authenticate } = require('./middleware/authorization/authorization')
 
 const versionedRoutes = process.env.DEV_CORE_ONLY === 'true'
   ? {}
@@ -46,13 +47,13 @@ const coreRoutes = require('./routes/core/routes')
 const internalRoutes = require('./routes/internal/routes')
 const publicRoutes = require('./routes/public/routes')
 for (const routeName in coreRoutes) {
-  app.use(`/${routeName}`, routeMiddleware)
+  app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {
     app.use(`/${routeName}`, coreRoutes[routeName][route])
   }
 }
 for (const routeName in internalRoutes) {
-  app.use(`/internal/${routeName}`, routeMiddleware)
+  app.use(`/internal/${routeName}`, routeMiddleware, authenticate())
   for (const route in internalRoutes[routeName]) {
     app.use(`/internal/${routeName}`, internalRoutes[routeName][route])
   }

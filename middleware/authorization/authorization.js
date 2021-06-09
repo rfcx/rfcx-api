@@ -52,7 +52,7 @@ function authenticatedWithRoles (...roles) {
 /**
  * Creates a middleware that checks the user is authenticated (with JWT or stream-token)
  */
-function authenticate (strategies = ['jwt', 'jwt-custom']) {
+function authenticate (strategies = ['jwt', 'jwt-custom', 'stream-token']) {
   return passport.authenticate(strategies, { session: false })
 }
 

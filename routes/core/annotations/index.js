@@ -8,7 +8,6 @@ const annotationsService = require('../../../services/annotations')
 const classificationService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
 const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 function isUuid (str) {
   return str.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/g) !== null
@@ -72,7 +71,7 @@ function isUuid (str) {
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticate(), (req, res) => {
+router.get('/', (req, res) => {
   const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -122,7 +121,7 @@ router.get('/', authenticate(), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.get('/:id', authenticate(), (req, res) => {
+router.get('/:id', (req, res) => {
   const user = req.rfcx.auth_token_info
   const annotationId = req.params.id
   if (!isUuid(annotationId)) {
@@ -173,7 +172,7 @@ router.get('/:id', authenticate(), (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.put('/:id', authenticate(), ensureUserSynced, (req, res) => {
+router.put('/:id', ensureUserSynced, (req, res) => {
   const annotationId = req.params.id
   const user = req.rfcx.auth_token_info
   const userId = user.id
@@ -234,7 +233,7 @@ router.put('/:id', authenticate(), ensureUserSynced, (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.delete('/:id', authenticate(), (req, res) => {
+router.delete('/:id', (req, res) => {
   const user = req.rfcx.auth_token_info
   const annotationId = req.params.id
   if (!isUuid(annotationId)) {

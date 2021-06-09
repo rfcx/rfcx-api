@@ -6,7 +6,6 @@ const { hasPermission, READ, UPDATE, STREAM } = require('../../../services/roles
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -63,7 +62,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/detections', authenticate(['jwt', 'jwt-custom', 'stream-token']), function (req, res) {
+router.get('/:id/detections', function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const convertedParams = {}
@@ -135,7 +134,7 @@ router.get('/:id/detections', authenticate(['jwt', 'jwt-custom', 'stream-token']
  *       404:
  *         description: Stream not found
  */
-router.post('/:id/detections', authenticate(), function (req, res) {
+router.post('/:id/detections', function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const detections = Array.isArray(req.body) ? req.body : [req.body]

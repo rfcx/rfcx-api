@@ -5,7 +5,6 @@ const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -43,7 +42,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       404:
  *         description: Stream not found
  */
-router.patch('/projects/:externalId', authenticate(), ensureUserSynced, (req, res) => {
+router.patch('/projects/:externalId', ensureUserSynced, (req, res) => {
   const user = req.rfcx.auth_token_info
   const projectId = req.params.externalId
   const convertedParams = {}

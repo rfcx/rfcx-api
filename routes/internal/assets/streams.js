@@ -6,7 +6,6 @@ const streamSegmentService = require('../../../services/streams/segments')
 const { parseFileNameAttrs, checkAttrsValidity, gluedDateStrToISO, getFile } = require('../../../services/streams/segment-file-utils')
 const { hasPermission, READ, STREAM } = require('../../../services/roles')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
   Spectrogram format (fspec):
@@ -64,7 +63,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *         description: Insufficient privileges
  */
 
-router.get('/streams/:attrs', authenticate(['jwt', 'jwt-custom', 'stream-token']), function (req, res) {
+router.get('/streams/:attrs', function (req, res) {
   parseFileNameAttrs(req).then(async (attrs) => {
     await checkAttrsValidity(req, attrs)
     const user = req.rfcx.auth_token_info

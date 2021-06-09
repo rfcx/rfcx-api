@@ -4,7 +4,6 @@ const segmentService = require('../../../services/streams/segments')
 const { getPermissions } = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -60,7 +59,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/:id/coverage', authenticate(), hasStreamPermission('R'), function (req, res) {
+router.get('/streams/:id/coverage', hasStreamPermission('R'), function (req, res) {
   const streamId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.query, convertedParams)
@@ -103,7 +102,7 @@ router.get('/streams/:id/coverage', authenticate(), hasStreamPermission('R'), fu
  *       404:
  *         description: Stream not found
  */
-router.get('/streams/:id/permissions', authenticate(), hasStreamPermission('R'), function (req, res) {
+router.get('/streams/:id/permissions', hasStreamPermission('R'), function (req, res) {
   return getPermissions(req.rfcx.auth_token_info.owner_id, req.params.id, 'stream')
     .then(async (permissions) => {
       res.json(permissions)

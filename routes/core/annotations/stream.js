@@ -5,7 +5,6 @@ const classificationService = require('../../../services/classifications')
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -67,7 +66,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/annotations', authenticate(), hasStreamPermission('R'), function (req, res) {
+router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const convertedParams = {}
@@ -127,7 +126,7 @@ router.get('/:id/annotations', authenticate(), hasStreamPermission('R'), functio
  *       404:
  *         description: Stream not found
  */
-router.post('/:id/annotations', authenticate(), ensureUserSynced, hasStreamPermission('U'), function (req, res) {
+router.post('/:id/annotations', ensureUserSynced, hasStreamPermission('U'), function (req, res) {
   const streamId = req.params.id
   const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}

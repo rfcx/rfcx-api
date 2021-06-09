@@ -6,7 +6,6 @@ const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const rolesService = require('../../../services/roles')
 const { hasProjectPermission } = require('../../../middleware/authorization/roles')
-const { authenticate } = require('../../../middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -28,7 +27,7 @@ const { authenticate } = require('../../../middleware/authorization/authorizatio
  *                 $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
  */
 
-router.get('/:id/users', authenticate(), hasProjectPermission('U'), async function (req, res) {
+router.get('/:id/users', hasProjectPermission('U'), async function (req, res) {
   try {
     return res.json(await rolesService.getUsersForItem(req.params.id, rolesService.PROJECT))
   } catch (e) {
@@ -64,7 +63,7 @@ router.get('/:id/users', authenticate(), hasProjectPermission('U'), async functi
  *               $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
  */
 
-router.put('/:id/users', authenticate(), hasProjectPermission('U'), function (req, res) {
+router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
   const projectId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
@@ -105,7 +104,7 @@ router.put('/:id/users', authenticate(), hasProjectPermission('U'), function (re
  *         description: OK
  */
 
-router.delete('/:id/users', authenticate(), hasProjectPermission('U'), function (req, res) {
+router.delete('/:id/users', hasProjectPermission('U'), function (req, res) {
   const projectId = req.params.id
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)

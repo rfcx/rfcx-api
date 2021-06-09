@@ -1,7 +1,4 @@
 const router = require('express').Router()
-const { authenticate } = require('../../../middleware/authorization/authorization')
-
-router.use(authenticate())
 
 router.post('/', require('./create'))
 router.get('/', require('./list'))
