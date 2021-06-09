@@ -604,7 +604,7 @@ router.route('/create')
           }
         )
       })
-      .spread((user, created) => {
+      .then((user) => {
         res.status(200).json(user)
       })
       .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
