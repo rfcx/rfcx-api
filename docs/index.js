@@ -58,12 +58,16 @@ const options = {
   },
   apis: [
     './routes/core/**/*.js',
+    './routes/internal/ai-hub/*.js',
+    './routes/internal/arbimon/*.js',
     './routes/internal/assets/*.js',
+    './routes/internal/cognition/*.js',
     './routes/internal/console/*.js',
     './routes/internal/cron/*.js',
     './routes/internal/explorer/*.js',
     './routes/internal/ingest/*.js',
     './routes/internal/prediction/*.js',
+    './routes/internal/rabbitmq/*.js',
     './routes/public/**/*.js',
     './routes/*.js'
   ]

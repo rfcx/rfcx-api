@@ -9,6 +9,7 @@
   - `20210523191500-create-classifier-index`
   - `20210524175900-create-classifier-output-classifier-id-index`
   - `20210527000001-convert-from-real-to-double-on-project-steam`
+- Add `STREAM_TOKEN_SALT` env var and set it to some long random string
 
 ## v1.0.18
 

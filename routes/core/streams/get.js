@@ -40,7 +40,7 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(params => {
       const options = {
-        readableBy: user.is_super || user.has_system_role ? undefined : user.id,
+        readableBy: user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id,
         fields: params.fields
       }
       return streamsService.get(id, options)

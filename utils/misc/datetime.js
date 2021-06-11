@@ -1,4 +1,6 @@
-const time = {
+const moment = require('moment')
+
+const datetime = {
   /**
    * We round the time so that all times only have 0 or 500 miliseconds - our quantum of time
    * @returns {moment} quantified time
@@ -28,8 +30,16 @@ const time = {
 
   momentToMysqlString: function (mom) {
     return mom.tz('UTC').format('YYYY-MM-DD HH:mm:ss.SSS')
+  },
+
+  gluedDateStrToMoment: function (dateStr) {
+    return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').utc()
+  },
+
+  gluedDateStrToISO: function (dateStr) {
+    return this.gluedDateStrToMoment(dateStr).toISOString()
   }
 
 }
 
-module.exports = time
+module.exports = datetime

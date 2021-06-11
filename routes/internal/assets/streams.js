@@ -3,8 +3,9 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity, gluedDateToISO, getFile } = require('../../../services/streams/segment-file-utils')
-const rolesService = require('../../../services/roles')
+const { parseFileNameAttrs, checkAttrsValidity, getFile } = require('../../../services/streams/segment-file-utils')
+const { gluedDateStrToISO } = require('../../../utils/misc/datetime')
+const { hasPermission, READ, STREAM } = require('../../../services/roles')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
@@ -66,19 +67,14 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 router.get('/streams/:attrs', function (req, res) {
   parseFileNameAttrs(req).then(async (attrs) => {
     await checkAttrsValidity(req, attrs)
+    const user = req.rfcx.auth_token_info
     const stream = await streamsService.get(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
-    let allowed
-    if (req.rfcx.auth_token_info.has_system_role) {
-      allowed = true
-    } else {
-      allowed = await rolesService.hasPermission(rolesService.READ, req.rfcx.auth_token_info.owner_id, stream, rolesService.STREAM)
-    }
-    if (!allowed) {
+    if (!user.has_system_role && !user.has_stream_token && !await hasPermission(READ, user.owner_id, stream, STREAM)) {
       throw new ForbiddenError('You do not have permission to access this stream.')
     }
-    const start = gluedDateToISO(attrs.time.starts)
-    const end = gluedDateToISO(attrs.time.ends)
+    const start = gluedDateStrToISO(attrs.time.starts)
+    const end = gluedDateStrToISO(attrs.time.ends)
     const queryData = await streamSegmentService.query({ stream_id, start, end }, { joinRelations: true })
     const segments = queryData.streamSegments
     if (!segments.length) {
