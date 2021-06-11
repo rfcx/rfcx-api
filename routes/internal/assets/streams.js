@@ -3,7 +3,8 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity, gluedDateStrToISO, getFile } = require('../../../services/streams/segment-file-utils')
+const { parseFileNameAttrs, checkAttrsValidity, getFile } = require('../../../services/streams/segment-file-utils')
+const { gluedDateStrToISO } = require('../../../utils/misc/datetime')
 const { hasPermission, READ, STREAM } = require('../../../services/roles')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
@@ -69,7 +70,7 @@ router.get('/streams/:attrs', function (req, res) {
     const user = req.rfcx.auth_token_info
     const stream = await streamsService.get(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
-    if (!user.has_system_role && !user.has_stream_token && !hasPermission(READ, user.owner_id, stream, STREAM)) {
+    if (!user.has_system_role && !user.has_stream_token && !await hasPermission(READ, user.owner_id, stream, STREAM)) {
       throw new ForbiddenError('You do not have permission to access this stream.')
     }
     const start = gluedDateStrToISO(attrs.time.starts)

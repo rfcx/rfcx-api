@@ -492,21 +492,11 @@ function combineStandardFilename (attrs, req) {
   return filename
 }
 
-function gluedDateStrToMoment (dateStr) {
-  return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').utc()
-}
-
-function gluedDateStrToISO (dateStr) {
-  return gluedDateStrToMoment(dateStr).toISOString()
-}
-
 module.exports = {
   parseFileNameAttrs,
   checkAttrsValidity,
   getFile,
   deleteFilesForStream,
-  gluedDateStrToMoment,
-  gluedDateStrToISO,
   convertAudio,
   getSegmentRemotePath
 }
