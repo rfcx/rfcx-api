@@ -39,7 +39,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
 
   if (projects) {
     const allowedProjects = await roleService.getAccessibleObjectsIDs(user.id, 'project', projects)
-    allowedItems.allowedProjects = allowedProjects
+    allowedItems.projects = allowedProjects
     if (allowedProjects.length > 0) {
       conditions.push(`s.project_id IN(${convertArrayToInSQLQuery(allowedProjects)})`)
     }
