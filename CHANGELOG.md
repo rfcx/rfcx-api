@@ -1,4 +1,4 @@
-## 1.0.22 (2021-06-XX)
+## 1.0.22 (2021-06-16)
 
 ### Features
 * **core:** Implement new "stream-token" authorization strategy and apply it for stream assets and stream detections endpoints ([CE-225](https://jira.rfcx.org/browse/CE-225))
