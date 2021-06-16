@@ -1,3 +1,12 @@
+## 1.0.22 (2021-06-16)
+
+### Features
+* **core:** Implement new "stream-token" authorization strategy and apply it for stream assets and stream detections endpoints ([CE-225](https://jira.rfcx.org/browse/CE-225))
+* **media:** Implement frequency clipping feature for spectrograms ([CE-227](https://jira.rfcx.org/browse/CE-227))
+* **media:** Implement frequency filtering feature for audios ([CE-227](https://jira.rfcx.org/browse/CE-227))
+* **core:** Move /streams/{id}/permissions from Internal into Core ([CE-831](https://jira.rfcx.org/browse/CE-831))
+
+
 ## 1.0.21 (2021-06-07)
 
 ### Features

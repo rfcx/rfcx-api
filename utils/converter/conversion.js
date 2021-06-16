@@ -1,4 +1,4 @@
-const timeUtils = require('../misc/time')
+const timeUtils = require('../misc/datetime')
 const moment = require('moment-timezone')
 
 module.exports = class Conversion {
