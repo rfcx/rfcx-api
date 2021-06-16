@@ -1,3 +1,8 @@
+## 1.0.22-hotfix.0 (2021-06-16)
+
+### Bug Fixes
+* **core:** System user or stream-token user can get detections for selected streams without roles
+
 ## 1.0.22 (2021-06-16)
 
 ### Features
