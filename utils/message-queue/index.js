@@ -28,18 +28,6 @@ class MessageQueue {
       console.error(`Message Queue: Failed to enqueue: ${err.message}`)
     }
   }
-
-  static isEnabled () { return process.env.MESSAGE_QUEUE_ENABLED === 'true' }
-
-  static default () {
-    if (!MessageQueue.instance) {
-      const SQSClient = require('./sqs-client')
-      const sqs = new SQSClient({ endpoint: process.env.MESSAGE_QUEUE_ENDPOINT })
-      const options = { queuePrefix: process.env.MESSAGE_QUEUE_PREFIX }
-      MessageQueue.instance = new MessageQueue(sqs, options)
-    }
-    return MessageQueue.instance
-  }
 }
 
 module.exports = MessageQueue

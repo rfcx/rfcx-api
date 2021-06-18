@@ -1,7 +1,7 @@
 jest.mock('../../modelsTimescale')
 const { StreamSegment } = require('../../modelsTimescale')
-jest.mock('../../utils/message-queue')
-const MessageQueue = require('../../utils/message-queue')
+jest.mock('../../utils/message-queue/default')
+const defaultMessageQueue = require('../../utils/message-queue/default')
 
 const service = require('./segments')
 const { SEGMENT_CREATED } = require('../../utils/message-queue/events')
@@ -10,10 +10,20 @@ beforeEach(() => {
   StreamSegment.create.mockReturnValue(Promise.resolve())
 })
 
+test('Create segment not queued when default queue not enabled', async () => {
+  defaultMessageQueue.isEnabled.mockReturnValue(false)
+  defaultMessageQueue.enqueue = jest.fn()
+  const segment = { id: 'a5e5', start: '2021-04-18T12:15:00.000Z', stream_id: '13d781bd' }
+  console.error = jest.fn()
+
+  await service.create(segment)
+
+  expect(defaultMessageQueue.enqueue).not.toHaveBeenCalled()
+})
+
 test('Create segment triggers queue message', async () => {
-  MessageQueue.isEnabled.mockReturnValue(true)
-  const fakeMessageQueue = { enqueue: jest.fn(() => Promise.resolve()) }
-  MessageQueue.default.mockReturnValue(fakeMessageQueue)
+  defaultMessageQueue.isEnabled.mockReturnValue(true)
+  defaultMessageQueue.enqueue = jest.fn(() => Promise.resolve())
   const id = '1dfa13bd-2855-43ae-a5e5-a345d78196fd'
   const start = '2021-04-18T12:12:00.000Z'
   const streamId = '13d781bd43ae'
@@ -21,14 +31,13 @@ test('Create segment triggers queue message', async () => {
 
   await service.create(segment)
 
-  expect(fakeMessageQueue.enqueue).toHaveBeenCalledTimes(1)
-  expect(fakeMessageQueue.enqueue).toHaveBeenCalledWith(SEGMENT_CREATED, { id, start, stream_id: streamId })
+  expect(defaultMessageQueue.enqueue).toHaveBeenCalledTimes(1)
+  expect(defaultMessageQueue.enqueue).toHaveBeenCalledWith(SEGMENT_CREATED, { id, start, stream_id: streamId })
 })
 
 test('Create segment queue fails gracefully', async () => {
-  MessageQueue.isEnabled.mockReturnValue(true)
-  const fakeMessageQueue = { enqueue: () => { return Promise.reject(new Error('Unable to connect')) } }
-  MessageQueue.default.mockReturnValue(fakeMessageQueue)
+  defaultMessageQueue.isEnabled.mockReturnValue(true)
+  defaultMessageQueue.enqueue.mockReturnValue(Promise.reject(new Error('Unable to connect')))
   const segment = { id: 'a5e5', start: '2021-04-18T12:15:00.000Z', stream_id: '13d781bd' }
   console.error = jest.fn()
 

@@ -1,7 +1,7 @@
 const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
-const MessageQueue = require('../../utils/message-queue')
+const messageQueue = require('../../utils/message-queue/default')
 const { SEGMENT_CREATED } = require('../../utils/message-queue/events')
 
 const availableIncludes = [
@@ -88,9 +88,9 @@ function create (segment, options = {}) {
   const transaction = options.transaction
   return StreamSegment.create(segment, { transaction })
     .then(() => {
-      if (MessageQueue.isEnabled()) {
+      if (messageQueue.isEnabled()) {
         const message = { id: segment.id, start: segment.start, stream_id: segment.stream_id }
-        return MessageQueue.default().enqueue(SEGMENT_CREATED, message).catch((e) => {
+        return messageQueue.enqueue(SEGMENT_CREATED, message).catch((e) => {
           console.error('Stream segment service -> create -> enqueue failed', e.message || e)
         })
       }
