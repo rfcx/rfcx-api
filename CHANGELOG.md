@@ -3,6 +3,11 @@
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
 
+## 1.0.22-hotfix.0 (2021-06-16)
+
+### Bug Fixes
+* **core:** System user or stream-token user can get detections for selected streams without roles
+
 
 ## 1.0.22 (2021-06-16)
 
@@ -20,7 +25,6 @@
 * **core:** Update GET /clustered-detections to be able to query the detections by giving the classifier values ([CE-702](https://jira.rfcx.org/browse/CE-702))
 * **core:** Add ability to filter streams/projects/organizations by permission ([CE-655](https://jira.rfcx.org/browse/CE-655))
 * **core:** Update GET /clustered-detections to be able to query the detections by giving multiple stream values ([CE-811](https://jira.rfcx.org/browse/CE-811))
-
 
 ### Performance Improvements
 * **legacy:** Do not generate anonymous token for audio json data; Reduce models which we include for GuardianAudio ([CE-795](https://jira.rfcx.org/browse/CE-795))
