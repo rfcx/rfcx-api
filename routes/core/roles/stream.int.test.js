@@ -22,11 +22,11 @@ async function commonSetup () {
   return { stream }
 }
 
-describe('GET internal/explorer/streams/:id/permissions', () => {
+describe('GET streams/:id/permissions', () => {
   test('returns CRUD for user stream', async () => {
     const { stream } = await commonSetup()
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -40,7 +40,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     const stream = { id: 'abc', name: 'not my stream', createdById: seedValues.otherUserId }
     await models.Stream.create(stream)
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(403)
   })
@@ -49,7 +49,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     const stream = { id: 'abc', name: 'public stream', isPublic: true, createdById: seedValues.otherUserId }
     await models.Stream.create(stream)
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -61,7 +61,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: stream.id, role_id: seedValues.roleAdmin })
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -76,7 +76,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: stream.id, role_id: seedValues.roleAdmin })
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -91,7 +91,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: stream.id, role_id: seedValues.roleMember })
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -105,7 +105,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: stream.id, role_id: seedValues.roleGuest })
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -119,7 +119,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Stream.create(stream)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -136,7 +136,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Stream.create(stream)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -152,7 +152,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Stream.create(stream)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleGuest })
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(200)
     const permissions = response.body
@@ -165,7 +165,7 @@ describe('GET internal/explorer/streams/:id/permissions', () => {
     await models.Project.create(project)
     await models.Stream.create(stream)
 
-    const response = await request(app).get(`/streams/${stream.id}/permissions`).send()
+    const response = await request(app).get(`/${stream.id}/permissions`).send()
 
     expect(response.statusCode).toBe(403)
   })
