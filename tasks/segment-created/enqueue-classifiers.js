@@ -2,7 +2,7 @@ const moment = require('moment')
 const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../modelsTimescale')
 const streamService = require('../../services/streams')
 const projectService = require('../../services/projects')
-const ClassifierMessageQueue = require('./classifier-message-queue')
+const classifierMessageQueue = require('./classifier-message-queue/default')
 
 const defaultPlatform = 'aws'
 
@@ -80,8 +80,7 @@ function selectPlatform (classifier, preferredPlatform) {
 function enqueue (platform, classifier, streamId, start) {
   const isPriority = moment(start).isAfter(moment().subtract(1, 'day'))
   const message = { streamId, start }
-  const messageQueue = ClassifierMessageQueue.default()
-  return messageQueue.publish(platform, classifier, isPriority, message)
+  return classifierMessageQueue.publish(platform, classifier, isPriority, message)
 }
 
 module.exports = enqueueClassifiers

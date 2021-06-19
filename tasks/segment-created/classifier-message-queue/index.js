@@ -1,4 +1,4 @@
-const MessageQueue = require('../../utils/message-queue')
+const MessageQueue = require('../../../utils/message-queue')
 
 /**
  * External message queue onto prediction service
@@ -29,16 +29,6 @@ class ClassifierMessageQueue extends MessageQueue {
   async publish (platform, classifier, priority, message) {
     const queue = this.classifierQueueName(platform, classifier, priority)
     return super.publish(queue, message)
-  }
-
-  static default () {
-    if (!ClassifierMessageQueue.cmqInstance) {
-      const SQSClient = require('../../utils/message-queue/sqs-client')
-      const sqs = new SQSClient({ endpoint: process.env.MESSAGE_QUEUE_ENDPOINT })
-      const options = { queuePrefix: 'classifier' }
-      ClassifierMessageQueue.cmqInstance = new ClassifierMessageQueue(sqs, options)
-    }
-    return ClassifierMessageQueue.cmqInstance
   }
 }
 

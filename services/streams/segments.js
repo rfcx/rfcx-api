@@ -91,7 +91,7 @@ function create (segment, options = {}) {
       if (messageQueue.isEnabled()) {
         const message = { id: segment.id, start: segment.start, stream_id: segment.stream_id }
         return messageQueue.publish(SEGMENT_CREATED, message).catch((e) => {
-          console.error('Stream segment service -> create -> enqueue failed', e.message || e)
+          console.error('Stream segment service -> create -> publish failed', e.message || e)
         })
       }
     })
