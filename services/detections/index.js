@@ -3,14 +3,13 @@ const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
-const roleService = require('../roles')
+const rolesService = require('../roles')
 
 /**
  * Get a list of detections
  * @param {string} start
  * @param {string} end
  * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
- * @param {object} streamsOnlyCreatedBy
  * @param {boolean} streamsOnlyPublic
  * @param {string | string[]} classifications Classification or list of classifications
  * @param {number} minConfidence Minimum confidence to query detections
@@ -20,7 +19,7 @@ const roleService = require('../roles')
  * @param {object} user
  * @returns {Detection[]} Detections
  */
-async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user) {
+async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user) {
   const condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -28,11 +27,12 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyCreate
     }
   }
   if (streamIdOrIds !== undefined) {
-    condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await roleService.getAccessibleObjectsIDs(user.id, 'stream', streamIdOrIds)
+    condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await rolesService.getAccessibleObjectsIDs(user.id, 'stream', streamIdOrIds)
   } else {
+    // TODO Make scalable for large numbers of streams
     const streamIds = streamsOnlyPublic
       ? await streamsService.getPublicStreamIds()
-      : await streamsService.getAccessibleStreamIds(user, streamsOnlyCreatedBy)
+      : await rolesService.getAccessibleObjectsIDs(user.id, rolesService.STREAM)
     condition.stream_id = {
       [models.Sequelize.Op.in]: streamIds
     }
@@ -90,7 +90,6 @@ async function query (start, end, streamIdOrIds, classifications, minConfidence,
  * @param {string} start
  * @param {string} end
  * @param {string | string[]} streams Stream id or list of stream ids
- * @param {string} streamsOnlyCreatedBy Streams created by `me` or `collaborators`
  * @param {string} streamsOnlyPublic Public streams
  * @param {string | string[]} classifications Classification or list of classifications
  * @param {string} timeInterval Time interval for aggregate results
@@ -103,11 +102,11 @@ async function query (start, end, streamIdOrIds, classifications, minConfidence,
  * @param {object} user
  * @returns {ClusteredDetection[]} Clustered detections
  */
-async function timeAggregatedQuery (start, end, streams, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset, user) {
+async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, classifications, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset, user) {
   const timeBucketAttribute = 'time_bucket'
   const aggregatedValueAttribute = 'aggregated_value'
   const queryOptions = {
-    ...(await defaultQueryOptions(start, end, streams, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user)),
+    ...(await defaultQueryOptions(start, end, streams, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user)),
     attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Detection', 'start', timeBucketAttribute, aggregatedValueAttribute),
     order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
     group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
