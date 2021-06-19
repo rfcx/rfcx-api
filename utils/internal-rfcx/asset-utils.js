@@ -18,10 +18,14 @@ exports.assetUtils = {
       return 'audio/ogg'
     } else if (audioCodec.toLowerCase() === 'flac') {
       return 'audio/flac'
+    } else if (audioCodec.toLowerCase() === 'wav') {
+      return 'audio/wav'
     } else if (audioCodec.toLowerCase() === 'aac') {
       return 'audio/mp4'
     } else if (audioCodec.toLowerCase() === 'mp3') {
       return 'audio/mpeg'
+    } else if (audioCodec.toLowerCase() === 'm4a') {
+      return 'audio/mp4'
     } else {
       return null
     }

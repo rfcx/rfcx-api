@@ -42,7 +42,6 @@ class MessageQueue {
    * @param {*} message
    * @return {boolean} true if the message was handled successfully (and can be deleted from the queue)
    */
-
   /**
    * Subscribe to receive messages from the queue
    * @param {string} eventName
@@ -54,18 +53,6 @@ class MessageQueue {
       console.info(`Message Queue: ${queue}: Receiving`, message)
       return messageHandler(message)
     })
-  }
-
-  static isEnabled () { return process.env.MESSAGE_QUEUE_ENABLED === 'true' }
-
-  static default () {
-    if (!MessageQueue.instance) {
-      const SQSClient = require('./sqs-client')
-      const sqs = new SQSClient({ endpoint: process.env.MESSAGE_QUEUE_ENDPOINT })
-      const options = { queuePrefix: process.env.MESSAGE_QUEUE_PREFIX }
-      MessageQueue.instance = new MessageQueue(sqs, options)
-    }
-    return MessageQueue.instance
   }
 }
 

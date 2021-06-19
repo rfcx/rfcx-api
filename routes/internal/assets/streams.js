@@ -3,8 +3,9 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity, gluedDateToISO, getFile } = require('../../../services/streams/segment-file-utils')
-const rolesService = require('../../../services/roles')
+const { parseFileNameAttrs, checkAttrsValidity, getFile } = require('../../../services/streams/segment-file-utils')
+const { gluedDateStrToISO } = require('../../../utils/misc/datetime')
+const { hasPermission, READ, STREAM } = require('../../../services/roles')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
@@ -18,7 +19,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
   First part of the filename is the stream id `LilSjZJkRK02`
   All following parameters are separated by _ and start with a single character that identifies the parameter type
     t  = start-end time range jointed with dot (custom format). includes milliseconds
-    r  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (NOT IMPLEMENTED YET)
+    r  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio
     g  = gain (volume) (int/float) 1 by default, which means 100% volume. 0 means no sound. 0.5 - 50% of volume 2 - double volume
     f  = file type (spec, wav, opus, flac, mp3)
     d  = dimension e.g. 200x512 (for file type spec only)
@@ -39,7 +40,7 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
  *         description: First part of the filename is the stream id `LilSjZJkRK02`</br>
  *                      All following parameters are separated by _ and start with a single character that identifies the parameter type</br>
  *                      `t`  = start-end time range jointed with dot (custom format). includes milliseconds (e.g. `t20191227T134400000Z.20191227T134420000Z`)</br>
- *                      `r`  = (**NOT YET IMPLEMENTED**) frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (e,g, `rfull`)</br>
+ *                      `r`  = frequency filter. "full" by default. two integers jointed with dot in case we need to filter audio (e,g, `rfull`)</br>
  *                      `g`  = gain (volume) (int/float) `1` by default, which means 100% volume. `0` means no sound. `0.5` - 50% of volume. `2` - 200% volume (e,g, `g1`)</br>
  *                      `f`  = file type (spec, wav, opus, flac, mp3) (e.g. `fwav`)</br>
  *                      `d`  = dimension e.g. 200x512 (for file type spec only) (e.g. `d600.512`)</br>
@@ -66,19 +67,14 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 router.get('/streams/:attrs', function (req, res) {
   parseFileNameAttrs(req).then(async (attrs) => {
     await checkAttrsValidity(req, attrs)
+    const user = req.rfcx.auth_token_info
     const stream = await streamsService.get(attrs.streamId)
     const stream_id = stream.id // eslint-disable-line camelcase
-    let allowed
-    if (req.rfcx.auth_token_info.has_system_role) {
-      allowed = true
-    } else {
-      allowed = await rolesService.hasPermission(rolesService.READ, req.rfcx.auth_token_info.owner_id, stream, rolesService.STREAM)
-    }
-    if (!allowed) {
+    if (!user.has_system_role && !user.has_stream_token && !await hasPermission(READ, user.owner_id, stream, STREAM)) {
       throw new ForbiddenError('You do not have permission to access this stream.')
     }
-    const start = gluedDateToISO(attrs.time.starts)
-    const end = gluedDateToISO(attrs.time.ends)
+    const start = gluedDateStrToISO(attrs.time.starts)
+    const end = gluedDateStrToISO(attrs.time.ends)
     const queryData = await streamSegmentService.query({ stream_id, start, end }, { joinRelations: true })
     const segments = queryData.streamSegments
     if (!segments.length) {

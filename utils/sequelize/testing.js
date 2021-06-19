@@ -47,14 +47,17 @@ const primaryUserGuid = 'abc123'
 const primaryUserEmail = 'jb@astonmartin.com'
 const otherUserId = 2
 const otherUserGuid = 'def456'
+const anotherUserId = 3
+const anotherUserGuid = 'ghy789'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
-const seedValues = { primaryUserId, primaryUserGuid, primaryUserEmail, otherUserId, otherUserGuid, roleAdmin, roleMember, roleGuest }
+const seedValues = { primaryUserId, primaryUserGuid, primaryUserEmail, otherUserId, otherUserGuid, anotherUserId, anotherUserGuid, roleAdmin, roleMember, roleGuest }
 
 async function seed (models) {
   await models.User.create({ id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: 'James', lastname: 'Bond', email: primaryUserEmail })
   await models.User.create({ id: otherUserId, guid: otherUserGuid, username: 'em', firstname: 'Eve', lastname: 'Moneypenny', email: 'em@astonmartin.com' })
+  await models.User.create({ id: anotherUserId, guid: anotherUserGuid, username: 'st', firstname: 'Big', lastname: 'Bobby', email: 'big@bobby.com' })
   await models.Role.create({ id: roleAdmin, name: 'Admin' })
   await models.Role.create({ id: roleMember, name: 'Member' })
   await models.Role.create({ id: roleGuest, name: 'Guest' })

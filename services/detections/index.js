@@ -3,6 +3,7 @@ const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
+const roleService = require('../roles')
 
 /**
  * Get a list of detections
@@ -27,7 +28,7 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyCreate
     }
   }
   if (streamIdOrIds !== undefined) {
-    condition.stream_id = streamIdOrIds
+    condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await roleService.getAccessibleObjectsIDs(user.id, 'stream', streamIdOrIds)
   } else {
     const streamIds = streamsOnlyPublic
       ? await streamsService.getPublicStreamIds()
@@ -84,11 +85,29 @@ async function query (start, end, streamIdOrIds, classifications, minConfidence,
   return models.Detection.findAll(opts)
 }
 
-async function timeAggregatedQuery (start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset, user) {
+/**
+ * Get a list of clustered detections
+ * @param {string} start
+ * @param {string} end
+ * @param {string | string[]} streams Stream id or list of stream ids
+ * @param {string} streamsOnlyCreatedBy Streams created by `me` or `collaborators`
+ * @param {string} streamsOnlyPublic Public streams
+ * @param {string | string[]} classifications Classification or list of classifications
+ * @param {string} timeInterval Time interval for aggregate results
+ * @param {string} aggregateFunction Aggregate function to apply
+ * @param {string} aggregateField Column or field to apply the function
+ * @param {number} minConfidence Minimum confidence to query detections
+ * @param {boolean} descending Order the result by descending time
+ * @param {number} limit Maximum number to get detections
+ * @param {number} offset Number of resuls to skip
+ * @param {object} user
+ * @returns {ClusteredDetection[]} Clustered detections
+ */
+async function timeAggregatedQuery (start, end, streams, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset, user) {
   const timeBucketAttribute = 'time_bucket'
   const aggregatedValueAttribute = 'aggregated_value'
   const queryOptions = {
-    ...(await defaultQueryOptions(start, end, streamId, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user)),
+    ...(await defaultQueryOptions(start, end, streams, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user)),
     attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Detection', 'start', timeBucketAttribute, aggregatedValueAttribute),
     order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
     group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
