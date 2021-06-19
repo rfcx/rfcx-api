@@ -53,11 +53,18 @@ const models = require('../../../modelsTimescale')
  *         in: query
  *         type: array|string
  *         example: xu82jDgX49
- *       - name: only_public
- *         description: Include detections from public streams only
+ *       - name: streams_public
+ *         description: Limit results to public streams
  *         in: query
  *         type: boolean
- *         default: false
+ *       - name: streams_created_by
+ *         description: Limit results to streams created by `me` or `collaborators`
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - me
+ *             - collaborators
  *       - name: classifications
  *         description: Limit results to classification values
  *         in: query
@@ -102,8 +109,8 @@ router.get('/', (req, res) => {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('streams').optional().toArray()
-  params.convert('include_public').optional().toBoolean()
-  params.convert('streams_public').optional().toBoolean() // Deprecated
+  params.convert('streams_public').optional().toBoolean()
+  params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('classifications').optional().toArray()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
@@ -117,8 +124,9 @@ router.get('/', (req, res) => {
     .then(async () => {
       const { start, end, streams, classifications, interval, aggregate, field, descending, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      const onlyPublic = convertedParams.include_public || convertedParams.streams_public
-      return detectionsService.timeAggregatedQuery(start, end, streams, onlyPublic, classifications, interval, aggregate, field, minConfidence, descending, limit, offset, user)
+      const streamsOnlyCreatedBy = convertedParams.streams_created_by
+      const streamsOnlyPublic = convertedParams.streams_public
+      return detectionsService.timeAggregatedQuery(start, end, streams, streamsOnlyCreatedBy, streamsOnlyPublic, classifications, interval, aggregate, field, minConfidence, descending, limit, offset, user)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
