@@ -3,6 +3,7 @@ const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
+const rolesService = require('../roles')
 
 /**
  * Combines query clauses based on input
@@ -14,7 +15,6 @@ const streamsService = require('../streams')
  * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
- * @param {string | number} filters.streamsOnlyCreatedBy
  * @param {string[]} filters.classifications
  * @param {*} options Additional options
  * @param {number} options.limit
@@ -33,9 +33,10 @@ async function defaultQueryOptions (filters, options = {}) {
   if (filters.streamId !== undefined) {
     condition.stream_id = filters.streamId
   } else {
+    // TODO Make scalable for large numbers of streams
     const streamIds = filters.streamsOnlyPublic
       ? await streamsService.getPublicStreamIds()
-      : await streamsService.getAccessibleStreamIds(filters.user, filters.streamsOnlyCreatedBy)
+      : await rolesService.getAccessibleObjectsIDs(filters.user.id, rolesService.STREAM)
     condition.stream_id = {
       [models.Sequelize.Op.in]: streamIds
     }
@@ -80,7 +81,6 @@ function formatFull (annotation) {
  * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
- * @param {string | number} filters.streamsOnlyCreatedBy
  * @param {string[]} filters.classifications
  * @param {*} options Additional options
  * @param {number} options.limit
@@ -111,7 +111,6 @@ async function query (filters, options = {}) {
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
  * @param {number} filters.createdBy
- * @param {string | number} filters.streamsOnlyCreatedBy
  * @param {string[]} filters.classifications
  * @param {*} options Additional options
  * @param {number} options.limit
