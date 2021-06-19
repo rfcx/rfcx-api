@@ -105,8 +105,8 @@ router.get('/', (req, res) => {
   params.convert('start').toMomentUtc()
   params.convert('end').toMomentUtc()
   params.convert('stream_id').optional().toString()
-  params.convert('streams_public').optional().toBoolean() // Deprecated
-  params.convert('include_public').optional().toBoolean()
+  params.convert('streams_public').optional().toBoolean()
+  params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('created_by').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
@@ -128,7 +128,8 @@ router.get('/', (req, res) => {
         }
       }
       const { start, end, interval, aggregate, field, is_manual, is_positive, descending, limit, offset } = convertedParams // eslint-disable-line camelcase
-      const streamsOnlyPublic = convertedParams.streams_public || convertedParams.include_public
+      const streamsOnlyCreatedBy = convertedParams.streams_created_by
+      const streamsOnlyPublic = convertedParams.streams_public
       const annotation = {
         start,
         end,
@@ -141,6 +142,7 @@ router.get('/', (req, res) => {
       return annotationsService.timeAggregatedQuery(
         annotation,
         {
+          streamsOnlyCreatedBy,
           streamsOnlyPublic,
           interval,
           aggregate,
