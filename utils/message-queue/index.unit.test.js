@@ -1,4 +1,9 @@
 const MessageQueue = require('.')
+const { muteConsole } = require('../sequelize/testing')
+
+beforeAll(() => {
+  muteConsole('info')
+})
 
 describe('Publish', () => {
   test('Publish is called once', async () => {
