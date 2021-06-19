@@ -6,13 +6,12 @@ require('../utils/process')
 // check that all required env vars are set
 require('../config/inspector')
 
-const MessageQueue = require('../utils/message-queue')
-if (!MessageQueue.isEnabled()) {
+const messageQueue = require('../utils/message-queue/default')
+if (!messageQueue.isEnabled()) {
   throw new Error('Message queue not enabled')
 }
 
 const tasks = require('../tasks')
-const messageQueue = MessageQueue.default()
 
 console.log('RFCX | Starting task server')
 tasks.listen(messageQueue)

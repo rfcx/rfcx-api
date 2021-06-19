@@ -12,12 +12,11 @@ function question (prompt) {
 }
 
 // Setup queue
-const MessageQueue = require('../utils/message-queue')
+const messageQueue = require('../utils/message-queue/default')
 const { SEGMENT_CREATED } = require('../tasks/event-names')
-if (!MessageQueue.isEnabled()) {
+if (!messageQueue.isEnabled()) {
   throw new Error('Message queue not enabled')
 }
-const messageQueue = MessageQueue.default()
 
 async function main () {
   // Print a menu of tasks
