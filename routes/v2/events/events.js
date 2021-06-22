@@ -9,8 +9,6 @@ const fileUtil = require('../../../utils/misc/file')
 const guidUtil = require('../../../utils/misc/guid')
 const eventsServiceNeo4j = require('../../../services/legacy/events/events-service-neo4j')
 const eventsServiceTimescale = require('../../../services/legacy/events/events-service-timescaledb')
-const usersService = require('../../../services/users/users-service-legacy')
-const usersFusedService = require('../../../services/users/fused')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const guardiansService = require('../../../services/guardians/guardians-service')
@@ -240,7 +238,6 @@ router.route('/:guid/trigger')
         guardian = null
       })
   })
-
 
 /**
  * @swagger

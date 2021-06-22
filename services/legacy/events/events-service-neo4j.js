@@ -688,5 +688,5 @@ module.exports = {
   formatReviewsForFiles,
   formatEventsAsTags,
   getAiModelsForReviews,
-  getEventByGuid,
+  getEventByGuid
 }
