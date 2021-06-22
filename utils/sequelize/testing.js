@@ -102,4 +102,8 @@ function muteConsole () {
   })
 }
 
-module.exports = { migrate, seed, seedValues, truncate, expressApp, muteConsole }
+function getRandomInRange (from, to, fixed) {
+  return (Math.random() * (to - from) + from).toFixed(fixed) * 1
+}
+
+module.exports = { migrate, seed, seedValues, truncate, expressApp, muteConsole, getRandomInRange }

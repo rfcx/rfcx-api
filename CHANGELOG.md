@@ -1,3 +1,8 @@
+## 1.0.23 (2021-06-XX)
+
+### Features
+* **legacy:** GET v2/events endpoint uses new events database structure ([CE-868](https://jira.rfcx.org/browse/CE-868))
+
 ## 1.0.22-hotfix.0 (2021-06-16)
 
 ### Bug Fixes

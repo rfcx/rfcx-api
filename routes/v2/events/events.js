@@ -8,6 +8,7 @@ const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
 const guidUtil = require('../../../utils/misc/guid')
 const eventsServiceNeo4j = require('../../../services/legacy/events/events-service-neo4j')
+const eventsServiceTimescale = require('../../../services/legacy/events/events-service-timescaledb')
 const usersService = require('../../../services/users/users-service-legacy')
 const usersFusedService = require('../../../services/users/fused')
 const ValidationError = require('../../../utils/converter/validation-error')
@@ -19,6 +20,7 @@ const sequelize = require('sequelize')
 const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'
 const earthRangerService = earthRangerEnabled ? require('../../../services/earthranger') : {}
 const moment = require('moment')
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 
 function query (req, res) {
   return eventsServiceNeo4j.queryData(req)
@@ -31,8 +33,25 @@ function query (req, res) {
     .catch(e => { httpError(req, res, 500, e, 'Error while searching events.'); console.log(e) })
 }
 
-router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), query)
+router.route('/').get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), (req, res) => {
+  const user = req.rfcx.auth_token_info
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('values').optional().toArray()
+  converter.convert('guardian_groups').optional().toArray()
+  converter.convert('order').default('measured_at').toString()
+  converter.convert('dir').default('DESC').toString()
+  converter.convert('limit').toInt().default(100).maximum(1000)
+  converter.convert('offset').toInt().default(0)
+
+  return converter.validate()
+    .then(params => {
+      return eventsServiceTimescale.query(params, user)
+    })
+    .then(function (json) {
+      res.status(200).send(json)
+    })
+    .catch(httpErrorHandler(req, res, 'Failed getting events'))
+})
 
 router.route('/search')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res, next) {

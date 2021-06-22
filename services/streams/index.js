@@ -306,6 +306,13 @@ async function getAccessibleStreamIds (user, createdBy = undefined) {
   return streamIds
 }
 
+/**
+ * Generates hashed token based on stream id, start timestamp and end timestamp
+ * @param {*} stream - stream id
+ * @param {*} start - start timestamp (ms)
+ * @param {*} end - end timestamp (ms)
+ * @returns
+ */
 function getStreamRangeToken (stream, start, end) {
   const STREAM_TOKEN_SALT = process.env.STREAM_TOKEN_SALT || 'random_string'
   return hashedCredentials(STREAM_TOKEN_SALT, `${stream}_${start}_${end}`)
