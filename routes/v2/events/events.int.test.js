@@ -21,8 +21,7 @@ const request = require('supertest')
 const moment = require('moment')
 const routes = require('./events.js')
 const models = require('../../../modelsTimescale')
-// const { migrate, truncate, expressApp, seed, seedValues, muteConsole, getRandomInRange } = require('../../../utils/sequelize/testing')
-const { migrate, truncate, expressApp, seed, seedValues, getRandomInRange } = require('../../../utils/sequelize/testing')
+const { migrate, truncate, expressApp, seed, seedValues, muteConsole, getRandomInRange } = require('../../../utils/sequelize/testing')
 const { ISOToGluedDateStr } = require('../../../utils/misc/datetime')
 
 const app = expressApp()
@@ -30,7 +29,7 @@ const app = expressApp()
 app.use('/', routes)
 
 beforeAll(async () => {
-  // muteConsole()
+  muteConsole()
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
 })
