@@ -312,3 +312,16 @@ describe('GET /v2/events', () => {
     expect(response.body.events[9].guid).toBe(events[19].id)
   })
 })
+
+describe('POST /v2/events/:guid/review', () => {
+  test('returns success when no payload provided', async () => {
+    const response = await request(app).post('/some-id/review').send()
+    expect(response.statusCode).toBe(200)
+    expect(response.body.success).toBeTruthy()
+  })
+  test('returns success when some payload provided', async () => {
+    const response = await request(app).post('/some-id/review').send({ confirmed: false, unreliable: true, windows: [] })
+    expect(response.statusCode).toBe(200)
+    expect(response.body.success).toBeTruthy()
+  })
+})
