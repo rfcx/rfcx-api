@@ -57,6 +57,7 @@ const options = {
     ]
   },
   apis: [
+    './routes/v2/events/events.js',
     './routes/core/**/*.js',
     './routes/internal/ai-hub/*.js',
     './routes/internal/arbimon/*.js',

@@ -33,12 +33,63 @@ function query (req, res) {
     .catch(e => { httpError(req, res, 500, e, 'Error while searching events.'); console.log(e) })
 }
 
+/**
+ * @swagger
+ *
+ * /v2/events:
+ *   get:
+ *     summary: Get list of events
+ *     tags:
+ *       - legacy
+ *     parameters:
+ *       - name: guardian_groups
+ *         description: List of legacy guardian groups ids
+ *         in: query
+ *         type: array|string
+ *       - name: values
+ *         description: List of clasification values
+ *         in: query
+ *         type: array|string
+ *       - name: limit
+ *         description: Maximum number of results to return
+ *         in: query
+ *         type: int
+ *         default: 100
+ *       - name: offset
+ *         description: Number of results to skip
+ *         in: query
+ *         type: int
+ *         default: 0
+ *       - name: dir
+ *         description: Results ordering
+ *         in: query
+ *         type: string
+ *         default: DESC
+ *       - name: dir
+ *         description: Results ordering by datetime
+ *         in: query
+ *         type: string
+ *         default: DESC
+ *     responses:
+ *       200:
+ *         description: List of legacy event objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/EventLegacy'
+ *       400:
+ *         description: Invalid query parameters
+ */
 router.route('/').get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), (req, res) => {
   const user = req.rfcx.auth_token_info
   const converter = new Converter(req.query, {}, true)
   converter.convert('values').optional().toArray()
   converter.convert('guardian_groups').optional().toArray()
-  converter.convert('order').default('measured_at').toString()
   converter.convert('dir').default('DESC').toString()
   converter.convert('limit').toInt().default(100).maximum(1000)
   converter.convert('offset').toInt().default(0)
