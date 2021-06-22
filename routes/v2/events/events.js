@@ -241,49 +241,30 @@ router.route('/:guid/trigger')
       })
   })
 
+
+/**
+ * @swagger
+ *
+ * /v2/events/{guid}/review:
+ *   post:
+ *     summary: Does nothing [deprecated] - was reviewing events in Neo4j database previosly
+ *     tags:
+ *       - legacy
+ *     responses:
+ *       200:
+ *         description: Success result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ */
 router.route('/:guid/review')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    const transformedParams = {}
-    const params = new Converter(req.body, transformedParams)
-
-    params.convert('confirmed').toBoolean()
-    params.convert('windows').toArray()
-    params.convert('unreliable').optional().toBoolean().default(false)
-
-    const user = usersService.getUserDataFromReq(req)
-    const timestamp = (new Date()).valueOf()
-    let event
-
-    return params.validate()
-      .then(() => {
-        return usersFusedService.ensureUserSyncedFromToken(req)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearPreviousReviewOfUser(req.params.guid, user)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearPreviousAudioWindowsReviewOfUser(req.params.guid, user)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearLatestReview(req.params.guid)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearLatestAudioWindowsReview(req.params.guid)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp, transformedParams.unreliable)
-      })
-      .then((data) => {
-        event = data
-        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp, transformedParams.unreliable)
-      })
-      .then((winds) => {
-        eventsServiceNeo4j.saveInTimescaleDB(event, winds, transformedParams.windows, req.rfcx.auth_token_info.owner_id)
-        res.status(200).send({ success: true })
-      })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while saving review data.'); console.log(e) })
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function (req, res) {
+    res.status(200).send({ success: true })
   })
 
 module.exports = router
