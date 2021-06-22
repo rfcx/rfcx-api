@@ -83,13 +83,14 @@ describe('GET /v2/events', () => {
 
   test('returns one event', async () => {
     const { classification, classifierEventStrategy, streams } = await commonSetup()
+    const startDate = moment().subtract(1, 'day')
     const event = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5f',
       streamId: streams[0].id,
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(1, 'day').toISOString(),
-      end: moment().subtract(1, 'day').add(10, 'minutes').toISOString()
+      start: startDate.toISOString(),
+      end: startDate.clone().add(10, 'minutes').toISOString()
     }
     await models.Event.create(event)
 
@@ -125,13 +126,14 @@ describe('GET /v2/events', () => {
 
   test('returns no events if value does not match', async () => {
     const { classification, classifierEventStrategy, streams } = await commonSetup()
+    const startDate = moment().subtract(1, 'day')
     const event = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5f',
       streamId: streams[0].id,
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(1, 'day').toISOString(),
-      end: moment().subtract(1, 'day').add(10, 'minutes').toISOString()
+      start: startDate.toISOString(),
+      end: startDate.clone().add(10, 'minutes').toISOString()
     }
     await models.Event.create(event)
 
@@ -149,13 +151,14 @@ describe('GET /v2/events', () => {
     ])
 
     const { classification, classifierEventStrategy, streams } = await commonSetup()
+    const startDate = moment().subtract(1, 'day')
     const event = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5f',
       streamId: streams[0].id,
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(1, 'day').toISOString(),
-      end: moment().subtract(1, 'day').add(10, 'minutes').toISOString()
+      start: startDate.toISOString(),
+      end: startDate.clone().add(10, 'minutes').toISOString()
     }
     await models.Event.create(event)
 
@@ -181,13 +184,14 @@ describe('GET /v2/events', () => {
     ])
 
     const { classification, classifierEventStrategy, streams } = await commonSetup()
+    const startDate = moment().subtract(1, 'day')
     const event = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5f',
       streamId: streams[0].id,
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(1, 'day').toISOString(),
-      end: moment().subtract(1, 'day').add(10, 'minutes').toISOString()
+      start: startDate.toISOString(),
+      end: startDate.clone().add(10, 'minutes').toISOString()
     }
     await models.Event.create(event)
 
@@ -199,23 +203,25 @@ describe('GET /v2/events', () => {
 
   test('returns several events', async () => {
     const { classification, classifierEventStrategy, streams } = await commonSetup()
+    const startDate = moment().subtract(1, 'day')
     const event1 = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5f',
       streamId: streams[0].id,
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(1, 'day').toISOString(),
-      end: moment().subtract(1, 'day').add(10, 'minutes').toISOString()
+      start: startDate.toISOString(),
+      end: startDate.clone().add(10, 'minutes').toISOString()
     }
     const classification2 = { id: 7719, value: 'vehicle', title: 'Vehicle', type_id: 1, source_id: 1 }
     await models.Classification.create(classification2)
+    const startDate2 = moment().subtract(2, 'days')
     const event2 = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5e',
       streamId: streams[1].id,
       classificationId: classification2.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(2, 'days').toISOString(),
-      end: moment().subtract(2, 'days').add(10, 'seconds').toISOString()
+      start: startDate2.toISOString(),
+      end: startDate2.clone().add(10, 'seconds').toISOString()
     }
     await models.Event.create(event1)
     await models.Event.create(event2)
@@ -253,21 +259,23 @@ describe('GET /v2/events', () => {
 
   test('returns several events in ascending order', async () => {
     const { classification, classifierEventStrategy, streams } = await commonSetup()
+    const startDate = moment().subtract(1, 'day')
     const event1 = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5f',
       streamId: streams[0].id,
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(1, 'day').toISOString(),
-      end: moment().subtract(1, 'day').add(10, 'minutes').toISOString()
+      start: startDate.toISOString(),
+      end: startDate.clone().add(10, 'minutes').toISOString()
     }
+    const startDate2 = moment().subtract(2, 'days')
     const event2 = {
       id: 'd72d4071-889a-4570-b419-b73ab1696f5e',
       streamId: streams[1].id,
       classificationId: classification.id,
       classifierEventStrategyId: classifierEventStrategy.id,
-      start: moment().subtract(2, 'days').toISOString(),
-      end: moment().subtract(2, 'days').add(10, 'seconds').toISOString()
+      start: startDate2.toISOString(),
+      end: startDate2.clone().add(10, 'seconds').toISOString()
     }
     await models.Event.create(event1)
     await models.Event.create(event2)
@@ -284,13 +292,14 @@ describe('GET /v2/events', () => {
     const indexes = [...Array(30).keys()].splice(10) // generate ids from 10 to 29
     const events = []
     for (const index of indexes) {
+      const startDate = moment().subtract(index, 'day')
       const event = {
         id: `d72d4071-889a-4570-b419-b73ab1696f${index}`,
         streamId: streams[0].id,
         classificationId: classification.id,
         classifierEventStrategyId: classifierEventStrategy.id,
-        start: moment().subtract(index, 'day').toISOString(),
-        end: moment().subtract(index, 'day').add(30, 'seconds').toISOString()
+        start: startDate.toISOString(),
+        end: startDate.clone().add(30, 'seconds').toISOString()
       }
       events.push(event)
       await models.Event.create(event)
