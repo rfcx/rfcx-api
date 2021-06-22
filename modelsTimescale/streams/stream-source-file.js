@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = function (sequelize, DataTypes) {
   const StreamSourceFile = sequelize.define('StreamSourceFile', {
     id: {
@@ -91,5 +93,6 @@ module.exports = function (sequelize, DataTypes) {
       'audio_codec_id', 'audio_file_format_id', 'sample_rate', 'created_at', 'updated_at'],
     lite: ['id', 'filename', 'duration', 'sample_rate']
   }
+  StreamSourceFile.include = includeBuilder(StreamSourceFile, 'stream_source_file', StreamSourceFile.attributes.lite)
   return StreamSourceFile
 }
