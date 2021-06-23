@@ -102,8 +102,4 @@ function muteConsole (levels = ['log', 'info', 'warn', 'error']) {
   })
 }
 
-function getRandomInRange (from, to, fixed) {
-  return (Math.random() * (to - from) + from).toFixed(fixed) * 1
-}
-
-module.exports = { migrate, seed, seedValues, truncate, expressApp, muteConsole, getRandomInRange }
+module.exports = { migrate, seed, seedValues, truncate, expressApp, muteConsole }

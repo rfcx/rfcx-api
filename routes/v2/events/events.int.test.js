@@ -21,8 +21,8 @@ const request = require('supertest')
 const moment = require('moment')
 const routes = require('./events.js')
 const models = require('../../../modelsTimescale')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole, getRandomInRange } = require('../../../utils/sequelize/testing')
-const { ISOToGluedDateStr } = require('../../../utils/misc/datetime')
+const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../utils/sequelize/testing')
+const { isoToGluedDateStr } = require('../../../utils/misc/datetime')
 
 const app = expressApp()
 
@@ -57,8 +57,8 @@ async function commonSetup () {
       id,
       name: `Tembe ${i + 1}`,
       createdById: seedValues.primaryUserId,
-      latitude: getRandomInRange(-90, 90, 3),
-      longitude: getRandomInRange(-180, 180, 3)
+      latitude: 40 + i,
+      longitude: 90 + i
     }
     streams.push(stream)
     await models.Stream.create(stream)
@@ -102,12 +102,12 @@ describe('GET /v2/events', () => {
     expect(ev.audioGuid).toBe(event.id)
     expect(ev.audioGuid).toBe(event.id)
     const endDate = moment.utc(event.start).add(1, 'minute').toISOString()
-    expect(ev.urls.mp3).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${ISOToGluedDateStr(event.start)}.${ISOToGluedDateStr(endDate)}_fmp3.mp3?stream-token=test-token`)
-    expect(ev.urls.opus).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${ISOToGluedDateStr(event.start)}.${ISOToGluedDateStr(endDate)}_fopus.opus?stream-token=test-token`)
-    expect(ev.urls.png).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${ISOToGluedDateStr(event.start)}.${ISOToGluedDateStr(endDate)}_z95_wdolph_g1_fspec_d1269.196.png?stream-token=test-token`)
+    expect(ev.urls.mp3).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${isoToGluedDateStr(event.start)}.${isoToGluedDateStr(endDate)}_fmp3.mp3?stream-token=test-token`)
+    expect(ev.urls.opus).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${isoToGluedDateStr(event.start)}.${isoToGluedDateStr(endDate)}_fopus.opus?stream-token=test-token`)
+    expect(ev.urls.png).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${isoToGluedDateStr(event.start)}.${isoToGluedDateStr(endDate)}_z95_wdolph_g1_fspec_d1269.196.png?stream-token=test-token`)
     expect(ev.createdAt).toBeDefined()
-    expect(ev.latitude).toBe(streams[0].latitude)
-    expect(ev.longitude).toBe(streams[0].longitude)
+    expect(ev.latitude).toBe(40)
+    expect(ev.longitude).toBe(90)
     expect(ev.siteGuid).toBe(`stream_${streams[0].id}`)
     expect(ev.audioMeasuredAt).toBe(new Date(event.start).valueOf())
     expect(ev.guardianGuid).toBe(streams[0].id)
@@ -235,12 +235,12 @@ describe('GET /v2/events', () => {
     expect(ev.guid).toBe(event2.id)
     expect(ev.audioGuid).toBe(event2.id)
     expect(ev.audioGuid).toBe(event2.id)
-    expect(ev.urls.mp3).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event2.streamId}_t${ISOToGluedDateStr(event2.start)}.${ISOToGluedDateStr(event2.end)}_fmp3.mp3?stream-token=test-token`)
-    expect(ev.urls.opus).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event2.streamId}_t${ISOToGluedDateStr(event2.start)}.${ISOToGluedDateStr(event2.end)}_fopus.opus?stream-token=test-token`)
-    expect(ev.urls.png).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event2.streamId}_t${ISOToGluedDateStr(event2.start)}.${ISOToGluedDateStr(event2.end)}_z95_wdolph_g1_fspec_d1269.196.png?stream-token=test-token`)
+    expect(ev.urls.mp3).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event2.streamId}_t${isoToGluedDateStr(event2.start)}.${isoToGluedDateStr(event2.end)}_fmp3.mp3?stream-token=test-token`)
+    expect(ev.urls.opus).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event2.streamId}_t${isoToGluedDateStr(event2.start)}.${isoToGluedDateStr(event2.end)}_fopus.opus?stream-token=test-token`)
+    expect(ev.urls.png).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event2.streamId}_t${isoToGluedDateStr(event2.start)}.${isoToGluedDateStr(event2.end)}_z95_wdolph_g1_fspec_d1269.196.png?stream-token=test-token`)
     expect(ev.createdAt).toBeDefined()
-    expect(ev.latitude).toBe(streams[1].latitude)
-    expect(ev.longitude).toBe(streams[1].longitude)
+    expect(ev.latitude).toBe(41)
+    expect(ev.longitude).toBe(91)
     expect(ev.siteGuid).toBe(`stream_${streams[1].id}`)
     expect(ev.audioMeasuredAt).toBe(new Date(event2.start).valueOf())
     expect(ev.guardianGuid).toBe(streams[1].id)

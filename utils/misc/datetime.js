@@ -44,7 +44,7 @@ function gluedDateStrToISO (dateStr) {
  * @param {*} dateStr
  * @returns
  */
-function ISOToGluedDateStr (dateStr) {
+function isoToGluedDateStr (dateStr) {
   return dateStr.replace(/-|:|\./g, '')
 }
 
@@ -53,5 +53,5 @@ module.exports = {
   momentToMysqlString,
   gluedDateStrToMoment,
   gluedDateStrToISO,
-  ISOToGluedDateStr
+  isoToGluedDateStr
 }

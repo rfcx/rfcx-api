@@ -4,7 +4,7 @@ const guardianGroupService = require('../../guardians/guardian-group-service')
 const { Classification, Event, Sequelize, Stream, Project } = require('../../../modelsTimescale')
 const { mapClassifications } = require('../classifications')
 const { getStreamRangeToken } = require('../../streams')
-const { ISOToGluedDateStr } = require('../../../utils/misc/datetime')
+const { isoToGluedDateStr } = require('../../../utils/misc/datetime')
 const pagedQuery = require('../../../utils/db/paged-query')
 const MEDIA_API_BASE_URL = process.env.MEDIA_API_BASE_URL
 
@@ -72,8 +72,8 @@ async function parseStreamsAndClassifications (params, user) {
 }
 
 function getAssetUrl (event, format) {
-  const startStr = ISOToGluedDateStr(event.start.toISOString())
-  const endStr = ISOToGluedDateStr(event.demoAbleEnd.toISOString())
+  const startStr = isoToGluedDateStr(event.start.toISOString())
+  const endStr = isoToGluedDateStr(event.demoAbleEnd.toISOString())
   const base = `${MEDIA_API_BASE_URL}internal/assets/streams/${event.stream_id}_t${startStr}.${endStr}`
   const streamToken = getStreamRangeToken(event.stream_id, event.start.valueOf(), event.demoAbleEnd.valueOf())
   let url
