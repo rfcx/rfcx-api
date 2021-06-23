@@ -8,12 +8,12 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "http"
     nginx.ingress.kubernetes.io/enable-cors: "flase"
   name: api-mqtt-ingress
-  namespace: production
+  namespace: staging
   labels:
       app: "api-mqtt"
 spec:
   rules:
-  - host: mqtt.rfcx.org
+  - host: staging-checkin-http.rfcx.org 
     http:
       paths:
       - backend:

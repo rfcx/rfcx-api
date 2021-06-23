@@ -2,7 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: api-service
-  namespace: production
+  namespace: staging
 spec:
   selector:
     app: api

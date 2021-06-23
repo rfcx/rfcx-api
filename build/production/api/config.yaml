@@ -57,3 +57,5 @@ data:
   REDIS_ENABLED: "true"
   EARTHRANGER_ENABLED: "true"
   EARTHRANGER_BASE_URL: "https://osaconservation.pamdas.org/"
+  ARBIMON_BASE_URL: "https://arbimon.rfcx.org/"
+  ARBIMON_ENABLED: "true"

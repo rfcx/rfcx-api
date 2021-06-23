@@ -7,15 +7,15 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
     nginx.ingress.kubernetes.io/backend-protocol: "http"
     nginx.ingress.kubernetes.io/enable-cors: "flase"
-  name: api-mqtt-ingress
+  name: api-ingress
   namespace: staging
   labels:
-      app: "api-mqtt"
+      app: "api"
 spec:
   rules:
-  - host: staging-checkin-http.rfcx.org 
+  - host: staging-api.rfcx.org
     http:
       paths:
       - backend:
-          serviceName: api-mqtt-service
-          servicePort: 3000
+          serviceName: api-service
+          servicePort: 80

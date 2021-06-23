@@ -63,9 +63,9 @@ spec:
                  expression { BRANCH_NAME ==~ /(develop|staging)/ }
             }
             steps {
-                sh "kubectl -n ${PHASE} apply -f build/k8s/${PHASE}/${APIHTTP}"
+                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIHTTP}"
                 sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl -n ${PHASE} apply -f build/k8s/${PHASE}/${APIMQTT}"
+                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIMQTT}"
                 sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
             }
         }
@@ -91,11 +91,11 @@ spec:
                  expression { BRANCH_NAME ==~ /(master)/ }
             }
             steps {
-                sh "kubectl -n ${PHASE} apply -f build/k8s/${PHASE}/${APIHTTP}"
+                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIHTTP}"
                 sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl -n ${PHASE} apply -f build/k8s/${PHASE}/${APIMQTT}"
+                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIMQTT}"
                 sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl -n ${PHASE} apply -f build/k8s/${PHASE}/${APIMEDIA}"
+                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIMEDIA}"
                 sh "kubectl set image deployment ${APIMEDIA} ${APIMEDIA}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
             }
         }

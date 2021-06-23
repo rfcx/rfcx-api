@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-mqtt
-  namespace: production
+  namespace: staging
 spec:
   selector:
     matchLabels:
@@ -18,7 +18,9 @@ spec:
           args: ["npm", "run", "start:mqtt"]
           envFrom:
             - secretRef:
-                name: api-rabbitmq-secrets
+                name: api-secrets
+            - configMapRef:
+                name: api-configmap
             - configMapRef:
                 name: api-mqtt-configmap
           ports:
