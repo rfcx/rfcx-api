@@ -19,12 +19,14 @@ spec:
           envFrom:
             - secretRef:
                 name: api-rabbitmq-secrets
+            - configMapRef:
+                name: api-mqtt-configmap
           ports:
             - containerPort: 3000
           resources:
             limits:
-              cpu: "2"
-              memory: 2000Mi
+              cpu: "500m"
+              memory: "300Mi"
             requests:
-              cpu: "1"
-              memory: 512Mi
+              cpu: "500m"
+              memory: "300Mi"
