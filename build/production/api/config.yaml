@@ -48,7 +48,7 @@ data:
   INGEST_BUCKET: "rfcx-streams-production"
   STREAMS_CACHE_BUCKET: "rfcx-streams-cache-production"
   USERS_BUCKET: "rfcx-users-production"
-  MQTT_BROKER_HOST: "mosquitto-service"
+  MQTT_BROKER_HOST: "rabbitmq"
   MEDIA_API_BASE_URL: "https://media-api.rfcx.org/"
   INGEST_SERVICE_BASE_URL: "http://ingest-service-service/"
   INGEST_SERVICE_ENABLED: "true"
