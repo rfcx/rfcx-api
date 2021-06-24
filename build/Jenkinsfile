@@ -60,67 +60,32 @@ spec:
                 label 'slave'
             }
             when {
-                 expression { BRANCH_NAME ==~ /(develop|staging)/ }
+                expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
-                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIHTTP}"
-                sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIMQTT}"
-                sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
+		sh "find . -type f -path 'build/${PHASE}' -name 'deployment.yaml' -exec sed -i 's|:latest|:${BUILD_NUMBER}|g' {} +"
+                sh "kubectl -n ${PHASE} apply -f build/${PHASE} --recursive"
             }
         }
-        stage('Verifying') {
+        stage('Verify') {
             agent {
                 label 'slave'
             }
             when {
-                 expression { BRANCH_NAME ==~ /(develop|staging)/ }
+                expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
                 sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
                 sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
-	            slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP/MQTT API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
-            }
-        }
-
-        stage('Deploy Production') {
-            agent {
-                label 'slave'
-            }
-            when {
-                 expression { BRANCH_NAME ==~ /(master)/ }
-            }
-            steps {
-                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIHTTP}"
-                sh "kubectl set image deployment ${APIHTTP} ${APIHTTP}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIMQTT}"
-                sh "kubectl set image deployment ${APIMQTT} ${APIMQTT}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-                sh "kubectl -n ${PHASE} apply -f build/${PHASE}/${APIMEDIA}"
-                sh "kubectl set image deployment ${APIMEDIA} ${APIMEDIA}=${ECR}/${APIHTTP}_${PHASE}:${BUILD_NUMBER} --namespace ${PHASE}"
-            }
-        }
-        stage('Verify Production') {
-            agent {
-                label 'slave'
-            }
-            options {
-                skipDefaultCheckout true
-            }
-            when {
-                 expression { BRANCH_NAME ==~ /(master)/ }
-            }
-            steps {
-                sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
                 sh "kubectl rollout status deployment ${APIMEDIA} --namespace ${PHASE}"
-                sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
-                slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP/MQTT/Media API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+	        slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP/MQTT API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             }
         }
     }
 }
 
 def branchToConfig(branch) {
-     script {
+    script {
         result = "NULL"
         if (branch == 'develop') {
              result = "testing"
@@ -135,6 +100,6 @@ def branchToConfig(branch) {
              slackChannel = "alerts-deployment-prod"
         }
         echo "BRANCH:${branch} -> CONFIGURATION:${result}"
-        }
-         return result
+    }
+    return result
 }
