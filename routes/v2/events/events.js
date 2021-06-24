@@ -153,6 +153,25 @@ router.route('/reviews/download')
       .catch(e => { console.log(e); httpError(req, res, 500, e, 'Error while searching reviews.') })
   })
 
+/**
+ * @swagger
+ *
+ * /v2/events/{guid}:
+ *   get:
+ *     summary: Get event details
+ *     tags:
+ *       - legacy
+ *     parameters:
+ *     responses:
+ *       200:
+ *         description: Legacy event data with windows
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EventLegacyWithWindows'
+ *       400:
+ *         description: Invalid query parameters
+ */
 router.route('/:guid')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
     eventsServiceTimescale.get(req.params.guid)
