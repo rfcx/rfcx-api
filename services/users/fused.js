@@ -1,7 +1,6 @@
 const { User: LegacyUser } = process.env.NODE_ENV === 'test' ? require('../../modelsTimescale') : require('../../models')
 const { User, Sequelize } = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ensureUserSyncedInNeo4j = process.env.NEO4J_ENABLED === 'true' ? require('./legacy/neo4j') : undefined
 
 const userBaseInclude = [{
   include: [{ all: true }]
@@ -58,9 +57,6 @@ function collectUserDataForSync (req) {
 
 async function ensureUserSynced (user) {
   await ensureUserSyncedInTimescaleDB(user)
-  if (ensureUserSyncedInNeo4j) {
-    await ensureUserSyncedInNeo4j(user)
-  }
 }
 
 async function ensureUserSyncedFromToken (req) {

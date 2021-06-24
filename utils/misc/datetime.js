@@ -39,9 +39,19 @@ function gluedDateStrToISO (dateStr) {
   return gluedDateStrToMoment(dateStr).toISOString()
 }
 
+/**
+ * Deletes all special characters from ISO date string (e.g. "0210621T20:11:05.436Z" to "20210621T201105436Z")
+ * @param {*} dateStr
+ * @returns
+ */
+function isoToGluedDateStr (dateStr) {
+  return dateStr.replace(/-|:|\./g, '')
+}
+
 module.exports = {
   quantify,
   momentToMysqlString,
   gluedDateStrToMoment,
-  gluedDateStrToISO
+  gluedDateStrToISO,
+  isoToGluedDateStr
 }

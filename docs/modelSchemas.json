@@ -1080,5 +1080,106 @@
         }
       }
     }
+  },
+  "EventLegacy": {
+    "properties": {
+      "guid": {
+        "type": "string",
+        "example": "cf8a7ac9-0dd2-40b6-b03f-a067d6c43325"
+      },
+      "audioGuid": {
+        "type": "string",
+        "example": "cf8a7ac9-0dd2-40b6-b03f-a067d6c43325"
+      },
+      "urls": {
+        "type": "object",
+        "properties": {
+          "mp3": {
+            "type": "string",
+            "example": "https://media-api.rfcx.org/internal/assets/streams/cfoo488ey48u_t20210616T075328465Z.20210616T075428465Z_fmp3.mp3?stream-token=7df9be544f1cac731876576b788e3c14cc94e99a6e38fc9bb9cf9ba098e1dbb0"
+          },
+          "opus": {
+            "type": "string",
+            "example": "https://media-api.rfcx.org/internal/assets/streams/cfoo488ey48u_t20210616T075328465Z.20210616T075428465Z_fopus.opus?stream-token=7df9be544f1cac731876576b788e3c14cc94e99a6e38fc9bb9cf9ba098e1dbb0"
+          },
+          "png": {
+            "type": "string",
+            "example": "https://media-api.rfcx.org/internal/assets/streams/cfoo488ey48u_t20210616T075328465Z.20210616T075428465Z_z95_wdolph_g1_fspec_d1269.196.png?stream-token=7df9be544f1cac731876576b788e3c14cc94e99a6e38fc9bb9cf9ba098e1dbb0"
+          }
+        }
+      },
+      "createdAt": {
+        "type": "number",
+        "example": 1623833526811
+      },
+      "guardianGuid": {
+        "type": "string",
+        "example": "cfoo488ey48u"
+      },
+      "guardianShortname": {
+        "type": "string",
+        "example": "Elefthero_old"
+      },
+      "latitude": {
+        "type": "float",
+        "example": 90.123
+      },
+      "longitude": {
+        "type": "float",
+        "example": 125.912
+      },
+      "siteGuid": {
+        "type": "string",
+        "example": "aoos00000000"
+      },
+      "audioMeasuredAt": {
+        "type": "number",
+        "example": 1623830008465
+      },
+      "audioDuration": {
+        "type": "number",
+        "example": 60000
+      },
+      "value": {
+        "type": "string",
+        "example": "gunshot"
+      },
+      "label": {
+        "type": "string",
+        "example": "Gunshot, gunfire"
+      },
+      "confirmed": {
+        "type": "number",
+        "example": 0
+      },
+      "rejected": {
+        "type": "number",
+        "example": 0
+      },
+      "last_review": {
+        "type": "object",
+        "example": null
+      },
+      "siteTimezone": {
+        "type": "string",
+        "example": null
+      },
+      "confidence": {
+        "type": "float",
+        "example": 1
+      },
+      "aiName": {
+        "type": "string",
+        "example": null
+      },
+      "aiGuid": {
+        "type": "string",
+        "example": null
+      },
+      "aiMinConfidence": {
+        "type": "float",
+        "example": null
+      }
+    }
   }
 }

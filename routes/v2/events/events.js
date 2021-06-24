@@ -8,8 +8,7 @@ const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
 const guidUtil = require('../../../utils/misc/guid')
 const eventsServiceNeo4j = require('../../../services/legacy/events/events-service-neo4j')
-const usersService = require('../../../services/users/users-service-legacy')
-const usersFusedService = require('../../../services/users/fused')
+const eventsServiceTimescale = require('../../../services/legacy/events/events-service-timescaledb')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const guardiansService = require('../../../services/guardians/guardians-service')
@@ -19,6 +18,7 @@ const sequelize = require('sequelize')
 const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'
 const earthRangerService = earthRangerEnabled ? require('../../../services/earthranger') : {}
 const moment = require('moment')
+const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 
 function query (req, res) {
   return eventsServiceNeo4j.queryData(req)
@@ -31,8 +31,76 @@ function query (req, res) {
     .catch(e => { httpError(req, res, 500, e, 'Error while searching events.'); console.log(e) })
 }
 
-router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), query)
+/**
+ * @swagger
+ *
+ * /v2/events:
+ *   get:
+ *     summary: Get list of events
+ *     tags:
+ *       - legacy
+ *     parameters:
+ *       - name: guardian_groups
+ *         description: List of legacy guardian groups ids
+ *         in: query
+ *         type: array|string
+ *       - name: values
+ *         description: List of clasification values
+ *         in: query
+ *         type: array|string
+ *       - name: limit
+ *         description: Maximum number of results to return
+ *         in: query
+ *         type: int
+ *         default: 100
+ *       - name: offset
+ *         description: Number of results to skip
+ *         in: query
+ *         type: int
+ *         default: 0
+ *       - name: dir
+ *         description: Results ordering
+ *         in: query
+ *         type: string
+ *         default: DESC
+ *       - name: dir
+ *         description: Results ordering by datetime
+ *         in: query
+ *         type: string
+ *         default: DESC
+ *     responses:
+ *       200:
+ *         description: List of legacy event objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/EventLegacy'
+ *       400:
+ *         description: Invalid query parameters
+ */
+router.route('/').get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), (req, res) => {
+  const user = req.rfcx.auth_token_info
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('values').optional().toArray()
+  converter.convert('guardian_groups').optional().toArray()
+  converter.convert('dir').default('DESC').toString()
+  converter.convert('limit').toInt().default(100).maximum(1000)
+  converter.convert('offset').toInt().default(0)
+
+  return converter.validate()
+    .then(params => {
+      return eventsServiceTimescale.query(params, user)
+    })
+    .then(function (json) {
+      res.status(200).send(json)
+    })
+    .catch(httpErrorHandler(req, res, 'Failed getting events'))
+})
 
 router.route('/search')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res, next) {
@@ -171,49 +239,29 @@ router.route('/:guid/trigger')
       })
   })
 
+/**
+ * @swagger
+ *
+ * /v2/events/{guid}/review:
+ *   post:
+ *     summary: Does nothing [deprecated] - was reviewing events in Neo4j database previosly
+ *     tags:
+ *       - legacy
+ *     responses:
+ *       200:
+ *         description: Success result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ */
 router.route('/:guid/review')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    const transformedParams = {}
-    const params = new Converter(req.body, transformedParams)
-
-    params.convert('confirmed').toBoolean()
-    params.convert('windows').toArray()
-    params.convert('unreliable').optional().toBoolean().default(false)
-
-    const user = usersService.getUserDataFromReq(req)
-    const timestamp = (new Date()).valueOf()
-    let event
-
-    return params.validate()
-      .then(() => {
-        return usersFusedService.ensureUserSyncedFromToken(req)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearPreviousReviewOfUser(req.params.guid, user)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearPreviousAudioWindowsReviewOfUser(req.params.guid, user)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearLatestReview(req.params.guid)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.clearLatestAudioWindowsReview(req.params.guid)
-      })
-      .then(() => {
-        return eventsServiceNeo4j.reviewEvent(req.params.guid, transformedParams.confirmed, user, timestamp, transformedParams.unreliable)
-      })
-      .then((data) => {
-        event = data
-        return eventsServiceNeo4j.reviewAudioWindows(transformedParams.windows, user, timestamp, transformedParams.unreliable)
-      })
-      .then((winds) => {
-        eventsServiceNeo4j.saveInTimescaleDB(event, winds, transformedParams.windows, req.rfcx.auth_token_info.owner_id)
-        res.status(200).send({ success: true })
-      })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while saving review data.'); console.log(e) })
+  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function (req, res) {
+    res.status(200).send({ success: true })
   })
 
 module.exports = router

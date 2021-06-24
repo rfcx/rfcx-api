@@ -12,8 +12,6 @@ const textGridService = require('../../textgrid/textgrid-service')
 const mailService = require('../../mail/mail-service')
 const aws = require('../../../utils/external/aws.js').aws()
 const hash = require('../../../utils/misc/hash')
-const annotationsService = require('../../annotations')
-const classificationService = require('../../classifications')
 
 function prepareOpts (req) {
   let order, dir
@@ -563,51 +561,6 @@ function sendSNSForEvent (data) {
   }
 }
 
-function clearPreviousReviewOfUser (guid, user) {
-  const query = 'MATCH (ev:event {guid: {guid}}) ' +
-    'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
-    'OPTIONAL MATCH (ev)-[:has_review]->(re:review)<-[:created]-(user) ' +
-    'DETACH DELETE re ' +
-    'RETURN ev as event'
-
-  const session = neo4j.session()
-  const resultPromise = Promise.resolve(session.run(query, {
-    guid,
-    userGuid: user.guid,
-    userEmail: user.email
-  }))
-
-  return resultPromise.then(result => {
-    session.close()
-    if (!result.records || !result.records.length) {
-      throw new EmptyResultError('Event with given guid not found.')
-    }
-    return result.records.map((record) => {
-      return record.get(0).properties
-    })
-  })
-}
-
-function clearLatestReview (guid) {
-  const query = 'MATCH (ev:event {guid: {guid}}) ' +
-    'OPTIONAL MATCH (ev)-[has_review]->(re:review { latest: true }) ' +
-    'SET re.latest = null ' +
-    'RETURN ev as event'
-
-  const session = neo4j.session()
-  const resultPromise = Promise.resolve(session.run(query, { guid }))
-
-  return resultPromise.then(result => {
-    session.close()
-    if (!result.records || !result.records.length) {
-      throw new EmptyResultError('Event with given guid not found.')
-    }
-    return result.records.map((record) => {
-      return record.get(0).properties
-    })
-  })
-}
-
 function createEvent (event) {
   const createdAt = Date.now()
   const eventUuid = event.id
@@ -644,109 +597,6 @@ function createEvent (event) {
   }
 
   return eventUuid
-}
-
-function reviewEvent (guid, confirmed, user, timestamp, unreliable) {
-  const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:classifies]->(val:label), (user:user {guid: {userGuid}, email: {userEmail}})' +
-    'MERGE (ev)-[:has_review]->(:review { latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
-    'RETURN ev as event, val.value as value'
-
-  const session = neo4j.session()
-  const resultPromise = Promise.resolve(session.run(query, {
-    guid,
-    confirmed,
-    userGuid: user.guid,
-    userEmail: user.email,
-    timestamp,
-    unreliable
-  }))
-
-  return resultPromise.then(result => {
-    session.close()
-    if (!result.records || !result.records.length) {
-      throw new EmptyResultError('Event with given guid not found.')
-    }
-    return result.records.map((record) => {
-      const event = record.get(0).properties
-      event.value = record.get(1)
-      return event
-    })[0]
-  })
-}
-
-function clearPreviousAudioWindowsReviewOfUser (guid, user) {
-  const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet) ' +
-    'OPTIONAL MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
-    'OPTIONAL MATCH (aws)-[:contains]->(aw:audioWindow)-[:has_review]->(re:review)<-[:created]-(user) ' +
-    'DETACH DELETE re ' +
-    'RETURN ev as event'
-
-  const session = neo4j.session()
-  const resultPromise = Promise.resolve(session.run(query, {
-    guid,
-    userGuid: user.guid,
-    userEmail: user.email
-  }))
-
-  return resultPromise.then(result => {
-    session.close()
-    if (!result.records || !result.records.length) {
-      throw new EmptyResultError('Event with given guid not found.')
-    }
-    return result.records.map((record) => {
-      return record.get(0).properties
-    })
-  })
-}
-
-function clearLatestAudioWindowsReview (guid) {
-  const query = 'MATCH (ev:event {guid: {guid}})<-[:contains]-(evs:eventSet)-[:relates_to]->(aws:audioWindowSet)-[:contains]->(aw:audioWindow)' +
-    'OPTIONAL MATCH (aw)-[:has_review]->(re:review) ' +
-    'SET re.latest = null ' +
-    'RETURN ev as event'
-
-  const session = neo4j.session()
-  const resultPromise = Promise.resolve(session.run(query, { guid }))
-
-  return resultPromise.then(result => {
-    session.close()
-    if (!result.records || !result.records.length) {
-      throw new EmptyResultError('Event with given guid not found.')
-    }
-    return result.records.map((record) => {
-      return record.get(0).properties
-    })
-  })
-}
-
-function reviewAudioWindows (windowsData, user, timestamp, unreliable) {
-  const session = neo4j.session()
-  const proms = []
-  windowsData.forEach((item) => {
-    const query = 'MATCH (aw:audioWindow {guid: {guid}}) ' +
-      'MATCH (user:user {guid: {userGuid}, email: {userEmail}}) ' +
-      'MERGE (aw)-[:has_review]->(:review {latest: true, confirmed: {confirmed}, created: {timestamp}, unreliable: {unreliable} })<-[:created]-(user) ' +
-      'RETURN aw as audioWindow'
-
-    const resultPromise = Promise.resolve(session.run(query, {
-      guid: item.guid,
-      confirmed: item.confirmed,
-      userGuid: user.guid,
-      userEmail: user.email,
-      timestamp,
-      unreliable
-    }))
-    proms.push(resultPromise)
-  })
-  return Promise.all(proms)
-    .then((promData) => {
-      session.close()
-      return promData.map((item) => {
-        return item.records.map((record) => {
-          return record.get(0).properties
-        })[0]
-      })
-    })
 }
 
 function generateTextGridContent (tempPath, reviews) {
@@ -826,31 +676,6 @@ function formatEventsAsTags (events, type) {
     .reduce((prev, cur) => { return prev.concat(cur) }, [])
 }
 
-async function saveInTimescaleDB (event, windows, confirmations, userId) {
-  try {
-    const confObj = confirmations.reduce((acc, conf) => {
-      acc[conf.guid] = conf.confirmed
-      return acc
-    }, {})
-    const classificationId = await classificationService.getId(event.value)
-    for (const w of windows) {
-      await annotationsService.create({
-        streamId: event.guardianGuid,
-        start: event.audioMeasuredAt + w.start,
-        end: event.audioMeasuredAt + w.end,
-        classificationId,
-        frequencyMin: null,
-        frequencyMax: null,
-        userId,
-        isManual: false,
-        isPositive: confObj[w.guid]
-      })
-    }
-  } catch (e) {
-    console.error('Failed sync between Neo4j and TimescaleDB reviews', e)
-  }
-}
-
 module.exports = {
   queryData,
   queryWindowsForEvent,
@@ -858,17 +683,10 @@ module.exports = {
   getEventInfoByGuid,
   sendNotificationsForEvent,
   sendSNSForEvent,
-  clearPreviousReviewOfUser,
-  clearPreviousAudioWindowsReviewOfUser,
-  clearLatestReview,
-  clearLatestAudioWindowsReview,
   createEvent,
-  reviewEvent,
-  reviewAudioWindows,
   generateTextGridContent,
   formatReviewsForFiles,
   formatEventsAsTags,
   getAiModelsForReviews,
-  getEventByGuid,
-  saveInTimescaleDB
+  getEventByGuid
 }
