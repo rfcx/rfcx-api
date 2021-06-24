@@ -86,14 +86,12 @@ router.route('/reviews/download')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    return eventsServiceNeo4j.getEventByGuid(req.params.guid)
-      .then((data) => {
-        res.status(200).json(data)
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+    eventsServiceTimescale.get(req.params.guid)
+      .then(function (json) {
+        res.status(200).send(json)
       })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, 'Event with given guid not found.'))
+      .catch(httpErrorHandler(req, res, 'Failed getting event'))
   })
 
 router.route('/:guid/windows')

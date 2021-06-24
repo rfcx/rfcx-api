@@ -132,3 +132,10 @@ describe('GET /events', () => {
     expect(response.body[0].start).toBe(events[1].start)
   })
 })
+
+describe('GET /events/{id}', () => {
+  test('valiation errof if id is invalid', async () => {
+    const response = await request(app).get('/invalid-id').query({})
+    expect(response.statusCode).toBe(400)
+  })
+})

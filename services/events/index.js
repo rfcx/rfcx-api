@@ -105,7 +105,11 @@ async function query (filters, options) {
 */
 async function get (id, options = {}) {
   if (!isUuid(id)) {
-    id = slugToUuid(id)
+    try {
+      id = slugToUuid(id)
+    } catch (e) {
+      throw new ValidationError('Invalid event identifier')
+    }
   }
 
   const attributes = options.fields && options.fields.length > 0 ? Event.attributes.full.filter(a => options.fields.includes(a)) : Event.attributes.full
