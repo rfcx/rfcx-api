@@ -313,6 +313,101 @@ describe('GET /v2/events', () => {
   })
 })
 
+describe('GET /v2/events/:guid', () => {
+  test('returns event with detections by guid', async () => {
+    const { classification, classifierEventStrategy, streams, classifier } = await commonSetup()
+    const startDate = moment().subtract(1, 'day')
+    const event = {
+      id: 'd72d4071-889a-4570-b419-b73ab1696f6e',
+      streamId: streams[0].id,
+      classificationId: classification.id,
+      classifierEventStrategyId: classifierEventStrategy.id,
+      start: startDate.toISOString(),
+      end: startDate.clone().add(10, 'minutes').toISOString()
+    }
+    await models.Event.create(event)
+    const detection1Start = startDate.clone().add('431', 'milliseconds')
+    const detection1End = detection1Start.clone().add('2000', 'milliseconds')
+    const detection1 = {
+      stream_id: streams[0].id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: detection1Start.toISOString(),
+      end: detection1End.toISOString(),
+      confidence: 0.9
+    }
+    const detection2Start = startDate.clone().add('12531', 'milliseconds')
+    const detection2End = detection2Start.clone().add('2000', 'milliseconds')
+    const detection2 = {
+      stream_id: streams[0].id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: detection2Start.toISOString(),
+      end: detection2End.toISOString(),
+      confidence: 0.99
+    }
+    const detection3Start = startDate.clone().add('32019', 'milliseconds')
+    const detection3End = detection3Start.clone().add('2000', 'milliseconds')
+    const detection3 = {
+      stream_id: streams[0].id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: detection3Start.toISOString(),
+      end: detection3End.toISOString(),
+      confidence: 1
+    }
+    await models.Detection.create(detection1)
+    await models.Detection.create(detection2)
+    await models.Detection.create(detection3)
+    const response = await request(app).get(`/${event.id}`).query({})
+    expect(response.statusCode).toBe(200)
+    const ev = response.body
+    expect(ev.guid).toBe(event.id)
+    expect(ev.audioGuid).toBe(event.id)
+    expect(ev.audioGuid).toBe(event.id)
+    const endDate = moment.utc(event.start).add(1, 'minute').toISOString()
+    expect(ev.urls.mp3).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${isoToGluedDateStr(event.start)}.${isoToGluedDateStr(endDate)}_fmp3.mp3?stream-token=test-token`)
+    expect(ev.urls.opus).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${isoToGluedDateStr(event.start)}.${isoToGluedDateStr(endDate)}_fopus.opus?stream-token=test-token`)
+    expect(ev.urls.png).toBe(`http://test-api.rfcx.org/internal/assets/streams/${event.streamId}_t${isoToGluedDateStr(event.start)}.${isoToGluedDateStr(endDate)}_z95_wdolph_g1_fspec_d1269.196.png?stream-token=test-token`)
+    expect(ev.createdAt).toBeDefined()
+    expect(ev.latitude).toBe(40)
+    expect(ev.longitude).toBe(90)
+    expect(ev.siteGuid).toBe(`stream_${streams[0].id}`)
+    expect(ev.audioMeasuredAt).toBe(new Date(event.start).valueOf())
+    expect(ev.guardianGuid).toBe(streams[0].id)
+    expect(ev.audioDuration).toBe(60000)
+    expect(ev.value).toBe(classification.value)
+    expect(ev.label).toBe(classification.title)
+    expect(ev.confirmed).toBe(0)
+    expect(ev.rejected).toBe(0)
+    expect(ev.last_review).toBeNull()
+    expect(ev.siteTimezone).toBeNull()
+    expect(ev.confidence).toBe(1)
+    expect(ev.aiName).toBeNull()
+    expect(ev.aiGuid).toBeNull()
+    expect(ev.aiMinConfidence).toBeNull()
+    const windows = ev.windows
+    expect(windows[0].guid).toBeDefined()
+    expect(windows[0].confirmed).toBeNull()
+    expect(windows[0].start).toBe(12531)
+    expect(windows[0].end).toBe(14531)
+    expect(windows[0].confidence).toBe(0.99)
+    expect(windows[1].guid).toBeDefined()
+    expect(windows[1].confirmed).toBeNull()
+    expect(windows[1].start).toBe(32019)
+    expect(windows[1].end).toBe(34019)
+    expect(windows[1].confidence).toBe(1)
+  })
+  test('returns 404 error for not found event', async () => {
+    const response = await request(app).get('/eeed4071-889a-4570-b419-b73ab1696f6e').query({})
+    expect(response.statusCode).toBe(404)
+  })
+  test('returns 400 error if guid has invalid format', async () => {
+    const response = await request(app).get('/invalid-id').query({})
+    expect(response.statusCode).toBe(400)
+  })
+})
+
 describe('POST /v2/events/:guid/review', () => {
   test('returns success when no payload provided', async () => {
     const response = await request(app).post('/some-id/review').send()

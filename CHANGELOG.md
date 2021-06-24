@@ -3,6 +3,7 @@
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
 * **legacy:** GET v2/events endpoint uses new events database structure ([CE-868](https://jira.rfcx.org/browse/CE-868))
+* **legacy:** GET v2/events/:guid endpoint uses new events database structure ([CE-998](https://jira.rfcx.org/browse/CE-998))
 * **legacy:** POST v2/events/:guid/review endpoint does nothing ([CE-904](https://jira.rfcx.org/browse/CE-904))
 * **legacy:** Authorization middleware does not sync user data with Neo4j ([CE-912](https://jira.rfcx.org/browse/CE-912))
 

@@ -4,7 +4,11 @@ const guardianGroupService = require('../../guardians/guardian-group-service')
 const { Classification, Event, Sequelize, Stream, Project } = require('../../../modelsTimescale')
 const { mapClassifications } = require('../classifications')
 const { getStreamRangeToken } = require('../../streams')
+const detectionsService = require('../../../services/detections')
 const { isoToGluedDateStr } = require('../../../utils/misc/datetime')
+const { isUuid, slugToUuid } = require('../../../utils/formatters/uuid')
+const { EmptyResultError, ValidationError } = require('../../../utils/errors')
+const { v4: uuidv4 } = require('uuid')
 const pagedQuery = require('../../../utils/db/paged-query')
 const MEDIA_API_BASE_URL = process.env.MEDIA_API_BASE_URL
 
@@ -86,7 +90,7 @@ function getAssetUrl (event, format) {
   return url
 }
 
-function format (event) {
+function format (event, detections) {
   const startTimestamp = event.start.valueOf()
   const endTimestamp = event.end.valueOf()
   const demoAbleEndTimestamp = endTimestamp - startTimestamp > 60000 ? startTimestamp + 60000 : endTimestamp
@@ -116,8 +120,22 @@ function format (event) {
     confidence: 1, // Probably unused
     aiName: null, // Probably unused
     aiGuid: null, // Probably unused,
-    aiMinConfidence: null // Probably unused
+    aiMinConfidence: null, // Probably unused
+    ...detections !== undefined ? { windows: formatDetections(detections, event) } : {}
   }
+}
+
+function formatDetections (detections, event) {
+  const startTimestamp = event.start.valueOf()
+  return detections.map((detection) => {
+    return {
+      guid: uuidv4(),
+      confirmed: null,
+      confidence: detection.confidence,
+      start: detection.start.valueOf() - startTimestamp,
+      end: detection.end.valueOf() - startTimestamp
+    }
+  })
 }
 
 async function query (params, user) {
@@ -153,9 +171,33 @@ async function query (params, user) {
   }
 
   return pagedQuery(Event, query)
-    .then(data => ({ events: data.results.map(format) }))
+    .then(data => ({ events: data.results.map((event) => { return format(event) }) }))
+}
+
+async function get (id) {
+  if (!isUuid(id)) {
+    try {
+      id = slugToUuid(id)
+    } catch (e) {
+      throw new ValidationError('Invalid event identifier')
+    }
+  }
+
+  const event = await Event.findOne({
+    where: { id },
+    attributes: ['id', 'stream_id', 'start', 'end', 'created_at'],
+    include
+  })
+
+  if (!event) {
+    throw new EmptyResultError('Event with given id not found')
+  }
+
+  const detections = await detectionsService.query(event.start, event.end, event.stream.id, [event.classification.value], undefined, 100, 0, { has_system_role: true })
+  return format(event, detections)
 }
 
 module.exports = {
-  query
+  query,
+  get
 }
