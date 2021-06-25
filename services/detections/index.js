@@ -28,7 +28,7 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyCreate
     }
   }
   if (streamIdOrIds !== undefined) {
-    condition.stream_id = await roleService.getAccessibleObjectsIDs(user.id, 'stream', streamIdOrIds)
+    condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await roleService.getAccessibleObjectsIDs(user.id, 'stream', streamIdOrIds)
   } else {
     const streamIds = streamsOnlyPublic
       ? await streamsService.getPublicStreamIds()

@@ -21,6 +21,10 @@ exports.env = {
   // GOOGLE_APPLICATION_CREDENTIALS: "./config/service-account.json",
   // PUBSUB_ENABLED: 'true',
 
+  // MESSAGE_QUEUE_ENABLED: 'true'
+  // MESSAGE_QUEUE_PREFIX: '',
+  // MESSAGE_QUEUE_ENDPOINT: 'http://sqs:9324',
+  
   BUCKET_ANALYSIS: 'rfcx-analysis',
 
   ASSET_BUCKET_AUDIO: 'rfcx-guardian-ark-development',
@@ -123,5 +127,7 @@ exports.env = {
   // NEW_RELIC_LICENSE_KEY: '',
   // NEW_RELIC_NO_CONFIG_FILE: 'true',
   // NEW_RELIC_APP_NAME: 'Core API Dev',
-  // NEW_RELIC_LOG_LEVEL: 'warn'
+  // NEW_RELIC_LOG_LEVEL: 'warn',
+
+  // STREAM_TOKEN_SALT: "any_random_string"
 }

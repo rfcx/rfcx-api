@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const segmentService = require('../../../services/streams/segments')
-const { getPermissions } = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
@@ -73,41 +72,6 @@ router.get('/streams/:id/coverage', hasStreamPermission('R'), function (req, res
       res.json(data)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream coverage'))
-})
-
-/**
- * @swagger
- *
- * /internal/explorer/streams/{id}/permissions:
- *   get:
- *     summary: Get list of user permissions for a stream
- *     tags:
- *       - internal
- *     parameters:
- *       - name: id
- *         description: Stream identifier
- *         in: path
- *         required: true
- *         type: string
- *     responses:
- *       200:
- *         description: An array of permissions
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: string
- *                 example: 'R'
- *       404:
- *         description: Stream not found
- */
-router.get('/streams/:id/permissions', hasStreamPermission('R'), function (req, res) {
-  return getPermissions(req.rfcx.auth_token_info.owner_id, req.params.id, 'stream')
-    .then(async (permissions) => {
-      res.json(permissions)
-    })
-    .catch(httpErrorHandler(req, res, 'Failed getting stream permissions'))
 })
 
 module.exports = router

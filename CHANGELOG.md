@@ -1,4 +1,24 @@
-## 1.0.21 (2021-??-??)
+## 1.0.23 (2021-06-??)
+
+### Features
+* **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
+
+## 1.0.22-hotfix.0 (2021-06-16)
+
+### Bug Fixes
+* **core:** System user or stream-token user can get detections for selected streams without roles
+
+
+## 1.0.22 (2021-06-16)
+
+### Features
+* **core:** Implement new "stream-token" authorization strategy and apply it for stream assets and stream detections endpoints ([CE-225](https://jira.rfcx.org/browse/CE-225))
+* **media:** Implement frequency clipping feature for spectrograms ([CE-227](https://jira.rfcx.org/browse/CE-227))
+* **media:** Implement frequency filtering feature for audios ([CE-227](https://jira.rfcx.org/browse/CE-227))
+* **core:** Move /streams/{id}/permissions from Internal into Core ([CE-831](https://jira.rfcx.org/browse/CE-831))
+
+
+## 1.0.21 (2021-06-07)
 
 ### Features
 * **core:** Update GET /classifications to be able to limit the classifications result by classifiers by classifiers ([CE-703](https://jira.rfcx.org/browse/CE-703))

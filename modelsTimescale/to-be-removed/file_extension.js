@@ -1,3 +1,5 @@
+const includeBuilder = require('../../utils/sequelize/include-builder')
+
 module.exports = (sequelize, DataTypes) => {
   const FileExtension = sequelize.define('FileExtension', {
     value: {
@@ -13,5 +15,6 @@ module.exports = (sequelize, DataTypes) => {
   FileExtension.attributes = {
     lite: ['value']
   }
+  FileExtension.include = includeBuilder(FileExtension, 'file_extension', FileExtension.attributes.lite)
   return FileExtension
 }
