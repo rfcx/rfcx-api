@@ -6,6 +6,7 @@
 * **legacy:** GET v2/events/:guid endpoint uses new events database structure ([CE-998](https://jira.rfcx.org/browse/CE-998))
 * **legacy:** POST v2/events/:guid/review endpoint does nothing ([CE-904](https://jira.rfcx.org/browse/CE-904))
 * **legacy:** Authorization middleware does not sync user data with Neo4j ([CE-912](https://jira.rfcx.org/browse/CE-912))
+* **legacy:** Delete all Neo4j-related code ([CE-1003](https://jira.rfcx.org/browse/CE-1003))
 
 ## 1.0.22-hotfix.0 (2021-06-16)
 

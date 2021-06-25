@@ -93,8 +93,6 @@ spec:
             value: "rfcx-report-production"
           - name: PNGCRUSH_PATH
             value: "/usr/bin/pngcrush"
-          - name: NEO4J_ENABLED
-            value: "true"
           - name: ASSET_BUCKET_ATTACHMENT
             value: "rfcx-attachment-production"
           - name: ASSET_BUCKET_AI

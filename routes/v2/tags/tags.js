@@ -4,7 +4,6 @@ const sequelize = require('sequelize')
 const moment = require('moment-timezone')
 const passport = require('passport')
 const httpError = require('../../../utils/http-errors.js')
-const eventsServiceNeo4j = require('../../../services/legacy/events/events-service-neo4j')
 const boxesService = require('../../../services/audio/boxes-service')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
@@ -20,35 +19,18 @@ router.route('/')
     const transformedParams = {}
     const params = new Converter(req.query, transformedParams)
 
-    params.convert('type').toString().isEqualToAny(['annotation', 'inference', 'inference:confirmed', 'inference:rejected'])
+    params.convert('type').toString().isEqualToAny(['annotation'])
 
     return params.validate()
       .then(() => {
-        if (['inference', 'inference:confirmed', 'inference:rejected'].includes(req.query.type)) {
-          if (['inference:confirmed', 'inference:rejected'].includes(req.query.type)) {
-            req.query.reviewed = 'true'
-          }
-          // Set include_windows true by default for this endpoint
-          req.query.include_windows = req.query.include_windows !== undefined ? req.query.include_windows : 'true'
-          return eventsServiceNeo4j.queryData(req)
-            .bind({})
-            .then((eventsData) => {
-              this.eventsData = eventsData
-              return eventsServiceNeo4j.formatEventsAsTags(eventsData.events, req.query.type)
-            })
-            .then((tags) => {
-              return tags
-            })
-        } else {
-          return boxesService.getData(req)
-            .then((data) => {
-              boxesService.calculateTimeOffsetsInSeconds(data.labels)
-              return data
-            })
-            .then((boxesData) => {
-              return boxesService.formatBoxesAsTags(boxesData.labels)
-            })
-        }
+        return boxesService.getData(req)
+          .then((data) => {
+            boxesService.calculateTimeOffsetsInSeconds(data.labels)
+            return data
+          })
+          .then((boxesData) => {
+            return boxesService.formatBoxesAsTags(boxesData.labels)
+          })
       })
       .then((json) => {
         res.status(200).send(json)

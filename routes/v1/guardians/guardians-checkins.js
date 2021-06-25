@@ -3,7 +3,6 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../../views/v1')
 const checkInHelpers = require('../../../utils/rfcx-checkin')
-const queueForPrediction = require('../../../utils/rfcx-analysis/queue-for-prediction')
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
@@ -156,11 +155,6 @@ router.route('/:guardian_id/checkins')
             })
             .then(function () {
               return checkInHelpers.audio.cleanupCheckInFiles(info)
-            })
-            .then(function () {
-              if (self.dbGuardian) {
-                return queueForPrediction(info, self.dbGuardian)
-              }
             })
             .then(function () {
               if (process.env.INGEST_SERVICE_ENABLED === 'true') {

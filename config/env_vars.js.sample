@@ -24,7 +24,7 @@ exports.env = {
   // MESSAGE_QUEUE_ENABLED: 'true'
   // MESSAGE_QUEUE_PREFIX: '',
   // MESSAGE_QUEUE_ENDPOINT: 'http://sqs:9324',
-  
+
   BUCKET_ANALYSIS: 'rfcx-analysis',
 
   ASSET_BUCKET_AUDIO: 'rfcx-guardian-ark-development',
@@ -42,13 +42,6 @@ exports.env = {
   DB_USERNAME: 'root',
   DB_PASSWORD: 'test',
   DB_PORT: 3306,
-
-  /// Neo4j database is required for endpoints related to legacy AIs, events, tags, sensations.
-  /// When `NEO4J_ENABLED` is set to true then URL, user and password are required.
-  // NEO4J_ENABLED: "true",
-  // NEO4J_URL: "bolt://neo4j.tools.rfcx.org:7688",
-  // NEO4J_USER: "",
-  // NEO4J_PASSWORD: "",
 
   POSTGRES_PORT: '5432',
   POSTGRES_HOSTNAME: '127.0.0.1',

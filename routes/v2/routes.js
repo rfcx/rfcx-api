@@ -1,7 +1,4 @@
 module.exports = {
-  ais: [
-    require('./ais/ais')
-  ],
   events: [
     require('./events/events')
   ],
