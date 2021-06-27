@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-service
+  namespace: staging
+spec:
+  selector:
+    app: api
+  type: ClusterIP 
+  ports:
+  - name: node
+    port: 80
+    targetPort: 8081
