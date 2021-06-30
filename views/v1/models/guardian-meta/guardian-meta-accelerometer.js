@@ -1,6 +1,6 @@
 exports.models = {
 
-  guardianMetaAccelerometer: function (req, res, dbAccelerometer, modelInfo) {
+  guardianMetaSentinelAccelerometer: function (req, res, dbAccelerometer, modelInfo) {
     if (!Array.isArray(dbAccelerometer)) { dbAccelerometer = [dbAccelerometer] }
 
     const jsonArray = []
@@ -10,9 +10,9 @@ exports.models = {
 
       jsonArray.push({
         measured_at: dbRow.measured_at,
-        x: dbRow.x,
-        y: dbRow.y,
-        z: dbRow.z
+        x: dbRow.x_milli_g_force_accel,
+        y: dbRow.y_milli_g_force_accel,
+        z: dbRow.z_milli_g_force_accel
       })
     }
     return jsonArray
