@@ -10,18 +10,7 @@ const hasRole = require('../../../middleware/authorization/authorization').hasRo
 router.route('/:guardian_id/meta/:meta_type')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const metaType = req.params.meta_type
-
     const modelLookUp = {
-      battery: {
-        model: 'GuardianMetaBattery',
-        viewFunction: 'guardianMetaBattery',
-        timeStampColumn: 'measured_at',
-        dbToJsonMap: {
-          measured_at: 'measured_at',
-          battery_percent: 'percent_charged',
-          battery_temperature: 'temperature'
-        }
-      },
       cpu: {
         model: 'GuardianMetaCPU',
         viewFunction: 'guardianMetaCPU',
@@ -30,6 +19,17 @@ router.route('/:guardian_id/meta/:meta_type')
           measured_at: 'measured_at',
           cpu_percent: 'percent_usage',
           cpu_clock: 'clock_speed'
+        }
+      },
+      memory: {
+        model: 'GuardianMetaMemory',
+        viewFunction: 'guardianMetaMemory',
+        timeStampColumn: 'measured_at',
+        dbToJsonMap: {
+          measured_at: 'measured_at',
+          system_bytes_available: 'system_bytes_available',
+          system_bytes_used: 'system_bytes_used',
+          system_bytes_minimum: 'system_bytes_minimum'
         }
       },
       datatransfer: {
@@ -75,6 +75,16 @@ router.route('/:guardian_id/meta/:meta_type')
           carrier_name: 'carrier_name'
         }
       },
+      battery: {
+        model: 'GuardianMetaBattery',
+        viewFunction: 'guardianMetaBattery',
+        timeStampColumn: 'measured_at',
+        dbToJsonMap: {
+          measured_at: 'measured_at',
+          battery_percent: 'percent_charged',
+          check_in_id: 'check_in_id'
+        }
+      },
       power: {
         model: 'GuardianMetaPower',
         viewFunction: 'guardianMetaPower',
@@ -85,12 +95,27 @@ router.route('/:guardian_id/meta/:meta_type')
           is_charged: 'is_charged'
         }
       },
-      accelerometer: {
-        model: 'GuardianMetaAccelerometer',
-        viewFunction: 'guardianMetaAccelerometer',
+      'sentinel-power': {
+        model: 'GuardianMetaSentinelPower',
+        viewFunction: 'guardianMetaSentinelPower',
         timeStampColumn: 'measured_at',
         dbToJsonMap: {
-          measured_at: 'measured_at'
+          battery_state_of_charge: 'battery_state_of_charge',
+          battery_power: 'battery_power',
+          system_power: 'system_power',
+          check_in_id: 'check_in_id'
+        }
+      },
+      accelerometer: {
+        model: 'GuardianMetaSentinelAccelerometer',
+        viewFunction: 'guardianMetaSentinelAccelerometer',
+        timeStampColumn: 'measured_at',
+        dbToJsonMap: {
+          measured_at: 'measured_at',
+          x_milli_g_force_accel: 'x_milli_g_force_accel',
+          y_milli_g_force_accel: 'y_milli_g_force_accel',
+          z_milli_g_force_accel: 'z_milli_g_force_accel',
+
         }
       },
       diskusage: {
@@ -122,6 +147,35 @@ router.route('/:guardian_id/meta/:meta_type')
           queued_at: 'queued_at',
           request_latency_guardian: 'latency',
           guardian_queued_checkins: 'queued'
+        }
+      },
+      'checkin-status': {
+        model: 'GuardianMetaCheckInStatus',
+        viewFunction: 'guardianMetaCheckInStatus',
+        timeStampColumn: 'measured_at',
+        dbToJsonMap: {
+          measured_at: 'measured_at',
+          queued_size_bytes: 'queued_size_bytes',
+          meta_size_bytes: 'meta_size_bytes'
+        }
+      },
+      mqtt: {
+        model: 'GuardianMetaMqttBrokerConnection',
+        viewFunction: 'guardianMetaMqttBrokerConnections',
+        timeStampColumn: 'connected_at',
+        dbToJsonMap: {
+          connected_at: 'connected_at',
+          connection_latency: 'connection_latency',
+          subscription_latency: 'subscription_latency'
+        }
+      },
+      sms: {
+        model: 'GuardianMetaMessage',
+        viewFunction: 'guardianMetaMessages',
+        timeStampColumn: 'received_at',
+        dbToJsonMap: {
+          address: 'address',
+          body: 'body'
         }
       },
       reboots: {
@@ -195,15 +249,6 @@ router.route('/:guardian_id/meta2/:meta_type')
     const metaType = req.params.meta_type
 
     const modelLookUp = {
-      battery: {
-        model: 'GuardianMetaBattery',
-        timeStampColumn: 'measured_at',
-        dbToJsonMap: {
-          measured_at: 'measured_at',
-          battery_percent: 'percent_charged',
-          battery_temperature: 'temperature'
-        }
-      },
       cpu: {
         model: 'GuardianMetaCPU',
         timeStampColumn: 'measured_at',

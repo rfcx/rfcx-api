@@ -7,11 +7,10 @@ exports.models = {
 
     for (const i in dbBattery) {
       const dbRow = dbBattery[i]
-
       jsonArray.push({
         measured_at: dbRow.measured_at,
         percent_charged: dbRow.battery_percent,
-        temperature: dbRow.battery_temperature
+        check_in_id: dbRow.check_in_id
       })
     }
     return jsonArray
