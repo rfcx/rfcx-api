@@ -114,8 +114,7 @@ router.route('/:guardian_id/meta/:meta_type')
           measured_at: 'measured_at',
           x_milli_g_force_accel: 'x_milli_g_force_accel',
           y_milli_g_force_accel: 'y_milli_g_force_accel',
-          z_milli_g_force_accel: 'z_milli_g_force_accel',
-
+          z_milli_g_force_accel: 'z_milli_g_force_accel'
         }
       },
       diskusage: {
