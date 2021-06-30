@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-media-service
+  namespace: production
+spec:
+  selector:
+    app: api-media
+  type: ClusterIP 
+  ports:
+  - name: node
+    port: 80
+    targetPort: 8081

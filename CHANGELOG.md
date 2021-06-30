@@ -1,7 +1,13 @@
+## 1.0.23 (2021-06-??)
+
+### Features
+* **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
+
 ## 1.0.22-hotfix.0 (2021-06-16)
 
 ### Bug Fixes
 * **core:** System user or stream-token user can get detections for selected streams without roles
+
 
 ## 1.0.22 (2021-06-16)
 
