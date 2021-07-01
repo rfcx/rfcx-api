@@ -7,7 +7,8 @@ const roleService = require('../roles')
  * @param {number} options.limit Maximum number to get detections
  * @param {number} options.offset Number of resuls to skip
  * @param {number | undefined} options.readableBy Include detections readable to the given user id or include all if undefined
- * @param {string} start
+ * @param { number } options.userId User id
+* @param {string} start
  * @param {string} end
  * @param {string[] | undefined} streams Stream id or list of stream ids
  * @param {string[] | undefined} projects Project id or list of project ids
@@ -62,7 +63,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
   }
 
   /**
-   * If no streams or projects given, then gen only public streams
+   * If no streams and no projects given, then get only public streams
    */
   if (!streams && !projects) {
     conditions.push('s.is_public = true')
@@ -133,7 +134,7 @@ async function defaultQuery (filters, options) {
   const annotationBind = {
     start: detections[0].start,
     end: detections[detections.length - 1].start,
-    userId: options.user.id
+    userId: options.userId
   }
 
   const annotationConditions = [
@@ -191,7 +192,7 @@ async function reviewQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive } = filters
 
   const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive)
-  bind.userId = options.user.id
+  bind.userId = options.userId
 
   const sql = `
     SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
@@ -242,6 +243,7 @@ async function reviewQuery (filters, options) {
  * @param {number} options.limit Maximum number to get detections
  * @param {number} options.offset Number of resuls to skip
  * @param {number | undefined} options.readableBy Include detections readable to the given user id or include all if undefined
+ * @param { number } options.userId User id
  * @returns {Detection[]} Detections
  */
 async function query (filters, options) {

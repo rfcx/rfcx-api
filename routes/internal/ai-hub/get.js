@@ -87,7 +87,8 @@ module.exports = (req, res) => {
       const options = {
         limit,
         offset,
-        readableBy: userIsSuper || hasSystemRole ? undefined : userId
+        readableBy: userIsSuper || hasSystemRole ? undefined : userId,
+        userId
       }
       const results = await reviewsService.query(filters, options)
       return res.json(results)
