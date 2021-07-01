@@ -8,7 +8,7 @@ const roleService = require('../roles')
  * @param {number} options.offset Number of resuls to skip
  * @param {number | undefined} options.readableBy Include detections readable to the given user id or include all if undefined
  * @param { number } options.userId User id
-* @param {string} start
+ * @param {string} start
  * @param {string} end
  * @param {string[] | undefined} streams Stream id or list of stream ids
  * @param {string[] | undefined} projects Project id or list of project ids
@@ -31,6 +31,8 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
     ...opts
   }
 
+  const projectsAndStreamsConditions = []
+
   /**
    * If there are projects given, check if the user has permission or has a special role e.g. super, system.
    * If it is a normal user, check the projects by permission.
@@ -38,26 +40,22 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
    */
   if (projects) {
     if (readableBy !== undefined) {
-      const allowedProjects = await roleService.getAccessibleObjectsIDs(readableBy, roleService.PROJECT, projects)
-      if (allowedProjects.length > 0) {
-        conditions.push('s.project_id = ANY($projects)')
-        bind.projects = allowedProjects
-      }
+      const allowedProjects = await roleService.getAccessibleObjectsIDs(readableBy, roleService.PROJECT, projects, 'R', true)
+      projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
+      bind.projects = allowedProjects
     } else {
-      conditions.push('s.project_id = ANY($projects)')
+      projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
       bind.projects = projects
     }
   }
 
   if (streams) {
     if (readableBy !== undefined) {
-      const allowedStreams = await roleService.getAccessibleObjectsIDs(readableBy, roleService.STREAM, streams)
-      if (allowedStreams.length > 0) {
-        conditions.push('d.stream_id = ANY($streams)')
-        bind.streams = allowedStreams
-      }
+      const allowedStreams = await roleService.getAccessibleObjectsIDs(readableBy, roleService.STREAM, streams, 'R', true)
+      projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
+      bind.streams = allowedStreams
     } else {
-      conditions.push('d.stream_id = ANY($streams)')
+      projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
       bind.streams = streams
     }
   }
@@ -96,13 +94,15 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
     conditions.push('a.is_positive IS null')
   }
 
-  return { conditions, bind }
+  return { conditions, projectsAndStreamsConditions, bind }
 }
 
 async function defaultQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence } = filters
 
-  const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
+  const { conditions, projectsAndStreamsConditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
+
+  console.log(JSON.stringify(bind, null, 4))
 
   /**
    * If given both streams and project but don't have any items back, then return []
@@ -110,6 +110,9 @@ async function defaultQuery (filters, options) {
   if ((streams && bind.streams.length === 0) && (projects && bind.projects.length === 0)) {
     return []
   }
+
+  const baseConditions = conditions.join(' AND ')
+  const fullConditions = projectsAndStreamsConditions.length === 0 ? baseConditions : `${baseConditions} AND (${projectsAndStreamsConditions.join(' OR ')})`
 
   const detectionsSql = `
     SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
@@ -120,7 +123,7 @@ async function defaultQuery (filters, options) {
     JOIN streams s ON d.stream_id = s.id
     JOIN classifications c ON d.classification_id = c.id
     JOIN classifiers clf ON d.classifier_id = clf.id
-    WHERE ${conditions.join(' AND ')}
+    WHERE ${fullConditions}
     ORDER BY d.start
     LIMIT $limit
     OFFSET $offset
