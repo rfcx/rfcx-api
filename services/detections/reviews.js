@@ -32,8 +32,8 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
 
   /**
    * If there are projects given, check if the user has permission or has a special role e.g. super, system.
-   * If it is a normal user, check the object by permission.
-   * If it is a special role user, allow everything.
+   * If it is a normal user, check the projects by permission.
+   * If it is a special role user, allow every projects.
    */
   if (projects) {
     if (readableBy !== undefined) {
@@ -48,24 +48,24 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
     }
   }
 
-  /**
-   * If there are streams or no project given, check if the user has permisstion or has a special role e.g. super, system.
-   * If it is a normal user, check the object by permission.
-   * If it is a special role user, allow everything.
-   */
-  if (streams || !projects) {
+  if (streams) {
     if (readableBy !== undefined) {
       const allowedStreams = await roleService.getAccessibleObjectsIDs(readableBy, roleService.STREAM, streams)
       if (allowedStreams.length > 0) {
         conditions.push('d.stream_id = ANY($streams)')
-        bind.streams = streams ? streams.filter(s => allowedStreams.includes(s)) : allowedStreams
+        bind.streams = allowedStreams
       }
-    } else if (streams) {
+    } else {
       conditions.push('d.stream_id = ANY($streams)')
       bind.streams = streams
-    } else {
-      conditions.push('s.is_public = true')
     }
+  }
+
+  /**
+   * If no streams or projects given, then gen only public streams
+   */
+  if (!streams && !projects) {
+    conditions.push('s.is_public = true')
   }
 
   if (classifiers) {
@@ -103,7 +103,10 @@ async function defaultQuery (filters, options) {
 
   const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
 
-  if (!streams && (projects && bind.projects.length === 0)) {
+  /**
+   * If given both streams and project but don't have any items back, then return []
+   */
+  if ((streams && bind.streams.length === 0) && (projects && bind.projects.length === 0)) {
     return []
   }
 
