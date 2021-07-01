@@ -65,7 +65,9 @@ const reviewsService = require('../../../services/detections/reviews')
  *                 $ref: '#/components/schemas/DetectionsAIHub'
  */
 module.exports = (req, res) => {
-  const user = req.rfcx.auth_token_info
+  const userId = req.rfcx.auth_token_info.id
+  const userIsSuper = req.rfcx.auth_token_info.is_super
+  const hasSystemRole = req.rfcx.auth_token_info.has_system_role
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
@@ -82,7 +84,11 @@ module.exports = (req, res) => {
   converter.validate()
     .then(async (params) => {
       const { limit, offset, ...filters } = params
-      const options = { limit, offset, user }
+      const options = {
+        limit,
+        offset,
+        readableBy: userIsSuper || hasSystemRole ? undefined : userId
+      }
       const results = await reviewsService.query(filters, options)
       return res.json(results)
     })
