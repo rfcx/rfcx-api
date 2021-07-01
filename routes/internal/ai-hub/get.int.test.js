@@ -1,6 +1,6 @@
 const routes = require('.')
 const models = require('../../../modelsTimescale')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../utils/sequelize/testing')
+const { migrate, truncate, expressApp, seed } = require('../../../utils/sequelize/testing')
 const request = require('supertest')
 
 const app = expressApp()
@@ -14,18 +14,6 @@ beforeAll(async () => {
 beforeEach(async () => {
   await truncate(models)
 })
-
-async function commonSetup () {
-  const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
-  await models.Stream.create(stream)
-  const stream2 = { id: 'def', name: 'my stream2', createdById: seedValues.otherUserId }
-  await models.Stream.create(stream2)
-  const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
-  await models.Classification.create(classification)
-  const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
-  await models.Classifier.create(classifier)
-  return { stream, stream2, classification, classifier }
-}
 
 describe('GET /internal/ai-hub/detections', () => {
   test('bad request', async () => {
