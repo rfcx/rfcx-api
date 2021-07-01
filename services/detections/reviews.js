@@ -1,6 +1,5 @@
 const models = require('../../modelsTimescale')
 const roleService = require('../roles')
-const streamsService = require('../streams')
 
 function convertArrayToInSQLQuery (items) {
   return items.map(x => "'" + x + "'").toString()
@@ -38,7 +37,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
   const allowedItems = {}
 
   if (projects) {
-    const allowedProjects = await roleService.getAccessibleObjectsIDs(user.id, 'project', projects)
+    const allowedProjects = await roleService.getAccessibleObjectsIDs(user.id, roleService.PROJECT, projects)
     allowedItems.projects = allowedProjects
     if (allowedProjects.length > 0) {
       conditions.push(`s.project_id IN(${convertArrayToInSQLQuery(allowedProjects)})`)
@@ -46,7 +45,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
   }
 
   if (streams || !projects) {
-    const allowedStreams = await streamsService.getAccessibleStreamIds(user)
+    const allowedStreams = await roleService.getAccessibleObjectsIDs(user.id, roleService.STREAM, streams)
     allowedItems.streams = streams ? streams.filter(s => allowedStreams.includes(s)) : allowedStreams
     if (allowedItems.streams.length > 0) {
       conditions.push(`d.stream_id IN(${convertArrayToInSQLQuery(allowedItems.streams)})`)
