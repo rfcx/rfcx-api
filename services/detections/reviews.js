@@ -1,16 +1,12 @@
 const models = require('../../modelsTimescale')
 const roleService = require('../roles')
 
-function convertArrayToInSQLQuery (items) {
-  return items.map(x => "'" + x + "'").toString()
-}
-
 /**
  * Get detections conditions and bind
  * @param {*} options
  * @param {number} options.limit Maximum number to get detections
  * @param {number} options.offset Number of resuls to skip
- * @param {User} options.user User to check for review status
+ * @param {number | undefined} options.readableBy Include detections readable to the given user id or include all if undefined
  * @param {string} start
  * @param {string} end
  * @param {string[] | undefined} streams Stream id or list of stream ids
@@ -27,37 +23,59 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
     'd.start >= $start',
     'd.start < $end'
   ]
-  const { user, ...opts } = options
+  const { readableBy, ...opts } = options
   const bind = {
     start: start.toISOString(),
     end: end.toISOString(),
     ...opts
   }
 
-  const allowedItems = {}
-
+  /**
+   * If there are projects given, check if the user has permission or has a special role e.g. super, system.
+   * If it is a normal user, check the object by permission.
+   * If it is a special role user, allow everything.
+   */
   if (projects) {
-    const allowedProjects = await roleService.getAccessibleObjectsIDs(user.id, roleService.PROJECT, projects)
-    allowedItems.projects = allowedProjects
-    if (allowedProjects.length > 0) {
-      conditions.push(`s.project_id IN(${convertArrayToInSQLQuery(allowedProjects)})`)
+    if (readableBy !== undefined) {
+      const allowedProjects = await roleService.getAccessibleObjectsIDs(readableBy, roleService.PROJECT, projects)
+      if (allowedProjects.length > 0) {
+        conditions.push('s.project_id = ANY($projects)')
+        bind.projects = allowedProjects
+      }
+    } else {
+      conditions.push('s.project_id = ANY($projects)')
+      bind.projects = projects
     }
   }
 
+  /**
+   * If there are streams or no project given, check if the user has permisstion or has a special role e.g. super, system.
+   * If it is a normal user, check the object by permission.
+   * If it is a special role user, allow everything.
+   */
   if (streams || !projects) {
-    const allowedStreams = await roleService.getAccessibleObjectsIDs(user.id, roleService.STREAM, streams)
-    allowedItems.streams = streams ? streams.filter(s => allowedStreams.includes(s)) : allowedStreams
-    if (allowedItems.streams.length > 0) {
-      conditions.push(`d.stream_id IN(${convertArrayToInSQLQuery(allowedItems.streams)})`)
+    if (readableBy !== undefined) {
+      const allowedStreams = await roleService.getAccessibleObjectsIDs(readableBy, roleService.STREAM, streams)
+      if (allowedStreams.length > 0) {
+        conditions.push('d.stream_id = ANY($streams)')
+        bind.streams = streams ? streams.filter(s => allowedStreams.includes(s)) : allowedStreams
+      }
+    } else if (streams) {
+      conditions.push('d.stream_id = ANY($streams)')
+      bind.streams = streams
+    } else {
+      conditions.push('s.is_public = true')
     }
   }
 
   if (classifiers) {
-    conditions.push(`d.classifier_id IN(${convertArrayToInSQLQuery(classifiers)})`)
+    conditions.push('d.classifier_id = ANY($classifiers)')
+    bind.classifiers = classifiers
   }
 
   if (classifications) {
-    conditions.push(`c.value IN(${convertArrayToInSQLQuery(classifications)})`)
+    conditions.push('c.value = ANY($classifications)')
+    bind.classifications = classifications
   }
 
   if (minConfidence) {
@@ -77,15 +95,15 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
     conditions.push('a.is_positive IS null')
   }
 
-  return { conditions, bind, allowedItems }
+  return { conditions, bind }
 }
 
 async function defaultQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence } = filters
 
-  const { conditions, bind, allowedItems } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
+  const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
 
-  if ((streams && allowedItems.streams.length === 0) || (projects && allowedItems.projects.length === 0)) {
+  if (!streams && (projects && bind.projects.length === 0)) {
     return []
   }
 
@@ -121,11 +139,13 @@ async function defaultQuery (filters, options) {
   ]
 
   if (classifications) {
-    annotationConditions.push(`c.value IN(${convertArrayToInSQLQuery(classifications)})`)
+    annotationConditions.push('c.value = ANY($classifications)')
+    annotationBind.classifications = classifications
   }
 
   if (bind.streams && bind.streams.length > 0) {
-    annotationConditions.push(`a.stream_id IN(${convertArrayToInSQLQuery(bind.streams)})`)
+    annotationConditions.push('a.stream_id = ANY($streams)')
+    annotationBind.streams = streams
   }
 
   const annotationsSql = `
@@ -218,7 +238,7 @@ async function reviewQuery (filters, options) {
  * @param {*} options
  * @param {number} options.limit Maximum number to get detections
  * @param {number} options.offset Number of resuls to skip
- * @param {User} options.user User to check for review status
+ * @param {number | undefined} options.readableBy Include detections readable to the given user id or include all if undefined
  * @returns {Detection[]} Detections
  */
 async function query (filters, options) {
