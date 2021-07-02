@@ -39,25 +39,13 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
    * If it is a special role user, allow every projects.
    */
   if (projects) {
-    if (readableBy !== undefined) {
-      const allowedProjects = await getAccessibleObjectsIDs(readableBy, PROJECT, projects, 'R', true)
-      projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
-      bind.projects = allowedProjects
-    } else {
-      projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
-      bind.projects = projects
-    }
+    projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
+    bind.projects = readableBy === undefined ? projects : await getAccessibleObjectsIDs(readableBy, PROJECT, projects, 'R', true)
   }
 
   if (streams) {
-    if (readableBy !== undefined) {
-      const allowedStreams = await getAccessibleObjectsIDs(readableBy, STREAM, streams, 'R', true)
-      projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
-      bind.streams = allowedStreams
-    } else {
-      projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
-      bind.streams = streams
-    }
+    projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
+    bind.streams = readableBy === undefined ? streams : await getAccessibleObjectsIDs(readableBy, STREAM, streams, 'R', true)
   }
 
   /**
