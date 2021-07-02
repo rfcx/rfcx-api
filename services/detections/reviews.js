@@ -1,5 +1,5 @@
 const models = require('../../modelsTimescale')
-const roleService = require('../roles')
+const { getAccessibleObjectsIDs, PROJECT, STREAM } = require('../roles')
 
 /**
  * Get detections conditions and bind
@@ -40,7 +40,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
    */
   if (projects) {
     if (readableBy !== undefined) {
-      const allowedProjects = await roleService.getAccessibleObjectsIDs(readableBy, roleService.PROJECT, projects, 'R', true)
+      const allowedProjects = await getAccessibleObjectsIDs(readableBy, PROJECT, projects, 'R', true)
       projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
       bind.projects = allowedProjects
     } else {
@@ -51,7 +51,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
 
   if (streams) {
     if (readableBy !== undefined) {
-      const allowedStreams = await roleService.getAccessibleObjectsIDs(readableBy, roleService.STREAM, streams, 'R', true)
+      const allowedStreams = await getAccessibleObjectsIDs(readableBy, STREAM, streams, 'R', true)
       projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
       bind.streams = allowedStreams
     } else {
