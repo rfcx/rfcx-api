@@ -47,6 +47,7 @@ module.exports = (req, res) => {
 
   const converter = new Converter(req.body, {})
   converter.convert('name').optional().toString()
+  converter.convert('project_id').optional().toString()
   converter.convert('description').optional().toString()
   converter.convert('is_public').optional().toBoolean()
   converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)

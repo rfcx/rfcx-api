@@ -103,6 +103,7 @@ module.exports = (req, res) => {
   const permissableBy = user.is_super || user.has_system_role ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('keyword').optional().toString()
+  converter.convert('external_id').optional().toString()
   converter.convert('organizations').optional().toArray()
   converter.convert('projects').optional().toArray()
   converter.convert('start').optional().toMomentUtc()
@@ -119,14 +120,14 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async params => {
-      const { keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields, permission } = params
+      const { externalId, keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields, permission } = params
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = permissableBy
       } else if (createdBy) {
         createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
-      const filters = { keyword, organizations, projects, start, end, createdBy, updatedAfter }
+      const filters = { keyword, organizations, projects, start, end, createdBy, updatedAfter, externalId }
       const options = {
         permissableBy,
         onlyPublic,

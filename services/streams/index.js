@@ -88,6 +88,10 @@ async function query (filters, options = {}) {
   const where = {}
 
   // Filters (restrict results - can use multiple filters safely)
+  if (filters.externalId) {
+    where.external_id = filters.externalId
+  }
+
   if (filters.keyword) {
     where.name = {
       [Sequelize.Op.iLike]: `%${filters.keyword}%`

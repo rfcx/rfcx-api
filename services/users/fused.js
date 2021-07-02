@@ -58,9 +58,9 @@ function collectUserDataForSync (req) {
 
 async function ensureUserSynced (user) {
   await ensureUserSyncedInTimescaleDB(user)
-  if (ensureUserSyncedInNeo4j) {
-    await ensureUserSyncedInNeo4j(user)
-  }
+  // if (ensureUserSyncedInNeo4j) {
+  //   await ensureUserSyncedInNeo4j(user)
+  // }
 }
 
 async function ensureUserSyncedFromToken (req) {
