@@ -102,8 +102,6 @@ async function defaultQuery (filters, options) {
 
   const { conditions, projectsAndStreamsConditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence)
 
-  console.log(JSON.stringify(bind, null, 4))
-
   /**
    * If given both streams and project but don't have any items back, then return []
    */
