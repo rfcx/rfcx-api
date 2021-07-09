@@ -2,6 +2,7 @@
 
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
+* **core:** Add unique constraint to user_project_roles table
 
 ## 1.0.22-hotfix.0 (2021-06-16)
 
