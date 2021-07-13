@@ -3,6 +3,10 @@
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
 
+### Bug Fixes
+* **core:** Guest user can not create stream in a project ([CE-961](https://jira.rfcx.org/browse/CE-961))
+
+
 ## 1.0.22-hotfix.0 (2021-06-16)
 
 ### Bug Fixes

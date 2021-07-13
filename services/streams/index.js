@@ -2,7 +2,7 @@ const { Stream, Project, User, Sequelize } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
-const { getAccessibleObjectsIDs, hasPermission, STREAM, READ, UPDATE, DELETE } = require('../roles')
+const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, DELETE } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 const { hashedCredentials } = require('../../utils/misc/hash')
@@ -55,8 +55,11 @@ async function get (idOrWhere, options = {}) {
  * @param {Stream} stream
  * @param {*} options
  */
-function create (stream, options = {}) {
+async function create (stream, options = {}) {
   const fullStream = { ...stream, ...computedAdditions(stream) }
+  if (fullStream.projectId && options.creatableBy && !(await hasPermission(UPDATE, options.creatableBy, fullStream.projectId, PROJECT))) {
+    throw new ForbiddenError()
+  }
   return Stream.create(fullStream)
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
