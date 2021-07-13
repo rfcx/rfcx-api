@@ -86,6 +86,13 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
 
+    swarm_serial: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+      }
+    },
+
     sentinel_version: {
       type: DataTypes.STRING,
       allowNull: true,
