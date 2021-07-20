@@ -22,6 +22,8 @@
 * **media:** Implement frequency filtering feature for audios ([CE-227](https://jira.rfcx.org/browse/CE-227))
 * **core:** Move /streams/{id}/permissions from Internal into Core ([CE-831](https://jira.rfcx.org/browse/CE-831))
 
+### Bug Fixes
+* **internal:** GET /internal/ai-hub/detections rely on projects/streams user permission ([CE-810](https://jira.rfcx.org/browse/CE-810))
 
 ## 1.0.21 (2021-06-07)
 
