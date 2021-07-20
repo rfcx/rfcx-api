@@ -170,7 +170,7 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string[]} inIds Subset of object ids to select from
  * @param {string} permission Required permission "R" by default
  */
-async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = READ) {
+async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = READ, includePublic = false) {
   const select = `SELECT DISTINCT ${itemName}.id FROM ${itemName}s ${itemName}`
   const joins = [
     `LEFT JOIN user_${itemName}_roles ${itemName}r ON ${itemName}.id = ${itemName}r.${itemName}_id AND ${itemName}r.user_id = ${userId}`,
@@ -195,6 +195,9 @@ async function getAccessibleObjectsIDs (userId, itemName, inIds, permission = RE
       `LEFT JOIN user_organization_roles organizationr ON organization.id = organizationr.organization_id AND organizationr.user_id = ${userId}`,
       'LEFT JOIN role_permissions organizationperm ON organizationr.role_id = organizationperm.role_id'
     ])
+    if (includePublic) {
+      wheres.push(`${itemName}.is_public = true`)
+    }
     wheres.push('organization.created_by_id = :userId')
     wheres.push(`organizationperm.permission = '${permission}'`)
   }
