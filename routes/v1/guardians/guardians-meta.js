@@ -157,7 +157,8 @@ router.route('/:guardian_id/meta/:meta_type')
           queued_size_bytes: 'queued_size_bytes',
           meta_size_bytes: 'meta_size_bytes',
           stashed_size_bytes: 'stashed_size_bytes',
-          archived_size_bytes: 'archived_size_bytes'
+          archived_size_bytes: 'archived_size_bytes',
+          vault_size_bytes: 'vault_size_bytes'
         }
       },
       mqtt: {

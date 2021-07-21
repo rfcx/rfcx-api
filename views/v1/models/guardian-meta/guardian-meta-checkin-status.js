@@ -13,7 +13,8 @@ exports.models = {
         queued_size_bytes: dbRow.queued_size_bytes,
         meta_size_bytes: dbRow.meta_size_bytes,
         stashed_size_bytes: dbRow.stashed_size_bytes,
-        archived_size_bytes: dbRow.archived_size_bytes
+        archived_size_bytes: dbRow.archived_size_bytes,
+        vault_size_bytes: dbRow.vault_size_bytes
       })
     }
     return jsonArray
