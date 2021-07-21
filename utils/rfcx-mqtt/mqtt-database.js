@@ -160,7 +160,7 @@ exports.checkInDatabase = {
   updateDbMetaAssetsExchangeLog: function (checkInObj) {
     const guardianId = checkInObj.db.dbGuardian.id
     // arrays of return values for checkin response json
-    const metaReturnArray = []; const purgedReturnArray = []; const unconfirmedReturnArray = []; const receivedReturnArray = []; const receivedIdArray = []
+    const metaReturnArray = []; const detectionsReturnArray = []; const purgedReturnArray = []; const unconfirmedReturnArray = []; const receivedReturnArray = []; const receivedIdArray = []
 
     const proms = []
     // create meta asset entries in database
@@ -174,6 +174,20 @@ exports.checkInDatabase = {
           }
         })
         metaReturnArray.push({ id: checkInObj.json.meta_ids[i] })
+        proms.push(prom)
+      }
+    }
+    // create detections asset entries in database
+    if (checkInObj.json.detection_ids != null) {
+      for (let i = 0; i < checkInObj.json.detection_ids.length; i++) {
+        const prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
+          where: {
+            guardian_id: guardianId,
+            asset_type: 'detections',
+            asset_id: checkInObj.json.detection_ids[i]
+          }
+        })
+        detectionsReturnArray.push({ id: checkInObj.json.detection_ids[i] })
         proms.push(prom)
       }
     }
@@ -236,6 +250,7 @@ exports.checkInDatabase = {
 
         // add checkin response json to overall checkInObj
         checkInObj.rtrn.obj.meta = metaReturnArray
+        checkInObj.rtrn.obj.detections = detectionsReturnArray
         checkInObj.rtrn.obj.purged = purgedReturnArray
         checkInObj.rtrn.obj.received = receivedReturnArray
         checkInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray
