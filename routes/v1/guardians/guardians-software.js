@@ -46,6 +46,35 @@ router.route('/:guid/software')
       })
   })
 
+router.route('/:guid/software/preferences')
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
+    models.Guardian.findOne({
+      where: { guid: req.params.guid }
+    }).then(function (dbGuardian) {
+      if (!dbGuardian) {
+        console.error('Guardian with given guid not found', { req: req.guid })
+        throw new sequelize.EmptyResultError('Guardian with given guid not found.')
+      }
+      return models.GuardianSoftwarePrefs.findAll({
+        where: {
+          guardian_id: dbGuardian.id,
+          ...req.query.prefs && req.query.prefs.length ? { pref_key: req.query.prefs } : {}
+        }
+      }).then((data) => {
+        return data.reduce((acc, cur) => {
+          acc[cur.pref_key] = cur.pref_value
+          return acc
+        }, {})
+      })
+    }).then((data) => {
+      res.status(200).json(data)
+    }).catch(sequelize.EmptyResultError, function (err) {
+      httpError(req, res, 404, null, err.message)
+    }).catch(function (err) {
+      httpError(req, res, 500, err, 'Failed to get guardian software preferences')
+    })
+  })
+
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)
 router.route('/:guardian_id/software/:software_role')

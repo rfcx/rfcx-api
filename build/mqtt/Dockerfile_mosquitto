@@ -1,8 +1,0 @@
-FROM debian:10
-RUN apt update && \
-    apt install -y mosquitto mosquitto-clients
-#ADD passwd /etc/mosquitto/passwd
-#ADD default.conf /etc/mosquitto/conf.d/default.conf
-RUN rm -rf /var/lib/apt/lists/*
-EXPOSE 1883
-CMD /etc/init.d/mosquitto start && tail -f /var/log/mosquitto/mosquitto.log
