@@ -47,7 +47,7 @@ async function get (idOrWhere, options = {}) {
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, stream.id, STREAM))) {
     throw new ForbiddenError()
   }
-  return stream
+  return stream.toJSON()
 }
 
 /**
