@@ -1,27 +1,36 @@
 const moment = require('moment')
 const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../modelsTimescale')
+const Cache = require('../../utils/cache')
 const streamService = require('../../services/streams')
 const projectService = require('../../services/projects')
 const classifierMessageQueue = require('./classifier-message-queue/default')
 
 const defaultPlatform = 'aws'
+const cache = new Cache(60)
+const cacheKeyGen = {
+  stream: id => `stream+${id}`,
+  project: id => `project+${id}`,
+  streamClassifiers: id => `streamClassifiers+${id}`
+}
 
 async function enqueueClassifiers (streamId, start) {
   // Find the preferred platform for the stream
-  const stream = await streamService.get(streamId, { fields: ['id', 'project_id'] })
+  const stream = await cache.get(cacheKeyGen.stream(streamId),
+    () => streamService.get(streamId, { fields: ['id', 'project_id'] }))
   let preferredPlatform = defaultPlatform
   if (stream.project_id) {
-    const project = await projectService.get(stream.project_id, { fields: ['preferred_platform'] })
+    const project = await cache.get(cacheKeyGen.project(stream.project_id),
+      () => projectService.get(stream.project_id, { fields: ['preferred_platform'] }))
     if (project.preferred_platform) {
       preferredPlatform = project.preferred_platform
     }
   }
 
   // Get the classifiers that are enabled for the stream
-  const classifiers = await getActiveClassifiers(stream)
+  const classifiers = await cache.get(cacheKeyGen.streamClassifiers(stream.id), () => getActiveClassifiers(stream))
 
   // Select the platform for each classifier
-  const classifiersAndPlatforms = classifiers.map(classifier => ({ classifier: classifier.toJSON(), platform: selectPlatform(classifier, preferredPlatform) }))
+  const classifiersAndPlatforms = classifiers.map(classifier => ({ classifier, platform: selectPlatform(classifier, preferredPlatform) }))
 
   // Queue the prediction service
   await Promise.all(classifiersAndPlatforms.map(cp => enqueue(cp.platform, cp.classifier, streamId, start)))
@@ -67,7 +76,8 @@ async function getActiveClassifiers (stream) {
     where
   }
 
-  return await Classifier.findAll(options)
+  const classifiers = await Classifier.findAll(options)
+  return classifiers.map(classifier => classifier.toJSON())
 }
 
 function selectPlatform (classifier, preferredPlatform) {
