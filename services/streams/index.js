@@ -162,7 +162,7 @@ async function query (filters, options = {}) {
     if (stream.latitude && stream.longitude) {
       const country = crg.get_country(stream.latitude, stream.longitude)
       if (country) {
-        return { ...stream.toJSON(), country_name: country.name } // eslint-disable-line camelcase
+        return { ...stream, country_name: country.name } // eslint-disable-line camelcase
       }
     }
     return stream
@@ -272,7 +272,7 @@ function ensureStreamExistsForGuardian (dbGuardian) {
   }
   return Stream.findOrCreate({ where, defaults })
     .spread((dbStream) => {
-      return dbStream
+      return dbStream.toJSON()
     })
 }
 
