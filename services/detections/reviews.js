@@ -1,5 +1,6 @@
 const models = require('../../modelsTimescale')
 const { getAccessibleObjectsIDs, PROJECT, STREAM } = require('../roles')
+const streamServices = require('../streams')
 
 /**
  * Get detections conditions and bind
@@ -49,10 +50,12 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
   }
 
   /**
-   * If no streams and no projects given, then get only public streams
+   * If no streams and no projects given, then get public streams and user allowed permission streams
    */
   if (!streams && !projects) {
-    conditions.push('s.is_public = true')
+    const filteredStreams = await streamServices.query({})
+    projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
+    bind.streams = filteredStreams.results.map(s => s.id)
   }
 
   if (classifiers) {
@@ -114,6 +117,7 @@ async function defaultQuery (filters, options) {
     LIMIT $limit
     OFFSET $offset
   `
+
   const detections = await models.sequelize.query(detectionsSql, { bind, nest: true, type: models.sequelize.QueryTypes.SELECT })
 
   if (detections.length === 0) {
@@ -138,7 +142,7 @@ async function defaultQuery (filters, options) {
 
   if (bind.streams && bind.streams.length > 0) {
     annotationConditions.push('a.stream_id = ANY($streams)')
-    annotationBind.streams = streams
+    annotationBind.streams = bind.streams
   }
 
   const annotationsSql = `
@@ -180,8 +184,11 @@ async function defaultQuery (filters, options) {
 async function reviewQuery (filters, options) {
   const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive } = filters
 
-  const { conditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive)
+  const { conditions, projectsAndStreamsConditions, bind } = await getConditionsAndBind(options, start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive)
   bind.userId = options.userId
+
+  const baseConditions = conditions.join(' AND ')
+  const fullConditions = projectsAndStreamsConditions.length === 0 ? baseConditions : `${baseConditions} AND (${projectsAndStreamsConditions.join(' OR ')})`
 
   const sql = `
     SELECT d.start, d.end, d.confidence, d.stream_id "stream.id", (s.name) "stream.name", (s.project_id) "stream.project_id",
@@ -200,7 +207,7 @@ async function reviewQuery (filters, options) {
       FROM annotations a
       WHERE a.start >= $start AND a.start < $end
     ) as a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start = a.start AND d.end = a.end
-    WHERE ${conditions.join(' AND ')}
+    WHERE ${fullConditions}
     GROUP BY d.start, d.end, d.classification_id, c.value, c.title, c.frequency_min, c.frequency_max,
     d.classifier_id, clf.name, clf.version, clf.external_id, d.stream_id, s.name, s.project_id, d.confidence
     LIMIT $limit
