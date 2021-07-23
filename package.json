@@ -50,6 +50,7 @@
     "mysql2": "2.1.0",
     "neo4j-driver": "1.7.3",
     "newrelic": "^7.0.2",
+    "node-cache": "^5.1.2",
     "node-unzip-2": "0.2.8",
     "parallel-download": "1.1.0",
     "passport": "0.4.1",
