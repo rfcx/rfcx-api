@@ -3,6 +3,7 @@
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
 * **core:** Add unique constraint to user_project_roles table
+* **internal:** Update /internal/ai-hub/detections endpoint to include user allowed streams permission when not send streams or projects query params ([CE-1154](https://jira.rfcx.org/browse/CE-1154))
 
 ### Bug Fixes
 * **core:** Guest user can not create stream in a project ([CE-961](https://jira.rfcx.org/browse/CE-961))
