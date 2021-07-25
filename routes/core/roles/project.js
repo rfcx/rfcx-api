@@ -38,32 +38,6 @@ router.get('/:id/users', hasProjectPermission('U'), async function (req, res) {
 /**
  * @swagger
  *
- * /projects/{projectId}/users/{userId}:
- *   get:
- *     summary: Get user permission which has been granted permission to project
- *     tags:
- *       - roles
- *     parameters:
- *     responses:
- *       200:
- *         description: A permission object
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/UserLiteWithRoleAndPermissions'
- */
-
-router.get('/:projectId/users/:userId', async function (req, res) {
-  try {
-    return res.json(await rolesService.getUserRoleForItem(req.params.projectId, req.params.userId, rolesService.PROJECT))
-  } catch (e) {
-    httpErrorHandler(req, res, 'Failed getting project permission.')(e)
-  }
-})
-
-/**
- * @swagger
- *
  * /projects/{id}/users:
  *   put:
  *     summary: Add or update project role to user
