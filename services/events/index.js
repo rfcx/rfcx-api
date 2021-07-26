@@ -159,7 +159,6 @@ async function update (id, event, options = {}) {
 }
 
 function format (event) {
-  event = event.toJSON()
   if (event.id) {
     event.id = uuidToSlug(event.id)
   }

@@ -122,7 +122,6 @@ async function query (filters, options) {
     .then(data => ({
       total: data.total,
       results: data.results.map((item) => {
-        item = item.toJSON()
         if (item.audio_file_format) {
           item.audio_file_format = item.audio_file_format.value // eslint-disable-line camelcase
         }
