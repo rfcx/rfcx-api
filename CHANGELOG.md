@@ -1,12 +1,14 @@
 ## 1.0.23 (2021-06-??)
 
 ### Features
-* **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749))
+* **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749)) ([CE-747](https://jira.rfcx.org/browse/CE-747))
+* **tasks:** Message queue consumer for segment creation that queues the prediction service ([CE-871](https://jira.rfcx.org/browse/CE-871))
 * **core:** Add unique constraint to user_project_roles table
 
 ### Bug Fixes
 * **core:** Guest user can not create stream in a project ([CE-961](https://jira.rfcx.org/browse/CE-961))
 * **core:** Fixes Explorer bug showing public detections on console page - Clustered detections should not include detections from public streams by default ([CE-684](https://jira.rfcx.org/browse/CE-684))
+
 
 
 ## 1.0.22-hotfix.0 (2021-06-16)
