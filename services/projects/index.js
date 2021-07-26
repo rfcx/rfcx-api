@@ -33,7 +33,7 @@ async function get (idOrWhere, options = {}) {
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, project.id, PROJECT))) {
     throw new ForbiddenError()
   }
-  return project
+  return project.toJSON()
 }
 
 /**
