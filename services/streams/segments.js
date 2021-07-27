@@ -11,6 +11,50 @@ const availableIncludes = [
 ]
 
 /**
+ * Get a stream segment
+ *
+ * For best performance, use strict = true (default)
+ * @param {string} streamId
+ * @param {string|number} start
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if stream is accessible to the given user id
+ * @param {boolean} options.strict When false, modify start/end filters to return all segments that cover or overlap start/end
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to all)
+ * @param {Transaction} options.transaction Perform in the given Sequelize transaction
+ * @returns {StreamSegment}
+ * @throws EmptyResultError when segment not found
+ * @throws ForbiddenError when `readableBy` user does not have read permission on the organization
+ */
+async function get (streamId, start, options = {}) {
+  const where = options.strict === false
+    ? {
+        stream_id: streamId,
+        start: { [Sequelize.Op.lte]: start.valueOf() },
+        end: { [Sequelize.Op.gt]: start.valueOf() }
+      }
+    : {
+        stream_id: streamId,
+        start: start.valueOf()
+      }
+  const requiredAttributes = ['stream_id']
+  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a) || requiredAttributes.includes(a)) : StreamSegment.attributes.default
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
+  const transaction = options.transaction || null
+  const order = [['start', 'ASC']]
+
+  const segment = await StreamSegment.findOne({ where, attributes, include, order, transaction })
+
+  if (!segment) {
+    throw new EmptyResultError('Segment not found')
+  }
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, segment.stream_id, STREAM))) {
+    throw new ForbiddenError()
+  }
+
+  return format(segment.toJSON(), options.fields || (StreamSegment.attributes.default.concat(availableIncludes.map(i => i.as))))
+}
+
+/**
  * Get a list of stream segments matching the filters
  * @param {*} filters
  * @param {string} filters.streamId Segments by stream (required)
@@ -153,14 +197,20 @@ function getNextSegmentTimeAfterSegment (segment, time) {
   }
 }
 
-function format (item) {
-  return {
+// TODO `format` could be generic, with a standard way to handle computed properties
+function pick (o, props) {
+  return Object.assign({}, ...props.map(prop => ({ [prop]: o[prop] })))
+}
+function format (item, keys = undefined) {
+  const computedItem = {
     ...item,
     file_extension: item.file_extension ? item.file_extension.value : null // eslint-disable-line camelcase
   }
+  return keys ? pick(computedItem, keys) : computedItem
 }
 
 module.exports = {
+  get,
   query,
   create,
   getStreamCoverage,
