@@ -64,7 +64,6 @@ describe('GET /streams/:id/segments', () => {
     expect(response.body[0].id).toBe(segment.id)
     expect(moment(response.body[0].start).toDate()).toEqual(segment.start)
     expect(moment(response.body[0].end).toDate()).toEqual(segment.end)
-    expect(response.body[0].sample_count).toBe(segment.sample_count)
     expect(response.body[0].file_extension).toBe('.wav')
   })
 

@@ -37,7 +37,7 @@ async function get (streamId, start, options = {}) {
         start: start.valueOf()
       }
   const requiredAttributes = ['stream_id']
-  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a) || requiredAttributes.includes(a)) : StreamSegment.attributes.default
+  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a) || requiredAttributes.includes(a)) : StreamSegment.attributes.full
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const transaction = options.transaction || null
   const order = [['start', 'ASC']]
@@ -51,7 +51,7 @@ async function get (streamId, start, options = {}) {
     throw new ForbiddenError()
   }
 
-  return format(segment.toJSON(), options.fields || (StreamSegment.attributes.default.concat(availableIncludes.map(i => i.as))))
+  return format(segment.toJSON(), options.fields || (StreamSegment.attributes.lite.concat(availableIncludes.map(i => i.as))))
 }
 
 /**
@@ -100,7 +100,7 @@ async function query (filters, options = {}) {
     }
   }
 
-  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.full
+  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : [FileExtension.include()]
 
   return pagedQuery(StreamSegment, {
