@@ -1,81 +1,72 @@
 const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../modelsTimescale')
-const EmptyResultError = require('../../utils/converter/empty-result-error')
-const ValidationError = require('../../utils/converter/validation-error')
+const { hasPermission, READ, STREAM } = require('../../services/roles')
 const messageQueue = require('../../utils/message-queue/default')
 const { SEGMENT_CREATED } = require('../../tasks/event-names')
+const { ValidationError, EmptyResultError, ForbiddenError } = require('../../utils/errors')
+const pagedQuery = require('../../utils/db/paged-query')
 
 const availableIncludes = [
-  Stream.include(),
   StreamSourceFile.include(),
   FileExtension.include()
 ]
 
 /**
- * Returns list of stream segments with total number filtered by specified attributes
- * @param {*} attrs stream segment attributes
- * @param {*} opts additional function params
+ * Get a list of stream segments matching the filters
+ * @param {*} filters
+ * @param {string} filters.streamId Segments by stream (required)
+ * @param {string|number} filters.start Segments starting on or after (moment) (required)
+ * @param {string|number} filters.end Segments start before (moment) (required)
+ * @param {*} options Query options
+ * @param {boolean} options.cover Modify start/end filters to return all segments that cover or overlap start/end
+ * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {number} options.limit Maximum results to include
+ * @param {number} options.offset Number of results to skip
+ * @param {number} options.readableBy Include only segments readable by the given user id
  */
-function query (attrs, opts = {}) {
-  if (attrs.end < attrs.start) {
-    throw new ValidationError('"end" attribute can not be less than "start" attribute')
+async function query (filters, options = {}) {
+  if (filters.end < filters.start) {
+    throw new ValidationError('"end" attribute cannot be less than "start" attribute')
   }
+  if (!(await Stream.findByPk(filters.streamId))) {
+    throw new EmptyResultError('Stream not found')
+  }
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, filters.streamId, STREAM))) {
+    throw new ForbiddenError()
+  }
+
   const where = {
-    stream_id: attrs.stream_id
+    stream_id: filters.streamId
   }
-  if (attrs.start.valueOf() === attrs.end.valueOf()) {
+  if (options.cover) {
     where[Sequelize.Op.or] = {
-      start: attrs.start.valueOf(),
-      end: attrs.start.valueOf(),
+      start: {
+        [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+      },
+      end: {
+        [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+      },
       [Sequelize.Op.and]: {
-        start: { [Sequelize.Op.lt]: attrs.start.valueOf() },
-        end: { [Sequelize.Op.gt]: attrs.end.valueOf() }
+        start: { [Sequelize.Op.lt]: filters.start.valueOf() },
+        end: { [Sequelize.Op.gt]: filters.end.valueOf() }
       }
     }
   } else {
-    where[Sequelize.Op.not] = {
-      [Sequelize.Op.or]: [
-        { start: { [Sequelize.Op.gte]: attrs.end.valueOf() } },
-        { end: { [Sequelize.Op.lte]: attrs.start.valueOf() } }
-      ]
+    where.start = {
+      [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
     }
   }
 
-  const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
-  return StreamSegment[method]({
-    where,
-    limit: attrs.limit,
-    offset: attrs.offset,
-    attributes: StreamSegment.attributes.full,
-    include: opts.joinRelations ? availableIncludes : [],
-    order: [['start', 'ASC']]
-  })
-    .then((data) => {
-      return {
-        count: method === 'findAndCountAll' ? data.count : data.length,
-        streamSegments: method === 'findAndCountAll' ? data.rows : data
-      }
-    })
-}
+  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.full
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : [FileExtension.include()]
 
-/**
- * Searches for segment model with given id
- * @param {string} id
- * @param {*} opts additional function params
- * @returns {*} segment model item
- */
-function get (id, opts = {}) {
-  return StreamSegment
-    .findOne({
-      where: { id },
-      attributes: StreamSegment.attributes.full,
-      include: opts && opts.joinRelations ? availableIncludes : []
-    })
-    .then(item => {
-      if (!item) {
-        throw new EmptyResultError('Stream segment with given id not found.')
-      }
-      return item
-    })
+  return pagedQuery(StreamSegment, {
+    where,
+    limit: options.limit,
+    offset: options.offset,
+    attributes,
+    include,
+    order: [['start', 'ASC']]
+  }).then(({ results, count }) => ({ results: results.map(segment => format(segment)), count }))
 }
 
 /**
@@ -99,14 +90,6 @@ function create (segment, options = {}) {
       console.error('Stream segment service -> create -> error', e)
       throw new ValidationError('Cannot create stream segment with provided data')
     })
-}
-
-/**
- * Destroys segment item
- * @param {*} segment segment modei item
- */
-function remove (segment) {
-  return segment.destroy()
 }
 
 /**
@@ -170,34 +153,16 @@ function getNextSegmentTimeAfterSegment (segment, time) {
   }
 }
 
-/**
- * Formats single item or array with multiple items
- * @param {*} items single item or array with multiple items
- */
-function format (data) {
-  const isArray = Array.isArray(data)
-  data = isArray ? data : [data]
-  data = data.map((item) => {
-    const { id, stream, start, end, sample_count, source_file, file_extension } = item // eslint-disable-line camelcase
-    return {
-      id,
-      stream,
-      start,
-      end,
-      sample_count,
-      source_file,
-      file_extension: file_extension && file_extension.value ? file_extension.value : null // eslint-disable-line camelcase
-    }
-  })
-  return isArray ? data : data[0]
+function format (item) {
+  return {
+    ...item,
+    file_extension: item.file_extension ? item.file_extension.value : null // eslint-disable-line camelcase
+  }
 }
 
 module.exports = {
   query,
-  get,
   create,
-  remove,
   getStreamCoverage,
-  format,
   getNextSegmentTimeAfterSegment
 }

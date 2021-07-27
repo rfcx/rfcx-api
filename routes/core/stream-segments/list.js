@@ -5,11 +5,11 @@ const Converter = require('../../../utils/converter/converter')
 /**
  * @swagger
  *
- * /streams/{id}/stream-segments:
+ * /streams/{id}/segments:
  *   get:
  *     summary: Get list of stream segments belonging to a stream
  *     tags:
- *       - stream-segments
+ *       - streams
  *     parameters:
  *       - name: id
  *         description: Stream identifier
@@ -57,22 +57,21 @@ const Converter = require('../../../utils/converter/converter')
  */
 module.exports = function (req, res) {
   const streamId = req.params.id
-  const convertedParams = {}
-  const params = new Converter(req.query, convertedParams)
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('limit').optional().toInt()
-  params.convert('offset').optional().toInt()
+  const user = req.rfcx.auth_token_info
+  const readableBy = user.is_super || user.has_system_role ? undefined : user.id
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('start').toMomentUtc()
+  converter.convert('end').toMomentUtc()
+  converter.convert('limit').optional().toInt()
+  converter.convert('offset').optional().toInt()
+  converter.convert('cover').default(false).toBoolean()
 
-  return params.validate()
-    .then(async () => {
-      convertedParams.stream_id = streamId
-      return streamSegmentService.query(convertedParams, { joinRelations: true })
+  converter.validate()
+    .then(async (params) => {
+      const { start, end, limit, offset, cover } = params
+      const options = { readableBy, limit, offset, cover }
+      return streamSegmentService.query({ start, end, streamId }, options)
     })
-    .then((data) => {
-      res
-        .header('Total-Items', data.count)
-        .json(streamSegmentService.format(data.streamSegments))
-    })
+    .then((data) => res.header('Total-Items', data.count).json(data.results))
     .catch(httpErrorHandler(req, res, 'Failed getting stream segments'))
 }

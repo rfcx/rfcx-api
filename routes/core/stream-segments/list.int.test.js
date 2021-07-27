@@ -74,7 +74,7 @@ describe('GET /streams/:id/segments', () => {
     const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
     const segment = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
 
-    const response = await request(app).get(`/${stream.id}/segments`).query({ start: '2021-07-26T10:10:20Z', end: '2021-07-26T10:10:50Z' })
+    const response = await request(app).get(`/${stream.id}/segments`).query({ cover: 'true', start: '2021-07-26T10:10:20Z', end: '2021-07-26T10:10:50Z' })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
