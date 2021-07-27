@@ -107,7 +107,7 @@ module.exports = (req, res) => {
         await Promise.all(data.results.map(async s => {
           const project = await projectsService.get(s.id)
           if (project.created_by_id === user.id) {
-            s.dataValues.permissions = ["C", "R", "U", "D"]
+            s.dataValues.permissions = ['C', 'R', 'U', 'D']
           } else {
             const permissions = await rolesService.getUserRoleForItem(s.id, user.id, rolesService.PROJECT)
             s.dataValues.permissions = permissions.permissions
