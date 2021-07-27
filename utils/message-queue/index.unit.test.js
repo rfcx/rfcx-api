@@ -1,33 +1,56 @@
 const MessageQueue = require('.')
+const { muteConsole } = require('../sequelize/testing')
 
-test('Publish is called once', async () => {
-  const fakeClient = { publish: jest.fn() }
-  const messageQueue = new MessageQueue(fakeClient)
-
-  await messageQueue.enqueue('hello world', {})
-
-  expect(fakeClient.publish).toHaveBeenCalledTimes(1)
+beforeAll(() => {
+  muteConsole('info')
 })
 
-test('Payload is published', async () => {
-  const queuePrefix = 'core'
-  const fakeClient = { publish: jest.fn() }
-  const messageQueue = new MessageQueue(fakeClient, { queuePrefix })
-  const payload = { x: 5, y: 'strawberries' }
+describe('Publish', () => {
+  test('Publish is called once', async () => {
+    const fakeClient = { publish: jest.fn() }
+    const messageQueue = new MessageQueue(fakeClient)
 
-  await messageQueue.enqueue('eat', payload)
+    await messageQueue.publish('hello world', {})
 
-  expect(fakeClient.publish.mock.calls[0][1]).toEqual(payload)
+    expect(fakeClient.publish).toHaveBeenCalledTimes(1)
+  })
+
+  test('Payload is published', async () => {
+    const queuePrefix = 'core'
+    const fakeClient = { publish: jest.fn() }
+    const messageQueue = new MessageQueue(fakeClient, { queuePrefix })
+    const payload = { x: 5, y: 'strawberries' }
+
+    await messageQueue.publish('eat', payload)
+
+    expect(fakeClient.publish.mock.calls[0][1]).toEqual(payload)
+  })
+
+  test('Queue prefix is configurable', async () => {
+    const queuePrefix = 'core'
+    const fakeClient = { publish: jest.fn() }
+    const messageQueue = new MessageQueue(fakeClient, { queuePrefix })
+    const eventName = 'eat'
+    const payload = { x: 5, y: 'strawberries' }
+
+    await messageQueue.publish(eventName, payload)
+
+    expect(fakeClient.publish.mock.calls[0][0]).toBe(`${queuePrefix}-${eventName}`)
+  })
 })
 
-test('Queue prefix is configurable', async () => {
-  const queuePrefix = 'core'
-  const fakeClient = { publish: jest.fn() }
-  const messageQueue = new MessageQueue(fakeClient, { queuePrefix })
-  const eventName = 'eat'
-  const payload = { x: 5, y: 'strawberries' }
+describe('Subscribe', () => {
+  test('Handler is called once', () => {
+    const fakeClient = {
+      subscribe: (queueName, handler) => {
+        handler({ x: 'Hello', y: 47 })
+      }
+    }
+    const messageQueue = new MessageQueue(fakeClient)
+    const messageHandler = jest.fn((message) => Promise.resolve(true))
 
-  await messageQueue.enqueue(eventName, payload)
+    messageQueue.subscribe('hello', messageHandler)
 
-  expect(fakeClient.publish.mock.calls[0][0]).toBe(`${queuePrefix}-${eventName}`)
+    expect(messageHandler).toHaveBeenCalledTimes(1)
+  })
 })

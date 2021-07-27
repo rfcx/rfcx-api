@@ -61,7 +61,7 @@ module.exports = (req, res) => {
         try {
           const updatedStream = await streamsService.get(id)
           const idToken = req.headers.authorization
-          return await arbimonService.updateSite(updatedStream.toJSON(), idToken)
+          return await arbimonService.updateSite(updatedStream, idToken)
         } catch (err) {
           console.error('Failed updating stream in Arbimon', err)
         }
