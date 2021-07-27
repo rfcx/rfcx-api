@@ -61,7 +61,7 @@ async function get (streamId, start, options = {}) {
  * @param {string|number} filters.start Segments starting on or after (moment) (required)
  * @param {string|number} filters.end Segments start before (moment) (required)
  * @param {*} options Query options
- * @param {boolean} options.cover Modify start/end filters to return all segments that cover or overlap start/end
+ * @param {boolean} options.strict When false, modify start/end filters to return all segments that cover or overlap start/end
  * @param {string[]} options.fields Attributes and relations to include in results
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
@@ -81,7 +81,7 @@ async function query (filters, options = {}) {
   const where = {
     stream_id: filters.streamId
   }
-  if (options.cover) {
+  if (options.strict === false) {
     where[Sequelize.Op.or] = {
       start: {
         [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]

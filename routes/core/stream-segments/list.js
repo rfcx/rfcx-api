@@ -36,6 +36,11 @@ const Converter = require('../../../utils/converter/converter')
  *         in: query
  *         type: int
  *         default: 0
+ *       - name: strict
+ *         description: Only return segments strictly within start/end (better performance)
+ *         in: query
+ *         type: boolean
+ *         default: true
  *     responses:
  *       200:
  *         description: List of stream segments objects
@@ -64,12 +69,12 @@ module.exports = function (req, res) {
   converter.convert('end').toMomentUtc()
   converter.convert('limit').optional().toInt()
   converter.convert('offset').optional().toInt()
-  converter.convert('cover').default(false).toBoolean()
+  converter.convert('strict').default(true).toBoolean()
 
   converter.validate()
     .then(async (params) => {
-      const { start, end, limit, offset, cover } = params
-      const options = { readableBy, limit, offset, cover }
+      const { start, end, limit, offset, strict } = params
+      const options = { readableBy, limit, offset, strict }
       return streamSegmentService.query({ start, end, streamId }, options)
     })
     .then((data) => res.header('Total-Items', data.count).json(data.results))
