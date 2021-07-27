@@ -1,6 +1,8 @@
-# Building and deploying the API
+[Home](../README.md) | [Tasks](../tasks/README.md) | **[Build/Deployment](README.md)**
 
-## Development server
+# Building and Deploying the API
+
+## Development server on Kubernetes
 
 ### First time setup
 
@@ -103,4 +105,16 @@ kubectl rollout restart deployment/api --namespace staging
 ```
 
 Note you might need to restart multiple APIs (replace `api` with the name of the deployment from the k8s yaml deployment file -- e.g. `api-mqtt`, `api-media`, etc).
+
+
+## FAQs
+
+### My latest deployment has crashed production. What should I do?
+
+In an emergency, you can revert a deployment to a specific build like this (example for mqtt):
+```sh
+kubectl set image deployment api-mqtt-legacy api-mqtt-legacy=887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-mqtt_production:192 --namespace production
+```
+
+The number `192` is the build number in Jenkins.
 

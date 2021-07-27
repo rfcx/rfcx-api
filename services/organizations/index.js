@@ -48,12 +48,14 @@ async function get (id, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? Organization.attributes.full.filter(a => options.fields.includes(a)) : Organization.attributes.full
   const includes = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
 
-  return Organization.findOne({
+  const organization = await Organization.findOne({
     where: { id },
     attributes,
     include: includes,
     paranoid: false
   })
+
+  return organization !== null ? organization.toJSON() : null
 }
 
 /**

@@ -299,7 +299,7 @@ router.route('/register')
           if (arbimonService.isEnabled && req.headers.authorization) {
             const idToken = req.headers.authorization
             const arbimonSite = await arbimonService.createSite({
-              ...dbStream.toJSON(),
+              ...dbStream,
               latitude: 0,
               longitude: 0,
               altitude: 0
