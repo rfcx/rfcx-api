@@ -19,12 +19,7 @@ const { Sequelize } = require('../../../modelsTimescale/index.js')
  *         required: true
  *         type: string
  *       - name: start
- *         description: Start timestamp (iso8601 or epoch)
- *         in: query
- *         required: true
- *         type: string
- *       - name: fields
- *         description: End timestamp (iso8601 or epoch)
+ *         description: Start timestamp (compact iso8601 or epoch)
  *         in: query
  *         required: true
  *         type: string
@@ -33,6 +28,10 @@ const { Sequelize } = require('../../../modelsTimescale/index.js')
  *         in: query
  *         type: boolean
  *         default: true
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: Stream segment object
@@ -62,6 +61,6 @@ module.exports = (req, res) => {
       }
       return get(streamId, start, options)
     })
-    .then(stream => res.json(stream))
-    .catch(httpErrorHandler(req, res, 'Failed getting stream'))
+    .then(segment => res.json(segment))
+    .catch(httpErrorHandler(req, res, 'Failed getting stream segment'))
 }

@@ -26,6 +26,11 @@ const Converter = require('../../../utils/converter/converter')
  *         in: query
  *         required: true
  *         type: string
+ *       - name: strict
+ *         description: Only return segments strictly within start/end (better performance)
+ *         in: query
+ *         type: boolean
+ *         default: true
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -36,11 +41,10 @@ const Converter = require('../../../utils/converter/converter')
  *         in: query
  *         type: int
  *         default: 0
- *       - name: strict
- *         description: Only return segments strictly within start/end (better performance)
+ *       - name: fields
+ *         description: Customize included fields and relations
  *         in: query
- *         type: boolean
- *         default: true
+ *         type: array
  *     responses:
  *       200:
  *         description: List of stream segments objects
