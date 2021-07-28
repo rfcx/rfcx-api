@@ -3,6 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const streamSourceFileService = require('../../../services/streams/source-files')
 const streamSegmentService = require('../../../services/streams/segments')
+const fileFormatService = require('../../../services/streams/file-extensions')
 const { sequelize } = require('../../../modelsTimescale')
 const { hasRole } = require('../../../middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
@@ -77,20 +78,23 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           streamSourceFileService.transformMetaAttr(sfParams)
           const streamSourceFile = await streamSourceFileService.create(sfParams, { transaction })
 
-          const segments = []
-          // Set missing stream_segment attributes and create a db row
-          for (const segParams of segConverter.transformedArray) {
-            segParams.stream_id = streamId
-            segParams.stream_source_file_id = streamSourceFile.id
-            await streamSegmentService.findOrCreateRelationships(segParams, { transaction })
-            const segment = await streamSegmentService.create(segParams, { transaction })
-            segments.push({ ...segment.toJSON(), file_size: segParams.file_size })
-          }
+          // Get file format ids
+          const fileExtensions = [...new Set(segConverter.transformedArray.map(segment => segment.file_extension))]
+          const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatService.findOrCreate({ value: ext }, { transaction })))
 
-          // Refresh stream max_sample rate, start adn end if needed
+          // Set required stream_segment attributes and create a db row
+          const segments = segConverter.transformedArray.map(segment => ({
+            ...segment,
+            stream_id: streamId,
+            stream_source_file_id: streamSourceFile.id,
+            file_extension_id: fileExtensionObjects.find(obj => obj.value === segment.file_extension).id
+          }))
+          await Promise.all(segments.map(segment => streamSegmentService.create(segment, { transaction })))
+
+          // Refresh stream max_sample rate, start and end if needed
           const minStart = moment.min(segConverter.transformedArray.map(s => s.start))
           const maxEnd = moment.max(segConverter.transformedArray.map(s => s.end))
-          await streamsService.refreshStreamBoundVars(stream.toJSON(), {
+          await streamsService.refreshStreamBoundVars(stream, {
             start: minStart.toDate(),
             end: maxEnd.toDate(),
             sampleRate: streamSourceFile.sample_rate

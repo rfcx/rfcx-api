@@ -16,12 +16,12 @@ async function addClassifiers (rawDetections) {
   for (const unknownId of unknownIds) {
     let classifier = classifiersUsingIds.find(c => c.id === parseInt(unknownId))
     if (classifier === undefined) {
-      classifier = classifiersUsingExternalIds.find(c => (c.toJSON() ? c.toJSON().external_id : c.external_id) === unknownId)
+      classifier = classifiersUsingExternalIds.find(c => c.external_id === unknownId)
       if (classifier === undefined) {
         classifier = classifiersUsingNameAndVersions.find(({ name, version }) => `${name}-v${version}` === unknownId)
       }
     }
-    classifierMapping[unknownId] = classifier ? classifier.toJSON() : classifier
+    classifierMapping[unknownId] = classifier
   }
 
   return rawDetections.map(detection => ({ ...detection, classifier: classifierMapping[detection.classifier] }))

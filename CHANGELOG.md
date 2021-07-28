@@ -1,7 +1,20 @@
+## 1.0.23 (2021-06-??)
+
+### Features
+* **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749)) ([CE-747](https://jira.rfcx.org/browse/CE-747))
+* **tasks:** Message queue consumer for segment creation that queues the prediction service ([CE-871](https://jira.rfcx.org/browse/CE-871))
+* **core:** Add unique constraint to user_project_roles table
+
+### Bug Fixes
+* **core:** Guest user can not create stream in a project ([CE-961](https://jira.rfcx.org/browse/CE-961))
+
+
+
 ## 1.0.22-hotfix.0 (2021-06-16)
 
 ### Bug Fixes
 * **core:** System user or stream-token user can get detections for selected streams without roles
+
 
 ## 1.0.22 (2021-06-16)
 
@@ -11,6 +24,8 @@
 * **media:** Implement frequency filtering feature for audios ([CE-227](https://jira.rfcx.org/browse/CE-227))
 * **core:** Move /streams/{id}/permissions from Internal into Core ([CE-831](https://jira.rfcx.org/browse/CE-831))
 
+### Bug Fixes
+* **internal:** GET /internal/ai-hub/detections rely on projects/streams user permission ([CE-810](https://jira.rfcx.org/browse/CE-810))
 
 ## 1.0.21 (2021-06-07)
 

@@ -9,7 +9,7 @@ const app = expressApp()
 app.use('/', routes)
 
 beforeAll(async () => {
-  muteConsole()
+  muteConsole('warn')
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
 })

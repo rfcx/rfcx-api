@@ -82,7 +82,8 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyCreate
  */
 async function query (start, end, streamIdOrIds, classifications, minConfidence, limit, offset, user) {
   const opts = await defaultQueryOptions(start, end, streamIdOrIds, undefined, false, classifications, minConfidence, false, limit, offset, user)
-  return models.Detection.findAll(opts)
+  const detections = await models.Detection.findAll(opts)
+  return detections.map(d => d.toJSON())
 }
 
 /**

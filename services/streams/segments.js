@@ -1,24 +1,13 @@
-const models = require('../../modelsTimescale')
+const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../modelsTimescale')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
-const { findOrCreateItem } = require('../../utils/sequelize')
+const messageQueue = require('../../utils/message-queue/default')
+const { SEGMENT_CREATED } = require('../../tasks/event-names')
 
-const streamSegmentBaseInclude = [
-  {
-    model: models.Stream,
-    as: 'stream',
-    attributes: models.Stream.attributes.lite
-  },
-  {
-    model: models.StreamSourceFile,
-    as: 'stream_source_file',
-    attributes: models.StreamSourceFile.attributes.lite
-  },
-  {
-    model: models.FileExtension,
-    as: 'file_extension',
-    attributes: models.FileExtension.attributes.lite
-  }
+const availableIncludes = [
+  Stream.include(),
+  StreamSourceFile.include(),
+  FileExtension.include()
 ]
 
 /**
@@ -34,30 +23,30 @@ function query (attrs, opts = {}) {
     stream_id: attrs.stream_id
   }
   if (attrs.start.valueOf() === attrs.end.valueOf()) {
-    where[models.Sequelize.Op.or] = {
+    where[Sequelize.Op.or] = {
       start: attrs.start.valueOf(),
       end: attrs.start.valueOf(),
-      [models.Sequelize.Op.and]: {
-        start: { [models.Sequelize.Op.lt]: attrs.start.valueOf() },
-        end: { [models.Sequelize.Op.gt]: attrs.end.valueOf() }
+      [Sequelize.Op.and]: {
+        start: { [Sequelize.Op.lt]: attrs.start.valueOf() },
+        end: { [Sequelize.Op.gt]: attrs.end.valueOf() }
       }
     }
   } else {
-    where[models.Sequelize.Op.not] = {
-      [models.Sequelize.Op.or]: [
-        { start: { [models.Sequelize.Op.gte]: attrs.end.valueOf() } },
-        { end: { [models.Sequelize.Op.lte]: attrs.start.valueOf() } }
+    where[Sequelize.Op.not] = {
+      [Sequelize.Op.or]: [
+        { start: { [Sequelize.Op.gte]: attrs.end.valueOf() } },
+        { end: { [Sequelize.Op.lte]: attrs.start.valueOf() } }
       ]
     }
   }
 
   const method = (!!attrs.limit || !!attrs.offset) ? 'findAndCountAll' : 'findAll' // don't use findAndCountAll if we don't need to limit and offset
-  return models.StreamSegment[method]({
+  return StreamSegment[method]({
     where,
     limit: attrs.limit,
     offset: attrs.offset,
-    attributes: models.StreamSegment.attributes.full,
-    include: opts.joinRelations ? streamSegmentBaseInclude : [],
+    attributes: StreamSegment.attributes.full,
+    include: opts.joinRelations ? availableIncludes : [],
     order: [['start', 'ASC']]
   })
     .then((data) => {
@@ -75,11 +64,11 @@ function query (attrs, opts = {}) {
  * @returns {*} segment model item
  */
 function get (id, opts = {}) {
-  return models.StreamSegment
+  return StreamSegment
     .findOne({
       where: { id },
-      attributes: models.StreamSegment.attributes.full,
-      include: opts && opts.joinRelations ? streamSegmentBaseInclude : []
+      attributes: StreamSegment.attributes.full,
+      include: opts && opts.joinRelations ? availableIncludes : []
     })
     .then(item => {
       if (!item) {
@@ -90,23 +79,25 @@ function get (id, opts = {}) {
 }
 
 /**
- * Creates stream segment item
- * @param {*} data stream segment attributes
- * @param {*} opts additional function params
- * @returns {*} stream segment model item
+ * Create stream segment
+ * @param {*} segment Stream segment attributes
+ * @param {*} options
+ * @param {Transaction} options.transaction Perform within given transaction
  */
-function create (data, opts = {}) {
-  if (!data) {
-    throw new ValidationError('Cannot create stream segment with empty object.')
-  }
-  const { id, stream_id, start, end, sample_count, stream_source_file_id, file_extension_id } = data // eslint-disable-line camelcase
-  const transaction = opts.transaction || null
-  return models.StreamSegment
-    .create({ id, stream_id, start, end, sample_count, stream_source_file_id, file_extension_id }, { transaction })
-    .then(item => { return opts && opts.joinRelations ? item.reload({ include: streamSegmentBaseInclude }) : item })
+function create (segment, options = {}) {
+  const transaction = options.transaction
+  return StreamSegment.create(segment, { transaction })
+    .then(() => {
+      if (messageQueue.isEnabled()) {
+        const message = { id: segment.id, start: segment.start, stream_id: segment.stream_id }
+        return messageQueue.publish(SEGMENT_CREATED, message).catch((e) => {
+          console.error('Stream segment service -> create -> publish failed', e.message || e)
+        })
+      }
+    })
     .catch((e) => {
       console.error('Stream segment service -> create -> error', e)
-      throw new ValidationError('Cannot create stream segment with provided data.')
+      throw new ValidationError('Cannot create stream segment with provided data')
     })
 }
 
@@ -116,23 +107,6 @@ function create (data, opts = {}) {
  */
 function remove (segment) {
   return segment.destroy()
-}
-
-/**
- * Finds or creates model items for FileExtension based on input value
- * Returns objcet with model item ids
- * @param {*} data object with values
- * @returns {*} object with mappings between attribute keys and ids
- */
-async function findOrCreateRelationships (data, opts = {}) {
-  const arr = [
-    { modelName: 'FileExtension', objKey: 'file_extension' }
-  ]
-  for (const item of arr) {
-    const where = { value: data[item.objKey] }
-    const modelItem = await findOrCreateItem(models[item.modelName], where, where, opts)
-    data[`${item.objKey}_id`] = modelItem.id
-  }
 }
 
 /**
@@ -182,11 +156,11 @@ function getNextSegmentTimeAfterSegment (segment, time) {
   if (segment.end > time) {
     return Promise.resolve(time)
   } else {
-    return models.StreamSegment
+    return StreamSegment
       .findOne({
         where: {
           stream_id: segment.stream_id,
-          start: { [models.Sequelize.Op.gte]: time }
+          start: { [Sequelize.Op.gte]: time }
         },
         order: [['start', 'ASC']]
       })
@@ -223,9 +197,7 @@ module.exports = {
   get,
   create,
   remove,
-  findOrCreateRelationships,
   getStreamCoverage,
   format,
-  getNextSegmentTimeAfterSegment,
-  streamSegmentBaseInclude
+  getNextSegmentTimeAfterSegment
 }

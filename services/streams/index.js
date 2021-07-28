@@ -2,7 +2,7 @@ const { Stream, Project, User, Sequelize } = require('../../modelsTimescale')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
-const { getAccessibleObjectsIDs, hasPermission, STREAM, READ, UPDATE, DELETE } = require('../roles')
+const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, DELETE } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 const { hashedCredentials } = require('../../utils/misc/hash')
@@ -47,7 +47,7 @@ async function get (idOrWhere, options = {}) {
   if (options.readableBy && !(await hasPermission(READ, options.readableBy, stream.id, STREAM))) {
     throw new ForbiddenError()
   }
-  return stream
+  return stream.toJSON()
 }
 
 /**
@@ -55,8 +55,11 @@ async function get (idOrWhere, options = {}) {
  * @param {Stream} stream
  * @param {*} options
  */
-function create (stream, options = {}) {
+async function create (stream, options = {}) {
   const fullStream = { ...stream, ...computedAdditions(stream) }
+  if (fullStream.projectId && options.creatableBy && !(await hasPermission(UPDATE, options.creatableBy, fullStream.projectId, PROJECT))) {
+    throw new ForbiddenError()
+  }
   return Stream.create(fullStream)
     .catch((e) => {
       console.error('Streams service -> create -> error', e)
@@ -159,7 +162,7 @@ async function query (filters, options = {}) {
     if (stream.latitude && stream.longitude) {
       const country = crg.get_country(stream.latitude, stream.longitude)
       if (country) {
-        return { ...stream.toJSON(), country_name: country.name } // eslint-disable-line camelcase
+        return { ...stream, country_name: country.name } // eslint-disable-line camelcase
       }
     }
     return stream
@@ -269,7 +272,7 @@ function ensureStreamExistsForGuardian (dbGuardian) {
   }
   return Stream.findOrCreate({ where, defaults })
     .spread((dbStream) => {
-      return dbStream
+      return dbStream.toJSON()
     })
 }
 
