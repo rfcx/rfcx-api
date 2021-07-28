@@ -53,7 +53,7 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
    * If no streams and no projects given, then get public streams and user allowed permission streams
    */
   if (!streams && !projects) {
-    const filteredStreams = await streamServices.query({})
+    const filteredStreams = await streamServices.query({}, { permissableBy: readableBy })
     projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
     bind.streams = filteredStreams.results.map(s => s.id)
   }
