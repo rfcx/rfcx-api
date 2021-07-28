@@ -1,7 +1,7 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { get } = require('../../../services/streams/segments')
 const Converter = require('../../../utils/converter/converter')
-const { gluedDateStrToMoment } = require('../../../utils/misc/datetime.js')
+const { gluedDateStrOrEpochToMoment } = require('../../../utils/misc/datetime.js')
 const { Sequelize } = require('../../../modelsTimescale/index.js')
 
 /**
@@ -48,7 +48,7 @@ const { Sequelize } = require('../../../modelsTimescale/index.js')
  */
 module.exports = (req, res) => {
   const streamId = req.params.id
-  const start = gluedDateStrToMoment(req.params.start)
+  const start = gluedDateStrOrEpochToMoment(req.params.start)
   const user = req.rfcx.auth_token_info
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
