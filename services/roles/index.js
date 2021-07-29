@@ -161,6 +161,27 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   return permissions
 }
 
+async function getPermissionsForProjects (projectIds, userId) {
+  const select = `SELECT pr.project_id, rp.permission FROM user_project_roles pr`
+  const join = `JOIN role_permissions rp on pr.role_id = rp.role_id`
+  const where = `WHERE pr.project_id IN (:projectIds) AND pr.user_id = ${userId}`
+  const sql = `${select} ${join} ${where}`
+
+  return models.sequelize.query(sql, { replacements: { projectIds }, type: models.sequelize.QueryTypes.SELECT })
+    .then(data => {
+      return data.reduce((r, e) => {
+        let projectId = ''
+        return Object.keys(e).forEach(k => {
+          if (k == 'project_id') {
+            projectId = e[k]
+          } else {
+            r[projectId] = (r[projectId] || []).concat(e[k])
+          }
+        }), r
+      }, {})
+    })
+}
+
 /**
  * Returns ids of all Organizations or Projects or Streams (based on specified itemModelName) which are accessible for user
  * based on his direct roles assigned to these objects or roles which assigned to parent objects (e.g. user will have access
@@ -325,6 +346,7 @@ module.exports = {
   getByName,
   hasPermission,
   getPermissions,
+  getPermissionsForProjects,
   getAccessibleObjectsIDs,
   getUsersForItem,
   getUserRoleForItem,

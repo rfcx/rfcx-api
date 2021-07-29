@@ -102,17 +102,20 @@ module.exports = (req, res) => {
         sort,
         fields
       }
+      if (fields && fields.includes('permissions') && !fields.includes('created_by_id')) {
+        fields.push('created_by_id')
+      }
       const data = await query(filters, options)
       if (fields && fields.includes('permissions')) {
-        await Promise.all(data.results.map(async s => {
-          const project = await projectsService.get(s.id)
-          if (project.created_by_id === user.id) {
-            s.dataValues.permissions = ['C', 'R', 'U', 'D']
+        const projectIds = data.results.map(s => s.id)
+        const permissions = await rolesService.getPermissionsForProjects(projectIds, user.id)
+        data.results.map(s => {
+          if (s.created_by_id === user.id) {
+            s.permissions = ['C', 'R', 'U', 'D']
           } else {
-            const permissions = await rolesService.getUserRoleForItem(s.id, user.id, rolesService.PROJECT)
-            s.dataValues.permissions = permissions.permissions
+            s.permissions = permissions[s.id]
           }
-        }))
+        })
       }
       return res
         .header('Total-Items', data.total)
