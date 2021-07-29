@@ -71,8 +71,10 @@ async function ensureUserSyncedFromToken (req) {
 
 async function ensureUserSyncedInTimescaleDB (user) {
   const where = {
-    guid: user.guid,
-    email: user.email
+    [Sequelize.Op.or]: {
+      guid: user.guid,
+      email: user.email
+    }
   }
 
   const defaults = { ...where };

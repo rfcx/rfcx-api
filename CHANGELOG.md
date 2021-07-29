@@ -1,3 +1,8 @@
+## 1.0.22-hotfix.1 (2021-07-29)
+
+### Bug Fixes
+* **core:** MySQL - TimescaleDB user sync is searching for `email` OR `guid` instead of `email` AND `guid`
+
 ## 1.0.22-hotfix.0 (2021-06-16)
 
 ### Bug Fixes
