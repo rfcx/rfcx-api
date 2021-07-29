@@ -102,6 +102,7 @@ module.exports = (req, res) => {
         sort,
         fields
       }
+      // permission field need created_by_id to map the results
       if (fields && fields.includes('permissions') && !fields.includes('created_by_id')) {
         fields.push('created_by_id')
       }

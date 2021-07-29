@@ -161,6 +161,11 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   return permissions
 }
 
+/**
+ * Returns object of permissions from passed projects
+ * @param {string[]} projectIds The list of project id
+ * @param {string} userId The user for which the projects are accessible
+ */
 async function getPermissionsForProjects (projectIds, userId) {
   const select = `SELECT pr.project_id, rp.permission FROM user_project_roles pr`
   const join = `JOIN role_permissions rp on pr.role_id = rp.role_id`
