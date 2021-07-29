@@ -2,7 +2,6 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { query } = require('../../../services/projects')
 const usersService = require('../../../services/users/fused')
 const rolesService = require('../../../services/roles')
-const projectsService = require('../../../services/projects')
 const Converter = require('../../../utils/converter/converter')
 
 /**
@@ -116,6 +115,7 @@ module.exports = (req, res) => {
           } else {
             s.permissions = permissions[s.id]
           }
+          return s
         })
       }
       return res

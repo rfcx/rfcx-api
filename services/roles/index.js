@@ -167,8 +167,8 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string} userId The user for which the projects are accessible
  */
 async function getPermissionsForProjects (projectIds, userId) {
-  const select = `SELECT pr.project_id, rp.permission FROM user_project_roles pr`
-  const join = `JOIN role_permissions rp on pr.role_id = rp.role_id`
+  const select = 'SELECT pr.project_id, rp.permission FROM user_project_roles pr'
+  const join = 'JOIN role_permissions rp on pr.role_id = rp.role_id'
   const where = `WHERE pr.project_id IN (:projectIds) AND pr.user_id = ${userId}`
   const sql = `${select} ${join} ${where}`
 
@@ -176,13 +176,14 @@ async function getPermissionsForProjects (projectIds, userId) {
     .then(data => {
       return data.reduce((r, e) => {
         let projectId = ''
-        return Object.keys(e).forEach(k => {
-          if (k == 'project_id') {
+        Object.keys(e).forEach(k => {
+          if (k === 'project_id') {
             projectId = e[k]
           } else {
             r[projectId] = (r[projectId] || []).concat(e[k])
           }
-        }), r
+        })
+        return r
       }, {})
     })
 }
