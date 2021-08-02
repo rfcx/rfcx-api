@@ -167,7 +167,6 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string} userId The user for which the projects are accessible
  */
 async function getPermissionsForProjects (projectIds, userId) {
-
   const projectsSql = 'SELECT id, organization_id, created_by_id FROM projects WHERE id IN (:projectIds)'
   const projectsResult = await models.sequelize.query(projectsSql, { replacements: { projectIds }, type: models.sequelize.QueryTypes.SELECT })
 
@@ -188,8 +187,8 @@ async function getPermissionsForProjects (projectIds, userId) {
     }
   })
   const projectPerms = await getPermissionsForObjects(PROJECT, excludedProjectIds, userId)
-  
-  return {...permObject, ...projectPerms}
+
+  return { ...permObject, ...projectPerms }
 }
 
 /**
@@ -198,19 +197,19 @@ async function getPermissionsForProjects (projectIds, userId) {
  * @param {string[]} inIds Subset of object ids to select from
  * @param {string} userId The user for which the projects are accessible
  */
-async function getPermissionsForObjects(itemName, inIds, userId) {
+async function getPermissionsForObjects (itemName, inIds, userId) {
   const select = `SELECT ${itemName}r.${itemName}_id, rp.permission FROM user_${itemName}_roles ${itemName}r`
   const join = `JOIN role_permissions rp on ${itemName}r.role_id = rp.role_id`
   const where = `WHERE ${itemName}r.${itemName}_id IN (:inIds) AND ${itemName}r.user_id = ${userId}`
   const sql = `${select} ${join} ${where}`
 
   return models.sequelize.query(sql, { replacements: { inIds }, type: models.sequelize.QueryTypes.SELECT })
-  .then(data => {
-    return reduceIdsAndPermissionsObject(itemName, data)
-  })
+    .then(data => {
+      return reduceIdsAndPermissionsObject(itemName, data)
+    })
 }
 
-function reduceIdsAndPermissionsObject(itemName, object) {
+function reduceIdsAndPermissionsObject (itemName, object) {
   return object.reduce((r, e) => {
     let projectId = ''
     Object.keys(e).forEach(k => {
