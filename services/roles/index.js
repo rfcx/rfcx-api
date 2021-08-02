@@ -112,7 +112,7 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   if (!item) {
     throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
   }
-  const originalItem = { ...item.toJSON() }
+  const originalItem = { ...item }
   const user = await (userIsPrimitive ? usersService.getByParams({ id: userId }) : Promise.resolve(userOrId))
   if (user.is_super || item.created_by_id === userId) {
     return [CREATE, READ, UPDATE, DELETE]
