@@ -5,6 +5,7 @@
 * **tasks:** Message queue consumer for segment creation that queues the prediction service ([CE-871](https://jira.rfcx.org/browse/CE-871))
 * **core:** Add unique constraint to user_project_roles table
 * **core:** Add permission field for project listing
+* **internal:** Update /internal/ai-hub/detections endpoint to include user allowed streams permission when not send streams or projects query params ([CE-1154](https://jira.rfcx.org/browse/CE-1154))
 
 ### Bug Fixes
 * **core:** Guest user can not create stream in a project ([CE-961](https://jira.rfcx.org/browse/CE-961))
