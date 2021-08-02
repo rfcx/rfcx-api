@@ -205,22 +205,18 @@ async function getPermissionsForObjects (itemName, inIds, userId) {
 
   return models.sequelize.query(sql, { replacements: { inIds }, type: models.sequelize.QueryTypes.SELECT })
     .then(data => {
-      return reduceIdsAndPermissionsObject(itemName, data)
+      return data.reduce((r, e) => {
+        let projectId = ''
+        Object.keys(e).forEach(k => {
+          if (k === `${itemName}_id`) {
+            projectId = e[k]
+          } else {
+            r[projectId] = (r[projectId] || []).concat(e[k])
+          }
+        })
+        return r
+      }, {})
     })
-}
-
-function reduceIdsAndPermissionsObject (itemName, object) {
-  return object.reduce((r, e) => {
-    let projectId = ''
-    Object.keys(e).forEach(k => {
-      if (k === `${itemName}_id`) {
-        projectId = e[k]
-      } else {
-        r[projectId] = (r[projectId] || []).concat(e[k])
-      }
-    })
-    return r
-  }, {})
 }
 
 /**
