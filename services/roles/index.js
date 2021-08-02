@@ -167,25 +167,61 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string} userId The user for which the projects are accessible
  */
 async function getPermissionsForProjects (projectIds, userId) {
-  const select = 'SELECT pr.project_id, rp.permission FROM user_project_roles pr'
-  const join = 'JOIN role_permissions rp on pr.role_id = rp.role_id'
-  const where = `WHERE pr.project_id IN (:projectIds) AND pr.user_id = ${userId}`
+
+  const projectsSql = 'SELECT id, organization_id, created_by_id FROM projects WHERE id IN (:projectIds)'
+  const projectsResult = await models.sequelize.query(projectsSql, { replacements: { projectIds }, type: models.sequelize.QueryTypes.SELECT })
+
+  const organizationIds = projectsResult.map(p => p.organization_id)
+  const organizationPerms = await getPermissionsForObjects(ORGANIZATION, organizationIds, userId)
+
+  const permObject = {}
+  const excludedProjectIds = []
+
+  projectsResult.forEach(p => {
+    if (p.organization_id) {
+      permObject[p.id] = organizationPerms[p.organization_id]
+    }
+    if (p.created_by_id === userId) {
+      permObject[p.id] = [CREATE, READ, UPDATE, DELETE]
+    } else {
+      excludedProjectIds.push(p.id)
+    }
+  })
+  const projectPerms = await getPermissionsForObjects(PROJECT, excludedProjectIds, userId)
+  
+  return {...permObject, ...projectPerms}
+}
+
+/**
+ * Returns object of permissions from passed objects
+ * @param {string} itemName Type of object:`STREAM` or `PROJECT` or `ORGANIZATION`
+ * @param {string[]} inIds Subset of object ids to select from
+ * @param {string} userId The user for which the projects are accessible
+ */
+async function getPermissionsForObjects(itemName, inIds, userId) {
+  const select = `SELECT ${itemName}r.${itemName}_id, rp.permission FROM user_${itemName}_roles ${itemName}r`
+  const join = `JOIN role_permissions rp on ${itemName}r.role_id = rp.role_id`
+  const where = `WHERE ${itemName}r.${itemName}_id IN (:inIds) AND ${itemName}r.user_id = ${userId}`
   const sql = `${select} ${join} ${where}`
 
-  return models.sequelize.query(sql, { replacements: { projectIds }, type: models.sequelize.QueryTypes.SELECT })
-    .then(data => {
-      return data.reduce((r, e) => {
-        let projectId = ''
-        Object.keys(e).forEach(k => {
-          if (k === 'project_id') {
-            projectId = e[k]
-          } else {
-            r[projectId] = (r[projectId] || []).concat(e[k])
-          }
-        })
-        return r
-      }, {})
+  return models.sequelize.query(sql, { replacements: { inIds }, type: models.sequelize.QueryTypes.SELECT })
+  .then(data => {
+    return reduceIdsAndPermissionsObject(itemName, data)
+  })
+}
+
+function reduceIdsAndPermissionsObject(itemName, object) {
+  return object.reduce((r, e) => {
+    let projectId = ''
+    Object.keys(e).forEach(k => {
+      if (k === `${itemName}_id`) {
+        projectId = e[k]
+      } else {
+        r[projectId] = (r[projectId] || []).concat(e[k])
+      }
     })
+    return r
+  }, {})
 }
 
 /**

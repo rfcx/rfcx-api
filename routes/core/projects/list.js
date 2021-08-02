@@ -101,21 +101,13 @@ module.exports = (req, res) => {
         sort,
         fields
       }
-      // permission field need created_by_id to map the results
-      if (fields && fields.includes('permissions') && !fields.includes('created_by_id')) {
-        fields.push('created_by_id')
-      }
+
       const data = await query(filters, options)
       if (fields && fields.includes('permissions')) {
         const projectIds = data.results.map(s => s.id)
         const permissions = await rolesService.getPermissionsForProjects(projectIds, user.id)
-        data.results.map(s => {
-          if (s.created_by_id === user.id) {
-            s.permissions = ['C', 'R', 'U', 'D']
-          } else {
-            s.permissions = permissions[s.id]
-          }
-          return s
+        data.results.forEach(s => {
+          s.permissions = permissions[s.id]
         })
       }
       return res
