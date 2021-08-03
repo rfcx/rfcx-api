@@ -4,7 +4,7 @@ const indicesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
-const storageService = process.env.PLATFORM === 'google' ? require('../../../services/storage/google') : require('../../../services/storage/amazon')
+const storageService = require('../../../services/storage')
 const { hasStreamPermission } = require('../../../middleware/authorization/roles')
 
 /**
@@ -79,14 +79,14 @@ router.get('/streams/:id/indices/:index/heatmap', hasStreamPermission('R'), (req
     .then(async () => {
       const { start, end, interval, aggregate, grouping } = convertedParams
       const storageFilePath = indicesService.getHeatmapStoragePath(streamId, start, end, interval, aggregate)
-      const exists = await storageService.exists(process.env.STREAMS_CACHE_BUCKET, storageFilePath)
+      const exists = await storageService.exists(storageService.buckets.streamsCache, storageFilePath)
       if (exists) {
-        return storageService.getReadStream(process.env.STREAMS_CACHE_BUCKET, storageFilePath).pipe(res)
+        return storageService.getReadStream(storageService.buckets.streamsCache, storageFilePath).pipe(res)
       } else {
         const values = await indicesService.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, false, undefined, 0)
         const heatmapData = heatmapDistribute(start, end, interval, grouping, values)
         const buffer = await heatmapGenerate(heatmapData)
-        storageService.uploadBuffer(process.env.STREAMS_CACHE_BUCKET, storageFilePath, buffer) // it's async, but we don't wait for it
+        storageService.uploadBuffer(storageService.buckets.streamsCache, storageFilePath, buffer) // it's async, but we don't wait for it
         res.set('Content-Type', 'image/png')
         res.send(buffer)
       }
