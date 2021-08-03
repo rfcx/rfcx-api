@@ -58,14 +58,6 @@ const rolesService = require('../../../services/roles')
  *         description: Limit results to public streams
  *         in: query
  *         type: boolean
- *       - name: streams_created_by
- *         description: Limit results to streams created by `me` or `collaborators`
- *         in: query
- *         schema:
- *           type: string
- *           enum:
- *             - me
- *             - collaborators
  *       - name: created_by
  *         description: Limit results to only those created by a user (e.g. `me` or username)
  *         in: query
@@ -106,7 +98,6 @@ router.get('/', (req, res) => {
   params.convert('end').toMomentUtc()
   params.convert('stream_id').optional().toString()
   params.convert('streams_public').optional().toBoolean()
-  params.convert('streams_created_by').optional().toString().isEqualToAny(['me', 'collaborators'])
   params.convert('created_by').optional().toString()
   params.convert('interval').default('1d').toTimeInterval()
   params.convert('aggregate').default('count').toAggregateFunction()
@@ -128,7 +119,6 @@ router.get('/', (req, res) => {
         }
       }
       const { start, end, interval, aggregate, field, is_manual, is_positive, descending, limit, offset } = convertedParams // eslint-disable-line camelcase
-      const streamsOnlyCreatedBy = convertedParams.streams_created_by
       const streamsOnlyPublic = convertedParams.streams_public
       const annotation = {
         start,
@@ -142,7 +132,6 @@ router.get('/', (req, res) => {
       return annotationsService.timeAggregatedQuery(
         annotation,
         {
-          streamsOnlyCreatedBy,
           streamsOnlyPublic,
           interval,
           aggregate,
