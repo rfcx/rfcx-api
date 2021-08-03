@@ -2,6 +2,8 @@
 
 ### Features
 * **core:** Add permission field for project listing
+* **core:** Segment endpoint supporting prediction service to get a whole segment file efficiently ([CE-1166](https://jira.rfcx.org/browse/CE-1166))
+* **core:** Standardised segment endpoint security
 
 
 ## 1.0.23 (2021-08-02)
