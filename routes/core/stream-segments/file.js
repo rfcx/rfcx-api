@@ -9,7 +9,7 @@ const storageService = require('../../../services/storage')
  *
  * /streams/{id}/segments/{start}/file:
  *   get:
- *     summary: Get list of stream segments belonging to a stream
+ *     summary: Get whole segment file matching exact start time
  *     tags:
  *       - streams
  *     parameters:

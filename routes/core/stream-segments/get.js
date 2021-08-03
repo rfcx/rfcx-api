@@ -9,7 +9,7 @@ const { Sequelize } = require('../../../modelsTimescale/index.js')
  *
  * /streams/{id}/segments/{start}:
  *   get:
- *     summary: Get list of stream segments belonging to a stream
+ *     summary: Get a single stream segment
  *     tags:
  *       - streams
  *     parameters:
