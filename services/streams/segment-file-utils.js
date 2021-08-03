@@ -181,7 +181,7 @@ function getSoxFriendlyHeight (y) {
 }
 
 function getSegmentExtension (segment) {
-  return segment.file_extension && segment.file_extension.value ? segment.file_extension.value : path.extname(segment.stream_source_file.filename)
+  return segment.file_extension ? (typeof segment.file_extension === 'string' ? segment.file_extension : segment.file_extension.value) : path.extname(segment.stream_source_file.filename)
 }
 
 function getSegmentRemotePath (segment) {
