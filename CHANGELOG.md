@@ -1,16 +1,25 @@
-## 1.0.23 (2021-07-??)
+## 1.0.24 (2021-08-XX)
+
+### Features
+* **core:** Add permission field for project listing
+
+
+## 1.0.23 (2021-08-02)
 
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749)) ([CE-747](https://jira.rfcx.org/browse/CE-747))
 * **tasks:** Message queue consumer for segment creation that queues the prediction service ([CE-871](https://jira.rfcx.org/browse/CE-871))
 * **core:** Add unique constraint to user_project_roles table
-* **core:** Add permission field for project listing
 * **internal:** Update /internal/ai-hub/detections endpoint to include user allowed streams permission when not send streams or projects query params ([CE-1154](https://jira.rfcx.org/browse/CE-1154))
 
 ### Bug Fixes
 * **core:** Guest user can not create stream in a project ([CE-961](https://jira.rfcx.org/browse/CE-961))
 
 
+## 1.0.22-hotfix.1 (2021-07-29)
+
+### Bug Fixes
+* **core:** MySQL - TimescaleDB user sync is searching for `email` OR `guid` instead of `email` AND `guid`
 
 ## 1.0.22-hotfix.0 (2021-06-16)
 
