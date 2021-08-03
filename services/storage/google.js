@@ -1,14 +1,14 @@
 const { Storage } = require('@google-cloud/storage')
 const storage = new Storage()
 
-function getSignedUrl (bucket, key, contentType, expires = 86400) {
+function getSignedUrl (bucket, key, contentType, expires = 86400, write = false) {
   // Get a reference to the destination file in GCS
   const file = storage.bucket(bucket).file(key)
 
-  // Create a temporary upload URL
+  // Create a temporary download/upload URL
   const expiresAtMs = Date.now() + expires * 1000
   const config = {
-    action: 'write',
+    action: write ? 'write' : 'read',
     expires: expiresAtMs,
     contentType
   }
