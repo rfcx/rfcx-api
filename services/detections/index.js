@@ -80,7 +80,7 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic
  * @returns {Detection[]} Detections
  */
 async function query (start, end, streamIdOrIds, classifications, minConfidence, limit, offset, user) {
-  const opts = await defaultQueryOptions(start, end, streamIdOrIds, undefined, false, classifications, minConfidence, false, limit, offset, user)
+  const opts = await defaultQueryOptions(start, end, streamIdOrIds, false, classifications, minConfidence, false, limit, offset, user)
   const detections = await models.Detection.findAll(opts)
   return detections.map(d => d.toJSON())
 }
