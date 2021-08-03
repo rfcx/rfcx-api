@@ -1,4 +1,4 @@
-## 1.0.23 (2021-06-??)
+## 1.0.23 (2021-08-02)
 
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749)) ([CE-747](https://jira.rfcx.org/browse/CE-747))
