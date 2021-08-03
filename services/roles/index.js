@@ -103,16 +103,15 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   if (!Object.keys(hierarchy).includes(itemName)) {
     throw new Error(`RolesService: invalid value for "itemName" parameter: "${itemName}"`)
   }
-  let item = await (isId
-    ? hierarchy[itemName].model.findOne({
-      where: { id: itemOrId },
-      paranoid: false
-    })
-    : Promise.resolve(itemOrId))
-  if (!item) {
-    throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
+  let item = itemOrId
+  if (isId) {
+    try {
+      item = (await hierarchy[itemName].model.findOne({ where: { id: itemOrId }, paranoid: false })).toJSON()
+    } catch (e) {
+      throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
+    }
   }
-  const originalItem = { ...item.toJSON() }
+  const originalItem = { ...item }
   const user = await (userIsPrimitive ? usersService.getByParams({ id: userId }) : Promise.resolve(userOrId))
   if (user.is_super || item.created_by_id === userId) {
     return [CREATE, READ, UPDATE, DELETE]
@@ -159,6 +158,57 @@ async function getPermissions (userOrId, itemOrId, itemName) {
     permissions = [READ]
   }
   return permissions
+}
+
+/**
+ * Returns object of permissions from passed projects
+ * @param {string[]} projectIds The list of project id
+ * @param {string} userId The user for which the projects are accessible
+ */
+async function getPermissionsForProjects (projectIds, userId) {
+  const projectsSql = 'SELECT id, organization_id, created_by_id FROM projects WHERE id IN (:projectIds)'
+  const projectsResult = await models.sequelize.query(projectsSql, { replacements: { projectIds }, type: models.sequelize.QueryTypes.SELECT })
+
+  const organizationIds = projectsResult.map(p => p.organization_id)
+  const organizationPerms = await getPermissionsForObjects(ORGANIZATION, organizationIds, userId)
+
+  const permObject = {}
+  const excludedProjectIds = []
+
+  projectsResult.forEach(p => {
+    if (p.organization_id) {
+      permObject[p.id] = organizationPerms[p.organization_id]
+    }
+    if (p.created_by_id === userId) {
+      permObject[p.id] = [CREATE, READ, UPDATE, DELETE]
+    } else {
+      excludedProjectIds.push(p.id)
+    }
+  })
+  const projectPerms = await getPermissionsForObjects(PROJECT, excludedProjectIds, userId)
+
+  return { ...permObject, ...projectPerms }
+}
+
+/**
+ * Returns object of permissions from passed objects
+ * @param {string} itemName Type of object:`STREAM` or `PROJECT` or `ORGANIZATION`
+ * @param {string[]} inIds Subset of object ids to select from
+ * @param {string} userId The user for which the projects are accessible
+ */
+async function getPermissionsForObjects (itemName, inIds, userId) {
+  const select = `SELECT ${itemName}r.${itemName}_id, rp.permission FROM user_${itemName}_roles ${itemName}r`
+  const join = `JOIN role_permissions rp on ${itemName}r.role_id = rp.role_id`
+  const where = `WHERE ${itemName}r.${itemName}_id IN (:inIds) AND ${itemName}r.user_id = ${userId}`
+  const sql = `${select} ${join} ${where}`
+
+  return models.sequelize.query(sql, { replacements: { inIds }, type: models.sequelize.QueryTypes.SELECT })
+    .then(data => {
+      return data.reduce((result, row) => {
+        result[row[`${itemName}_id`]] = (result[row[`${itemName}_id`]] || []).concat(row.permission)
+        return result
+      }, {})
+    })
 }
 
 /**
@@ -325,6 +375,7 @@ module.exports = {
   getByName,
   hasPermission,
   getPermissions,
+  getPermissionsForProjects,
   getAccessibleObjectsIDs,
   getUsersForItem,
   getUserRoleForItem,
