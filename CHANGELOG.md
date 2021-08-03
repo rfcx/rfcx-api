@@ -1,3 +1,9 @@
+## 1.0.24 (2021-08-XX)
+
+### Features
+* **core:** Add permission field for project listing
+
+
 ## 1.0.23 (2021-08-02)
 
 ### Features
