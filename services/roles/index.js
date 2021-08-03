@@ -103,16 +103,15 @@ async function getPermissions (userOrId, itemOrId, itemName) {
   if (!Object.keys(hierarchy).includes(itemName)) {
     throw new Error(`RolesService: invalid value for "itemName" parameter: "${itemName}"`)
   }
-  let item = await (isId
-    ? hierarchy[itemName].model.findOne({
-      where: { id: itemOrId },
-      paranoid: false
-    })
-    : Promise.resolve(itemOrId))
-  if (!item) {
-    throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
+  let item = itemOrId
+  if (isId) {
+    try {
+      item = (await hierarchy[itemName].model.findOne({ where: { id: itemOrId }, paranoid: false })).toJSON()
+    } catch (e) {
+      throw new EmptyResultError(`${itemName} with given id doesn't exist.`)
+    }
   }
-  const originalItem = { ...item.toJSON() }
+  const originalItem = { ...item }
   const user = await (userIsPrimitive ? usersService.getByParams({ id: userId }) : Promise.resolve(userOrId))
   if (user.is_super || item.created_by_id === userId) {
     return [CREATE, READ, UPDATE, DELETE]
