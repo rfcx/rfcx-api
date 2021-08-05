@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## v1.0.24
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210805150100-add-stream-timezone-column`
+
 ## v1.0.22
 - Deploy Explorer updates from `bug/CE-831-upload-permissions` branch
 - Add `STREAM_TOKEN_SALT` env var and set it to some long random string
