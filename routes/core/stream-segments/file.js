@@ -19,7 +19,7 @@ const storageService = require('../../../services/storage')
  *         required: true
  *         type: string
  *       - name: start
- *         description: Start timestamp (compact iso8601 or epoch)
+ *         description: Segment start timestamp (compact iso8601 or epoch)
  *         in: query
  *         required: true
  *         type: string

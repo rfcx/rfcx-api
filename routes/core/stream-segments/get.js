@@ -19,12 +19,12 @@ const { Sequelize } = require('../../../modelsTimescale/index.js')
  *         required: true
  *         type: string
  *       - name: start
- *         description: Start timestamp (compact iso8601 or epoch)
- *         in: query
+ *         description: Segment start timestamp (compact iso8601 or epoch)
+ *         in: path
  *         required: true
  *         type: string
  *       - name: strict
- *         description: Only return segments strictly within start/end (better performance)
+ *         description: Only return a segment that starts exactly on the start parameter (better performance)
  *         in: query
  *         type: boolean
  *         default: true

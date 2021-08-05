@@ -7,7 +7,7 @@ const Converter = require('../../../utils/converter/converter')
  *
  * /streams/{id}/segments:
  *   get:
- *     summary: Get list of stream segments belonging to a stream
+ *     summary: Get list of stream segments between start and end
  *     tags:
  *       - streams
  *     parameters:
@@ -27,7 +27,7 @@ const Converter = require('../../../utils/converter/converter')
  *         required: true
  *         type: string
  *       - name: strict
- *         description: Only return segments strictly within start/end (better performance)
+ *         description: Only return segments that start within the range of the start/end parameters (better performance)
  *         in: query
  *         type: boolean
  *         default: true
