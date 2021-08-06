@@ -27,5 +27,3 @@ test('can parse compact-iso8601 instead of epoch', () => {
 
   expect(result.toISOString()).toEqual('2021-07-28T12:26:55.750Z')
 })
-
-

@@ -1,12 +1,9 @@
 const router = require('express').Router()
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/segments')
 const { parseFileNameAttrs, checkAttrsValidity, getFile } = require('../../../services/streams/segment-file-utils')
 const { gluedDateStrToISO } = require('../../../utils/misc/datetime')
-const { hasPermission, READ, STREAM } = require('../../../services/roles')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
   Spectrogram format (fspec):

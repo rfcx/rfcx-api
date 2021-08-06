@@ -2,7 +2,6 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { get } = require('../../../services/streams/segments')
 const Converter = require('../../../utils/converter/converter')
 const { gluedDateStrOrEpochToMoment } = require('../../../utils/misc/datetime.js')
-const { Sequelize } = require('../../../modelsTimescale/index.js')
 
 /**
  * @swagger
