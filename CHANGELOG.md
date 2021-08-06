@@ -2,6 +2,7 @@
 
 ### Features
 * **core:** Add permission field for project listing
+* **core:** Add `timezone` column to `streams` table([CE-1168](https://jira.rfcx.org/browse/CE-1168))
 
 ### Bug Fixes
 * **core:** Fixes Explorer bug showing public detections on console page - Clustered detections should not include detections from public streams by default ([CE-684](https://jira.rfcx.org/browse/CE-684))
