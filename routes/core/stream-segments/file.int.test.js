@@ -2,10 +2,15 @@ const routes = require('.')
 const models = require('../../../modelsTimescale')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../utils/sequelize/testing')
 const request = require('supertest')
+const storageService = require('../../../services/storage')
 
 const app = expressApp()
 
 app.use('/', routes)
+
+jest.spyOn(storageService, 'getSignedUrl').mockImplementation((bucket, key, contentType, expires = 86400, write = false) => {
+  return Promise.resolve(`https://fake-s3/${bucket}/${key}?extra=stuff`)
+})
 
 beforeAll(async () => {
   muteConsole('warn')
