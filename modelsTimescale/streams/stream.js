@@ -63,7 +63,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true
     },
     timezone: {
-      type: DataTypes.STRING(3),
+      type: DataTypes.STRING.STRING(40),
       allowNull: true
     },
     maxSampleRate: {
@@ -153,7 +153,7 @@ module.exports = function (sequelize, DataTypes) {
   }
   Stream.attributes = {
     full: ['id', 'name', 'description', 'start', 'end', 'project_id', 'is_public', 'latitude', 'longitude', 'altitude', 'timezone', 'max_sample_rate', 'external_id', 'created_by_id', 'created_at', 'updated_at'],
-    lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'timezone', 'is_public']
+    lite: ['id', 'name', 'start', 'end', 'latitude', 'longitude', 'altitude', 'is_public']
   }
   Stream.include = includeBuilder(Stream, 'stream', Stream.attributes.lite)
   return Stream
