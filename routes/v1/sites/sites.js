@@ -23,10 +23,7 @@ router.route('/')
       where.is_active = true
     }
 
-    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-      .then((user) => {
-        return userService.getAllUserSiteGuids(user)
-      })
+    return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
       .then((guids) => {
         where.guid = {
           [models.Sequelize.Op.in]: guids
@@ -98,10 +95,7 @@ router.route('/statistics/audio')
 
 router.route('/:site_id')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
-    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-      .then((user) => {
-        return userService.getAllUserSiteGuids(user)
-      })
+    return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
       .then((guids) => {
         const guid = req.params.site_id
         if (req.user && req.user.userType === 'auth0') {

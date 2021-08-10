@@ -13,10 +13,7 @@ const userService = require('../../../services/users/users-service-legacy')
 
 router.route('/:site_id/guardians')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
-    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-      .then((user) => {
-        return userService.getAllUserSiteGuids(user)
-      })
+    return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
       .then((guids) => {
         const guid = req.params.site_id
         if (!guids.includes(guid)) {
