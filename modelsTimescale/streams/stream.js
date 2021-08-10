@@ -63,7 +63,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true
     },
     timezone: {
-      type: DataTypes.STRING.STRING(40),
+      type: DataTypes.STRING(40),
       allowNull: true
     },
     maxSampleRate: {
