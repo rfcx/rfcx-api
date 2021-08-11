@@ -5,6 +5,9 @@
 * **core:** Segment endpoint supporting prediction service to get a whole segment file efficiently ([CE-1166](https://jira.rfcx.org/browse/CE-1166))
 * **core:** Standardised segment endpoint security
 
+### Bug Fixes
+* **core:** Fixes Explorer bug showing public detections on console page - Clustered detections should not include detections from public streams by default ([CE-684](https://jira.rfcx.org/browse/CE-684))
+
 
 ## 1.0.23 (2021-08-02)
 
@@ -16,7 +19,6 @@
 
 ### Bug Fixes
 * **core:** Guest user can not create stream in a project ([CE-961](https://jira.rfcx.org/browse/CE-961))
-* **core:** Fixes Explorer bug showing public detections on console page - Clustered detections should not include detections from public streams by default ([CE-684](https://jira.rfcx.org/browse/CE-684))
 
 
 ## 1.0.22-hotfix.1 (2021-07-29)
