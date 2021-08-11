@@ -8,16 +8,14 @@ const audioUtils = require('../../utils/rfcx-audio').audioUtils
 const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
 const mathUtil = require('../../utils/misc/math')
 const hash = require('../../utils/misc/hash')
-const storageService = process.env.PLATFORM === 'google' ? require('../storage/google') : require('../storage/amazon')
+const storageService = require('../storage')
 
 const possibleWindowFuncs = ['dolph', 'hann', 'hamming', 'bartlett', 'rectangular', 'kaiser']
 const possibleExtensions = ['png', 'jpeg', 'wav', 'opus', 'flac', 'mp3']
 const possibleFileTypes = ['spec', 'wav', 'opus', 'flac', 'mp3']
 const possibleAudioFileTypes = ['wav', 'opus', 'flac', 'mp3']
 
-const INGEST_BUCKET = process.env.INGEST_BUCKET
 const MEDIA_CACHE_ENABLED = `${process.env.MEDIA_CACHE_ENABLED}` === 'true'
-const STREAMS_CACHE_BUCKET = process.env.STREAMS_CACHE_BUCKET
 const CACHE_DIRECTORY = process.env.CACHE_DIRECTORY
 const FFMPEG_PATH = process.env.FFMPEG_PATH
 const SOX_PATH = process.env.SOX_PATH
@@ -142,13 +140,13 @@ async function getFile (req, res, attrs, segments, nextTimestamp) {
     additionalHeaders['RFCx-Stream-Next-Timestamp'] = nextTimestamp
   }
 
-  const getFromCache = MEDIA_CACHE_ENABLED ? await storageService.exists(STREAMS_CACHE_BUCKET, storageFilePath) : false
+  const getFromCache = MEDIA_CACHE_ENABLED ? await storageService.exists(storageService.buckets.streamsCache, storageFilePath) : false
   if (getFromCache) {
     res.attachment(attrs.fileType === 'spec' ? spectrogramFilename : audioFilename)
     for (const key in additionalHeaders) {
       res.setHeader(key, additionalHeaders[key])
     }
-    return storageService.getReadStream(STREAMS_CACHE_BUCKET, storageFilePath).pipe(res)
+    return storageService.getReadStream(storageService.buckets.streamsCache, storageFilePath).pipe(res)
   } else {
     return generateFile(req, res, attrs, segments, additionalHeaders)
   }
@@ -183,7 +181,7 @@ function getSoxFriendlyHeight (y) {
 }
 
 function getSegmentExtension (segment) {
-  return segment.file_extension && segment.file_extension.value ? segment.file_extension.value : path.extname(segment.stream_source_file.filename)
+  return segment.file_extension ? (typeof segment.file_extension === 'string' ? segment.file_extension : segment.file_extension.value) : path.extname(segment.stream_source_file.filename)
 }
 
 function getSegmentRemotePath (segment) {
@@ -198,7 +196,7 @@ function downloadSegments (segments) {
     const remotePath = getSegmentRemotePath(segment)
     const segmentExtension = getSegmentExtension(segment)
     segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
-    downloadProms.push(storageService.download(INGEST_BUCKET, remotePath, segment.sourceFilePath))
+    downloadProms.push(storageService.download(storageService.buckets.streams, remotePath, segment.sourceFilePath))
   }
   return Promise.all(downloadProms)
 }
@@ -364,8 +362,8 @@ function uploadCachedFiles (streamId, audioFilename, audioFilePath, spectrogramF
   const audioStoragePath = `${streamId}/audio/${audioFilename}`
   const spectrogramStoragePath = `${streamId}/image/${spectrogramFilename}`
   const proms = [
-    storageService.upload(STREAMS_CACHE_BUCKET, audioStoragePath, audioFilePath),
-    ...!!spectrogramFilename && spectrogramFilePath ? [storageService.upload(STREAMS_CACHE_BUCKET, spectrogramStoragePath, spectrogramFilePath)] : []
+    storageService.upload(storageService.buckets.streamsCache, audioStoragePath, audioFilePath),
+    ...!!spectrogramFilename && spectrogramFilePath ? [storageService.upload(storageService.buckets.streamsCache, spectrogramStoragePath, spectrogramFilePath)] : []
   ]
   return Promise.all(proms)
 }
@@ -464,8 +462,8 @@ function deleteFilesForStream (dbStream) {
           const key = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
           keys.push(key)
         })
-        console.log(`Deleting following files in ${INGEST_BUCKET} bucket:`, keys.join(', '))
-        return storageService.deleteFiles(INGEST_BUCKET, keys)
+        console.log(`Deleting following files in ${storageService.buckets.streams} bucket:`, keys.join(', '))
+        return storageService.deleteFiles(storageService.buckets.streams, keys)
       })
   })
 }

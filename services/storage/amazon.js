@@ -7,15 +7,16 @@ const s3Client = new S3({
   region: process.env.AWS_REGION_ID
 })
 
-function getSignedUrl (Bucket, Key, ContentType, Expires = 86400) {
+function getSignedUrl (bucket, key, contentType, expires = 86400, write = false) {
   const params = {
-    Bucket,
-    Key,
-    Expires,
-    ContentType
+    Bucket: bucket,
+    Key: key,
+    Expires: expires,
+    ContentType: contentType
   }
+  const operation = write ? 'putObject' : 'getObject'
   return (new Promise((resolve, reject) => {
-    s3Client.getSignedUrl('putObject', params, (err, data) => {
+    s3Client.getSignedUrl(operation, params, (err, data) => {
       if (err) {
         reject(err)
       } else {
