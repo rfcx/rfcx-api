@@ -3,6 +3,7 @@ const models = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
+const { getAccessibleObjectsIDs, STREAM } = require('../roles')
 
 /**
  * Combines query clauses based on input
@@ -14,7 +15,6 @@ const streamsService = require('../streams')
  * @param {boolean} filters.isPositive Whether annotation represents absence of specified classification
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
- * @param {string | number} filters.streamsOnlyCreatedBy
  * @param {string[]} filters.classifications
  * @param {*} options Additional options
  * @param {number} options.limit
@@ -35,7 +35,7 @@ async function defaultQueryOptions (filters, options = {}) {
   } else {
     const streamIds = filters.streamsOnlyPublic
       ? await streamsService.getPublicStreamIds()
-      : await streamsService.getAccessibleStreamIds(filters.user, filters.streamsOnlyCreatedBy)
+      : await getAccessibleObjectsIDs(filters.user.id, STREAM)
     condition.stream_id = {
       [models.Sequelize.Op.in]: streamIds
     }
@@ -111,7 +111,6 @@ async function query (filters, options = {}) {
  * @param {boolean} filters.streamsOnlyPublic
  * @param {object} filters.user
  * @param {number} filters.createdBy
- * @param {string | number} filters.streamsOnlyCreatedBy
  * @param {string[]} filters.classifications
  * @param {*} options Additional options
  * @param {number} options.limit
