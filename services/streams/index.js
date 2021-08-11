@@ -6,6 +6,7 @@ const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, D
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 const { hashedCredentials } = require('../../utils/misc/hash')
+const { getTzByLatLng } = require('../../utils/misc/timezone')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),
@@ -14,11 +15,14 @@ const availableIncludes = [
 
 function computedAdditions (stream) {
   const additions = {}
-  if (stream.latitude && stream.longitude) {
-    const country = crg.get_country(stream.latitude, stream.longitude)
+  const { latitude, longitude } = stream
+  if (latitude && longitude) {
+    const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
     }
+
+    additions.timezone = getTzByLatLng(latitude, longitude)
   }
   return additions
 }
