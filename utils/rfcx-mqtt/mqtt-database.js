@@ -173,7 +173,7 @@ exports.checkInDatabase = {
             asset_id: checkInObj.json.meta_ids[i]
           }
         })
-        metaReturnArray.push({ id: checkInObj.json.meta_ids[i] })
+        metaReturnArray.push({ id: checkInObj.json.meta_ids[i].toString() })
         proms.push(prom)
       }
     }
@@ -203,7 +203,7 @@ exports.checkInDatabase = {
               asset_type: metaPurgedAssets[asstInd][0],
               asset_id: metaPurgedAssets[asstInd][1]
             })
-            purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: '' + metaPurgedAssets[asstInd][1] })
+            purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1].toString() })
           }
         }
         // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
@@ -219,7 +219,7 @@ exports.checkInDatabase = {
             })
               .then((dbAssetEntry) => {
                 if (dbAssetEntry != null) {
-                  receivedReturnArray.push({ type: 'audio', id: '' + dbAssetEntry.asset_id })
+                  receivedReturnArray.push({ type: 'audio', id: dbAssetEntry.asset_id.toString() })
                   receivedIdArray.push(dbAssetEntry.asset_id)
                 }
               })
@@ -243,7 +243,7 @@ exports.checkInDatabase = {
         if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
           for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
             if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
-              unconfirmedReturnArray.push({ type: 'audio', id: '' + checkInObj.json.checkins_to_verify[i] })
+              unconfirmedReturnArray.push({ type: 'audio', id: checkInObj.json.checkins_to_verify[i].toString() })
             }
           }
         }
