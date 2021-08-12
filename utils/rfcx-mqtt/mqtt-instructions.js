@@ -73,7 +73,7 @@ exports.mqttInstructions = {
                     guardian_id: checkInObj.db.dbGuardian.id
                   }
                 }).spread(function (dbExecuted, wasCreated) {
-                  checkInObj.rtrn.obj.received.push({ type: 'instruction', id: ''+dbExecuted.instr_id })
+                  checkInObj.rtrn.obj.received.push({ type: 'instruction', id: '' + dbExecuted.instr_id })
 
                   models.GuardianMetaInstructionsQueue.findOne({
                     where: {

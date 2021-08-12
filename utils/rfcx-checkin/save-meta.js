@@ -83,11 +83,10 @@ exports.saveMeta = {
     const dbMetaDataTransfer = []
 
     for (const dtInd in metaDataTransfer) {
-
-      const network_bytes_rx = (metaDataTransfer[dtInd][6] != null) ? 0 : parseInt(metaDataTransfer[dtInd][6])
-      const network_bytes_tx = (metaDataTransfer[dtInd][7] != null) ? 0 : parseInt(metaDataTransfer[dtInd][7])
-      const network_total_bytes_rx = (metaDataTransfer[dtInd][8] != null) ? 0 : parseInt(metaDataTransfer[dtInd][8])
-      const network_total_bytes_tx = (metaDataTransfer[dtInd][9] != null) ? 0 : parseInt(metaDataTransfer[dtInd][9])
+      const networkBytesRx = (metaDataTransfer[dtInd][6] != null) ? 0 : parseInt(metaDataTransfer[dtInd][6])
+      const networkBytesTx = (metaDataTransfer[dtInd][7] != null) ? 0 : parseInt(metaDataTransfer[dtInd][7])
+      const networkTotalBytesRx = (metaDataTransfer[dtInd][8] != null) ? 0 : parseInt(metaDataTransfer[dtInd][8])
+      const networkTotalBytesTx = (metaDataTransfer[dtInd][9] != null) ? 0 : parseInt(metaDataTransfer[dtInd][9])
 
       dbMetaDataTransfer.push({
 
@@ -95,21 +94,21 @@ exports.saveMeta = {
         check_in_id: checkInId,
         started_at: new Date(parseInt(metaDataTransfer[dtInd][0])),
         ended_at: new Date(parseInt(metaDataTransfer[dtInd][1])),
-        
+
         mobile_bytes_received: parseInt(metaDataTransfer[dtInd][2]),
         mobile_bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
         mobile_total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
         mobile_total_bytes_sent: parseInt(metaDataTransfer[dtInd][5]),
 
-        network_bytes_received: network_bytes_rx,
-        network_bytes_sent: network_bytes_tx,
-        network_total_bytes_received: network_total_bytes_rx,
-        network_total_bytes_sent: network_total_bytes_tx,
-        
-        bytes_received: parseInt(metaDataTransfer[dtInd][2]) + network_bytes_rx,
-        bytes_sent: parseInt(metaDataTransfer[dtInd][3]) + network_bytes_tx,
-        total_bytes_received: parseInt(metaDataTransfer[dtInd][4]) + network_total_bytes_rx,
-        total_bytes_sent: parseInt(metaDataTransfer[dtInd][5]) + network_total_bytes_tx
+        network_bytes_received: networkBytesRx,
+        network_bytes_sent: networkBytesTx,
+        network_total_bytes_received: networkTotalBytesRx,
+        network_total_bytes_sent: networkTotalBytesTx,
+
+        bytes_received: parseInt(metaDataTransfer[dtInd][2]) + networkBytesRx,
+        bytes_sent: parseInt(metaDataTransfer[dtInd][3]) + networkBytesTx,
+        total_bytes_received: parseInt(metaDataTransfer[dtInd][4]) + networkTotalBytesRx,
+        total_bytes_sent: parseInt(metaDataTransfer[dtInd][5]) + networkTotalBytesTx
       })
     }
 
