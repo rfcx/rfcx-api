@@ -92,8 +92,8 @@ exports.saveMeta = {
       })
     }
 
-    models.GuardianMetaDataTransfer
-      .bulkCreate(dbMetaDataTransfer).then(function () { }).catch(function (err) {
+    return models.GuardianMetaDataTransfer
+      .bulkCreate(dbMetaDataTransfer).catch(function (err) {
         console.log('failed to create GuardianMetaDataTransfer | ' + err)
       })
   },
