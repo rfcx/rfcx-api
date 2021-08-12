@@ -22,13 +22,7 @@ router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const sitesQuery = {}
 
-    return Promise.resolve()
-      .then(() => {
-        return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-      })
-      .then((user) => {
-        return userService.getAllUserSiteGuids(user)
-      })
+    return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
       .then((guids) => {
         let sites = []
         if (req.query.sites) {

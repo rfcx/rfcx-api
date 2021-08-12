@@ -204,19 +204,37 @@ function clearSitesRelationsForUser (user) {
   return models.UserSiteRelation.destroy({ where: { user_id: user.id } })
 }
 
-function getAllUserSiteGuids (dbUser) {
-  const guids = []
-  if (dbUser.DefaultSite) {
-    guids.push(dbUser.DefaultSite.guid)
-  }
-  if (dbUser.GuardianSites) {
-    dbUser.GuardianSites.forEach((site) => {
-      if (!guids.includes(site.guid)) {
-        guids.push(site.guid)
-      }
+function getAllUserSiteGuids (guid) {
+  return models.User
+    .findOne({
+      where: { guid },
+      include: [
+        {
+          model: models.GuardianSite,
+          as: 'DefaultSite',
+          attributes: ['guid']
+        },
+        {
+          model: models.GuardianSite,
+          as: 'GuardianSites',
+          attributes: ['guid']
+        }
+      ]
     })
-  }
-  return guids
+    .then((dbUser) => {
+      const guids = []
+      if (dbUser.DefaultSite) {
+        guids.push(dbUser.DefaultSite.guid)
+      }
+      if (dbUser.GuardianSites) {
+        dbUser.GuardianSites.forEach((site) => {
+          if (!guids.includes(site.guid)) {
+            guids.push(site.guid)
+          }
+        })
+      }
+      return guids
+    })
 }
 
 function attachSitesToUser (sites, user) {
