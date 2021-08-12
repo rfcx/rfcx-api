@@ -58,10 +58,7 @@ function prepareOpts (req) {
   }
 
   let availableSiteGuids = []
-  return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-    .then((user) => {
-      return userService.getAllUserSiteGuids(user)
-    })
+  return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
     .then((guids) => {
       availableSiteGuids = guids
       if (opts.sites) {
