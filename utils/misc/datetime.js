@@ -35,6 +35,10 @@ function gluedDateStrToMoment (dateStr) {
   return moment(dateStr, 'YYYYMMDDTHHmmssSSSZ').utc()
 }
 
+function gluedDateStrOrEpochToMoment (dateStr) {
+  return /^\d+$/.exec(dateStr) ? moment(parseInt(dateStr)) : gluedDateStrToMoment(dateStr)
+}
+
 function gluedDateStrToISO (dateStr) {
   return gluedDateStrToMoment(dateStr).toISOString()
 }
@@ -43,5 +47,6 @@ module.exports = {
   quantify,
   momentToMysqlString,
   gluedDateStrToMoment,
+  gluedDateStrOrEpochToMoment,
   gluedDateStrToISO
 }

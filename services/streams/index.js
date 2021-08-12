@@ -6,6 +6,7 @@ const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, D
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 const { hashedCredentials } = require('../../utils/misc/hash')
+const { getTzByLatLng } = require('../../utils/misc/timezone')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),
@@ -14,11 +15,14 @@ const availableIncludes = [
 
 function computedAdditions (stream) {
   const additions = {}
-  if (stream.latitude && stream.longitude) {
-    const country = crg.get_country(stream.latitude, stream.longitude)
+  const { latitude, longitude } = stream
+  if (latitude && longitude) {
+    const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
     }
+
+    additions.timezone = getTzByLatLng(latitude, longitude)
   }
   return additions
 }
@@ -27,11 +31,12 @@ function computedAdditions (stream) {
  * Get a single stream by id or where clause
  * @param {string|object} idOrWhere id or where condition
  * @param {*} options Additional get options
- * @param {number} options.readableBy Include only if organization is accessible to the given user id
+ * @param {number} options.readableBy Include only if stream is accessible to the given user id
  * @param {string[]} options.fields Attributes and relations to include in results (defaults to all)
+ * @param {Transaction} options.transaction Perform in the given Sequelize transaction
  * @returns {Stream} stream model item
- * @throws EmptyResultError when organization not found
- * @throws ForbiddenError when `readableBy` user does not have read permission on the organization
+ * @throws EmptyResultError when stream not found
+ * @throws ForbiddenError when `readableBy` user does not have read permission on the stream
  */
 async function get (idOrWhere, options = {}) {
   const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
