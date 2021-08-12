@@ -42,7 +42,10 @@ exports.models = {
             }
           : null,
         last_audio: dbRow.last_audio ? dbRow.last_audio : null,
-        notes: dbRow.notes || null
+        notes: dbRow.notes || null,
+        phone_imei: dbRow.phone_imei || null,
+        phone_sim_number: dbRow.phone_sim_number || null,
+        phone_sim_serial: dbRow.phone_sim_serial || null
       }
 
       jsonArray.push(guardian)

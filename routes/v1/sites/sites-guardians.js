@@ -13,10 +13,7 @@ const userService = require('../../../services/users/users-service-legacy')
 
 router.route('/:site_id/guardians')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
-    return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
-      .then((user) => {
-        return userService.getAllUserSiteGuids(user)
-      })
+    return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
       .then((guids) => {
         const guid = req.params.site_id
         if (!guids.includes(guid)) {
@@ -34,8 +31,11 @@ router.route('/:site_id/guardians')
         }
         this.dbSite = dbSite
         return models.Guardian.findAll({
-          where: { site_id: dbSite.id },
-          include: [{ all: true }],
+          where: {
+            site_id: dbSite.id,
+            ...req.query.is_visible !== undefined ? { is_visible: req.query.is_visible === 'true' } : {}
+          },
+          include: [],
           order: [['last_check_in', 'DESC']],
           limit: req.rfcx.limit,
           offset: req.rfcx.offset
@@ -45,6 +45,9 @@ router.route('/:site_id/guardians')
         if (!dbGuardians.length) {
           throw new sequelize.EmptyResultError(`No guardians were found for site "${this.dbSite.guid}".`)
         }
+        dbGuardians.forEach((dbGuardian) => {
+          dbGuardian.Site = this.dbSite
+        })
         this.dbGuardians = dbGuardians
       })
       .then(() => {
@@ -69,6 +72,28 @@ router.route('/:site_id/guardians')
         return Promise.resolve()
       })
       .then(() => {
+        if (req.query.include_hardware) {
+          const proms = []
+          this.dbGuardians.forEach((dbGuardan) => {
+            const prom = models.GuardianMetaHardware.findOne({
+              where: { guardian_id: dbGuardan.id },
+              attributes: ['phone_imei', 'phone_sim_number', 'phone_sim_serial']
+            })
+              .then((dbMetaHardware) => {
+                if (dbMetaHardware) {
+                  dbGuardan.phone_imei = dbMetaHardware.phone_imei
+                  dbGuardan.phone_sim_number = dbMetaHardware.phone_sim_number
+                  dbGuardan.phone_sim_serial = dbMetaHardware.phone_sim_serial
+                }
+                return true
+              })
+            proms.push(prom)
+          })
+          return Promise.all(proms)
+        }
+        return Promise.resolve()
+      })
+      .then(() => {
         if (req.query.last_audio) {
           const proms = []
           this.dbGuardians.forEach(function (guardian) {
@@ -80,7 +105,8 @@ router.route('/:site_id/guardians')
                   as: 'Guardian',
                   where: {
                     id: guardian.id
-                  }
+                  },
+                  attributes: ['id']
                 }]
               })
               .then((dbAudio) => {
