@@ -13,7 +13,7 @@ metadata:
     app: "api-mqtt"
 spec:
   rules:
-    - host: staging-rabbitmq.rfcx.org
+    - host: staging-api-mqtt.rfcx.org
       http:
         paths:
           - backend:
