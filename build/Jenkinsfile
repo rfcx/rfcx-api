@@ -63,7 +63,7 @@ spec:
                 expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
-		sh "find . -type f -path 'build/${PHASE}' -name 'deployment.yaml' -exec sed -i 's|:latest|:${BUILD_NUMBER}|g' {} +"
+                sh "find . -type f -path 'build/${PHASE}' -name 'deployment.yaml' -exec sed -i 's|:latest|:${BUILD_NUMBER}|g' {} +"
                 sh "kubectl -n ${PHASE} apply -f build/${PHASE} --recursive"
             }
         }
@@ -75,10 +75,11 @@ spec:
                 expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
-                sh "kubectl rollout status deployment ${APIHTTP} --namespace ${PHASE}"
-                sh "kubectl rollout status deployment ${APIMQTT} --namespace ${PHASE}"
-                sh "kubectl rollout status deployment ${APIMEDIA} --namespace ${PHASE}"
-	        slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP/MQTT API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
+                sh "for i in `find build/${PHASE} -mindepth 1 -maxdepth 1 -type d -exec basename {} \;`
+                    do
+                    kubectl rollout status deployment $i --namespace ${PHASE}
+                    done"
+                slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP/MQTT API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             }
         }
     }
