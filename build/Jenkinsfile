@@ -75,10 +75,10 @@ spec:
                 expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
-                sh "for i in `find build/${PHASE} -mindepth 1 -maxdepth 1 -type d | sed "s/build\/${PHASE}\///"`
+                sh 'for i in `find build/${PHASE} -mindepth 1 -maxdepth 1 -type d | sed "s/build\/${PHASE}\///"`
                     do
                     kubectl rollout status deployment $i --namespace ${PHASE}
-                    done"
+                    done'
                 slackSend (channel: "#${slackChannel}", color: '#4CAF50', message: "*HTTP/MQTT API*: Deployment completed <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
             }
         }
