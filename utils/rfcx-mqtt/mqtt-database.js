@@ -160,7 +160,7 @@ exports.checkInDatabase = {
   updateDbMetaAssetsExchangeLog: function (checkInObj) {
     const guardianId = checkInObj.db.dbGuardian.id
     // arrays of return values for checkin response json
-    const metaReturnArray = []; const purgedReturnArray = []; const unconfirmedReturnArray = []; const receivedReturnArray = []; const receivedIdArray = []
+    const metaReturnArray = []; const detectionsReturnArray = []; const purgedReturnArray = []; const unconfirmedReturnArray = []; const receivedReturnArray = []; const receivedIdArray = []
 
     const proms = []
     // create meta asset entries in database
@@ -173,7 +173,21 @@ exports.checkInDatabase = {
             asset_id: checkInObj.json.meta_ids[i]
           }
         })
-        metaReturnArray.push({ id: checkInObj.json.meta_ids[i] })
+        metaReturnArray.push({ id: checkInObj.json.meta_ids[i].toString() })
+        proms.push(prom)
+      }
+    }
+    // create detections asset entries in database
+    if (checkInObj.json.detection_ids != null) {
+      for (let i = 0; i < checkInObj.json.detection_ids.length; i++) {
+        const prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
+          where: {
+            guardian_id: guardianId,
+            asset_type: 'detections',
+            asset_id: checkInObj.json.detection_ids[i]
+          }
+        })
+        detectionsReturnArray.push({ id: checkInObj.json.detection_ids[i] })
         proms.push(prom)
       }
     }
@@ -189,7 +203,7 @@ exports.checkInDatabase = {
               asset_type: metaPurgedAssets[asstInd][0],
               asset_id: metaPurgedAssets[asstInd][1]
             })
-            purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1] })
+            purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1].toString() })
           }
         }
         // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
@@ -205,7 +219,7 @@ exports.checkInDatabase = {
             })
               .then((dbAssetEntry) => {
                 if (dbAssetEntry != null) {
-                  receivedReturnArray.push({ type: 'audio', id: dbAssetEntry.asset_id })
+                  receivedReturnArray.push({ type: 'audio', id: dbAssetEntry.asset_id.toString() })
                   receivedIdArray.push(dbAssetEntry.asset_id)
                 }
               })
@@ -229,13 +243,14 @@ exports.checkInDatabase = {
         if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
           for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
             if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
-              unconfirmedReturnArray.push({ type: 'audio', id: checkInObj.json.checkins_to_verify[i] })
+              unconfirmedReturnArray.push({ type: 'audio', id: checkInObj.json.checkins_to_verify[i].toString() })
             }
           }
         }
 
         // add checkin response json to overall checkInObj
         checkInObj.rtrn.obj.meta = metaReturnArray
+        checkInObj.rtrn.obj.detections = detectionsReturnArray
         checkInObj.rtrn.obj.purged = purgedReturnArray
         checkInObj.rtrn.obj.received = receivedReturnArray
         checkInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray
