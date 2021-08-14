@@ -268,6 +268,7 @@ exports.checkInDatabase = {
 
     const prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' }
     const prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }
+    const prefsSha1CharLimit = prefsJson.sha1.length
     for (const prefKey in prefsJson.vals) { prefsJson.cnt++ } // eslint-disable-line no-unused-vars
 
     // retrieve, sort and take checksum of prefs rows for this guardian in the database
@@ -285,8 +286,8 @@ exports.checkInDatabase = {
       prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
 
       const prefsFindOrCreatePromises = []
-      if ((prefsJson.sha1 !== prefsDb.sha1) && (prefsJson.sha1 !== '')) {
-        prefsReturnArray = [{ sha1: prefsDb.sha1 }]
+      if ((prefsJson.sha1 !== '') && (prefsJson.sha1.substr(0, prefsSha1CharLimit) !== prefsDb.sha1.substr(0, prefsSha1CharLimit))) {
+        prefsReturnArray = [{ sha1: prefsDb.sha1.substr(0, prefsSha1CharLimit) }]
 
         if (prefsJson.cnt > 0) {
           return models.GuardianSoftwarePrefs.destroy({
@@ -317,7 +318,7 @@ exports.checkInDatabase = {
                   }
                   prefsDb.blobForSha1 = prefsBlobArr.join('|')
                   prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
-                  prefsReturnArray = [{ sha1: prefsDb.sha1 }]
+                  prefsReturnArray = [{ sha1: prefsDb.sha1.substr(0, prefsSha1CharLimit) }]
                 }).then(() => {
                   return Promise.all(prefsFindOrCreatePromises)
                 })
@@ -325,7 +326,7 @@ exports.checkInDatabase = {
           })
         }
       } else if (prefsJson.cnt > 0) {
-        prefsReturnArray = [{ sha1: prefsDb.sha1 }]
+        prefsReturnArray = [{ sha1: prefsDb.sha1.substr(0, prefsSha1CharLimit) }]
       }
     }).then(() => {
       checkInObj.rtrn.obj.prefs = prefsReturnArray
