@@ -13,7 +13,7 @@ Core Tasks are background processes that listen to message queues for events and
 
 1. Use `docker-compose up -d` to start the local SQS server (as well as the database).
 2. Ensure the env_vars are set for `MESSAGE_QUEUE_*` (`ENDPOINT` should be localhost or your docker machine IP).
-3. Run `npm run dev:tests` to start the Tasks server (with hot-reloading).
+3. Run `npm run dev:tasks` to start the Tasks server (with hot-reloading).
 
 ## Adding a new task
 

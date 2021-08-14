@@ -11,7 +11,7 @@ exports.models = {
       jsonArray.push({
         started_at: dbRow.started_at,
         ended_at: dbRow.ended_at,
-        
+
         mobile_bytes_received: dbRow.mobile_bytes_received,
         mobile_bytes_sent: dbRow.mobile_bytes_sent,
         mobile_total_bytes_received: dbRow.mobile_total_bytes_received,

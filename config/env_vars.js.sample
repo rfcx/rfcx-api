@@ -74,13 +74,13 @@ exports.env = {
 
   NODE_LOG_LEVEL: 'info', // error, warn, info, debug
 
-  AUTH0_DOMAIN: 'rfcx.eu.auth0.com',
-  AUTH0_EXTENSION_URL: '',
+  AUTH0_DOMAIN: 'auth.rfcx.org',
+  AUTH0_EXTENSION_URL: 'rfcx.eu.webtask.io/adf6e2f2b84784b57522e3b19dfc9201/api',
   AUTH0_CLIENT_ID: '',
   AUTH0_CLIENT_SECRET: '',
   AUTH0_AUTHZ_AUDIENCE: 'urn:auth0-authz-api',
   AUTH0_CLOUD_AUDIENCE: 'https://rfcx.org',
-  AUTH0_DEFAULT_DB_CONNECTION: '',
+  AUTH0_DEFAULT_DB_CONNECTION: 'Username-Password-Authentication',
 
   MQTT_BROKER_HOST: 'mqtt.rfcx.org',
 
