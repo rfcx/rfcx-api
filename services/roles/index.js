@@ -1,6 +1,7 @@
 const models = require('../../modelsTimescale')
 const usersService = require('../users/fused')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
+const multer = require('multer')
 
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'
@@ -197,6 +198,9 @@ async function getPermissionsForProjects (projectIds, userId) {
  * @param {string} userId The user for which the projects are accessible
  */
 async function getPermissionsForObjects (itemName, inIds, userId) {
+  if (!inIds) {
+    return {}
+  }
   const select = `SELECT ${itemName}r.${itemName}_id, rp.permission FROM user_${itemName}_roles ${itemName}r`
   const join = `JOIN role_permissions rp on ${itemName}r.role_id = rp.role_id`
   const where = `WHERE ${itemName}r.${itemName}_id IN (:inIds) AND ${itemName}r.user_id = ${userId}`
