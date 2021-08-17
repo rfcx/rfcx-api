@@ -147,12 +147,13 @@ async function defaultQuery (filters, options) {
   }
 
   const annotationsSql = `
-    SELECT a.start, a.end, a.classification_id, a.stream_id,
+    SELECT a.start, a.end, a.classification_id, a.stream_id, STRING_AGG(u.email, ',') reviewers,
     COUNT(1) total,
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) positive,
     SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = true THEN 1 WHEN a.created_by_id = $userId AND a.is_positive = false THEN -1 ELSE 0 END) me
     FROM annotations a
     JOIN classifications c ON a.classification_id = c.id
+    JOIN users u ON a.created_by_id = u.id
     WHERE ${annotationConditions.join(' AND ')}
     GROUP BY a.start, a.end, a.classification_id, a.stream_id
     ORDER BY a.start;
@@ -169,13 +170,15 @@ async function defaultQuery (filters, options) {
     d.review = {
       total: 0,
       positive: 0,
-      me: null
+      me: null,
+      reviewers: []
     }
     if (matchAnnotation) {
       d.review.total = Number(matchAnnotation.total)
       d.review.positive = Number(matchAnnotation.positive)
       const me = Number(matchAnnotation.me)
       d.review.me = me === 0 ? null : me > 0
+      d.reviewers = matchAnnotation.reviewers ? matchAnnotation.reviewers.split(',') : []
     }
   }
 
@@ -196,6 +199,7 @@ async function reviewQuery (filters, options) {
     d.classifier_id "classifier.id", (clf.external_id) "classifier.external_id", (clf.name) "classifier.name", (clf.version) "classifier.version",
     d.classification_id "classification.id", (c.value) "classification.value", (c.title) "classification.title",
     (c.frequency_min) "classification.frequency_min", (c.frequency_max) "classification.frequency_max",
+    STRING_AGG(a.email, ',') "review.reviewers",
     SUM(CASE WHEN a.is_positive IS NOT null THEN 1 ELSE 0 END) "review.total",
     SUM(CASE WHEN a.is_positive THEN 1 ELSE 0 END) "review.positive",
     SUM(CASE WHEN a.created_by_id = $userId AND a.is_positive = true THEN 1 WHEN a.created_by_id = $userId AND a.is_positive = false THEN -1 ELSE 0 END) "review.me"
@@ -204,8 +208,9 @@ async function reviewQuery (filters, options) {
     JOIN classifications c ON d.classification_id = c.id
     JOIN classifiers clf ON d.classifier_id = clf.id
     LEFT JOIN (
-      SELECT a.start, a.end, a.created_by_id , a.classification_id, a.stream_id, a.is_positive
+      SELECT a.start, a.end, a.created_by_id , a.classification_id, a.stream_id, a.is_positive, u.email
       FROM annotations a
+      JOIN users u ON a.created_by_id = u.id
       WHERE a.start >= $start AND a.start < $end
     ) as a ON d.stream_id = a.stream_id AND d.classification_id = a.classification_id AND d.start = a.start AND d.end = a.end
     WHERE ${fullConditions}
@@ -220,6 +225,7 @@ async function reviewQuery (filters, options) {
     d.review.positive = Number(d.review.positive)
     const me = Number(d.review.me)
     d.review.me = me === 0 ? null : me > 0
+    d.review.reviewers = d.review.reviewers ? d.review.reviewers.split(',') : []
   })
   return detections
 }
