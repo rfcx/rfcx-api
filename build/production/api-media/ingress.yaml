@@ -8,9 +8,6 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 
-    nginx.ingress.kubernetes.io/backend-protocol: "http"
-    nginx.ingress.kubernetes.io/enable-cors: "false"
-
     # Rate limiting
     # limit-rpm = limit each IP address to X requests per minute
     # limit-whitelist = do not rate limit clients in the IP range
