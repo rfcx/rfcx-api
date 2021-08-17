@@ -5,6 +5,7 @@
 * **core:** Add `timezone` column to `streams` table([CE-1168](https://jira.rfcx.org/browse/CE-1168))
 * **core:** Segment endpoint supporting prediction service to get a whole segment file efficiently ([CE-1166](https://jira.rfcx.org/browse/CE-1166))
 * **core:** Standardised segment endpoint security
+* **core:** Update /internal/ai-hub to return reviewed detection user information ([CE-1242](https://jira.rfcx.org/browse/CE-1242))
 
 ### Bug Fixes
 * **core:** Fixes Explorer bug showing public detections on console page - Clustered detections should not include detections from public streams by default ([CE-684](https://jira.rfcx.org/browse/CE-684))
