@@ -58,7 +58,7 @@ router.get('/app-info', (req, res) => {
 // TODO: find out if this is used
 router.get('/', function (req, res) {
   res.status(200).json({
-    name: 'Rainforest Connection (RFCx)',
+    name: 'Rainforest Connection (RFCx) 2',
     message: 'Access to this API requires authentication. Please send requests for access by email to contact@rfcx.org',
     info: 'https://rfcx.org/'
   })
