@@ -4,9 +4,12 @@ metadata:
   annotations:
     # Docs: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations
 
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    # Maximum request body size
+    nginx.ingress.kubernetes.io/proxy-body-size: "1m"
+
+    # Timeout for communicating with service (in seconds)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
 
     # Rate limiting
     # limit-rpm = limit each IP address to X requests per minute
