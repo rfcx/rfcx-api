@@ -63,7 +63,7 @@ spec:
                 expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
-                sh 'find build/${PHASE} -name "deployment.yaml" -exec sed -i '' s/:latest/:${BUILD_NUMBER}/g {} +'
+                sh 'find build/${PHASE} -name "deployment.yaml" -exec sed -i s/:latest/:${BUILD_NUMBER}/g {} +'
                 sh "kubectl -n ${PHASE} apply -f build/${PHASE} --recursive"
             }
         }
