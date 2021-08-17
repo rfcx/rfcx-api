@@ -166,6 +166,9 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string} userId The user for which the projects are accessible
  */
 async function getPermissionsForProjects (projectIds, userId) {
+  if (projectIds.length === 0) {
+    return {}
+  }
   const projectsSql = 'SELECT id, organization_id, created_by_id FROM projects WHERE id IN (:projectIds)'
   const projectsResult = await models.sequelize.query(projectsSql, { replacements: { projectIds }, type: models.sequelize.QueryTypes.SELECT })
 
