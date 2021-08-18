@@ -586,23 +586,15 @@ router.route('/create')
 
     params.validate()
       .then(() => {
-        return usersService.findOrCreateUser(
-          {
-            [models.Sequelize.Op.or]: {
-              guid: transformedParams.guid,
-              email: transformedParams.email
-            }
-          },
-          {
-            guid: transformedParams.guid,
-            email: transformedParams.email,
-            subscription_email: transformedParams.subscription_email || null,
-            firstname: transformedParams.firstname,
-            lastname: transformedParams.lastname,
-            rfcx_system: transformedParams.rfcx_system === true,
-            password: transformedParams.password || null
-          }
-        )
+        return usersService.findOrCreateUser({
+          guid: transformedParams.guid,
+          email: transformedParams.email,
+          subscription_email: transformedParams.subscription_email || null,
+          firstname: transformedParams.firstname,
+          lastname: transformedParams.lastname,
+          rfcx_system: transformedParams.rfcx_system === true,
+          password: transformedParams.password || null
+        })
       })
       .then((user) => {
         res.status(200).json(user)

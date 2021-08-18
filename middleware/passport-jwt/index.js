@@ -55,21 +55,13 @@ function checkDBUser (req, jwtPayload, done) {
     jwtPayload.email = `${tokenUserGuid}@rfcx.org`
   }
 
-  userService.findOrCreateUser(
-    {
-      [sequelize.Op.or]: {
-        guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
-        email: jwtPayload.email
-      }
-    },
-    {
-      guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
-      email: jwtPayload.email,
-      firstname: jwtPayload.given_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.given_name : ''),
-      lastname: jwtPayload.family_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.family_name : ''),
-      rfcx_system: false
-    }
-  )
+  userService.findOrCreateUser({
+    guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
+    email: jwtPayload.email,
+    firstname: jwtPayload.given_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.given_name : ''),
+    lastname: jwtPayload.family_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.family_name : ''),
+    rfcx_system: false
+  })
     .spread(async (user, created) => {
       req.rfcx.auth_token_info = combineUserData(jwtPayload, user)
       if (!created) {
