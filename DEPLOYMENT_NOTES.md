@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## v1.0.25
+- Look out for errors related to the changes to the ingress annotations 
+  (due to CE-943).
+
 ## v1.0.24
 - Run `npm run sync-timescale` to apply the following migrations:
   - `20210805150100-add-stream-timezone-column`
