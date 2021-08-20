@@ -297,7 +297,14 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
       command += `,lowpass=f=${attrs.clip.top}`
     }
   }
-  command += `" -y -vn -ac 1 ${outputPath}` // double quote closes filter_complex; -y === "overwrite output files"; -vn === "disable video"; -ac 1 - single audio channel
+  command += '" ' // closes filter_complex
+  command += '-y ' // overwrite output files
+  command += '-vn ' // disable video
+  command += '-ac 1 ' // -ac 1 - single audio channel
+  if (attrs.fileType === 'mp3') {
+    command += `-b:a ${attrs.maxSampleRate > 38400 ? '96' : '32'}k ` // 38400 === 48000 * 0.8
+  }
+  command += outputPath
   return runExec(command)
 }
 

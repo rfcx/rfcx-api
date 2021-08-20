@@ -11,6 +11,12 @@
 * **guardian:** Guardian instruction ids were sent as numbers instead of strings, causing the Guardian to fail when parsing and not purge it from the exchange log.
 
 
+## 1.0.23-hotfix.0 (2021-08-20)
+
+### Features
+* **media:** Set bitrate explicitly when mp3 is requested ([CE-1255](https://jira.rfcx.org/browse/CE-1255))
+
+
 ## 1.0.23 (2021-08-02)
 
 ### Features

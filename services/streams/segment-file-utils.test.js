@@ -202,6 +202,36 @@ describe('convertAudio', () => {
       })
     })
 
+    describe('mp3 bitrate', () => {
+      test('Should return correct command with bit rate set to 32k when mp3 is requested and original sample rate is 24000', () => {
+        const segments = [
+          { start: 1000, end: 2000, sourceFilePath: '/tmp/source.wav', stream_source_file: { sample_rate: 24000 } }
+        ]
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.wav -filter_complex "[0:a]aresample=24000[0resampled];[0resampled]concat=n=1:v=0:a=1,lowpass=f=200" -y -vn -ac 1 -b:a 32k /tmp/destination.mp3'
+        segmentFileUtils.convertAudio(segments, 1100, 1900, { fileType: 'mp3', clip: { top: 200, bottom: 0 } }, '/tmp/destination.mp3')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+      test('Should return correct command with bit rate set to 32k when mp3 is requested and original sample rate is 38400', () => {
+        const segments = [
+          { start: 1000, end: 2000, sourceFilePath: '/tmp/source.wav', stream_source_file: { sample_rate: 38400 } }
+        ]
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.wav -filter_complex "[0:a]aresample=38400[0resampled];[0resampled]concat=n=1:v=0:a=1,lowpass=f=200" -y -vn -ac 1 -b:a 32k /tmp/destination.mp3'
+        segmentFileUtils.convertAudio(segments, 1100, 1900, { fileType: 'mp3', clip: { top: 200, bottom: 0 } }, '/tmp/destination.mp3')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+      test('Should return correct command with bit rate set to 96k when mp3 is requested and original sample rate is 48000', () => {
+        const segments = [
+          { start: 1000, end: 2000, sourceFilePath: '/tmp/source.wav', stream_source_file: { sample_rate: 48000 } }
+        ]
+        const command = '/usr/local/bin/ffmpeg -ss 100ms -t 800ms -i /tmp/source.wav -filter_complex "[0:a]aresample=48000[0resampled];[0resampled]concat=n=1:v=0:a=1,lowpass=f=200" -y -vn -ac 1 -b:a 96k /tmp/destination.mp3'
+        segmentFileUtils.convertAudio(segments, 1100, 1900, { fileType: 'mp3', clip: { top: 200, bottom: 0 } }, '/tmp/destination.mp3')
+        expect(runExec).toHaveBeenCalledTimes(1)
+        expect(runExec).toHaveBeenCalledWith(command)
+      })
+    })
+
     describe('Time ranges', () => {
       test('Should return correct command for range which starts before segment and ends with segment', () => {
         const segments = [
