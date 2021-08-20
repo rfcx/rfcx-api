@@ -1,4 +1,10 @@
-## 1.0.23 (2021-06-??)
+## 1.0.23-hotfix.0 (2021-08-02)
+
+### Features
+* **media:** Set bitrate explicitly when mp3 is requested ([CE-1255](https://jira.rfcx.org/browse/CE-1255))
+
+
+## 1.0.23 (2021-08-02)
 
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749)) ([CE-747](https://jira.rfcx.org/browse/CE-747))
