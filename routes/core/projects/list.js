@@ -1,6 +1,7 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const { query } = require('../../../services/projects')
 const usersService = require('../../../services/users/fused')
+const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 
 /**
@@ -100,7 +101,17 @@ module.exports = (req, res) => {
         sort,
         fields
       }
+
       const data = await query(filters, options)
+      if (fields && fields.includes('permissions')) {
+        if (data.results.length > 0) {
+          const projectIds = data.results.map(s => s.id)
+          const permissions = await rolesService.getPermissionsForProjects(projectIds, user.id)
+          data.results.forEach(s => {
+            s.permissions = permissions[s.id]
+          })
+        }
+      }
       return res
         .header('Total-Items', data.total)
         .json(data.results)

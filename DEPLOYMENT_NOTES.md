@@ -1,5 +1,16 @@
 # API Deployment Notes
 
+## v1.0.25
+- Look out for errors related to the changes to the ingress annotations 
+  (due to CE-943).
+
+## v1.0.24
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210805150100-add-stream-timezone-column`
+- Check that Jenkins is using the correct Jenkinsfile and update if necessary.
+  (Note that if it needs updating then the previous work to "apply" yaml
+  config on deploy might be untested.)
+
 ## v1.0.22
 - Deploy Explorer updates from `bug/CE-831-upload-permissions` branch
 - Add `STREAM_TOKEN_SALT` env var and set it to some long random string
