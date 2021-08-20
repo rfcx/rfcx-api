@@ -4,7 +4,6 @@ const jwksRsa = require('jwks-rsa-passport-edition')
 const userService = require('../../services/users/users-service-legacy')
 const usersFusedService = require('../../services/users/fused')
 const guid = require('../../utils/misc/guid')
-const sequelize = require('sequelize')
 const { getUserRolesFromToken } = require('../../services/auth0/auth0-service')
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()
@@ -55,21 +54,13 @@ function checkDBUser (req, jwtPayload, done) {
     jwtPayload.email = `${tokenUserGuid}@rfcx.org`
   }
 
-  userService.findOrCreateUser(
-    {
-      [sequelize.Op.or]: {
-        guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
-        email: jwtPayload.email
-      }
-    },
-    {
-      guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
-      email: jwtPayload.email,
-      firstname: jwtPayload.given_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.given_name : ''),
-      lastname: jwtPayload.family_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.family_name : ''),
-      rfcx_system: false
-    }
-  )
+  userService.findOrCreateUser({
+    guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
+    email: jwtPayload.email,
+    firstname: jwtPayload.given_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.given_name : ''),
+    lastname: jwtPayload.family_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.family_name : ''),
+    rfcx_system: false
+  })
     .spread(async (user, created) => {
       req.rfcx.auth_token_info = combineUserData(jwtPayload, user)
       if (!created) {
