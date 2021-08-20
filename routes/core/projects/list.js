@@ -104,11 +104,13 @@ module.exports = (req, res) => {
 
       const data = await query(filters, options)
       if (fields && fields.includes('permissions')) {
-        const projectIds = data.results.map(s => s.id)
-        const permissions = await rolesService.getPermissionsForProjects(projectIds, user.id)
-        data.results.forEach(s => {
-          s.permissions = permissions[s.id]
-        })
+        if (data.results.length > 0) {
+          const projectIds = data.results.map(s => s.id)
+          const permissions = await rolesService.getPermissionsForProjects(projectIds, user.id)
+          data.results.forEach(s => {
+            s.permissions = permissions[s.id]
+          })
+        }
       }
       return res
         .header('Total-Items', data.total)

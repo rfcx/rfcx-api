@@ -98,13 +98,16 @@ function createUser (opts) {
     })
 }
 
-function findOrCreateUser (where, defaults) {
-  const data = combineNewUserData(defaults)
+function findOrCreateUser (data) {
+  const defaults = combineNewUserData(data)
+  const where = {
+    [sequelize.Op.or]: {
+      guid: defaults.guid,
+      email: defaults.email
+    }
+  }
   return models.User
-    .findOrCreate({
-      where: where,
-      defaults: data
-    })
+    .findOrCreate({ where, defaults })
     .spread((user, created) => {
       return [user, created]
     })

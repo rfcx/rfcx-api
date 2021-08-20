@@ -166,6 +166,9 @@ async function getPermissions (userOrId, itemOrId, itemName) {
  * @param {string} userId The user for which the projects are accessible
  */
 async function getPermissionsForProjects (projectIds, userId) {
+  if (!projectIds.length) {
+    return {}
+  }
   const projectsSql = 'SELECT id, organization_id, created_by_id FROM projects WHERE id IN (:projectIds)'
   const projectsResult = await models.sequelize.query(projectsSql, { replacements: { projectIds }, type: models.sequelize.QueryTypes.SELECT })
 
@@ -197,6 +200,9 @@ async function getPermissionsForProjects (projectIds, userId) {
  * @param {string} userId The user for which the projects are accessible
  */
 async function getPermissionsForObjects (itemName, inIds, userId) {
+  if (!inIds.length) {
+    return {}
+  }
   const select = `SELECT ${itemName}r.${itemName}_id, rp.permission FROM user_${itemName}_roles ${itemName}r`
   const join = `JOIN role_permissions rp on ${itemName}r.role_id = rp.role_id`
   const where = `WHERE ${itemName}r.${itemName}_id IN (:inIds) AND ${itemName}r.user_id = ${userId}`
