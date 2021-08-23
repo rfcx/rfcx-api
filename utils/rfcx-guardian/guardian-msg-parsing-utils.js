@@ -33,19 +33,50 @@ exports.guardianMsgParsingUtils = {
       rtrn: {
         obj: {
           checkin_id: null,
+          // asset types
           audio: [],
+          meta: [],
           screenshots: [],
           logs: [],
-          messages: [],
-          meta: [],
           photos: [],
           videos: [],
+          messages: [],
+          apks: [],
+          detections: [],
+          classifiers: [],
+          instructions: [],
+          prefs: [],
+          segments: [],
+          snippets: [],
+          // asset exchange status
           purged: [],
           received: [],
-          unconfirmed: [],
-          prefs: [],
-          instructions: [],
-          segment: []
+          unconfirmed: []
+        }
+      },
+
+      // alternative (shorter) field names
+      abbr: {
+        fields: {
+          // asset types
+          audio: 'aud',
+          meta: 'mta',
+          screenshots: 'scn',
+          logs: 'log',
+          photos: 'pho',
+          videos: 'vid',
+          messages: 'sms',
+          apks: 'apk',
+          detections: 'det',
+          classifiers: 'cls',
+          instructions: 'ins',
+          prefs: 'prf',
+          segments: 'seg',
+          snippets: 'sni',
+          // asset exchange status
+          purged: 'prg',
+          received: 'rec',
+          unconfirmed: 'unc'
         }
       }
     }
@@ -60,7 +91,7 @@ exports.guardianMsgParsingUtils = {
   msgSegmentConstants: function () {
     const obj = {
       lengths: {
-        maxFullSeg: { sms: 160, sbd: 120 },
+        maxFullSeg: { sms: 160, sbd: 100, swm: 192 },
         grpGuid: 4,
         segId: 3,
         grdGuid: 12,
@@ -207,6 +238,9 @@ function slicePayload (segPayload, segProtocol, keyName, sliceAtVals, hasFiniteL
     // return sliced string
     return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
   } else if (segProtocol === 'sbd') {
+    // return sliced byte buffer
+    return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
+  } else if (segProtocol === 'swm') {
     // return sliced byte buffer
     return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
   }

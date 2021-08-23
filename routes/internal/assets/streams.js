@@ -1,12 +1,9 @@
 const router = require('express').Router()
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const streamsService = require('../../../services/streams')
 const streamSegmentService = require('../../../services/streams/segments')
 const { parseFileNameAttrs, checkAttrsValidity, getFile } = require('../../../services/streams/segment-file-utils')
 const { gluedDateStrToISO } = require('../../../utils/misc/datetime')
-const { hasPermission, READ, STREAM } = require('../../../services/roles')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 /**
   Spectrogram format (fspec):
@@ -66,25 +63,19 @@ const ForbiddenError = require('../../../utils/converter/forbidden-error')
 
 router.get('/streams/:attrs', function (req, res) {
   parseFileNameAttrs(req).then(async (attrs) => {
-    await checkAttrsValidity(req, attrs)
     const user = req.rfcx.auth_token_info
-    const stream = await streamsService.get(attrs.streamId)
-    const stream_id = stream.id // eslint-disable-line camelcase
-    if (!user.has_system_role && !user.has_stream_token && !await hasPermission(READ, user.owner_id, stream, STREAM)) {
-      throw new ForbiddenError('You do not have permission to access this stream.')
-    }
+    const readableBy = user.is_super || user.has_system_role ? undefined : user.id
+    await checkAttrsValidity(req, attrs)
     const start = gluedDateStrToISO(attrs.time.starts)
     const end = gluedDateStrToISO(attrs.time.ends)
-    const queryData = await streamSegmentService.query({ stream_id, start, end }, { joinRelations: true })
+    const queryData = await streamSegmentService.query({ stream_id: attrs.streamId, start, end }, { strict: false, readableBy })
     const segments = queryData.streamSegments
     if (!segments.length) {
       throw new EmptyResultError('No audio files found for selected time range.')
     }
     const nextTimestamp = await streamSegmentService.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
     return await getFile(req, res, attrs, segments, nextTimestamp)
-  }).catch((e) => {
-    httpErrorHandler(req, res, 'Failed getting stream asset.')(e)
-  })
+  }).catch(httpErrorHandler(req, res, 'Failed getting stream asset'))
 })
 
 module.exports = router

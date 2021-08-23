@@ -9,7 +9,7 @@ const sequelize = require('sequelize')
 // get the latest released version of the guardian software
 // (primarily for guardians who are checking for updates)
 router.route('/:guardian_id/software/:software_role')
-  .get(passport.authenticate('token', { session: false }), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
     const softwareRole = req.params.software_role
 
     models.Guardian

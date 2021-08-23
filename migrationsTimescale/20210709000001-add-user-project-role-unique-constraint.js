@@ -6,7 +6,7 @@ module.exports = {
     )
   },
   down: async (queryInterface, Sequelize) => {
-    return await queryInterface.sequelize.quert(
+    return await queryInterface.sequelize.query(
       'ALTER TABLE user_project_roles DROP CONSTRAINT user_project_roles_unique;'
     )
   }

@@ -1,4 +1,23 @@
-## 1.0.23 (2021-06-??)
+## 1.0.24 (2021-08-XX)
+
+### Features
+* **core:** Add permission field for project listing
+* **core:** Add `timezone` column to `streams` table([CE-1168](https://jira.rfcx.org/browse/CE-1168))
+* **core:** Segment endpoint supporting prediction service to get a whole segment file efficiently ([CE-1166](https://jira.rfcx.org/browse/CE-1166))
+* **core:** Standardised segment endpoint security
+
+### Bug Fixes
+* **core:** Fixes Explorer bug showing public detections on console page - Clustered detections should not include detections from public streams by default ([CE-684](https://jira.rfcx.org/browse/CE-684))
+* **guardian:** Guardian instruction ids were sent as numbers instead of strings, causing the Guardian to fail when parsing and not purge it from the exchange log.
+
+
+## 1.0.23-hotfix.0 (2021-08-20)
+
+### Features
+* **media:** Set bitrate explicitly when mp3 is requested ([CE-1255](https://jira.rfcx.org/browse/CE-1255))
+
+
+## 1.0.23 (2021-08-02)
 
 ### Features
 * **internal:** Support for message queue on segment creation ([CE-749](https://jira.rfcx.org/browse/CE-749)) ([CE-747](https://jira.rfcx.org/browse/CE-747))

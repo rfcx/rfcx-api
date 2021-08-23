@@ -4,7 +4,6 @@ const jwksRsa = require('jwks-rsa-passport-edition')
 const userService = require('../../services/users/users-service-legacy')
 const usersFusedService = require('../../services/users/fused')
 const guid = require('../../utils/misc/guid')
-const sequelize = require('sequelize')
 const { getUserRolesFromToken } = require('../../services/auth0/auth0-service')
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()

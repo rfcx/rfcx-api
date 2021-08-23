@@ -62,6 +62,8 @@ router.route('/segments/sms')
                               order: [['segment_id', 'ASC']]
                             }).then(function (dbSegments) {
                               if (dbSegmentGrp.segment_count === dbSegments.length) {
+                                // this appears to only execute sometimes. Less reliably when the number of segments is high.
+                                // probably a race condition?
                                 msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, segObj.guardian_guid, segObj.guardian_pincode)
                               }
                             })
@@ -84,6 +86,8 @@ router.route('/segments/sms')
                         order: [['segment_id', 'ASC']]
                       }).then(function (dbSegments) {
                         if (dbSegmentGrp.segment_count === dbSegments.length) {
+                          // this appears to only execute sometimes. Less reliably when the number of segments is high.
+                          // probably a race condition?
                           msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, dbSegmentGrp.Guardian.guid, dbSegmentGrp.Guardian.auth_pin_code)
                         }
                       })
@@ -169,6 +173,8 @@ router.route('/segments/sbd')
                               order: [['segment_id', 'ASC']]
                             }).then(function (dbSegments) {
                               if (dbSegmentGrp.segment_count === dbSegments.length) {
+                                // this appears to only execute sometimes. Less reliably when the number of segments is high.
+                                // probably a race condition?
                                 msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, segObj.guardian_guid, segObj.guardian_pincode)
                               }
                             })
@@ -191,6 +197,8 @@ router.route('/segments/sbd')
                         order: [['segment_id', 'ASC']]
                       }).then(function (dbSegments) {
                         if (dbSegmentGrp.segment_count === dbSegments.length) {
+                          // this appears to only execute sometimes. Less reliably when the number of segments is high.
+                          // probably a race condition?
                           msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, dbSegmentGrp.Guardian.guid, dbSegmentGrp.Guardian.auth_pin_code)
                         }
                       })

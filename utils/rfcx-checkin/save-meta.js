@@ -83,15 +83,32 @@ exports.saveMeta = {
     const dbMetaDataTransfer = []
 
     for (const dtInd in metaDataTransfer) {
+      const networkBytesRx = (metaDataTransfer[dtInd][6] != null) ? 0 : parseInt(metaDataTransfer[dtInd][6])
+      const networkBytesTx = (metaDataTransfer[dtInd][7] != null) ? 0 : parseInt(metaDataTransfer[dtInd][7])
+      const networkTotalBytesRx = (metaDataTransfer[dtInd][8] != null) ? 0 : parseInt(metaDataTransfer[dtInd][8])
+      const networkTotalBytesTx = (metaDataTransfer[dtInd][9] != null) ? 0 : parseInt(metaDataTransfer[dtInd][9])
+
       dbMetaDataTransfer.push({
+
         guardian_id: guardianId,
         check_in_id: checkInId,
         started_at: new Date(parseInt(metaDataTransfer[dtInd][0])),
         ended_at: new Date(parseInt(metaDataTransfer[dtInd][1])),
-        bytes_received: parseInt(metaDataTransfer[dtInd][2]),
-        bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
-        total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
-        total_bytes_sent: parseInt(metaDataTransfer[dtInd][5])
+
+        mobile_bytes_received: parseInt(metaDataTransfer[dtInd][2]),
+        mobile_bytes_sent: parseInt(metaDataTransfer[dtInd][3]),
+        mobile_total_bytes_received: parseInt(metaDataTransfer[dtInd][4]),
+        mobile_total_bytes_sent: parseInt(metaDataTransfer[dtInd][5]),
+
+        network_bytes_received: networkBytesRx,
+        network_bytes_sent: networkBytesTx,
+        network_total_bytes_received: networkTotalBytesRx,
+        network_total_bytes_sent: networkTotalBytesTx,
+
+        bytes_received: parseInt(metaDataTransfer[dtInd][2]) + networkBytesRx,
+        bytes_sent: parseInt(metaDataTransfer[dtInd][3]) + networkBytesTx,
+        total_bytes_received: parseInt(metaDataTransfer[dtInd][4]) + networkTotalBytesRx,
+        total_bytes_sent: parseInt(metaDataTransfer[dtInd][5]) + networkTotalBytesTx
       })
     }
 
