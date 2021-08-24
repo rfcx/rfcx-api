@@ -14,7 +14,7 @@ metadata:
     # Rate limiting
     # limit-rpm = limit each IP address to X requests per minute
     # limit-whitelist = do not rate limit clients in the IP range
-    nginx.ingress.kubernetes.io/limit-rpm: "30"
+    nginx.ingress.kubernetes.io/limit-rpm: "300"
     # nginx.ingress.kubernetes.io/limit-whitelist: "comma separated list of CIDRs"
 
   name: api-ingress
