@@ -1,4 +1,4 @@
-## 1.0.24 (2021-08-XX)
+## 1.0.24 (2021-08-24)
 
 ### Features
 * **core:** Add permission field for project listing
