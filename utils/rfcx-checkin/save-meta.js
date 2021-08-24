@@ -83,10 +83,10 @@ exports.saveMeta = {
     const dbMetaDataTransfer = []
 
     for (const dtInd in metaDataTransfer) {
-      const networkBytesRx = (metaDataTransfer[dtInd][6] != null) ? 0 : parseInt(metaDataTransfer[dtInd][6])
-      const networkBytesTx = (metaDataTransfer[dtInd][7] != null) ? 0 : parseInt(metaDataTransfer[dtInd][7])
-      const networkTotalBytesRx = (metaDataTransfer[dtInd][8] != null) ? 0 : parseInt(metaDataTransfer[dtInd][8])
-      const networkTotalBytesTx = (metaDataTransfer[dtInd][9] != null) ? 0 : parseInt(metaDataTransfer[dtInd][9])
+      const networkBytesRx = (metaDataTransfer[dtInd][6] == null) ? 0 : parseInt(metaDataTransfer[dtInd][6])
+      const networkBytesTx = (metaDataTransfer[dtInd][7] == null) ? 0 : parseInt(metaDataTransfer[dtInd][7])
+      const networkTotalBytesRx = (metaDataTransfer[dtInd][8] == null) ? 0 : parseInt(metaDataTransfer[dtInd][8])
+      const networkTotalBytesTx = (metaDataTransfer[dtInd][9] == null) ? 0 : parseInt(metaDataTransfer[dtInd][9])
 
       dbMetaDataTransfer.push({
 
