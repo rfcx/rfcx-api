@@ -68,8 +68,12 @@ router.get('/streams/:attrs', function (req, res) {
     await checkAttrsValidity(req, attrs)
     const start = gluedDateStrToISO(attrs.time.starts)
     const end = gluedDateStrToISO(attrs.time.ends)
-    const queryData = await streamSegmentService.query({ stream_id: attrs.streamId, start, end }, { strict: false, readableBy })
-    const segments = queryData.streamSegments
+    const queryData = await streamSegmentService.query({ streamId: attrs.streamId, start, end }, {
+      fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
+      strict: false,
+      readableBy
+    })
+    const segments = queryData.results
     if (!segments.length) {
       throw new EmptyResultError('No audio files found for selected time range.')
     }
