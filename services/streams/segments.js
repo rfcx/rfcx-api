@@ -142,7 +142,7 @@ function create (segment, options = {}) {
  */
 async function getStreamCoverage (attrs) {
   const queryData = await query(attrs)
-  const segments = queryData.streamSegments
+  const segments = queryData.results
   if (!segments.length) {
     return {
       coverage: 0,

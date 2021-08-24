@@ -67,7 +67,7 @@ router.get('/streams/:id/coverage', hasStreamPermission('R'), function (req, res
 
   return params.validate()
     .then(async () => {
-      convertedParams.stream_id = streamId
+      convertedParams.streamId = streamId
       const data = await segmentService.getStreamCoverage(convertedParams)
       res.json(data)
     })
