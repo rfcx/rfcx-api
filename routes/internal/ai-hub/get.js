@@ -1,97 +1,59 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const Converter = require('../../../utils/converter/converter')
-const reviewsService = require('../../../services/detections/reviews')
+const { get } = require('../../../services/detections/index')
 
 /**
  * @swagger
  *
- * /internal/ai-hub/detections:
+ * /internal/ai-hub/detections/{id}/{start}:
  *   get:
- *     summary: Get list of detections integrate with annotations
+ *     summary: Get detection by identifier and start time
  *     tags:
  *       - internal
  *     parameters:
+ *       - name: id
+ *         description: Stream id
+ *         in: path
+ *         required: true
+ *         type: string
  *       - name: start
- *         description: Limit to a start date on or after (iso8601 or epoch)
- *         in: query
+ *         description: Limit to a start date on (iso8601 or epoch)
+ *         in: path
  *         required: true
  *         type: string
  *         example: 2020-01-01T00:00:00.000Z
- *       - name: end
- *         description: Limit to a start date before (iso8601 or epoch)
+ *       - name: fields
+ *         description: Customize included fields and relations
  *         in: query
- *         required: true
- *         type: string
- *         example: 2020-12-31T00:00:00.000Z
- *       - name: streams
- *         description: List of stream ids to limit results
- *         in: query
- *         type: array|string
- *       - name: projects
- *         description: List of project ids to limit results
- *         in: query
- *         type: array|string
- *       - name: classifiers
- *         description: List of classifiers ids
- *         in: query
- *         type: array|number
- *       - name: classifications
- *         description: List of classification values
- *         in: query
- *         type: array|string
- *       - name: min_confidence
- *         description: Return results above a minimum confidence
- *         in: query
- *         type: float
- *         example: 0.95
- *       - name: limit
- *         description: Maximum number of results to return
- *         in: query
- *         type: int
- *         default: 100
- *       - name: offset
- *         description: Number of results to skip
- *         in: query
- *         type: int
- *         default: 0
+ *         type: array
  *     responses:
  *       200:
- *         description: List of detections integrate with annotations object
+ *         description: Detection
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/DetectionsAIHub'
+ *               $ref: '#/components/schemas/DetectionAIHub'
  */
 module.exports = (req, res) => {
   const userId = req.rfcx.auth_token_info.id
   const userIsSuper = req.rfcx.auth_token_info.is_super
   const hasSystemRole = req.rfcx.auth_token_info.has_system_role
-  const converter = new Converter(req.query, {}, true)
-  converter.convert('start').toMomentUtc()
-  converter.convert('end').toMomentUtc()
-  converter.convert('streams').optional().toArray()
-  converter.convert('projects').optional().toArray()
-  converter.convert('classifiers').optional().toArray()
-  converter.convert('classifications').optional().toArray()
-  converter.convert('min_confidence').optional().toFloat()
-  converter.convert('is_reviewed').optional().toBoolean()
-  converter.convert('is_positive').optional().toBoolean()
-  converter.convert('limit').default(100).toInt().maximum(1000)
-  converter.convert('offset').default(0).toInt()
+  const converterParams = new Converter(req.params, {}, true)
+  converterParams.convert('id').toInt()
+  converterParams.convert('start').toMomentUtc()
 
-  converter.validate()
+  const converterQuery = new Converter(req.query, {}, true)
+  converterQuery.convert('fields').optional().toArray()
+
+  converterParams.validate()
     .then(async (params) => {
-      const { limit, offset, ...filters } = params
+      const query = await converterQuery.validate()
       const options = {
-        limit,
-        offset,
         readableBy: userIsSuper || hasSystemRole ? undefined : userId,
-        userId
+        fields: query.fields
       }
-      const results = await reviewsService.query(filters, options)
-      return res.json(results)
+      const result = await get(params, options)
+      return res.json(result)
     })
-    .catch(httpErrorHandler(req, res, 'Failed getting detections'))
+    .catch(httpErrorHandler(req, res, 'Failed getting detection'))
 }

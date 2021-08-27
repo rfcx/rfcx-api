@@ -56,7 +56,7 @@ module.exports = {
         review_status: {
           type: Sequelize.INTEGER,
           allowNull: false,
-          default: 0
+          defaultValue: 0
         }
       }, { transaction })
       const type = queryInterface.sequelize.QueryTypes.RAW
