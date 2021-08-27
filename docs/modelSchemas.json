@@ -266,6 +266,10 @@
         "type": "boolean",
         "example": true
       },
+      "created_at": {
+        "type": "date",
+        "example": "2020-05-12T12:48:21.500Z"
+      },
       "user": {
         "$ref": "#/components/schemas/UserLite"
       }
@@ -291,25 +295,17 @@
       },
       "classification": {
         "$ref": "#/components/schemas/ClassificationLite"
-      }
-    }
-  },
-  "DetectionWithReviews": {
-    "allOf": [
-      {
-        "$ref": "#/components/schemas/Detection"
       },
-      {
-        "properties": {
-          "reviews": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Review"
-            }
-          }
+      "classifier": {
+        "$ref": "#/components/schemas/ClassifierLite"
+      },
+      "reviews": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Review"
         }
       }
-    ]
+    }
   },
   "StreamLite": {
     "properties": {
@@ -953,58 +949,6 @@
       },
       "subscription_type": {
         "$ref": "#/components/schemas/SubscriptionTypeLite"
-      }
-    }
-  },
-  "DetectionsAIHub": {
-    "properties": {
-      "start": {
-        "type": "date",
-        "example": "2020-07-24T00:00:16.000Z"
-      },
-      "end": {
-        "type": "date",
-        "example": "2020-07-24T00:00:18.000Z"
-      },
-      "confidence": {
-        "type": "float",
-        "example": 0.25542380778346574
-      },
-      "stream": {
-        "type": "object",
-        "example": {
-          "id": "LilSjZJkRK06",
-          "name": "Topher test public",
-          "project_id": "bbbbbbbbbbb6"
-        },
-        "classifier": {
-          "type": "object",
-          "example": {
-            "id": 1,
-            "external_id": "e890e406-4855-4401-9705-5e6158ba9040",
-            "name": "everything",
-            "version": 1
-          }
-        },
-        "classification": {
-          "type": "object",
-          "example": {
-            "id": 268,
-            "value": "porosus",
-            "title": "Crocodylus porosus",
-            "frequency_min": null,
-            "frequency_max": null
-          }
-        },
-        "review": {
-          "type": "object",
-          "example": {
-            "total": 2,
-            "positive": 2,
-            "negative": 0,
-            "my": null
-          }
-        }
       }
     }
   },
