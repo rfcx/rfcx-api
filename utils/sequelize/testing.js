@@ -2,6 +2,10 @@ const fs = require('fs')
 const path = require('path')
 const express = require('express')
 
+const replacedMigrations = [
+  '20210824000001-create-detections-table.js'
+]
+
 // Copied from StackOverflow - only to be used for testing
 async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
   const migrations = fs.readdirSync(path.join(__dirname, '../../migrationsTimescale'))
@@ -29,12 +33,13 @@ async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
   }
 
   for (const filename of migrations) {
-    const migration = require(path.join(__dirname, '../../migrationsTimescale', filename))
+    const migrationsPath = !replacedMigrations.includes(filename) ? '../../migrationsTimescale' : './sqlite-replacements'
+    const migration = require(path.join(__dirname, migrationsPath, filename))
     try {
       await migration.up(sequelize.queryInterface, Sequelize)
       await sequelize.query(`INSERT INTO ${table} VALUES (:name)`, { type: Sequelize.QueryTypes.INSERT, replacements: { name: filename } })
     } catch (err) {
-      console.error('Failed performing migration: ' + filename)
+      console.error('Failed performing migration: ' + filename, err)
       break
     }
   }
