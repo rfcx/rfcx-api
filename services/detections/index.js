@@ -1,9 +1,60 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
+const { EmptyResultError, ForbiddenError } = require('../../utils/errors')
+const { Stream, Classifier, Classification, Detection, User, DetectionReview } = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const streamsService = require('../streams')
-const { getAccessibleObjectsIDs, STREAM } = require('../roles')
+const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
+
+const availableIncludes = [
+  Stream.include(),
+  Classifier.include(),
+  Classification.include(),
+  DetectionReview.include({
+    separate: true, // to get all associated rows
+    include: [
+      User.include()
+    ]
+  })
+]
+
+/**
+ * Get single detection
+ * @param {number} id - detection id
+ * @param {string} start - detection start
+ * @returns {Detection} Detection
+ */
+async function get (filters, options = {}) {
+  const attributes = options.fields && options.fields.length > 0 ? Detection.attributes.full.filter(a => options.fields.includes(a)) : Detection.attributes.full
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
+
+  if (!options.fields.includes('stream_id')) {
+    attributes.push('stream_id') // it is required for 'hasPermission' function call later
+  }
+
+  const detection = await Detection.findOne({
+    where: {
+      id: filters.id,
+      start: moment.utc(filters.start).valueOf()
+    },
+    attributes,
+    include
+  })
+
+  if (!detection) {
+    throw new EmptyResultError('Detection with given parameters not found')
+  }
+
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, detection.stream_id, STREAM))) {
+    throw new ForbiddenError()
+  }
+
+  if (!options.fields.includes('stream_id')) {
+    delete detection.stream_id
+  }
+  return detection
+}
 
 /**
  * Get a list of detections
@@ -120,6 +171,7 @@ async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, clas
 const DEFAULT_IGNORE_THRESHOLD = 0.5
 
 module.exports = {
+  get,
   query,
   timeAggregatedQuery,
   DEFAULT_IGNORE_THRESHOLD
