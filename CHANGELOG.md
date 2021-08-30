@@ -1,8 +1,21 @@
+## 1.0.25 (2021-09-XX)
+
+### Performance Improvements
+* **core:** Add `id` and `review_status` columns to `detections` table ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Create `detection_reviews` table ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Refactor GET /detections endpoint to use new db structure ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Add tests for GET /detections endpoint ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Add GET /detections/:id/:start endpoint to query for single detection ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Add tests for GET /detections/:id/:start endpoint ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Update detections service to use new filters/options code logic ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Update clustered-detections endpoint to use new refactored logic ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+
+
 ## 1.0.24 (2021-08-24)
 
 ### Features
 * **core:** Add permission field for project listing
-* **core:** Add `timezone` column to `streams` table([CE-1168](https://jira.rfcx.org/browse/CE-1168))
+* **core:** Add `timezone` column to `streams` table ([CE-1168](https://jira.rfcx.org/browse/CE-1168))
 * **core:** Segment endpoint supporting prediction service to get a whole segment file efficiently ([CE-1166](https://jira.rfcx.org/browse/CE-1166))
 * **core:** Standardised segment endpoint security
 
