@@ -1,3 +1,7 @@
+## 1.0.25 (2021-09-xx)
+* **guardian:** Add `stream_id` to `Guardians` table
+* **guardian:** Guardian registration won't create stream in Core and Arbimon
+
 ## 1.0.24 (2021-08-24)
 
 ### Features
