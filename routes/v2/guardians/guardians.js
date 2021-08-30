@@ -11,9 +11,7 @@ const usersService = require('../../../services/users/users-service-legacy')
 const usersFusedService = require('../../../services/users/fused')
 const guardiansService = require('../../../services/guardians/guardians-service')
 const sitesService = require('../../../services/sites/sites-service')
-const streamsService = require('../../../services/streams')
 const Converter = require('../../../utils/converter/converter')
-const arbimonService = require('../../../services/arbimon')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
