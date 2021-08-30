@@ -146,8 +146,11 @@ async function query (filters, options) {
 async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, classifications, timeInterval, aggregateFunction, aggregateField, minConfidence, descending, limit, offset, user) {
   const timeBucketAttribute = 'time_bucket'
   const aggregatedValueAttribute = 'aggregated_value'
+  const filters = { start, end, streams, classifications, minConfidence, streams_public: streamsOnlyPublic }
+  const options = { limit, offset, descending, readableBy: user.id }
   const queryOptions = {
-    ...(await defaultQueryOptions(start, end, streams, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user)),
+    ...(await defaultQueryOptions(filters, options)),
+    include: [Classification.include()],
     attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Detection', 'start', timeBucketAttribute, aggregatedValueAttribute),
     order: [models.Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
     group: [timeBucketAttribute].concat(models.Sequelize.col('classification.id')),
