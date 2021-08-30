@@ -58,7 +58,6 @@ const options = {
   },
   apis: [
     './routes/core/**/*.js',
-    './routes/internal/ai-hub/*.js',
     './routes/internal/arbimon/*.js',
     './routes/internal/assets/*.js',
     './routes/internal/cognition/*.js',

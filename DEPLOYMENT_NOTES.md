@@ -1,8 +1,13 @@
 # API Deployment Notes
 
 ## v1.0.25
-- Look out for errors related to the changes to the ingress annotations 
-  (due to CE-943).
+- Delete manually old `detection_reviews` table from production db (it was not deleted before).
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20210824000000-rename-detections-table.js`
+  - `20210824000001-create-detections-table.js`
+  - `20210824000002-create-detection-review-table.js`
+- Check that detections query request works fine in Explorer and Ai Hub
+- Check that clustered detections request works fine in Explorer and Ai Hub
 
 ## v1.0.24
 - Run `npm run sync-timescale` to apply the following migrations:
@@ -10,6 +15,8 @@
 - Check that Jenkins is using the correct Jenkinsfile and update if necessary.
   (Note that if it needs updating then the previous work to "apply" yaml
   config on deploy might be untested.)
+- Look out for errors related to the changes to the ingress annotations
+  (due to CE-943).
 
 ## v1.0.22
 - Deploy Explorer updates from `bug/CE-831-upload-permissions` branch

@@ -1,13 +1,14 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../../../modelsTimescale')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../utils/sequelize/testing')
+const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../utils/sequelize/testing')
 
 const app = expressApp()
 
 app.use('/', routes)
 
 beforeAll(async () => {
+  muteConsole()
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
 })

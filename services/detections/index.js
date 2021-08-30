@@ -1,18 +1,17 @@
 const moment = require('moment')
 const models = require('../../modelsTimescale')
-const { EmptyResultError, ForbiddenError } = require('../../utils/errors')
-const { Stream, Classifier, Classification, Detection, User, DetectionReview } = require('../../modelsTimescale')
+const { EmptyResultError, ForbiddenError, ValidationError } = require('../../utils/errors')
+const { Stream, Classifier, Classification, Detection, User, DetectionReview, Sequelize } = require('../../modelsTimescale')
 const { propertyToFloat } = require('../../utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
-const streamsService = require('../streams')
-const { getAccessibleObjectsIDs, hasPermission, READ, STREAM } = require('../roles')
+const { getAccessibleObjectsIDs, hasPermission, READ, STREAM, PROJECT } = require('../roles')
 
 const availableIncludes = [
   Stream.include(),
   Classifier.include(),
   Classification.include(),
   DetectionReview.include({
-    separate: true, // to get all associated rows
+    separate: true, // to get all associated rows for hasMany relationship
     include: [
       User.include()
     ]
@@ -57,83 +56,73 @@ async function get (filters, options = {}) {
   return detection
 }
 
-/**
- * Get a list of detections
- * @param {string} start
- * @param {string} end
- * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
- * @param {boolean} streamsOnlyPublic
- * @param {string | string[]} classifications Classification or list of classifications
- * @param {number} minConfidence Minimum confidence to query detections
- * @param {boolean} descending
- * @param {number} limit Maximum number to get detections
- * @param {number} offset Number of resuls to skip
- * @param {object} user
- * @returns {Detection[]} Detections
- */
-async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user) {
-  const condition = {
+async function defaultQueryOptions (filters = {}, options = {}) {
+  if (!filters.start || !filters.end) {
+    throw new ValidationError('"start" and "end" are required to query for detections')
+  }
+  const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive } = filters
+  const { readableBy, offset, limit, descending } = options
+
+  const attributes = options.fields && options.fields.length > 0 ? Detection.attributes.full.filter(a => options.fields.includes(a)) : Detection.attributes.full
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+
+  const order = [['start', descending ? 'DESC' : 'ASC']]
+  const where = {
     start: {
-      [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
-      [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
+      [Sequelize.Op.gte]: moment.utc(start).valueOf(),
+      [Sequelize.Op.lt]: moment.utc(end).valueOf()
     }
   }
-  if (streamIdOrIds !== undefined) {
-    condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await getAccessibleObjectsIDs(user.id, STREAM, streamIdOrIds)
-  } else {
-    const streamIds = streamsOnlyPublic
-      ? await streamsService.getPublicStreamIds()
-      : await getAccessibleObjectsIDs(user.id, STREAM)
-    condition.stream_id = {
-      [models.Sequelize.Op.in]: streamIds
+  if (projects) {
+    where['$stream.project_id$'] = readableBy === undefined ? projects : await getAccessibleObjectsIDs(readableBy, PROJECT, projects, 'R', true)
+    if (!include.find(i => i.as === 'stream')) {
+      include.push(availableIncludes.find(a => a.as === 'stream'))
     }
   }
-
-  const classificationCondition = classifications === undefined
-    ? {}
-    : { value: { [models.Sequelize.Op.or]: classifications } }
-
+  if (streams) {
+    where.stream_id = readableBy === undefined ? streams : await getAccessibleObjectsIDs(readableBy, STREAM, streams, 'R', true)
+  }
+  if (classifications) {
+    where['$classification.value$'] = { [Sequelize.Op.or]: classifications }
+    if (!include.find(i => i.as === 'classification')) {
+      include.push(availableIncludes.find(a => a.as === 'classification'))
+    }
+  }
+  if (classifiers) {
+    where.classifier_id = { [Sequelize.Op.or]: classifiers }
+  }
+  if (isReviewed !== undefined) {
+    where.review_status = { [isReviewed ? Sequelize.Op.ne : Sequelize.Op.eq]: 0 }
+  }
+  if (isPositive !== undefined) {
+    where.review_status = isPositive ? 1 : -1
+  }
   // TODO: if minConfidence is undefined, get it from event strategy
-  condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
-  return {
-    where: condition,
-    include: [
-      {
-        as: 'classification',
-        model: models.Classification,
-        where: classificationCondition,
-        attributes: models.Classification.attributes.lite,
-        required: true
-      },
-      {
-        as: 'classifier',
-        model: models.Classifier,
-        attributes: [],
-        required: true
-      }
-    ],
-    attributes: models.Detection.attributes.lite,
-    offset: offset,
-    limit: limit,
-    order: [['start', descending ? 'DESC' : 'ASC']]
-  }
+  where.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
+  return { where, include, attributes, offset, limit, order }
 }
 
 /**
- * Get a list of detections
- * @param {string} start
- * @param {string} end
- * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
- * @param {string | string[]} classifications Classification or list of classifications
- * @param {number} minConfidence Minimum confidence to query detections
- * @param {number} limit Maximum number to get detections
- * @param {number} offset Number of resuls to skip
- * @param {object} user
+ * Get a list of detections matching the filters
+ * @param {*} filters Additional query options
+ * @param {string[]} filters.streams Filter by one or more stream identifiers
+ * @param {string[]} filters.projects Filter by one or more project identifiers
+ * @param {string[]} filters.classifiers Filter by one or more classifier identifiers
+ * @param {string[]} filters.classifications Filter by one or more classification values
+ * @param {string[]} filters.minConfidence Filter by minimum confidence
+ * @param {string[]} filters.isReviewed Filter by reviewed/unreviewed detections
+ * @param {string[]} filters.isPositive Filter by approved/rejected detections
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if the detection is accessible to the given user id
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to lite attributes)
+ * @param {boolean} options.descending Order the results in descending date order
+ * @param {number} options.limit
+ * @param {number} options.offset
  * @returns {Detection[]} Detections
  */
-async function query (start, end, streamIdOrIds, classifications, minConfidence, limit, offset, user) {
-  const opts = await defaultQueryOptions(start, end, streamIdOrIds, false, classifications, minConfidence, false, limit, offset, user)
-  const detections = await models.Detection.findAll(opts)
+async function query (filters, options) {
+  const opts = await defaultQueryOptions(filters, options)
+  const detections = await Detection.findAll(opts)
   return detections.map(d => d.toJSON())
 }
 

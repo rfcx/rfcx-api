@@ -38,7 +38,6 @@ function create (eventData) {
 
 /**
  * Get a list of events matching the filters
- * @param {string} id
  * @param {*} filters Additional query options
  * @param {string[]} filters.streamIds Filter by one or more stream identifiers
  * @param {string[]} filters.classificationValues Filter by one or more classification values
