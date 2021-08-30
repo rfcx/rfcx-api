@@ -100,24 +100,10 @@ router.route('/register')
 
       // Create guardian
       const dbGuardian = await guardiansService.createGuardian(guardianAttrs)
-      // Create stream
-      const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
-
-      if (arbimonService.isEnabled) {
-        const idToken = req.headers.authorization
-        const arbimonSite = await arbimonService.createSite({
-          ...dbStream,
-          latitude: 0,
-          longitude: 0,
-          altitude: 0
-        }, idToken)
-        await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
-      }
 
       res.status(200).json({
         name: dbGuardian.shortname,
         guid: dbGuardian.guid,
-        stream: dbStream.guid,
         token: token,
         pin_code: pinCode,
         api_mqtt_host: process.env.GUARDIAN_BROKER_HOSTNAME,
