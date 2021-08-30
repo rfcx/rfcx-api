@@ -166,6 +166,10 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue: false,
       allowNull: true,
       validate: { }
+    },
+    stream_id: {
+      type: DataTypes.STRING(12),
+      allowNull: true
     }
   }, {
     indexes: [
