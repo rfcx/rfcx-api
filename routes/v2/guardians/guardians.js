@@ -77,6 +77,8 @@ router.route('/:guid')
     return params.validate()
       .then(() => guardiansService.getGuardianByGuid(req.params.guid))
       .then((guardian) => guardiansService.updateGuardian(guardian, transformedParams))
+      .then((guardian) => guardiansService.formatGuardian(guardian))
+      .then((json) => res.status(200).send(json))
       .catch(e => { httpError(req, res, 500, e, `Error while updating guardian with guid "${req.params.guid}".`); console.log(e) })
   })
 

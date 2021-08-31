@@ -31,6 +31,7 @@ function formatGuardian (guardian) {
     shortname: guardian.shortname,
     latitude: guardian.latitude,
     longitude: guardian.longitude,
+    altitude: guardian.altitude,
     notes: guardian.notes,
     phone_number: guardian.phone_number,
     is_visible: guardian.is_visible,
@@ -48,7 +49,8 @@ function formatGuardian (guardian) {
           name: guardian.Site.name,
           timezone: guardian.Site.timezone
         }
-      : null
+      : null,
+    stream_id: guardian.stream_id
   }
   return guardianFormatted
 }
