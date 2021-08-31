@@ -45,6 +45,16 @@ const Converter = require('../../../utils/converter/converter')
  *         in: query
  *         type: float
  *         example: 0.95
+ *       - name: is_reviewed
+ *         description: Return reviewed/unreviewed detections
+ *         in: query
+ *         type: boolean
+ *         example: true
+ *       - name: is_positive
+ *         description: Return confirmed/rejected detections
+ *         in: query
+ *         type: boolean
+ *         example: true
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query

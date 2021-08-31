@@ -9,6 +9,8 @@
 * **core:** Add tests for GET /detections/:id/:start endpoint ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
 * **core:** Update detections service to use new filters/options code logic ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
 * **core:** Update clustered-detections endpoint to use new refactored logic ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Add detection review endpoint ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
+* **core:** Add tests for detection review endpoint ([CE-1138](https://jira.rfcx.org/browse/CE-1138))
 
 
 ## 1.0.24 (2021-08-24)
