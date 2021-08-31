@@ -62,6 +62,24 @@ router.route('/:guid')
       .catch(e => { httpError(req, res, 500, e, `Error while getting guardian with guid "${req.params.guid}".`); console.log(e) })
   })
 
+router.route('/:guid')
+  .patch(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'systemUser']), function (req, res) {
+    const transformedParams = {}
+    const params = new Converter(req.body, transformedParams)
+
+    params.convert('shortname').optional().toString()
+    params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
+    params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+    params.convert('altitude').optional().toFloat()
+    params.convert('stream_id').optional().toString()
+    params.convert('is_visible').optional().toBoolean()
+
+    return params.validate()
+      .then(() => guardiansService.getGuardianByGuid(req.params.guid))
+      .then((guardian) => guardiansService.updateGuardian(guardian, transformedParams))
+      .catch(e => { httpError(req, res, 500, e, `Error while updating guardian with guid "${req.params.guid}".`); console.log(e) })
+  })
+
 router.route('/register')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'guardianCreator']), async function (req, res) {
     const transformedParams = {}
