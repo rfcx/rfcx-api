@@ -101,7 +101,6 @@ router.route('/:guid')
         }
         // Commit the transaction after doing update both guardian and stream
         await t.commit()
-        
         return guardian
       })
       .then((guardian) => guardiansService.formatGuardian(guardian))
