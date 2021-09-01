@@ -89,9 +89,6 @@ router.route('/:guid')
           is_public: transformedParams.is_visible
         }, { transaction: t })
 
-        // Commit the transaction after doing update both guardian and stream
-        await t.commit()
-
         if (arbimonService.isEnabled) {
           await arbimonService.updateSite({
             id: guardian.stream_id,
@@ -102,6 +99,9 @@ router.route('/:guid')
             is_private: !transformedParams.is_visible
           }, req.headers.authorization)
         }
+        // Commit the transaction after doing update both guardian and stream
+        await t.commit()
+        
         return guardian
       })
       .then((guardian) => guardiansService.formatGuardian(guardian))
