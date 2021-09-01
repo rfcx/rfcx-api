@@ -83,16 +83,17 @@ function formatGuardiansPublic (guardians) {
   })
 }
 
-function updateGuardian (guardian, attrs) {
+function updateGuardian (guardian, attrs, options = {}) {
   const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'altitude', 'stream_id']
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
       guardian[allowedAttr] = attrs[allowedAttr]
     }
   })
-  return guardian.save()
+  const transaction = options.transaction || null
+  return guardian.save({ transaction })
     .then(() => {
-      return guardian.reload({ include: [{ all: true }] })
+      return guardian.reload({ include: [{ all: true }], transaction })
     })
 }
 
