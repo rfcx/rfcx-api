@@ -14,7 +14,7 @@ const sitesService = require('../../../services/sites/sites-service')
 const streamsService = require('../../../services/streams')
 const arbimonService = require('../../../services/arbimon')
 const Converter = require('../../../utils/converter/converter')
-const models = require('../../models')
+const models = require('../../../models')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -83,7 +83,6 @@ router.route('/:guid')
       .then((guardian) => guardiansService.updateGuardian(guardian, transformedParams), { transaction: t })
       .then(async (guardian) => {
         await streamsService.update(guardian.stream_id, {
-          name: guardian.shortname,
           latitude: transformedParams.latitude,
           longitude: transformedParams.longitude,
           altitude: transformedParams.altitude,

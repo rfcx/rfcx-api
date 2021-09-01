@@ -194,6 +194,7 @@ async function query (filters, options = {}) {
  * @param {integer} stream.project_external_id
  * @param {*} options
  * @param {number} options.updatableBy Update only if stream is updatable by the given user id
+ * @param {Transaction} options.transaction Transaction for sql chain
  * @throws EmptyResultError when stream not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
  */
@@ -206,8 +207,7 @@ async function update (id, stream, options = {}) {
   return Stream.update(fullStream, {
     where: { id },
     individualHooks: true, // force use afterUpdate hook
-    transaction
-  })
+  }, { transaction })
 }
 
 /**
