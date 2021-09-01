@@ -94,7 +94,7 @@ router.route('/:guid')
 
         if (arbimonService.isEnabled) {
           await arbimonService.updateSite({
-            id: stream.id,
+            id: guardian.stream_id,
             name: transformedParams.shortname,
             latitude: transformedParams.latitude,
             longitude: transformedParams.longitude,
@@ -103,12 +103,12 @@ router.route('/:guid')
           }, req.headers.authorization)
         }
         return guardian
-      }) 
+      })
       .then((guardian) => guardiansService.formatGuardian(guardian))
       .then((json) => res.status(200).send(json))
       .catch(async (e) => {
         await t.rollback()
-        httpError(req, res, 500, e, `Error while updating guardian with guid "${req.params.guid}".`); console.log(e) 
+        httpError(req, res, 500, e, `Error while updating guardian with guid "${req.params.guid}".`); console.log(e)
       })
   })
 
