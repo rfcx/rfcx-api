@@ -13,7 +13,7 @@ router.route('/software/:software_role')
     const softwareRole = req.params.software_role
 
     const dbQuery = {
-      is_available: true,
+      is_available: true
     }
     if (softwareRole === 'all') {
       dbQuery.is_updatable = true
@@ -85,7 +85,7 @@ router.route('/:guardian_id/software/:software_role')
 
 module.exports = router
 
-function viewSoftwareJson(dbSoftware) {
+function viewSoftwareJson (dbSoftware) {
   if (!Array.isArray(dbSoftware)) { dbSoftware = [dbSoftware] }
 
   const jsonArray = []
