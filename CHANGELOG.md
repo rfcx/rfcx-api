@@ -1,3 +1,6 @@
+## 1.0.25 (2021-09-xx)
+* **guardian:** Create alternate endpoint to get all latest software information without guid given
+
 ## 1.0.24 (2021-08-24)
 
 ### Features
