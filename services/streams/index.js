@@ -206,8 +206,9 @@ async function update (id, stream, options = {}) {
   const transaction = options.transaction || null
   return Stream.update(fullStream, {
     where: { id },
-    individualHooks: true // force use afterUpdate hook
-  }, { transaction })
+    individualHooks: true, // force use afterUpdate hook
+    transaction
+  })
 }
 
 /**

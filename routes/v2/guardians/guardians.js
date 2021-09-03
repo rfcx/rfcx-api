@@ -15,6 +15,7 @@ const streamsService = require('../../../services/streams')
 const arbimonService = require('../../../services/arbimon')
 const Converter = require('../../../utils/converter/converter')
 const models = require('../../../models')
+const modelsTimescale = require('../../../modelsTimescale')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -66,7 +67,7 @@ router.route('/:guid')
   })
 
 router.route('/:guid')
-  .patch(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'systemUser']), async function (req, res) {
+  .patch(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'systemUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -77,21 +78,25 @@ router.route('/:guid')
     params.convert('stream_id').optional().toString()
     params.convert('is_visible').optional().toBoolean()
 
-    const t = await models.sequelize.transaction()
+    let mysqlTransaction, timescaleTransaction
     return params.validate()
-      .then(() => guardiansService.getGuardianByGuid(req.params.guid))
-      .then((guardian) => guardiansService.updateGuardian(guardian, transformedParams), { transaction: t })
-      .then(async (guardian) => {
-        await streamsService.update(guardian.stream_id, {
+      .then(async () => {
+        mysqlTransaction = await models.sequelize.transaction()
+        timescaleTransaction = await modelsTimescale.sequelize.transaction()
+
+        const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
+        const updatedGuardian = await guardiansService.updateGuardian(guardian, transformedParams, { transaction: mysqlTransaction })
+
+        await streamsService.update(updatedGuardian.stream_id, {
           latitude: transformedParams.latitude,
           longitude: transformedParams.longitude,
           altitude: transformedParams.altitude,
           is_public: transformedParams.is_visible
-        }, { transaction: t })
+        }, { transaction: timescaleTransaction })
 
         if (arbimonService.isEnabled) {
           await arbimonService.updateSite({
-            id: guardian.stream_id,
+            id: updatedGuardian.stream_id,
             name: transformedParams.shortname,
             latitude: transformedParams.latitude,
             longitude: transformedParams.longitude,
@@ -99,14 +104,21 @@ router.route('/:guid')
             is_private: !transformedParams.is_visible
           }, req.headers.authorization)
         }
+
         // Commit the transaction after doing update both guardian and stream
-        await t.commit()
-        return guardian
+        await mysqlTransaction.commit()
+        await timescaleTransaction.commit()
+        return res.status(200).send(await guardiansService.formatGuardian(updatedGuardian))
       })
-      .then((guardian) => guardiansService.formatGuardian(guardian))
-      .then((json) => res.status(200).send(json))
       .catch(async (e) => {
-        await t.rollback()
+        if (mysqlTransaction) {
+          console.log('roll back mysql')
+          await mysqlTransaction.rollback()
+        }
+        if (timescaleTransaction) {
+          console.log('roll back timescale')
+          await timescaleTransaction.rollback()
+        }
         httpError(req, res, 500, e, `Error while updating guardian with guid "${req.params.guid}".`); console.log(e)
       })
   })
