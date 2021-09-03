@@ -112,11 +112,9 @@ router.route('/:guid')
       })
       .catch(async (e) => {
         if (mysqlTransaction) {
-          console.log('roll back mysql')
           await mysqlTransaction.rollback()
         }
         if (timescaleTransaction) {
-          console.log('roll back timescale')
           await timescaleTransaction.rollback()
         }
         httpError(req, res, 500, e, `Error while updating guardian with guid "${req.params.guid}".`); console.log(e)
