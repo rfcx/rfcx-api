@@ -1,3 +1,5 @@
+## 1.0.24 (2021-09-xx)
+* **guardian:** Add new endpoint for Swarm webhook to send segment message
 ## 1.0.24 (2021-08-24)
 
 ### Features
