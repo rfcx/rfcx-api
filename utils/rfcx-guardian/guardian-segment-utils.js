@@ -1,7 +1,6 @@
 const models = require('../../models')
 const msgSegUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 
-
 exports.segmentUtils = {
   saveSegmentToDb: async function (segObj) {
     const guardianMetaSegRecv = await models.GuardianMetaSegmentsReceived
@@ -47,13 +46,13 @@ exports.segmentUtils = {
 
         if (guardianMetaSegGrp) {
           const dbSegments = await models.GuardianMetaSegmentsReceived.findAll({
-            where: { group_guid: dbSegmentGrp.guid },
+            where: { group_guid: guardianMetaSegGrp.guid },
             order: [['segment_id', 'ASC']]
           })
-          if (dbSegmentGrp.segment_count === dbSegments.length) {
+          if (guardianMetaSegGrp.segment_count === dbSegments.length) {
             // this appears to only execute sometimes. Less reliably when the number of segments is high.
             // probably a race condition?
-            msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, segObj.guardian_guid, segObj.guardian_pincode)
+            msgSegUtils.assembleReceivedSegments(dbSegments, guardianMetaSegGrp, segObj.guardian_guid, segObj.guardian_pincode)
           }
         }
       } else {
