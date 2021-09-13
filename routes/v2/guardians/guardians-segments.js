@@ -9,7 +9,7 @@ const smsTwilio = require('../../../utils/rfcx-guardian/guardian-sms-twilio.js')
 const sbdRockBlock = require('../../../utils/rfcx-guardian/guardian-sbd-rockblock.js').sbdRockBlock
 const swarmMsg = require('../../../utils/rfcx-guardian/guardian-swm.js').swarm
 
-const saveSegmentToDb = require('../../../utils/rfcx-guardian/guardian-segment-utils.js')
+const segmentUtils = require('../../../utils/rfcx-guardian/guardian-segment-utils.js').segmentUtils
 
 router.route('/segments/sms')
   .post(function (req, res) {
@@ -73,12 +73,12 @@ router.route('/segments/sbd')
 
 router.route('/segments/swm')
   .post(function (req, res) {
-    if (smsTwilio.validateIncomingMessage(req)) {
+    if (swarmMsg.validateIncomingMessage(req)) {
       console.log('Incoming Swarm message validated...')
 
       const segObj = msgSegUtils.parseMsgSegment(req.body.data, 'swm', 'test')
 
-      saveSegmentToDb(segObj)
+      segmentUtils.saveSegmentToDb(segObj)
         .then(() => {
           res.writeHead(200, { 'Content-Type': 'text/xml' })
           res.end()
