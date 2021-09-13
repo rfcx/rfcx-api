@@ -13,8 +13,5 @@ module.exports = {
   ],
   tags: [
     require('./tags/tags')
-  ],
-  swarm: [
-    require('./swarm')
   ]
 }

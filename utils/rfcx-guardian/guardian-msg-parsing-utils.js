@@ -241,7 +241,7 @@ function slicePayload (segPayload, segProtocol, keyName, sliceAtVals, hasFiniteL
     // return sliced byte buffer
     return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
   } else if (segProtocol === 'swm') {
-    // return sliced byte buffer
+    // return sliced string
     return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
   }
   return null

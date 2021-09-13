@@ -1,4 +1,3 @@
-const models = require('../../../models')
 const express = require('express')
 const router = express.Router()
 const httpError = require('../../../utils/http-errors.js')
@@ -18,11 +17,11 @@ router.route('/segments/sms')
 
       const segObj = msgSegUtils.parseMsgSegment(req.body.Body, 'sms', req.body.From)
 
-      saveSegmentToDb(segObj)
-      .then(() => {
-        res.writeHead(200, { 'Content-Type': 'text/xml' })
-        res.end()
-      })
+      segmentUtils.saveSegmentToDb(segObj)
+        .then(() => {
+          res.writeHead(200, { 'Content-Type': 'text/xml' })
+          res.end()
+        })
         .catch(sequelize.ValidationError, e => {
           let message = 'Validation error'
           try {
@@ -48,11 +47,11 @@ router.route('/segments/sbd')
 
       const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'hex'), 'sbd', req.body.imei)
 
-      saveSegmentToDb(segObj)
-      .then(() => {
-        res.writeHead(200, { 'Content-Type': 'text/xml' })
-        res.end()
-      })
+      segmentUtils.saveSegmentToDb(segObj)
+        .then(() => {
+          res.writeHead(200, { 'Content-Type': 'text/xml' })
+          res.end()
+        })
         .catch(sequelize.ValidationError, e => {
           let message = 'Validation error'
           try {
