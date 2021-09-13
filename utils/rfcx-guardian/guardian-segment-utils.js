@@ -1,4 +1,4 @@
-export async function saveSegmentToDb(segObj) {
+async function saveSegmentToDb(segObj) {
   const guardianMetaSegRecv = await models.GuardianMetaSegmentsReceived
     .findOrCreate({
       where: {
@@ -73,3 +73,5 @@ export async function saveSegmentToDb(segObj) {
     }
   }
 }
+
+exports.module = saveSegmentToDb
