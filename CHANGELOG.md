@@ -5,6 +5,7 @@
 * **guardian:** Guardian registration won't create stream in Core and Arbimon
 * **guardian:** Audios from Guardian won't be ingested if there is no `stream_id`
 * **guardian:** Guardian v2 endpoint to update information
+* **guardian:** Create alternate endpoint to get all latest software information without guid given
 
 
 ## 1.0.24-hotfix.1 (2021-??-??)
