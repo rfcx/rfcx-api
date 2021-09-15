@@ -93,7 +93,7 @@ async function defaultQuery (filters, options) {
   /**
    * If given both streams and project but don't have any items back, then return []
    */
-  if ((streams && bind.streams.length === 0) && (projects && bind.projects.length === 0)) {
+  if ((streams && (!bind.streams || bind.streams.length === 0)) && (projects && (!bind.projects || bind.projects.length === 0))) {
     return []
   }
 
