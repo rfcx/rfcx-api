@@ -2,6 +2,7 @@
 
 ### Features
 * **guardian:** Add `stream_id` to `Guardians` table
+* **guardian:** Guardian registration won't create stream in Core and Arbimon
 
 
 ## 1.0.24-hotfix.1 (2021-??-??)

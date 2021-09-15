@@ -11,9 +11,7 @@ const usersService = require('../../../services/users/users-service-legacy')
 const usersFusedService = require('../../../services/users/fused')
 const guardiansService = require('../../../services/guardians/guardians-service')
 const sitesService = require('../../../services/sites/sites-service')
-const streamsService = require('../../../services/streams')
 const Converter = require('../../../utils/converter/converter')
-const arbimonService = require('../../../services/arbimon')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -100,24 +98,10 @@ router.route('/register')
 
       // Create guardian
       const dbGuardian = await guardiansService.createGuardian(guardianAttrs)
-      // Create stream
-      const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
-
-      if (arbimonService.isEnabled) {
-        const idToken = req.headers.authorization
-        const arbimonSite = await arbimonService.createSite({
-          ...dbStream,
-          latitude: 0,
-          longitude: 0,
-          altitude: 0
-        }, idToken)
-        await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
-      }
 
       res.status(200).json({
         name: dbGuardian.shortname,
         guid: dbGuardian.guid,
-        stream: dbStream.guid,
         token: token,
         pin_code: pinCode,
         api_mqtt_host: process.env.GUARDIAN_BROKER_HOSTNAME,
