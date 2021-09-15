@@ -48,7 +48,8 @@ function formatGuardian (guardian) {
           name: guardian.Site.name,
           timezone: guardian.Site.timezone
         }
-      : null
+      : null,
+    stream_id: guardian.stream_id
   }
   return guardianFormatted
 }
@@ -81,16 +82,17 @@ function formatGuardiansPublic (guardians) {
   })
 }
 
-function updateGuardian (guardian, attrs) {
-  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible']
+function updateGuardian (guardian, attrs, options = {}) {
+  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'stream_id']
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
       guardian[allowedAttr] = attrs[allowedAttr]
     }
   })
-  return guardian.save()
+  const transaction = options.transaction || null
+  return guardian.save({ transaction })
     .then(() => {
-      return guardian.reload({ include: [{ all: true }] })
+      return guardian.reload({ include: [{ all: true }], transaction })
     })
 }
 
