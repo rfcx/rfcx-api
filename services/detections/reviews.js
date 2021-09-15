@@ -35,24 +35,20 @@ async function getConditionsAndBind (options, start, end, streams, projects, cla
   const projectsAndStreamsConditions = []
 
   /**
-   * If there are projects given, check if the user has permission or has a special role e.g. super, system.
+   * Check if the user has permission or has a special role e.g. super, system.
    * If it is a normal user, check the projects by permission.
    * If it is a special role user, allow every projects.
    */
-  if (projects) {
-    projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
-    bind.projects = readableBy === undefined ? projects : await getAccessibleObjectsIDs(readableBy, PROJECT, projects, 'R', true)
-  }
-
   if (streams) {
     projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
     bind.streams = readableBy === undefined ? streams : await getAccessibleObjectsIDs(readableBy, STREAM, streams, 'R', true)
-  }
-
-  /**
-   * If no streams and no projects given, then get public streams and user allowed permission streams
-   */
-  if (!streams && !projects) {
+  } else if (projects) {
+    projectsAndStreamsConditions.push('s.project_id = ANY($projects)')
+    bind.projects = readableBy === undefined ? projects : await getAccessibleObjectsIDs(readableBy, PROJECT, projects, 'R', true)
+  } else {
+    /**
+     * If no streams and no projects given, then get public streams and user allowed permission streams
+     */
     const filteredStreams = await streamServices.query({}, { permissableBy: readableBy })
     conditions.push('s.is_public = true')
     projectsAndStreamsConditions.push('d.stream_id = ANY($streams)')
@@ -97,7 +93,7 @@ async function defaultQuery (filters, options) {
   /**
    * If given both streams and project but don't have any items back, then return []
    */
-  if ((streams && bind.streams.length === 0) && (projects && bind.projects.length === 0)) {
+  if ((streams && (!bind.streams || bind.streams.length === 0)) && (projects && (!bind.projects || bind.projects.length === 0))) {
     return []
   }
 

@@ -2,14 +2,10 @@
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    return queryInterface.addColumn(
-      'Guardians',
-      'stream_id',
-      {
-        type: Sequelize.STRING(12),
-        allowNull: true
-      }
-    )
+    return queryInterface.sequelize.transaction(async t => {
+      await queryInterface.addColumn('Guardians', 'stream_id', { type: Sequelize.STRING(12), allowNull: true }, { transaction: t })
+      await queryInterface.sequelize.query('UPDATE Guardians SET stream_id = guid', { transaction: t })
+    })
   },
 
   down: function (queryInterface, Sequelize) {

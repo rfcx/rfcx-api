@@ -1,7 +1,16 @@
 ## 1.0.25 (2021-09-xx)
+
+### Features
 * **guardian:** Add `stream_id` to `Guardians` table
 * **guardian:** Guardian registration won't create stream in Core and Arbimon
 * **guardian:** Audios from Guardian won't be ingested if there is no `stream_id`
+
+
+## 1.0.24-hotfix.1 (2021-??-??)
+
+### Bug Fixes
+* **internal:** Fix /internal/ai-hub/detections return all streams from projects if projects were given
+
 
 ## 1.0.24 (2021-08-24)
 
