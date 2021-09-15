@@ -3,6 +3,7 @@
 ### Features
 * **guardian:** Add `stream_id` to `Guardians` table
 * **guardian:** Guardian registration won't create stream in Core and Arbimon
+* **guardian:** Audios from Guardian won't be ingested if there is no `stream_id`
 
 
 ## 1.0.24-hotfix.1 (2021-??-??)
