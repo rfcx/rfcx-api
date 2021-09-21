@@ -84,7 +84,8 @@ async function query (filters, options = {}) {
   if (options.strict === false) {
     where[Sequelize.Op.or] = {
       start: {
-        [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+        [Sequelize.Op.gte]: filters.start.valueOf(),
+        [Sequelize.Op.lt]: filters.end.valueOf()
       },
       end: {
         [Sequelize.Op.gt]: filters.start.valueOf(),

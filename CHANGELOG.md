@@ -1,7 +1,7 @@
 ## 1.0.24-hotfix.2 (2021-??-??)
 
 ### Bug Fixes
-* **media:** use 'gt' and 'lte' instead of 'between' for 'end' attribute for segments search ([CE-1372](https://jira.rfcx.org/browse/CE-1372))
+* **media:** don't use 'between' for segments search ([CE-1372](https://jira.rfcx.org/browse/CE-1372))
 
 ## 1.0.24-hotfix.1 (2021-??-??)
 
