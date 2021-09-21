@@ -87,7 +87,8 @@ async function query (filters, options = {}) {
         [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
       },
       end: {
-        [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+        [Sequelize.Op.gt]: filters.start.valueOf(),
+        [Sequelize.Op.lte]: filters.end.valueOf()
       },
       [Sequelize.Op.and]: {
         start: { [Sequelize.Op.lt]: filters.start.valueOf() },
