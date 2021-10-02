@@ -16,7 +16,7 @@ const availableIncludes = [
 function computedAdditions (stream) {
   const additions = {}
   const { latitude, longitude } = stream
-  if (latitude && longitude) {
+  if (latitude !== undefined && longitude !== undefined) {
     const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
