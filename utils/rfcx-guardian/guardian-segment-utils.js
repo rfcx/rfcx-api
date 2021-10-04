@@ -3,7 +3,7 @@ const msgSegUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-util
 
 exports.segmentUtils = {
   saveSegmentToDb: async function (segObj) {
-    const guardianMetaSegRecv = await models.GuardianMetaSegmentsReceived
+    await models.GuardianMetaSegmentsReceived
       .findOrCreate({
         where: {
           group_guid: segObj.group_guid,
@@ -14,20 +14,19 @@ exports.segmentUtils = {
         defaults: {
           received_at: new Date()
         }
-      }).spread((dbSegmentRec, created) => {
+      }).spread(async (dbSegmentRec, created) => {
+        if (!created) {
+          dbSegmentRec.body = segObj.segment_body
+          return await dbSegmentRec.save()
+        }
         return dbSegmentRec
       })
-
-    guardianMetaSegRecv.body = segObj.segment_body
-
-    await guardianMetaSegRecv.save()
 
     if ((segObj.segment_id === 0) && (segObj.guardian_guid != null)) {
       const dbGuardian = await models.Guardian
         .findOne({
           where: { guid: segObj.guardian_guid }
         })
-      this.dbGuardian = dbGuardian
 
       if (segObj.guardian_pincode === dbGuardian.auth_pin_code) {
         const guardianMetaSegGrp = await models.GuardianMetaSegmentsGroup
@@ -46,8 +45,7 @@ exports.segmentUtils = {
 
         if (guardianMetaSegGrp) {
           const dbSegments = await models.GuardianMetaSegmentsReceived.findAll({
-            where: { group_guid: guardianMetaSegGrp.guid },
-            order: [['segment_id', 'ASC']]
+            where: { group_guid: guardianMetaSegGrp.guid }
           })
           if (guardianMetaSegGrp.segment_count === dbSegments.length) {
             // this appears to only execute sometimes. Less reliably when the number of segments is high.
@@ -66,8 +64,7 @@ exports.segmentUtils = {
         })
       if (dbSegmentGrp) {
         const dbSegments = await models.GuardianMetaSegmentsReceived.findAll({
-          where: { group_guid: dbSegmentGrp.guid },
-          order: [['segment_id', 'ASC']]
+          where: { group_guid: dbSegmentGrp.guid }
         })
         if (dbSegmentGrp.segment_count === dbSegments.length) {
           // this appears to only execute sometimes. Less reliably when the number of segments is high.

@@ -75,7 +75,7 @@ router.route('/segments/swm')
     if (swarmMsg.validateIncomingMessage(req)) {
       console.log('Incoming Swarm message validated...')
 
-      const segObj = msgSegUtils.parseMsgSegment(req.body.data, 'swm', 'test')
+      const segObj = msgSegUtils.parseMsgSegment(req.body.data, 'swm', req.body.deviceId)
       segmentUtils.saveSegmentToDb(segObj)
         .then(() => {
           res.writeHead(200, { 'Content-Type': 'text/xml' })
