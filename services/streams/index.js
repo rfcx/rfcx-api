@@ -16,7 +16,7 @@ const availableIncludes = [
 function computedAdditions (stream) {
   const additions = {}
   const { latitude, longitude } = stream
-  if (latitude && longitude) {
+  if (latitude !== undefined && longitude !== undefined) {
     const country = crg.get_country(latitude, longitude)
     if (country) {
       additions.countryName = country.name
@@ -194,6 +194,7 @@ async function query (filters, options = {}) {
  * @param {integer} stream.project_external_id
  * @param {*} options
  * @param {number} options.updatableBy Update only if stream is updatable by the given user id
+ * @param {Transaction} options.transaction Transaction for sql chain
  * @throws EmptyResultError when stream not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the stream
  */

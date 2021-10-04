@@ -71,7 +71,7 @@ router.patch('/streams/:externalId', (req, res) => {
         convertedParams.project_id = externalProject.id
       }
       await streamsService.update(stream.id, convertedParams)
-      return await streamsService.get(stream)
+      return await streamsService.get(stream.id)
     })
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed updating stream'))

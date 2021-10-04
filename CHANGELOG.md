@@ -1,5 +1,26 @@
-## 1.0.24 (2021-09-xx)
+## 1.0.25 (2021-09-xx)
+
+### Features
+* **guardian:** Add `stream_id` to `Guardians` table
+* **guardian:** Guardian registration won't create stream in Core and Arbimon
+* **guardian:** Audios from Guardian won't be ingested if there is no `stream_id`
+* **guardian:** Guardian v2 endpoint to update information
+* **guardian:** Create alternate endpoint to get all latest software information without guid given
 * **guardian:** Add new endpoint for Swarm webhook to send segment message
+
+
+## 1.0.24-hotfix.2 (2021-??-??)
+
+### Bug Fixes
+* **media:** don't use 'between' for segments search ([CE-1372](https://jira.rfcx.org/browse/CE-1372))
+
+
+## 1.0.24-hotfix.1 (2021-??-??)
+
+### Bug Fixes
+* **internal:** Fix /internal/ai-hub/detections return all streams from projects if projects were given
+
+
 ## 1.0.24 (2021-08-24)
 
 ### Features
