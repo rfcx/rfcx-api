@@ -60,6 +60,7 @@ const options = {
     './routes/core/**/*.js',
     './routes/internal/ai-hub/*.js',
     './routes/internal/arbimon/*.js',
+    './routes/internal/auth0/*.js',
     './routes/internal/assets/*.js',
     './routes/internal/cognition/*.js',
     './routes/internal/console/*.js',

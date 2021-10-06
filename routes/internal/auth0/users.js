@@ -9,9 +9,9 @@ const arbimonService = require('../../../services/arbimon')
 /**
  * @swagger
  *
- * /streams/{id}/stream-source-files-and-segments:
+ * /internal/auth0/new-login:
  *   post:
- *     summary: Create a stream source file and related segments
+ *     summary: Create a user from POST-Login auth0 webhook
  *     tags:
  *       - internal
  *     requestBody:
@@ -34,15 +34,16 @@ const arbimonService = require('../../../services/arbimon')
  *               email:
  *                 type: string
  *                 example: john@doe.com
- *
+ *               picture:
+ *                 type: string
+ *                 example: https://john.doe/picture.png
+ *               user_id:
+ *                 type: string
+ *                 description: internal Auth0 user id
+ *                 example: auth0|123
  *     responses:
- *       201:
+ *       200:
  *         description: Created
- *         headers:
- *           Location:
- *             description: Path of the created resource (e.g. `/stream-source-files/xyz123`)
- *             schema:
- *               type: string
  *       400:
  *         description: Invalid query parameters
  */
