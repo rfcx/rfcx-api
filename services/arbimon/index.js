@@ -176,11 +176,32 @@ async function createRecordingsFromSegments (segments, opts) {
   return createRecordings(recordings)
 }
 
+function createUser (user, idToken) {
+  const body = {};
+  ['firstname', 'lastname', 'email', 'guid', 'user_id', 'picture'].forEach((attr) => { body[attr] = user[attr] })
+  const options = {
+    method: 'POST',
+    url: `${arbimonBaseUrl}api/integration/users`,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body,
+    json: true
+  }
+
+  return getClientToken()
+    .then((token) => {
+      options.headers.authorization = `Bearer ${token}`
+      return rp(options).catch(e => { throw rpErrorMatcher(e) })
+    })
+}
+
 module.exports = {
   isEnabled,
   createProject,
   createSite,
   updateSite,
   deleteSite,
-  createRecordingsFromSegments
+  createRecordingsFromSegments,
+  createUser
 }
