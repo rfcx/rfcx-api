@@ -6,6 +6,8 @@
 ## v1.0.25
 - Look out for errors related to the changes to the ingress annotations
   (due to CE-943).
+- Run `npm run sync-mysql` to apply the following migrations:
+  - `20210830000001-add-stream-id-to-guardian`
 
 ## v1.0.24
 - Run `npm run sync-timescale` to apply the following migrations:
