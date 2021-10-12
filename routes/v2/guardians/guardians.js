@@ -12,8 +12,10 @@ const usersFusedService = require('../../../services/users/fused')
 const guardiansService = require('../../../services/guardians/guardians-service')
 const sitesService = require('../../../services/sites/sites-service')
 const streamsService = require('../../../services/streams')
-const Converter = require('../../../utils/converter/converter')
 const arbimonService = require('../../../services/arbimon')
+const Converter = require('../../../utils/converter/converter')
+const models = require('../../../models')
+const modelsTimescale = require('../../../modelsTimescale')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -64,6 +66,61 @@ router.route('/:guid')
       .catch(e => { httpError(req, res, 500, e, `Error while getting guardian with guid "${req.params.guid}".`); console.log(e) })
   })
 
+router.route('/:guid')
+  .patch(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'systemUser']), function (req, res) {
+    const transformedParams = {}
+    const params = new Converter(req.body, transformedParams)
+
+    params.convert('shortname').optional().toString()
+    params.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
+    params.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
+    params.convert('altitude').optional().toFloat()
+    params.convert('stream_id').optional().toString()
+    params.convert('is_visible').optional().toBoolean()
+
+    let mysqlTransaction, timescaleTransaction
+    return params.validate()
+      .then(async () => {
+        mysqlTransaction = await models.sequelize.transaction()
+        timescaleTransaction = await modelsTimescale.sequelize.transaction()
+
+        const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
+        const updatedGuardian = await guardiansService.updateGuardian(guardian, transformedParams, { transaction: mysqlTransaction })
+
+        await streamsService.update(updatedGuardian.stream_id, {
+          latitude: transformedParams.latitude,
+          longitude: transformedParams.longitude,
+          altitude: transformedParams.altitude,
+          is_public: transformedParams.is_visible
+        }, { transaction: timescaleTransaction })
+
+        if (arbimonService.isEnabled) {
+          await arbimonService.updateSite({
+            id: updatedGuardian.stream_id,
+            name: transformedParams.shortname,
+            latitude: transformedParams.latitude,
+            longitude: transformedParams.longitude,
+            altitude: transformedParams.altitude,
+            is_private: !transformedParams.is_visible
+          }, req.headers.authorization)
+        }
+
+        // Commit the transaction after doing update both guardian and stream
+        await mysqlTransaction.commit()
+        await timescaleTransaction.commit()
+        return res.status(200).send(await guardiansService.formatGuardian(updatedGuardian))
+      })
+      .catch(async (e) => {
+        if (mysqlTransaction) {
+          await mysqlTransaction.rollback()
+        }
+        if (timescaleTransaction) {
+          await timescaleTransaction.rollback()
+        }
+        httpError(req, res, 500, e, `Error while updating guardian with guid "${req.params.guid}".`); console.log(e)
+      })
+  })
+
 router.route('/register')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'guardianCreator']), async function (req, res) {
     const transformedParams = {}
@@ -100,24 +157,10 @@ router.route('/register')
 
       // Create guardian
       const dbGuardian = await guardiansService.createGuardian(guardianAttrs)
-      // Create stream
-      const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
-
-      if (arbimonService.isEnabled) {
-        const idToken = req.headers.authorization
-        const arbimonSite = await arbimonService.createSite({
-          ...dbStream,
-          latitude: 0,
-          longitude: 0,
-          altitude: 0
-        }, idToken)
-        await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
-      }
 
       res.status(200).json({
         name: dbGuardian.shortname,
         guid: dbGuardian.guid,
-        stream: dbStream.guid,
         token: token,
         pin_code: pinCode,
         api_mqtt_host: process.env.GUARDIAN_BROKER_HOSTNAME,
