@@ -24,7 +24,7 @@ exports.env = {
   // MESSAGE_QUEUE_ENABLED: 'true'
   // MESSAGE_QUEUE_PREFIX: '',
   // MESSAGE_QUEUE_ENDPOINT: 'http://127.0.0.1:9324',
-  
+
   BUCKET_ANALYSIS: 'rfcx-analysis',
 
   ASSET_BUCKET_AUDIO: 'rfcx-guardian-ark-development',
@@ -130,4 +130,8 @@ exports.env = {
   // NEW_RELIC_LOG_LEVEL: 'warn',
 
   // STREAM_TOKEN_SALT: "any_random_string"
+
+  /// When `RANGER_API_ENABLED` is set to `true` then the other env vars are required.
+  // RANGER_API_ENABLED: 'false'
+  // RANGER_API_SQS_QUEUE: '',
 }

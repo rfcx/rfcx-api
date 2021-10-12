@@ -4,7 +4,15 @@ const mailService = require('../mail/mail-service')
 const firebaseService = require('../firebase/firebase-service')
 const moment = require('moment-timezone')
 const { getTzByLatLng } = require('../../utils/misc/timezone')
+const rangerAPIEnabled = `${process.env.RANGER_API_ENABLED}` === 'true'
+const rangerAPITopic = process.env.RANGER_API_SQS_QUEUE
+let rangerAPIMessageQueue
 let emailTemplate
+
+if (rangerAPIEnabled) {
+  const { MessageQueue } = require('@rfcx/message-queue')
+  rangerAPIMessageQueue = new MessageQueue('sqs', { endpoint: '' })
+}
 
 /**
  * Define html template for email notifications on app initialization
@@ -67,10 +75,34 @@ async function notify (event) {
       latitude: `${event.stream.latitude}`,
       longitude: `${event.stream.longitude}`
     }
-    await Promise.all([
+    const promises = [
       sendEmails(splittedSubs.Email, data),
       sendPushNotifications(splittedSubs['Push Notification'], pnData)
-    ])
+    ]
+    if (rangerAPIEnabled) {
+      const rangerMessageData = {
+        id: event.id,
+        start: event.start,
+        end: event.end,
+        stream: {
+          id: event.stream.id,
+          name: event.stream.name,
+          latitude: event.stream.latitude,
+          longitude: event.stream.longitude
+        },
+        project: {
+          id: event.stream.project.id,
+          name: event.stream.project.name
+        },
+        classification: {
+          value: event.classification.value,
+          title: event.classification.title
+        },
+        createdAt: event.createdAt
+      }
+      promises.push(sendRangerSQS(rangerMessageData))
+    }
+    await Promise.all(promises)
   }
 }
 
@@ -120,6 +152,14 @@ function sendPushNotifications (users, data) {
     body
   }
   return firebaseService.sendToTopic(opts)
+}
+
+/**
+ * Sends SQS message with event data to Ranger API
+ * @param {*} data
+ */
+async function sendRangerSQS (data) {
+  return rangerAPIMessageQueue.publish(rangerAPITopic, data)
 }
 
 module.exports = {
