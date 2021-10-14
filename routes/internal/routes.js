@@ -1,4 +1,7 @@
 module.exports = {
+  auth0: [
+    require('./auth0/users')
+  ],
   assets: [
     require('./assets/streams')
   ],

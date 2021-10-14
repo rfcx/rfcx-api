@@ -9,6 +9,12 @@
 * **guardian:** Add new endpoint for Swarm webhook to send segment message
 
 
+## 1.0.24-hotfix.3 (2021-??-??)
+
+### Features
+* **internal:** add endpoint for auth0 post-login webhook ([CE-1437](https://jira.rfcx.org/browse/CE-1437))
+
+
 ## 1.0.24-hotfix.2 (2021-??-??)
 
 ### Bug Fixes
