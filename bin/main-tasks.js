@@ -6,7 +6,7 @@ require('../utils/process')
 // check that all required env vars are set
 require('../config/inspector')
 
-const messageQueue = require('../utils/message-queue/default')
+const messageQueue = require('../utils/message-queue/sqs')
 if (!messageQueue.isEnabled()) {
   throw new Error('Message queue not enabled')
 }

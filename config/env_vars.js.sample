@@ -131,7 +131,4 @@ exports.env = {
 
   // STREAM_TOKEN_SALT: "any_random_string"
 
-  /// When `RANGER_API_ENABLED` is set to `true` then the other env vars are required.
-  // RANGER_API_ENABLED: 'false'
-  // RANGER_API_SQS_QUEUE: '',
 }

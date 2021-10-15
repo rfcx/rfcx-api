@@ -3,7 +3,7 @@ const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, se
 const Cache = require('../../utils/cache')
 const streamService = require('../../services/streams')
 const projectService = require('../../services/projects')
-const classifierMessageQueue = require('./classifier-message-queue/default')
+const classifierMessageQueue = require('./classifier-message-queue/sqs')
 
 const defaultPlatform = 'aws'
 const cache = new Cache(60)

@@ -1,8 +1,5 @@
 # API Deployment Notes
 
-## 1.0.24-hotfix.3
-- Add `RANGER_API_ENABLED` and `RANGER_API_SQS_QUEUE` to secrets
-
 ## v1.0.25
 - Look out for errors related to the changes to the ingress annotations
   (due to CE-943).

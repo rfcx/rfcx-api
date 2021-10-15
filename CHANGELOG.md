@@ -1,7 +1,7 @@
 ## 1.0.24-hotfix.4 (2021-10-12)
 
 ### Features
-* **core:** send SQS message regarding new event to Ranger API ([CE-1410](https://jira.rfcx.org/browse/CE-1410))
+* **core:** broadcast SNS message regarding new event ([CE-1410](https://jira.rfcx.org/browse/CE-1410))
 
 
 ## 1.0.25 (2021-09-xx)
