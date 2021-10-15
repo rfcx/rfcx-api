@@ -150,7 +150,7 @@ exports.checkInDatabase = {
 
       saveMeta.Device((checkInObj.json.device == null) ? {} : checkInObj.json.device, guardianId),
 
-      saveMeta.SwarmDiagnostics(strArrToJSArr(checkInObj.json.swm_diagnostics, '|', '*'), guardianId, checkInId)
+      saveMeta.SwarmDiagnostics(strArrToJSArr(checkInObj.json.swm, '|', '*'), guardianId, checkInId)
     ]
 
     return Promise.all(proms)
