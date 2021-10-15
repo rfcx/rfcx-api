@@ -494,6 +494,34 @@ exports.saveMeta = {
       return detectionsService.create(expandedDetections)
     }
     return Promise.resolve()
+  },
+
+  SwarmDiagnostics: function (payloadArr, guardianId, checkInId) {
+    const dbMetaNetwork = []
+
+    for (const payload of payloadArr) {
+      dbMetaNetwork.push({
+        guardian_id: guardianId,
+        check_in_id: checkInId,
+        measured_at: new Date(parseInt(payload[0])),
+        signal_strength: parseInt(payload[1]),
+        network_type: 'background',
+        carrier_name: 'swarm'
+      })
+      if (payload.length === 8 && payload[2] !== '') {
+        dbMetaNetwork.push({
+          guardian_id: guardianId,
+          check_in_id: checkInId,
+          measured_at: new Date(parseInt(payload[0])),
+          signal_strength: parseInt(payload[2]),
+          network_type: 'satellite',
+          carrier_name: 'swarm'
+        })
+      }
+      // TODO Save additional swarm diagnostics: satellite packet + unsent
+    }
+
+    return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork)
   }
 
 }
