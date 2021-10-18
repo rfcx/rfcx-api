@@ -500,6 +500,10 @@ exports.saveMeta = {
     const dbMetaNetwork = []
 
     for (const payload of payloadArr) {
+      // Payload specification:
+      // measured_at, background_rssi, [satellite_rssi, snr, fdev, time, satellite_id,] num_of_unsent_messages
+
+      // Always contains background
       dbMetaNetwork.push({
         guardian_id: guardianId,
         check_in_id: checkInId,
@@ -508,6 +512,7 @@ exports.saveMeta = {
         network_type: 'background',
         carrier_name: 'swarm'
       })
+      // Optionally contains satellite packet
       if (payload.length === 8 && payload[2] !== '') {
         dbMetaNetwork.push({
           guardian_id: guardianId,
@@ -517,8 +522,9 @@ exports.saveMeta = {
           network_type: 'satellite',
           carrier_name: 'swarm'
         })
+        // TODO Save additional satellite packet properties
       }
-      // TODO Save additional swarm diagnostics: satellite packet + unsent
+      // TODO Save unsent messages information
     }
 
     return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork)
