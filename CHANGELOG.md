@@ -6,6 +6,7 @@
 * **guardian:** Audios from Guardian won't be ingested if there is no `stream_id`
 * **guardian:** Guardian v2 endpoint to update information
 * **guardian:** Create alternate endpoint to get all latest software information without guid given
+* **guardian:** Add new endpoint for Swarm webhook to send segment message
 
 
 ## 1.0.24-hotfix.3 (2021-??-??)
