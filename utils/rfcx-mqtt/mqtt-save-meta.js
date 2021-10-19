@@ -513,7 +513,7 @@ exports.saveMeta = {
           measured_at: measuredAt,
           signal_strength: backgroundRssi,
           network_type: 'background',
-          carrier_name: 'swarm'
+          carrier_name: 'Swarm'
         })
       }
       // Optionally contains satellite packet (indexes 2-6)
@@ -526,7 +526,7 @@ exports.saveMeta = {
             measured_at: measuredAt,
             signal_strength: satelliteRssi,
             network_type: 'satellite',
-            carrier_name: 'swarm'
+            carrier_name: 'Swarm'
           })
         }
         // TODO Save additional satellite packet properties
