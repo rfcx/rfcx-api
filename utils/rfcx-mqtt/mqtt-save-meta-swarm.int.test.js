@@ -71,3 +71,12 @@ test('background, satellite, and unsent', async () => {
   expect(results[0].signal_strength).toBe(backgroundRssi)
   expect(results[1].signal_strength).toBe(satelliteRssi)
 })
+
+test('invalid number for background', async () => {
+  const input = ['1420070745567', '', '8']
+
+  await SwarmDiagnostics([input], 'xyz', '123')
+
+  const results = await models.GuardianMetaNetwork.findAll()
+  expect(results.length).toBe(0)
+})

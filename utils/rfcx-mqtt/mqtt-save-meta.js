@@ -502,26 +502,33 @@ exports.saveMeta = {
     for (const payload of payloadArr) {
       // Payload specification:
       // measured_at, background_rssi, [satellite_rssi, snr, fdev, time, satellite_id,] num_of_unsent_messages
+      const measuredAt = new Date(parseInt(payload[0]))
 
-      // Always contains background
-      dbMetaNetwork.push({
-        guardian_id: guardianId,
-        check_in_id: checkInId,
-        measured_at: new Date(parseInt(payload[0])),
-        signal_strength: parseInt(payload[1]),
-        network_type: 'background',
-        carrier_name: 'swarm'
-      })
-      // Optionally contains satellite packet
-      if (payload.length === 8 && payload[2] !== '') {
+      // Always contains background at index 1
+      const backgroundRssi = parseInt(payload[1])
+      if (!isNaN(backgroundRssi)) {
         dbMetaNetwork.push({
           guardian_id: guardianId,
           check_in_id: checkInId,
-          measured_at: new Date(parseInt(payload[0])),
-          signal_strength: parseInt(payload[2]),
-          network_type: 'satellite',
+          measured_at: measuredAt,
+          signal_strength: backgroundRssi,
+          network_type: 'background',
           carrier_name: 'swarm'
         })
+      }
+      // Optionally contains satellite packet (indexes 2-6)
+      if (payload.length === 8) {
+        const satelliteRssi = parseInt(payload[2])
+        if (!isNaN(satelliteRssi)) {
+          dbMetaNetwork.push({
+            guardian_id: guardianId,
+            check_in_id: checkInId,
+            measured_at: measuredAt,
+            signal_strength: satelliteRssi,
+            network_type: 'satellite',
+            carrier_name: 'swarm'
+          })
+        }
         // TODO Save additional satellite packet properties
       }
       // TODO Save unsent messages information
