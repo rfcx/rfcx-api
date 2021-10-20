@@ -233,7 +233,7 @@ function constructSegmentsGroup (guardianGuid, guardianPinCode, msgType, apiProt
 
 function slicePayload (segPayload, segProtocol, keyName, sliceAtVals, hasFiniteLength) {
   const sliceAt = (hasFiniteLength) ? [sliceAtVals[keyName][0], sliceAtVals[keyName][1]] : [(sliceAtVals[keyName][0] + sliceAtVals[keyName][1])]
-  const segPayloadStr = '' + segPayload
+  const segPayloadStr = segPayload.toString()
   if (segProtocol === 'sms') {
     // return sliced string
     return (sliceAt.length > 1) ? segPayloadStr.substr(sliceAt[0], sliceAt[1]) : segPayloadStr.substr(sliceAt[0])
