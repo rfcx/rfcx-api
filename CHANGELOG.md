@@ -1,3 +1,6 @@
+## 1.0.26 (2021-10-xx)
+* **guardian:** Decode base64 string from Swarm to match correct format of Guardian segment
+
 ## 1.0.25 (2021-10-19)
 
 ### Features
