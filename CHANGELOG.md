@@ -8,6 +8,7 @@
 * **guardian:** Create alternate endpoint to get all latest software information without guid given
 * **guardian:** Store Swarm diagnostics for background_rssi and satellite_rssi in the meta network table
 * **guardian:** Add new endpoint for Swarm webhook to send segment message
+* **guardian:** Decode base64 string from Swarm to match correct format of Guardian segment
 
 
 ## 1.0.24-hotfix.3 (2021-??-??)
