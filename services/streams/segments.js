@@ -1,7 +1,7 @@
 const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../modelsTimescale')
 const { hasPermission, READ, STREAM } = require('../../services/roles')
 // const messageQueue = require('../../utils/message-queue/sqs')
-const { SEGMENT_CREATED } = require('../../tasks/event-names')
+// const { SEGMENT_CREATED } = require('../../tasks/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../utils/errors')
 const pagedQuery = require('../../utils/db/paged-query')
 
@@ -124,6 +124,7 @@ async function query (filters, options = {}) {
 function create (segment, options = {}) {
   const transaction = options.transaction
   return StreamSegment.create(segment, { transaction })
+    // TODO: uncomment when this event is needed
     // .then(() => {
     //   if (messageQueue.isEnabled()) {
     //     const message = { id: segment.id, start: segment.start, stream_id: segment.stream_id }
