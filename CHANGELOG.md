@@ -1,10 +1,4 @@
-## 1.0.24-hotfix.4 (2021-10-12)
-
-### Features
-* **core:** broadcast SNS message regarding new event ([CE-1410](https://jira.rfcx.org/browse/CE-1410))
-
-
-## 1.0.25 (2021-09-xx)
+## 1.0.25 (2021-10-XX)
 
 ### Features
 * **guardian:** Add `stream_id` to `Guardians` table
@@ -12,15 +6,36 @@
 * **guardian:** Audios from Guardian won't be ingested if there is no `stream_id`
 * **guardian:** Guardian v2 endpoint to update information
 * **guardian:** Create alternate endpoint to get all latest software information without guid given
+* **guardian:** Store Swarm diagnostics for background_rssi and satellite_rssi in the meta network table
+* **guardian:** Add new endpoint for Swarm webhook to send segment message
+* **guardian:** Decode base64 string from Swarm to match correct format of Guardian segment
 
 
-## 1.0.24-hotfix.2 (2021-??-??)
+## 1.0.24-hotfix.5 (2021-10-25)
+
+### Features
+* **core:** broadcast SNS message regarding new event ([CE-1410](https://jira.rfcx.org/browse/CE-1410))
+
+
+## 1.0.24-hotfix.4 (2021-10-23)
+
+### Bug Fixes
+* **core:** fix permission logic for project owner ([CE-1301](https://jira.rfcx.org/browse/CE-1301))
+
+
+## 1.0.24-hotfix.3 (2021-10-07)
+
+### Features
+* **internal:** add endpoint for auth0 post-login webhook ([CE-1437](https://jira.rfcx.org/browse/CE-1437))
+
+
+## 1.0.24-hotfix.2 (2021-09-21)
 
 ### Bug Fixes
 * **media:** don't use 'between' for segments search ([CE-1372](https://jira.rfcx.org/browse/CE-1372))
 
 
-## 1.0.24-hotfix.1 (2021-??-??)
+## 1.0.24-hotfix.1 (2021-09-13)
 
 ### Bug Fixes
 * **internal:** Fix /internal/ai-hub/detections return all streams from projects if projects were given
