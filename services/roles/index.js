@@ -144,6 +144,9 @@ async function getPermissions (userOrId, itemOrId, itemName) {
           paranoid: false
         })
         if (item) {
+          if (item.created_by_id === userId) {
+            return [CREATE, READ, UPDATE, DELETE]
+          }
           currentLevel = hierarchy[currentLevel.parent]
         }
       } else {

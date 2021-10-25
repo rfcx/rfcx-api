@@ -1,15 +1,21 @@
-## 1.0.24-hotfix.3 (2021-??-??)
+## 1.0.24-hotfix.4 (2021-10-23)
+
+### Bug Fixes
+* **core:** fix permission logic for project owner ([CE-1301](https://jira.rfcx.org/browse/CE-1301))
+
+
+## 1.0.24-hotfix.3 (2021-10-07)
 
 ### Features
 * **internal:** add endpoint for auth0 post-login webhook ([CE-1437](https://jira.rfcx.org/browse/CE-1437))
 
 
-## 1.0.24-hotfix.2 (2021-??-??)
+## 1.0.24-hotfix.2 (2021-09-21)
 
 ### Bug Fixes
 * **media:** don't use 'between' for segments search ([CE-1372](https://jira.rfcx.org/browse/CE-1372))
 
-## 1.0.24-hotfix.1 (2021-??-??)
+## 1.0.24-hotfix.1 (2021-09-13)
 
 ### Bug Fixes
 * **internal:** Fix /internal/ai-hub/detections return all streams from projects if projects were given
