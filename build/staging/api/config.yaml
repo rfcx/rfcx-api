@@ -35,6 +35,7 @@ data:
   GUARDIAN_API_SMS_ADDRESS: "+14154803657"
   MAILCHIMP_API_URL: "https://us9.api.mailchimp.com/3.0/"
   MEDIA_API_BASE_URL: "https://staging-api.rfcx.org/"
+  MESSAGE_QUEUE_POSTFIX: 'staging'
   MQTT_BROKER_HOST: "rabbitmq-http"
   MQTT_BROKER_PORT: "1883"
   NEO4J_ENABLED: "true"
