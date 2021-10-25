@@ -1,6 +1,6 @@
 const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../modelsTimescale')
 const { hasPermission, READ, STREAM } = require('../../services/roles')
-const messageQueue = require('../../utils/message-queue/sqs')
+// const messageQueue = require('../../utils/message-queue/sqs')
 const { SEGMENT_CREATED } = require('../../tasks/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../utils/errors')
 const pagedQuery = require('../../utils/db/paged-query')
@@ -124,14 +124,14 @@ async function query (filters, options = {}) {
 function create (segment, options = {}) {
   const transaction = options.transaction
   return StreamSegment.create(segment, { transaction })
-    .then(() => {
-      if (messageQueue.isEnabled()) {
-        const message = { id: segment.id, start: segment.start, stream_id: segment.stream_id }
-        return messageQueue.publish(SEGMENT_CREATED, message).catch((e) => {
-          console.error('Stream segment service -> create -> publish failed', e.message || e)
-        })
-      }
-    })
+    // .then(() => {
+    //   if (messageQueue.isEnabled()) {
+    //     const message = { id: segment.id, start: segment.start, stream_id: segment.stream_id }
+    //     return messageQueue.publish(SEGMENT_CREATED, message).catch((e) => {
+    //       console.error('Stream segment service -> create -> publish failed', e.message || e)
+    //     })
+    //   }
+    // })
     .catch((e) => {
       console.error('Stream segment service -> create -> error', e)
       throw new ValidationError('Cannot create stream segment with provided data')
