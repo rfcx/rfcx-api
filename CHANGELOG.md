@@ -1,4 +1,4 @@
-## 1.0.25 (2021-10-19)
+## 1.0.25 (2021-10-XX)
 
 ### Features
 * **guardian:** Add `stream_id` to `Guardians` table
@@ -9,6 +9,12 @@
 * **guardian:** Store Swarm diagnostics for background_rssi and satellite_rssi in the meta network table
 * **guardian:** Add new endpoint for Swarm webhook to send segment message
 * **guardian:** Decode base64 string from Swarm to match correct format of Guardian segment
+
+
+## 1.0.24-hotfix.5 (2021-10-25)
+
+### Features
+* **core:** broadcast SNS message regarding new event ([CE-1410](https://jira.rfcx.org/browse/CE-1410))
 
 
 ## 1.0.24-hotfix.4 (2021-10-23)

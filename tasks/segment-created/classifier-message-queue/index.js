@@ -1,4 +1,4 @@
-const MessageQueue = require('../../../utils/message-queue')
+const { MessageQueue } = require('@rfcx/message-queue')
 
 /**
  * External message queue onto prediction service

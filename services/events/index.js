@@ -4,6 +4,8 @@ const { EmptyResultError, ValidationError, ForbiddenError } = require('../../uti
 const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
+const messageQueue = require('../../utils/message-queue/sns')
+const { EVENT_CREATED } = require('../../tasks/event-names')
 
 const availableIncludes = [
   Stream.include(),
@@ -27,7 +29,13 @@ function forceIncludeForWhere (includes, associationAs) {
 
 function create (eventData) {
   return Event.create(eventData)
-    .then((event) => {
+    .then(async (event) => {
+      if (messageQueue.isEnabled()) {
+        const message = { id: event.id, streamId: event.streamId }
+        return messageQueue.publish(EVENT_CREATED, message).catch((e) => {
+          console.error('Event service -> create -> publish failed', e.message || e)
+        })
+      }
       return uuidToSlug(event.id)
     })
     .catch((e) => {
