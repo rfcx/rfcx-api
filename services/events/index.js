@@ -32,7 +32,7 @@ function create (eventData) {
     .then(async (event) => {
       if (messageQueue.isEnabled()) {
         const message = { id: event.id, streamId: event.streamId }
-        return messageQueue.publish(EVENT_CREATED, message).catch((e) => {
+        await messageQueue.publish(EVENT_CREATED, message).catch((e) => {
           console.error('Event service -> create -> publish failed', e.message || e)
         })
       }
