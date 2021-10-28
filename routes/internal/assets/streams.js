@@ -64,7 +64,7 @@ const { gluedDateStrToISO } = require('../../../utils/misc/datetime')
 router.get('/streams/:attrs', function (req, res) {
   parseFileNameAttrs(req).then(async (attrs) => {
     const user = req.rfcx.auth_token_info
-    const readableBy = user.is_super || user.has_system_role ? undefined : user.id
+    const readableBy = user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id
     await checkAttrsValidity(req, attrs)
     const start = gluedDateStrToISO(attrs.time.starts)
     const end = gluedDateStrToISO(attrs.time.ends)
