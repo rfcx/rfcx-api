@@ -155,7 +155,7 @@ describe('POST /streams', () => {
     expect(stream.id).toBe(definedId)
   })
 
-  test('returns 400 when defined id length less than minimum(12)', async () => {
+  test('returns 400 when id length less than minimum(12)', async () => {
     const requestBody = {
       id: 'abcdef12345',
       name: 'test-stream-with-id'
@@ -166,7 +166,7 @@ describe('POST /streams', () => {
     expect(response.statusCode).toBe(400)
   })
 
-  test('returns 400 when defined id length more than minimum(12)', async () => {
+  test('returns 400 when id length more than minimum(12)', async () => {
     const requestBody = {
       id: 'abcdef1234567',
       name: 'test-stream-with-id'
@@ -174,6 +174,26 @@ describe('POST /streams', () => {
 
     const response = await request(app).post('/').send(requestBody)
 
+    expect(response.statusCode).toBe(400)
+  })
+
+  test('returns 400 when id has uppercase symbols', async () => {
+    const requestBody = {
+      id: 'ABcdef1234567',
+      name: 'test-stream-with-id'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(400)
+  })
+
+  test('returns 400 when id has special characters', async () => {
+    const requestBody = {
+      id: 'abcd-f1234567',
+      name: 'test-stream-with-id'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 })

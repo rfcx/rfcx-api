@@ -36,7 +36,7 @@ const arbimonService = require('../../../services/arbimon')
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const converter = new Converter(req.body, {}, true)
-  converter.convert('id').optional().toString().minLength(12).maxLength(12)
+  converter.convert('id').optional().toString().minLength(12).maxLength(12).isPassingRegExp(/[a-z0-9]{12}/, 'should have only lowercase characters and integers')
   converter.convert('name').toString()
   converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
