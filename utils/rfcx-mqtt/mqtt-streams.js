@@ -13,7 +13,7 @@ async function ingestGuardianAudio (checkInObj) {
   const uploadData = await upload({
     filename: path.basename(checkInObj.audio.meta.s3Path),
     timestamp: moment.tz(checkInObj.audio.meta.measuredAt, 'UTC').toISOString(),
-    stream: checkInObj.db.dbGuardian.guid,
+    stream: checkInObj.db.dbGuardian.stream_id,
     checksum: checkInObj.audio.meta.sha1CheckSum,
     targetBitrate: checkInObj.audio.meta.bitRate,
     sampleRate: checkInObj.audio.meta.sampleRate
