@@ -139,4 +139,41 @@ describe('POST /streams', () => {
     const stream = await models.Stream.findByPk(id)
     expect(stream.timezone).toBe(null)
   })
+
+  test('returns 201 when defined id in request body', async () => {
+    const definedId = 'abcdef123456'
+    const requestBody = {
+      id: definedId,
+      name: 'test-stream-with-id'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.id).toBe(definedId)
+  })
+
+  test('returns 400 when defined id length less than minimum(12)', async () => {
+    const requestBody = {
+      id: 'abcdef12345',
+      name: 'test-stream-with-id'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+  })
+
+  test('returns 400 when defined id length more than minimum(12)', async () => {
+    const requestBody = {
+      id: 'abcdef1234567',
+      name: 'test-stream-with-id'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+  })
 })

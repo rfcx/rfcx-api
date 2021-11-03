@@ -36,6 +36,7 @@ const arbimonService = require('../../../services/arbimon')
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const converter = new Converter(req.body, {}, true)
+  converter.convert('id').optional().toString().minLength(12).maxLength(12)
   converter.convert('name').toString()
   converter.convert('latitude').optional().toFloat().minimum(-90).maximum(90)
   converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
@@ -49,8 +50,10 @@ module.exports = (req, res) => {
     .then(async (params) => {
       const stream = {
         ...params,
-        id: randomId(),
         createdById: user.id
+      }
+      if (!params.id) {
+        stream.id = randomId()
       }
 
       // TODO move - route handler should not contain business logic
