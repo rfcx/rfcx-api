@@ -9,6 +9,7 @@
 * **guardian:** Store Swarm diagnostics for background_rssi and satellite_rssi in the meta network table
 * **guardian:** Add new endpoint for Swarm webhook to send segment message
 * **guardian:** Decode base64 string from Swarm to match correct format of Guardian segment
+* **core:** Add `id` params to create stream endpoint
 
 
 ## 1.0.24-hotfix.5 (2021-10-25)

@@ -357,4 +357,13 @@ module.exports = class Conversion {
 
     return this
   }
+
+  isPassingRegExp (exp, message) {
+    this.conversions.push(() => {
+      if (!exp.test(this.src[this.property])) {
+        this.throwError(message || 'is not passing regular expression')
+      }
+      return this
+    })
+  }
 }

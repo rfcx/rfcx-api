@@ -326,6 +326,11 @@
   "Stream": {
     "type": "object",
     "properties": {
+      "id": {
+        "type": "string",
+        "description": "A stream id",
+        "example": "xxxxxxxxxxxx"
+      },
       "name": {
         "type": "string",
         "description": "Stream name",
