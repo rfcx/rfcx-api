@@ -59,3 +59,4 @@ data:
   EARTHRANGER_BASE_URL: "https://osaconservation.pamdas.org/"
   ARBIMON_BASE_URL: "https://arbimon.rfcx.org/"
   ARBIMON_ENABLED: "true"
+  MESSAGE_QUEUE_ENABLED: "true"
