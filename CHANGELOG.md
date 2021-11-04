@@ -1,4 +1,4 @@
-## 1.0.25 (2021-10-XX)
+## 1.0.25 (2021-11-04)
 
 ### Features
 * **guardian:** Add `stream_id` to `Guardians` table
