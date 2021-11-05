@@ -11,6 +11,9 @@ module.exports = {
   cron: [
     require('./cron/streams')
   ],
+  checkin: [
+    require('./checkin/index')
+  ],
   console: [
     require('./console/stream')
   ],

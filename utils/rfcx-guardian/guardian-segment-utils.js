@@ -1,5 +1,4 @@
 const models = require('../../models')
-const msgSegUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 
 exports.segmentUtils = {
   saveSegmentToDb: async function (segObj) {
@@ -24,13 +23,12 @@ exports.segmentUtils = {
       })
 
     if ((segObj.segment_id === 0) && (segObj.guardian_guid != null)) {
-      const dbGuardian = await models.Guardian
-        .findOne({
-          where: { guid: segObj.guardian_guid }
-        })
+      const dbGuardian = await models.Guardian.findOne({ where: { guid: segObj.guardian_guid } })
 
-      if (segObj.guardian_pincode === dbGuardian.auth_pin_code) {
-        const guardianMetaSegGrp = await models.GuardianMetaSegmentsGroup
+      if (segObj.guardian_pincode !== dbGuardian.auth_pin_code) {
+        console.error(`Failed to match PIN Code "${segObj.guardian_pincode}"`)
+      } else {
+        await models.GuardianMetaSegmentsGroup
           .findOrCreate({
             where: {
               guid: segObj.group_guid,
@@ -40,39 +38,22 @@ exports.segmentUtils = {
               checksum_snippet: segObj.message_checksum_snippet,
               guardian_id: dbGuardian.id
             }
-          }).spread((dbSegmentRec) => {
-            return dbSegmentRec
           })
-
-        if (guardianMetaSegGrp) {
-          const dbSegments = await models.GuardianMetaSegmentsReceived.findAll({
-            where: { group_guid: guardianMetaSegGrp.guid }
-          })
-          if (guardianMetaSegGrp.segment_count === dbSegments.length) {
-            // this appears to only execute sometimes. Less reliably when the number of segments is high.
-            // probably a race condition?
-            msgSegUtils.assembleReceivedSegments(dbSegments, guardianMetaSegGrp, segObj.guardian_guid, segObj.guardian_pincode)
-          }
-        }
-      } else {
-        console.log("Failed to match PIN Code '" + segObj.guardian_pincode + "'")
-      }
-    } else {
-      const dbSegmentGrp = await models.GuardianMetaSegmentsGroup
-        .findOne({
-          where: { guid: segObj.group_guid },
-          include: [{ model: models.Guardian, as: 'Guardian' }]
-        })
-      if (dbSegmentGrp) {
-        const dbSegments = await models.GuardianMetaSegmentsReceived.findAll({
-          where: { group_guid: dbSegmentGrp.guid }
-        })
-        if (dbSegmentGrp.segment_count === dbSegments.length) {
-          // this appears to only execute sometimes. Less reliably when the number of segments is high.
-          // probably a race condition?
-          msgSegUtils.assembleReceivedSegments(dbSegments, dbSegmentGrp, dbSegmentGrp.Guardian.guid, dbSegmentGrp.Guardian.auth_pin_code)
-        }
       }
     }
+  },
+
+  deleteSegmentsAndGroup: (segmentIds, groupId) => {
+    return models.sequelize.transaction()
+      .then(async (transaction) => {
+        await models.GuardianMetaSegmentsReceived.destroy({
+          where: { id: { [models.Sequelize.Op.in]: segmentIds } },
+          transaction
+        })
+        await models.GuardianMetaSegmentsGroup.destroy({
+          where: { id: groupId },
+          transaction
+        })
+      })
   }
 }

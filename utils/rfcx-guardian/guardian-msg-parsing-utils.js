@@ -201,7 +201,7 @@ exports.guardianMsgParsingUtils = {
             pingRouter.onMessagePing(pingObj, messageId)
               .then((result) => {
                 if (JSON.stringify(result.obj).length > 2) {
-                  const segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, 'cmd', dbSegGrp.protocol, result.obj, result.gzip)
+                  const segsForQueue = this.constructSegmentsGroupForQueue(guardianGuid, guardianPinCode, 'cmd', dbSegGrp.protocol, result.obj, result.gzip)
 
                   for (let i = 0; i < segsForQueue.length; i++) {
                     smsTwilio.sendSms(segsForQueue[i], dbSegs[0].origin_address)
@@ -225,10 +225,6 @@ exports.guardianMsgParsingUtils = {
 
 function getPingObj (inputJsonObj, guardianId, guardianToken) {
   return exports.guardianMsgParsingUtils.constructGuardianMsgObj(inputJsonObj, guardianId, guardianToken)
-}
-
-function constructSegmentsGroup (guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer) {
-  return exports.guardianMsgParsingUtils.constructSegmentsGroupForQueue(guardianGuid, guardianPinCode, msgType, apiProtocol, msgJsonObj, msgJsonGzippedBuffer)
 }
 
 function slicePayload (segPayload, segProtocol, keyName, sliceAtVals, hasFiniteLength) {
