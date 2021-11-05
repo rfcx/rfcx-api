@@ -1,3 +1,9 @@
+## 1.0.26 (2021-11-XX)
+
+### Features
+* **guardian:** Process assembled checkin data by a call from separate cron job ([CE-1345](https://jira.rfcx.org/browse/CE-1345))
+
+
 ## 1.0.25 (2021-11-04)
 
 ### Features
