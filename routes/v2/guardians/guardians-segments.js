@@ -111,6 +111,9 @@ router.route('/segments/:groupId')
           .then(result => {
             res.json(result)
           })
+          .catch(err => {
+            res.status(500).json({ message: err.message, error: { status: 500 } })
+          })
       })
   })
 
