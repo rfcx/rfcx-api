@@ -99,4 +99,19 @@ router.route('/segments/swm')
     }
   })
 
+router.route('/segments/:groupId')
+  .get(function (req, res) {
+    const groupId = req.params.groupId
+    segmentUtils.getSegmentsFromGroupId(groupId)
+      .then(segments => {
+        if (segments.length === 0) {
+          httpError(req, res, 400, null, 'group id is not existing')
+        }
+        msgSegUtils.decodeSegmentsToJSON(segments)
+          .then(result => {
+            res.json(result)
+          })
+      })
+  })
+
 module.exports = router

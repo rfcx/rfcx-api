@@ -74,5 +74,11 @@ exports.segmentUtils = {
         }
       }
     }
+  },
+
+  getSegmentsFromGroupId: async function (groupId) {
+    return await models.GuardianMetaSegmentsReceived.findAll({
+      where: { group_guid: groupId }
+    })
   }
 }
