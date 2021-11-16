@@ -187,7 +187,7 @@ exports.guardianMsgParsingUtils = {
 
   assembleReceivedSegments: function (dbSegs, dbSegGrp, guardianGuid, guardianPinCode) {
     let concatSegs = ''
-    const sortedSegments = dbSegs.sort((a, b) => a.segment_id - b.segment_id)
+    const sortedSegments = dbSegs.sort((a, b) => a.segment_id - b.segment_id) // sort by segment_id to make segments arranged
     for (let i = 0; i < sortedSegments.length; i++) { concatSegs += sortedSegments[i].body }
 
     checkInHelpers.gzip.unZipJson(encodeURIComponent(concatSegs)).bind({})
@@ -224,7 +224,7 @@ exports.guardianMsgParsingUtils = {
 
   decodeSegmentsToJSON: function (segments) {
     let concatSegs = ''
-    const sortedSegments = segments.sort((a, b) => a.segment_id - b.segment_id)
+    const sortedSegments = segments.sort((a, b) => a.segment_id - b.segment_id) // sort by segment_id to make segments arranged
     for (let i = 0; i < sortedSegments.length; i++) { concatSegs += sortedSegments[i].body }
 
     return checkInHelpers.gzip.unZipJson(encodeURIComponent(concatSegs)).bind({})
