@@ -186,11 +186,7 @@ exports.guardianMsgParsingUtils = {
   },
 
   assembleReceivedSegments: function (dbSegs, dbSegGrp, guardianGuid, guardianPinCode) {
-    let concatSegs = ''
-    const sortedSegments = dbSegs.sort((a, b) => a.segment_id - b.segment_id) // sort by segment_id to make segments arranged
-    for (let i = 0; i < sortedSegments.length; i++) { concatSegs += sortedSegments[i].body }
-
-    checkInHelpers.gzip.unZipJson(encodeURIComponent(concatSegs)).bind({})
+    decodeSegmentsToJSON(dbSegs)
       .then(function (jsonObj) {
         if (dbSegGrp.type === 'png') {
           if (hash.hashData(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) === dbSegGrp.checksum_snippet) {
