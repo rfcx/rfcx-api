@@ -1,3 +1,12 @@
+## 1.0.26 (2021-11-xx)
+
+### Features
+* **guardian:** Add `GET /v2/guardians/segments/:groupId` to get JSON of segments in `groupId` (for debugging)
+
+### Bug Fixes
+* **guardian:** Fix assemble segments function when there are 10 or more segments (incorrect sorting causing unzip fail)
+
+
 ## 1.0.25 (2021-11-04)
 
 ### Features

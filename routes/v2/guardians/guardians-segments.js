@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const httpError = require('../../../utils/http-errors.js')
 const sequelize = require('sequelize')
+const passport = require('passport')
 
 const msgSegUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 const smsTwilio = require('../../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
@@ -97,6 +98,25 @@ router.route('/segments/swm')
       res.writeHead(401, { 'Content-Type': 'text/xml' })
       res.end()
     }
+  })
+
+// For debugging purposes
+router.route('/segments/:groupId')
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+    const groupId = req.params.groupId
+    segmentUtils.getSegmentsFromGroupId(groupId)
+      .then(segments => {
+        if (segments.length === 0) {
+          httpError(req, res, 400, null, 'group id is not existing')
+        }
+        msgSegUtils.decodeSegmentsToJSON(segments)
+          .then(result => {
+            res.json(result)
+          })
+          .catch(err => {
+            res.status(500).json({ message: err.message, error: { status: 500 } })
+          })
+      })
   })
 
 module.exports = router
