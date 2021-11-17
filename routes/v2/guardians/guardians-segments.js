@@ -100,6 +100,7 @@ router.route('/segments/swm')
     }
   })
 
+// For debugging purposes
 router.route('/segments/:groupId')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
     const groupId = req.params.groupId
