@@ -186,7 +186,7 @@ exports.guardianMsgParsingUtils = {
   },
 
   assembleReceivedSegments: function (dbSegs, dbSegGrp, guardianGuid, guardianPinCode) {
-    decodeSegmentsToJSON(dbSegs)
+    this.decodeSegmentsToJSON(dbSegs)
       .then(function (jsonObj) {
         if (dbSegGrp.type === 'png') {
           if (hash.hashData(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) === dbSegGrp.checksum_snippet) {
