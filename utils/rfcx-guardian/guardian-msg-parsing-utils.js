@@ -3,6 +3,7 @@ const checkInHelpers = require('../../utils/rfcx-checkin')
 const pingRouter = require('../../utils/rfcx-guardian/router-ping.js').pingRouter
 const guidService = require('../../utils/misc/guid.js')
 const smsTwilio = require('../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
+const models = require('../../models')
 
 exports.guardianMsgParsingUtils = {
 
@@ -188,33 +189,49 @@ exports.guardianMsgParsingUtils = {
   assembleReceivedSegments: function (dbSegs, dbSegGrp, guardianGuid, guardianPinCode) {
     this.decodeSegmentsToJSON(dbSegs)
       .then(function (jsonObj) {
-        if (dbSegGrp.type === 'png') {
-          if (hash.hashData(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) === dbSegGrp.checksum_snippet) {
-            let messageId = guidService.generate()
-
-            const pingObj = getPingObj(jsonObj, guardianGuid, null)
-            pingObj.meta.allow_without_auth_token = true
-
-            pingRouter.onMessagePing(pingObj, messageId)
-              .then((result) => {
-                if (JSON.stringify(result.obj).length > 2) {
-                  const segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, 'cmd', dbSegGrp.protocol, result.obj, result.gzip)
-
-                  for (let i = 0; i < segsForQueue.length; i++) {
-                    smsTwilio.sendSms(segsForQueue[i], dbSegs[0].origin_address)
-                  }
-                }
-                for (let k = 0; k < dbSegs.length; k++) { dbSegs[k].destroy() }
-                dbSegGrp.destroy()
-
-                console.log('sms ping message processed', messageId)
-                messageId = null
-                result = null
-
-                return true
-              })
-          }
+        const groupLog = {
+          guardian_id: dbSegGrp.guardian_id,
+          group_guid: dbSegGrp.guid,
+          type: dbSegGrp.message_type,
+          protocol: dbSegGrp.protocol,
+          segment_count: dbSegGrp.segment_count,
+          payload: JSON.stringify(jsonObj, null, 2)
         }
+        models.GuardianMetaSegmentsGroupLog.create(groupLog)
+        console.log(`assembleReceivedSegments: logged group ${dbSegGrp.guid}`)
+
+        if (dbSegGrp.type !== 'png') {
+          console.log(`assembleReceivedSegments: not a ping for group ${dbSegGrp.guid}`)
+          return
+        }
+
+        if (hash.hashData(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) !== dbSegGrp.checksum_snippet) {
+          console.log(`assembleReceivedSegments: invalid checksum ${dbSegGrp.checksum_snippet} for group ${dbSegGrp.guid}`)
+          return
+        }
+
+        const messageId = guidService.generate()
+        const originAddress = dbSegs[0].origin_address
+        const pingObj = getPingObj(jsonObj, guardianGuid, null)
+        pingObj.meta.allow_without_auth_token = true
+
+        pingRouter.onMessagePing(pingObj, messageId)
+          .then((result) => {
+            console.log(`assembleReceivedSegments: ping processed for group ${dbSegGrp.guid}`)
+
+            for (let k = 0; k < dbSegs.length; k++) { dbSegs[k].destroy() }
+            dbSegGrp.destroy()
+
+            if (JSON.stringify(result.obj).length > 2) {
+              const segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, 'cmd', 'sms', result.obj, result.gzip)
+
+              for (let i = 0; i < segsForQueue.length; i++) {
+                smsTwilio.sendSms(segsForQueue[i], originAddress)
+              }
+              console.log('cmd sms sent', messageId)
+            }
+            return true
+          })
       })
   },
 

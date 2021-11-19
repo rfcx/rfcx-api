@@ -90,6 +90,7 @@ const db = {
   GuardianMetaReboot: require('./guardian-meta/guardian-meta-reboot')(sequelize, Sequelize),
   GuardianMetaScreenShot: require('./guardian-meta/guardian-meta-screenshot')(sequelize, Sequelize),
   GuardianMetaSegmentsGroup: require('./guardian-meta/guardian-meta-segments-group')(sequelize, Sequelize),
+  GuardianMetaSegmentsGroupLog: require('./guardian-meta/guardian-meta-segments-group-log')(sequelize, Sequelize),
   GuardianMetaSegmentsQueue: require('./guardian-meta/guardian-meta-segments-queue')(sequelize, Sequelize),
   GuardianMetaSegmentsReceived: require('./guardian-meta/guardian-meta-segments-received')(sequelize, Sequelize),
   GuardianMetaSentinelAccelerometer: require('./guardian-meta/guardian-meta-sentinel-accelerometer')(sequelize, Sequelize),
