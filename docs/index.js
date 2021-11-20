@@ -6,8 +6,8 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'RFCx API Documentation',
-      version: '0.0.1'
+      title: 'Rainforest Connection® API Documentation',
+      version: '1.0.26'
     },
     servers: [
       {
@@ -80,7 +80,7 @@ const swaggerUiOptions = {
   operationsSorter: 'alpha'
 }
 const swaggerUiExpressOptions = {
-  customSiteTitle: 'RFCx API Documentation',
+  customSiteTitle: 'Rainforest Connection® API Documentation',
   customCss: '.topbar { display: none }',
   swaggerOptions: swaggerUiOptions
 }
