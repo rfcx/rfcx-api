@@ -192,7 +192,7 @@ exports.guardianMsgParsingUtils = {
     const groupLog = {
       guardian_id: dbSegGrp.guardian_id,
       group_guid: dbSegGrp.guid,
-      type: dbSegGrp.message_type,
+      type: dbSegGrp.type,
       protocol: dbSegGrp.protocol,
       segment_count: dbSegGrp.segment_count,
       payload: JSON.stringify(jsonObj, null, 2)
