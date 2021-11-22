@@ -73,6 +73,11 @@ router.route('/segments/sbd')
 
 router.route('/segments/swm')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
+    // To bypass test message for saving change on Swarm
+    if (req.body.deviceId === 0 && req.body.packetId === 0) {
+      res.writeHead(200, { 'Content-Type': 'text/xml' }).end()
+    }
+
     if (swarmMsg.validateIncomingMessage(req)) {
       console.log('Incoming Swarm message validated...')
 
