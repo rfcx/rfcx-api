@@ -72,7 +72,7 @@ router.route('/segments/sbd')
   })
 
 router.route('/segments/swm')
-  .post(function (req, res) {
+  .post(passport.authenticate('token', { session: false }), function (req, res) {
     if (swarmMsg.validateIncomingMessage(req)) {
       console.log('Incoming Swarm message validated...')
 
