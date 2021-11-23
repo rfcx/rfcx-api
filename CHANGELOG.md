@@ -2,6 +2,7 @@
 
 ### Features
 * **guardian:** Add authenticate to `POST /v2/guardians/swm` endpoint to use old way authentication
+* **guardian:** Bypass the test message from Swarm connection test
 
 ## 1.0.26 (2021-11-20)
 
