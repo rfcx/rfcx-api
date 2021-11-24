@@ -60,17 +60,19 @@ module.exports = (req, res) => {
       transaction = await models.sequelize.transaction()
       options.transaction = transaction
 
-      streamsService.update(id, params, options)
+      return await streamsService.update(id, params, options)
     })
     .then(async () => {
       // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
         try {
-          const updatedStream = await streamsService.get(id)
+          const updatedStream = await streamsService.get(id, { transaction: transaction })
           const idToken = req.headers.authorization
           return await arbimonService.updateSite(updatedStream, idToken)
         } catch (err) {
           console.error('Failed updating stream in Arbimon', err)
+          await transaction.rollback()
+          throw err
         }
       }
       return undefined
@@ -79,10 +81,5 @@ module.exports = (req, res) => {
       await transaction.commit()
       res.sendStatus(204)
     })
-    .catch(async () => {
-      if (transaction) {
-        await transaction.rollback()
-      }
-      httpErrorHandler(req, res, 'Failed updating stream')
-    })
+    .catch(httpErrorHandler(req, res, 'Failed updating stream'))
 }
