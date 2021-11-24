@@ -2,6 +2,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const Converter = require('../../../utils/converter/converter')
 const arbimonService = require('../../../services/arbimon')
+const models = require('../../../modelsTimescale')
 
 /**
  * @swagger
@@ -53,8 +54,14 @@ module.exports = (req, res) => {
   converter.convert('longitude').optional().toFloat().minimum(-180).maximum(180)
   converter.convert('altitude').optional().toFloat()
 
+  let transaction
   converter.validate()
-    .then((params) => streamsService.update(id, params, options))
+    .then(async (params) => {
+      transaction = await models.sequelize.transaction()
+      options.transaction = transaction
+
+      streamsService.update(id, params, options)
+    })
     .then(async () => {
       // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
@@ -68,6 +75,14 @@ module.exports = (req, res) => {
       }
       return undefined
     })
-    .then(() => res.sendStatus(204))
-    .catch(httpErrorHandler(req, res, 'Failed updating stream'))
+    .then(async () => {
+      await transaction.commit()
+      res.sendStatus(204)
+    })
+    .catch(async () => {
+      if (transaction) {
+        await transaction.rollback()
+      }
+      httpErrorHandler(req, res, 'Failed updating stream')
+    })
 }
