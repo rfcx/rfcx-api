@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
 const createDetectionsService = require('../../../services/detections/create')
+const streamsService = require('../../../services/streams')
 const { hasPermission, READ, UPDATE, STREAM } = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
@@ -76,6 +77,7 @@ router.get('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
+      // TODO add readableBy to detectionsService.query to avoid permission checks in route handler
       if (!user.has_system_role && !user.stream_token && !await hasPermission(READ, user, streamId, STREAM)) {
         throw new ForbiddenError('You do not have permission to read this stream')
       }
@@ -148,7 +150,11 @@ router.post('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
-      if (!user.has_system_role && !await hasPermission(UPDATE, user, streamId, STREAM)) {
+      // TODO add creatableBy to detectionsService.create to avoid permission checks and stream existance checks in route handler
+      if (user.has_system_role) {
+        // Need to check that the stream exists (throws)
+        await streamsService.get(streamId, { fields: ['id'] })
+      } else if (!await hasPermission(UPDATE, user, streamId, STREAM)) {
         throw new ForbiddenError('You do not have permission to update this stream')
       }
 
