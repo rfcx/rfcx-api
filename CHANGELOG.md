@@ -1,3 +1,8 @@
+## 1.0.28 (2021-11-xx)
+
+### Features
+* **core:** Add transction to `PATCH /streams/:id`
+
 ## 1.0.27 (2021-11-23)
 
 ### Features
