@@ -1,3 +1,9 @@
+## 1.0.28 (2021-11-27)
+
+### Bug Fixes
+* **guardian:** Provide the stream_id for prediction service. Do not queue the prediction service if there is no stream id.
+
+
 ## 1.0.27 (2021-11-23)
 
 ### Features
