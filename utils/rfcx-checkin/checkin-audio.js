@@ -244,7 +244,8 @@ exports.audio = {
             capture_sample_count: audioInfo.dbAudioObj.capture_sample_count,
             sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
             latitude: dbGuardian.latitude,
-            longitude: dbGuardian.longitude
+            longitude: dbGuardian.longitude,
+            stream_id: dbGuardian.stream_id
           }
           const prom = aws.publish(name, message)
             .then((data) => {

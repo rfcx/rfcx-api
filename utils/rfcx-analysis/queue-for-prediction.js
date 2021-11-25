@@ -2,7 +2,7 @@ const legacyQueueToNeo4jAndSqs = require('../rfcx-checkin/checkin-audio').audio.
 const pubsub = require('../external/pubsub')
 
 function queueForPrediction (audioInfo, guardian) {
-  if (process.env.NEO4J_ENABLED === 'true') {
+  if (process.env.NEO4J_ENABLED === 'true' && guardian.stream_id) {
     return legacyQueueToNeo4jAndSqs(audioInfo, guardian)
   }
   if (process.env.PUBSUB_ENABLED === 'true') {
