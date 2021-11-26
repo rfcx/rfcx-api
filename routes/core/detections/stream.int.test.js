@@ -94,4 +94,41 @@ describe('POST /streams/:id/detections', () => {
     expect(response.statusCode).toBe(201)
     expect(console.warn).toHaveBeenCalled()
   })
+
+  test('stream not found', async () => {
+    const { classifier, classifierOutput } = await commonSetup()
+    const requestBody = [
+      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: 0.99 }
+    ]
+
+    const response = await request(app).post('/b0gU5stream/detections').send(requestBody)
+
+    expect(response.statusCode).toBe(404)
+  })
+
+  test('stream not found when system role', async () => {
+    const appWithUserSystemRole = expressApp({ has_system_role: true })
+    appWithUserSystemRole.use('/', routes)
+    const { classifier, classifierOutput } = await commonSetup()
+    const requestBody = [
+      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: 0.99 }
+    ]
+
+    const response = await request(appWithUserSystemRole).post('/b0gU5stream/detections').send(requestBody)
+
+    expect(response.statusCode).toBe(404)
+  })
+
+  test('stream not accessible', async () => {
+    const { classifier, classifierOutput } = await commonSetup()
+    const stream = { id: 'xyz', name: 'not my stream', createdById: seedValues.otherUserId }
+    await models.Stream.create(stream)
+    const requestBody = [
+      { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: 0.99 }
+    ]
+
+    const response = await request(app).post(`/${stream.id}/detections`).send(requestBody)
+
+    expect(response.statusCode).toBe(403)
+  })
 })

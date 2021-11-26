@@ -1,3 +1,9 @@
+## 1.0.28 (2021-11-26)
+
+### Bug Fixes
+* **guardian:** HTTP 500 error when system role posts detections on not found stream
+
+
 ## 1.0.27 (2021-11-23)
 
 ### Features
