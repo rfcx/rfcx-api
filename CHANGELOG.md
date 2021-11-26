@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 * **guardian:** HTTP 500 error when system role posts detections on not found stream
+* **guardian:** Provide the stream_id for prediction service and do not queue the prediction service if there is no stream id
 
 
 ## 1.0.27 (2021-11-23)
