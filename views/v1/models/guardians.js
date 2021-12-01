@@ -10,6 +10,7 @@ exports.models = {
 
       const guardian = {
         guid: dbRow.guid,
+        stream_id: dbRow.stream_id,
         shortname: dbRow.shortname,
         is_certified: dbRow.is_certified,
         is_visible: dbRow.is_visible,
