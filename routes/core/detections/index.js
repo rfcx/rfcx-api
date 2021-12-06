@@ -33,6 +33,10 @@ const Converter = require('../../../utils/converter/converter')
  *         description: List of clasification values
  *         in: query
  *         type: array|string
+ *       - name: classifiers
+ *         description: List of classifier guids
+ *         in: query
+ *         type: array|string
  *       - name: min_confidence
  *         description: Return results above a minimum confidence
  *         in: query
@@ -67,6 +71,7 @@ router.get('/', (req, res) => {
   params.convert('end').toMomentUtc()
   params.convert('streams').optional().toArray()
   params.convert('classifications').optional().toArray()
+  params.convert('classifiers').optional().toArray()
   params.convert('min_confidence').optional().toFloat()
   params.convert('limit').optional().toInt().maximum(1000)
   params.convert('offset').optional().toInt()
@@ -75,8 +80,8 @@ router.get('/', (req, res) => {
     .then(async () => {
       const streamIds = convertedParams.streams
       const minConfidence = convertedParams.min_confidence
-      const { start, end, classifications, limit, offset } = convertedParams
-      const result = await detectionsService.query(start, end, streamIds, classifications, minConfidence, limit, offset, user)
+      const { start, end, classifications, classifiers, limit, offset } = convertedParams
+      const result = await detectionsService.query(start, end, streamIds, classifications, minConfidence, limit, offset, user, classifiers)
       return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

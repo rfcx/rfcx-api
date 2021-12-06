@@ -19,7 +19,7 @@ const { getAccessibleObjectsIDs, STREAM } = require('../roles')
  * @param {object} user
  * @returns {Detection[]} Detections
  */
-async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user) {
+async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user, classifiers) {
   const condition = {
     start: {
       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
@@ -29,17 +29,23 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic
   if (streamIdOrIds !== undefined) {
     condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await getAccessibleObjectsIDs(user.id, STREAM, streamIdOrIds)
   } else {
-    const streamIds = streamsOnlyPublic
-      ? await streamsService.getPublicStreamIds()
-      : await getAccessibleObjectsIDs(user.id, STREAM)
-    condition.stream_id = {
-      [models.Sequelize.Op.in]: streamIds
+    if (!user.has_system_role) {
+      const streamIds = streamsOnlyPublic
+        ? await streamsService.getPublicStreamIds()
+        : await getAccessibleObjectsIDs(user.id, STREAM)
+      condition.stream_id = {
+        [models.Sequelize.Op.in]: streamIds
+      }
     }
   }
 
   const classificationCondition = classifications === undefined
     ? {}
     : { value: { [models.Sequelize.Op.or]: classifications } }
+
+  const classifierCondition = classifiers === undefined
+    ? {}
+    : { externalId: { [models.Sequelize.Op.or]: classifiers } }
 
   // TODO: if minConfidence is undefined, get it from event strategy
   condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
@@ -56,6 +62,7 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic
       {
         as: 'classifier',
         model: models.Classifier,
+        where: classifierCondition,
         attributes: [],
         required: true
       }
@@ -77,10 +84,11 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic
  * @param {number} limit Maximum number to get detections
  * @param {number} offset Number of resuls to skip
  * @param {object} user
+ * @param {string | string[]} classifiers Classifier or list of classifiers
  * @returns {Detection[]} Detections
  */
-async function query (start, end, streamIdOrIds, classifications, minConfidence, limit, offset, user) {
-  const opts = await defaultQueryOptions(start, end, streamIdOrIds, false, classifications, minConfidence, false, limit, offset, user)
+async function query (start, end, streamIdOrIds, classifications, minConfidence, limit, offset, user, classifiers) {
+  const opts = await defaultQueryOptions(start, end, streamIdOrIds, false, classifications, minConfidence, false, limit, offset, user, classifiers)
   const detections = await models.Detection.findAll(opts)
   return detections.map(d => d.toJSON())
 }
