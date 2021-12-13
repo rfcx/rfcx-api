@@ -111,7 +111,11 @@ router.route('/:guardian_id/meta/:meta_type')
           battery_state_of_charge: 'battery_state_of_charge',
           battery_power: 'battery_power',
           system_power: 'system_power',
-          check_in_id: 'check_in_id'
+          check_in_id: 'check_in_id',
+          battery_current: 'battery_current',
+          input_current: 'input_current',
+          system_current: 'system_current',
+          battery_voltage: 'battery_voltage'
         }
       },
       accelerometer: {
