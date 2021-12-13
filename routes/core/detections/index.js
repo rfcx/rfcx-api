@@ -34,7 +34,7 @@ const Converter = require('../../../utils/converter/converter')
  *         in: query
  *         type: array|string
  *       - name: classifiers
- *         description: List of classifier guids
+ *         description: List of classifier ids
  *         in: query
  *         type: array|string
  *       - name: min_confidence

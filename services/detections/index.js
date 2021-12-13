@@ -28,24 +28,24 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic
   }
   if (streamIdOrIds !== undefined) {
     condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await getAccessibleObjectsIDs(user.id, STREAM, streamIdOrIds)
-  } else {
-    if (!user.has_system_role) {
-      const streamIds = streamsOnlyPublic
-        ? await streamsService.getPublicStreamIds()
-        : await getAccessibleObjectsIDs(user.id, STREAM)
-      condition.stream_id = {
-        [models.Sequelize.Op.in]: streamIds
-      }
+  } else if (!user.has_system_role) {
+    const streamIds = streamsOnlyPublic
+      ? await streamsService.getPublicStreamIds()
+      : await getAccessibleObjectsIDs(user.id, STREAM)
+    condition.stream_id = {
+      [models.Sequelize.Op.in]: streamIds
+    }
+  }
+
+  if (classifiers !== undefined) {
+    condition.classifier_id = {
+      [models.Sequelize.Op.in]: classifiers
     }
   }
 
   const classificationCondition = classifications === undefined
     ? {}
     : { value: { [models.Sequelize.Op.or]: classifications } }
-
-  const classifierCondition = classifiers === undefined
-    ? {}
-    : { externalId: { [models.Sequelize.Op.or]: classifiers } }
 
   // TODO: if minConfidence is undefined, get it from event strategy
   condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
@@ -62,7 +62,6 @@ async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic
       {
         as: 'classifier',
         model: models.Classifier,
-        where: classifierCondition,
         attributes: [],
         required: true
       }
