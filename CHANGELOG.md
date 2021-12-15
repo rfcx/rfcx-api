@@ -1,3 +1,9 @@
+## 1.0.29 (2021-12-XX)
+
+### Features
+* **core:** Add `classifiers` query param to `GET /detections` endpoint
+
+
 ## 1.0.28 (2021-11-26)
 
 ### Bug Fixes
