@@ -37,7 +37,6 @@ spec:
                  expression { BRANCH_NAME ==~ /(develop|staging|master)/ }
             }
             steps {
-                slackSend (channel: "#${slackChannel}", color: '#FF9800', message: "*HTTP API*: Build started <${env.BUILD_URL}|#${env.BUILD_NUMBER}> commit ${env.GIT_COMMIT[0..6]} on ${env.BRANCH_NAME}")
                 container(name: 'kaniko') {
                     sh """
                     /kaniko/executor --snapshotMode=redo --use-new-run=true --cache=true --cache-repo=${ECR}/${APIHTTP}_${PHASE} --dockerfile `pwd`/build/Dockerfile --context `pwd` --destination=${ECR}/${APIHTTP}_${PHASE}:latest --destination=${ECR}/${APIHTTP}_${PHASE}:$BUILD_NUMBER
@@ -46,7 +45,6 @@ spec:
             }
             post {
                 success {
-                    slackSend (channel: "#${slackChannel}", color: '#3380C7', message: "*HTTP/MQTT API*: Image built on build <${env.BUILD_URL}|#${env.BUILD_NUMBER}>")
                     echo 'Compile Stage Successful'
                 }
                 failure {
