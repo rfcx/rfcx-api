@@ -49,7 +49,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     is_updatable: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true,
+      defaultValue: false,
       validate: {
       }
     },
