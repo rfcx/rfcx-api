@@ -93,9 +93,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaDataTransfer
-      .bulkCreate(dbMetaDataTransfer).catch(function (err) {
-        console.log('failed to create GuardianMetaDataTransfer | ' + err)
-      })
+      .bulkCreate(dbMetaDataTransfer)
   },
 
   LightMeter: function (metaLightMeter, guardianId, checkInId) {
