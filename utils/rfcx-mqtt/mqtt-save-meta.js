@@ -229,7 +229,14 @@ exports.saveMeta = {
     const diskUsage = { internal: {}, external: {} }
 
     for (const duInd in metaDiskUsage) {
-      diskUsage[metaDiskUsage[duInd][0]] = {
+      let type = ''
+      if (metaDiskUsage[duInd][0] === 'i' || metaDiskUsage[duInd][0] === 'internal') {
+        type = 'internal'
+      }
+      if (metaDiskUsage[duInd][0] === 'e' || metaDiskUsage[duInd][0] === 'external') {
+        type = 'external'
+      }
+      diskUsage[type] = {
         measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
         used: parseInt(metaDiskUsage[duInd][2]),
         available: parseInt(metaDiskUsage[duInd][3])
@@ -248,7 +255,9 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaDiskUsage.bulkCreate(dbMetaDiskUsage)
+    return models.GuardianMetaDiskUsage.bulkCreate(dbMetaDiskUsage).catch(function (err) {
+      console.log('failed to create GuardianMetaDataTransfer | ' + err)
+    })
   },
 
   Memory: function (metaMemory, guardianId, checkInId) {
