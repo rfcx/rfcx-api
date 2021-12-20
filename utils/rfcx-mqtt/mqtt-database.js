@@ -1,8 +1,8 @@
 const models = require('../../models')
 const fs = require('fs')
-const saveMeta = require('../../utils/rfcx-mqtt/mqtt-save-meta.js').saveMeta
-const smsMessages = require('../../utils/rfcx-guardian/guardian-sms-database.js').messages
-const hash = require('../../utils/misc/hash')
+const saveMeta = require('./mqtt-save-meta.js').saveMeta
+const smsMessages = require('../rfcx-guardian/guardian-sms-database.js').messages
+const hash = require('../misc/hash')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
 
