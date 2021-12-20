@@ -7,9 +7,10 @@ jest.mock('../../models', () => {
   const dataTransfer = []
   return {
     GuardianMetaDataTransfer: {
-      findAll: () => dataTransfer,
+      findAll: () => Promise.resolve(dataTransfer),
       bulkCreate: (objects) => {
         dataTransfer.push(...objects)
+        return Promise.resolve()
       }
     },
     reset: () => {
