@@ -22,7 +22,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaCPU.bulkCreate(dbMetaCPU).catch(function (err) {
-      console.log('failed to create GuardianMetaDataTransfer | ' + err)
+      console.log('failed to create GuardianMetaCPU | ' + err)
     })
   },
 
@@ -41,7 +41,9 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaBattery.bulkCreate(dbMetaBattery)
+    return models.GuardianMetaBattery.bulkCreate(dbMetaBattery).catch(function (err) {
+      console.log('failed to create GuardianMetaBattery | ' + err)
+    })
   },
 
   Network: function (metaNetwork, guardianId, checkInId) {
