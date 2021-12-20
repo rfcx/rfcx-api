@@ -21,7 +21,9 @@ exports.saveMeta = {
       }
     }
 
-    return models.GuardianMetaCPU.bulkCreate(dbMetaCPU)
+    return models.GuardianMetaCPU.bulkCreate(dbMetaCPU).catch(function (err) {
+      console.log('failed to create GuardianMetaDataTransfer | ' + err)
+    })
   },
 
   Battery: function (metaBattery, guardianId, checkInId) {
