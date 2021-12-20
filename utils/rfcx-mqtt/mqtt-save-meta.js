@@ -464,7 +464,7 @@ exports.saveMeta = {
                     where: opts,
                     defaults: opts
                   })
-                  .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
+                  .then(([dbSoftwareRoleVersionInsertion, wasCreatedInsertion]) => {
                     dbSoftwareRoleVersionInsertion.updated_at = new Date()
                     return dbSoftwareRoleVersionInsertion.save()
                   })
@@ -473,7 +473,7 @@ exports.saveMeta = {
                   .findOrCreate({
                     where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
                   })
-                  .spread((dbMetaSoftware, wasCreated) => {
+                  .then(([dbMetaSoftware, wasCreatedInsertion]) => {
                     dbMetaSoftware.updated_at = new Date()
                     return dbMetaSoftware.save()
                   })
