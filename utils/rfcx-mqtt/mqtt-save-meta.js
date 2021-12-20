@@ -222,7 +222,9 @@ exports.saveMeta = {
       }
     }
 
-    return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection)
+    return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection).catch(function (err) {
+      console.log('failed to create GuardianMetaMqttBrokerConnection | ' + err)
+    })
   },
 
   Storage: function (metaDiskUsage, guardianId, checkInId) {
