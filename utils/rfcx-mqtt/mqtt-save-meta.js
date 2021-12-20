@@ -60,7 +60,9 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork)
+    return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork).catch(function (err) {
+      console.log('failed to create GuardianMetaNetwork | ' + err)
+    })
   },
 
   DataTransfer: function (metaDataTransfer, guardianId, checkInId) {
