@@ -1,7 +1,7 @@
 ## 1.0.30 (2021-12-XX)
 
 ### Performance Improvements
-* **core:** Improve `detections` query function by reducing amount of chunks to check
+* **core:** Improve `segments` query function by reducing amount of chunks to check
 
 
 ## 1.0.29 (2021-12-15)
