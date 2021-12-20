@@ -6,9 +6,10 @@ jest.mock('../../models', () => {
   const networks = []
   return {
     GuardianMetaNetwork: {
-      findAll: () => networks,
+      findAll: () => Promise.resolve(networks),
       bulkCreate: (objects) => {
         networks.push(...objects)
+        return Promise.resolve()
       }
     },
     reset: () => {
