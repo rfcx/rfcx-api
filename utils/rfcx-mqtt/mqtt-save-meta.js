@@ -264,7 +264,11 @@ exports.saveMeta = {
     const memory = { system: {} }
 
     for (const mInd in metaMemory) {
-      memory[metaMemory[mInd][0]] = {
+      let type = ''
+      if (metaMemory[mInd][0] === 's' || metaMemory[mInd][0] === 'system') {
+        type = 'system'
+      }
+      memory[type] = {
         measured_at: new Date(parseInt(metaMemory[mInd][1])),
         used: parseInt(metaMemory[mInd][2]),
         available: parseInt(metaMemory[mInd][3]),
@@ -284,7 +288,9 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaMemory.bulkCreate(dbMetaMemory)
+    return models.GuardianMetaMemory.bulkCreate(dbMetaMemory).catch(function (err) {
+      console.log('failed to create GuardianMetaMemory | ' + err)
+    })
   },
 
   SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
