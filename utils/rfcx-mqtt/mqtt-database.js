@@ -65,7 +65,7 @@ exports.checkInDatabase = {
   createDbCheckIn: function (checkInObj) {
     let opts
     try {
-      const checkInStatArray = this.strArrToJSArr(checkInObj.json.checkins, '|', '*')
+      const checkInStatArray = strArrToJSArr(checkInObj.json.checkins, '|', '*')
       checkInObj.json.checkins_to_verify = []
       for (const vInd in checkInStatArray) {
         checkInObj.json[checkInStatArray[vInd][0] + '_checkins'] = checkInStatArray[vInd][1]
@@ -125,32 +125,32 @@ exports.checkInDatabase = {
     const checkInId = (checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null
 
     const proms = [
-      saveMeta.DataTransfer(this.strArrToJSArr((checkInObj.json.data_transfer || checkInObj.json.dt), '|', '*'), guardianId, checkInId),
-      saveMeta.CPU(this.strArrToJSArr(checkInObj.json.cpu || checkInObj.json.cpu, '|', '*'), guardianId, checkInId),
-      saveMeta.Battery(this.strArrToJSArr(checkInObj.json.battery || checkInObj.json.btt, '|', '*'), guardianId, checkInId),
-      saveMeta.Network(this.strArrToJSArr(checkInObj.json.network || checkInObj.json.nw, '|', '*'), guardianId, checkInId),
-      saveMeta.LightMeter(this.strArrToJSArr(checkInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
-      saveMeta.Accelerometer(this.strArrToJSArr(checkInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
-      saveMeta.Storage(this.strArrToJSArr(checkInObj.json.storage || checkInObj.json.str, '|', '*'), guardianId, checkInId),
-      saveMeta.Memory(this.strArrToJSArr(checkInObj.json.memory || checkInObj.json.mm, '|', '*'), guardianId, checkInId),
-      saveMeta.GeoPosition(this.strArrToJSArr(checkInObj.json.geoposition, '|', '*'), guardianId, checkInId),
-      saveMeta.DateTimeOffset(this.strArrToJSArr(checkInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
-      saveMeta.MqttBrokerConnection(this.strArrToJSArr(checkInObj.json.broker_connections || checkInObj.json.bc, '|', '*'), guardianId, checkInId),
-      saveMeta.Detections((checkInObj.json.detections == null || checkInObj.json.dtt == null) ? checkInObj.json.detections.split('|') : [], checkInObj.db.dbGuardian.stream_id),
+      saveMeta.DataTransfer(strArrToJSArr(checkInObj.json.data_transfer, '|', '*'), guardianId, checkInId),
+      saveMeta.CPU(strArrToJSArr(checkInObj.json.cpu, '|', '*'), guardianId, checkInId),
+      saveMeta.Battery(strArrToJSArr(checkInObj.json.battery, '|', '*'), guardianId, checkInId),
+      saveMeta.Network(strArrToJSArr(checkInObj.json.network, '|', '*'), guardianId, checkInId),
+      saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
+      saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
+      saveMeta.Storage(strArrToJSArr(checkInObj.json.storage, '|', '*'), guardianId, checkInId),
+      saveMeta.Memory(strArrToJSArr(checkInObj.json.memory, '|', '*'), guardianId, checkInId),
+      saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition, '|', '*'), guardianId, checkInId),
+      saveMeta.DateTimeOffset(strArrToJSArr(checkInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
+      saveMeta.MqttBrokerConnection(strArrToJSArr(checkInObj.json.broker_connections, '|', '*'), guardianId, checkInId),
+      saveMeta.Detections(checkInObj.json.detections ? checkInObj.json.detections.split('|') : [], checkInObj.db.dbGuardian.stream_id),
 
-      saveMeta.RebootEvents(this.strArrToJSArr(checkInObj.json.reboots, '|', '*'), guardianId, checkInId),
-      saveMeta.SoftwareRoleVersion(this.strArrToJSArr(checkInObj.json.software || checkInObj.json.sw, '|', '*'), guardianId),
-      saveMeta.PreviousCheckIns(this.strArrToJSArr(checkInObj.json.previous_checkins, '|', '*')),
+      saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots, '|', '*'), guardianId, checkInId),
+      saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software, '|', '*'), guardianId),
+      saveMeta.PreviousCheckIns(strArrToJSArr(checkInObj.json.previous_checkins, '|', '*')),
 
-      saveMeta.CheckInStatus(this.strArrToJSArr(checkInObj.json.checkins || checkInObj.json.chn, '|', '*'), guardianId, checkInObj.json.measured_at),
+      saveMeta.CheckInStatus(strArrToJSArr(checkInObj.json.checkins, '|', '*'), guardianId, checkInObj.json.measured_at),
 
-      saveMeta.SentinelPower(this.strArrToJSArr(checkInObj.json.sentinel_power || checkInObj.json.sp, '|', '*'), guardianId, checkInId),
-      saveMeta.SentinelSensor('accelerometer', this.strArrToJSArr(checkInObj.json.sentinel_sensor || checkInObj.json.ss, '|', '*'), guardianId, checkInId),
-      saveMeta.SentinelSensor('compass', this.strArrToJSArr(checkInObj.json.sentinel_sensor || checkInObj.json.ss, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelPower(strArrToJSArr(checkInObj.json.sentinel_power, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelSensor('accelerometer', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelSensor('compass', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
 
-      saveMeta.Device((checkInObj.json.device == null || checkInObj.json.dv == null) ? {} : (checkInObj.json.device || checkInObj.json.dv), guardianId),
+      saveMeta.Device((checkInObj.json.device == null) ? {} : checkInObj.json.device, guardianId),
 
-      saveMeta.SwarmDiagnostics(this.strArrToJSArr(checkInObj.json.swm, '|', '*'), guardianId, checkInId)
+      saveMeta.SwarmDiagnostics(strArrToJSArr(checkInObj.json.swm, '|', '*'), guardianId, checkInId)
     ]
 
     return Promise.all(proms)
@@ -197,7 +197,7 @@ exports.checkInDatabase = {
       .then(() => {
         // parse list of purged assets from guardian, delete them from database and return list
         const dbMetaPurgedAssets = []
-        const metaPurgedAssets = this.strArrToJSArr(checkInObj.json.purged, '|', '*')
+        const metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
         for (const asstInd in metaPurgedAssets) {
           if (metaPurgedAssets[asstInd][1] != null) {
             dbMetaPurgedAssets.push({
@@ -604,7 +604,7 @@ exports.checkInDatabase = {
       return Promise.resolve(checkInObj)
     }
 
-    const coordsArr = this.strArrToJSArr(checkInObj.json.geoposition, '|', '*')
+    const coordsArr = strArrToJSArr(checkInObj.json.geoposition, '|', '*')
     if (!coordsArr.length) {
       return Promise.resolve(checkInObj)
     }
@@ -654,15 +654,16 @@ exports.checkInDatabase = {
       .then(() => {
         return checkInObj
       })
-  },
+  }
 
-  strArrToJSArr: function (str, delimA, delimB) {
-    if ((str == null) || (str.length === 0)) { return [] }
-    try {
-      const rtrnArr = []; const arr = str.split(delimA)
-      if (arr.length > 0) { for (const i in arr) { rtrnArr.push(arr[i].split(delimB)) } return rtrnArr } else { return [] }
-    } catch (e) {
-      console.log(e); return []
-    }
+}
+
+function strArrToJSArr (str, delimA, delimB) {
+  if ((str == null) || (str.length === 0)) { return [] }
+  try {
+    const rtrnArr = []; const arr = str.split(delimA)
+    if (arr.length > 0) { for (const i in arr) { rtrnArr.push(arr[i].split(delimB)) } return rtrnArr } else { return [] }
+  } catch (e) {
+    console.log(e); return []
   }
 }
