@@ -441,17 +441,17 @@ exports.saveMeta = {
     const roleVersions = {}
     const proms = []
     for (const vInd in roleArr) {
-      let role = ''
-      if (roleArr[vInd][0] === 'g' || roleArr[vInd][0] === 'guardian') {
+      let role = roleArr[vInd][0]
+      if (role === 'g') {
         role = 'guardian'
       }
-      if (roleArr[vInd][0] === 'a' || roleArr[vInd][0] === 'admin') {
+      if (role === 'a') {
         role = 'admin'
       }
-      if (roleArr[vInd][0] === 'c' || roleArr[vInd][0] === 'classify') {
+      if (role === 'c') {
         role = 'classify'
       }
-      if (roleArr[vInd][0] === 'u' || roleArr[vInd][0] === 'updater') {
+      if (role === 'u') {
         role = 'updater'
       }
       roleVersions[role] = roleArr[vInd][1]

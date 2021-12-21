@@ -71,7 +71,7 @@ test('normal software', async () => {
 
   const softwareVersions = await models.GuardianSoftwareVersion.findAll()
   const metaSoftwareVersions = await models.GuardianMetaSoftwareVersion.findAll()
-  expect(softwareVersions.length).toBe(3)
+  expect(softwareVersions.length).toBe(4)
   expect(metaSoftwareVersions.length).toBe(0)
 })
 
