@@ -7,6 +7,7 @@ beforeEach(() => {
   saveMeta.CPU = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.Battery = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.DataTransfer = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.Network = jest.fn().mockImplementation(() => Promise.resolve())
 })
 
 test('battery save is called', async () => {
@@ -69,6 +70,26 @@ test('data transfer save is called when abbreviated', async () => {
   expect(saveMeta.DataTransfer).toHaveBeenCalledWith(dataTransferExample, expect.anything(), expect.anything())
 })
 
+test('network save is called', async () => {
+  const json = { network: join(networkExample) }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Network).toHaveBeenCalledWith(networkExample, guardianId, checkinId)
+})
+
+test('network save is called when abbreviated', async () => {
+  const json = { nw: join(networkExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Network).toHaveBeenCalledWith(networkExample, expect.anything(), expect.anything())
+})
+
 const batteryExample = [
   ['1639990754314', '100', '25', '0', '1'],
   ['1639990558385', '100', '25', '0', '1']
@@ -81,6 +102,11 @@ const cpuExample = [
 const dataTransferExample = [
   ['1639662436136', '1639662614136', '0', '0', '490602', '9344564'],
   ['1639662257911', '1639662436136', '0', '0', '490602', '9344564']
+]
+
+const networkExample = [
+  ['1639662807479', '-91', 'hspa', 'AT&T'],
+  ['1639661726813', '-91', 'hspa', 'AT&T']
 ]
 
 function join (arrayOfArray) {
