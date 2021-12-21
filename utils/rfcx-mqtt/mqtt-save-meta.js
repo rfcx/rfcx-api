@@ -299,7 +299,15 @@ exports.saveMeta = {
     const sntnlPwrEntries = { }
 
     for (const duInd in metaSntnlPwr) {
-      const sysInpBatt = metaSntnlPwr[duInd][0] + ''
+      let sysInpBatt = metaSntnlPwr[duInd][0] + ''
+      if (sysInpBatt === 's') {
+        sysInpBatt = 'system'
+      } else if (sysInpBatt === 'i') {
+        sysInpBatt = 'input'
+      } else if (sysInpBatt === 'b') {
+        sysInpBatt = 'battery'
+      }
+
       const timeStamp = metaSntnlPwr[duInd][1] + ''
 
       if (sntnlPwrEntries[timeStamp] == null) {
@@ -350,7 +358,9 @@ exports.saveMeta = {
       }
     }
 
-    return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower)
+    return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower).catch(function (err) {
+      console.log('failed to create GuardianMetaSentinelPower | ' + err)
+    })
   },
 
   SentinelSensor: function (sensorTag, metaSntnlSnsr, guardianId, checkInId) {
