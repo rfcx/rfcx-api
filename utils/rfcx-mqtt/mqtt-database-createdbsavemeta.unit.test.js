@@ -31,6 +31,15 @@ test('battery save is called when abbreviated', async () => {
   expect(saveMeta.Battery).toHaveBeenCalledWith(batteryExample, expect.anything(), expect.anything())
 })
 
+test('battery save is called when invalid abbreviated but send empty list', async () => {
+  const json = { b: join(batteryExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Battery).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
+})
+
 test('cpu save is called', async () => {
   const json = { cpu: join(cpuExample) }
   const guardianId = 'xyz'
@@ -49,6 +58,15 @@ test('cpu save is called when abbreviated', async () => {
   await createDbSaveMeta(checkin)
 
   expect(saveMeta.CPU).toHaveBeenCalledWith(cpuExample, expect.anything(), expect.anything())
+})
+
+test('cpu save is called when invalid abbreviated but send empty list', async () => {
+  const json = { cp: join(cpuExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.CPU).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
 })
 
 test('data transfer save is called', async () => {
@@ -71,6 +89,15 @@ test('data transfer save is called when abbreviated', async () => {
   expect(saveMeta.DataTransfer).toHaveBeenCalledWith(dataTransferExample, expect.anything(), expect.anything())
 })
 
+test('data transfer save is called when abbreviated but send empty list', async () => {
+  const json = { dtf: join(dataTransferExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.DataTransfer).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
+})
+
 test('network save is called', async () => {
   const json = { network: join(networkExample) }
   const guardianId = 'xyz'
@@ -89,6 +116,15 @@ test('network save is called when abbreviated', async () => {
   await createDbSaveMeta(checkin)
 
   expect(saveMeta.Network).toHaveBeenCalledWith(networkExample, expect.anything(), expect.anything())
+})
+
+test('network save is called when abbreviated but send empty list', async () => {
+  const json = { ntw: join(networkExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Network).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
 })
 
 test('storage save is called', async () => {
@@ -110,6 +146,17 @@ test('storage save is called when abbreviated', async () => {
 
   expect(saveMeta.Storage).toHaveBeenCalledWith(storageExample, expect.anything(), expect.anything())
 })
+
+test('storage save is called when abbreviated but send empty list', async () => {
+  const json = { stg: join(storageExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Storage).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
+})
+
+const emptyList = []
 
 const batteryExample = [
   ['1639990754314', '100', '25', '0', '1'],
