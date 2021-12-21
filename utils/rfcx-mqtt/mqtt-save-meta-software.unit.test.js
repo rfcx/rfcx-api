@@ -5,7 +5,8 @@ jest.mock('../../models', () => {
   const software = [
     { id: 4, role: 'guardian' },
     { id: 5, role: 'admin' },
-    { id: 6, role: 'classify' }
+    { id: 6, role: 'classify' },
+    { id: 99, role: 'somethingnew' }
   ]
   const softwareVersions = []
   const metaSoftwareVersions = []
@@ -63,7 +64,8 @@ test('normal software', async () => {
   const payloadAsArray = [
     ['guardian', '0.8.9'],
     ['admin', '0.8.8'],
-    ['classify', '0.8.3']]
+    ['classify', '0.8.3'],
+    ['somethingnew', '0.0.1']]
 
   await SoftwareRoleVersion(payloadAsArray, 'xyz', '123')
 
