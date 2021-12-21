@@ -231,11 +231,11 @@ exports.saveMeta = {
     const diskUsage = { internal: {}, external: {} }
 
     for (const duInd in metaDiskUsage) {
-      let type = ''
-      if (metaDiskUsage[duInd][0] === 'i' || metaDiskUsage[duInd][0] === 'internal') {
+      let type = metaDiskUsage[duInd][0]
+      if (type === 'i') {
         type = 'internal'
       }
-      if (metaDiskUsage[duInd][0] === 'e' || metaDiskUsage[duInd][0] === 'external') {
+      if (type === 'e') {
         type = 'external'
       }
       diskUsage[type] = {
@@ -266,8 +266,8 @@ exports.saveMeta = {
     const memory = { system: {} }
 
     for (const mInd in metaMemory) {
-      let type = ''
-      if (metaMemory[mInd][0] === 's' || metaMemory[mInd][0] === 'system') {
+      let type = metaMemory[mInd][0]
+      if (type === 's') {
         type = 'system'
       }
       memory[type] = {
