@@ -441,14 +441,27 @@ exports.saveMeta = {
     const roleVersions = {}
     const proms = []
     for (const vInd in roleArr) {
-      roleVersions[roleArr[vInd][0]] = roleArr[vInd][1]
+      let role = ''
+      if (roleArr[vInd][0] === 'g' || roleArr[vInd][0] === 'guardian') {
+        role = 'guardian'
+      }
+      if (roleArr[vInd][0] === 'a' || roleArr[vInd][0] === 'admin') {
+        role = 'admin'
+      }
+      if (roleArr[vInd][0] === 'c' || roleArr[vInd][0] === 'classify') {
+        role = 'classify'
+      }
+      if (roleArr[vInd][0] === 'u' || roleArr[vInd][0] === 'updater') {
+        role = 'updater'
+      }
+      roleVersions[role] = roleArr[vInd][1]
       const prom = models.GuardianSoftware
         .findOne({
-          where: { role: roleArr[vInd][0] }
+          where: { role: role }
         })
         .then((dbSoftwareRole) => {
           if (!dbSoftwareRole) {
-            return Promise.reject(`Role "${roleArr[vInd][0]}" was not found.`) // eslint-disable-line prefer-promise-reject-errors
+            return Promise.reject(`Role "${role}" was not found.`) // eslint-disable-line prefer-promise-reject-errors
           }
           return models.GuardianSoftwareVersion
             .findAll({

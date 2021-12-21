@@ -72,3 +72,17 @@ test('normal software', async () => {
   expect(softwareVersions.length).toBe(3)
   expect(metaSoftwareVersions.length).toBe(0)
 })
+
+test('shorten software', async () => {
+  const payloadAsArray = [
+    ['g', '0.8.9'],
+    ['a', '0.8.8'],
+    ['c', '0.8.3']]
+
+  await SoftwareRoleVersion(payloadAsArray, 'xyz', '123')
+
+  const softwareVersions = await models.GuardianSoftwareVersion.findAll()
+  const metaSoftwareVersions = await models.GuardianMetaSoftwareVersion.findAll()
+  expect(softwareVersions.length).toBe(3)
+  expect(metaSoftwareVersions.length).toBe(0)
+})
