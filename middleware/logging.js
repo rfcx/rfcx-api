@@ -17,7 +17,7 @@ module.exports = expressWinston.logger({
       body = body.slice(0, 5)
       body.push(`Other ${totalLength - 5} items were cropped...`)
     }
-    return `${req.method} ${res.statusCode} ${req.url} ${res.responseTime} Origin: ${req.headers.Origin} Authorization: ${req.headers.authorization} ${JSON.stringify(body)}`
+    return `${req.method} ${res.statusCode} ${req.url} ${res.responseTime} Authorization: ${req.headers.authorization} ${JSON.stringify(body)}`
   },
   expressFormat: false
 })
