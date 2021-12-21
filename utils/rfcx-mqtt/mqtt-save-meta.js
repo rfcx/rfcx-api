@@ -396,6 +396,22 @@ exports.saveMeta = {
     const dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) }
 
     for (const vInd in metaCheckInStatus) {
+      let type = metaCheckInStatus[vInd][0]
+      if (type === 's') {
+        type = 'sent'
+      } else if (type === 'q') {
+        type = 'queued'
+      } else if (type === 'm') {
+        type = 'meta'
+      } else if (type === 'sk') {
+        type = 'skipped'
+      } else if (type === 'st') {
+        type = 'stashed'
+      } else if (type === 'a') {
+        type = 'archived'
+      } else if (type === 'v') {
+        type = 'vault'
+      }
       dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_count'] = parseInt(metaCheckInStatus[vInd][1])
       if (metaCheckInStatus[vInd][2] != null) {
         dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_size_bytes'] = parseInt(metaCheckInStatus[vInd][2])
@@ -403,7 +419,9 @@ exports.saveMeta = {
     }
     dbMetaCheckInStatus.push(dbMetaCheckInStatusObj)
 
-    return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus)
+    return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus).catch(function (err) {
+      console.log('failed to create GuardianMetaCheckInStatus | ' + err)
+    })
   },
 
   PreviousCheckIns: function (previousCheckIns) {
