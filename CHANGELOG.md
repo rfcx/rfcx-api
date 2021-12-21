@@ -3,6 +3,7 @@
 ### Performance Improvements
 * **core:** Improve `segments` query function by reducing amount of chunks to check
 * **core:** Reduce MySQL calls for user account
+* **core:** Do not sync static user like systemUser in Timescale and Neo4j
 
 
 ## 1.0.29 (2021-12-15)
