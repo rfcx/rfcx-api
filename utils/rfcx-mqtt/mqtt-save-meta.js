@@ -167,26 +167,37 @@ exports.saveMeta = {
   },
 
   Device: function (metaDevice, guardianId) {
+    const { a, p, h, ...others } = metaDevice
+    const fullDevice = { ...others }
+    if (a !== undefined) {
+      const fullAndroid = { product: a.p, brand: a.br, model: a.m, build: a.bu, android: a.a, manufacturer: a.mf }
+      fullDevice.android = fullAndroid
+    }
+    if (p !== undefined) {
+      const fullPhone = { sim: p.s, number: p.n, imei: p.imei, imsi: p.imsi }
+      fullDevice.phone = fullPhone
+    }
+
     return models.GuardianMetaHardware
       .findOrCreate({
         where: { guardian_id: guardianId }
       })
-      .spread((dbMetaHardware, wasCreated) => {
-        if (metaDevice.android != null) {
-          dbMetaHardware.manufacturer = metaDevice.android.manufacturer
-          dbMetaHardware.brand = metaDevice.android.brand
-          dbMetaHardware.model = metaDevice.android.model
-          dbMetaHardware.product = metaDevice.android.product
-          dbMetaHardware.android_version = metaDevice.android.android
-          dbMetaHardware.android_build = metaDevice.android.build
+      .then(([dbMetaHardware, wasCreated]) => {
+        if (fullDevice.android != null) {
+          dbMetaHardware.manufacturer = fullDevice.android.manufacturer
+          dbMetaHardware.brand = fullDevice.android.brand
+          dbMetaHardware.model = fullDevice.android.model
+          dbMetaHardware.product = fullDevice.android.product
+          dbMetaHardware.android_version = fullDevice.android.android
+          dbMetaHardware.android_build = fullDevice.android.build
         }
 
-        if (metaDevice.phone != null) {
-          dbMetaHardware.phone_imsi = (metaDevice.phone.imsi != null) ? metaDevice.phone.imsi : null
-          dbMetaHardware.phone_imei = (metaDevice.phone.imei != null) ? metaDevice.phone.imei : null
-          dbMetaHardware.phone_sim_serial = (metaDevice.phone.sim != null) ? metaDevice.phone.sim : null
-          dbMetaHardware.phone_sim_number = (metaDevice.phone.number != null) ? metaDevice.phone.number : null
-          dbMetaHardware.phone_sim_carrier = (metaDevice.phone.carrier != null) ? metaDevice.phone.carrier : null
+        if (fullDevice.phone != null) {
+          dbMetaHardware.phone_imsi = (fullDevice.phone.imsi != null) ? fullDevice.phone.imsi : null
+          dbMetaHardware.phone_imei = (fullDevice.phone.imei != null) ? fullDevice.phone.imei : null
+          dbMetaHardware.phone_sim_serial = (fullDevice.phone.sim != null) ? fullDevice.phone.sim : null
+          dbMetaHardware.phone_sim_number = (fullDevice.phone.number != null) ? fullDevice.phone.number : null
+          dbMetaHardware.phone_sim_carrier = (fullDevice.phone.carrier != null) ? fullDevice.phone.carrier : null
         }
 
         return dbMetaHardware.save()
