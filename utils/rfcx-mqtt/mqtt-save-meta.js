@@ -2,6 +2,8 @@ const models = require('../../models')
 const { parse: parseDetections } = require('./mqtt-detections-parse')
 const detectionsService = require('../../services/detections/create')
 
+const compactKeysSoftwareRole = { g: 'guardian', a: 'admin', c: 'classify', u: 'updater' }
+
 exports.saveMeta = {
 
   CPU: function (metaCPU, guardianId, checkInId) {
@@ -469,24 +471,11 @@ exports.saveMeta = {
     const roleVersions = {}
     const proms = []
     for (const vInd in roleArr) {
-      let role = roleArr[vInd][0]
-      if (role === 'g') {
-        role = 'guardian'
-      }
-      if (role === 'a') {
-        role = 'admin'
-      }
-      if (role === 'c') {
-        role = 'classify'
-      }
-      if (role === 'u') {
-        role = 'updater'
-      }
+      const roleRaw = roleArr[vInd][0]
+      const role = Object.keys(compactKeysSoftwareRole).includes(roleRaw) ? compactKeysSoftwareRole[roleRaw] : roleRaw
       roleVersions[role] = roleArr[vInd][1]
       const prom = models.GuardianSoftware
-        .findOne({
-          where: { role: role }
-        })
+        .findOne({ where: { role } })
         .then((dbSoftwareRole) => {
           if (!dbSoftwareRole) {
             return Promise.reject(`Role "${role}" was not found.`) // eslint-disable-line prefer-promise-reject-errors
