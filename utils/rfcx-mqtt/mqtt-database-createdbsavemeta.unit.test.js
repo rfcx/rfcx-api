@@ -15,6 +15,7 @@ beforeEach(() => {
   saveMeta.SoftwareRoleVersion = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.CheckInStatus = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.SentinelPower = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.Device = jest.fn().mockImplementation(() => Promise.resolve())
 })
 
 test('battery save is called', async () => {
@@ -341,7 +342,38 @@ test('sentinel power save is called when abbreviated but send empty list', async
   expect(saveMeta.SentinelPower).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
 })
 
+test('device save is called', async () => {
+  const json = { device: deviceExample }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Device).toHaveBeenCalledWith(deviceExample, guardianId)
+})
+
+test('device save is called when abbreviated', async () => {
+  const json = { dv: deviceExample }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Device).toHaveBeenCalledWith(deviceExample, expect.anything())
+})
+
+test('device save is called when abbreviated but send empty list', async () => {
+  const json = { dvc: deviceExample }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Device).toHaveBeenCalledWith(emptyObj, expect.anything())
+})
+
 const emptyList = []
+
+const emptyObj = {}
 
 const batteryExample = [
   ['1639990754314', '100', '25', '0', '1'],
@@ -398,6 +430,31 @@ const sentinelPowerExample = [
   ['i', '1639989299200', '9008', '80', '8', '718'],
   ['b', '1639989299200', '3363', '-20', '100.00', '-65']
 ]
+
+const deviceExample = {
+  android: {
+    product: 'Guardian',
+    brand: 'RFCx',
+    model: '3G_IOT',
+    build: '0.2.3',
+    android: '4.4.2',
+    manufacturer: 'OrangePi'
+  },
+  phone: {
+    sim: '8901260295780250462f',
+    number: '14156300572',
+    imei: '358877840010416',
+    imsi: '310260298025046'
+  },
+  hardware: {
+    product: 'Guardian',
+    brand: 'RFCx',
+    model: '3G_IOT',
+    build: '0.2.3',
+    android: '4.4.2',
+    manufacturer: 'OrangePi'
+  }
+}
 
 function join (arrayOfArray) {
   return arrayOfArray.map(array => array.join('*')).join('|')
