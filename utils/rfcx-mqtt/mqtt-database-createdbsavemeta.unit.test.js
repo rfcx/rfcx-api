@@ -16,6 +16,7 @@ beforeEach(() => {
   saveMeta.CheckInStatus = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.SentinelPower = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.Device = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.SwarmDiagnostics = jest.fn().mockImplementation(() => Promise.resolve())
 })
 
 test('battery save is called', async () => {
@@ -371,6 +372,17 @@ test('device save is called when abbreviated but send empty list', async () => {
   expect(saveMeta.Device).toHaveBeenCalledWith(emptyObj, expect.anything())
 })
 
+test('swarm save is called', async () => {
+  const json = { swm: join(swarmExample) }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.SwarmDiagnostics).toHaveBeenCalledWith(swarmExample, guardianId, checkinId)
+})
+
 const emptyList = []
 
 const emptyObj = {}
@@ -429,6 +441,11 @@ const sentinelPowerExample = [
   ['s', '1639989299200', '8972', '90', '30', '783'],
   ['i', '1639989299200', '9008', '80', '8', '718'],
   ['b', '1639989299200', '3363', '-20', '100.00', '-65']
+]
+
+const swarmExample = [
+  ['1420070745567', '-101', '-95', '7', '11', '2021-09-30 10:10:10', '0x1234AB', '5'],
+  ['1420070745999', '-101', '-95', '7', '11', '2021-09-30 10:10:10', '0x1234AB', '5']
 ]
 
 const deviceExample = {
