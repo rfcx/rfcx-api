@@ -1,6 +1,8 @@
 const { saveMeta: { CheckInStatus } } = require('./mqtt-save-meta')
 const models = require('../../models')
 
+const compactKeysCheckIns = { s: 'sent', q: 'queued', m: 'meta', sk: 'skipped', st: 'stashed', a: 'archived', v: 'vault' }
+
 jest.mock('../../models', () => {
   const checkins = []
   return {
@@ -60,7 +62,7 @@ test('shorten checkins', async () => {
 
   expect(results.length).toBe(1)
   payloadAsArray.forEach((it) => {
-    expect(results[0][it[0] + '_count']).toBe(parseInt(it[1]))
-    expect(results[0][it[0] + '_size_bytes']).toBe(parseInt(it[2]))
+    expect(results[0][compactKeysCheckIns[it[0]] + '_count']).toBe(parseInt(it[1]))
+    expect(results[0][compactKeysCheckIns[it[0]] + '_size_bytes']).toBe(parseInt(it[2]))
   })
 })

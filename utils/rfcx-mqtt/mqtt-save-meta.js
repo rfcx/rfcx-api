@@ -3,6 +3,10 @@ const { parse: parseDetections } = require('./mqtt-detections-parse')
 const detectionsService = require('../../services/detections/create')
 
 const compactKeysSoftwareRole = { g: 'guardian', a: 'admin', c: 'classify', u: 'updater' }
+const compactKeysStorage = { i: 'internal', e: 'external' }
+const compactKeysMemory = { s: 'system' }
+const compactKeysSentinelPower = { s: 'system', i: 'input', b: 'battery' }
+const compactKeysCheckIns = { s: 'sent', q: 'queued', m: 'meta', sk: 'skipped', st: 'stashed', a: 'archived', v: 'vault' }
 
 exports.saveMeta = {
 
@@ -233,13 +237,8 @@ exports.saveMeta = {
     const diskUsage = { internal: {}, external: {} }
 
     for (const duInd in metaDiskUsage) {
-      let type = metaDiskUsage[duInd][0]
-      if (type === 'i') {
-        type = 'internal'
-      }
-      if (type === 'e') {
-        type = 'external'
-      }
+      const typeRaw = metaDiskUsage[duInd][0]
+      const type = Object.keys(compactKeysStorage).includes(typeRaw) ? compactKeysStorage[typeRaw] : typeRaw
       diskUsage[type] = {
         measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
         used: parseInt(metaDiskUsage[duInd][2]),
@@ -268,10 +267,8 @@ exports.saveMeta = {
     const memory = { system: {} }
 
     for (const mInd in metaMemory) {
-      let type = metaMemory[mInd][0]
-      if (type === 's') {
-        type = 'system'
-      }
+      const typeRaw = metaMemory[mInd][0]
+      const type = Object.keys(compactKeysMemory).includes(typeRaw) ? compactKeysMemory[typeRaw] : typeRaw
       memory[type] = {
         measured_at: new Date(parseInt(metaMemory[mInd][1])),
         used: parseInt(metaMemory[mInd][2]),
@@ -301,14 +298,8 @@ exports.saveMeta = {
     const sntnlPwrEntries = { }
 
     for (const duInd in metaSntnlPwr) {
-      let sysInpBatt = metaSntnlPwr[duInd][0] + ''
-      if (sysInpBatt === 's') {
-        sysInpBatt = 'system'
-      } else if (sysInpBatt === 'i') {
-        sysInpBatt = 'input'
-      } else if (sysInpBatt === 'b') {
-        sysInpBatt = 'battery'
-      }
+      const sysInpBattRaw = metaSntnlPwr[duInd][0] + ''
+      const sysInpBatt = Object.keys(compactKeysSentinelPower).includes(sysInpBattRaw) ? compactKeysSentinelPower[sysInpBattRaw] : sysInpBattRaw
 
       const timeStamp = metaSntnlPwr[duInd][1] + ''
 
@@ -408,25 +399,11 @@ exports.saveMeta = {
     const dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) }
 
     for (const vInd in metaCheckInStatus) {
-      let type = metaCheckInStatus[vInd][0]
-      if (type === 's') {
-        type = 'sent'
-      } else if (type === 'q') {
-        type = 'queued'
-      } else if (type === 'm') {
-        type = 'meta'
-      } else if (type === 'sk') {
-        type = 'skipped'
-      } else if (type === 'st') {
-        type = 'stashed'
-      } else if (type === 'a') {
-        type = 'archived'
-      } else if (type === 'v') {
-        type = 'vault'
-      }
-      dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_count'] = parseInt(metaCheckInStatus[vInd][1])
+      const typeRaw = metaCheckInStatus[vInd][0]
+      const type = Object.keys(compactKeysCheckIns).includes(typeRaw) ? compactKeysCheckIns[typeRaw] : typeRaw
+      dbMetaCheckInStatusObj[type + '_count'] = parseInt(metaCheckInStatus[vInd][1])
       if (metaCheckInStatus[vInd][2] != null) {
-        dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_size_bytes'] = parseInt(metaCheckInStatus[vInd][2])
+        dbMetaCheckInStatusObj[type + '_size_bytes'] = parseInt(metaCheckInStatus[vInd][2])
       }
     }
     dbMetaCheckInStatus.push(dbMetaCheckInStatusObj)
