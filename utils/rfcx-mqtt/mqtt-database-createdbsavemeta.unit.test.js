@@ -13,6 +13,7 @@ beforeEach(() => {
   saveMeta.MqttBrokerConnection = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.Detections = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.SoftwareRoleVersion = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.CheckInStatus = jest.fn().mockImplementation(() => Promise.resolve())
 })
 
 test('battery save is called', async () => {
@@ -280,6 +281,36 @@ test('software role save is called when abbreviated but send empty list', async 
   expect(saveMeta.SoftwareRoleVersion).toHaveBeenCalledWith(emptyList, expect.anything())
 })
 
+test('checkins save is called', async () => {
+  const measuredAt = 1234567891011
+  const json = { checkins: join(checkinsExample), measured_at: measuredAt }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.CheckInStatus).toHaveBeenCalledWith(checkinsExample, guardianId, measuredAt)
+})
+
+test('checkins save is called when abbreviated', async () => {
+  const json = { chn: join(checkinsExample), measured_at: 1234567891011 }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.CheckInStatus).toHaveBeenCalledWith(checkinsExample, expect.anything(), expect.anything())
+})
+
+test('checkins save is called when abbreviated but send empty list', async () => {
+  const json = { chns: join(checkinsExample), measured_at: 1234567891011 }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.CheckInStatus).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
+})
+
 const emptyList = []
 
 const batteryExample = [
@@ -325,6 +356,11 @@ const softwareRoleExample = [
   ['guardian', '0.8.9'],
   ['admin', '0.8.8'],
   ['classify', '0.8.3']
+]
+
+const checkinsExample = [
+  ['s', '0', '0'],
+  ['q', '602', '83754671']
 ]
 
 function join (arrayOfArray) {
