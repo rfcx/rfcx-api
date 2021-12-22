@@ -294,7 +294,7 @@ test('checkins save is called', async () => {
 })
 
 test('checkins save is called when abbreviated', async () => {
-  const json = { chn: join(checkinsExample), measured_at: 1234567891011 }
+  const json = { chn: join(checkinsExample), ma: 1234567891011 }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
   await createDbSaveMeta(checkin)
@@ -303,7 +303,7 @@ test('checkins save is called when abbreviated', async () => {
 })
 
 test('checkins save is called when abbreviated but send empty list', async () => {
-  const json = { chns: join(checkinsExample), measured_at: 1234567891011 }
+  const json = { chns: join(checkinsExample), ma: 1234567891011 }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
   await createDbSaveMeta(checkin)

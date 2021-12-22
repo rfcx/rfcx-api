@@ -671,8 +671,8 @@ function strArrToJSArr (str, delimA, delimB) {
 
 function abbreviatedToFullName (checkInObj) {
   const json = checkInObj.json
-  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ...others } = json
-  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, ...others }
+  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, ...others } = json
+  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, ...others }
   checkInObj.json = fullNameJson
   return checkInObj
 }
