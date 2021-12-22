@@ -156,6 +156,35 @@ test('storage save is called when abbreviated but send empty list', async () => 
   expect(saveMeta.Storage).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
 })
 
+test('memory save is called', async () => {
+  const json = { memory: join(memoryExample) }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Memory).toHaveBeenCalledWith(memoryExample, guardianId, checkinId)
+})
+
+test('memory save is called when abbreviated', async () => {
+  const json = { mm: join(memoryExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Memory).toHaveBeenCalledWith(memoryExample, expect.anything(), expect.anything())
+})
+
+test('memory save is called when abbreviated but send empty list', async () => {
+  const json = { mmr: join(memoryExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Memory).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
+})
+
 const emptyList = []
 
 const batteryExample = [
@@ -180,6 +209,11 @@ const networkExample = [
 const storageExample = [
   ['i', '1639662807198', '287502336', '1077907456'],
   ['e', '1639662807198', '396197888', '127436980224']
+]
+
+const memoryExample = [
+  ['system', '1639986182572', '309223424', '172429312', '57702400'],
+  ['system', '1639986003785', '309149696', '172503040', '57702400']
 ]
 
 function join (arrayOfArray) {
