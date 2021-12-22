@@ -97,7 +97,7 @@ test('data transfer save is called when abbreviated', async () => {
   expect(saveMeta.DataTransfer).toHaveBeenCalledWith(dataTransferExample, expect.anything(), expect.anything())
 })
 
-test('data transfer save is called when abbreviated but send empty list', async () => {
+test('data transfer save is called when invalid abbreviated but send empty list', async () => {
   const json = { dtf: join(dataTransferExample) }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -126,7 +126,7 @@ test('network save is called when abbreviated', async () => {
   expect(saveMeta.Network).toHaveBeenCalledWith(networkExample, expect.anything(), expect.anything())
 })
 
-test('network save is called when abbreviated but send empty list', async () => {
+test('network save is called when invalid abbreviated but send empty list', async () => {
   const json = { ntw: join(networkExample) }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -155,7 +155,7 @@ test('storage save is called when abbreviated', async () => {
   expect(saveMeta.Storage).toHaveBeenCalledWith(storageExample, expect.anything(), expect.anything())
 })
 
-test('storage save is called when abbreviated but send empty list', async () => {
+test('storage save is called when invalid abbreviated but send empty list', async () => {
   const json = { stg: join(storageExample) }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -184,7 +184,7 @@ test('memory save is called when abbreviated', async () => {
   expect(saveMeta.Memory).toHaveBeenCalledWith(memoryExample, expect.anything(), expect.anything())
 })
 
-test('memory save is called when abbreviated but send empty list', async () => {
+test('memory save is called when invalid abbreviated but send empty list', async () => {
   const json = { mmr: join(memoryExample) }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -213,7 +213,7 @@ test('broker connections save is called when abbreviated', async () => {
   expect(saveMeta.MqttBrokerConnection).toHaveBeenCalledWith(brokerConnectionExample, expect.anything(), expect.anything())
 })
 
-test('broker connections save is called when abbreviated but send empty list', async () => {
+test('broker connections save is called when invalid abbreviated but send empty list', async () => {
   const json = { bkc: join(brokerConnectionExample) }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -245,7 +245,7 @@ test('detections save is called when abbreviated', async () => {
   expect(saveMeta.Detections).toHaveBeenCalledWith(joinDetections.split('|'), expect.anything())
 })
 
-test('detections save is called when abbreviated but send empty list', async () => {
+test('detections save is called when invalid abbreviated but send empty list', async () => {
   const joinDetections = join(detectionExample)
   const json = { dtts: joinDetections }
   const checkin = makeCheckin(json, 'xyz', 'abc', 'hjk')
@@ -275,7 +275,7 @@ test('software role save is called when abbreviated', async () => {
   expect(saveMeta.SoftwareRoleVersion).toHaveBeenCalledWith(softwareRoleExample, expect.anything())
 })
 
-test('software role save is called when abbreviated but send empty list', async () => {
+test('software role save is called when invalid abbreviated but send empty list', async () => {
   const json = { sws: join(softwareRoleExample) }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -305,7 +305,7 @@ test('checkins save is called when abbreviated', async () => {
   expect(saveMeta.CheckInStatus).toHaveBeenCalledWith(checkinsExample, expect.anything(), expect.anything())
 })
 
-test('checkins save is called when abbreviated but send empty list', async () => {
+test('checkins save is called when invalid abbreviated but send empty list', async () => {
   const json = { chns: join(checkinsExample), ma: 1234567891011 }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -334,7 +334,7 @@ test('sentinel power save is called when abbreviated', async () => {
   expect(saveMeta.SentinelPower).toHaveBeenCalledWith(sentinelPowerExample, expect.anything(), expect.anything())
 })
 
-test('sentinel power save is called when abbreviated but send empty list', async () => {
+test('sentinel power save is called when invalid abbreviated but send empty list', async () => {
   const json = { stp: join(sentinelPowerExample) }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
@@ -363,7 +363,7 @@ test('device save is called when abbreviated', async () => {
   expect(saveMeta.Device).toHaveBeenCalledWith(deviceExample, expect.anything())
 })
 
-test('device save is called when abbreviated but send empty list', async () => {
+test('device save is called when invalid abbreviated but send empty list', async () => {
   const json = { dvc: deviceExample }
   const checkin = makeCheckin(json, 'xyz', 'abc')
 
