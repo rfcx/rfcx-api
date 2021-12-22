@@ -46,6 +46,28 @@ describe('MQTT save meta', () => {
     expect(detections[3].confidence).toBe(0.90)
   })
 
+  test('detections single payload abbreviated', async () => {
+    const { stream, classifier, classifierOutput } = await commonSetup()
+    const start = 1420070745567
+    const step = 1000
+    const confidencesRaw = 'n3,0.98,n11,0.98,n3,0.95,n10,0.90,n4,0.97,n9,0.96,n6'
+    const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step}*${confidencesRaw}`
+    console.log = jest.fn()
+
+    await Detections([input], stream.id)
+
+    const detections = await models.Detection.findAll({ order: ['start'] })
+    expect(detections.length).toBe(6)
+    expect(detections[0].start).toEqual(moment(start + 3 * step).toDate())
+    expect(detections[0].confidence).toBe(0.98)
+    expect(detections[1].start).toEqual(moment(start + 15 * step).toDate())
+    expect(detections[1].confidence).toBe(0.98)
+    expect(detections[2].start).toEqual(moment(start + 19 * step).toDate())
+    expect(detections[2].confidence).toBe(0.95)
+    expect(detections[3].start).toEqual(moment(start + 30 * step).toDate())
+    expect(detections[3].confidence).toBe(0.90)
+  })
+
   test('detections multiple payloads', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start1 = 1619211870411
@@ -71,11 +93,51 @@ describe('MQTT save meta', () => {
     expect(detections[12].confidence).toBe(0.95)
   })
 
+  test('detections multiple payloads abbreviated', async () => {
+    const { stream, classifier, classifierOutput } = await commonSetup()
+    const start1 = 1619211870411
+    const start2 = 1619212320741
+    const step = 975
+    const confidencesRaw1 = 'n9,0.99,n4,0.96,n3,0.99,0.98,n36,0.99,0.98,n2,0.97,n33'
+    const confidencesRaw2 = 'n9,0.98,,0.98,n4,0.99,n42,0.99,n7,0.98,n21,0.95,n4'
+    const input1 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start1}*${step}*${confidencesRaw1}`
+    const input2 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start2}*${step}*${confidencesRaw2}`
+    console.log = jest.fn()
+
+    await Detections([input1, input2], stream.id)
+
+    const detections = await models.Detection.findAll({ order: ['start'] })
+    expect(detections.length).toBe(13)
+    expect(detections[0].start).toEqual(moment(start1 + 9 * step).toDate())
+    expect(detections[0].confidence).toBe(0.99)
+    expect(detections[7].start).toEqual(moment(start2 + 9 * step).toDate())
+    expect(detections[7].confidence).toBe(0.98)
+    expect(detections[8].start).toEqual(moment(start2 + 11 * step).toDate())
+    expect(detections[8].confidence).toBe(0.98)
+    expect(detections[12].start).toEqual(moment(start2 + 89 * step).toDate())
+    expect(detections[12].confidence).toBe(0.95)
+  })
+
   test('payload with bad step (*1000)', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start = 1420070745567
     const step = 1000
     const confidencesRaw = ',,,0.98,,,,,,,,,,,,0.98,,,,0.95,,,,,,,,,,,0.90,,,,,0.97,,,,,,,,,,0.96,,,,,,'
+    const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step * 1000}*${confidencesRaw}`
+    console.log = jest.fn()
+
+    await Detections([input], stream.id)
+
+    const detections = await models.Detection.findAll({ order: ['start'] })
+    expect(detections.length).toBe(6)
+    expect(detections[0].start).toEqual(moment(start + 3 * step).toDate())
+  })
+
+  test('payload with bad step (*1000) abbreviated', async () => {
+    const { stream, classifier, classifierOutput } = await commonSetup()
+    const start = 1420070745567
+    const step = 1000
+    const confidencesRaw = 'n3,0.98,n11,0.98,n3,0.95,n10,0.90,n4,0.97,n9,0.96,n6'
     const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step * 1000}*${confidencesRaw}`
     console.log = jest.fn()
 
