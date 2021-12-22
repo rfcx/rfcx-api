@@ -12,6 +12,7 @@ beforeEach(() => {
   saveMeta.Memory = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.MqttBrokerConnection = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.Detections = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.SoftwareRoleVersion = jest.fn().mockImplementation(() => Promise.resolve())
 })
 
 test('battery save is called', async () => {
@@ -250,6 +251,35 @@ test('detections save is called when abbreviated but send empty list', async () 
   expect(saveMeta.Detections).toHaveBeenCalledWith(emptyList, expect.anything())
 })
 
+test('software role save is called', async () => {
+  const json = { software: join(softwareRoleExample) }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.SoftwareRoleVersion).toHaveBeenCalledWith(softwareRoleExample, guardianId)
+})
+
+test('software role save is called when abbreviated', async () => {
+  const json = { sw: join(softwareRoleExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.SoftwareRoleVersion).toHaveBeenCalledWith(softwareRoleExample, expect.anything())
+})
+
+test('software role save is called when abbreviated but send empty list', async () => {
+  const json = { sws: join(softwareRoleExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.SoftwareRoleVersion).toHaveBeenCalledWith(emptyList, expect.anything())
+})
+
 const emptyList = []
 
 const batteryExample = [
@@ -289,6 +319,12 @@ const brokerConnectionExample = [
 const detectionExample = [
   ['chainsaw', 'chainsaw-v5', '1637772067416*975000', ',,,0.97,,,0.97,,0.99,0.99,0.99,,0.96,,,,,,,,,,,0.97,,,,,0.96,,,,,,,,0.96,,,,,,,,,0.97,,,,,0.99,,,0.99,0.98,,0.97,0.99,,0.98,,,0.97,,0.99,0.98,,,,,,,,,,,,,,,,,,,,,,,,,,'],
   ['chainsaw', 'chainsaw-v5', '1637770716128*975000', ',,,,,,,,,,,,,,,,,0.98,,,,,,,,,,,,,,,,,,,,0.99,,,,,,,,,,,,,,,,,0.98,,,,,,,,,,,,,,0.99,,0.98,,,,,,,,,0.98,,,0.97,,,,,,,,0.96,,']
+]
+
+const softwareRoleExample = [
+  ['guardian', '0.8.9'],
+  ['admin', '0.8.8'],
+  ['classify', '0.8.3']
 ]
 
 function join (arrayOfArray) {
