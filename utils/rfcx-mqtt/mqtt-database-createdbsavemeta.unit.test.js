@@ -9,6 +9,9 @@ beforeEach(() => {
   saveMeta.DataTransfer = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.Network = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.Storage = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.Memory = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.MqttBrokerConnection = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.Detections = jest.fn().mockImplementation(() => Promise.resolve())
 })
 
 test('battery save is called', async () => {
@@ -214,6 +217,39 @@ test('broker connections save is called when abbreviated but send empty list', a
   expect(saveMeta.MqttBrokerConnection).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
 })
 
+test('detections save is called', async () => {
+  const joinDetections = join(detectionExample)
+  const json = { detections: joinDetections }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const streamId = 'hjk'
+  const checkin = makeCheckin(json, guardianId, checkinId, streamId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Detections).toHaveBeenCalledWith(joinDetections.split('|'), streamId)
+})
+
+test('detections save is called when abbreviated', async () => {
+  const joinDetections = join(detectionExample)
+  const json = { dtt: joinDetections }
+  const checkin = makeCheckin(json, 'xyz', 'abc', 'hjk')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Detections).toHaveBeenCalledWith(joinDetections.split('|'), expect.anything())
+})
+
+test('detections save is called when abbreviated but send empty list', async () => {
+  const joinDetections = join(detectionExample)
+  const json = { dtts: joinDetections }
+  const checkin = makeCheckin(json, 'xyz', 'abc', 'hjk')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.Detections).toHaveBeenCalledWith(emptyList, expect.anything())
+})
+
 const emptyList = []
 
 const batteryExample = [
@@ -250,15 +286,21 @@ const brokerConnectionExample = [
   ['1639985978216', '9280', '476', 'ssl://api-mqtt.rfcx.org:8883']
 ]
 
+const detectionExample = [
+  ['chainsaw', 'chainsaw-v5', '1637772067416*975000', ',,,0.97,,,0.97,,0.99,0.99,0.99,,0.96,,,,,,,,,,,0.97,,,,,0.96,,,,,,,,0.96,,,,,,,,,0.97,,,,,0.99,,,0.99,0.98,,0.97,0.99,,0.98,,,0.97,,0.99,0.98,,,,,,,,,,,,,,,,,,,,,,,,,,'],
+  ['chainsaw', 'chainsaw-v5', '1637770716128*975000', ',,,,,,,,,,,,,,,,,0.98,,,,,,,,,,,,,,,,,,,,0.99,,,,,,,,,,,,,,,,,0.98,,,,,,,,,,,,,,0.99,,0.98,,,,,,,,,0.98,,,0.97,,,,,,,,0.96,,']
+]
+
 function join (arrayOfArray) {
   return arrayOfArray.map(array => array.join('*')).join('|')
 }
 
-function makeCheckin (json, guardianId, checkinId) {
+function makeCheckin (json, guardianId, checkinId, streamId) {
   return {
     db: {
       dbGuardian: {
-        id: guardianId
+        id: guardianId,
+        stream_id: streamId
       },
       dbCheckIn: {
         id: checkinId
