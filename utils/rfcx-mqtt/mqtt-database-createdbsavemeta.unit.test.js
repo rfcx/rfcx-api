@@ -14,6 +14,7 @@ beforeEach(() => {
   saveMeta.Detections = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.SoftwareRoleVersion = jest.fn().mockImplementation(() => Promise.resolve())
   saveMeta.CheckInStatus = jest.fn().mockImplementation(() => Promise.resolve())
+  saveMeta.SentinelPower = jest.fn().mockImplementation(() => Promise.resolve())
 })
 
 test('battery save is called', async () => {
@@ -311,6 +312,35 @@ test('checkins save is called when abbreviated but send empty list', async () =>
   expect(saveMeta.CheckInStatus).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
 })
 
+test('sentinel power save is called', async () => {
+  const json = { sentinel_power: join(sentinelPowerExample) }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.SentinelPower).toHaveBeenCalledWith(sentinelPowerExample, guardianId, checkinId)
+})
+
+test('sentinel power save is called when abbreviated', async () => {
+  const json = { sp: join(sentinelPowerExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.SentinelPower).toHaveBeenCalledWith(sentinelPowerExample, expect.anything(), expect.anything())
+})
+
+test('sentinel power save is called when abbreviated but send empty list', async () => {
+  const json = { stp: join(sentinelPowerExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.SentinelPower).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
+})
+
 const emptyList = []
 
 const batteryExample = [
@@ -361,6 +391,12 @@ const softwareRoleExample = [
 const checkinsExample = [
   ['s', '0', '0'],
   ['q', '602', '83754671']
+]
+
+const sentinelPowerExample = [
+  ['s', '1639989299200', '8972', '90', '30', '783'],
+  ['i', '1639989299200', '9008', '80', '8', '718'],
+  ['b', '1639989299200', '3363', '-20', '100.00', '-65']
 ]
 
 function join (arrayOfArray) {
