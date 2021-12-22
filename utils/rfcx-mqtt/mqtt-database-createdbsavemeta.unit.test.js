@@ -185,6 +185,35 @@ test('memory save is called when abbreviated but send empty list', async () => {
   expect(saveMeta.Memory).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
 })
 
+test('broker connections save is called', async () => {
+  const json = { broker_connections: join(brokerConnectionExample) }
+  const guardianId = 'xyz'
+  const checkinId = 'abc'
+  const checkin = makeCheckin(json, guardianId, checkinId)
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.MqttBrokerConnection).toHaveBeenCalledWith(brokerConnectionExample, guardianId, checkinId)
+})
+
+test('broker connections save is called when abbreviated', async () => {
+  const json = { bc: join(brokerConnectionExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.MqttBrokerConnection).toHaveBeenCalledWith(brokerConnectionExample, expect.anything(), expect.anything())
+})
+
+test('broker connections save is called when abbreviated but send empty list', async () => {
+  const json = { bkc: join(brokerConnectionExample) }
+  const checkin = makeCheckin(json, 'xyz', 'abc')
+
+  await createDbSaveMeta(checkin)
+
+  expect(saveMeta.MqttBrokerConnection).toHaveBeenCalledWith(emptyList, expect.anything(), expect.anything())
+})
+
 const emptyList = []
 
 const batteryExample = [
@@ -214,6 +243,11 @@ const storageExample = [
 const memoryExample = [
   ['system', '1639986182572', '309223424', '172429312', '57702400'],
   ['system', '1639986003785', '309149696', '172503040', '57702400']
+]
+
+const brokerConnectionExample = [
+  ['1639986160114', '29953', '455', 'ssl://api-mqtt.rfcx.org:8883'],
+  ['1639985978216', '9280', '476', 'ssl://api-mqtt.rfcx.org:8883']
 ]
 
 function join (arrayOfArray) {
