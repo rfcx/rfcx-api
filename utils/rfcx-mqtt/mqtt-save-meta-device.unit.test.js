@@ -134,6 +134,16 @@ test('new device meta (compact format) is saved', async () => {
   const results = await models.GuardianMetaHardware.findAll()
 
   expect(results.length).toBe(1)
+  expect(results[0].manufacturer).toEqual(payload.a.mf)
+  expect(results[0].product).toEqual(payload.a.p)
+  expect(results[0].brand).toEqual(payload.a.br)
+  expect(results[0].model).toEqual(payload.a.m)
+  expect(results[0].android_build).toEqual(payload.a.bu)
+  expect(results[0].android_version).toEqual(payload.a.a)
+  expect(results[0].phone_sim_serial).toEqual(payload.p.s)
+  expect(results[0].phone_sim_number).toEqual(payload.p.n)
+  expect(results[0].phone_imei).toEqual(payload.p.imei)
+  expect(results[0].phone_imsi).toEqual(payload.p.imsi)
 })
 
 test('shorten device invalid', async () => {
@@ -158,5 +168,17 @@ test('shorten device invalid', async () => {
 
   const results = await models.GuardianMetaHardware.findAll()
 
+  console.log(results)
+
   expect(results.length).toBe(1)
+  expect(results[0].manufacturer).toEqual(payload.a.mf)
+  expect(results[0].product).toEqual(payload.a.p)
+  expect(results[0].brand).toEqual(payload.a.br)
+  expect(results[0].model).toEqual(payload.a.m)
+  expect(results[0].android_build).toEqual(payload.a.bu)
+  expect(results[0].android_version).toEqual(payload.a.a)
+  expect(results[0].phone_sim_serial).toBeUndefined()
+  expect(results[0].phone_sim_number).toBeUndefined()
+  expect(results[0].phone_imei).toBeUndefined()
+  expect(results[0].phone_imsi).toBeUndefined()
 })
