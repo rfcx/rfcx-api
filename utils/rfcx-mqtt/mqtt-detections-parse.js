@@ -16,30 +16,21 @@ function parse (input) {
     stepMs = stepMs / 1000
   }
 
-  if (confidences.includes('n')) {
-    let realIndexOfConfidence = 0
-    return confidences.split(',').map((x) => {
-      if (x[0] === 'n') {
-        realIndexOfConfidence += parseInt(x.substring(1))
-        return undefined
-      }
-      const start = moment(timestampMs + realIndexOfConfidence * stepMs)
-      const end = start.clone().add(stepMs, 'milliseconds')
-      const confidence = parseFloat(x)
-      realIndexOfConfidence++
-      return { classification, classifier, start, end, confidence }
-    }).filter((x) => x !== undefined)
-  } else {
-    return confidences.split(',').map((x, i) => {
-      if (x === '') {
-        return undefined
-      }
-      const start = moment(timestampMs + i * stepMs)
-      const end = start.clone().add(stepMs, 'milliseconds')
-      const confidence = parseFloat(x)
-      return { classification, classifier, start, end, confidence }
-    }).filter((x) => x !== undefined)
-  }
+  let skipped = 0
+  return confidences.split(',').map((x) => {
+    if (x === '') {
+      skipped++
+      return undefined
+    } else if (x.startsWith('n')) {
+      skipped += parseInt(x.substring(1))
+      return undefined
+    }
+    const start = moment(timestampMs + skipped * stepMs)
+    const end = start.clone().add(stepMs, 'milliseconds')
+    const confidence = parseFloat(x)
+    skipped++
+    return { classification, classifier, start, end, confidence }
+  }).filter((x) => x !== undefined)
 }
 
 module.exports = { parse }

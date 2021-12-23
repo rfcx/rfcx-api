@@ -168,8 +168,6 @@ test('shorten device invalid', async () => {
 
   const results = await models.GuardianMetaHardware.findAll()
 
-  console.log(results)
-
   expect(results.length).toBe(1)
   expect(results[0].manufacturer).toEqual(payload.a.mf)
   expect(results[0].product).toEqual(payload.a.p)
