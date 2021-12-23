@@ -53,6 +53,14 @@ test('success with multiple detections', () => {
   expect(result.length).toBe(6)
 })
 
+test('success with multiple detections (compact format)', () => {
+  const raw = 'chainsaw*chainsaw-v5*1420070745567*1000*n25,0.98,n11,0.98,n3,0.95,n10,0.90,n4,0.97,n9,0.96,n26'
+
+  const result = parse(raw)
+
+  expect(result.length).toBe(6)
+})
+
 test('incorrect step (from tembe guardians)', () => {
   const raw = 'chainsaw*chainsaw-v5*1619211870411*975000*,,,,,,,,,0.99,,,,,0.96,,,,0.99,0.98,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.99,0.98,,,0.97,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
   const firstResultOffsetMs = 9 * 975
