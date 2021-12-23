@@ -1,3 +1,9 @@
+## 1.0.30 (2021-12-xx)
+
+### Features
+* **core:** Add tests for `mqtt-save-meta.js` and `createDbSaveMeta`
+
+
 ## 1.0.29 (2021-12-15)
 
 ### Features
