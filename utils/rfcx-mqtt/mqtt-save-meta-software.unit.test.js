@@ -60,7 +60,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal software', async () => {
+test('can save software', async () => {
   const payloadAsArray = [
     ['guardian', '0.8.9'],
     ['admin', '0.8.8'],
@@ -75,7 +75,7 @@ test('normal software', async () => {
   expect(metaSoftwareVersions.length).toBe(0)
 })
 
-test('shorten software', async () => {
+test('can save software (compact format)', async () => {
   const payloadAsArray = [
     ['g', '0.8.9'],
     ['a', '0.8.8'],

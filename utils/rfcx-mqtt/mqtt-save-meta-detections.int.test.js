@@ -24,7 +24,7 @@ async function commonSetup () {
 }
 
 describe('MQTT save meta', () => {
-  test('detections single payload', async () => {
+  test('can save detections single payload', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start = 1420070745567
     const step = 1000
@@ -46,7 +46,7 @@ describe('MQTT save meta', () => {
     expect(detections[3].confidence).toBe(0.90)
   })
 
-  test('detections single payload abbreviated', async () => {
+  test('can save detections single payload abbreviated', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start = 1420070745567
     const step = 1000
@@ -68,7 +68,7 @@ describe('MQTT save meta', () => {
     expect(detections[3].confidence).toBe(0.90)
   })
 
-  test('detections multiple payloads', async () => {
+  test('can save detections multiple payloads', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start1 = 1619211870411
     const start2 = 1619212320741
@@ -93,7 +93,7 @@ describe('MQTT save meta', () => {
     expect(detections[12].confidence).toBe(0.95)
   })
 
-  test('detections multiple payloads abbreviated', async () => {
+  test('can save detections multiple payloads abbreviated', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start1 = 1619211870411
     const start2 = 1619212320741
@@ -118,7 +118,7 @@ describe('MQTT save meta', () => {
     expect(detections[12].confidence).toBe(0.95)
   })
 
-  test('payload with bad step (*1000)', async () => {
+  test('can save payload with bad step (*1000)', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start = 1420070745567
     const step = 1000
@@ -133,7 +133,7 @@ describe('MQTT save meta', () => {
     expect(detections[0].start).toEqual(moment(start + 3 * step).toDate())
   })
 
-  test('payload with bad step (*1000) abbreviated', async () => {
+  test('can save payload with bad step (*1000) abbreviated', async () => {
     const { stream, classifier, classifierOutput } = await commonSetup()
     const start = 1420070745567
     const step = 1000
@@ -148,7 +148,7 @@ describe('MQTT save meta', () => {
     expect(detections[0].start).toEqual(moment(start + 3 * step).toDate())
   })
 
-  test('payload with missing -edge in classifier name (chainsaw-v5)', async () => {
+  test('can save payload with missing -edge in classifier name (chainsaw-v5)', async () => {
     const { stream, classification } = await commonSetup()
     const classifier = { id: 4, externalId: 'dddeee', name: 'chainsaw-edge', version: 5, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
     await models.Classifier.create(classifier)

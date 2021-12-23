@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal cpu', async () => {
+test('can save cpu meta', async () => {
   const payloadAsArray = [
     ['1639990677555', '24', '424', '200'],
     ['1639990558292', '24', '354', '200'],
@@ -42,7 +42,7 @@ test('normal cpu', async () => {
   })
 })
 
-test('shorten cpu', async () => {
+test('can save cpu meta (compact format)', async () => {
   const payloadAsArray = [
     ['1639990677555', '24', '424', '200'],
     ['1639990558292', '24', '354', '200'],

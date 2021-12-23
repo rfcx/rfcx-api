@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal memory', async () => {
+test('can save memory', async () => {
   const payloadAsArray = [
     ['system', '1639986182572', '309223424', '172429312', '57702400'],
     ['system', '1639986003785', '309149696', '172503040', '57702400'],
@@ -41,7 +41,7 @@ test('normal memory', async () => {
   expect(results[0].system_bytes_minimum).toBe(parseInt(payloadAsArray[2][4]))
 })
 
-test('shorten memory', async () => {
+test('can save memory (compact format)', async () => {
   const payloadAsArray = [
     ['s', '1639986182572', '309223424', '172429312', '57702400'],
     ['s', '1639986003785', '309149696', '172503040', '57702400'],
@@ -58,7 +58,7 @@ test('shorten memory', async () => {
   expect(results[0].system_bytes_minimum).toBe(parseInt(payloadAsArray[2][4]))
 })
 
-test('shorten memory invalid', async () => {
+test('can not save memory invalid (compact format)', async () => {
   const payloadAsArray = [
     ['st', '1639986182572', '309223424', '172429312', '57702400'],
     ['st', '1639986003785', '309149696', '172503040', '57702400'],

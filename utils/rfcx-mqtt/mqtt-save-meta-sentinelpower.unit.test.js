@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal sentinel power', async () => {
+test('can save sentinel power', async () => {
   const payloadAsArray = [
     ['system', '1639989299200', '8972', '90', '30', '783'],
     ['input', '1639989299200', '9008', '80', '8', '718'],
@@ -57,7 +57,7 @@ test('normal sentinel power', async () => {
   })
 })
 
-test('shorten sentinel power', async () => {
+test('can save sentinel power (compact format)', async () => {
   const payloadAsArray = [
     ['s', '1639989299200', '8972', '90', '30', '783'],
     ['i', '1639989299200', '9008', '80', '8', '718'],

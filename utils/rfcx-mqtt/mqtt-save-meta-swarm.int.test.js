@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('background and unsent', async () => {
+test('can save background and unsent', async () => {
   const measuredAt = 1420070745567
   const backgroundRssi = -101
   const unsentMessageCount = 5
@@ -38,7 +38,7 @@ test('background and unsent', async () => {
   expect(results[0].signal_strength).toBe(backgroundRssi)
 })
 
-test('background and unsent with empty satellite values', async () => {
+test('can save background and unsent with empty satellite values', async () => {
   const measuredAt = 1420070745567
   const backgroundRssi = -101
   const unsentMessageCount = 5
@@ -52,7 +52,7 @@ test('background and unsent with empty satellite values', async () => {
   expect(results[0].signal_strength).toBe(backgroundRssi)
 })
 
-test('background, satellite, and unsent', async () => {
+test('can save background, satellite, and unsent', async () => {
   const measuredAt = 1420070745567
   const backgroundRssi = -101
   const satelliteRssi = -95
@@ -73,7 +73,7 @@ test('background, satellite, and unsent', async () => {
   expect(results[1].signal_strength).toBe(satelliteRssi)
 })
 
-test('invalid number for background', async () => {
+test('can save invalid number for background', async () => {
   const input = ['1420070745567', '', '8']
 
   await SwarmDiagnostics([input], 'xyz', '123')

@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal data transfer', async () => {
+test('can save data transfer meta', async () => {
   const payloadAsArray = [
     ['1639662436136', '1639662614136', '0', '0', '490602', '9344564'],
     ['1639662257911', '1639662436136', '0', '0', '490602', '9344564'],
@@ -50,7 +50,7 @@ test('normal data transfer', async () => {
   })
 })
 
-test('shorten data transfer', async () => {
+test('can save data transfer (compact format)', async () => {
   const payloadAsArray = [
     ['1639662436136', '1639662614136', '0', '0', '490602', '9344564'],
     ['1639662257911', '1639662436136', '0', '0', '490602', '9344564'],

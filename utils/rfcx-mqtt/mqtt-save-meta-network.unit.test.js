@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal network', async () => {
+test('can save network', async () => {
   const payloadAsArray = [
     ['1639662807479', '-91', 'hspa', 'AT&T'],
     ['1639661726813', '-91', 'hspa', 'AT&T'],
@@ -43,7 +43,7 @@ test('normal network', async () => {
   })
 })
 
-test('shorten network', async () => {
+test('can save network (compact format)', async () => {
   const payloadAsArray = [
     ['1639662807479', '-91', 'hspa', 'AT&T'],
     ['1639661726813', '-91', 'hspa', 'AT&T'],

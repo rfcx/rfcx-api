@@ -25,7 +25,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal checkins', async () => {
+test('can save checkins meta', async () => {
   const payloadAsArray = [
     ['sent', '0', '0'],
     ['queued', '602', '83754671'],
@@ -46,7 +46,7 @@ test('normal checkins', async () => {
   })
 })
 
-test('shorten checkins', async () => {
+test('can save checkins meta (compact format)', async () => {
   const payloadAsArray = [
     ['s', '0', '0'],
     ['q', '602', '83754671'],

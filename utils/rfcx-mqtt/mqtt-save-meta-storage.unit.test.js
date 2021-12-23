@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal storage', async () => {
+test('can save storage', async () => {
   const payloadAsArray = [
     ['internal', '1639662807198', '287502336', '1077907456'],
     ['external', '1639662807198', '396197888', '127436980224'],
@@ -43,7 +43,7 @@ test('normal storage', async () => {
   expect(results[0].external_bytes_used).toBe(parseInt(payloadAsArray[3][2]))
 })
 
-test('shorten storage', async () => {
+test('can save storage (compact format)', async () => {
   const payloadAsArray = [
     ['i', '1639662807198', '287502336', '1077907456'],
     ['e', '1639662807198', '396197888', '127436980224'],
@@ -62,7 +62,7 @@ test('shorten storage', async () => {
   expect(results[0].external_bytes_used).toBe(parseInt(payloadAsArray[3][2]))
 })
 
-test('shorten storage invalid', async () => {
+test('cannot save storage invalid (compact format)', async () => {
   const payloadAsArray = [
     ['in', '1639662807198', '287502336', '1077907456'],
     ['ex', '1639662807198', '396197888', '127436980224'],

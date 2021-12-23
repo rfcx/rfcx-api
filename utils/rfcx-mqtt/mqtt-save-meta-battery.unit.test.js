@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal battery', async () => {
+test('can save battery meta', async () => {
   const payloadAsArray = [
     ['1639990754314', '100', '25', '0', '1'],
     ['1639990558385', '100', '25', '0', '1']]
@@ -43,7 +43,7 @@ test('normal battery', async () => {
   })
 })
 
-test('shorten battery', async () => {
+test('can save battery meta (compact format)', async () => {
   const payloadAsArray = [
     ['1639990754314', '100', '25', '0', '1'],
     ['1639990558385', '100', '25', '0', '1']]

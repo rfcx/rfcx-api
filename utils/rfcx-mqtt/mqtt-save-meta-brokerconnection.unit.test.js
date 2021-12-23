@@ -24,7 +24,7 @@ beforeEach(async () => {
   await models.reset()
 })
 
-test('normal broker connection', async () => {
+test('can save broker connection meta', async () => {
   const payloadAsArray = [
     ['1639986160114', '29953', '455', 'ssl://api-mqtt.rfcx.org:8883'],
     ['1639985978216', '9280', '476', 'ssl://api-mqtt.rfcx.org:8883'],
