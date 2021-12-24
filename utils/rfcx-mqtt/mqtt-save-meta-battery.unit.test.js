@@ -42,22 +42,3 @@ test('can save battery meta', async () => {
     expect(results[index].is_fully_charged).toBe(true)
   })
 })
-
-test('can save battery meta (compact format)', async () => {
-  const payloadAsArray = [
-    ['1639990754314', '100', '25', '0', '1'],
-    ['1639990558385', '100', '25', '0', '1']]
-
-  await Battery(payloadAsArray, 'xyz', '123')
-
-  const results = await models.GuardianMetaBattery.findAll()
-  expect(results.length).toBe(2)
-
-  payloadAsArray.forEach((it, index) => {
-    expect(results[index].measured_at).toEqual(moment(parseInt(it[0])).toDate())
-    expect(results[index].battery_percent).toBe(parseInt(it[1]))
-    expect(results[index].battery_temperature).toBe(parseInt(it[2]))
-    expect(results[index].is_charging).toBe(false)
-    expect(results[index].is_fully_charged).toBe(true)
-  })
-})

@@ -43,21 +43,3 @@ test('can save network', async () => {
   })
 })
 
-test('can save network (compact format)', async () => {
-  const payloadAsArray = [
-    ['1639662807479', '-91', 'hspa', 'AT&T'],
-    ['1639661726813', '-91', 'hspa', 'AT&T'],
-    ['1639661194334', '-97', 'hspa', 'AT&T']]
-
-  await Network(payloadAsArray, 'xyz', '123')
-
-  const results = await models.GuardianMetaNetwork.findAll()
-  expect(results.length).toBe(3)
-
-  payloadAsArray.forEach((it, index) => {
-    expect(results[index].measured_at).toEqual(moment(parseInt(it[0])).toDate())
-    expect(results[index].signal_strength).toBe(parseInt(it[1]))
-    expect(results[index].network_type).toBe(it[2])
-    expect(results[index].carrier_name).toBe(it[3])
-  })
-})

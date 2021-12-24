@@ -41,21 +41,3 @@ test('can save cpu meta', async () => {
     expect(results[index].cpu_clock).toBe(parseInt(it[2]))
   })
 })
-
-test('can save cpu meta (compact format)', async () => {
-  const payloadAsArray = [
-    ['1639990677555', '24', '424', '200'],
-    ['1639990558292', '24', '354', '200'],
-    ['1639990618092', '18', '251', '200']]
-
-  await CPU(payloadAsArray, 'xyz', '123')
-
-  const results = await models.GuardianMetaCPU.findAll()
-  expect(results.length).toBe(3)
-
-  payloadAsArray.forEach((it, index) => {
-    expect(results[index].measured_at).toEqual(moment(parseInt(it[0])).toDate())
-    expect(results[index].cpu_percent).toBe(parseInt(it[1]))
-    expect(results[index].cpu_clock).toBe(parseInt(it[2]))
-  })
-})
