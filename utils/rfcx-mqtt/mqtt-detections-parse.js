@@ -16,19 +16,27 @@ function parse (input) {
     stepMs = stepMs / 1000
   }
 
-  let skipped = 0
-  return confidences.split(',').map((x) => {
-    if (x === '') {
-      skipped++
-      return undefined
-    } else if (x.startsWith('n')) {
-      skipped += parseInt(x.substring(1))
+  // Convert string of confidences to array of floats e.g. [undefined, undefined, 0.987, undefined]
+  const expandedConfidences = []
+  confidences.split(',').forEach((val) => {
+    if (val === '') {
+      expandedConfidences.push(undefined)
+    } else if (val.startsWith('n')) {
+      const num = parseInt(val.substring(1)) // Guaranteed to be int due to regex
+      expandedConfidences.push(...new Array(num).fill(undefined))
+    } else {
+      const confidence = parseFloat(val) // Guaranteed to be float due to regex
+      expandedConfidences.push(confidence)
+    }
+  })
+
+  // Convert array of confidences to array of objects with start/end
+  return expandedConfidences.map((confidence, i) => {
+    if (confidence === undefined) {
       return undefined
     }
-    const start = moment(timestampMs + skipped * stepMs)
+    const start = moment(timestampMs + i * stepMs)
     const end = start.clone().add(stepMs, 'milliseconds')
-    const confidence = parseFloat(x)
-    skipped++
     return { classification, classifier, start, end, confidence }
   }).filter((x) => x !== undefined)
 }
