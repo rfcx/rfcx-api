@@ -54,11 +54,13 @@ test('success with multiple detections', () => {
 })
 
 test('success with multiple detections (compact format)', () => {
-  const raw = 'chainsaw*chainsaw-v5*1420070745567*1000*n25,0.98,n11,0.98,n3,0.95,n10,0.90,n4,0.97,n9,0.96,n26'
+  const raw = 'chainsaw*chainsaw-v5*1420070745567*1000*n3,0.98,n11,0.98,n3,0.95,n10,0.90,n4,0.97,n9,0.96,n26'
 
   const result = parse(raw)
 
   expect(result.length).toBe(6)
+  expect(result[0].start.toISOString()).toBe('2015-01-01T00:05:48.567Z')
+  expect(result[1].start.toISOString()).toBe('2015-01-01T00:06:00.567Z')
 })
 
 test('success with multiple detections (compact format) and empty string', () => {
