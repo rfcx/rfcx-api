@@ -42,4 +42,3 @@ test('can save network', async () => {
     expect(results[index].carrier_name).toBe(it[3])
   })
 })
-

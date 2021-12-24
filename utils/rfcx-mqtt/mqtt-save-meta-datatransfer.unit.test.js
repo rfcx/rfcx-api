@@ -49,4 +49,3 @@ test('can save data transfer meta', async () => {
     expect(results[index].mobile_total_bytes_sent).toBe(parseInt(it[5]))
   })
 })
-
