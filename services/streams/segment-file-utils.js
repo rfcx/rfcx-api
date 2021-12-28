@@ -39,7 +39,7 @@ function parseFileNameAttrs (req) {
       })
       return item ? item.slice(symb.length) : undefined
     }
-    const streamId = nameArr[0] && nameArr[0].length === 12 ? nameArr[0] : undefined
+    const streamId = nameArr[0] && nameArr[0].length > 0 ? nameArr[0] : undefined
     const dimensionsStr = findStartsWith('d')
     const timeStr = findStartsWith('t')
     const clipStr = findStartsWith('r')
@@ -75,6 +75,7 @@ function parseFileNameAttrs (req) {
 }
 
 function checkAttrsValidity (req, attrs) {
+  const requestContentTypeExpectedExtension = req.get('Content-Type').split('/')[1]
   if (!attrs.streamId) {
     throw (new ValidationError('Stream id is required.'))
   }
@@ -84,7 +85,7 @@ function checkAttrsValidity (req, attrs) {
   if (!attrs.time || !attrs.time.starts || !attrs.time.ends) {
     throw new ValidationError('"t" (time) attribute is required and should have the following format: "t20190907T004303000Z.20190907T005205000Z".')
   }
-  if (!possibleExtensions.includes(req.rfcx.content_type)) {
+  if (!possibleExtensions.includes(requestContentTypeExpectedExtension)) {
     throw new ValidationError(`Unsupported file extension. Possible values: ${possibleExtensions.join(', ')}`)
   }
   if ((moment(attrs.time.ends, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')).diff((moment(attrs.time.starts, 'YYYYMMDDTHHmmssSSSZ').tz('UTC')), 'minutes') > 15) {
@@ -93,10 +94,10 @@ function checkAttrsValidity (req, attrs) {
   if (attrs.clip && attrs.clip.top && attrs.clip.bottom && parseInt(attrs.clip.top) <= parseInt(attrs.clip.bottom)) {
     throw new ValidationError('Highpass frequency filter can not be greater or equal to lowpass')
   }
-  if (attrs.fileType === 'spec' && (req.rfcx.content_type !== 'png' && req.rfcx.content_type !== 'jpeg')) {
+  if (attrs.fileType === 'spec' && !['png', 'jpeg'].includes(requestContentTypeExpectedExtension)) {
     throw new ValidationError('Unsupported file extension. Only png or jpeg are available for type spec')
   }
-  if (possibleAudioFileTypes.includes(attrs.fileType) && req.rfcx.content_type !== attrs.fileType) {
+  if (possibleAudioFileTypes.includes(attrs.fileType) && requestContentTypeExpectedExtension !== attrs.fileType) {
     throw new ValidationError('Invalid file extension. File type and file extension should match.')
   }
   if (attrs.fileType === 'spec' && (!attrs.dimensions || !attrs.dimensions.x || !attrs.dimensions.y)) {
