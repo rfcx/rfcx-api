@@ -1,14 +1,17 @@
-const models = require('../../../models')
 const express = require('express')
-const router = express.Router()
-const httpError = require('../../../utils/http-errors.js')
 const sequelize = require('sequelize')
+const models = require('../../../models')
+const httpError = require('../../../utils/http-errors.js')
+const takeContentTypeFromFileExtMiddleware = require('../../../middleware/legacy/take-content-type-from-file-ext')
 const ValidationError = require('../../../utils/converter/validation-error')
 const reportsService = require('../../../services/reports/reports-service')
 const attachmentService = require('../../../services/attachment/attachment-service')
 const audioService = require('../../../services/audio/audio-service')
 const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson, guardianAudioAmplitude } = require('../../../views/v1/models/guardian-audio').models
 const { guardianMetaScreenshotFile, guardianMetaScreenshots } = require('../../../views/v1/models/guardian-meta/guardian-meta-screenshots').models
+
+const router = express.Router()
+router.use(takeContentTypeFromFileExtMiddleware)
 
 router.route('/audio/:audio_id')
   .get(function (req, res) {
