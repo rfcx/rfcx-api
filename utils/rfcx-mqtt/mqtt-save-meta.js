@@ -2,6 +2,12 @@ const models = require('../../models')
 const { parse: parseDetections } = require('./mqtt-detections-parse')
 const detectionsService = require('../../services/detections/create')
 
+const compactKeysSoftwareRole = { g: 'guardian', a: 'admin', c: 'classify', u: 'updater' }
+const compactKeysStorage = { i: 'internal', e: 'external' }
+const compactKeysMemory = { s: 'system' }
+const compactKeysSentinelPower = { s: 'system', i: 'input', b: 'battery' }
+const compactKeysCheckIns = { s: 'sent', q: 'queued', m: 'meta', sk: 'skipped', st: 'stashed', a: 'archived', v: 'vault' }
+
 exports.saveMeta = {
 
   CPU: function (metaCPU, guardianId, checkInId) {
@@ -21,7 +27,9 @@ exports.saveMeta = {
       }
     }
 
-    return models.GuardianMetaCPU.bulkCreate(dbMetaCPU)
+    return models.GuardianMetaCPU.bulkCreate(dbMetaCPU).catch(function (err) {
+      console.log('failed to create GuardianMetaCPU | ' + err)
+    })
   },
 
   Battery: function (metaBattery, guardianId, checkInId) {
@@ -39,7 +47,9 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaBattery.bulkCreate(dbMetaBattery)
+    return models.GuardianMetaBattery.bulkCreate(dbMetaBattery).catch(function (err) {
+      console.log('failed to create GuardianMetaBattery | ' + err)
+    })
   },
 
   Network: function (metaNetwork, guardianId, checkInId) {
@@ -56,7 +66,9 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork)
+    return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork).catch(function (err) {
+      console.log('failed to create GuardianMetaNetwork | ' + err)
+    })
   },
 
   DataTransfer: function (metaDataTransfer, guardianId, checkInId) {
@@ -155,26 +167,37 @@ exports.saveMeta = {
   },
 
   Device: function (metaDevice, guardianId) {
+    const { a, p, h, ...others } = metaDevice
+    const fullDevice = { ...others }
+    if (a !== undefined) {
+      const fullAndroid = { product: a.p, brand: a.br, model: a.m, build: a.bu, android: a.a, manufacturer: a.mf }
+      fullDevice.android = fullAndroid
+    }
+    if (p !== undefined) {
+      const fullPhone = { sim: p.s, number: p.n, imei: p.imei, imsi: p.imsi }
+      fullDevice.phone = fullPhone
+    }
+
     return models.GuardianMetaHardware
       .findOrCreate({
         where: { guardian_id: guardianId }
       })
-      .spread((dbMetaHardware, wasCreated) => {
-        if (metaDevice.android != null) {
-          dbMetaHardware.manufacturer = metaDevice.android.manufacturer
-          dbMetaHardware.brand = metaDevice.android.brand
-          dbMetaHardware.model = metaDevice.android.model
-          dbMetaHardware.product = metaDevice.android.product
-          dbMetaHardware.android_version = metaDevice.android.android
-          dbMetaHardware.android_build = metaDevice.android.build
+      .then(([dbMetaHardware, wasCreated]) => {
+        if (fullDevice.android != null) {
+          dbMetaHardware.manufacturer = fullDevice.android.manufacturer
+          dbMetaHardware.brand = fullDevice.android.brand
+          dbMetaHardware.model = fullDevice.android.model
+          dbMetaHardware.product = fullDevice.android.product
+          dbMetaHardware.android_version = fullDevice.android.android
+          dbMetaHardware.android_build = fullDevice.android.build
         }
 
-        if (metaDevice.phone != null) {
-          dbMetaHardware.phone_imsi = (metaDevice.phone.imsi != null) ? metaDevice.phone.imsi : null
-          dbMetaHardware.phone_imei = (metaDevice.phone.imei != null) ? metaDevice.phone.imei : null
-          dbMetaHardware.phone_sim_serial = (metaDevice.phone.sim != null) ? metaDevice.phone.sim : null
-          dbMetaHardware.phone_sim_number = (metaDevice.phone.number != null) ? metaDevice.phone.number : null
-          dbMetaHardware.phone_sim_carrier = (metaDevice.phone.carrier != null) ? metaDevice.phone.carrier : null
+        if (fullDevice.phone != null) {
+          dbMetaHardware.phone_imsi = (fullDevice.phone.imsi != null) ? fullDevice.phone.imsi : null
+          dbMetaHardware.phone_imei = (fullDevice.phone.imei != null) ? fullDevice.phone.imei : null
+          dbMetaHardware.phone_sim_serial = (fullDevice.phone.sim != null) ? fullDevice.phone.sim : null
+          dbMetaHardware.phone_sim_number = (fullDevice.phone.number != null) ? fullDevice.phone.number : null
+          dbMetaHardware.phone_sim_carrier = (fullDevice.phone.carrier != null) ? fullDevice.phone.carrier : null
         }
 
         return dbMetaHardware.save()
@@ -216,14 +239,18 @@ exports.saveMeta = {
       }
     }
 
-    return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection)
+    return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection).catch(function (err) {
+      console.log('failed to create GuardianMetaMqttBrokerConnection | ' + err)
+    })
   },
 
   Storage: function (metaDiskUsage, guardianId, checkInId) {
     const diskUsage = { internal: {}, external: {} }
 
     for (const duInd in metaDiskUsage) {
-      diskUsage[metaDiskUsage[duInd][0]] = {
+      const typeRaw = metaDiskUsage[duInd][0]
+      const type = Object.keys(compactKeysStorage).includes(typeRaw) ? compactKeysStorage[typeRaw] : typeRaw
+      diskUsage[type] = {
         measured_at: new Date(parseInt(metaDiskUsage[duInd][1])),
         used: parseInt(metaDiskUsage[duInd][2]),
         available: parseInt(metaDiskUsage[duInd][3])
@@ -242,14 +269,18 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaDiskUsage.bulkCreate(dbMetaDiskUsage)
+    return models.GuardianMetaDiskUsage.bulkCreate(dbMetaDiskUsage).catch(function (err) {
+      console.log('failed to create GuardianMetaDataTransfer | ' + err)
+    })
   },
 
   Memory: function (metaMemory, guardianId, checkInId) {
     const memory = { system: {} }
 
     for (const mInd in metaMemory) {
-      memory[metaMemory[mInd][0]] = {
+      const typeRaw = metaMemory[mInd][0]
+      const type = Object.keys(compactKeysMemory).includes(typeRaw) ? compactKeysMemory[typeRaw] : typeRaw
+      memory[type] = {
         measured_at: new Date(parseInt(metaMemory[mInd][1])),
         used: parseInt(metaMemory[mInd][2]),
         available: parseInt(metaMemory[mInd][3]),
@@ -269,14 +300,18 @@ exports.saveMeta = {
       })
     }
 
-    return models.GuardianMetaMemory.bulkCreate(dbMetaMemory)
+    return models.GuardianMetaMemory.bulkCreate(dbMetaMemory).catch(function (err) {
+      console.log('failed to create GuardianMetaMemory | ' + err)
+    })
   },
 
   SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
     const sntnlPwrEntries = { }
 
     for (const duInd in metaSntnlPwr) {
-      const sysInpBatt = metaSntnlPwr[duInd][0] + ''
+      const sysInpBattRaw = metaSntnlPwr[duInd][0] + ''
+      const sysInpBatt = Object.keys(compactKeysSentinelPower).includes(sysInpBattRaw) ? compactKeysSentinelPower[sysInpBattRaw] : sysInpBattRaw
+
       const timeStamp = metaSntnlPwr[duInd][1] + ''
 
       if (sntnlPwrEntries[timeStamp] == null) {
@@ -327,7 +362,9 @@ exports.saveMeta = {
       }
     }
 
-    return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower)
+    return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower).catch(function (err) {
+      console.log('failed to create GuardianMetaSentinelPower | ' + err)
+    })
   },
 
   SentinelSensor: function (sensorTag, metaSntnlSnsr, guardianId, checkInId) {
@@ -373,14 +410,18 @@ exports.saveMeta = {
     const dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) }
 
     for (const vInd in metaCheckInStatus) {
-      dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_count'] = parseInt(metaCheckInStatus[vInd][1])
+      const typeRaw = metaCheckInStatus[vInd][0]
+      const type = Object.keys(compactKeysCheckIns).includes(typeRaw) ? compactKeysCheckIns[typeRaw] : typeRaw
+      dbMetaCheckInStatusObj[type + '_count'] = parseInt(metaCheckInStatus[vInd][1])
       if (metaCheckInStatus[vInd][2] != null) {
-        dbMetaCheckInStatusObj[metaCheckInStatus[vInd][0] + '_size_bytes'] = parseInt(metaCheckInStatus[vInd][2])
+        dbMetaCheckInStatusObj[type + '_size_bytes'] = parseInt(metaCheckInStatus[vInd][2])
       }
     }
     dbMetaCheckInStatus.push(dbMetaCheckInStatusObj)
 
-    return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus)
+    return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus).catch(function (err) {
+      console.log('failed to create GuardianMetaCheckInStatus | ' + err)
+    })
   },
 
   PreviousCheckIns: function (previousCheckIns) {
@@ -418,14 +459,14 @@ exports.saveMeta = {
     const roleVersions = {}
     const proms = []
     for (const vInd in roleArr) {
-      roleVersions[roleArr[vInd][0]] = roleArr[vInd][1]
+      const roleRaw = roleArr[vInd][0]
+      const role = Object.keys(compactKeysSoftwareRole).includes(roleRaw) ? compactKeysSoftwareRole[roleRaw] : roleRaw
+      roleVersions[role] = roleArr[vInd][1]
       const prom = models.GuardianSoftware
-        .findOne({
-          where: { role: roleArr[vInd][0] }
-        })
+        .findOne({ where: { role } })
         .then((dbSoftwareRole) => {
           if (!dbSoftwareRole) {
-            return Promise.reject(`Role "${roleArr[vInd][0]}" was not found.`) // eslint-disable-line prefer-promise-reject-errors
+            return Promise.reject(`Role "${role}" was not found.`) // eslint-disable-line prefer-promise-reject-errors
           }
           return models.GuardianSoftwareVersion
             .findAll({
@@ -441,7 +482,7 @@ exports.saveMeta = {
                     where: opts,
                     defaults: opts
                   })
-                  .spread((dbSoftwareRoleVersionInsertion, wasCreatedInsertion) => {
+                  .then(([dbSoftwareRoleVersionInsertion, wasCreatedInsertion]) => {
                     dbSoftwareRoleVersionInsertion.updated_at = new Date()
                     return dbSoftwareRoleVersionInsertion.save()
                   })
@@ -450,7 +491,7 @@ exports.saveMeta = {
                   .findOrCreate({
                     where: { guardian_id: guardianId, software_id: dbSoftwareRole.id, version_id: dbSoftwareRoleVersion[0].id }
                   })
-                  .spread((dbMetaSoftware, wasCreated) => {
+                  .then(([dbMetaSoftware, wasCreatedInsertion]) => {
                     dbMetaSoftware.updated_at = new Date()
                     return dbMetaSoftware.save()
                   })

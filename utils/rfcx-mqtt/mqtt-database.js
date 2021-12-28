@@ -1,8 +1,8 @@
 const models = require('../../models')
 const fs = require('fs')
-const saveMeta = require('../../utils/rfcx-mqtt/mqtt-save-meta.js').saveMeta
-const smsMessages = require('../../utils/rfcx-guardian/guardian-sms-database.js').messages
-const hash = require('../../utils/misc/hash')
+const saveMeta = require('./mqtt-save-meta.js').saveMeta
+const smsMessages = require('../rfcx-guardian/guardian-sms-database.js').messages
+const hash = require('../misc/hash')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
 
@@ -121,41 +121,42 @@ exports.checkInDatabase = {
   },
 
   createDbSaveMeta: function (checkInObj) {
+    const newCheckInObj = abbreviatedToFullName(checkInObj)
     const guardianId = checkInObj.db.dbGuardian.id
     const checkInId = (checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null
 
     const proms = [
-      saveMeta.DataTransfer(strArrToJSArr(checkInObj.json.data_transfer, '|', '*'), guardianId, checkInId),
-      saveMeta.CPU(strArrToJSArr(checkInObj.json.cpu, '|', '*'), guardianId, checkInId),
-      saveMeta.Battery(strArrToJSArr(checkInObj.json.battery, '|', '*'), guardianId, checkInId),
-      saveMeta.Network(strArrToJSArr(checkInObj.json.network, '|', '*'), guardianId, checkInId),
-      saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
-      saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
-      saveMeta.Storage(strArrToJSArr(checkInObj.json.storage, '|', '*'), guardianId, checkInId),
-      saveMeta.Memory(strArrToJSArr(checkInObj.json.memory, '|', '*'), guardianId, checkInId),
-      saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition, '|', '*'), guardianId, checkInId),
-      saveMeta.DateTimeOffset(strArrToJSArr(checkInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
-      saveMeta.MqttBrokerConnection(strArrToJSArr(checkInObj.json.broker_connections, '|', '*'), guardianId, checkInId),
-      saveMeta.Detections(checkInObj.json.detections ? checkInObj.json.detections.split('|') : [], checkInObj.db.dbGuardian.stream_id),
+      saveMeta.DataTransfer(strArrToJSArr(newCheckInObj.json.data_transfer, '|', '*'), guardianId, checkInId),
+      saveMeta.CPU(strArrToJSArr(newCheckInObj.json.cpu, '|', '*'), guardianId, checkInId),
+      saveMeta.Battery(strArrToJSArr(newCheckInObj.json.battery, '|', '*'), guardianId, checkInId),
+      saveMeta.Network(strArrToJSArr(newCheckInObj.json.network, '|', '*'), guardianId, checkInId),
+      saveMeta.LightMeter(strArrToJSArr(newCheckInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
+      saveMeta.Accelerometer(strArrToJSArr(newCheckInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
+      saveMeta.Storage(strArrToJSArr(newCheckInObj.json.storage, '|', '*'), guardianId, checkInId),
+      saveMeta.Memory(strArrToJSArr(newCheckInObj.json.memory, '|', '*'), guardianId, checkInId),
+      saveMeta.GeoPosition(strArrToJSArr(newCheckInObj.json.geoposition, '|', '*'), guardianId, checkInId),
+      saveMeta.DateTimeOffset(strArrToJSArr(newCheckInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
+      saveMeta.MqttBrokerConnection(strArrToJSArr(newCheckInObj.json.broker_connections, '|', '*'), guardianId, checkInId),
+      saveMeta.Detections(newCheckInObj.json.detections ? newCheckInObj.json.detections.split('|') : [], newCheckInObj.db.dbGuardian.stream_id),
 
-      saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots, '|', '*'), guardianId, checkInId),
-      saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software, '|', '*'), guardianId),
-      saveMeta.PreviousCheckIns(strArrToJSArr(checkInObj.json.previous_checkins, '|', '*')),
+      saveMeta.RebootEvents(strArrToJSArr(newCheckInObj.json.reboots, '|', '*'), guardianId, checkInId),
+      saveMeta.SoftwareRoleVersion(strArrToJSArr(newCheckInObj.json.software, '|', '*'), guardianId),
+      saveMeta.PreviousCheckIns(strArrToJSArr(newCheckInObj.json.previous_checkins, '|', '*')),
 
-      saveMeta.CheckInStatus(strArrToJSArr(checkInObj.json.checkins, '|', '*'), guardianId, checkInObj.json.measured_at),
+      saveMeta.CheckInStatus(strArrToJSArr(newCheckInObj.json.checkins, '|', '*'), guardianId, newCheckInObj.json.measured_at),
 
-      saveMeta.SentinelPower(strArrToJSArr(checkInObj.json.sentinel_power, '|', '*'), guardianId, checkInId),
-      saveMeta.SentinelSensor('accelerometer', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
-      saveMeta.SentinelSensor('compass', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelPower(strArrToJSArr(newCheckInObj.json.sentinel_power, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelSensor('accelerometer', strArrToJSArr(newCheckInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelSensor('compass', strArrToJSArr(newCheckInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
 
-      saveMeta.Device((checkInObj.json.device == null) ? {} : checkInObj.json.device, guardianId),
+      saveMeta.Device((newCheckInObj.json.device == null) ? {} : newCheckInObj.json.device, guardianId),
 
-      saveMeta.SwarmDiagnostics(strArrToJSArr(checkInObj.json.swm, '|', '*'), guardianId, checkInId)
+      saveMeta.SwarmDiagnostics(strArrToJSArr(newCheckInObj.json.swm, '|', '*'), guardianId, checkInId)
     ]
 
     return Promise.all(proms)
       .then(() => {
-        return checkInObj
+        return newCheckInObj
       })
   },
 
@@ -666,4 +667,12 @@ function strArrToJSArr (str, delimA, delimB) {
   } catch (e) {
     console.log(e); return []
   }
+}
+
+function abbreviatedToFullName (checkInObj) {
+  const json = checkInObj.json
+  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, ...others } = json
+  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, ...others }
+  checkInObj.json = fullNameJson
+  return checkInObj
 }
