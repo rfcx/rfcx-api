@@ -16,7 +16,6 @@ const SOX_PATH = process.env.SOX_PATH
 const IMAGEMAGICK_PATH = process.env.IMAGEMAGICK_PATH
 
 async function getFile (req, res, attrs, segments, nextTimestamp) {
-  console.log('here')
   const filename = combineStandardFilename(attrs, req)
   const extension = attrs.fileType === 'spec' ? 'wav' : attrs.fileType
 
