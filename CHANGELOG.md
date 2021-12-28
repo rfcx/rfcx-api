@@ -1,5 +1,9 @@
 ## 1.0.30 (2021-12-XX)
 
+### Features
+* **core:** Add functionality to parsing shorten property names to full name of meta payload
+* **core:** Add tests for `mqtt-save-meta.js` and `createDbSaveMeta`
+
 ### Performance Improvements
 * **core:** Improve `segments` query function by reducing amount of chunks to check
 * **core:** Reduce MySQL calls for user account
