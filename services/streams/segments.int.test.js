@@ -37,11 +37,7 @@ test('returns 1 segment', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:00:00.000Z',
     end: '2021-07-26T10:10:20.000Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: false,
-    readableBy: undefined
-  })
+  }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[0].id)
 })
@@ -52,11 +48,7 @@ test('returns 2, 3 and 4 segments', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:11:30.000Z',
     end: '2021-07-26T10:13:20.000Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: false,
-    readableBy: undefined
-  })
+  }, { strict: false })
   expect(data.results.length).toBe(3)
   expect(data.results[0].id).toBe(segments[1].id)
   expect(data.results[1].id).toBe(segments[2].id)
@@ -69,11 +61,7 @@ test('returns 10 segment', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:19:22.000Z',
     end: '2021-07-26T10:32:20.000Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: false,
-    readableBy: undefined
-  })
+  }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[9].id)
 })
@@ -84,11 +72,7 @@ test('returns 9 segment with exact start time', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:18:00.000Z',
     end: '2021-07-26T10:18:10.000Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: false,
-    readableBy: undefined
-  })
+  }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
 })
@@ -99,11 +83,7 @@ test('returns 9 segment with exact start and end time', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:18:00.000Z',
     end: '2021-07-26T10:18:59.999Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: false,
-    readableBy: undefined
-  })
+  }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
 })
@@ -114,11 +94,7 @@ test('returns 9 segment with time in the middle of segment', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:18:10.000Z',
     end: '2021-07-26T10:18:20.999Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: false,
-    readableBy: undefined
-  })
+  }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
 })
@@ -129,11 +105,7 @@ test('returns 9 segment when strict is true', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:17:45.000Z',
     end: '2021-07-26T10:18:20.999Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: true,
-    readableBy: undefined
-  })
+  }, { strict: true })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
 })
@@ -144,11 +116,7 @@ test('does not return 9 segment with time in the middle of segment when strict i
     streamId: stream.id,
     start: '2021-07-26T10:18:10.000Z',
     end: '2021-07-26T10:18:20.999Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: true,
-    readableBy: undefined
-  })
+  }, { strict: true })
   expect(data.results.length).toBe(0)
 })
 
@@ -158,10 +126,6 @@ test('returns all segments', async () => {
     streamId: stream.id,
     start: '2021-07-26T10:00:00.000Z',
     end: '2021-07-26T10:32:20.000Z'
-  }, {
-    fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
-    strict: false,
-    readableBy: undefined
-  })
+  }, { strict: false })
   expect(data.results.length).toBe(segments.length)
 })
