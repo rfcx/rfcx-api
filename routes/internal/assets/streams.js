@@ -3,7 +3,7 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamSegmentService = require('../../../services/streams/segments')
 const { parseFileNameAttrs, checkAttrsValidity, getFile } = require('../../../services/streams/segment-file-utils')
-const { gluedDateStrToISO } = require('../../../utils/misc/datetime')
+const { gluedDateStrToMoment } = require('../../../utils/misc/datetime')
 
 /**
   Spectrogram format (fspec):
@@ -66,8 +66,8 @@ router.get('/streams/:attrs', function (req, res) {
     const user = req.rfcx.auth_token_info
     const readableBy = user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id
     await checkAttrsValidity(req, attrs)
-    const start = gluedDateStrToISO(attrs.time.starts)
-    const end = gluedDateStrToISO(attrs.time.ends)
+    const start = gluedDateStrToMoment(attrs.time.starts)
+    const end = gluedDateStrToMoment(attrs.time.ends)
     const queryData = await streamSegmentService.query({ streamId: attrs.streamId, start, end }, {
       fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
       strict: false,

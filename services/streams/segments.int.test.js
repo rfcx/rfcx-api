@@ -1,6 +1,7 @@
 const models = require('../../modelsTimescale')
 const { migrate, truncate, seed, seedValues } = require('../../utils/sequelize/testing')
 const service = require('./segments')
+const moment = require('moment')
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
@@ -35,8 +36,8 @@ test('returns 1 segment', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:00:00.000Z',
-    end: '2021-07-26T10:10:20.000Z'
+    start: moment('2021-07-26T10:00:00.000Z'),
+    end: moment('2021-07-26T10:10:20.000Z')
   }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[0].id)
@@ -46,8 +47,8 @@ test('returns 2, 3 and 4 segments', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:11:30.000Z',
-    end: '2021-07-26T10:13:20.000Z'
+    start: moment('2021-07-26T10:11:30.000Z'),
+    end: moment('2021-07-26T10:13:20.000Z')
   }, { strict: false })
   expect(data.results.length).toBe(3)
   expect(data.results[0].id).toBe(segments[1].id)
@@ -59,8 +60,8 @@ test('returns 10 segment', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:19:22.000Z',
-    end: '2021-07-26T10:32:20.000Z'
+    start: moment('2021-07-26T10:19:22.000Z'),
+    end: moment('2021-07-26T10:32:20.000Z')
   }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[9].id)
@@ -70,8 +71,8 @@ test('returns 9 segment with exact start time', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:18:00.000Z',
-    end: '2021-07-26T10:18:10.000Z'
+    start: moment('2021-07-26T10:18:00.000Z'),
+    end: moment('2021-07-26T10:18:10.000Z')
   }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
@@ -81,8 +82,8 @@ test('returns 9 segment with exact start and end time', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:18:00.000Z',
-    end: '2021-07-26T10:18:59.999Z'
+    start: moment('2021-07-26T10:18:00.000Z'),
+    end: moment('2021-07-26T10:18:59.999Z')
   }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
@@ -92,8 +93,8 @@ test('returns 9 segment with time in the middle of segment', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:18:10.000Z',
-    end: '2021-07-26T10:18:20.999Z'
+    start: moment('2021-07-26T10:18:10.000Z'),
+    end: moment('2021-07-26T10:18:20.999Z')
   }, { strict: false })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
@@ -103,8 +104,8 @@ test('returns 9 segment when strict is true', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:17:45.000Z',
-    end: '2021-07-26T10:18:20.999Z'
+    start: moment('2021-07-26T10:17:45.000Z'),
+    end: moment('2021-07-26T10:18:20.999Z')
   }, { strict: true })
   expect(data.results.length).toBe(1)
   expect(data.results[0].id).toBe(segments[8].id)
@@ -114,8 +115,8 @@ test('does not return 9 segment with time in the middle of segment when strict i
   const { stream } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:18:10.000Z',
-    end: '2021-07-26T10:18:20.999Z'
+    start: moment('2021-07-26T10:18:10.000Z'),
+    end: moment('2021-07-26T10:18:20.999Z')
   }, { strict: true })
   expect(data.results.length).toBe(0)
 })
@@ -124,8 +125,8 @@ test('returns all segments', async () => {
   const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
-    start: '2021-07-26T10:00:00.000Z',
-    end: '2021-07-26T10:32:20.000Z'
+    start: moment('2021-07-26T10:00:00.000Z'),
+    end: moment('2021-07-26T10:32:20.000Z')
   }, { strict: false })
   expect(data.results.length).toBe(segments.length)
 })

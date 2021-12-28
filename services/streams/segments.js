@@ -4,7 +4,6 @@ const { hasPermission, READ, STREAM } = require('../../services/roles')
 // const { SEGMENT_CREATED } = require('../../tasks/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../utils/errors')
 const pagedQuery = require('../../utils/db/paged-query')
-const moment = require('moment')
 
 const availableIncludes = [
   StreamSourceFile.include(),
@@ -83,8 +82,6 @@ async function query (filters, options = {}) {
   const where = {
     stream_id: filters.streamId
   }
-  const start = moment.utc(filters.start)
-  const end = moment.utc(filters.end)
   if (options.strict === false) {
     where[Sequelize.Op.and] = {
       start: {
@@ -93,26 +90,26 @@ async function query (filters, options = {}) {
         // A solution to this is to limit search to exact one-two chunks first and then search by `start` + `end` only inside these chunks.
         // We have to find a timeframe where segment with its own full duration will be places. We don't know duration of each segment, so we
         // will add some time to beginning and some time to the end (10 minutes to be safe).
-        [Sequelize.Op.between]: [start.clone().subtract(10, 'minutes').valueOf(), end.clone().add(10, 'minutes').valueOf()]
+        [Sequelize.Op.between]: [filters.start.clone().subtract(10, 'minutes').valueOf(), filters.end.clone().add(10, 'minutes').valueOf()]
       },
       [Sequelize.Op.or]: {
         start: {
-          [Sequelize.Op.gte]: start.valueOf(),
-          [Sequelize.Op.lt]: end.valueOf()
+          [Sequelize.Op.gte]: filters.start.valueOf(),
+          [Sequelize.Op.lt]: filters.end.valueOf()
         },
         end: {
-          [Sequelize.Op.gt]: start.valueOf(),
-          [Sequelize.Op.lte]: end.valueOf()
+          [Sequelize.Op.gt]: filters.start.valueOf(),
+          [Sequelize.Op.lte]: filters.end.valueOf()
         },
         [Sequelize.Op.and]: {
-          start: { [Sequelize.Op.lt]: start.valueOf() },
-          end: { [Sequelize.Op.gt]: end.valueOf() }
+          start: { [Sequelize.Op.lt]: filters.start.valueOf() },
+          end: { [Sequelize.Op.gt]: filters.end.valueOf() }
         }
       }
     }
   } else {
     where.start = {
-      [Sequelize.Op.between]: [start.valueOf(), end.valueOf()]
+      [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
     }
   }
 
