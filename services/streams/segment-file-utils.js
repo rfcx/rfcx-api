@@ -21,9 +21,8 @@ const FFMPEG_PATH = process.env.FFMPEG_PATH
 const SOX_PATH = process.env.SOX_PATH
 const IMAGEMAGICK_PATH = process.env.IMAGEMAGICK_PATH
 
-function parseFileNameAttrs (req) {
+function parseFileNameAttrs (name) {
   return new Promise((resolve, reject) => {
-    const name = req.params.attrs
     if (!name) {
       reject(new ValidationError('File parameters must be specified in the url.'))
       return

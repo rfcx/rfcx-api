@@ -14,11 +14,7 @@ async function parseStreamAndTime (req) {
   let stream, start, end
   const url = req.originalUrl
   if (url.startsWith(assetsPrefix)) {
-    const attrs = await parseFileNameAttrs({
-      params: {
-        attrs: req.originalUrl.replace('/internal/assets/streams/', '')
-      }
-    })
+    const attrs = await parseFileNameAttrs(req.originalUrl.replace('/internal/assets/streams/', '')) // TODO Don't make middleware dependent on url structure
     stream = attrs.streamId
     if (attrs.time) {
       if (attrs.time.starts) {
