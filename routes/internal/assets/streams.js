@@ -1,8 +1,10 @@
+const path = require('path')
 const router = require('express').Router()
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamSegmentService = require('../../../services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity, getFile } = require('../../../services/streams/segment-file-utils')
+const { parseFileNameAttrs, checkAttrsValidity } = require('../../../services/streams/segment-file-parsing')
+const { getFile } = require('../../../services/streams/segment-file-utils')
 const { gluedDateStrToMoment } = require('../../../utils/misc/datetime')
 
 /**
@@ -62,10 +64,12 @@ const { gluedDateStrToMoment } = require('../../../utils/misc/datetime')
  */
 
 router.get('/streams/:attrs', function (req, res) {
-  parseFileNameAttrs(req.params.attrs).then(async (attrs) => {
+  const fileExtension = path.extname(req.params.attrs).slice(1)
+  const fileNameWithoutExtension = path.basename(req.params.attrs, `.${fileExtension}`)
+  parseFileNameAttrs(fileNameWithoutExtension).then(async (attrs) => {
     const user = req.rfcx.auth_token_info
     const readableBy = user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id
-    await checkAttrsValidity(req, attrs)
+    await checkAttrsValidity(req, attrs, fileExtension)
     const start = gluedDateStrToMoment(attrs.time.starts)
     const end = gluedDateStrToMoment(attrs.time.ends)
     const queryData = await streamSegmentService.query({ streamId: attrs.streamId, start, end }, {
