@@ -162,36 +162,37 @@ exports.checkInDatabase = {
   },
 
   updateDbMetaAssetsExchangeLog: function (checkInObj) {
-    const guardianId = checkInObj.db.dbGuardian.id
+    const newCheckInObj = abbreviatedToFullName(checkInObj)
+    const guardianId = newCheckInObj.db.dbGuardian.id
     // arrays of return values for checkin response json
     const metaReturnArray = []; const detectionsReturnArray = []; const purgedReturnArray = []; const unconfirmedReturnArray = []; const receivedReturnArray = []; const receivedIdArray = []
 
     const proms = []
     // create meta asset entries in database
-    if (checkInObj.json.meta_ids != null) {
-      for (let i = 0; i < checkInObj.json.meta_ids.length; i++) {
+    if (newCheckInObj.json.meta_ids != null) {
+      for (let i = 0; i < newCheckInObj.json.meta_ids.length; i++) {
         const prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
           where: {
             guardian_id: guardianId,
             asset_type: 'meta',
-            asset_id: checkInObj.json.meta_ids[i]
+            asset_id: newCheckInObj.json.meta_ids[i]
           }
         })
-        metaReturnArray.push({ id: checkInObj.json.meta_ids[i].toString() })
+        metaReturnArray.push({ id: newCheckInObj.json.meta_ids[i].toString() })
         proms.push(prom)
       }
     }
     // create detections asset entries in database
-    if (checkInObj.json.detection_ids != null) {
-      for (let i = 0; i < checkInObj.json.detection_ids.length; i++) {
+    if (newCheckInObj.json.detection_ids != null) {
+      for (let i = 0; i < newCheckInObj.json.detection_ids.length; i++) {
         const prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
           where: {
             guardian_id: guardianId,
             asset_type: 'detections',
-            asset_id: checkInObj.json.detection_ids[i]
+            asset_id: newCheckInObj.json.detection_ids[i]
           }
         })
-        detectionsReturnArray.push({ id: checkInObj.json.detection_ids[i] })
+        detectionsReturnArray.push({ id: newCheckInObj.json.detection_ids[i] })
         proms.push(prom)
       }
     }
@@ -199,7 +200,7 @@ exports.checkInDatabase = {
       .then(() => {
         // parse list of purged assets from guardian, delete them from database and return list
         const dbMetaPurgedAssets = []
-        const metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
+        const metaPurgedAssets = strArrToJSArr(newCheckInObj.json.purged, '|', '*')
         for (const asstInd in metaPurgedAssets) {
           if (metaPurgedAssets[asstInd][1] != null) {
             dbMetaPurgedAssets.push({
@@ -212,13 +213,13 @@ exports.checkInDatabase = {
         }
         // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
         const promsExchLogs = []
-        if (checkInObj.json.checkins_to_verify != null) {
-          for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+        if (newCheckInObj.json.checkins_to_verify != null) {
+          for (let i = 0; i < newCheckInObj.json.checkins_to_verify.length; i++) {
             const prom = models.GuardianMetaAssetExchangeLog.findOne({
               where: {
                 guardian_id: guardianId,
                 asset_type: 'audio',
-                asset_id: checkInObj.json.checkins_to_verify[i]
+                asset_id: newCheckInObj.json.checkins_to_verify[i]
               }
             })
               .then((dbAssetEntry) => {
@@ -244,22 +245,22 @@ exports.checkInDatabase = {
           })
       })
       .then(() => {
-        if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
-          for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
-            if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
-              unconfirmedReturnArray.push({ type: 'audio', id: checkInObj.json.checkins_to_verify[i].toString() })
+        if ((newCheckInObj.json.checkins_to_verify != null) && (newCheckInObj.json.checkins_to_verify.length > 0)) {
+          for (let i = 0; i < newCheckInObj.json.checkins_to_verify.length; i++) {
+            if (receivedIdArray.indexOf(newCheckInObj.json.checkins_to_verify[i]) < 0) {
+              unconfirmedReturnArray.push({ type: 'audio', id: newCheckInObj.json.checkins_to_verify[i].toString() })
             }
           }
         }
 
         // add checkin response json to overall checkInObj
-        checkInObj.rtrn.obj.meta = metaReturnArray
-        checkInObj.rtrn.obj.detections = detectionsReturnArray
-        checkInObj.rtrn.obj.purged = purgedReturnArray
-        checkInObj.rtrn.obj.received = receivedReturnArray
-        checkInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray
+        newCheckInObj.rtrn.obj.meta = metaReturnArray
+        newCheckInObj.rtrn.obj.detections = detectionsReturnArray
+        newCheckInObj.rtrn.obj.purged = purgedReturnArray
+        newCheckInObj.rtrn.obj.received = receivedReturnArray
+        newCheckInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray
 
-        return checkInObj
+        return newCheckInObj
       })
   },
 
@@ -672,8 +673,8 @@ function strArrToJSArr (str, delimA, delimB) {
 
 function abbreviatedToFullName (checkInObj) {
   const json = checkInObj.json
-  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, msg, ...others } = json
-  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, messages: msg, ...others }
+  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, msg, mid, did, p, ...others } = json
+  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, messages: msg, meta_ids: mid, detection_ids: did, purged: p, ...others }
   checkInObj.json = fullNameJson
   return checkInObj
 }
