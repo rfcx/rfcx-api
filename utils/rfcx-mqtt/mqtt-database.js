@@ -96,14 +96,15 @@ exports.checkInDatabase = {
   },
 
   saveDbMessages: function (checkInObj) {
+    const newCheckInObj = abbreviatedToFullName(checkInObj)
     const msgs = []
     let msgInfo
     const proms = []
     try {
       msgInfo = smsMessages.info(
-        checkInObj.json.messages,
-        checkInObj.db.dbGuardian.id,
-        ((checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null)
+        newCheckInObj.json.messages,
+        newCheckInObj.db.dbGuardian.id,
+        ((newCheckInObj.db.dbCheckIn != null) ? newCheckInObj.db.dbCheckIn.id : null)
       )
     } catch (e) {
       return Promise.reject(e)
@@ -115,8 +116,8 @@ exports.checkInDatabase = {
     }
     return Promise.all(proms)
       .then(() => {
-        checkInObj.rtrn.obj.messages = msgs
-        return checkInObj
+        newCheckInObj.rtrn.obj.messages = msgs
+        return newCheckInObj
       })
   },
 
@@ -671,8 +672,8 @@ function strArrToJSArr (str, delimA, delimB) {
 
 function abbreviatedToFullName (checkInObj) {
   const json = checkInObj.json
-  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, ...others } = json
-  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, ...others }
+  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, msg, ...others } = json
+  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, messages: msg, ...others }
   checkInObj.json = fullNameJson
   return checkInObj
 }
