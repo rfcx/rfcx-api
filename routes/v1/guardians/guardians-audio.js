@@ -25,7 +25,12 @@ router.route('/:guardian_id/audio')
         return models.GuardianAudio
           .findAll({
             where: dbQuery,
-            include: [{ all: true }],
+            include: [
+              { model: models.Guardian, as: 'Guardian', attributes: ['guid'] },
+              { model: models.GuardianSite, as: 'Site', attributes: ['guid', 'timezone', 'timezone_offset'] },
+              { model: models.GuardianAudioFormat, as: 'Format', attributes: ['sample_rate'] },
+              { model: models.GuardianCheckIn, as: 'CheckIn', attributes: ['guid'] }
+            ],
             order: [[dateClmn, dbQueryOrder]],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
