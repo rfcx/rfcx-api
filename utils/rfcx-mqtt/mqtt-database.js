@@ -265,20 +265,21 @@ exports.checkInDatabase = {
   },
 
   syncGuardianPrefs: function (checkInObj) {
+    const newCheckInObj = abbreviatedToFullName(checkInObj)
     let prefsReturnArray = []
 
-    if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: '', vals: {} } }
-    if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = '' }
-    if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {} }
+    if (newCheckInObj.json.prefs == null) { newCheckInObj.json.prefs = { sha1: '', vals: {} } }
+    if (newCheckInObj.json.prefs.sha1 == null) { newCheckInObj.json.prefs.sha1 = '' }
+    if (newCheckInObj.json.prefs.vals == null) { newCheckInObj.json.prefs.vals = {} }
 
     const prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' }
-    const prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }
+    const prefsJson = { sha1: newCheckInObj.json.prefs.sha1, vals: newCheckInObj.json.prefs.vals, cnt: 0 }
     const prefsSha1CharLimit = prefsJson.sha1.length
     for (const prefKey in prefsJson.vals) { prefsJson.cnt++ } // eslint-disable-line no-unused-vars
 
     // retrieve, sort and take checksum of prefs rows for this guardian in the database
     return models.GuardianSoftwarePrefs.findAll({
-      where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
+      where: { guardian_id: newCheckInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
     }).then((dbPrefs) => {
       const prefsBlobArr = []
       if (dbPrefs.length > 0) {
@@ -296,12 +297,12 @@ exports.checkInDatabase = {
 
         if (prefsJson.cnt > 0) {
           return models.GuardianSoftwarePrefs.destroy({
-            where: { guardian_id: checkInObj.db.dbGuardian.id }
+            where: { guardian_id: newCheckInObj.db.dbGuardian.id }
           }).then(() => {
             for (const prefKey in prefsJson.vals) {
               const prom = models.GuardianSoftwarePrefs.findOrCreate({
                 where: {
-                  guardian_id: checkInObj.db.dbGuardian.id,
+                  guardian_id: newCheckInObj.db.dbGuardian.id,
                   pref_key: prefKey,
                   pref_value: prefsJson.vals[prefKey]
                 }
@@ -312,7 +313,7 @@ exports.checkInDatabase = {
             return Promise.all(prefsFindOrCreatePromises)
               .then(() => {
                 return models.GuardianSoftwarePrefs.findAll({
-                  where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
+                  where: { guardian_id: newCheckInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
                 }).then((dbPrefs) => {
                   const prefsBlobArr = []
                   if (dbPrefs.length > 0) {
@@ -334,8 +335,8 @@ exports.checkInDatabase = {
         prefsReturnArray = [{ sha1: prefsDb.sha1.substr(0, prefsSha1CharLimit) }]
       }
     }).then(() => {
-      checkInObj.rtrn.obj.prefs = prefsReturnArray
-      return checkInObj
+      newCheckInObj.rtrn.obj.prefs = prefsReturnArray
+      return newCheckInObj
     })
   },
 
@@ -673,8 +674,17 @@ function strArrToJSArr (str, delimA, delimB) {
 
 function abbreviatedToFullName (checkInObj) {
   const json = checkInObj.json
-  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, msg, mid, did, p, ...others } = json
-  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, messages: msg, meta_ids: mid, detection_ids: did, purged: p, ...others }
+  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, msg, mid, did, p, pf, ...others } = json
+  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, messages: msg, meta_ids: mid, detection_ids: did, purged: p, prefs: abbreviatedPrefsToFUllName(pf), ...others }
   checkInObj.json = fullNameJson
   return checkInObj
+}
+
+function abbreviatedPrefsToFUllName (prefsObj) {
+  if (!prefsObj) {
+    return prefsObj
+  }
+  const { s, v, ...others } = prefsObj
+  const fullNamePrefs = { sha1: s, vals: v, ...others }
+  return fullNamePrefs
 }
