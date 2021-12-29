@@ -96,15 +96,14 @@ exports.checkInDatabase = {
   },
 
   saveDbMessages: function (checkInObj) {
-    const newCheckInObj = abbreviatedToFullName(checkInObj)
     const msgs = []
     let msgInfo
     const proms = []
     try {
       msgInfo = smsMessages.info(
-        newCheckInObj.json.messages,
-        newCheckInObj.db.dbGuardian.id,
-        ((newCheckInObj.db.dbCheckIn != null) ? newCheckInObj.db.dbCheckIn.id : null)
+        checkInObj.json.messages,
+        checkInObj.db.dbGuardian.id,
+        ((checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null)
       )
     } catch (e) {
       return Promise.reject(e)
@@ -116,83 +115,81 @@ exports.checkInDatabase = {
     }
     return Promise.all(proms)
       .then(() => {
-        newCheckInObj.rtrn.obj.messages = msgs
-        return newCheckInObj
+        checkInObj.rtrn.obj.messages = msgs
+        return checkInObj
       })
   },
 
   createDbSaveMeta: function (checkInObj) {
-    const newCheckInObj = abbreviatedToFullName(checkInObj)
     const guardianId = checkInObj.db.dbGuardian.id
     const checkInId = (checkInObj.db.dbCheckIn != null) ? checkInObj.db.dbCheckIn.id : null
 
     const proms = [
-      saveMeta.DataTransfer(strArrToJSArr(newCheckInObj.json.data_transfer, '|', '*'), guardianId, checkInId),
-      saveMeta.CPU(strArrToJSArr(newCheckInObj.json.cpu, '|', '*'), guardianId, checkInId),
-      saveMeta.Battery(strArrToJSArr(newCheckInObj.json.battery, '|', '*'), guardianId, checkInId),
-      saveMeta.Network(strArrToJSArr(newCheckInObj.json.network, '|', '*'), guardianId, checkInId),
-      saveMeta.LightMeter(strArrToJSArr(newCheckInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
-      saveMeta.Accelerometer(strArrToJSArr(newCheckInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
-      saveMeta.Storage(strArrToJSArr(newCheckInObj.json.storage, '|', '*'), guardianId, checkInId),
-      saveMeta.Memory(strArrToJSArr(newCheckInObj.json.memory, '|', '*'), guardianId, checkInId),
-      saveMeta.GeoPosition(strArrToJSArr(newCheckInObj.json.geoposition, '|', '*'), guardianId, checkInId),
-      saveMeta.DateTimeOffset(strArrToJSArr(newCheckInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
-      saveMeta.MqttBrokerConnection(strArrToJSArr(newCheckInObj.json.broker_connections, '|', '*'), guardianId, checkInId),
-      saveMeta.Detections(newCheckInObj.json.detections ? newCheckInObj.json.detections.split('|') : [], newCheckInObj.db.dbGuardian.stream_id),
+      saveMeta.DataTransfer(strArrToJSArr(checkInObj.json.data_transfer, '|', '*'), guardianId, checkInId),
+      saveMeta.CPU(strArrToJSArr(checkInObj.json.cpu, '|', '*'), guardianId, checkInId),
+      saveMeta.Battery(strArrToJSArr(checkInObj.json.battery, '|', '*'), guardianId, checkInId),
+      saveMeta.Network(strArrToJSArr(checkInObj.json.network, '|', '*'), guardianId, checkInId),
+      saveMeta.LightMeter(strArrToJSArr(checkInObj.json.lightmeter, '|', '*'), guardianId, checkInId),
+      saveMeta.Accelerometer(strArrToJSArr(checkInObj.json.accelerometer, '|', '*'), guardianId, checkInId),
+      saveMeta.Storage(strArrToJSArr(checkInObj.json.storage, '|', '*'), guardianId, checkInId),
+      saveMeta.Memory(strArrToJSArr(checkInObj.json.memory, '|', '*'), guardianId, checkInId),
+      saveMeta.GeoPosition(strArrToJSArr(checkInObj.json.geoposition, '|', '*'), guardianId, checkInId),
+      saveMeta.DateTimeOffset(strArrToJSArr(checkInObj.json.datetime_offsets, '|', '*'), guardianId, checkInId),
+      saveMeta.MqttBrokerConnection(strArrToJSArr(checkInObj.json.broker_connections, '|', '*'), guardianId, checkInId),
+      saveMeta.Detections(checkInObj.json.detections ? checkInObj.json.detections.split('|') : [], checkInObj.db.dbGuardian.stream_id),
 
-      saveMeta.RebootEvents(strArrToJSArr(newCheckInObj.json.reboots, '|', '*'), guardianId, checkInId),
-      saveMeta.SoftwareRoleVersion(strArrToJSArr(newCheckInObj.json.software, '|', '*'), guardianId),
-      saveMeta.PreviousCheckIns(strArrToJSArr(newCheckInObj.json.previous_checkins, '|', '*')),
+      saveMeta.RebootEvents(strArrToJSArr(checkInObj.json.reboots, '|', '*'), guardianId, checkInId),
+      saveMeta.SoftwareRoleVersion(strArrToJSArr(checkInObj.json.software, '|', '*'), guardianId),
+      saveMeta.PreviousCheckIns(strArrToJSArr(checkInObj.json.previous_checkins, '|', '*')),
 
-      saveMeta.CheckInStatus(strArrToJSArr(newCheckInObj.json.checkins, '|', '*'), guardianId, newCheckInObj.json.measured_at),
+      saveMeta.CheckInStatus(strArrToJSArr(checkInObj.json.checkins, '|', '*'), guardianId, checkInObj.json.measured_at),
 
-      saveMeta.SentinelPower(strArrToJSArr(newCheckInObj.json.sentinel_power, '|', '*'), guardianId, checkInId),
-      saveMeta.SentinelSensor('accelerometer', strArrToJSArr(newCheckInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
-      saveMeta.SentinelSensor('compass', strArrToJSArr(newCheckInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelPower(strArrToJSArr(checkInObj.json.sentinel_power, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelSensor('accelerometer', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
+      saveMeta.SentinelSensor('compass', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
 
-      saveMeta.Device((newCheckInObj.json.device == null) ? {} : newCheckInObj.json.device, guardianId),
+      saveMeta.Device((checkInObj.json.device == null) ? {} : checkInObj.json.device, guardianId),
 
-      saveMeta.SwarmDiagnostics(strArrToJSArr(newCheckInObj.json.swm, '|', '*'), guardianId, checkInId)
+      saveMeta.SwarmDiagnostics(strArrToJSArr(checkInObj.json.swm, '|', '*'), guardianId, checkInId)
     ]
 
     return Promise.all(proms)
       .then(() => {
-        return newCheckInObj
+        return checkInObj
       })
   },
 
   updateDbMetaAssetsExchangeLog: function (checkInObj) {
-    const newCheckInObj = abbreviatedToFullName(checkInObj)
-    const guardianId = newCheckInObj.db.dbGuardian.id
+    const guardianId = checkInObj.db.dbGuardian.id
     // arrays of return values for checkin response json
     const metaReturnArray = []; const detectionsReturnArray = []; const purgedReturnArray = []; const unconfirmedReturnArray = []; const receivedReturnArray = []; const receivedIdArray = []
 
     const proms = []
     // create meta asset entries in database
-    if (newCheckInObj.json.meta_ids != null) {
-      for (let i = 0; i < newCheckInObj.json.meta_ids.length; i++) {
+    if (checkInObj.json.meta_ids != null) {
+      for (let i = 0; i < checkInObj.json.meta_ids.length; i++) {
         const prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
           where: {
             guardian_id: guardianId,
             asset_type: 'meta',
-            asset_id: newCheckInObj.json.meta_ids[i]
+            asset_id: checkInObj.json.meta_ids[i]
           }
         })
-        metaReturnArray.push({ id: newCheckInObj.json.meta_ids[i].toString() })
+        metaReturnArray.push({ id: checkInObj.json.meta_ids[i].toString() })
         proms.push(prom)
       }
     }
     // create detections asset entries in database
-    if (newCheckInObj.json.detection_ids != null) {
-      for (let i = 0; i < newCheckInObj.json.detection_ids.length; i++) {
+    if (checkInObj.json.detection_ids != null) {
+      for (let i = 0; i < checkInObj.json.detection_ids.length; i++) {
         const prom = models.GuardianMetaAssetExchangeLog.findOrCreate({
           where: {
             guardian_id: guardianId,
             asset_type: 'detections',
-            asset_id: newCheckInObj.json.detection_ids[i]
+            asset_id: checkInObj.json.detection_ids[i]
           }
         })
-        detectionsReturnArray.push({ id: newCheckInObj.json.detection_ids[i] })
+        detectionsReturnArray.push({ id: checkInObj.json.detection_ids[i] })
         proms.push(prom)
       }
     }
@@ -200,7 +197,7 @@ exports.checkInDatabase = {
       .then(() => {
         // parse list of purged assets from guardian, delete them from database and return list
         const dbMetaPurgedAssets = []
-        const metaPurgedAssets = strArrToJSArr(newCheckInObj.json.purged, '|', '*')
+        const metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
         for (const asstInd in metaPurgedAssets) {
           if (metaPurgedAssets[asstInd][1] != null) {
             dbMetaPurgedAssets.push({
@@ -213,13 +210,13 @@ exports.checkInDatabase = {
         }
         // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
         const promsExchLogs = []
-        if (newCheckInObj.json.checkins_to_verify != null) {
-          for (let i = 0; i < newCheckInObj.json.checkins_to_verify.length; i++) {
+        if (checkInObj.json.checkins_to_verify != null) {
+          for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
             const prom = models.GuardianMetaAssetExchangeLog.findOne({
               where: {
                 guardian_id: guardianId,
                 asset_type: 'audio',
-                asset_id: newCheckInObj.json.checkins_to_verify[i]
+                asset_id: checkInObj.json.checkins_to_verify[i]
               }
             })
               .then((dbAssetEntry) => {
@@ -245,41 +242,40 @@ exports.checkInDatabase = {
           })
       })
       .then(() => {
-        if ((newCheckInObj.json.checkins_to_verify != null) && (newCheckInObj.json.checkins_to_verify.length > 0)) {
-          for (let i = 0; i < newCheckInObj.json.checkins_to_verify.length; i++) {
-            if (receivedIdArray.indexOf(newCheckInObj.json.checkins_to_verify[i]) < 0) {
-              unconfirmedReturnArray.push({ type: 'audio', id: newCheckInObj.json.checkins_to_verify[i].toString() })
+        if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {
+          for (let i = 0; i < checkInObj.json.checkins_to_verify.length; i++) {
+            if (receivedIdArray.indexOf(checkInObj.json.checkins_to_verify[i]) < 0) {
+              unconfirmedReturnArray.push({ type: 'audio', id: checkInObj.json.checkins_to_verify[i].toString() })
             }
           }
         }
 
         // add checkin response json to overall checkInObj
-        newCheckInObj.rtrn.obj.meta = metaReturnArray
-        newCheckInObj.rtrn.obj.detections = detectionsReturnArray
-        newCheckInObj.rtrn.obj.purged = purgedReturnArray
-        newCheckInObj.rtrn.obj.received = receivedReturnArray
-        newCheckInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray
+        checkInObj.rtrn.obj.meta = metaReturnArray
+        checkInObj.rtrn.obj.detections = detectionsReturnArray
+        checkInObj.rtrn.obj.purged = purgedReturnArray
+        checkInObj.rtrn.obj.received = receivedReturnArray
+        checkInObj.rtrn.obj.unconfirmed = unconfirmedReturnArray
 
-        return newCheckInObj
+        return checkInObj
       })
   },
 
   syncGuardianPrefs: function (checkInObj) {
-    const newCheckInObj = abbreviatedToFullName(checkInObj)
     let prefsReturnArray = []
 
-    if (newCheckInObj.json.prefs == null) { newCheckInObj.json.prefs = { sha1: '', vals: {} } }
-    if (newCheckInObj.json.prefs.sha1 == null) { newCheckInObj.json.prefs.sha1 = '' }
-    if (newCheckInObj.json.prefs.vals == null) { newCheckInObj.json.prefs.vals = {} }
+    if (checkInObj.json.prefs == null) { checkInObj.json.prefs = { sha1: '', vals: {} } }
+    if (checkInObj.json.prefs.sha1 == null) { checkInObj.json.prefs.sha1 = '' }
+    if (checkInObj.json.prefs.vals == null) { checkInObj.json.prefs.vals = {} }
 
     const prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' }
-    const prefsJson = { sha1: newCheckInObj.json.prefs.sha1, vals: newCheckInObj.json.prefs.vals, cnt: 0 }
+    const prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }
     const prefsSha1CharLimit = prefsJson.sha1.length
     for (const prefKey in prefsJson.vals) { prefsJson.cnt++ } // eslint-disable-line no-unused-vars
 
     // retrieve, sort and take checksum of prefs rows for this guardian in the database
     return models.GuardianSoftwarePrefs.findAll({
-      where: { guardian_id: newCheckInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
+      where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
     }).then((dbPrefs) => {
       const prefsBlobArr = []
       if (dbPrefs.length > 0) {
@@ -297,12 +293,12 @@ exports.checkInDatabase = {
 
         if (prefsJson.cnt > 0) {
           return models.GuardianSoftwarePrefs.destroy({
-            where: { guardian_id: newCheckInObj.db.dbGuardian.id }
+            where: { guardian_id: checkInObj.db.dbGuardian.id }
           }).then(() => {
             for (const prefKey in prefsJson.vals) {
               const prom = models.GuardianSoftwarePrefs.findOrCreate({
                 where: {
-                  guardian_id: newCheckInObj.db.dbGuardian.id,
+                  guardian_id: checkInObj.db.dbGuardian.id,
                   pref_key: prefKey,
                   pref_value: prefsJson.vals[prefKey]
                 }
@@ -313,7 +309,7 @@ exports.checkInDatabase = {
             return Promise.all(prefsFindOrCreatePromises)
               .then(() => {
                 return models.GuardianSoftwarePrefs.findAll({
-                  where: { guardian_id: newCheckInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
+                  where: { guardian_id: checkInObj.db.dbGuardian.id }, order: [['pref_key', 'ASC']], limit: 150
                 }).then((dbPrefs) => {
                   const prefsBlobArr = []
                   if (dbPrefs.length > 0) {
@@ -335,8 +331,8 @@ exports.checkInDatabase = {
         prefsReturnArray = [{ sha1: prefsDb.sha1.substr(0, prefsSha1CharLimit) }]
       }
     }).then(() => {
-      newCheckInObj.rtrn.obj.prefs = prefsReturnArray
-      return newCheckInObj
+      checkInObj.rtrn.obj.prefs = prefsReturnArray
+      return checkInObj
     })
   },
 
@@ -670,21 +666,4 @@ function strArrToJSArr (str, delimA, delimB) {
   } catch (e) {
     console.log(e); return []
   }
-}
-
-function abbreviatedToFullName (checkInObj) {
-  const json = checkInObj.json
-  const { dt, c, btt, nw, str, mm, bc, dtt, sw, chn, sp, dv, ma, msg, mid, did, p, pf, ...others } = json
-  const fullNameJson = { data_transfer: dt, cpu: c, battery: btt, network: nw, storage: str, memory: mm, broker_connections: bc, detections: dtt, software: sw, checkins: chn, sentinel_power: sp, device: dv, measured_at: ma, messages: msg, meta_ids: mid, detection_ids: did, purged: p, prefs: abbreviatedPrefsToFullName(pf), ...others }
-  checkInObj.json = fullNameJson
-  return checkInObj
-}
-
-function abbreviatedPrefsToFullName (prefsObj) {
-  if (!prefsObj) {
-    return prefsObj
-  }
-  const { s, v, ...others } = prefsObj
-  const fullNamePrefs = { sha1: s, vals: v, ...others }
-  return fullNamePrefs
 }
