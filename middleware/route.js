@@ -1,5 +1,3 @@
-const path = require('path')
-
 module.exports = function (req, res, next) {
   const requestStartTime = (new Date()).valueOf()
   const apiUrlDomain = `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}`
@@ -17,11 +15,6 @@ module.exports = function (req, res, next) {
 
   const paramOrder = (req.query.order == null || typeof (req.query.order) !== 'string') ? null : ((req.query.order.toLowerCase() === 'ascending') ? 'ASC' : 'DESC')
 
-  let contentType = path.extname(req.path).trim().substr(1)
-  if (contentType.trim().length === 0) { contentType = 'json' }
-  const urlPath = req.originalUrl
-  req.url = req.url.replace('.' + contentType, '')
-
   const authUser = { header: null, query: null, body: null }
   if (req.headers['x-auth-user'] != null) { authUser.header = req.headers['x-auth-user'] }
   if (req.query.auth_user != null) { authUser.query = req.query.auth_user }
@@ -37,13 +30,11 @@ module.exports = function (req, res, next) {
     api_url_protocol: process.env.REST_PROTOCOL,
     api_url_domain: apiUrlDomain,
     api_version: apiVersion,
-    url_path: urlPath,
     limit: paramLimit,
     offset: paramOffset,
     starting_after: paramAfter,
     ending_before: paramBefore,
     order: paramOrder,
-    content_type: contentType.toLowerCase(),
     auth_user: authUser
   }
 
@@ -53,7 +44,7 @@ module.exports = function (req, res, next) {
     (req.rfcx.api_url_protocol === 'http') &&
     (allowedOverInsecureConnection.indexOf(req.headers.host) < 0)
   ) {
-    res.redirect('https://' + req.headers.host + req.rfcx.url_path)
+    res.redirect('https://' + req.headers.host + req.url)
   } else {
     next()
   }

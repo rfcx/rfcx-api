@@ -33,6 +33,9 @@ function combineUserData (jwtPayload, user) {
     type: 'user',
     owner_id: user.id,
     owner_guid: user.guid,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    username: user.username,
     is_super: !!user.is_super,
     has_system_role: getUserRolesFromToken(jwtPayload).includes('systemUser')
   })
@@ -43,6 +46,7 @@ function checkDBUser (req, jwtPayload, done) {
   const tokenUserGuid = jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : undefined)
   // if request was sent from userless account (like GAIA), then use static user
   if (!jwtPayload.email && !tokenUserGuid) {
+    jwtPayload.isStaticUser = true
     jwtPayload.email = 'userless@rfcx.org'
     jwtPayload.given_name = 'userless'
     jwtPayload.family_name = 'rfcx'
@@ -63,7 +67,7 @@ function checkDBUser (req, jwtPayload, done) {
   })
     .spread(async (user, created) => {
       req.rfcx.auth_token_info = combineUserData(jwtPayload, user)
-      if (!created) {
+      if (!created && !jwtPayload.isStaticUser) {
         await usersFusedService.ensureUserSyncedFromToken(req)
       }
       done(null, req.rfcx.auth_token_info)

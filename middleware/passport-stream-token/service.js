@@ -1,5 +1,5 @@
 const moment = require('moment')
-const { parseFileNameAttrs } = require('../../services/streams/segment-file-utils')
+const { parseFileNameAttrs } = require('../../services/streams/segment-file-parsing')
 const { gluedDateStrToMoment } = require('../../utils/misc/datetime')
 
 const assetsPrefix = '/internal/assets/streams/'
@@ -14,11 +14,7 @@ async function parseStreamAndTime (req) {
   let stream, start, end
   const url = req.originalUrl
   if (url.startsWith(assetsPrefix)) {
-    const attrs = await parseFileNameAttrs({
-      params: {
-        attrs: req.originalUrl.replace('/internal/assets/streams/', '')
-      }
-    })
+    const attrs = await parseFileNameAttrs(req.originalUrl.replace('/internal/assets/streams/', '')) // TODO Don't make middleware dependent on url structure
     stream = attrs.streamId
     if (attrs.time) {
       if (attrs.time.starts) {
