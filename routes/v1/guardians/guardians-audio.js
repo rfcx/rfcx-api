@@ -3,8 +3,11 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
+const takeContentTypeFromFileExtMiddleware = require('../../../middleware/legacy/take-content-type-from-file-ext')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
+
+router.use(takeContentTypeFromFileExtMiddleware)
 
 router.route('/:guardian_id/audio')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
