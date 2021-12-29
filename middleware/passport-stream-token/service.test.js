@@ -28,12 +28,11 @@ describe('parseStreamAndTime', () => {
       expect(data.start).toEqual(1579011692000)
       expect(data.end).toEqual(1579012292000)
     })
-    test('Should return undefined stream id, start and end from invalid url', async () => {
+    test('Should return undefined start and end from invalid url', async () => {
       const req = {
         originalUrl: '/internal/assets/streams/fspec_d600.410.png'
       }
       const data = await service.parseStreamAndTime(req)
-      expect(data.stream).toEqual(undefined)
       expect(data.start).toEqual(undefined)
       expect(data.end).toEqual(undefined)
     })

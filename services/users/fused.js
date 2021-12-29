@@ -47,15 +47,6 @@ async function getIdByGuid (guid) {
   }
 }
 
-function collectUserDataForSync (req) {
-  const { guid, email, picture } = req.rfcx.auth_token_info
-  return getByGuidOrEmail(guid, email)
-    .then((dbUser) => {
-      const { id, firstname, lastname, username } = dbUser
-      return { id, firstname, lastname, username, email, guid, picture }
-    })
-}
-
 async function ensureUserSynced (user) {
   await ensureUserSyncedInTimescaleDB(user)
   if (ensureUserSyncedInNeo4j) {
@@ -64,9 +55,7 @@ async function ensureUserSynced (user) {
 }
 
 async function ensureUserSyncedFromToken (req) {
-  // get combined data from MySQL and Auth0 token
-  const user = await collectUserDataForSync(req)
-  await ensureUserSynced(user)
+  await ensureUserSynced(req.rfcx.auth_token_info)
 }
 
 async function ensureUserSyncedInTimescaleDB (user) {

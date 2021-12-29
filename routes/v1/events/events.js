@@ -20,6 +20,9 @@ const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const hasRole = require('../../../middleware/authorization/authorization').hasRole
 const firebaseService = require('../../../services/firebase/firebase-service')
 const guardianGroupService = require('../../../services/guardians/guardian-group-service')
+const takeContentTypeFromFileExtMiddleware = require('../../../middleware/legacy/take-content-type-from-file-ext')
+
+router.use(takeContentTypeFromFileExtMiddleware)
 
 router.route('/event')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {

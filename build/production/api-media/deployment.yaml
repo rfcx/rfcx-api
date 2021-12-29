@@ -20,6 +20,8 @@ spec:
             name: api-secrets
         - configMapRef:
             name: api-configmap
+        - configMapRef:
+            name: api-media-configmap
         resources:
           requests:
             memory: "700Mi"
