@@ -6,8 +6,10 @@
 
 ### Performance Improvements
 * **core:** Improve `segments` query function by reducing amount of chunks to check
-* **core:** Reduce MySQL calls for user account
-* **core:** Do not sync static user like systemUser in Timescale and Neo4j
+* **legacy:** Reduce MySQL calls for user account
+* **legacy:** Do not sync static user like systemUser in Timescale and Neo4j
+* **legacy:** Do not sync static user like anonymous assistant in Timescale and Neo4j
+* **legacy:** Include only required joins for guardian audio query
 
 
 ## 1.0.29 (2021-12-15)
