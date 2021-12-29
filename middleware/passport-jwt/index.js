@@ -53,6 +53,10 @@ function checkDBUser (req, jwtPayload, done) {
     jwtPayload.guid = guid.generate()
   }
 
+  if (jwtPayload.email === 'anonymous-assistant@rfcx.org') {
+    jwtPayload.isStaticUser = true
+  }
+
   // if request was sent from account which doesn't have email (like Facebook, created with a phone number)
   if (!jwtPayload.email && tokenUserGuid) {
     jwtPayload.email = `${tokenUserGuid}@rfcx.org`
