@@ -1,6 +1,6 @@
 const { checkInDatabase: { saveDbMessages } } = require('./mqtt-database')
 const smsMessages = require('../rfcx-guardian/guardian-sms-database.js').messages
-const checkinUtils = require('../checkin')
+const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 jest.mock('./mqtt-save-meta')
 
@@ -67,7 +67,7 @@ test('messages save is called with sms wrong abbreviated', async () => {
 const messageExample = [{ 1: { android_id: 1 } }]
 
 function makeCheckin (json, guardianId, checkinId) {
-  return checkinUtils.abbreviatedToFullName({
+  return expandAbbreviatedFieldNames({
     db: {
       dbGuardian: {
         id: guardianId

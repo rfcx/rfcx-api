@@ -1,6 +1,6 @@
 const { checkInDatabase: { updateDbMetaAssetsExchangeLog } } = require('./mqtt-database')
 const model = require('../../models')
-const checkinUtils = require('../checkin')
+const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 beforeEach(() => {
   model.GuardianMetaAssetExchangeLog.findOrCreate = jest.fn().mockImplementation(() => Promise.resolve())
@@ -106,7 +106,7 @@ const detectionIdsExample = [
 const purgedExample = 'meta*1640654813742|meta*1640654903858|meta*1640654993886'
 
 function makeCheckin (json, guardianId, checkinId) {
-  return checkinUtils.abbreviatedToFullName({
+  return expandAbbreviatedFieldNames({
     db: {
       dbGuardian: {
         id: guardianId

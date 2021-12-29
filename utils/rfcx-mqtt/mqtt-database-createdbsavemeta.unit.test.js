@@ -1,6 +1,6 @@
 const { checkInDatabase: { createDbSaveMeta } } = require('./mqtt-database')
 const { saveMeta } = require('./mqtt-save-meta')
-const checkinUtils = require('../checkin')
+const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 jest.mock('./mqtt-save-meta')
 
@@ -479,7 +479,7 @@ function join (arrayOfArray) {
 }
 
 function makeCheckin (json, guardianId, checkinId, streamId) {
-  return checkinUtils.abbreviatedToFullName({
+  return expandAbbreviatedFieldNames({
     db: {
       dbGuardian: {
         id: guardianId,

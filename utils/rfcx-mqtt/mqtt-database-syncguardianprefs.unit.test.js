@@ -1,6 +1,6 @@
 const { checkInDatabase: { syncGuardianPrefs } } = require('./mqtt-database')
 const model = require('../../models')
-const checkinUtils = require('../checkin')
+const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 beforeEach(() => {
   model.GuardianSoftwarePrefs.findOrCreate = jest.fn().mockImplementation(() => Promise.resolve())
@@ -98,7 +98,7 @@ const findAllMockData = [
 const findAllSha1 = '4fbf3fee33c55a16864dceee62f1af1ddcfbfada'
 
 function makeCheckin (json, guardianId, checkinId) {
-  return checkinUtils.abbreviatedToFullName({
+  return expandAbbreviatedFieldNames({
     db: {
       dbGuardian: {
         id: guardianId
