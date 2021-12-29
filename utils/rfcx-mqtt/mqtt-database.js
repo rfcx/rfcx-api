@@ -680,7 +680,7 @@ function abbreviatedToFullName (checkInObj) {
   return checkInObj
 }
 
-function abbreviatedPrefsToFUllName (prefsObj) {
+function abbreviatedPrefsToFullName (prefsObj) {
   if (!prefsObj) {
     return prefsObj
   }
