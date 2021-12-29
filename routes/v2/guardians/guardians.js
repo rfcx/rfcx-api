@@ -67,7 +67,7 @@ router.route('/:guid')
   })
 
 router.route('/:guid')
-  .patch(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'systemUser']), function (req, res) {
+  .patch(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'systemUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
