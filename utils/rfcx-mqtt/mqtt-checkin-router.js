@@ -8,6 +8,7 @@ const guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publ
 const mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
 const queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
 const SensationsService = require('../../services/legacy/sensations/sensations-service')
+const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 function onMessageCheckin (data, messageId) {
   // cached file garbage collection... only do garbage collection ~1% of the time
@@ -15,7 +16,8 @@ function onMessageCheckin (data, messageId) {
 
   return mqttInputData.parseCheckInInput(data)
     .then((checkInObj) => {
-      return checkInDatabase.getDbGuardian(checkInObj)
+      const expandedCheckinObj = expandAbbreviatedFieldNames(checkInObj)
+      return checkInDatabase.getDbGuardian(expandedCheckinObj)
     })
     .then((checkInObj) => {
       return checkInDatabase.validateDbGuardianToken(checkInObj)
