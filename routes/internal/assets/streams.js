@@ -82,7 +82,7 @@ router.get('/streams/:attrs', function (req, res) {
       throw new EmptyResultError('No audio files found for selected time range.')
     }
     const nextTimestamp = await streamSegmentService.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
-    return await getFile(req, res, attrs, segments, nextTimestamp)
+    return await getFile(req, res, attrs, fileExtension, segments, nextTimestamp)
   }).catch(httpErrorHandler(req, res, 'Failed getting stream asset'))
 })
 

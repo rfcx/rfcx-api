@@ -15,7 +15,7 @@ const FFMPEG_PATH = process.env.FFMPEG_PATH
 const SOX_PATH = process.env.SOX_PATH
 const IMAGEMAGICK_PATH = process.env.IMAGEMAGICK_PATH
 
-async function getFile (req, res, attrs, segments, nextTimestamp) {
+async function getFile (req, res, attrs, fileExtension, segments, nextTimestamp) {
   const filename = combineStandardFilename(attrs, req)
   const extension = attrs.fileType === 'spec' ? 'wav' : attrs.fileType
 
@@ -43,7 +43,7 @@ async function getFile (req, res, attrs, segments, nextTimestamp) {
     }
     return storageService.getReadStream(storageService.buckets.streamsCache, storageFilePath).pipe(res)
   } else {
-    return generateFile(req, res, attrs, segments, additionalHeaders)
+    return generateFile(req, res, attrs, fileExtension, segments, additionalHeaders)
   }
 }
 
@@ -203,16 +203,16 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   return runExec(command)
 }
 
-async function makeSpectrogram (sourcePath, outputPath, filename, contentType, attrs) {
+async function makeSpectrogram (sourcePath, outputPath, filename, fileExtension, attrs) {
   const height = getSoxFriendlyHeight(attrs.dimensions.y)
   await renderSpectrogram(sourcePath, outputPath, attrs.monochrome, attrs.dimensions.x, height, attrs.windowFunc, attrs.zAxis)
   if (attrs.clip && attrs.clip !== 'full') {
     await cropSpectrogram(outputPath, attrs, height)
   }
   await resizeSpectrogram(outputPath, attrs.dimensions)
-  if (contentType !== 'png') {
-    await convertSpectrogram(outputPath, { ...attrs, contentType })
-    filename = filename.replace('.png', `.${contentType}`)
+  if (fileExtension !== 'png') {
+    await convertSpectrogram(outputPath, { ...attrs, fileExtension })
+    filename = filename.replace('.png', `.${fileExtension}`)
   }
   return filename
 }
@@ -237,7 +237,7 @@ function resizeSpectrogram (sourcePath, dimensions) {
 }
 
 function convertSpectrogram (sourcePath, attrs) {
-  const outputPath = sourcePath.replace('.png', `.${attrs.contentType}`)
+  const outputPath = sourcePath.replace('.png', `.${attrs.fileExtension}`)
   return runExec(`${IMAGEMAGICK_PATH} -strip -interlace Plane -quality ${100 - attrs.jpegCompression}% ${sourcePath} ${outputPath}`)
 }
 
@@ -285,8 +285,7 @@ function deleteLocalFiles (segments, audioFilePath, audioFilePathCached, spectro
   }
 }
 
-async function generateFile (req, res, attrs, segments, additionalHeaders) {
-  const reqContentType = req.rfcx.content_type
+async function generateFile (req, res, attrs, fileExtension, segments, additionalHeaders) {
   const tmpDir = `${CACHE_DIRECTORY}ffmpeg/`
   const filename = combineStandardFilename(attrs, req)
   const extension = attrs.fileType === 'spec' ? 'wav' : attrs.fileType
@@ -303,12 +302,12 @@ async function generateFile (req, res, attrs, segments, additionalHeaders) {
   await downloadSegments(segments)
   await convertAudio(segments, start, end, attrs, audioFilePath)
   if (attrs.fileType === 'spec') {
-    spectrogramFilename = await makeSpectrogram(audioFilePath, spectrogramFilePath, spectrogramFilename, reqContentType, attrs)
+    spectrogramFilename = await makeSpectrogram(audioFilePath, spectrogramFilePath, spectrogramFilename, fileExtension, attrs)
     spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
   }
   const { audioFilePathCached, spectrogramFilePathCached } = MEDIA_CACHE_ENABLED ? await cloneFiles(audioFilePath, attrs.fileType === 'spec' ? spectrogramFilePath : null) : {}
   if (attrs.fileType === 'spec') {
-    await audioUtils.serveAudioFromFile(res, spectrogramFilePath, spectrogramFilename, `image/${reqContentType}`, !!req.query.inline, additionalHeaders)
+    await audioUtils.serveAudioFromFile(res, spectrogramFilePath, spectrogramFilename, `image/${fileExtension}`, !!req.query.inline, additionalHeaders)
   } else {
     await audioUtils.serveAudioFromFile(res, audioFilePath, audioFilename, assetUtils.mimeTypeFromAudioCodec(attrs.fileType), !!req.query.inline, additionalHeaders)
   }
