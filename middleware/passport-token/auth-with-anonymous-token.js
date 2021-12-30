@@ -21,7 +21,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
         })
       } else if ((dbToken.auth_token_hash === hash.hashedCredentials(dbToken.auth_token_salt, token)) &&
         ((dbToken.only_allow_access_to == null) ||
-          (regex.regExIndexOf(req.rfcx.url_path, JSON.parse(dbToken.only_allow_access_to)) > -1)
+          (regex.regExIndexOf(req.baseUrl + req.path, JSON.parse(dbToken.only_allow_access_to)) > -1)
         )
       ) {
         req.rfcx.auth_token_info = {
