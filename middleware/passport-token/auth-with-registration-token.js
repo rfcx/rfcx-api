@@ -27,7 +27,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
         return done(null, false, { message: 'invitation code has already been redeemed ' + dbToken.total_redemptions + ' time(s)' })
       } else if ((dbToken.auth_token_hash === hash.hashedCredentials(dbToken.auth_token_salt, inviteToken)) &&
         ((dbToken.only_allow_access_to == null) ||
-          (regex.regExIndexOf(req.rfcx.url_path, JSON.parse(dbToken.only_allow_access_to)) > -1)
+          (regex.regExIndexOf(req.baseUrl + req.path, JSON.parse(dbToken.only_allow_access_to)) > -1)
         )
       ) {
         req.rfcx.auth_token_info = {

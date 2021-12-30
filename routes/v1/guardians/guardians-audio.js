@@ -3,8 +3,11 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
+const takeContentTypeFromFileExtMiddleware = require('../../../middleware/legacy/take-content-type-from-file-ext')
 const passport = require('passport')
 passport.use(require('../../../middleware/passport-token').TokenStrategy)
+
+router.use(takeContentTypeFromFileExtMiddleware)
 
 router.route('/:guardian_id/audio')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
@@ -22,7 +25,12 @@ router.route('/:guardian_id/audio')
         return models.GuardianAudio
           .findAll({
             where: dbQuery,
-            include: [{ all: true }],
+            include: [
+              { model: models.Guardian, as: 'Guardian', attributes: ['guid'] },
+              { model: models.GuardianSite, as: 'Site', attributes: ['guid', 'timezone', 'timezone_offset'] },
+              { model: models.GuardianAudioFormat, as: 'Format', attributes: ['sample_rate'] },
+              { model: models.GuardianCheckIn, as: 'CheckIn', attributes: ['guid'] }
+            ],
             order: [[dateClmn, dbQueryOrder]],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset

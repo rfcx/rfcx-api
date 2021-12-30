@@ -29,7 +29,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
                 })
             } else if ((dbUser.Token[i].auth_token_hash === hash.hashedCredentials(dbUser.Token[i].auth_token_salt, token)) &&
               ((dbUser.Token[i].only_allow_access_to == null) ||
-                (regex.regExIndexOf(req.rfcx.url_path, JSON.parse(dbUser.Token[i].only_allow_access_to)) > -1))) {
+                (regex.regExIndexOf(req.baseUrl + req.path, JSON.parse(dbUser.Token[i].only_allow_access_to)) > -1))) {
               req.rfcx.auth_token_info = {
                 type: 'user',
                 id: dbUser.Token[i].id,

@@ -13,14 +13,10 @@ exports.gzip = {
             if (!zLibError) {
               resolve(JSON.parse(zLibBuffer.toString()))
             } else {
-              if (zLibError) {
-                console.log(zLibError)
-                reject(new Error(zLibError))
-              }
+              reject(new Error(zLibError))
             }
           })
       } catch (err) {
-        console.log(err)
         reject(new Error(err))
       }
     })
@@ -31,7 +27,6 @@ exports.gzip = {
       try {
         resolve(unZippedDestinationFilePath)
       } catch (err) {
-        console.log(err)
         reject(new Error(err))
       }
     })

@@ -43,6 +43,10 @@ router.route('/:guardian_id/pings')
             httpError(req, res, 500, err, 'failed to save ping')
           })
       })
+      .catch(function (err) {
+        console.error('Failed to unzip json', err)
+        httpError(req, res, 500, err, 'failed to unzip json')
+      })
   })
 
 module.exports = router

@@ -78,7 +78,7 @@ router.route('/login')
 
           return token.createUserToken({
             token_type: 'login',
-            created_by: req.rfcx.url_path,
+            created_by: req.baseUrl + req.path,
             reference_tag: dbUser.guid,
             owner_primary_key: dbUser.id,
             minutes_until_expiration: loginExpirationInMinutes
@@ -159,7 +159,7 @@ router.route('/register')
 
           token.createUserToken({
             token_type: 'registration',
-            created_by: req.rfcx.url_path,
+            created_by: req.baseUrl + req.path,
             reference_tag: dbUser.guid,
             owner_primary_key: dbUser.id,
             minutes_until_expiration: loginExpirationInMinutes
