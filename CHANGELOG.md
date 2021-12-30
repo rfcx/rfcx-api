@@ -9,6 +9,8 @@
 * **core:** Reduce MySQL calls for user account
 * **core:** Do not sync static user like systemUser in Timescale and Neo4j
 
+### Bug Fixes
+* **guardian:** User can register and deploy a Guardian without the guardianCreator role
 
 ## 1.0.29 (2021-12-15)
 
