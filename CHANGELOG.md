@@ -11,6 +11,8 @@
 * **legacy:** Do not sync static user like anonymous assistant in Timescale and Neo4j
 * **legacy:** Include only required joins for guardian audio query
 
+### Bug Fixes
+* **guardian:** User can register and deploy a Guardian without the guardianCreator role
 
 ## 1.0.29 (2021-12-15)
 
