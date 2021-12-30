@@ -15,10 +15,6 @@ router.route('/:guardian_id/pings')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
     // unzip gzipped meta json blob
     checkInHelpers.gzip.unZipJson(req.body.json)
-      .catch(function (err) {
-        console.error('Failed to unzip json', err)
-        httpError(req, res, 500, err, 'failed to unzip json')
-      })
       .bind({})
       .then(function (json) {
         let messageId = guidService.generate()
@@ -46,6 +42,10 @@ router.route('/:guardian_id/pings')
             console.error('Failed to save ping', err)
             httpError(req, res, 500, err, 'failed to save ping')
           })
+      })
+      .catch(function (err) {
+        console.error('Failed to unzip json', err)
+        httpError(req, res, 500, err, 'failed to unzip json')
       })
   })
 
