@@ -1,4 +1,4 @@
-## 1.0.30 (2021-12-XX)
+## 1.0.30 (2021-12-30)
 
 ### Features
 * **core:** Add functionality to parsing shorten property names to full name of meta payload
