@@ -10,7 +10,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
     '^/v2/guardians/' + authUser.guid + '/software/[a-z]+$',
     '^/v2/guardians/' + authUser.guid + '/pings$'
   ]
-  const path = req.path
+  const path = req.baseUrl + req.path
 
   models.Guardian
     .findOne({
