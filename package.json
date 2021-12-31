@@ -66,7 +66,7 @@
     "request": "2.88.2",
     "request-promise": "4.2.1",
     "roboto-font": "0.1.0",
-    "sequelize": "5.21.8",
+    "sequelize": "5.22.5",
     "sha.js": "2.4.8",
     "sqs-consumer": "^5.5.0",
     "stripe": "6.20.1",
