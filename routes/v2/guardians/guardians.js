@@ -92,6 +92,12 @@ router.route('/:guid')
         }, { updatableBy, transaction: timescaleTransaction })
 
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
+
+        // Update the last deployed timestamp whenever stream id changes
+        if (guardian.stream_id === null || guardian.stream_id !== params.stream_id) {
+          params.last_deployed = models.sequelize.literal('CURRENT_TIMESTAMP')
+        }
+
         const updatedGuardian = await guardiansService.updateGuardian(guardian, params, { transaction: mysqlTransaction })
 
         if (arbimonService.isEnabled) {
