@@ -22,8 +22,8 @@ console.log(`RFCX | Initializing sequelize for ${databaseType}`)
 initializeSequelize()
 
 function initializeSequelize () {
-  const modelsPath = databaseType === 'timescale' ? 'modelsTimescale' : 'models'
   const migrationsPath = databaseType === 'timescale' ? 'migrations' : 'migrations-legacy'
+  const modelsPath = databaseType === 'timescale' ? 'models' : 'models-legacy'
   const models = require('../' + modelsPath)
 
   console.log('RFCX | Creating config params: started')

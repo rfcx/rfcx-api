@@ -1,145 +1,46 @@
-const Sequelize = require('sequelize')
-const defineRelationships = require('./relationships')
-const env = process.env.NODE_ENV || 'development'
+const { sequelize, Sequelize, options } = require('./db')
 
-const options = env === 'test'
-  ? {
-      dialect: 'sqlite',
-      logging: false
-    }
-  : {
-      dialect: 'mysql',
-      host: process.env.DB_HOSTNAME,
-      port: process.env.DB_PORT,
-      logging: false,
-      define: {
-        underscored: true,
-        timestamps: true,
-        charset: 'utf8',
-        dialectOptions: {
-          collate: 'utf8_general_ci'
-        }
-      },
-      hooks: {
-        afterConnect: () => {
-          console.log('Connected to MySQL')
-        },
-        afterDisconnect: () => {
-          console.log('Disonnected from MySQL')
-        }
-      }
-    }
-if (env === 'development') {
-  options.logging = function (str) {
-    console.log('\nSQL QUERY----------------------------------\n', str, '\n----------------------------------')
-  }
+const models = {
+  Annotation: require('./annotations/annotation')(sequelize, Sequelize),
+  ClassificationAlternativeName: require('./classifications/classification-alternative-name')(sequelize, Sequelize),
+  ClassificationSource: require('./classifications/classification-source')(sequelize, Sequelize),
+  ClassificationType: require('./classifications/classification-type')(sequelize, Sequelize),
+  Classification: require('./classifications/classification')(sequelize, Sequelize),
+  Language: require('./classifications/language')(sequelize, Sequelize),
+  ClassifierActiveProject: require('./classifiers/classifier-active-project')(sequelize, Sequelize),
+  ClassifierActiveStream: require('./classifiers/classifier-active-stream')(sequelize, Sequelize),
+  ClassifierDeployment: require('./classifiers/classifier-deployment')(sequelize, Sequelize),
+  ClassifierEventStrategy: require('./classifiers/classifier-event-strategy')(sequelize, Sequelize),
+  ClassifierOutput: require('./classifiers/classifier-output')(sequelize, Sequelize),
+  Classifier: require('./classifiers/classifier')(sequelize, Sequelize),
+  Detection: require('./detections/detection')(sequelize, Sequelize),
+  EventStrategy: require('./events/event-strategy')(sequelize, Sequelize),
+  Event: require('./events/event')(sequelize, Sequelize),
+  IndexType: require('./indices/index-type')(sequelize, Sequelize),
+  IndexValue: require('./indices/index-value')(sequelize, Sequelize),
+  Index: require('./indices/index')(sequelize, Sequelize),
+  Organization: require('./projects/organization')(sequelize, Sequelize),
+  Project: require('./projects/project')(sequelize, Sequelize),
+  Stream: require('./streams/stream')(sequelize, Sequelize),
+  StreamSegment: require('./streams/stream-segment')(sequelize, Sequelize),
+  StreamSourceFile: require('./streams/stream-source-file')(sequelize, Sequelize),
+  AudioCodec: require('./to-be-removed/audio_codec')(sequelize, Sequelize),
+  AudioFileFormat: require('./to-be-removed/audio_file_format')(sequelize, Sequelize),
+  FileExtension: require('./to-be-removed/file_extension')(sequelize, Sequelize),
+  RolePermission: require('./users/role-permission')(sequelize, Sequelize),
+  Role: require('./users/role')(sequelize, Sequelize),
+  UserOrganizationRole: require('./users/user-organization-role')(sequelize, Sequelize),
+  UserProjectRole: require('./users/user-project-role')(sequelize, Sequelize),
+  UserProjectSubscription: require('./users/user-project-subscription')(sequelize, Sequelize),
+  UserStreamRole: require('./users/user-stream-role')(sequelize, Sequelize),
+  User: require('./users/user')(sequelize, Sequelize)
 }
 
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, options)
-sequelize.authenticate() // check connection
-
-const db = {
-  AttachmentType: require('./attachment/attachment-type')(sequelize, Sequelize),
-  Attachment: require('./attachment/attachment')(sequelize, Sequelize),
-  AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
-  AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
-  AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
-  AudioAnalysisState: require('./audio-analysis/audio-analysis-state')(sequelize, Sequelize),
-  AudioAnalysisTrainingSet: require('./audio-analysis/audio-analysis-training-set')(sequelize, Sequelize),
-  ClassificationSource: require('./classification/classification-source')(sequelize, Sequelize),
-  ClassificationType: require('./classification/classification-type')(sequelize, Sequelize),
-  Classification: require('./classification/classification')(sequelize, Sequelize),
-  SpeciesName: require('./classification/species-name')(sequelize, Sequelize),
-  ContactMessage: require('./contact-message/contact-message')(sequelize, Sequelize),
-  FilterPreset: require('./filter-preset/filter-preset')(sequelize, Sequelize),
-  GuardianAudioBox: require('./guardian-audio/guardian-audio-box')(sequelize, Sequelize),
-  GuardianAudioCollection: require('./guardian-audio/guardian-audio-collection')(sequelize, Sequelize),
-  GuardianAudioCollectionsRelations: require('./guardian-audio/guardian-audio-collections-relations')(sequelize, Sequelize),
-  GuardianAudioEventReasonForCreation: require('./guardian-audio/guardian-audio-event-reason-for-creation')(sequelize, Sequelize),
-  GuardianAudioEventType: require('./guardian-audio/guardian-audio-event-type')(sequelize, Sequelize),
-  GuardianAudioEventValue: require('./guardian-audio/guardian-audio-event-value')(sequelize, Sequelize),
-  GuardianAudioEventValueHighLevelKey: require('./guardian-audio/guardian-audio-event-value-high-level-key')(sequelize, Sequelize),
-  GuardianAudioEvent: require('./guardian-audio/guardian-audio-events')(sequelize, Sequelize),
-  GuardianAudioFormat: require('./guardian-audio/guardian-audio-format')(sequelize, Sequelize),
-  GuardianAudioHighlight: require('./guardian-audio/guardian-audio-highlights')(sequelize, Sequelize),
-  GuardianAudioTag: require('./guardian-audio/guardian-audio-tag')(sequelize, Sequelize),
-  GuardianAudio: require('./guardian-audio/guardian-audio')(sequelize, Sequelize),
-  GuardianEvent: require('./guardian-event/guardian-event')(sequelize, Sequelize),
-  GuardianMetaAccelerometer: require('./guardian-meta/guardian-meta-accelerometer')(sequelize, Sequelize),
-  GuardianMetaAssetExchangeLog: require('./guardian-meta/guardian-meta-asset-exchange-log')(sequelize, Sequelize),
-  GuardianMetaBattery: require('./guardian-meta/guardian-meta-battery')(sequelize, Sequelize),
-  GuardianMetaCheckInStatus: require('./guardian-meta/guardian-meta-checkin-status')(sequelize, Sequelize),
-  GuardianMetaCPU: require('./guardian-meta/guardian-meta-cpu')(sequelize, Sequelize),
-  GuardianMetaDataTransfer: require('./guardian-meta/guardian-meta-datatransfer')(sequelize, Sequelize),
-  GuardianMetaDateTimeOffset: require('./guardian-meta/guardian-meta-datetime-offset')(sequelize, Sequelize),
-  GuardianMetaDiskUsage: require('./guardian-meta/guardian-meta-diskusage')(sequelize, Sequelize),
-  GuardianMetaGeoLocation: require('./guardian-meta/guardian-meta-geolocation')(sequelize, Sequelize),
-  GuardianMetaGeoPosition: require('./guardian-meta/guardian-meta-geoposition')(sequelize, Sequelize),
-  GuardianMetaHardware: require('./guardian-meta/guardian-meta-hardware')(sequelize, Sequelize),
-  GuardianMetaInstructionsLog: require('./guardian-meta/guardian-meta-instructions-log')(sequelize, Sequelize),
-  GuardianMetaInstructionsQueue: require('./guardian-meta/guardian-meta-instructions-queue')(sequelize, Sequelize),
-  GuardianMetaLightMeter: require('./guardian-meta/guardian-meta-lightmeter')(sequelize, Sequelize),
-  GuardianMetaLog: require('./guardian-meta/guardian-meta-log')(sequelize, Sequelize),
-  GuardianMetaMemory: require('./guardian-meta/guardian-meta-memory')(sequelize, Sequelize),
-  GuardianMetaMessage: require('./guardian-meta/guardian-meta-message')(sequelize, Sequelize),
-  GuardianMetaMqttBrokerConnection: require('./guardian-meta/guardian-meta-mqtt-broker-connection')(sequelize, Sequelize),
-  GuardianMetaNetwork: require('./guardian-meta/guardian-meta-network')(sequelize, Sequelize),
-  GuardianMetaOffline: require('./guardian-meta/guardian-meta-offline')(sequelize, Sequelize),
-  GuardianMetaPhoto: require('./guardian-meta/guardian-meta-photo')(sequelize, Sequelize),
-  GuardianMetaPower: require('./guardian-meta/guardian-meta-power')(sequelize, Sequelize),
-  GuardianMetaReboot: require('./guardian-meta/guardian-meta-reboot')(sequelize, Sequelize),
-  GuardianMetaScreenShot: require('./guardian-meta/guardian-meta-screenshot')(sequelize, Sequelize),
-  GuardianMetaSegmentsGroup: require('./guardian-meta/guardian-meta-segments-group')(sequelize, Sequelize),
-  GuardianMetaSegmentsGroupLog: require('./guardian-meta/guardian-meta-segments-group-log')(sequelize, Sequelize),
-  GuardianMetaSegmentsQueue: require('./guardian-meta/guardian-meta-segments-queue')(sequelize, Sequelize),
-  GuardianMetaSegmentsReceived: require('./guardian-meta/guardian-meta-segments-received')(sequelize, Sequelize),
-  GuardianMetaSentinelAccelerometer: require('./guardian-meta/guardian-meta-sentinel-accelerometer')(sequelize, Sequelize),
-  GuardianMetaSentinelCompass: require('./guardian-meta/guardian-meta-sentinel-compass')(sequelize, Sequelize),
-  GuardianMetaSentinelPower: require('./guardian-meta/guardian-meta-sentinel-power')(sequelize, Sequelize),
-  GuardianMetaSoftwareVersion: require('./guardian-meta/guardian-meta-software')(sequelize, Sequelize),
-  GuardianMetaUpdateCheckIn: require('./guardian-meta/guardian-meta-updatecheckin')(sequelize, Sequelize),
-  GuardianMetaVideo: require('./guardian-meta/guardian-meta-video')(sequelize, Sequelize),
-  GuardianSoftwarePrefs: require('./guardian-software/guardian-software-prefs')(sequelize, Sequelize),
-  GuardianSoftwareVersion: require('./guardian-software/guardian-software-version')(sequelize, Sequelize),
-  GuardianSoftware: require('./guardian-software/guardian-software')(sequelize, Sequelize),
-  Location: require('./location/location')(sequelize, Sequelize),
-  Organization: require('./organization/organization')(sequelize, Sequelize),
-  AnonymousToken: require('./token/anonymous-token')(sequelize, Sequelize),
-  RegistrationToken: require('./token/registration-token')(sequelize, Sequelize),
-  ResetPasswordToken: require('./token/reset-password-token')(sequelize, Sequelize),
-  UserToken: require('./token/user-token')(sequelize, Sequelize),
-  User: require('./user/user')(sequelize, Sequelize),
-  UserGuardianGroupSubscription: require('./user/user-group-subscriptions')(sequelize, Sequelize),
-  UserLocation: require('./user/user-location')(sequelize, Sequelize),
-  UserSiteRelation: require('./user/user-relations')(sequelize, Sequelize),
-  AdoptProtectDonation: require('./adopt-protect-donation')(sequelize, Sequelize),
-  Device: require('./device')(sequelize, Sequelize),
-  GuardianAudioUpload: require('./guardian-audio-upload')(sequelize, Sequelize),
-  GuardianCheckIn: require('./guardian-checkin')(sequelize, Sequelize),
-  GuardianGroupGuardianAudioEventTypeRelation: require('./guardian-group-event-type-relation')(sequelize, Sequelize),
-  GuardianGroupGuardianAudioEventValueRelation: require('./guardian-group-event-value-relation')(sequelize, Sequelize),
-  GuardianGroupRelation: require('./guardian-group-relation')(sequelize, Sequelize),
-  GuardianGroup: require('./guardian-group')(sequelize, Sequelize),
-  GuardianSite: require('./guardian-site')(sequelize, Sequelize),
-  Guardian: require('./guardian')(sequelize, Sequelize),
-  HealthCheck: require('./health-check')(sequelize, Sequelize),
-  Language: require('./language')(sequelize, Sequelize),
-  ReportAttachmentRelation: require('./report-attachment-relation')(sequelize, Sequelize),
-  Report: require('./report')(sequelize, Sequelize),
-  ShortLink: require('./shortlink')(sequelize, Sequelize),
-  SourceType: require('./source-type')(sequelize, Sequelize)
-}
-
-Object.keys(db).forEach(function (modelName) {
-  if ('associate' in db[modelName]) {
-    db[modelName].associate(db)
+// Create associations
+Object.keys(models).forEach(function (modelName) {
+  if ('associate' in models[modelName]) {
+    models[modelName].associate(models)
   }
 })
 
-defineRelationships(sequelize.models)
-
-db.sequelize = sequelize
-db.Sequelize = Sequelize
-db.options = options
-
-module.exports = db
+module.exports = { ...models, sequelize, Sequelize, options }

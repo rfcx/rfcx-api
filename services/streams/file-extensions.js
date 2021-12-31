@@ -1,5 +1,5 @@
 const { findOrCreateItem } = require('../../utils/sequelize')
-const { FileExtension } = require('../../modelsTimescale')
+const { FileExtension } = require('../../models')
 
 /**
  * Find or create model for FileExtension based on input value

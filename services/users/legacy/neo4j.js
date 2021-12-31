@@ -1,5 +1,5 @@
 const neo4j = require('../../../utils/neo4j')
-const { User } = require('../../../models')
+const { User } = require('../../../models-legacy')
 
 async function ensureUserSyncedInNeo4j (user) {
   if (user instanceof User) {

@@ -15,8 +15,8 @@ const sitesService = require('../../../services/sites/sites-service')
 const streamsService = require('../../../services/streams')
 const arbimonService = require('../../../services/arbimon')
 const Converter = require('../../../utils/converter/converter')
+const modelsLegacy = require('../../../models-legacy')
 const models = require('../../../models')
-const modelsTimescale = require('../../../modelsTimescale')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -80,8 +80,8 @@ router.route('/:guid')
     let mysqlTransaction, timescaleTransaction
     return converter.validate()
       .then(async (params) => {
-        mysqlTransaction = await models.sequelize.transaction()
-        timescaleTransaction = await modelsTimescale.sequelize.transaction()
+        mysqlTransaction = await modelsLegacy.sequelize.transaction()
+        timescaleTransaction = await models.sequelize.transaction()
 
         // Check the user has permission to write to stream
         await streamsService.update(params.stream_id, {
