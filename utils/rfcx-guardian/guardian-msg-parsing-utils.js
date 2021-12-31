@@ -3,7 +3,7 @@ const checkInHelpers = require('../../utils/rfcx-checkin')
 const pingRouter = require('../../utils/rfcx-guardian/router-ping.js').pingRouter
 const guidService = require('../../utils/misc/guid.js')
 const smsTwilio = require('../../utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
-const models = require('../../models')
+const models = require('../../models-legacy')
 
 exports.guardianMsgParsingUtils = {
 

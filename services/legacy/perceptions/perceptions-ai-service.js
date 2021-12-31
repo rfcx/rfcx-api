@@ -1,6 +1,6 @@
 const Converter = require('../../../utils/converter/converter')
 const CognitionService = require('../cognitions/cognitions-service')
-const models = require('../../../models')
+const models = require('../../../models-legacy')
 const aws = require('../../../utils/external/aws').aws()
 const ValidationError = require('../../../utils/converter/validation-error')
 const Promise = require('bluebird')

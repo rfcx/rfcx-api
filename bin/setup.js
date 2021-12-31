@@ -35,27 +35,6 @@ function initializeSequelize () {
     fs.writeFile(configJsonFile, configJsonContent, function (e) {
       if (!e) {
         console.log('RFCX | sequelize config.json has been [re]generated')
-        // console.log('RFCX | Getting models')
-        // var models = require("../models");
-
-        // /* sequelize sync */
-        // console.log('RFCX | Syncing models\n');
-        // models.sequelize.sync({
-        //   logging: console.log
-        // })
-        //   .then(function() {
-        //     console.log('\nRFCX | Models have been synced')
-        //     /* run sequelize-cli migrations from command line */
-        //     var seqCliPath = process.cwd()+'/node_modules/sequelize-cli/bin/sequelize';
-        //     console.log('RFCX | Migrating db: started')
-        //     require('child_process').exec(seqCliPath+' db:migrate:old_schema; '+seqCliPath+' db:migrate;',function(err,sOut,sErr){
-        //       console.log('RFCX | Migrating db: ended')
-        //       console.log(sErr);
-        //     });
-        //   })
-        //   .catch(function(err) {
-        //     console.log('RFCX | Error in syncing models:', err);
-        //   });
       }
     })
   })

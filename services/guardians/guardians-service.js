@@ -1,4 +1,4 @@
-const models = require('../../models')
+const models = require('../../models-legacy')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const Promise = require('bluebird')
 const hash = require('../../utils/misc/hash')

@@ -1,5 +1,5 @@
 const { checkInDatabase: { syncGuardianPrefs } } = require('./mqtt-database')
-const model = require('../../models')
+const model = require('../../models-legacy')
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 beforeEach(() => {

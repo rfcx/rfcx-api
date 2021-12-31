@@ -1,6 +1,6 @@
 const sequelize = require('sequelize')
 const Converter = require('../../utils/converter/converter')
-const models = require('../../models')
+const models = require('../../models-legacy')
 const userService = require('../users/users-service-legacy')
 
 function validateCreateParams (params) {

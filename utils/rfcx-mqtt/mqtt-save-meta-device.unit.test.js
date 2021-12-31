@@ -1,7 +1,7 @@
 const { saveMeta: { Device } } = require('./mqtt-save-meta')
-const models = require('../../models')
+const models = require('../../models-legacy')
 
-jest.mock('../../models', () => {
+jest.mock('../../models-legacy', () => {
   const devices = []
   return {
     GuardianMetaHardware: {

@@ -1,6 +1,6 @@
 const express = require('express')
 const sequelize = require('sequelize')
-const models = require('../../../models')
+const models = require('../../../models-legacy')
 const httpError = require('../../../utils/http-errors.js')
 const takeContentTypeFromFileExtMiddleware = require('../../../middleware/legacy/take-content-type-from-file-ext')
 const ValidationError = require('../../../utils/converter/validation-error')
