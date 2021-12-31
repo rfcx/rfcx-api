@@ -1,5 +1,5 @@
 const verboseLogging = (process.env.NODE_ENV !== 'production')
-const models = require('../../models')
+const models = require('../../models-legacy')
 const hash = require('../../utils/misc/hash')
 const regex = require('../../utils/misc/regex.js')
 
