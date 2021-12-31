@@ -1,5 +1,8 @@
 # API Deployment Notes
 
+## 1.0.31
+- Run `npm run sync-mysql` for new migration
+
 ## 1.0.27
 - Add `Users` and `UserTokens` a row for Swarm user - contact @Frongs for the information
 
