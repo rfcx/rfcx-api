@@ -35,7 +35,8 @@ exports.models = {
           }
         },
         last_sync: dbRow.last_sync ? dbRow.last_sync : null,
-        battery_percent: dbRow.battery_percent ? dbRow.battery_percent : null,
+        battery_percent_internal: dbRow.battery_percent_internal,
+        battery_percent: dbRow.battery_percent,
         site: dbRow.Site
           ? {
               guid: dbRow.Site.guid,
