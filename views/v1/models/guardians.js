@@ -47,7 +47,8 @@ exports.models = {
         notes: dbRow.notes || null,
         phone_imei: dbRow.phone_imei || null,
         phone_sim_number: dbRow.phone_sim_number || null,
-        phone_sim_serial: dbRow.phone_sim_serial || null
+        phone_sim_serial: dbRow.phone_sim_serial || null,
+        last_deployed: dbRow.last_deployed
       }
 
       jsonArray.push(guardian)
