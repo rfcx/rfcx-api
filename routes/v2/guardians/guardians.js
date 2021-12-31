@@ -17,6 +17,7 @@ const arbimonService = require('../../../services/arbimon')
 const Converter = require('../../../utils/converter/converter')
 const models = require('../../../models')
 const modelsTimescale = require('../../../modelsTimescale')
+const { EmptyResultError, ForbiddenError } = require('../../../utils/errors')
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -89,7 +90,12 @@ router.route('/:guid')
           longitude: params.longitude,
           altitude: params.altitude,
           is_public: params.is_visible
-        }, { updatableBy, transaction: timescaleTransaction })
+        }, { updatableBy, transaction: timescaleTransaction }).catch(e => {
+          if (e instanceof EmptyResultError || e instanceof ForbiddenError) {
+            throw new ValidationError('stream id does not exist or is not updatable by user')
+          }
+          throw e
+        })
 
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
 
