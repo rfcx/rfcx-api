@@ -71,7 +71,9 @@ function randomAmplitudeArray (length, max) {
     if (index === 0) {
       arr[index] = Math.random() * max
     } else {
-      arr[index] = arr[index - 1] + ((Math.random() - 0.5) * max * 0.125)
+      const incrementFactor = Math.random() > 0.9 ? 0.5 : 0.1
+      arr[index] = Math.abs(arr[index - 1] + ((Math.random() - 0.5) * max * incrementFactor))
+      if (arr[index] > max) { arr[index] = 2 * max - arr[index] }
     }
   })
   return arr.map(val => Math.round(val * 1000000) / 1000000)
