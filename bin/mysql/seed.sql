@@ -25,3 +25,8 @@ INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (8, 
 
 INSERT INTO rfcx_api.SourceTypes (id, name, created_at, updated_at) VALUES (1, 'GuardianAudio', '2017-04-17 12:21:49', '2017-04-17 12:21:51');
 INSERT INTO rfcx_api.SourceTypes (id, name, created_at, updated_at) VALUES (2, 'Users', '2017-04-17 12:22:04', '2017-04-17 12:22:07');
+
+INSERT INTO rfcx_api.GuardianAudioFormats (id, codec, mime, file_extension, sample_rate, sample_size, channel_count, target_bit_rate, is_vbr, created_at, updated_at) VALUES (1, 'opus', 'audio/ogg', 'opus', 12000, 0, 1, 16384, 1, '2022-01-03 21:37:45', '2022-01-03 21:37:49');
+
+INSERT INTO rfcx_api.GuardianAudio (guid, measured_at, measured_at_local, analyzed_at, analysis_queued_at, size, capture_sample_count, encode_duration, sha1_checksum, url, original_filename, created_at, updated_at, guardian_id, site_id, check_in_id, format_id) VALUES ('c2355d62-0a49-444f-a7ee-33252ead3c39', '2022-01-03 21:31:22.000', '2022-01-03 23:31:34.000', null, null, 157746, 1087488, 2200, 'abc', null, null, '2022-01-03 21:34:45', '2022-01-03 21:34:45', 129, 3, null, 1);
+
