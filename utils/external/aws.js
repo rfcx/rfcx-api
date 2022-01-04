@@ -1,6 +1,6 @@
 const SNS = require('aws-sdk/clients/sns')
 const SQS = require('aws-sdk/clients/sqs')
-const S3 = useAWSMocks() ? require('faux-knox') : require('knox')
+const S3 = require('knox')
 const EmptyResultError = require('..//converter/empty-result-error')
 
 const _snsClient = new SNS({
@@ -15,12 +15,8 @@ const _sqsClient = new SQS({
   region: process.env.AWS_REGION_ID
 })
 
-function useAWSMocks () {
-  return (process.env.NODE_ENV === 'test')
-}
-
 function getBucket (bucketName) {
-  return useAWSMocks() ? process.cwd() + '/tmp/faux-knox/' + bucketName + '/' : bucketName
+  return bucketName
 }
 
 const s3Clients = {}
@@ -46,14 +42,12 @@ exports.aws = function () {
     },
 
     s3SignedUrl: function (bucketName, filePath, linkExpirationInMinutes) {
-      return (useAWSMocks())
-        ? 's3-mock-signed-url'
-        : findOrCreateS3Client(bucketName)
-          .signedUrl(filePath, new Date((new Date()).valueOf() + (1000 * 60 * linkExpirationInMinutes)))
+      return findOrCreateS3Client(bucketName)
+        .signedUrl(filePath, new Date((new Date()).valueOf() + (1000 * 60 * linkExpirationInMinutes)))
     },
 
     s3ConfirmSave: function (s3Res, savePath) {
-      return useAWSMocks() || (s3Res.req.url.indexOf(savePath) >= 0)
+      return s3Res.req.url.indexOf(savePath) >= 0
     },
 
     sns: function () {
@@ -62,10 +56,6 @@ exports.aws = function () {
 
     sqs: function () {
       return _sqsClient
-    },
-
-    snsIgnoreError: function () {
-      return useAWSMocks()
     },
 
     snsTopicArn: function (topicName) {
@@ -77,7 +67,7 @@ exports.aws = function () {
         const TopicArn = that.snsTopicArn(topic)
         const Message = JSON.stringify(message)
         that.sns().publish({ TopicArn, Message }, function (snsErr, snsData) {
-          if (!!snsErr && !that.snsIgnoreError()) {
+          if (snsErr) {
             reject(new Error(snsErr))
           } else {
             resolve(snsData)
