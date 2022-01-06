@@ -170,6 +170,10 @@ module.exports = function (sequelize, DataTypes) {
     stream_id: {
       type: DataTypes.STRING(12),
       allowNull: true
+    },
+    last_deployed: {
+      type: DataTypes.DATE(3),
+      allowNull: true
     }
   }, {
     indexes: [

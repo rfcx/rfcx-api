@@ -45,7 +45,7 @@ function setupTmpDirectory () {
   if (!fs.existsSync(tmpDir)) {
     fs.mkdirSync(tmpDir)
   }
-  ['uploads', 'test-assets', 'faux-knox', 'ffmpeg', 'zip'].forEach((name) => {
+  ['uploads', 'test-assets', 'ffmpeg', 'zip'].forEach((name) => {
     try {
       const dirName = path.join(tmpDir, name)
       if (fs.existsSync(dirName)) {
