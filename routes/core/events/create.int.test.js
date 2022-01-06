@@ -1,4 +1,4 @@
-const models = require('../../../modelsTimescale')
+const models = require('../../../models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../../utils/sequelize/testing')
 const request = require('supertest')
 const moment = require('moment')

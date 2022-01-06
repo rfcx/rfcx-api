@@ -1,4 +1,4 @@
-const models = require('../../modelsTimescale')
+const models = require('../../models')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const pagedQuery = require('../../utils/db/paged-query')
 

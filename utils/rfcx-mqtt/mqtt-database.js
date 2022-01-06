@@ -1,4 +1,4 @@
-const models = require('../../models')
+const models = require('../../models-legacy')
 const fs = require('fs')
 const saveMeta = require('./mqtt-save-meta.js').saveMeta
 const smsMessages = require('../rfcx-guardian/guardian-sms-database.js').messages

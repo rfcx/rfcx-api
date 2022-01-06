@@ -2,7 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const detectionsService = require('../../../services/detections')
 const Converter = require('../../../utils/converter/converter')
-const models = require('../../../modelsTimescale')
+const models = require('../../../models')
 
 /**
  * @swagger

@@ -1,4 +1,4 @@
-const models = require('../../../models')
+const models = require('../../../models-legacy')
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')

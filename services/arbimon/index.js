@@ -3,7 +3,7 @@ const moment = require('moment')
 const arbimonBaseUrl = process.env.ARBIMON_BASE_URL
 const { rpErrorMatcher } = require('../../utils/http-error-handler')
 const { getSegmentRemotePath } = require('../streams/segment-file-utils')
-const { StreamSegment, StreamSourceFile, AudioCodec, FileExtension } = require('../../modelsTimescale')
+const { StreamSegment, StreamSourceFile, AudioCodec, FileExtension } = require('../../models')
 const { getClientToken } = require('../auth0/auth0-service')
 const { EmptyResultError } = require('../../utils/errors')
 

@@ -1,6 +1,6 @@
 const build = require('./create.build')
 const classifierService = require('../classifiers')
-const { Detection } = require('../../modelsTimescale/index')
+const { Detection } = require('../../models')
 
 async function create (rawDetections) {
   // Find dependent ids, filter rows

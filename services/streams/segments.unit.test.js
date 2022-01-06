@@ -1,5 +1,5 @@
-jest.mock('../../modelsTimescale')
-const { StreamSegment } = require('../../modelsTimescale')
+jest.mock('../../models')
+const { StreamSegment } = require('../../models')
 jest.mock('../../utils/message-queue/sqs')
 const defaultMessageQueue = require('../../utils/message-queue/sqs')
 

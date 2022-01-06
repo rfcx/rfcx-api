@@ -1,5 +1,5 @@
 const models = require('../../models')
-const modelsTimescale = require('../../modelsTimescale')
+const modelsLegacy = require('../../models-legacy')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
 const redis = redisEnabled ? require('../../utils/redis') : {}
 
@@ -13,7 +13,7 @@ function calcStatus (status, start) {
 async function mySQLConnected () {
   const start = Date.now()
   try {
-    await models.sequelize.authenticate()
+    await modelsLegacy.sequelize.authenticate()
     return calcStatus(true, start)
   } catch (e) {
     return calcStatus(false, start)
@@ -23,7 +23,7 @@ async function mySQLConnected () {
 async function timescaleDBConnected () {
   const start = Date.now()
   try {
-    await modelsTimescale.sequelize.authenticate()
+    await models.sequelize.authenticate()
     return calcStatus(true, start)
   } catch (e) {
     return calcStatus(false, start)

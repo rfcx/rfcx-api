@@ -1,4 +1,4 @@
-const models = require('../../models')
+const models = require('../../models-legacy')
 const sqlUtils = require('../../utils/misc/sql')
 
 const AUDIO_DURATION = 90 // our audio files last approximately 90 seconds

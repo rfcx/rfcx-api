@@ -1,4 +1,4 @@
-const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../modelsTimescale')
+const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../models')
 const { hasPermission, READ, STREAM } = require('../../services/roles')
 // const messageQueue = require('../../utils/message-queue/sqs')
 // const { SEGMENT_CREATED } = require('../../tasks/event-names')

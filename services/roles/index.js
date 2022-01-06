@@ -1,4 +1,4 @@
-const models = require('../../modelsTimescale')
+const models = require('../../models')
 const usersService = require('../users/fused')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 

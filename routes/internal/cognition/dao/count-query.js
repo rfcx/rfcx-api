@@ -1,4 +1,4 @@
-const { sequelize, Sequelize: { QueryTypes } } = require('../../../../modelsTimescale')
+const { sequelize, Sequelize: { QueryTypes } } = require('../../../../models')
 
 /**
  *
