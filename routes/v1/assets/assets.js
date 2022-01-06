@@ -65,7 +65,10 @@ router.route('/audio/amplitude/:audio_id')
         res.status(500).json({ msg: 'failed to return audio amplitude' })
       })
   })
+// TODO Remove with above route handler when no longer needed
 function randomAmplitudeArray (length, max) {
+  // Create a random array of doubles less than max but keep the difference between consequetive values
+  // to be less than 10% of max 90% of the time (the other 10% of the time, allow sudden changes in values)
   const arr = [...new Array(length)]
   arr.forEach((_val, index) => {
     if (index === 0) {
