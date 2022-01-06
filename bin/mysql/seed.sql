@@ -25,3 +25,7 @@ INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (8, 
 
 INSERT INTO rfcx_api.SourceTypes (id, name, created_at, updated_at) VALUES (1, 'GuardianAudio', '2017-04-17 12:21:49', '2017-04-17 12:21:51');
 INSERT INTO rfcx_api.SourceTypes (id, name, created_at, updated_at) VALUES (2, 'Users', '2017-04-17 12:22:04', '2017-04-17 12:22:07');
+
+INSERT INTO rfcx_api.GuardianMetaBattery (id, measured_at, battery_percent, battery_temperature, is_charging, is_fully_charged, created_at, updated_at, guardian_id, check_in_id) VALUES (1, '2021-12-31 11:54:03.000', 90, 50, 0, 0, '2021-12-31 11:54:18', '2021-12-31 11:54:18', 129, null);
+
+INSERT INTO rfcx_api.GuardianMetaSentinelPower (id, measured_at, system_temperature, system_voltage, system_current, system_power, input_voltage, input_current, input_power, battery_state_of_charge, battery_voltage, battery_current, battery_power, created_at, updated_at, guardian_id, check_in_id) VALUES (1, '2021-12-31 11:54:03.000', 77, 5000, 3000, 1000, 5500, 2000, 1000, 33, 3500, 5000, 1000, '2021-12-31 12:02:04', '2021-12-31 12:02:04', 129, null);
