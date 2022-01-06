@@ -1,5 +1,5 @@
 const Converter = require('../../utils/converter/converter')
-const models = require('../../models')
+const models = require('../../models-legacy')
 const Promise = require('bluebird')
 const request = require('request')
 const ForbiddenError = require('../../utils/converter/forbidden-error')

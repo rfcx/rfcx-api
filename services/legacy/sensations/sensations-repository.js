@@ -1,4 +1,4 @@
-const sequelize = require('../../../models/index').sequelize
+const sequelize = require('../../../models-legacy/index').sequelize
 const timeUtils = require('../../../utils/misc/datetime')
 module.exports = class SensationsRepository {
   create (params) {

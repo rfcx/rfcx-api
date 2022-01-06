@@ -1,5 +1,5 @@
 const moment = require('moment')
-const models = require('../../modelsTimescale')
+const models = require('../../models')
 const { timeAggregatedQueryAttributes } = require('../../utils/timeseries/time-aggregated-query')
 const storageService = require('../storage')
 

@@ -1,4 +1,4 @@
-const models = require('../../../models')
+const models = require('../../../models-legacy')
 const express = require('express')
 const router = express.Router()
 const views = require('../../../views/v1')
@@ -54,18 +54,18 @@ router.route('/:site_id/guardians')
         if (req.query.include_last_sync) {
           const proms = []
           this.dbGuardians.forEach((dbGuardan) => {
-            const prom = models.GuardianMetaBattery.findOne({
-              where: { guardian_id: dbGuardan.id },
-              order: [['measured_at', 'DESC']]
-            })
-              .then((dbMetaBattery) => {
-                if (dbMetaBattery) {
-                  dbGuardan.last_sync = dbMetaBattery.measured_at
-                  dbGuardan.battery_percent = dbMetaBattery.battery_percent
-                }
-                return true
-              })
-            proms.push(prom)
+            const query = { where: { guardian_id: dbGuardan.id }, order: [['measured_at', 'DESC']] }
+            proms.push(models.GuardianMetaBattery.findOne(query).then((dbMetaBattery) => {
+              if (dbMetaBattery) {
+                dbGuardan.last_sync = dbMetaBattery.measured_at
+                dbGuardan.battery_percent_internal = dbMetaBattery.battery_percent
+              }
+            }))
+            proms.push(models.GuardianMetaSentinelPower.findOne(query).then((dbMetaSentinelPower) => {
+              if (dbMetaSentinelPower) {
+                dbGuardan.battery_percent = dbMetaSentinelPower.battery_state_of_charge
+              }
+            }))
           })
           return Promise.all(proms)
         }

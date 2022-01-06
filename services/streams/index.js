@@ -1,4 +1,4 @@
-const { Stream, Project, User, Sequelize } = require('../../modelsTimescale')
+const { Stream, Project, User, Sequelize } = require('../../models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../utils/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')

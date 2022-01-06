@@ -1,4 +1,4 @@
-const { Organization, Sequelize, User } = require('../../modelsTimescale')
+const { Organization, Sequelize, User } = require('../../models')
 const { ForbiddenError, ValidationError } = require('../../utils/errors')
 const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
 const { randomId } = require('../../utils/misc/hash')

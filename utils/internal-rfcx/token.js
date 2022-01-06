@@ -1,7 +1,7 @@
 /* eslint camelcase: "off" */
 const Promise = require('bluebird')
 const hash = require('../../utils/misc/hash')
-const models = require('../../models')
+const models = require('../../models-legacy')
 
 exports.token = {
 

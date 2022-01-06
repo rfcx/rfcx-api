@@ -2,7 +2,7 @@ const sequelize = require('sequelize')
 const Converter = require('../../../utils/converter/converter')
 const SensationsRepository = require('./sensations-repository')
 const ValidationError = require('../../../utils/converter/validation-error')
-const models = require('../../../models')
+const models = require('../../../models-legacy')
 const moment = require('moment-timezone')
 
 function createSensations (params) {

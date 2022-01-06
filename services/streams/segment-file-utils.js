@@ -1,5 +1,5 @@
 const { runExec } = require('../../utils/misc/shell')
-const models = require('../../modelsTimescale')
+const models = require('../../models')
 const Promise = require('bluebird')
 const path = require('path')
 const moment = require('moment-timezone')

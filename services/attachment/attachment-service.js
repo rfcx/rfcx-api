@@ -1,7 +1,7 @@
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
 const S3Service = require('../legacy/s3/s3-service')
-const models = require('../../models')
+const models = require('../../models-legacy')
 const sequelize = require('sequelize')
 
 function uploadAttachment (opts) {

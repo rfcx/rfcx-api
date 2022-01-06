@@ -35,7 +35,8 @@ exports.models = {
           }
         },
         last_sync: dbRow.last_sync ? dbRow.last_sync : null,
-        battery_percent: dbRow.battery_percent ? dbRow.battery_percent : null,
+        battery_percent_internal: dbRow.battery_percent_internal,
+        battery_percent: dbRow.battery_percent,
         site: dbRow.Site
           ? {
               guid: dbRow.Site.guid,
@@ -46,7 +47,8 @@ exports.models = {
         notes: dbRow.notes || null,
         phone_imei: dbRow.phone_imei || null,
         phone_sim_number: dbRow.phone_sim_number || null,
-        phone_sim_serial: dbRow.phone_sim_serial || null
+        phone_sim_serial: dbRow.phone_sim_serial || null,
+        last_deployed: dbRow.last_deployed
       }
 
       jsonArray.push(guardian)

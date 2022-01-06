@@ -1,5 +1,5 @@
 const moment = require('moment')
-const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../modelsTimescale')
+const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../models')
 const Cache = require('../../utils/cache')
 const streamService = require('../../services/streams')
 const projectService = require('../../services/projects')

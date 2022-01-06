@@ -1,5 +1,5 @@
-const { User: LegacyUser } = process.env.NODE_ENV === 'test' ? require('../../modelsTimescale') : require('../../models')
-const { User, Sequelize } = require('../../modelsTimescale')
+const { User: LegacyUser } = process.env.NODE_ENV === 'test' ? require('../../models') : require('../../models-legacy')
+const { User, Sequelize } = require('../../models')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ensureUserSyncedInNeo4j = process.env.NEO4J_ENABLED === 'true' ? require('./legacy/neo4j') : undefined
 

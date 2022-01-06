@@ -1,5 +1,5 @@
 const { EmptyResultError } = require('../../utils/errors')
-const { Classifier, ClassifierDeployment, Sequelize } = require('../../modelsTimescale')
+const { Classifier, ClassifierDeployment, Sequelize } = require('../../models')
 const pagedQuery = require('../../utils/db/paged-query')
 const { getSortFields } = require('../../utils/sequelize/sort')
 const { toCamelObject } = require('../../utils/formatters/string-cases')

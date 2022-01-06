@@ -1,7 +1,7 @@
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidationError = require('../../utils/converter/validation-error')
 const { findOrCreateItem } = require('../../utils/sequelize')
-const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../modelsTimescale')
+const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../models')
 const { getAccessibleObjectsIDs, STREAM } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 

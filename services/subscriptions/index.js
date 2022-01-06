@@ -1,4 +1,4 @@
-const { Organization, Project, Stream, User, UserProjectSubscription } = require('../../modelsTimescale')
+const { Organization, Project, Stream, User, UserProjectSubscription } = require('../../models')
 const subscriptionTypes = require('./subscription-types')
 const EmptyResultError = require('../../utils/converter/empty-result-error')
 const ValidaionError = require('../../utils/converter/validation-error')

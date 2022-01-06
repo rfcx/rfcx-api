@@ -1,7 +1,7 @@
 const request = require('supertest')
 const moment = require('moment')
 const routes = require('./stream')
-const models = require('../../../modelsTimescale')
+const models = require('../../../models')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../utils/sequelize/testing')
 
 const app = expressApp()

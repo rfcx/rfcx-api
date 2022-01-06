@@ -11,7 +11,7 @@ if (fs.existsSync(__dirname + '/../../config/env_vars.js')) {
 
 process.env.NODE_ENV = 'production' // could also be staging...
 
-const models = require(__dirname + '/../../models')
+const models = require(__dirname + '/../../models-legacy')
 const token = require(__dirname + '/../../utils/internal-rfcx/token.js').token
 const aws = require(__dirname + '/../../utils/external/aws.js').aws()
 
