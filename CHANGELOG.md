@@ -2,6 +2,7 @@
 
 ### Features
 * **guardian**: Add last_deployed and battery_percent_internal fields for Guardians
+* **core**: Broadcast SNS message regarding updated event
 
 ## 1.0.30 (2021-12-30)
 
