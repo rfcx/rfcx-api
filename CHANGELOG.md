@@ -2,6 +2,7 @@
 
 ### Features
 * **guardian**: Add last_deployed and battery_percent_internal fields for Guardians
+* **legacy**: Removed amplitude endpoint (keep returning random data to maintain mobile apps)
 
 ## 1.0.30 (2021-12-30)
 
@@ -18,6 +19,7 @@
 
 ### Bug Fixes
 * **guardian:** User can register and deploy a Guardian without the guardianCreator role
+
 
 ## 1.0.29 (2021-12-15)
 
