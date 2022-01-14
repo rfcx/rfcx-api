@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const httpError = require('../../../utils/http-errors.js')
-const sequelize = require('sequelize')
+const { ValidationError } = require('sequelize')
 const passport = require('passport')
 
 const msgSegUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
@@ -23,16 +23,15 @@ router.route('/segments/sms')
           res.writeHead(200, { 'Content-Type': 'text/xml' })
           res.end()
         })
-        .catch(sequelize.ValidationError, e => {
+        .catch(ValidationError, e => {
           let message = 'Validation error'
           try {
             message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
           } catch (err) { }
           httpError(req, res, 400, null, message)
         })
-        .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
         .catch(function (err) {
-          console.log(err)
+          console.error(err)
           res.status(500).json({ message: err.message, error: { status: 500 } })
         })
     } else {
@@ -53,16 +52,15 @@ router.route('/segments/sbd')
           res.writeHead(200, { 'Content-Type': 'text/xml' })
           res.end()
         })
-        .catch(sequelize.ValidationError, e => {
+        .catch(ValidationError, e => {
           let message = 'Validation error'
           try {
             message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
           } catch (err) { }
           httpError(req, res, 400, null, message)
         })
-        .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
         .catch(function (err) {
-          console.log(err)
+          console.error(err)
           res.status(500).json({ message: err.message, error: { status: 500 } })
         })
     } else {
@@ -87,16 +85,15 @@ router.route('/segments/swm')
           res.writeHead(200, { 'Content-Type': 'text/xml' })
           res.end()
         })
-        .catch(sequelize.ValidationError, e => {
+        .catch(ValidationError, e => {
           let message = 'Validation error'
           try {
             message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
           } catch (err) { }
           httpError(req, res, 400, null, message)
         })
-        .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
         .catch(function (err) {
-          console.log(err)
+          console.error(err)
           res.status(500).json({ message: err.message, error: { status: 500 } })
         })
     } else {

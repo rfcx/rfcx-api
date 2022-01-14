@@ -20,3 +20,8 @@ INSERT INTO rfcx_api.SourceTypes (id, name, created_at, updated_at) VALUES (2, '
 INSERT INTO rfcx_api.GuardianMetaBattery (id, measured_at, battery_percent, battery_temperature, is_charging, is_fully_charged, created_at, updated_at, guardian_id, check_in_id) VALUES (1, '2021-12-31 11:54:03.000', 90, 50, 0, 0, '2021-12-31 11:54:18', '2021-12-31 11:54:18', 129, null);
 
 INSERT INTO rfcx_api.GuardianMetaSentinelPower (id, measured_at, system_temperature, system_voltage, system_current, system_power, input_voltage, input_current, input_power, battery_state_of_charge, battery_voltage, battery_current, battery_power, created_at, updated_at, guardian_id, check_in_id) VALUES (1, '2021-12-31 11:54:03.000', 77, 5000, 3000, 1000, 5500, 2000, 1000, 33, 3500, 5000, 1000, '2021-12-31 12:02:04', '2021-12-31 12:02:04', 129, null);
+
+INSERT INTO rfcx_api.GuardianAudioFormats (id, codec, mime, file_extension, sample_rate, sample_size, channel_count, target_bit_rate, is_vbr, created_at, updated_at) VALUES (1, 'opus', 'audio/ogg', 'opus', 12000, 0, 1, 16384, 1, '2022-01-03 21:37:45', '2022-01-03 21:37:49');
+
+INSERT INTO rfcx_api.GuardianAudio (guid, measured_at, measured_at_local, analyzed_at, analysis_queued_at, size, capture_sample_count, encode_duration, sha1_checksum, url, original_filename, created_at, updated_at, guardian_id, site_id, check_in_id, format_id) VALUES ('c2355d62-0a49-444f-a7ee-33252ead3c39', '2022-01-03 21:31:22.000', '2022-01-03 23:31:34.000', null, null, 157746, 1087488, 2200, 'abc', null, null, '2022-01-03 21:34:45', '2022-01-03 21:34:45', 129, 3, null, 1);
+
