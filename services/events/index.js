@@ -5,7 +5,7 @@ const { isUuid, uuidToSlug, slugToUuid } = require('../../utils/formatters/uuid'
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../roles')
 const pagedQuery = require('../../utils/db/paged-query')
 const messageQueue = require('../../utils/message-queue/sns')
-const { EVENT_CREATED } = require('../../tasks/event-names')
+const { EVENT_CREATED, EVENT_UPDATED } = require('../../tasks/event-names')
 
 const availableIncludes = [
   Stream.include(),
@@ -163,6 +163,11 @@ async function update (id, event, options = {}) {
   })
   if (result[0] === 0) {
     throw new EmptyResultError('Event with given id not found')
+  }
+  if (messageQueue.isEnabled()) {
+    await messageQueue.publish(EVENT_UPDATED, { id }).catch((e) => {
+      console.error('Event service -> update -> publish failed', e.message || e)
+    })
   }
 }
 
