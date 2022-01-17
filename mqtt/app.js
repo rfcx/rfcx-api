@@ -42,7 +42,7 @@ app.http.use(passport.initialize())
 require('../middleware/route')
 
 // Enable documentation
-app.http.use('/docs', require('../docs/mqtt'))
+app.http.use('/docs', require('./_docs'))
 // Default and health check routes
 app.http.use(require('./routes/info'))
 // RabbitMQ specific endpoints

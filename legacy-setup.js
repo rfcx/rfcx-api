@@ -2,8 +2,8 @@ console.log('----------------------------------\nRFCX | setup started')
 const path = require('path')
 const fs = require('fs')
 
-if (fs.existsSync(path.join(__dirname, '/../config/env_vars.js'))) {
-  const env = require(path.join(__dirname, '/../config/env_vars.js')).env
+if (fs.existsSync(path.join(__dirname, '/config/env_vars.js'))) {
+  const env = require(path.join(__dirname, '/config/env_vars.js')).env
   for (const i in env) { process.env[i] = env[i] }
 }
 

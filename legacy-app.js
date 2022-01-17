@@ -66,7 +66,7 @@ for (const routeName in publicRoutes) {
 }
 
 // Enable documentation
-app.use('/docs', require('./docs'))
+app.use('/docs', require('./core/_docs'))
 
 // Default and health check routes
 app.use(require('./noncore/info'))
