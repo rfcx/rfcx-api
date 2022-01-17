@@ -9,7 +9,7 @@ let messageQueue
 
 if (isEnabled) {
   const { MessageQueue } = require('@rfcx/message-queue')
-  const messageQueue = new MessageQueue('sqs', {
+  messageQueue = new MessageQueue('sqs', {
     endpoint: process.env.MESSAGE_QUEUE_ENDPOINT,
     topicPrefix: process.env.MESSAGE_QUEUE_PREFIX
   })
