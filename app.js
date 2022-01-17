@@ -31,8 +31,8 @@ const { authenticate } = require('./middleware/authorization/authorization')
 const versionedRoutes = process.env.DEV_CORE_ONLY === 'true'
   ? {}
   : {
-      v1: require('./routes/v1/routes'),
-      v2: require('./routes/v2/routes')
+      v1: require('./noncore/v1/routes'),
+      v2: require('./noncore/v2/routes')
     }
 for (const apiVersion in versionedRoutes) {
   app.use(`/${apiVersion}`, routeMiddleware)
@@ -43,9 +43,9 @@ for (const apiVersion in versionedRoutes) {
   }
 }
 
-const coreRoutes = require('./routes/core/routes')
-const internalRoutes = require('./routes/internal/routes')
-const publicRoutes = require('./routes/public/routes')
+const coreRoutes = require('./core/routes')
+const internalRoutes = require('./core/internal/routes')
+const publicRoutes = require('./core/routes-public')
 for (const routeName in coreRoutes) {
   app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {
@@ -69,7 +69,7 @@ for (const routeName in publicRoutes) {
 app.use('/docs', require('./docs'))
 
 // Default and health check routes
-app.use(require('./routes/info'))
+app.use(require('./noncore/info'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('./middleware/error')
