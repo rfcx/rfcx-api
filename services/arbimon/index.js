@@ -161,12 +161,13 @@ function createRecordings (body) {
     body,
     json: true
   }
-
+  console.log(`arbimon: createRecordings: ${JSON.stringify(body)}`)
   return getClientToken()
     .then((token) => {
       options.headers.authorization = `Bearer ${token}`
       return rp(options).catch(e => { throw rpErrorMatcher(e) })
     })
+    .then((response) => console.log(`arbimon: createRecordings response: ${JSON.stringify(response)}`))
 }
 
 async function createRecordingsFromSegments (segments, opts) {
