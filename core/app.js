@@ -30,7 +30,6 @@ const { authenticate } = require('../middleware/authorization/authorization')
 
 const coreRoutes = require('./routes')
 const internalRoutes = require('./internal/routes')
-const publicRoutes = require('./routes-public')
 for (const routeName in coreRoutes) {
   app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {
@@ -41,12 +40,6 @@ for (const routeName in internalRoutes) {
   app.use(`/internal/${routeName}`, routeMiddleware, authenticate())
   for (const route in internalRoutes[routeName]) {
     app.use(`/internal/${routeName}`, internalRoutes[routeName][route])
-  }
-}
-for (const routeName in publicRoutes) {
-  app.use(`/public/${routeName}`, routeMiddleware)
-  for (const route in publicRoutes[routeName]) {
-    app.use(`/public/${routeName}`, publicRoutes[routeName][route])
   }
 }
 

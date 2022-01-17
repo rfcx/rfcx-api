@@ -667,37 +667,6 @@
       }
     ]
   },
-  "ProjectPublic": {
-    "properties": {
-      "name": {
-        "type": "string",
-        "example": "My Project 1"
-      },
-      "description": {
-        "type": "string",
-        "example": "Project 1 description"
-      }
-    }
-  },
-  "ProjectPublicWithLocation": {
-    "allOf": [
-      {
-        "$ref": "#/components/schemas/ProjectPublic"
-      },
-      {
-        "properties": {
-          "latitude": {
-            "type": "float",
-            "example": 90.123
-          },
-          "longitude": {
-            "type": "float",
-            "example": 125.912
-          }
-        }
-      }
-    ]
-  },
   "Permission": {
     "properties": {
       "stream": {
