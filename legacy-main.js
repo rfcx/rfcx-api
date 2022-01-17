@@ -3,12 +3,12 @@ console.log('----------------------------------\nRFCX | main started')
 const startTime = new Date()
 
 // Ensure unhandled promises are handled by the process
-require('../utils/process')
+require('./utils/process')
 
 // check that all required env vars are set
-require('../config/inspector')
+require('./config/inspector')
 
-const app = require('../app')
+const app = require('./legacy-app')
 
 console.log('App load time: %dms', new Date() - startTime)
 

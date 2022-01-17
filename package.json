@@ -8,11 +8,14 @@
     "url": "https://github.com/rfcx/rfcx-api.git"
   },
   "scripts": {
-    "dev": "nodemon bin/main.js",
-    "dev:core": "DEV_CORE_ONLY=true nodemon bin/main.js",
+    "dev": "nodemon legacy-main.js",
+    "dev:core": "nodemon core/main.js",
+    "dev:noncore": "nodemon noncore/main.js",
     "dev:tasks": "nodemon tasks/main.js",
-    "start": "node bin/setup.js ; node bin/main.js",
-    "start:mqtt": "node bin/setup.js ; node bin/main-mqtt.js",
+    "start": "node legacy-setup.js ; node legacy-main.js",
+    "start:core": "node core/main.js",
+    "start:noncore": "node core/main.js",
+    "start:mqtt": "node mqtt/main.js",
     "start:tasks": "node tasks/main.js",
     "sync-mysql": "node bin/sync-sql.js --type=mysql",
     "sync-timescale": "node bin/sync-sql.js --type=timescale",
