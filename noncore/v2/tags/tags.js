@@ -8,7 +8,7 @@ const eventsServiceNeo4j = require('../../../services/legacy/events/events-servi
 const boxesService = require('../../../services/audio/boxes-service')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 
 router.route('/')

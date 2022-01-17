@@ -1,7 +1,7 @@
 const verboseLogging = (process.env.NODE_ENV !== 'production')
-const models = require('../../models-legacy')
-const hash = require('../../utils/misc/hash')
-const regex = require('../../utils/misc/regex.js')
+const models = require('../../../models-legacy')
+const hash = require('../../../utils/misc/hash')
+const regex = require('../../../utils/misc/regex.js')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   models.AnonymousToken

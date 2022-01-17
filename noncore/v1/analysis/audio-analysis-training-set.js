@@ -5,7 +5,7 @@ const views = require('../../../views/v1')
 const passport = require('passport')
 const httpError = require('../../../utils/http-errors.js')
 const Promise = require('bluebird')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
 
 router.route('/training-sets')

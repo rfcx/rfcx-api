@@ -2,7 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 const indicesService = require('../../services/indices/values')
 const Converter = require('../../utils/converter/converter')
-const { hasStreamPermission } = require('../../middleware/authorization/roles')
+const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 
 /**
  * @swagger

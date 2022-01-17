@@ -3,14 +3,14 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../../views/v1')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
-const requireUser = require('../../../middleware/authorization/authorization').requireTokenType('user')
+const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const Promise = require('bluebird')
 const sqlUtils = require('../../../utils/misc/sql')
 const httpError = require('../../../utils/http-errors.js')
 const urls = require('../../../utils/misc/urls')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 function createOrUpdateTag (tag) {
   return models.GuardianAudio

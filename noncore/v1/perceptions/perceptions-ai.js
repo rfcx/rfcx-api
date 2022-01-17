@@ -3,14 +3,14 @@ const express = require('express')
 const router = express.Router()
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const PerceptionsAiService = require('../../../services/legacy/perceptions/perceptions-ai-service')
 const ValidationError = require('../../../utils/converter/validation-error')
 const ApiConverter = require('../../../utils/api-converter')
 const urls = require('../../../utils/misc/urls')
 const sequelize = require('sequelize')
 const guidService = require('../../../utils/misc/guid.js')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 /**
  * Takes guid and ai attributes and creates AI

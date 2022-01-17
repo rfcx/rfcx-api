@@ -5,7 +5,7 @@ const token = require('../../../utils/internal-rfcx/token.js').token
 const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 router.route('/login')
   .post(function (req, res) {

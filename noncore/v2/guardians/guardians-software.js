@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const passport = require('passport')
 const httpError = require('../../../utils/http-errors.js')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
 
 // get the latest released version of the guardian software

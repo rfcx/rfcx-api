@@ -5,7 +5,7 @@ const usersFusedService = require('../../services/users/fused')
 const Converter = require('../../utils/converter/converter')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const rolesService = require('../../services/roles')
-const { hasProjectPermission } = require('../../middleware/authorization/roles')
+const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**
  * @swagger

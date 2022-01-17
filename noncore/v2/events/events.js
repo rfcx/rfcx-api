@@ -13,7 +13,7 @@ const usersFusedService = require('../../../services/users/fused')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const guardiansService = require('../../../services/guardians/guardians-service')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 const sequelize = require('sequelize')
 const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'

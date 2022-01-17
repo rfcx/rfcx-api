@@ -3,13 +3,13 @@ const express = require('express')
 const router = express.Router()
 const httpError = require('../../../utils/http-errors.js')
 const Converter = require('../../../utils/converter/converter')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const generator = require('generate-password')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
 const redis = redisEnabled ? require('../../../utils/redis') : {}
 const ValidationError = require('../../../utils/converter/validation-error')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 router.route('/:shortlink_id')
   .get(function (req, res) {

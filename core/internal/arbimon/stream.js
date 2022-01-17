@@ -5,7 +5,7 @@ const projectsService = require('../../../services/projects')
 const rolesService = require('../../../services/roles')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const ensureUserSynced = require('../../../middleware/legacy/ensure-user-synced')
+const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger

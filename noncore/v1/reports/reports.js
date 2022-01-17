@@ -3,9 +3,9 @@ const express = require('express')
 const router = express.Router()
 const sequelize = require('sequelize')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const path = require('path')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const reportsService = require('../../../services/reports/reports-service')
 const attachmentService = require('../../../services/attachment/attachment-service')
 const usersService = require('../../../services/users/users-service-legacy')

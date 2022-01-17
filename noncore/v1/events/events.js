@@ -5,7 +5,7 @@ const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const guid = require('../../../utils/misc/guid.js')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const Promise = require('bluebird')
 const ApiConverter = require('../../../utils/api-converter')
 const Converter = require('../../../utils/converter/converter')
@@ -17,10 +17,10 @@ const eventTypeService = require('../../../services/legacy/events/event-type-ser
 const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const firebaseService = require('../../../services/firebase/firebase-service')
 const guardianGroupService = require('../../../services/guardians/guardian-group-service')
-const takeContentTypeFromFileExtMiddleware = require('../../../middleware/legacy/take-content-type-from-file-ext')
+const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
 
 router.use(takeContentTypeFromFileExtMiddleware)
 

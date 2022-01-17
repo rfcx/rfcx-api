@@ -4,8 +4,8 @@ const router = express.Router()
 const queryHelpers = require('../../../utils/rfcx-query')
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 router.route('/:guardian_id/status')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {

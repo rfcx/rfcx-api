@@ -7,7 +7,7 @@ const rolesService = require('../../services/roles')
 const annotationsService = require('../../services/annotations')
 const classificationService = require('../../services/classifications')
 const Converter = require('../../utils/converter/converter')
-const ensureUserSynced = require('../../middleware/legacy/ensure-user-synced')
+const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
 function isUuid (str) {
   return str.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/g) !== null

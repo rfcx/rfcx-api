@@ -4,8 +4,8 @@ const router = express.Router()
 const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')

@@ -1,5 +1,5 @@
-const httpError = require('../../utils/http-errors')
-const auth0Service = require('../../services/auth0/auth0-service')
+const httpError = require('../../../utils/http-errors')
+const auth0Service = require('../../../services/auth0/auth0-service')
 const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
 passport.use('jwt', require('../passport-jwt').JwtStrategy)
@@ -22,7 +22,7 @@ function requireTokenType (type) {
 /**
  * Creates a middleware for checking if user has one or more of the roles
  * How to use:
- * var hasRole = require('..../middleware/authorization/authorization').hasRole;
+ * var hasRole = require('..../common/middleware/authorization/authorization').hasRole;
  * router.route("/").get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session:false }), hasRole(['rfcxUser']), function(req, res) { ... })
  * @param {Array<String>} expectedRoles
  */

@@ -4,9 +4,9 @@ const router = express.Router()
 const passport = require('passport')
 const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 router.route('/:guid/software')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {

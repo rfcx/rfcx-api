@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const indicesService = require('../../../services/indices')
 const indexValuesService = require('../../../services/indices/values')
 const Converter = require('../../../utils/converter/converter')
-const { hasRole } = require('../../../middleware/authorization/authorization')
+const { hasRole } = require('../../../common/middleware/authorization/authorization')
 
 /**
  * @swagger

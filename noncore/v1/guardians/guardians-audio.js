@@ -3,9 +3,9 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
-const takeContentTypeFromFileExtMiddleware = require('../../../middleware/legacy/take-content-type-from-file-ext')
+const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 router.use(takeContentTypeFromFileExtMiddleware)
 

@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const ensureUserSynced = require('../../middleware/legacy/ensure-user-synced')
+const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
 router.post('/', ensureUserSynced, require('./create'))
 router.get('/', require('./list'))

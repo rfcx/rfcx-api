@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../../views/v1')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 router.route('/:guardian_id/events')
   .get(passport.authenticate('token', { session: false }), function (req, res) {

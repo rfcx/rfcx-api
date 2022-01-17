@@ -5,7 +5,7 @@ const Converter = require('../../../utils/converter/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
 const storageService = require('../../../services/storage')
-const { hasStreamPermission } = require('../../../middleware/authorization/roles')
+const { hasStreamPermission } = require('../../../common/middleware/authorization/roles')
 
 /**
  * @swagger

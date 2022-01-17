@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { authenticatedWithRoles } = require('../../../middleware/authorization/authorization')
+const { authenticatedWithRoles } = require('../../../common/middleware/authorization/authorization')
 
 /**
  * @swagger

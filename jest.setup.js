@@ -1,1 +1,1 @@
-jest.mock('./middleware/authorization/authorization')
+jest.mock('./common/middleware/authorization/authorization')

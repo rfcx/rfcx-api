@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const { hasRole } = require('../../../middleware/authorization/authorization')
+const { hasRole } = require('../../../common/middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
 const userService = require('../../../services/users/users-service-legacy')
 const usersFusedService = require('../../../services/users/fused')

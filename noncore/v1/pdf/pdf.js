@@ -5,7 +5,7 @@ const httpError = require('../../../utils/http-errors')
 const ValidationError = require('../../../utils/converter/validation-error')
 const pdfService = require('../../../services/pdf/pdf')
 const sequelize = require('sequelize')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 
 router.route('/generate-with-pdfmake')

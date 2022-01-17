@@ -3,8 +3,8 @@ const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 const annotationsService = require('../../services/annotations')
 const classificationService = require('../../services/classifications')
 const Converter = require('../../utils/converter/converter')
-const { hasStreamPermission } = require('../../middleware/authorization/roles')
-const ensureUserSynced = require('../../middleware/legacy/ensure-user-synced')
+const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
+const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger

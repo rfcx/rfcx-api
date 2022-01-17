@@ -5,7 +5,7 @@ const usersFusedService = require('../../services/users/fused')
 const Converter = require('../../utils/converter/converter')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const { getPermissions, getUsersForItem, getByName, addRole, getUserRoleForItem, removeRole, STREAM } = require('../../services/roles')
-const { hasStreamPermission } = require('../../middleware/authorization/roles')
+const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 
 /**
  * @swagger

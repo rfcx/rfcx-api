@@ -5,13 +5,13 @@ const ValidationError = require('../../../utils/converter/validation-error')
 const guardianGroupService = require('../../../services/guardians/guardian-group-service')
 const auth0Service = require('../../../services/auth0/auth0-service')
 const usersService = require('../../../services/users/users-service-legacy')
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const sequelize = require('sequelize')
 const Converter = require('../../../utils/converter/converter')
 const Promise = require('bluebird')
 const hash = require('../../../utils/misc/hash')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 // returns guardian groups bases on accessibleSites user attribute
 router.route('/groups')

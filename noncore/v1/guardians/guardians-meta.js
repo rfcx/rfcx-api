@@ -4,8 +4,8 @@ const router = express.Router()
 const views = require('../../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
-passport.use(require('../../../middleware/passport-token').TokenStrategy)
-const hasRole = require('../../../middleware/authorization/authorization').hasRole
+passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
+const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 router.route('/:guardian_id/meta/:meta_type')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
