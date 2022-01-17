@@ -1,12 +1,10 @@
 .DS_Store
 
 # RFCx config files
-/config/env_vars.*
-!/config/env_vars.js.sample
-/config/config.json
-/config/service-account.json
-/bin/admin/_private
-/bin/audio/tmp
+/common/config/env_vars.*
+!/common/config/env_vars.js.sample
+/common/config/config.json
+/common/config/service-account.json
 
 # Temporary cache directory
 /tmp
@@ -19,30 +17,6 @@
 pids
 *.pid
 *.seed
-
-# Compiled binary addons (http://nodejs.org/api/addons.html)
-/build/Release
-
-# Dependency directory
-# Commenting this out is preferred by some people, see
-# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git-
-# node_modules
-
-# Elastic Beanstalk Files
-/.elasticbeanstalk/
-/.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
-
-# Intelli J Files
-/.idea
-rfcx-api.iml
-
-# MongoDB-related stuff
-bin/mongo/.env
-
-# TimescaleDB-related stuff
-bin/timescaledb/.env
 
 coverage
 node_modules
