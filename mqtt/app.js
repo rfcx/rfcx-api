@@ -1,5 +1,5 @@
 // various process-related stuff
-require('./utils/process')
+require('../utils/process')
 
 if (process.env.NODE_ENV === 'production') {
   require('newrelic')
@@ -33,23 +33,23 @@ app.http = express()
 app.http.set('title', 'rfcx-api-mqtt')
 app.http.set('port', process.env.PORT || 8080)
 app.http.use(cors())
-app.http.use(require('./middleware/logging'))
+app.http.use(require('../middleware/logging'))
 app.http.use(bodyParser.urlencoded({ extended: false }))
 app.http.use(bodyParser.json({ limit: '1mb' }))
-app.http.use(multer(require('./config/multer').config(process.env)))
+app.http.use(multer(require('../config/multer').config(process.env)))
 app.http.use(passport.initialize())
 
-require('./middleware/route')
+require('../middleware/route')
 
 // Enable documentation
-app.http.use('/docs', require('./docs/mqtt'))
+app.http.use('/docs', require('../docs/mqtt'))
 // Default and health check routes
 app.http.use(require('./routes/info'))
 // RabbitMQ specific endpoints
 app.http.use('/internal/rabbitmq', require('./routes/internal/rabbitmq'))
 
 // Catch errors
-const { notFound, exceptionOccurred } = require('./middleware/error')
+const { notFound, exceptionOccurred } = require('../middleware/error')
 app.http.use(notFound) // Last route, catches all
 app.http.use(exceptionOccurred) // Catches all errors (including 404)
 

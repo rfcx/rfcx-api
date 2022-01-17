@@ -5,7 +5,7 @@ require('../config/inspector')
 
 const appId = 'rfcx-api-mqtt'
 
-const app = require('../app-mqtt.js')
+const app = require('./app')
 const guidService = require('../utils/misc/guid.js')
 
 console.log('RFCX | Starting server')
