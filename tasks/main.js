@@ -11,7 +11,7 @@ if (!messageQueue.isEnabled()) {
   throw new Error('Message queue not enabled')
 }
 
-const tasks = require('../tasks')
+const tasks = require('./listen')
 
 console.log('RFCX | Starting task server')
 tasks.listen(messageQueue)
