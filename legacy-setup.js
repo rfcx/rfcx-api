@@ -2,8 +2,8 @@ console.log('----------------------------------\nRFCX | setup started')
 const path = require('path')
 const fs = require('fs')
 
-if (fs.existsSync(path.join(__dirname, '/config/env_vars.js'))) {
-  const env = require(path.join(__dirname, '/config/env_vars.js')).env
+if (fs.existsSync(path.join(__dirname, '/common/config/env_vars.js'))) {
+  const env = require(path.join(__dirname, '/common/config/env_vars.js')).env
   for (const i in env) { process.env[i] = env[i] }
 }
 
@@ -15,7 +15,7 @@ initializeSequelize()
 
 function initializeSequelize () {
   console.log('RFCX | Creating config params: started')
-  const configJsonFile = path.join(__dirname, '/../config/config.json')
+  const configJsonFile = path.join(__dirname, '/../common/config/config.json')
 
   const sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
 
