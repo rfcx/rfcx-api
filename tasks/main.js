@@ -4,7 +4,7 @@ console.log('----------------------------------\nRFCX | main started')
 require('../utils/process')
 
 // check that all required env vars are set
-require('../config/inspector')
+require('../common/config/inspector')
 
 const messageQueue = require('../utils/message-queue/sqs')
 if (!messageQueue.isEnabled()) {

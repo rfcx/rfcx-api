@@ -36,7 +36,7 @@ app.http.use(cors())
 app.http.use(require('../middleware/logging'))
 app.http.use(bodyParser.urlencoded({ extended: false }))
 app.http.use(bodyParser.json({ limit: '1mb' }))
-app.http.use(multer(require('../config/multer').config(process.env)))
+app.http.use(multer(require('../common/config/multer').config(process.env)))
 app.http.use(passport.initialize())
 
 require('../middleware/route')

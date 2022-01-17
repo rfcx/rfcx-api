@@ -1,7 +1,7 @@
 console.log('----------------------------------\nRFCX | main-mqtt started')
 
 // check that all required env vars are set
-require('../config/inspector')
+require('../common/config/inspector')
 
 const appId = 'rfcx-api-mqtt'
 

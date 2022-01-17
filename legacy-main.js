@@ -6,7 +6,7 @@ const startTime = new Date()
 require('./utils/process')
 
 // check that all required env vars are set
-require('./config/inspector')
+require('./common/config/inspector')
 
 const app = require('./legacy-app')
 

@@ -19,7 +19,7 @@ app.use(cors()) // TO-DO: Currently enables CORS for all requests. We may have a
 app.use(require('./middleware/logging'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({ limit: '5mb' }))
-app.use(multer(require('./config/multer').config(process.env)))
+app.use(multer(require('./common/config/multer').config(process.env)))
 app.use(passport.initialize())
 
 const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
