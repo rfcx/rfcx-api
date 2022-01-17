@@ -5,7 +5,7 @@ const moment = require('moment-timezone')
 const ValidationError = require('../../../utils/converter/validation-error')
 const sqlUtils = require('../../../utils/misc/sql')
 const guardianGroupService = require('../../guardians/guardian-group-service')
-const views = require('../../../views/v1')
+const views = require('../../../noncore/views/v1')
 
 const eventQueryCountSelect =
   'SELECT GuardianAudioEvent.begins_at, GuardianAudioEvent.ends_at, Site.timezone as site_timezone '

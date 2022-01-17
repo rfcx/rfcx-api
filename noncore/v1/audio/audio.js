@@ -30,7 +30,7 @@ const boxesService = require('../../../services/audio/boxes-service')
 const Converter = require('../../../utils/converter/converter')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const { baseInclude, guardianAudioJson, guardianAudioLabels } = require('../../../views/v1/models/guardian-audio').models
+const { baseInclude, guardianAudioJson, guardianAudioLabels } = require('../../views/v1/models/guardian-audio').models
 
 function filter (req) {
   let order = 'measured_at ASC'

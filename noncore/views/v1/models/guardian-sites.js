@@ -1,4 +1,4 @@
-function getAllViews () { return require('../../../views/v1') }
+function getAllViews () { return require('..') }
 
 exports.models = {
 

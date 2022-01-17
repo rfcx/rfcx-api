@@ -7,8 +7,8 @@ const ValidationError = require('../../../utils/converter/validation-error')
 const reportsService = require('../../../services/reports/reports-service')
 const attachmentService = require('../../../services/attachment/attachment-service')
 const audioService = require('../../../services/audio/audio-service')
-const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson } = require('../../../views/v1/models/guardian-audio').models
-const { guardianMetaScreenshotFile, guardianMetaScreenshots } = require('../../../views/v1/models/guardian-meta/guardian-meta-screenshots').models
+const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson } = require('../../views/v1/models/guardian-audio').models
+const { guardianMetaScreenshotFile, guardianMetaScreenshots } = require('../../views/v1/models/guardian-meta/guardian-meta-screenshots').models
 
 const router = express.Router()
 router.use(takeContentTypeFromFileExtMiddleware)

@@ -2,7 +2,7 @@ const models = require('../../../models-legacy')
 const express = require('express')
 const router = express.Router()
 const token = require('../../../utils/internal-rfcx/token.js').token
-const views = require('../../../views/v1')
+const views = require('../../views/v1')
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)

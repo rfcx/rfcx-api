@@ -62,7 +62,7 @@ function sendEmail (serviceRequest) {
 function renderContactFormEmail (opts) {
   return new Promise((resolve, reject) => {
     try {
-      const source = fs.readFileSync(path.join(__dirname, '../../views/email/contact-form.handlebars'), 'utf8')
+      const source = fs.readFileSync(path.join(__dirname, '../../noncore/views/email/contact-form.handlebars'), 'utf8')
       const template = handlebars.compile(source)
       resolve(template(opts))
     } catch (e) {
@@ -74,7 +74,7 @@ function renderContactFormEmail (opts) {
 function getDetectionAlertHtml () {
   return new Promise((resolve, reject) => {
     try {
-      const source = fs.readFileSync(path.join(__dirname, '../../views/email/detection-alert.handlebars'), 'utf8')
+      const source = fs.readFileSync(path.join(__dirname, '../../noncore/views/email/detection-alert.handlebars'), 'utf8')
       resolve(source)
     } catch (e) {
       reject(e)
@@ -85,7 +85,7 @@ function getDetectionAlertHtml () {
 function getEventAlertHtml () {
   return new Promise((resolve, reject) => {
     try {
-      const source = fs.readFileSync(path.join(__dirname, '../../views/email/event-alert.handlebars'), 'utf8')
+      const source = fs.readFileSync(path.join(__dirname, '../../noncore/views/email/event-alert.handlebars'), 'utf8')
       resolve(source)
     } catch (e) {
       reject(e)

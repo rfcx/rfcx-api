@@ -1,5 +1,5 @@
 const Promise = require('bluebird')
-function getAllViews () { return require('../../../views/v1') }
+function getAllViews () { return require('..') }
 
 exports.models = {
 

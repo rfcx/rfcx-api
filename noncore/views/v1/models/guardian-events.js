@@ -1,6 +1,6 @@
 const Promise = require('bluebird')
-const token = require('../../../utils/internal-rfcx/token.js').token
-function getAllViews () { return require('../../../views/v1') }
+const token = require('../../../../utils/internal-rfcx/token.js').token
+function getAllViews () { return require('..') }
 
 exports.models = {
 

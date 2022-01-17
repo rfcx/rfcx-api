@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const views = require('../../../views/v1')
+const views = require('../../views/v1')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
