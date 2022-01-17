@@ -17,8 +17,8 @@
     "start:noncore": "node core/main.js",
     "start:mqtt": "node mqtt/main.js",
     "start:tasks": "node tasks/main.js",
-    "sync-mysql": "node bin/sync-sql.js --type=mysql",
-    "sync-timescale": "node bin/sync-sql.js --type=timescale",
+    "migrate:core": "node cli/db/migrate.js core",
+    "migrate:noncore": "node cli/db/migrate.js noncore",
     "test": "eslint \"**/*.js\" && jest",
     "jest": "jest",
     "lint": "eslint \"**/*.js\""
@@ -90,7 +90,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "jest": "^26.0.1",
-    "minimist": "1.2.5",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",
     "sqlite3": "^5.0.2",

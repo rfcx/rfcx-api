@@ -2,10 +2,8 @@ console.log('----------------------------------\nRFCX | sync-sql started')
 const exec = require('child_process').exec
 const fs = require('fs')
 const path = require('path')
-const argv = require('minimist')(process.argv.slice(2))
 
-// MySQL by default
-const databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql'
+const isCore = process.argv.slice(2).includes('core')
 
 // Explanation:
 // 1. Load the environment variables from env_vars.js (if exists)
@@ -13,27 +11,27 @@ const databaseType = argv && argv.type === 'timescale' ? 'timescale' : 'mysql'
 // 3. Run model sync (mysql only)
 // 4. Run migrations
 
-if (fs.existsSync(path.join(__dirname, '/../config/env_vars.js'))) {
-  const env = require(path.join(__dirname, '/../config/env_vars.js')).env
+if (fs.existsSync(path.join(__dirname, '/../../config/env_vars.js'))) {
+  const env = require(path.join(__dirname, '/../../config/env_vars.js')).env
   for (const i in env) { process.env[i] = env[i] }
 }
 
-console.log(`RFCX | Initializing sequelize for ${databaseType}`)
+console.log(`RFCX | Initializing sequelize for ${isCore ? 'CORE' : 'NONCORE'}`)
 initializeSequelize()
 
 function initializeSequelize () {
-  const migrationsPath = databaseType === 'timescale' ? 'core/_migrations' : 'noncore/_migrations'
-  const modelsPath = databaseType === 'timescale' ? 'models' : 'models-legacy'
-  const models = require('../' + modelsPath)
+  const migrationsPath = isCore ? 'core/_migrations' : 'noncore/_migrations'
+  const modelsPath = isCore ? 'models' : 'models-legacy'
+  const models = require('../../' + modelsPath)
 
   console.log('RFCX | Creating config params: started')
-  const configJsonFile = path.join(__dirname, '/../config/config.json')
+  const configJsonFile = path.join(__dirname, '/../../config/config.json')
 
   const sequelizeVerbose = (process.env.SEQUELIZE_VERBOSE != null) ? process.env.SEQUELIZE_VERBOSE : false
 
-  const dbUsername = databaseType === 'timescale' ? process.env.POSTGRES_USER : process.env.DB_USERNAME
-  const dbPassword = databaseType === 'timescale' ? process.env.POSTGRES_PASSWORD : process.env.DB_PASSWORD
-  const dbName = databaseType === 'timescale' ? process.env.POSTGRES_DB : process.env.DB_NAME
+  const dbUsername = isCore ? process.env.POSTGRES_USER : process.env.DB_USERNAME
+  const dbPassword = isCore ? process.env.POSTGRES_PASSWORD : process.env.DB_PASSWORD
+  const dbName = isCore ? process.env.POSTGRES_DB : process.env.DB_NAME
 
   const config = {
     ...models.options,
@@ -64,7 +62,7 @@ function initializeSequelize () {
         })
       }
 
-      if (databaseType === 'timescale') {
+      if (isCore) {
         // Apply migrations
         console.log('RFCX | Running Timescale migrations\n')
         migrate()
