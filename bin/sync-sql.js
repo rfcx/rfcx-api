@@ -22,7 +22,7 @@ console.log(`RFCX | Initializing sequelize for ${databaseType}`)
 initializeSequelize()
 
 function initializeSequelize () {
-  const migrationsPath = databaseType === 'timescale' ? 'migrations' : 'migrations-legacy'
+  const migrationsPath = databaseType === 'timescale' ? 'core/_migrations' : 'noncore/_migrations'
   const modelsPath = databaseType === 'timescale' ? 'models' : 'models-legacy'
   const models = require('../' + modelsPath)
 
