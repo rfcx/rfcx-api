@@ -1,8 +1,7 @@
 const { EmptyResultError, ValidationError } = require('../../../utils/errors')
-const { findOrCreateItem } = require('../../../utils/sequelize')
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../../models')
 const { getAccessibleObjectsIDs, STREAM } = require('../roles')
-const pagedQuery = require('../../../utils/db/paged-query')
+const pagedQuery = require('../../_utils/db/paged-query')
 
 const streamSourceFileBaseInclude = [
   Stream.include(),
@@ -173,9 +172,11 @@ async function findOrCreateRelationships (data, opts = {}) {
     { model: AudioFileFormat, objKey: 'audio_file_format' }
   ]
   const result = {}
+  const transaction = opts.transaction || null
   for (const item of arr) {
     const where = { value: data[item.objKey] }
-    const modelItem = await findOrCreateItem(item.model, where, where, opts)
+    const defaults = where
+    const [modelItem, _created] = await item.model.findOrCreate({ where, defaults, transaction })
     result[`${item.objKey}_id`] = modelItem.id
   }
   return result

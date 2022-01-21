@@ -1,4 +1,3 @@
-const { findOrCreateItem } = require('../../../utils/sequelize')
 const { FileExtension } = require('../../../models')
 
 /**
@@ -8,7 +7,11 @@ const { FileExtension } = require('../../../models')
  * @returns {*} object with mappings between attribute keys and ids
  */
 async function findOrCreate (data, options = {}) {
-  return await findOrCreateItem(FileExtension, data, data, options)
+  const transaction = options.transaction || null
+  const where = data
+  const defaults = data
+  const [item, _created] = await FileExtension.findOrCreate({ where, defaults, transaction })
+  return item
 }
 
 module.exports = { findOrCreate }

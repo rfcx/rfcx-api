@@ -3,7 +3,7 @@ const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrateg
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../utils/errors')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../../utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../roles')
-const pagedQuery = require('../../../utils/db/paged-query')
+const pagedQuery = require('../../_utils/db/paged-query')
 const messageQueue = require('../../../utils/message-queue/sns')
 const { EVENT_CREATED, EVENT_UPDATED } = require('../../../tasks/event-names')
 

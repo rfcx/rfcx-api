@@ -3,7 +3,7 @@ const { hasPermission, READ, STREAM } = require('../roles')
 // const messageQueue = require('../../utils/message-queue/sqs')
 // const { SEGMENT_CREATED } = require('../../tasks/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../../utils/errors')
-const pagedQuery = require('../../../utils/db/paged-query')
+const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
   StreamSourceFile.include(),

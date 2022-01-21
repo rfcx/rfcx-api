@@ -1,8 +1,8 @@
 const moment = require('moment')
 const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../models')
-const Cache = require('../../utils/cache')
-const streamService = require('../../services/streams')
-const projectService = require('../../services/projects')
+const Cache = require('../_utils/cache')
+const streamService = require('../../core/_services/streams')
+const projectService = require('../../core/_services/projects')
 const classifierMessageQueue = require('./classifier-message-queue/default')
 
 const defaultPlatform = 'aws'

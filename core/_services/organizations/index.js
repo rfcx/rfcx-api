@@ -2,8 +2,8 @@ const { Organization, Sequelize, User } = require('../../../models')
 const { ForbiddenError, ValidationError } = require('../../../utils/errors')
 const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
 const { randomId } = require('../../../utils/misc/hash')
-const pagedQuery = require('../../../utils/db/paged-query')
-const { getSortFields } = require('../../../utils/sequelize/sort')
+const pagedQuery = require('../../_utils/db/paged-query')
+const { getSortFields } = require('../../_utils/db/sort')
 
 const availableIncludes = [User.include({ as: 'created_by' })]
 

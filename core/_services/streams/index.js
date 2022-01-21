@@ -3,8 +3,8 @@ const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, DELETE } = require('../roles')
-const pagedQuery = require('../../../utils/db/paged-query')
-const { getSortFields } = require('../../../utils/sequelize/sort')
+const pagedQuery = require('../../_utils/db/paged-query')
+const { getSortFields } = require('../../_utils/db/sort')
 const { hashedCredentials } = require('../../../utils/misc/hash')
 const { getTzByLatLng } = require('../../../utils/misc/timezone')
 

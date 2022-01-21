@@ -1,4 +1,4 @@
-const includeBuilder = require('../../utils/sequelize/include-builder')
+const includeBuilder = require('../../core/_utils/db/include-builder')
 
 module.exports = (sequelize, DataTypes) => {
   const FileExtension = sequelize.define('FileExtension', {
