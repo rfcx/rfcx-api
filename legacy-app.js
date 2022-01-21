@@ -62,7 +62,7 @@ for (const routeName in internalRoutes) {
 app.use('/docs', require('./core/_docs'))
 
 // Default and health check routes
-app.use(require('./noncore/info'))
+app.use(require('./noncore/v1/info'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('./common/middleware/error')

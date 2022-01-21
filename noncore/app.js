@@ -43,7 +43,7 @@ for (const apiVersion in versionedRoutes) {
 }
 
 // Default and health check routes
-app.use(require('./info'))
+app.use('/v1', require('./v1/info'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('../common/middleware/error')

@@ -1,6 +1,6 @@
 const router = require('express').Router()
-const healthCheck = require('../common/utils/health-check')
-const packageData = require('../package.json')
+const healthCheck = require('../_utils/db/health-check')
+const packageData = require('../../package.json')
 
 /**
  * @swagger
@@ -23,7 +23,6 @@ const packageData = require('../package.json')
  *                   type: boolean
  */
 router.get('/health-check', healthCheck)
-router.get('/health_check', healthCheck)
 
 /**
  * @swagger
@@ -45,22 +44,10 @@ router.get('/health_check', healthCheck)
  *                 app:
  *                   type: string
  *                   description: Application version
- *                 node:
- *                   type: string
  */
 router.get('/app-info', (req, res) => {
   res.status(200).json({
-    node: process.version, // TODO: potential security risk to advertise software versions
     app: packageData.version
-  })
-})
-
-// TODO: find out if this is used
-router.get('/', function (req, res) {
-  res.status(200).json({
-    name: 'Rainforest Connection (RFCx)',
-    message: 'Access to this API requires authentication. Please send requests for access by email to contact@rfcx.org',
-    info: 'https://rfcx.org/'
   })
 })
 

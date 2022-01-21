@@ -1,7 +1,6 @@
-const models = require('../../models')
-const modelsLegacy = require('../../noncore/_models')
+const models = require('../../_models')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
-const redis = redisEnabled ? require('../../utils/redis') : {}
+const redis = redisEnabled ? require('../../v1/shortlinks/redisshortlinks/redis') : {}
 
 function calcStatus (status, start) {
   return {
@@ -11,16 +10,6 @@ function calcStatus (status, start) {
 }
 
 async function mySQLConnected () {
-  const start = Date.now()
-  try {
-    await modelsLegacy.sequelize.authenticate()
-    return calcStatus(true, start)
-  } catch (e) {
-    return calcStatus(false, start)
-  }
-}
-
-async function timescaleDBConnected () {
   const start = Date.now()
   try {
     await models.sequelize.authenticate()
@@ -52,20 +41,18 @@ async function check (req, res) {
   const rtrnJson = {
     status: false,
     mysql: false,
-    timescaledb: false,
     ...redisEnabled && { redis: false }
   }
   if (req.query.headers === '1') { rtrnJson.http_headers = {}; for (const i in req.headers) { rtrnJson.http_headers[i] = req.headers[i] } }
-  const proms = [mySQLConnected(), timescaleDBConnected()]
+  const proms = [mySQLConnected()]
   if (redisEnabled) {
     proms.push(redisConnected())
   }
   return Promise.all(proms)
     .then((data) => {
       rtrnJson.mysql = data[0]
-      rtrnJson.timescaledb = data[1]
       if (redisEnabled) {
-        rtrnJson.redis = data[2]
+        rtrnJson.redis = data[1]
       }
       rtrnJson.status = !data.includes(false)
       res.json(rtrnJson)

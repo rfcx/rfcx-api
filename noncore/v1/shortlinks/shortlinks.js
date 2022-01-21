@@ -6,7 +6,7 @@ const Converter = require('../../../utils/converter/converter')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const generator = require('generate-password')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
-const redis = redisEnabled ? require('../../../utils/redis') : {}
+const redis = redisEnabled ? require('./redis') : {}
 const ValidationError = require('../../../utils/converter/validation-error')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
