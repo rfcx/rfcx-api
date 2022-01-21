@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const annotationsService = require('../../../services/annotations')
 const Converter = require('../../../utils/converter/converter')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const models = require('../../../modelsTimescale')
+const models = require('../../../models')
 const rolesService = require('../../../services/roles')
 
 /**

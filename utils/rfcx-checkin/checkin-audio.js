@@ -1,5 +1,5 @@
 const Promise = require('bluebird')
-const models = require('../../models')
+const models = require('../../models-legacy')
 const fs = require('fs')
 const zlib = require('zlib')
 const hash = require('../../utils/misc/hash')

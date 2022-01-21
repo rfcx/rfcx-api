@@ -1,4 +1,4 @@
-const { Classifier, ClassifierEventStrategy, EventStrategy, ClassifierOutput } = require('../../modelsTimescale')
+const { Classifier, ClassifierEventStrategy, EventStrategy, ClassifierOutput } = require('../../models')
 const { EmptyResultError } = require('../../utils/errors')
 
 // TODO: we might decide to remove the `classifiers` field option as it includes a lot of data

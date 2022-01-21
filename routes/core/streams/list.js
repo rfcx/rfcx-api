@@ -2,7 +2,7 @@ const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const streamsService = require('../../../services/streams')
 const usersService = require('../../../services/users/fused')
 const Converter = require('../../../utils/converter/converter')
-const { Stream } = require('../../../modelsTimescale')
+const { Stream } = require('../../../models')
 const { CREATE, READ, UPDATE, DELETE } = require('../../../services/roles')
 
 /**

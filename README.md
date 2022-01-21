@@ -64,34 +64,17 @@ docker stop rfcx-api-timescaledb
 You can use [pgAdmin](https://www.pgadmin.org/download/) GUI Client to view your database.
 
 
-### Models sync and running migrations for MySQL or TimescaleDB
-
-#### To create new table
-To create new table in MySQL, the only thing you will need is to create new model file in `models/`.
-If you need to add any associations to another tables, put them into `defineRelationships` function in `models/relationships.js`.
-
-To create a new table in TimescaleDB, follow the instructions in Sequelize to create a migration in the `migrationsTimescale` folder (same as for updating an existing table).
-
-#### To update existing table
-To update/delete existing table you will need to create migration file in `migrations/` or `migrationsTimescale` respectively.
-For MySQL:
-```
-npx sequelize migration:create --migrations-path ./migrations --name this-is-example-of-name
-```
-For TimescaleDB:
-```
-npx sequelize migration:create --migrations-path ./migrationsTimescale --name this-is-example-of-name
-```
+### Create the database tables
 
 #### To run sync and migrations
 
-For MySQL (you may need to create an empty `migrations` folder first):
+For MySQL (legacy):
 
 ```
 npm run sync-mysql
 ```
 
-For TimescaleDB:
+For TimescaleDB (core):
 ```
 npm run sync-timescale
 ```

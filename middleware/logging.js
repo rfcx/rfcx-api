@@ -19,5 +19,6 @@ module.exports = expressWinston.logger({
     }
     return `${req.method} ${res.statusCode} ${req.url} ${res.responseTime} Authorization: ${req.headers.authorization} ${JSON.stringify(body)}`
   },
-  expressFormat: false
+  expressFormat: false,
+  statusLevels: true
 })

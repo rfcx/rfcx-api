@@ -12,16 +12,16 @@ INSERT INTO rfcx_api.UserSiteRelations (created_at, updated_at, user_id, guardia
 INSERT INTO rfcx_api.UserSiteRelations (created_at, updated_at, user_id, guardian_site_id) VALUES ('2020-12-27 11:00:47', '2020-12-27 11:00:48', 13, 2)
 INSERT INTO rfcx_api.UserSiteRelations (created_at, updated_at, user_id, guardian_site_id) VALUES ('2020-12-27 11:00:50', '2020-12-27 11:00:51', 13, 3)
 
-INSERT INTO rfcx_api.Guardians (id, guid, site_id, shortname, is_certified, phone_number, carrier_name, last_check_in, check_in_count, last_update_check_in, update_check_in_count, is_updatable, latitude, longitude, cartodb_coverage_id, auth_token_salt, auth_token_hash, auth_token_expires_at, auth_token_updated_at, prefs_audio_capture_interval, prefs_service_monitor_interval, created_at, updated_at, sim_card_id, notes, is_visible, creator, is_private, stream) VALUES (129, 'c9d541166e12', 3, 'Sede - North Road #1', 0, null, null, '2017-05-27 02:43:28.643', 26189, null, 0, 1, -1.7983700037002563, -46.96590042114258, null, 'jw8yefdeq8lyxgwg3u6c58le4zir03i9y0617fkzc2xkpwilrzs1cq9upeq7du', '04d331fc675c433d8af62fb9996c7a8f3e58aed526e23805e3fbf447dd643bf5', '2016-09-15 00:08:30.000', '2016-05-20 00:08:32.000', 90, 5, '2015-09-02 00:08:15.000', '2017-05-27 02:43:28.000', null, null, 0, null, 0, null);
-
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (1, 12000, '2019-12-09 10:49:49', '2019-12-09 10:49:49');
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (2, 44100, '2019-12-11 11:08:14', '2019-12-11 11:08:14');
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (3, 96000, '2019-12-12 11:02:21', '2019-12-12 11:02:21');
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (4, 64000, '2019-12-12 13:24:38', '2019-12-12 13:24:38');
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (5, 50000, '2019-12-16 16:55:00', '2019-12-16 16:55:00');
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (6, 8000, '2019-12-17 12:47:26', '2019-12-17 12:47:26');
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (7, 48000, '2019-12-23 07:12:54', '2019-12-23 07:12:54');
-INSERT INTO rfcx_api.SampleRates (id, value, created_at, updated_at) VALUES (8, 16000, '2019-12-26 05:34:05', '2019-12-26 05:34:05');
+INSERT INTO rfcx_api.Guardians (id, guid, site_id, shortname, is_certified, phone_number, carrier_name, last_check_in, check_in_count, last_update_check_in, update_check_in_count, is_updatable, latitude, longitude, cartodb_coverage_id, auth_token_salt, auth_token_hash, auth_token_expires_at, auth_token_updated_at, created_at, updated_at, sim_card_id, notes, is_visible, creator, is_private) VALUES (129, 'c9d541166e12', 3, 'Sede - North Road #1', 0, null, null, '2017-05-27 02:43:28.643', 26189, null, 0, 1, -1.7983700037002563, -46.96590042114258, null, 'jw8yefdeq8lyxgwg3u6c58le4zir03i9y0617fkzc2xkpwilrzs1cq9upeq7du', '04d331fc675c433d8af62fb9996c7a8f3e58aed526e23805e3fbf447dd643bf5', '2016-09-15 00:08:30.000', '2016-05-20 00:08:32.000', '2015-09-02 00:08:15.000', '2017-05-27 02:43:28.000', null, null, 0, null, 0);
 
 INSERT INTO rfcx_api.SourceTypes (id, name, created_at, updated_at) VALUES (1, 'GuardianAudio', '2017-04-17 12:21:49', '2017-04-17 12:21:51');
 INSERT INTO rfcx_api.SourceTypes (id, name, created_at, updated_at) VALUES (2, 'Users', '2017-04-17 12:22:04', '2017-04-17 12:22:07');
+
+INSERT INTO rfcx_api.GuardianMetaBattery (id, measured_at, battery_percent, battery_temperature, is_charging, is_fully_charged, created_at, updated_at, guardian_id, check_in_id) VALUES (1, '2021-12-31 11:54:03.000', 90, 50, 0, 0, '2021-12-31 11:54:18', '2021-12-31 11:54:18', 129, null);
+
+INSERT INTO rfcx_api.GuardianMetaSentinelPower (id, measured_at, system_temperature, system_voltage, system_current, system_power, input_voltage, input_current, input_power, battery_state_of_charge, battery_voltage, battery_current, battery_power, created_at, updated_at, guardian_id, check_in_id) VALUES (1, '2021-12-31 11:54:03.000', 77, 5000, 3000, 1000, 5500, 2000, 1000, 33, 3500, 5000, 1000, '2021-12-31 12:02:04', '2021-12-31 12:02:04', 129, null);
+
+INSERT INTO rfcx_api.GuardianAudioFormats (id, codec, mime, file_extension, sample_rate, sample_size, channel_count, target_bit_rate, is_vbr, created_at, updated_at) VALUES (1, 'opus', 'audio/ogg', 'opus', 12000, 0, 1, 16384, 1, '2022-01-03 21:37:45', '2022-01-03 21:37:49');
+
+INSERT INTO rfcx_api.GuardianAudio (guid, measured_at, measured_at_local, analyzed_at, analysis_queued_at, size, capture_sample_count, encode_duration, sha1_checksum, url, original_filename, created_at, updated_at, guardian_id, site_id, check_in_id, format_id) VALUES ('c2355d62-0a49-444f-a7ee-33252ead3c39', '2022-01-03 21:31:22.000', '2022-01-03 23:31:34.000', null, null, 157746, 1087488, 2200, 'abc', null, null, '2022-01-03 21:34:45', '2022-01-03 21:34:45', 129, 3, null, 1);
+

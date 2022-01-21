@@ -1,4 +1,4 @@
-const models = require('../../models')
+const models = require('../../models-legacy')
 const msgSegUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 
 exports.segmentUtils = {

@@ -6,7 +6,7 @@ const hash = require('../../../utils/misc/hash')
 const audioUtils = require('../../../utils/rfcx-audio').audioUtils
 const assetUtils = require('../../../utils/internal-rfcx/asset-utils.js').assetUtils
 const validation = require('../../../utils/misc/validation.js')
-const { GuardianSite, Guardian, GuardianAudioFormat } = require('../../../models')
+const { GuardianSite, Guardian, GuardianAudioFormat } = require('../../../models-legacy')
 
 exports.models = {
 
@@ -78,66 +78,6 @@ exports.models = {
         console.log(err)
         res.status(500).json({ msg: 'failed to download audio' })
       })
-  },
-
-  guardianAudioAmplitude: function (req, res, dbRow) {
-    return new Promise(function (resolve, reject) {
-      const queryParams = parsePermittedQueryParams(req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate))
-
-      // auto-generate the asset filepath if it's not stored in the url column
-      const audioStorageUrl = (dbRow.url == null)
-        ? 's3://' + process.env.ASSET_BUCKET_AUDIO + assetUtils.getGuardianAssetStoragePath('audio', dbRow.measured_at, dbRow.Guardian.guid, dbRow.Format.file_extension)
-        : dbRow.url
-
-      audioUtils.cacheSourceAudio(audioStorageUrl)
-        .then(function ({ sourceFilePath }) {
-          audioUtils.transcodeToFile('wav', {
-            enhanced: false,
-            sampleRate: dbRow.Format.sample_rate,
-            clipOffset: queryParams.clipOffset,
-            clipDuration: queryParams.clipDuration,
-            sourceFilePath: sourceFilePath
-          }).then(function (outputFilePath) {
-            const amplitudeType = 'RMS'
-
-            let soxExec = ''
-
-            for (let i = 0; i < (queryParams.clipDuration / queryParams.amplitudeWindowDuration); i++) {
-              if (i > 0) { soxExec += ' && ' }
-              soxExec += 'echo "$(' + process.env.SOX_PATH + ' ' + outputFilePath + ' -n trim ' + (queryParams.amplitudeWindowDuration * i) + ' ' + queryParams.amplitudeWindowDuration + ' stat 2>&1)"' +
-                ' | grep "' + amplitudeType + "\" | grep \"amplitude\" | cut -d':' -f 2 | sed -e 's/^[ \\t]*//'"
-            }
-
-            exec(soxExec, function (err, stdout, stderr) {
-              if (stderr.trim().length > 0) { console.log(stderr) }
-              if (err) { console.log(err) }
-              fs.unlink(outputFilePath, function (e) { if (e) { console.log(e) } })
-
-              const allStringAmplitudes = stdout.trim().split('\n')
-              const allAmplitudes = []
-              for (let i = 0; i < allStringAmplitudes.length; i++) {
-                allAmplitudes.push(parseFloat(allStringAmplitudes[i]))
-              }
-
-              resolve([{
-                guid: dbRow.guid,
-                offset: Math.round(1000 * queryParams.clipOffset),
-                duration: Math.round(1000 * queryParams.clipDuration),
-                amplitude: {
-                  window_duration: Math.round(1000 * queryParams.amplitudeWindowDuration),
-                  type: amplitudeType.toLowerCase(),
-                  values: allAmplitudes
-                }
-              }])
-            })
-          }).catch(function (err) {
-            console.log(err)
-            reject(new Error(err))
-          })
-        }).catch(function (err) {
-          reject(new Error(err))
-        })
-    })
   },
 
   guardianAudioSpectrogram: function (req, res, dbRow) {
@@ -312,11 +252,6 @@ function parsePermittedQueryParams (queryParams, clipDurationFull) {
   let specWindowFunc = (queryParams.window_function == null) ? 'dolph' : queryParams.window_function.trim().toLowerCase()
   if (['dolph', 'hann', 'hamming', 'bartlett', 'rectangular', 'kaiser'].indexOf(specWindowFunc) < 0) { specWindowFunc = 'dolph' }
 
-  // Amplitude Analysis Customization Parameters
-
-  let amplitudeWindowDuration = (queryParams.window_duration == null) ? 500 : parseInt(queryParams.window_duration)
-  if ([250, 500, 1000, 2000].indexOf(amplitudeWindowDuration) < 0) { amplitudeWindowDuration = 500 }
-
   // Audio Clipping Parameters
 
   let clipOffset = (queryParams.offset == null) ? 0 : (parseInt(queryParams.offset) / 1000)
@@ -331,7 +266,6 @@ function parsePermittedQueryParams (queryParams, clipDurationFull) {
     specRotate: specRotate,
     specZaxis: specZaxis,
     specWindowFunc: specWindowFunc.substr(0, 1).toUpperCase() + specWindowFunc.substr(1),
-    amplitudeWindowDuration: amplitudeWindowDuration / 1000,
     clipOffset: clipOffset,
     clipDuration: clipDuration
   }

@@ -2,7 +2,7 @@ const { adoptProtectDonations } = require('./models/adopt-protect').models
 const { DataFilterAudioGuidToJson } = require('./models/datafilters').models
 const { guardianAudioEventsJson, guardianAudioEventsByGuardianJson, guardianAudioEventsByDatesJson, guardianAudioEventsCSV, guardianAudioEventsByGuardianCSV, guardianAudioEventsByDatesCSV } = require('./models/guardian-audio-events').models
 const { guardianAudioHighlights } = require('./models/guardian-audio-highlights').models
-const { baseInclude, guardianAudioFile, guardianAudioAmplitude, guardianAudioSpectrogram, guardianAudioJson, guardianAudioLabels, transformCreateAudioRequestToModel } = require('./models/guardian-audio').models
+const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson, guardianAudioLabels, transformCreateAudioRequestToModel } = require('./models/guardian-audio').models
 const { guardianCheckIns } = require('./models/guardian-checkins').models
 const { guardianEvents, guardianEventsLite } = require('./models/guardian-events').models
 const { guardianSites } = require('./models/guardian-sites').models
@@ -46,7 +46,6 @@ module.exports = {
     guardianAudioHighlights,
     baseInclude,
     guardianAudioFile,
-    guardianAudioAmplitude,
     guardianAudioSpectrogram,
     guardianAudioJson,
     guardianAudioLabels,

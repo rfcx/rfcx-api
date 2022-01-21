@@ -1,5 +1,5 @@
 const Promise = require('bluebird')
-const models = require('../../../models')
+const models = require('../../../models-legacy')
 function getAllQueryHelpers () { return require('../../../utils/rfcx-query') }
 
 exports.guardianStatusAudio = {

@@ -1,4 +1,4 @@
-const models = require('../../modelsTimescale')
+const models = require('../../models')
 const { getAccessibleObjectsIDs, PROJECT, STREAM } = require('../roles')
 const streamServices = require('../streams')
 

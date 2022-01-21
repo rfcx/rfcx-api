@@ -1,7 +1,7 @@
 const fs = require('fs')
 const unzip = require('node-unzip-2')
 const xmldom = new (require('xmldom').DOMParser)()
-const togeojson = require('togeojson')
+const togeojson = require('@tmcw/togeojson')
 const Promise = require('bluebird')
 
 function toKML (path, callback) {
@@ -53,6 +53,5 @@ function toGeoJSON (path, isKML) {
 }
 
 module.exports = {
-  toKML,
   toGeoJSON
 }

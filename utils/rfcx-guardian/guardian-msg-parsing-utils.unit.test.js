@@ -1,9 +1,9 @@
 console.error = () => undefined
 const { guardianMsgParsingUtils } = require('./guardian-msg-parsing-utils')
 const { pingRouter } = require('../../utils/rfcx-guardian/router-ping.js')
-const models = require('../../models')
+const models = require('../../models-legacy')
 
-jest.mock('../../models', () => {
+jest.mock('../../models-legacy', () => {
   const logs = []
   return {
     Sequelize: { Op: { in: 'in' } },

@@ -1,4 +1,4 @@
-const models = require('../../models')
+const models = require('../../models-legacy')
 const { parse: parseDetections } = require('./mqtt-detections-parse')
 const detectionsService = require('../../services/detections/create')
 
