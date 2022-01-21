@@ -1,4 +1,4 @@
-const models = require('../../models')
+const models = require('../../../models')
 
 const timeBucketFunction = 'time_bucket'
 const timeAggregatedQueryAttributes = function (timeInterval, func, field, modelName, modelTimeField, timeBucketAttribute = 'time_bucket', aggregatedValueAttribute = 'aggregated_value', includeFirstLast = true) {

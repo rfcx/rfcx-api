@@ -1,6 +1,6 @@
 const moment = require('moment')
 const models = require('../../../models')
-const { timeAggregatedQueryAttributes } = require('../../../utils/timeseries/time-aggregated-query')
+const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
 const storageService = require('../storage')
 
 function defaultQueryOptions (streamId, index, start, end, descending, limit, offset) {

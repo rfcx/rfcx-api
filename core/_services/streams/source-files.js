@@ -176,7 +176,7 @@ async function findOrCreateRelationships (data, opts = {}) {
   for (const item of arr) {
     const where = { value: data[item.objKey] }
     const defaults = where
-    const [modelItem, _created] = await item.model.findOrCreate({ where, defaults, transaction })
+    const [modelItem] = await item.model.findOrCreate({ where, defaults, transaction })
     result[`${item.objKey}_id`] = modelItem.id
   }
   return result

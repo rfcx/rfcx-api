@@ -10,7 +10,7 @@ async function findOrCreate (data, options = {}) {
   const transaction = options.transaction || null
   const where = data
   const defaults = data
-  const [item, _created] = await FileExtension.findOrCreate({ where, defaults, transaction })
+  const [item] = await FileExtension.findOrCreate({ where, defaults, transaction })
   return item
 }
 
