@@ -2,7 +2,7 @@
 
 const Promise = require('bluebird')
 const fs = require('fs')
-const aws = require('../../../../utils/external/aws').aws()
+const aws = require('../../../_utils/external/aws').aws()
 
 /**
  * Uploads file to S3 storage

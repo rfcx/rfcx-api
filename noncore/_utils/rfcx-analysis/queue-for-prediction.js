@@ -1,5 +1,5 @@
 const legacyQueueToNeo4jAndSqs = require('../rfcx-checkin/checkin-audio').audio.queueForTaggingByActiveV3Models
-const pubsub = require('../../../utils/external/pubsub')
+const pubsub = require('../../_utils/external/pubsub')
 
 function queueForPrediction (audioInfo, guardian) {
   if (process.env.NEO4J_ENABLED === 'true' && guardian.stream_id) {
