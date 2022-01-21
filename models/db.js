@@ -17,7 +17,10 @@ const baseOptions = {
 const dbConfigPostgres = {
   dialect: 'postgres',
   dialectOptions: {
-    ssl: process.env.POSTGRES_SSL_ENABLED === 'true'
+    ssl: {
+      require: process.env.POSTGRES_SSL_ENABLED === 'true',
+      rejectUnauthorized: false
+    }
   },
   host: process.env.POSTGRES_HOSTNAME,
   port: process.env.POSTGRES_PORT,
