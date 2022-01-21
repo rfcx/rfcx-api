@@ -1,15 +1,15 @@
 const express = require('express')
 const router = express.Router()
-const checkInHelpers = require('../../../utils/rfcx-checkin')
-const httpError = require('../../../utils/http-errors.js')
+const checkInHelpers = require('../../_utils/rfcx-checkin')
+const httpError = require('../../../utils/http-errors')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 
-const guardianMsgParsingUtils = require('../../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
-const pingRouter = require('../../../utils/rfcx-guardian/router-ping.js').pingRouter
-const guidService = require('../../../utils/misc/guid.js')
+const guardianMsgParsingUtils = require('../../_utils/rfcx-guardian/guardian-msg-parsing-utils').guardianMsgParsingUtils
+const pingRouter = require('../../_utils/rfcx-guardian/router-ping').pingRouter
+const guidService = require('../../../utils/misc/guid')
 
 router.route('/:guardian_id/pings')
   .post(passport.authenticate('token', { session: false }), function (req, res) {

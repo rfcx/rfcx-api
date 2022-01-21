@@ -1,6 +1,6 @@
 const Promise = require('bluebird')
 const fs = require('fs')
-const assetUtil = require('../internal-rfcx/asset-utils').assetUtils
+const assetUtil = require('../../noncore/_utils/internal-rfcx/asset-utils').assetUtils
 
 function serveFile (res, filePathToServe, fileName, mimeType, inline) {
   return new Promise((resolve, reject) => {

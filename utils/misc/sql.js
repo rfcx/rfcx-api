@@ -5,6 +5,4 @@ function condAdd (sql, condition, add) {
   return sql
 }
 
-module.exports = {
-  condAdd: condAdd
-}
+module.exports = { condAdd }

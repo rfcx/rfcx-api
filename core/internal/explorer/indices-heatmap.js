@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const indicesService = require('../../../services/indices/values')
+const indicesService = require('../../_services/indices/values')
 const Converter = require('../../../utils/converter/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
-const storageService = require('../../../services/storage')
+const storageService = require('../../_services/storage')
 const { hasStreamPermission } = require('../../../common/middleware/authorization/roles')
 
 /**

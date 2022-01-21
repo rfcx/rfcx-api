@@ -7,17 +7,17 @@ const archiveUtil = require('../../../utils/misc/archive')
 const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
 const guidUtil = require('../../../utils/misc/guid')
-const eventsServiceNeo4j = require('../../../services/legacy/events/events-service-neo4j')
-const usersService = require('../../../services/users/users-service-legacy')
-const usersFusedService = require('../../../services/users/fused')
+const eventsServiceNeo4j = require('../../_services/legacy/events/events-service-neo4j')
+const usersService = require('../../../common/users/users-service-legacy')
+const usersFusedService = require('../../../common/users/fused')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const guardiansService = require('../../../services/guardians/guardians-service')
+const guardiansService = require('../../_services/guardians/guardians-service')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 const sequelize = require('sequelize')
 const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'
-const earthRangerService = earthRangerEnabled ? require('../../../services/earthranger') : {}
+const earthRangerService = earthRangerEnabled ? require('../../_services/earthranger') : {}
 const moment = require('moment')
 
 function query (req, res) {

@@ -2,7 +2,7 @@ const routes = require('.')
 const models = require('../../models')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../utils/sequelize/testing')
 const request = require('supertest')
-const storageService = require('../../services/storage')
+const storageService = require('../_services/storage')
 
 const app = expressApp()
 

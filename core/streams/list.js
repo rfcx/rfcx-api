@@ -1,9 +1,9 @@
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
-const streamsService = require('../../services/streams')
-const usersService = require('../../services/users/fused')
+const streamsService = require('../_services/streams')
+const usersService = require('../../common/users/fused')
 const Converter = require('../../utils/converter/converter')
 const { Stream } = require('../../models')
-const { CREATE, READ, UPDATE, DELETE } = require('../../services/roles')
+const { CREATE, READ, UPDATE, DELETE } = require('../_services/roles')
 
 /**
  * @swagger

@@ -1,10 +1,10 @@
 const path = require('path')
 const router = require('express').Router()
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const streamSegmentService = require('../../../services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity } = require('../../../services/streams/segment-file-parsing')
-const { getFile } = require('../../../services/streams/segment-file-utils')
+const { httpErrorHandler } = require('../../../utils/http-error-handler')
+const streamSegmentService = require('../../_services/streams/segments')
+const { parseFileNameAttrs, checkAttrsValidity } = require('../../_services/streams/segment-file-parsing')
+const { getFile } = require('../../_services/streams/segment-file-utils')
 const { gluedDateStrToMoment } = require('../../../utils/misc/datetime')
 
 /**

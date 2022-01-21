@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../utils/http-error-handler')
-const detectionsService = require('../../services/detections')
+const detectionsService = require('../_services/detections')
 const Converter = require('../../utils/converter/converter')
 
 /**

@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../../utils/http-error-handler')
 const Converter = require('../../../utils/converter/converter')
-const reviewsService = require('../../../services/detections/reviews')
+const reviewsService = require('../../_services/detections/reviews')
 
 /**
  * @swagger

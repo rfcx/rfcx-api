@@ -1,5 +1,5 @@
 const httpError = require('../../../utils/http-errors')
-const auth0Service = require('../../../services/auth0/auth0-service')
+const auth0Service = require('../../../core/_services/auth0/auth0-service')
 const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
 passport.use('jwt', require('../passport-jwt').JwtStrategy)

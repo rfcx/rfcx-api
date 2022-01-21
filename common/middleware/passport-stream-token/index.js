@@ -1,6 +1,6 @@
 const TokenStrategy = require('passport-accesstoken').Strategy
 const ValidationError = require('../../../utils/converter/validation-error')
-const { getStreamRangeToken } = require('../../../services/streams/index')
+const { getStreamRangeToken } = require('../../../core/_services/streams')
 const { parseStreamAndTime } = require('./service')
 
 const strategy = new TokenStrategy({

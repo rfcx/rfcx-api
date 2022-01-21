@@ -5,11 +5,11 @@ const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
-const models = require('../../../models-legacy')
+const models = require('../../_models')
 const flipCoin = require('../../../utils/misc/rand.js').flipCoin
 const sqlUtils = require('../../../utils/misc/sql')
 const csvUtils = require('../../../utils/misc/csv')
-const datafiltersService = require('../../../services/datafilters/datafilters-service')
+const datafiltersService = require('../../_services/datafilters/datafilters-service')
 
 const condAdd = sqlUtils.condAdd
 

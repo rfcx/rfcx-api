@@ -1,15 +1,15 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
-const streamsService = require('../../../services/streams')
-const streamSourceFileService = require('../../../services/streams/source-files')
-const streamSegmentService = require('../../../services/streams/segments')
-const fileFormatService = require('../../../services/streams/file-extensions')
+const streamsService = require('../../_services/streams')
+const streamSourceFileService = require('../../_services/streams/source-files')
+const streamSegmentService = require('../../_services/streams/segments')
+const fileFormatService = require('../../_services/streams/file-extensions')
 const { sequelize } = require('../../../models')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
 const Converter = require('../../../utils/converter/converter')
 const ArrayConverter = require('../../../utils/converter/array-converter')
 const moment = require('moment')
-const arbimonService = require('../../../services/arbimon')
+const arbimonService = require('../../_services/arbimon')
 
 /**
  * @swagger

@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const healthCheck = require('../utils/internal-rfcx/health-check')
+const healthCheck = require('../common/utils/health-check')
 const packageData = require('../package.json')
 
 /**

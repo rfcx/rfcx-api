@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
-const streamsService = require('../../services/streams')
+const streamsService = require('../_services/streams')
 const Converter = require('../../utils/converter/converter')
 
 /**

@@ -1,5 +1,5 @@
 const moment = require('moment')
-const { parseFileNameAttrs } = require('../../../services/streams/segment-file-parsing')
+const { parseFileNameAttrs } = require('../../../core/_services/streams/segment-file-parsing')
 const { gluedDateStrToMoment } = require('../../../utils/misc/datetime')
 
 const assetsPrefix = '/internal/assets/streams/'

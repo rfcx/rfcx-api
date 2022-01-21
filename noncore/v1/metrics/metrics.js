@@ -1,5 +1,5 @@
 const express = require('express')
-const metricsService = require('../../../services/metrics/metrics-service')
+const metricsService = require('../../_services/metrics/metrics-service')
 const router = express.Router()
 
 router.route('/')

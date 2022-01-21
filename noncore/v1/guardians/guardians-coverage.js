@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const SensationsService = require('../../../services/legacy/sensations/sensations-service')
-const executeService = require('../../../services/execute-service')
+const SensationsService = require('../../_services/legacy/sensations/sensations-service')
+const executeService = require('../../_services/execute-service')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole

@@ -1,8 +1,8 @@
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
-const { get } = require('../../services/streams/segments')
+const { get } = require('../_services/streams/segments')
 const { gluedDateStrOrEpochToMoment } = require('../../utils/misc/datetime.js')
-const { getSegmentRemotePath } = require('../../services/streams/segment-file-utils')
-const storageService = require('../../services/storage')
+const { getSegmentRemotePath } = require('../_services/streams/segment-file-utils')
+const storageService = require('../_services/storage')
 
 /**
  * @swagger

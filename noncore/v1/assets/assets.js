@@ -1,12 +1,12 @@
 const express = require('express')
 const sequelize = require('sequelize')
-const models = require('../../../models-legacy')
+const models = require('../../_models')
 const httpError = require('../../../utils/http-errors.js')
 const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
 const ValidationError = require('../../../utils/converter/validation-error')
-const reportsService = require('../../../services/reports/reports-service')
-const attachmentService = require('../../../services/attachment/attachment-service')
-const audioService = require('../../../services/audio/audio-service')
+const reportsService = require('../../_services/reports/reports-service')
+const attachmentService = require('../../_services/attachment/attachment-service')
+const audioService = require('../../_services/audio/audio-service')
 const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson } = require('../../views/v1/models/guardian-audio').models
 const { guardianMetaScreenshotFile, guardianMetaScreenshots } = require('../../views/v1/models/guardian-meta/guardian-meta-screenshots').models
 

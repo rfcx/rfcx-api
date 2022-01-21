@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
-const streamSourceFileService = require('../../services/streams/source-files')
+const streamSourceFileService = require('../_services/streams/source-files')
 const Converter = require('../../utils/converter/converter')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
-const auth0Service = require('../../services/auth0/auth0-service')
-const rolesService = require('../../services/roles')
+const auth0Service = require('../_services/auth0/auth0-service')
+const rolesService = require('../_services/roles')
 
 /**
  * @swagger

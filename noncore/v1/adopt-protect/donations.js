@@ -1,4 +1,4 @@
-const models = require('../../../models-legacy')
+const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
@@ -8,7 +8,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 const stripe = require('../../../utils/stripe/stripe')
-const classyService = require('../../../services/classy/classy')
+const classyService = require('../../_services/classy/classy')
 const ValidationError = require('../../../utils/converter/validation-error')
 
 router.route('/donations/:donation_id')

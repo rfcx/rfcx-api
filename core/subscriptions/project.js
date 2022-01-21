@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 const Converter = require('../../utils/converter/converter')
-const subscriptionsService = require('../../services/subscriptions')
+const subscriptionsService = require('../_services/subscriptions')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**

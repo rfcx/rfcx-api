@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
-const projectsService = require('../../services/projects')
-const usersFusedService = require('../../services/users/fused')
+const projectsService = require('../_services/projects')
+const usersFusedService = require('../../common/users/fused')
 const Converter = require('../../utils/converter/converter')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
-const rolesService = require('../../services/roles')
+const rolesService = require('../_services/roles')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**

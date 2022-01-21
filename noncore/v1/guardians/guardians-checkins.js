@@ -1,9 +1,9 @@
-const models = require('../../../models-legacy')
+const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
-const checkInHelpers = require('../../../utils/rfcx-checkin')
-const queueForPrediction = require('../../../utils/rfcx-analysis/queue-for-prediction')
+const checkInHelpers = require('../../_utils/rfcx-checkin')
+const queueForPrediction = require('../../_utils/rfcx-analysis/queue-for-prediction')
 const httpError = require('../../../utils/http-errors.js')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
@@ -11,7 +11,7 @@ const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const ValidationError = require('../../../utils/converter/validation-error')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
-const SensationsService = require('../../../services/legacy/sensations/sensations-service')
+const SensationsService = require('../../_services/legacy/sensations/sensations-service')
 
 router.route('/:guardian_id/checkins')
   .post(passport.authenticate('token', { session: false }), function (req, res) {

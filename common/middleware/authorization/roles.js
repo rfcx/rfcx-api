@@ -1,4 +1,4 @@
-const rolesService = require('../../../services/roles')
+const rolesService = require('../../../core/_services/roles')
 const httpError = require('../../../utils/http-errors')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 

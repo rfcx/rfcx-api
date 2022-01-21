@@ -2,7 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
 const Converter = require('../../utils/converter/converter')
-const eventsService = require('../../services/events')
+const eventsService = require('../_services/events')
 
 router.post('/', authenticatedWithRoles('systemUser'), require('./create'))
 router.patch('/:id', authenticatedWithRoles('systemUser'), require('./update'))

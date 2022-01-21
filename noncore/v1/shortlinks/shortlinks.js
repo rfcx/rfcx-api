@@ -1,4 +1,4 @@
-const models = require('../../../models-legacy')
+const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const httpError = require('../../../utils/http-errors.js')

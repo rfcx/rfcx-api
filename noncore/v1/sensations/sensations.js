@@ -4,7 +4,7 @@ const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const httpError = require('../../../utils/http-errors')
-const sensationsService = require('../../../services/legacy/sensations/sensations-service')
+const sensationsService = require('../../_services/legacy/sensations/sensations-service')
 const ValidationError = require('../../../utils/converter/validation-error')
 
 router.route('/')

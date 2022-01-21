@@ -3,10 +3,10 @@ const exec = require('child_process').exec
 const moment = require('moment-timezone')
 const fs = require('fs')
 const hash = require('../../../../utils/misc/hash')
-const audioUtils = require('../../../../utils/rfcx-audio').audioUtils
-const assetUtils = require('../../../../utils/internal-rfcx/asset-utils.js').assetUtils
+const audioUtils = require('../../../_utils/rfcx-audio').audioUtils
+const assetUtils = require('../../../_utils/internal-rfcx/asset-utils.js').assetUtils
 const validation = require('../../../../utils/misc/validation.js')
-const { GuardianSite, Guardian, GuardianAudioFormat } = require('../../../../models-legacy')
+const { GuardianSite, Guardian, GuardianAudioFormat } = require('../../../_models')
 
 exports.models = {
 

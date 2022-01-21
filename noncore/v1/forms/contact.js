@@ -5,8 +5,8 @@ const ValidationError = require('../../../utils/converter/validation-error')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const sequelize = require('sequelize')
 const Converter = require('../../../utils/converter/converter')
-const mailService = require('../../../services/mail/mail-service')
-const contactMessagesService = require('../../../services/contact-messages/contact-messages-service')
+const mailService = require('../../_services/mail/mail-service')
+const contactMessagesService = require('../../_services/contact-messages/contact-messages-service')
 
 router.route('/contact')
   .post((req, res) => {

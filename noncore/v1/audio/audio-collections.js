@@ -1,4 +1,4 @@
-const models = require('../../../models-legacy')
+const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
@@ -7,7 +7,7 @@ const httpError = require('../../../utils/http-errors.js')
 const Promise = require('bluebird')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
-const datafiltersService = require('../../../services/datafilters/datafilters-service')
+const datafiltersService = require('../../_services/datafilters/datafilters-service')
 const csvUtils = require('../../../utils/misc/csv')
 
 function filterExcludedGuids (originalArray, foundedArray) {

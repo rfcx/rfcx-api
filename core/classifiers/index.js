@@ -2,11 +2,11 @@ const router = require('express').Router()
 const ValidationError = require('../../utils/converter/validation-error')
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
-const service = require('../../services/classifiers')
+const service = require('../_services/classifiers')
 const Converter = require('../../utils/converter/converter')
-const { getIds } = require('../../services/classifications')
-const { parseClassifierOutputMapping } = require('../../services/classifiers/parsing')
-const { upload } = require('../../services/classifiers/upload')
+const { getIds } = require('../_services/classifications')
+const { parseClassifierOutputMapping } = require('../_services/classifiers/parsing')
+const { upload } = require('../_services/classifiers/upload')
 
 /**
  * @swagger

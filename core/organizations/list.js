@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
-const organizationsService = require('../../services/organizations')
-const usersService = require('../../services/users/fused')
+const organizationsService = require('../_services/organizations')
+const usersService = require('../../common/users/fused')
 const Converter = require('../../utils/converter/converter')
 
 /**

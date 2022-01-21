@@ -1,10 +1,10 @@
 const { httpErrorHandler } = require('../../utils/http-error-handler.js')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
-const projectsService = require('../../services/projects')
+const projectsService = require('../_services/projects')
 const { randomId } = require('../../utils/misc/hash')
 const Converter = require('../../utils/converter/converter')
-const { hasPermission, CREATE, ORGANIZATION } = require('../../services/roles')
-const arbimonService = require('../../services/arbimon')
+const { hasPermission, CREATE, ORGANIZATION } = require('../_services/roles')
+const arbimonService = require('../_services/arbimon')
 
 /**
  * @swagger

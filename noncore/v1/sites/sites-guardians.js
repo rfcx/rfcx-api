@@ -1,4 +1,4 @@
-const models = require('../../../models-legacy')
+const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
@@ -9,7 +9,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
-const userService = require('../../../services/users/users-service-legacy')
+const userService = require('../../../common/users/users-service-legacy')
 
 router.route('/:site_id/guardians')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
