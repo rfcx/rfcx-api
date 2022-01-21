@@ -1,4 +1,4 @@
-const firebase = require('../../../utils/firebase/firebase')
+const firebase = require('./firebase-initialized')
 
 /**
  * Sends a Firebase message to individual device
