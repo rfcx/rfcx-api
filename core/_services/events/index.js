@@ -4,7 +4,7 @@ const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../
 const { isUuid, uuidToSlug, slugToUuid } = require('../../../utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../roles')
 const pagedQuery = require('../../_utils/db/paged-query')
-const messageQueue = require('../../../utils/message-queue/sns')
+const messageQueue = require('../../../common/message-queue/sns')
 const { EVENT_CREATED, EVENT_UPDATED } = require('../../../tasks/event-names')
 
 const availableIncludes = [

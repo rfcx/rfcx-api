@@ -1,4 +1,4 @@
-const neo4j = require('../../../utils/neo4j')
+const neo4j = require('../../../noncore/_utils/neo4j/neo4j')
 const { User } = require('../../../noncore/_models')
 
 async function ensureUserSyncedInNeo4j (user) {

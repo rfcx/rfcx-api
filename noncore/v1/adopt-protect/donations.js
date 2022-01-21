@@ -7,7 +7,7 @@ const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
-const stripe = require('../../../utils/stripe/stripe')
+const stripe = require('../../_utils/stripe/stripe')
 const classyService = require('../../_services/classy/classy')
 const ValidationError = require('../../../utils/converter/validation-error')
 
