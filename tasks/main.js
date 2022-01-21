@@ -1,7 +1,7 @@
 console.log('----------------------------------\nRFCX | main started')
 
 // Ensure unhandled promises are handled by the process
-require('../utils/process')
+require('../common/error-handling/process')
 
 // check that all required env vars are set
 require('../common/config/inspector')

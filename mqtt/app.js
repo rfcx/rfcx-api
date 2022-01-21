@@ -1,5 +1,5 @@
 // various process-related stuff
-require('../utils/process')
+require('../common/error-handling/process')
 
 if (process.env.NODE_ENV === 'production') {
   require('newrelic')
@@ -43,8 +43,7 @@ require('../common/middleware/route')
 
 // Enable documentation
 app.http.use('/docs', require('./_docs'))
-// Default and health check routes
-app.http.use(require('./routes/info'))
+
 // RabbitMQ specific endpoints
 app.http.use('/internal/rabbitmq', require('./routes/internal/rabbitmq'))
 
