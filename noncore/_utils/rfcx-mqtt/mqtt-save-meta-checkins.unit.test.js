@@ -1,9 +1,9 @@
 const { saveMeta: { CheckInStatus } } = require('./mqtt-save-meta')
-const models = require('../../models-legacy')
+const models = require('../../_models')
 
 const compactKeysCheckIns = { s: 'sent', q: 'queued', m: 'meta', sk: 'skipped', st: 'stashed', a: 'archived', v: 'vault' }
 
-jest.mock('../../models-legacy', () => {
+jest.mock('../../_models', () => {
   const checkins = []
   return {
     GuardianMetaCheckInStatus: {

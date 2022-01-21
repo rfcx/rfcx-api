@@ -1,5 +1,5 @@
 'use strict'
-const { getTzByLatLng } = require('../utils/misc/timezone')
+const { getTzByLatLng } = require('../../utils/misc/timezone')
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {

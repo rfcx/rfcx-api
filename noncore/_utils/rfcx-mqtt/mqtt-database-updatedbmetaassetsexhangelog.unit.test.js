@@ -1,5 +1,5 @@
 const { checkInDatabase: { updateDbMetaAssetsExchangeLog } } = require('./mqtt-database')
-const model = require('../../models-legacy')
+const model = require('../../_models')
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 beforeEach(() => {

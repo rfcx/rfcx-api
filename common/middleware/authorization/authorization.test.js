@@ -2,7 +2,7 @@
 process.env.NODE_LOG_LEVEL = 'error'
 jest.unmock('./authorization')
 jest.mock('../../../utils/http-errors', () => ({}))
-jest.mock('../../../services/auth0/auth0-service', () => ({
+jest.mock('../../../core/_services/auth0/auth0-service', () => ({
   getUserRolesFromToken (token) {
     return token.roles
   }

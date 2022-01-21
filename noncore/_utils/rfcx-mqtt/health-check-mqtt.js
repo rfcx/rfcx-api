@@ -1,5 +1,5 @@
 const Promise = require('bluebird')
-const models = require('../../models-legacy')
+const models = require('../../noncore/_models')
 
 exports.healthCheck = {
 

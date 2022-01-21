@@ -1,6 +1,6 @@
 const routes = require('./streams')
 const models = require('../../../models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../utils/sequelize/testing')
+const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
 const request = require('supertest')
 
 jest.mock('../../_services/streams/segment-file-utils', () => (

@@ -1,5 +1,5 @@
 const models = require('../../models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../utils/sequelize/testing')
+const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const moment = require('moment')
 const { slugToUuid } = require('../../utils/formatters/uuid')

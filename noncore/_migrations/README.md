@@ -1,5 +1,5 @@
 #### To create new table
-To create new table in MySQL, the only thing you will need is to create new model file in `models-legacy/`.
+To create new table in MySQL, the only thing you will need is to create new model file in `noncore/_models/`.
 If you need to add any associations to another tables, put them into `defineRelationships` function in `models/relationships.js`.
 
 #### To update existing table

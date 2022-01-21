@@ -1,5 +1,5 @@
 process.env.FFMPEG_PATH = '/usr/local/bin/ffmpeg'
-const shellModulePath = '../../utils/misc/shell'
+const shellModulePath = '../../../utils/misc/shell'
 jest.mock(shellModulePath)
 const { runExec } = require(shellModulePath)
 runExec.mockImplementation(() => {})

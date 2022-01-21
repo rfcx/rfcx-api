@@ -1,8 +1,8 @@
 const moment = require('moment')
 const { saveMeta: { SwarmDiagnostics } } = require('./mqtt-save-meta')
-const models = require('../../models-legacy')
+const models = require('../../_models')
 
-jest.mock('../../models-legacy', () => {
+jest.mock('../../_models', () => {
   const networks = []
   return {
     GuardianMetaNetwork: {

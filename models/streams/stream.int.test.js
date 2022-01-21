@@ -1,6 +1,6 @@
 
 const models = require('..')
-const { migrate, truncate, seed, seedValues } = require('../../utils/sequelize/testing')
+const { migrate, truncate, seed, seedValues } = require('../../common/testing/sequelize')
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)

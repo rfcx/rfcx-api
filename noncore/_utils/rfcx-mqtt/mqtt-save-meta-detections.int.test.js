@@ -1,7 +1,7 @@
 const moment = require('moment')
 const { saveMeta: { Detections } } = require('./mqtt-save-meta')
-const models = require('../../models')
-const { migrate, truncate, seed, seedValues } = require('../sequelize/testing')
+const models = require('../../../models')
+const { migrate, truncate, seed, seedValues } = require('../../../common/testing/sequelize')
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)

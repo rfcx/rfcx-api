@@ -1,7 +1,7 @@
 const { saveMeta: { SoftwareRoleVersion } } = require('./mqtt-save-meta')
-const models = require('../../models-legacy')
+const models = require('../../_models')
 
-jest.mock('../../models-legacy', () => {
+jest.mock('../../_models', () => {
   const software = [
     { id: 4, role: 'guardian' },
     { id: 5, role: 'admin' },

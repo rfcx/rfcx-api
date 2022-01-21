@@ -21,7 +21,7 @@ initializeSequelize()
 
 function initializeSequelize () {
   const migrationsPath = isCore ? 'core/_migrations' : 'noncore/_migrations'
-  const modelsPath = isCore ? 'models' : 'models-legacy'
+  const modelsPath = isCore ? 'models' : 'noncore/_models'
   const models = require('../../' + modelsPath)
 
   console.log('RFCX | Creating config params: started')
