@@ -1,5 +1,5 @@
 const moment = require('moment-timezone')
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 const possibleWindowFuncs = ['dolph', 'hann', 'hamming', 'bartlett', 'rectangular', 'kaiser']
 const possibleExtensions = ['png', 'jpeg', 'wav', 'opus', 'flac', 'mp3']

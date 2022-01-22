@@ -3,7 +3,7 @@ const router = express.Router()
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 const auth0Service = require('../../../core/_services/auth0/auth0-service')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')

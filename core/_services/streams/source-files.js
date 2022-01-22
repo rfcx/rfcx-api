@@ -1,4 +1,4 @@
-const { EmptyResultError, ValidationError } = require('../../../utils/errors')
+const { EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../../models')
 const { getAccessibleObjectsIDs, STREAM } = require('../roles')
 const pagedQuery = require('../../_utils/db/paged-query')

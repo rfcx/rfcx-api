@@ -1,5 +1,5 @@
 const { Stream, Project, User, Sequelize } = require('../../../models')
-const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../utils/errors')
+const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const crg = require('country-reverse-geocoding').country_reverse_geocoding()
 const projectsService = require('../projects')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, DELETE } = require('../roles')

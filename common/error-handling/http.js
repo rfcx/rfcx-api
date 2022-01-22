@@ -1,7 +1,7 @@
-const ValidationError = require('../../utils/converter/validation-error')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
-const EmptyResultError = require('../../utils/converter/empty-result-error')
-const UnauthorizedError = require('../../utils/converter/unauthorized-error')
+const { ValidationError } = require('./errors')
+const { ForbiddenError } = require('./errors')
+const { EmptyResultError } = require('./errors')
+const { UnauthorizedError } = require('./errors')
 
 const options = {
   400: {

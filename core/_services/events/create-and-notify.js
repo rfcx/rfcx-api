@@ -3,7 +3,7 @@ const streamsService = require('../streams')
 const classificationsService = require('../classifications')
 const { notify } = require('./notifications')
 const { createEvent: createLegacyEvent } = require('../../../noncore/_services/legacy/events/events-service-neo4j')
-const { ValidationError } = require('../../../utils/errors')
+const { ValidationError } = require('../../../common/error-handling/errors')
 const { slugToUuid } = require('../../../utils/formatters/uuid')
 
 async function createAndNotify (eventData) {

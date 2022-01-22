@@ -1,6 +1,6 @@
 const util = require('util')
 const { httpErrorResponse } = require('../../common/error-handling/http')
-const ValidationError = require('../../utils/converter/validation-error')
+const { ValidationError } = require('../../common/error-handling/errors')
 
 module.exports = function (req, res, serviceRequest, serviceFunction, message = 'Failed') {
   serviceFunction(serviceRequest)

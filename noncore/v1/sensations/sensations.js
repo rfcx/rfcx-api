@@ -5,7 +5,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const sensationsService = require('../../_services/legacy/sensations/sensations-service')
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 router.route('/')
   .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {

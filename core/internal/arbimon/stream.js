@@ -4,7 +4,7 @@ const streamsService = require('../../_services/streams')
 const projectsService = require('../../_services/projects')
 const rolesService = require('../../_services/roles')
 const Converter = require('../../../utils/converter/converter')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const { ForbiddenError } = require('../../../common/error-handling/errors')
 const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
 
 /**

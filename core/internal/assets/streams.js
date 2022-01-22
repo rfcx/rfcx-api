@@ -1,6 +1,6 @@
 const path = require('path')
 const router = require('express').Router()
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const streamSegmentService = require('../../_services/streams/segments')
 const { parseFileNameAttrs, checkAttrsValidity } = require('../../_services/streams/segment-file-parsing')

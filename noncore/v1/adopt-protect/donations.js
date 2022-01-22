@@ -9,7 +9,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const Converter = require('../../../utils/converter/converter')
 const stripe = require('../../_utils/stripe/stripe')
 const classyService = require('../../_services/classy/classy')
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 router.route('/donations/:donation_id')
   .get(passport.authenticate('token', { session: false }), function (req, res) {

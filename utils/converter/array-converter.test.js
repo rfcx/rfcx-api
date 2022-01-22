@@ -4,7 +4,7 @@
 // 3. remove old tests that do not work
 
 const ArrayConverter = require('./array-converter')
-const ValidationError = require('./validation-error')
+const { ValidationError } = require('../../common/error-handling/errors')
 
 test('empty returns empty', () => {
   const converter = new ArrayConverter([])

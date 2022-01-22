@@ -9,7 +9,7 @@ const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
 const SensationsService = require('../../_services/legacy/sensations/sensations-service')
 

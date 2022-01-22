@@ -1,4 +1,4 @@
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 const strArrToJSArr = require('./checkin-audio').audio.strArrToJSArr
 
 const minAttrs = ['queued_at', 'measured_at']

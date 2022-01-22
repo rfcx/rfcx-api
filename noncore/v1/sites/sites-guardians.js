@@ -8,7 +8,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const { ForbiddenError } = require('../../../common/error-handling/errors')
 const userService = require('../../../common/users/users-service-legacy')
 
 router.route('/:site_id/guardians')

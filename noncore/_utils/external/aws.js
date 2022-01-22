@@ -1,7 +1,7 @@
 const SNS = require('aws-sdk/clients/sns')
 const SQS = require('aws-sdk/clients/sqs')
 const S3 = require('knox')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 const _snsClient = new SNS({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,

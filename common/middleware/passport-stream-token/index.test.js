@@ -1,4 +1,4 @@
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 const streamServicePath = '../../../core/_services/streams/index'
 jest.mock(streamServicePath)
 const { getStreamRangeToken } = require(streamServicePath)

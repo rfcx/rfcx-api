@@ -28,8 +28,8 @@ const guidUtil = require('../../../utils/misc/guid')
 const audioService = require('../../_services/audio/audio-service')
 const boxesService = require('../../_services/audio/boxes-service')
 const Converter = require('../../../utils/converter/converter')
-const ValidationError = require('../../../utils/converter/validation-error')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { baseInclude, guardianAudioJson, guardianAudioLabels } = require('../../views/v1/models/guardian-audio').models
 
 function filter (req) {

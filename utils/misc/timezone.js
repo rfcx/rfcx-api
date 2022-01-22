@@ -1,5 +1,5 @@
 const tzlookup = require('tz-lookup')
-const ValidationError = require('../converter/validation-error')
+const { ValidationError } = require('../../common/error-handling/errors')
 
 function getTzByLatLng (latitude, longitude) {
   try {

@@ -1,7 +1,7 @@
 const sequelize = require('sequelize')
 const Converter = require('../../../../utils/converter/converter')
 const SensationsRepository = require('./sensations-repository')
-const ValidationError = require('../../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../../common/error-handling/errors')
 const models = require('../../../_models')
 const moment = require('moment-timezone')
 

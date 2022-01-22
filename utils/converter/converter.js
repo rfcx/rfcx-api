@@ -1,5 +1,5 @@
 const Conversion = require('./conversion')
-const ValidationError = require('./validation-error')
+const { ValidationError } = require('../../common/error-handling/errors')
 const { toCamelObject } = require('../formatters/string-cases')
 
 module.exports = class Converter {

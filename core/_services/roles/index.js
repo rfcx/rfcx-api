@@ -1,6 +1,6 @@
 const models = require('../../../models')
 const usersService = require('../../../common/users/fused')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 const ORGANIZATION = 'organization'
 const PROJECT = 'project'

@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const streamsService = require('../_services/streams')
 const usersFusedService = require('../../common/users/fused')
 const Converter = require('../../utils/converter/converter')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
+const { ForbiddenError } = require('../../common/error-handling/errors')
 const { getPermissions, getUsersForItem, getByName, addRole, getUserRoleForItem, removeRole, STREAM } = require('../_services/roles')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 

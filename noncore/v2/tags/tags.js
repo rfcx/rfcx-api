@@ -6,8 +6,8 @@ const passport = require('passport')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const eventsServiceNeo4j = require('../../_services/legacy/events/events-service-neo4j')
 const boxesService = require('../../_services/audio/boxes-service')
-const ValidationError = require('../../../utils/converter/validation-error')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../utils/converter/converter')
 

@@ -1,5 +1,5 @@
 const models = require('../../../models')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const includedRelationReducer = require('../../../utils/formatters/included-relations')
 
 function get (idOrValue) {

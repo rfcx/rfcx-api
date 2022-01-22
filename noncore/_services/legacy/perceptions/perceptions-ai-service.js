@@ -2,7 +2,7 @@ const Converter = require('../../../../utils/converter/converter')
 const CognitionService = require('../cognitions/cognitions-service')
 const models = require('../../../_models')
 const aws = require('../../../_utils/external/aws').aws()
-const ValidationError = require('../../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../../common/error-handling/errors')
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
 

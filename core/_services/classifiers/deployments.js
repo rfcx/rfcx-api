@@ -1,4 +1,4 @@
-const { EmptyResultError } = require('../../../utils/errors')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { Classifier, ClassifierDeployment, Sequelize } = require('../../../models')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')

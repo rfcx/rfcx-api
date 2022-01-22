@@ -2,7 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const annotationsService = require('../_services/annotations')
 const Converter = require('../../utils/converter/converter')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
+const { ForbiddenError } = require('../../common/error-handling/errors')
 const models = require('../../models')
 const rolesService = require('../_services/roles')
 

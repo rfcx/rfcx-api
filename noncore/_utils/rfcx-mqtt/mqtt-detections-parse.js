@@ -1,5 +1,5 @@
 const moment = require('moment')
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 function parse (input) {
   const parseRegex = /(?<classification>[a-zA-Z_]+)\*(?<classifier>[a-zA-Z0-9_-]+)\*(?<timestamp>[0-9]+)\*(?<step>[0-9]+)\*(?<confidences>([0-9]*\.[0-9]+)?((,|n[0-9]+)([0-9]*\.[0-9]+)?)+)$/g

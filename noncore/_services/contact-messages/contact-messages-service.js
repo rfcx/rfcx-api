@@ -2,7 +2,7 @@ const Converter = require('../../../utils/converter/converter')
 const models = require('../../_models')
 const Promise = require('bluebird')
 const request = require('request')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const { ForbiddenError } = require('../../../common/error-handling/errors')
 
 function validateCreateParams (params) {
   params = new Converter(params)

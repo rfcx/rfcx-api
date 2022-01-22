@@ -1,5 +1,5 @@
 const models = require('../../../models')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 function query (limit, offset) {
   return models.Index

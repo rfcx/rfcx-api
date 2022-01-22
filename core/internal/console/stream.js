@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../common/error-handling/http.js')
 const streamsStatisticsService = require('../../_services/streams/statistics')
 const rolesService = require('../../_services/roles')
 const Converter = require('../../../utils/converter/converter')
-const ForbiddenError = require('../../../utils/converter/forbidden-error')
+const { ForbiddenError } = require('../../../common/error-handling/errors')
 
 /**
  * @swagger

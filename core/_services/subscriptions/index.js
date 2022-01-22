@@ -1,7 +1,7 @@
 const { Organization, Project, Stream, User, UserProjectSubscription } = require('../../../models')
 const subscriptionTypes = require('./subscription-types')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const ValidaionError = require('../../../utils/converter/validation-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
+const ValidaionError = require('../../../common/error-handling/errors')
 
 const subscriptionModels = {
   organization: null, // not yet implemented

@@ -1,5 +1,5 @@
 const models = require('../../../models')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [

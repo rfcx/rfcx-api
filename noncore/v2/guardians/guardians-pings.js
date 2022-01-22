@@ -5,7 +5,7 @@ const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 const guardianMsgParsingUtils = require('../../_utils/rfcx-guardian/guardian-msg-parsing-utils').guardianMsgParsingUtils
 const pingRouter = require('../../_utils/rfcx-guardian/router-ping').pingRouter

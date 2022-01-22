@@ -5,7 +5,7 @@ const { rpErrorHandler } = require('../../../common/error-handling/http')
 const { getSegmentRemotePath } = require('../streams/segment-file-utils')
 const { StreamSegment, StreamSourceFile, AudioCodec, FileExtension } = require('../../../models')
 const { getClientToken } = require('../auth0/auth0-service')
-const { EmptyResultError } = require('../../../utils/errors')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 const isEnabled = `${process.env.ARBIMON_ENABLED}` === 'true'
 

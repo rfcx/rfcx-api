@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const projectsService = require('../_services/projects')
 const usersFusedService = require('../../common/users/fused')
 const Converter = require('../../utils/converter/converter')
-const ForbiddenError = require('../../utils/converter/forbidden-error')
+const { ForbiddenError } = require('../../common/error-handling/errors')
 const rolesService = require('../_services/roles')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 

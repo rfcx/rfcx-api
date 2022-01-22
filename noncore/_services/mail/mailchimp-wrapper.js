@@ -1,5 +1,5 @@
 const rp = require('request-promise')
-const ValidationError = require('../../../utils/converter/validation-error')
+const { ValidationError } = require('../../../common/error-handling/errors')
 const Promise = require('bluebird')
 const mandrill = require('mandrill-api/mandrill')
 const mandrillClient = new mandrill.Mandrill(process.env.MANDRILL_KEY)

@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const EmptyResultError = require('../../../utils/converter/empty-result-error')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const Promise = require('bluebird')
 const hash = require('../../../utils/misc/hash')
 
