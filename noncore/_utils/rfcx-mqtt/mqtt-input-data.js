@@ -1,10 +1,10 @@
 const fs = require('fs')
 const zlib = require('zlib')
-const hash = require('../../utils/misc/hash')
-const aws = require('../_utils/external/aws.js').aws()
-const assetUtils = require('../../utils/internal-rfcx/asset-utils.js').assetUtils
+const hash = require('../../../utils/misc/hash')
+const aws = require('../external/aws.js').aws()
+const assetUtils = require('../internal-rfcx/asset-utils.js').assetUtils
 const Promise = require('bluebird')
-const guardianMsgParsingUtils = require('../../utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
+const guardianMsgParsingUtils = require('../rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
 
 exports.mqttInputData = {
 

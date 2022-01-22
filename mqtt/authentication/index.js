@@ -1,7 +1,7 @@
 const router = require('express').Router()
-const Converter = require('../../../utils/converter/converter')
-const guardianAuthService = require('../../_services/guardians/authentication')
-const guardiansService = require('../../_services/guardians/guardians-service')
+const Converter = require('../../utils/converter/converter')
+const guardianAuthService = require('./token')
+const guardiansService = require('../../noncore/_services/guardians/guardians-service')
 
 /**
  * @swagger

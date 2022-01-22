@@ -6,7 +6,10 @@ require('../common/config/inspector')
 const appId = 'rfcx-api-mqtt'
 
 const app = require('./app')
-const guidService = require('../utils/misc/guid.js')
+const guidService = require('../utils/misc/guid')
+
+const mqttCheckInRouter = require('../noncore/_utils/rfcx-mqtt/mqtt-checkin-router').mqttCheckInRouter
+const pingRouter = require('../noncore/_utils/rfcx-guardian/router-ping').pingRouter
 
 console.log('RFCX | Starting server')
 
@@ -67,9 +70,6 @@ app.mqtt.on('close', () => {
 if (process && process.pid) {
   console.log('pid', process.pid)
 }
-
-const mqttCheckInRouter = require('../utils/rfcx-mqtt/mqtt-checkin-router.js').mqttCheckInRouter
-const pingRouter = require('../utils/rfcx-guardian/router-ping.js').pingRouter
 
 app.mqtt.on('message', (topic, data) => {
   let messageId = guidService.generate()

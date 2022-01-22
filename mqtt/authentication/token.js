@@ -1,4 +1,4 @@
-const guardianService = require('./guardians-service')
+const guardianService = require('../../noncore/_services/guardians/guardians-service')
 const hash = require('../../utils/misc/hash')
 
 async function isTokenCorrect (guardianOrGuid, token) {

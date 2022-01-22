@@ -45,7 +45,7 @@ require('../common/middleware/route')
 app.http.use('/docs', require('./_docs'))
 
 // RabbitMQ specific endpoints
-app.http.use('/internal/rabbitmq', require('./routes/internal/rabbitmq'))
+app.http.use('/internal/rabbitmq', require('./authentication'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('../common/middleware/error')

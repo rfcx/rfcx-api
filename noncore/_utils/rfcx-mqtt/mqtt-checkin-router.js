@@ -1,13 +1,13 @@
 const Promise = require('bluebird')
-const cachedFiles = require('../../utils/internal-rfcx/cached-files.js').cachedFiles
-const mqttInputData = require('../../utils/rfcx-mqtt/mqtt-input-data.js').mqttInputData
-const checkInDatabase = require('../../utils/rfcx-mqtt/mqtt-database.js').checkInDatabase
-const checkInAssets = require('../../utils/rfcx-mqtt/mqtt-checkin-assets.js').checkInAssets
-const mqttInstructions = require('../../utils/rfcx-mqtt/mqtt-instructions.js').mqttInstructions
-const guardianCommand = require('../../utils/rfcx-guardian/guardian-command-publish.js').guardianCommand
-const mqttStreams = require('../../utils/rfcx-mqtt/mqtt-streams')
-const queueForPrediction = require('../../utils/rfcx-analysis/queue-for-prediction')
-const SensationsService = require('../../services/legacy/sensations/sensations-service')
+const cachedFiles = require('../internal-rfcx/cached-files.js').cachedFiles
+const mqttInputData = require('../rfcx-mqtt/mqtt-input-data.js').mqttInputData
+const checkInDatabase = require('../rfcx-mqtt/mqtt-database.js').checkInDatabase
+const checkInAssets = require('../rfcx-mqtt/mqtt-checkin-assets.js').checkInAssets
+const mqttInstructions = require('../rfcx-mqtt/mqtt-instructions.js').mqttInstructions
+const guardianCommand = require('../rfcx-guardian/guardian-command-publish.js').guardianCommand
+const mqttStreams = require('../rfcx-mqtt/mqtt-streams')
+const queueForPrediction = require('../rfcx-analysis/queue-for-prediction')
+const SensationsService = require('../../_services/legacy/sensations/sensations-service')
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 function onMessageCheckin (data, messageId) {
