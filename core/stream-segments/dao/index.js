@@ -223,10 +223,21 @@ function format (item, keys = undefined) {
   return keys ? pick(computedItem, keys) : computedItem
 }
 
+function removeDuplicates (segments) {
+  return segments.reduce((acc, cur) => {
+    const existing = acc.find(i => i.start.valueOf() === cur.start.valueOf())
+    if (!existing) {
+      acc.push(cur)
+    }
+    return acc
+  }, [])
+}
+
 module.exports = {
   get,
   query,
   create,
   getStreamCoverage,
-  getNextSegmentTimeAfterSegment
+  getNextSegmentTimeAfterSegment,
+  removeDuplicates
 }
