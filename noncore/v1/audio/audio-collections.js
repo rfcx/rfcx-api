@@ -6,7 +6,7 @@ const passport = require('passport')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const Promise = require('bluebird')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
-const ApiConverter = require('../../../utils/api-converter')
+const ApiConverter = require('../../_utils/api-converter')
 const datafiltersService = require('../../_services/datafilters/datafilters-service')
 const csvUtils = require('../../../utils/misc/csv')
 

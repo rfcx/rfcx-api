@@ -3,7 +3,7 @@ const router = express.Router()
 const views = require('../../views/v1')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
-const ApiConverter = require('../../../utils/api-converter')
+const ApiConverter = require('../../_utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const models = require('../../_models')
 const flipCoin = require('../../../utils/misc/rand.js').flipCoin
