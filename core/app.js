@@ -1,35 +1,24 @@
 const express = require('express')
-const multer = require('multer')
-const passport = require('passport')
 const cors = require('cors')
-const bodyParser = require('body-parser')
 const addRequestId = require('express-request-id')
-const promBundle = require('express-prom-bundle')
 
-if (process.env.NODE_ENV === 'production') {
-  require('newrelic')
-}
+const logging = require('../common/middleware/logging')
+const metrics = require('../common/middleware/metrics')
+const { urlEncoded, json, multipartFile } = require('../common/middleware/body-parsing')
+const routeMiddleware = require('../common/middleware/route')
+const { authenticate } = require('../common/middleware/authorization/authorization')
+const coreRoutes = require('./routes')
+const internalRoutes = require('./internal/routes')
 
 const app = express()
 
-app.set('title', 'rfcx-api')
-app.set('port', process.env.PORT || 8080)
-app.use(addRequestId({ attributeName: 'guid' }))
-app.use(cors()) // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
-app.use(require('../common/middleware/logging'))
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json({ limit: '5mb' }))
-app.use(multer(require('../common/config/multer').config(process.env)))
-app.use(passport.initialize())
+// Middleware
+app.use(addRequestId({ attributeName: 'guid' })) // TODO Still needed?
+app.use(cors()) // TODO Should we limit which routes need cors?
+app.use(logging, metrics)
+app.use(urlEncoded, json, multipartFile)
 
-const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
-app.use(metricsMiddleware)
-
-const routeMiddleware = require('../common/middleware/route')
-const { authenticate } = require('../common/middleware/authorization/authorization')
-
-const coreRoutes = require('./routes')
-const internalRoutes = require('./internal/routes')
+// Main routes
 for (const routeName in coreRoutes) {
   app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {
@@ -43,11 +32,9 @@ for (const routeName in internalRoutes) {
   }
 }
 
-// Enable documentation
-app.use('/docs', require('./_docs'))
-
-// Default and health check routes
+// Support routes
 app.use(require('./info'))
+app.use('/docs', require('./_docs'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('../common/middleware/error')

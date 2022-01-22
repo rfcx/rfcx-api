@@ -19,14 +19,6 @@ const options = env === 'test'
         dialectOptions: {
           collate: 'utf8_general_ci'
         }
-      },
-      hooks: {
-        afterConnect: () => {
-          console.log('Connected to MySQL')
-        },
-        afterDisconnect: () => {
-          console.log('Disonnected from MySQL')
-        }
       }
     }
 if (env === 'development') {

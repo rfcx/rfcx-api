@@ -1,39 +1,27 @@
 const express = require('express')
-const multer = require('multer')
-const passport = require('passport')
 const cors = require('cors')
-const bodyParser = require('body-parser')
 const addRequestId = require('express-request-id')
-const promBundle = require('express-prom-bundle')
 
-if (process.env.NODE_ENV === 'production') {
-  require('newrelic')
-}
+const logging = require('./common/middleware/logging')
+const metrics = require('./common/middleware/metrics')
+const { urlEncoded, json, multipartFile } = require('./common/middleware/body-parsing')
+const routeMiddleware = require('./common/middleware/route')
+const { authenticate } = require('./common/middleware/authorization/authorization')
+const v1Routes = require('./noncore/v1/routes')
+const v2Routes = require('./noncore/v2/routes')
+const coreRoutes = require('./core/routes')
+const internalRoutes = require('./core/internal/routes')
 
 const app = express()
 
-app.set('title', 'rfcx-api')
-app.set('port', process.env.PORT || 8080)
+// Middleware
 app.use(addRequestId({ attributeName: 'guid' }))
-app.use(cors()) // TO-DO: Currently enables CORS for all requests. We may have a reason to limit this in the future...
-app.use(require('./common/middleware/logging'))
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json({ limit: '5mb' }))
-app.use(multer(require('./common/config/multer').config(process.env)))
-app.use(passport.initialize())
+app.use(cors())
+app.use(logging, metrics)
+app.use(urlEncoded, json, multipartFile)
 
-const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
-app.use(metricsMiddleware)
-
-const routeMiddleware = require('./common/middleware/route')
-const { authenticate } = require('./common/middleware/authorization/authorization')
-
-const versionedRoutes = process.env.DEV_CORE_ONLY === 'true'
-  ? {}
-  : {
-      v1: require('./noncore/v1/routes'),
-      v2: require('./noncore/v2/routes')
-    }
+// Noncore routes
+const versionedRoutes = { v1: v1Routes, v2: v2Routes }
 for (const apiVersion in versionedRoutes) {
   app.use(`/${apiVersion}`, routeMiddleware)
 }
@@ -43,8 +31,7 @@ for (const apiVersion in versionedRoutes) {
   }
 }
 
-const coreRoutes = require('./core/routes')
-const internalRoutes = require('./core/internal/routes')
+// Core routes
 for (const routeName in coreRoutes) {
   app.use(`/${routeName}`, routeMiddleware, authenticate())
   for (const route in coreRoutes[routeName]) {
@@ -58,10 +45,8 @@ for (const routeName in internalRoutes) {
   }
 }
 
-// Enable documentation
+// Support routes
 app.use('/docs', require('./core/_docs'))
-
-// Default and health check routes
 app.use(require('./noncore/v1/info'))
 
 // Catch errors

@@ -1,7 +1,10 @@
-[*.apib]
-indent_style = space
-indent_size = 4
+root = true
 
-[*.js]
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{js,json}]
+charset = utf-8
 indent_style = space
 indent_size = 2

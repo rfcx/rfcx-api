@@ -12,7 +12,7 @@
     "dev:core": "nodemon core/main.js",
     "dev:noncore": "nodemon noncore/main.js",
     "dev:tasks": "nodemon tasks/main.js",
-    "start": "node legacy-setup.js ; node legacy-main.js",
+    "start": "node legacy-main.js",
     "start:core": "node core/main.js",
     "start:noncore": "node core/main.js",
     "start:mqtt": "node mqtt/main.js",
