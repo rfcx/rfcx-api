@@ -7,9 +7,9 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../_utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const Promise = require('bluebird')
-const sqlUtils = require('../../../utils/misc/sql')
+const sqlUtils = require('../../_utils/db/sql-cond-add')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
-const urls = require('../../../utils/misc/urls')
+const urls = require('../../_utils/misc/urls')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 function createOrUpdateTag (tag) {

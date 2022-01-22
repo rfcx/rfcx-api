@@ -1,6 +1,6 @@
 const Promise = require('bluebird')
 const { EmptyResultError } = require('../../../../common/error-handling/errors')
-const sqlUtils = require('../../../../utils/misc/sql')
+const sqlUtils = require('../../../_utils/db/sql-cond-add')
 const neo4j = require('../../../_utils/neo4j/neo4j')
 const S3Service = require('../../legacy/s3/s3-service')
 const guid = require('../../../../utils/misc/guid')

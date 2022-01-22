@@ -6,7 +6,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../_utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const models = require('../../_models')
-const sqlUtils = require('../../../utils/misc/sql')
+const sqlUtils = require('../../_utils/db/sql-cond-add')
 const csvUtils = require('../../_utils/misc/csv')
 const datafiltersService = require('../../_services/datafilters/datafilters-service')
 

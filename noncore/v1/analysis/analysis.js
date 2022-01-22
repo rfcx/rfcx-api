@@ -6,9 +6,9 @@ const { httpErrorResponse } = require('../../../common/error-handling/http')
 const ApiConverter = require('../../_utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const passport = require('passport')
-const sqlUtils = require('../../../utils/misc/sql')
+const sqlUtils = require('../../_utils/db/sql-cond-add')
 const Promise = require('bluebird')
-const urls = require('../../../utils/misc/urls')
+const urls = require('../../_utils/misc/urls')
 
 function getModel (req) {
   if (req.query.model_guid) {

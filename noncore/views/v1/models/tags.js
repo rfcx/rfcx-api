@@ -1,5 +1,5 @@
 const Promise = require('bluebird')
-const urls = require('../../../../utils/misc/urls')
+const urls = require('../../../_utils/misc/urls')
 
 exports.models = {
 

@@ -1,5 +1,4 @@
 const request = require('request')
-const Promise = require('bluebird')
 const guid = require('../../../utils/misc/guid')
 const generator = require('generate-password')
 

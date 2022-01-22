@@ -1,4 +1,4 @@
-const urls = require('../../utils/misc/urls')
+const urls = require('../_utils/misc/urls')
 
 const SequelizeApiConverter = function (type, req, selfProperty) {
   const converter = this

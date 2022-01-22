@@ -12,7 +12,7 @@ const cachedFiles = require('../internal-rfcx/cached-files.js').cachedFiles
 const aiService = require('../../_services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')
-const urls = require('../../../utils/misc/urls')
+const urls = require('../../_utils/misc/urls')
 
 exports.audio = {
 

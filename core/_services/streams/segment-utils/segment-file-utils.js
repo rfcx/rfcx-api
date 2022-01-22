@@ -1,6 +1,5 @@
-const { runExec } = require('../../../../utils/misc/shell')
+const { runExec } = require('./shell')
 const models = require('../../../../models')
-const Promise = require('bluebird')
 const path = require('path')
 const moment = require('moment-timezone')
 const audioUtils = require('../../../../noncore/_utils/rfcx-audio').audioUtils

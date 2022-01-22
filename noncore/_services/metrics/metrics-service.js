@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const sqlUtils = require('../../../utils/misc/sql')
+const sqlUtils = require('../../_utils/db/sql-cond-add')
 
 const AUDIO_DURATION = 90 // our audio files last approximately 90 seconds
 

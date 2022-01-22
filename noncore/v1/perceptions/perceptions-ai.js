@@ -7,7 +7,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const PerceptionsAiService = require('../../_services/legacy/perceptions/perceptions-ai-service')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const ApiConverter = require('../../_utils/api-converter')
-const urls = require('../../../utils/misc/urls')
+const urls = require('../../_utils/misc/urls')
 const sequelize = require('sequelize')
 const guidService = require('../../../utils/misc/guid.js')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole

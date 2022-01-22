@@ -3,7 +3,7 @@ const sequelize = require('sequelize')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
 const guid = require('../../../utils/misc/guid')
-const sqlUtils = require('../../../utils/misc/sql')
+const sqlUtils = require('../../_utils/db/sql-cond-add')
 const attachmentService = require('../attachment/attachment-service')
 
 const reportsQueryBase =

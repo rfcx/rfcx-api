@@ -1,8 +1,8 @@
 const Promise = require('bluebird')
-const urlUtil = require('../../../utils/misc/urls')
+const urlUtil = require('../../_utils/misc/urls')
 const audioUtils = require('../../_utils/rfcx-audio').audioUtils
 const models = require('../../_models')
-const sqlUtils = require('../../../utils/misc/sql')
+const sqlUtils = require('../../_utils/db/sql-cond-add')
 const sequelize = require('sequelize')
 const guardianGroupService = require('../guardians/guardian-group-service')
 

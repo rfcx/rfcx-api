@@ -1,6 +1,6 @@
 const moment = require('moment-timezone')
 const models = require('../../_models')
-const sqlUtils = require('../../../utils/misc/sql')
+const sqlUtils = require('../../_utils/db/sql-cond-add')
 
 const querySelect =
   'SELECT GuardianAudioBox.guid, GuardianAudioBox.audio_guid, GuardianAudioBox.confidence, ' +

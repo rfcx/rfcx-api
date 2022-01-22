@@ -3,7 +3,7 @@ const sequelize = require('sequelize')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
 const { ValidationError } = require('../../../../common/error-handling/errors')
-const sqlUtils = require('../../../../utils/misc/sql')
+const sqlUtils = require('../../../_utils/db/sql-cond-add')
 const guardianGroupService = require('../../guardians/guardian-group-service')
 const views = require('../../../views/v1')
 
