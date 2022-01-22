@@ -7,7 +7,7 @@
 /common/config/service-account.json
 
 # Temporary cache directory
-/tmp
+/.tmp
 
 # Logs
 /logs

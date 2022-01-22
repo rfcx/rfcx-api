@@ -4,7 +4,7 @@ exports.env = {
 
   // PLATFORM: "amazon", // "amazon" or "google"
 
-  CACHE_DIRECTORY: process.cwd() + '/tmp/',
+  CACHE_DIRECTORY: process.cwd() + '/.tmp/',
 
   FFMPEG_PATH: '/usr/bin/ffmpeg',
   SOX_PATH: '/usr/bin/sox',
