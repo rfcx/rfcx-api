@@ -1,7 +1,7 @@
 const express = require('express')
 const sequelize = require('sequelize')
 const models = require('../../_models')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
 const ValidationError = require('../../../utils/converter/validation-error')
 const reportsService = require('../../_services/reports/reports-service')

@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const ValidationError = require('../../../utils/converter/validation-error')
 const pdfService = require('../../_services/pdf/pdf')
 const sequelize = require('sequelize')

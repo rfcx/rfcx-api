@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const queryHelpers = require('../../_utils/rfcx-query')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole

@@ -1,4 +1,4 @@
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../error-handling/http')
 const auth0Service = require('../../../core/_services/auth0/auth0-service')
 const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)

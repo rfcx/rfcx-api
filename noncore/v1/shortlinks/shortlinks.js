@@ -1,7 +1,7 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const Converter = require('../../../utils/converter/converter')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const generator = require('generate-password')

@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const token = require('../../_utils/internal-rfcx/token').token
 const views = require('../../views/v1')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 

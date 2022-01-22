@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole

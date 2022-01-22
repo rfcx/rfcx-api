@@ -1,4 +1,4 @@
-const { httpErrorHandler } = require('../../utils/http-error-handler.js')
+const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const ForbiddenError = require('../../utils/converter/forbidden-error')
 const projectsService = require('../_services/projects')
 const { randomId } = require('../../utils/misc/hash')

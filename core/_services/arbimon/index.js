@@ -1,7 +1,7 @@
 const rp = require('request-promise')
 const moment = require('moment')
 const arbimonBaseUrl = process.env.ARBIMON_BASE_URL
-const { rpErrorHandler } = require('../../../utils/http-error-handler')
+const { rpErrorHandler } = require('../../../common/error-handling/http')
 const { getSegmentRemotePath } = require('../streams/segment-file-utils')
 const { StreamSegment, StreamSourceFile, AudioCodec, FileExtension } = require('../../../models')
 const { getClientToken } = require('../auth0/auth0-service')

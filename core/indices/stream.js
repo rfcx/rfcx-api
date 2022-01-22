@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../utils/http-error-handler.js')
+const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const indicesService = require('../_services/indices/values')
 const Converter = require('../../utils/converter/converter')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')

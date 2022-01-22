@@ -1,6 +1,6 @@
 const rolesService = require('../../../core/_services/roles')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
-const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+const { httpErrorResponse } = require('../../error-handling/http')
+const { httpErrorHandler } = require('../../error-handling/http.js')
 
 /**
  * @typedef {string} Permission Supported values "C" (create), "R" (read), "U" (update), "D" (delete)

@@ -3,7 +3,7 @@ const router = express.Router()
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const sensationsService = require('../../_services/legacy/sensations/sensations-service')
 const ValidationError = require('../../../utils/converter/validation-error')
 

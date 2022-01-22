@@ -1,4 +1,4 @@
-const { httpErrorHandler } = require('../../utils/http-error-handler.js')
+const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const Converter = require('../../utils/converter/converter')
 const createEventAndNotify = require('../_services/events/create-and-notify')
 

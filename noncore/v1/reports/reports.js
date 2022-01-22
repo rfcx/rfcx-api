@@ -15,7 +15,7 @@ const Converter = require('../../../utils/converter/converter')
 const ValidationError = require('../../../utils/converter/validation-error')
 const ForbiddenError = require('../../../utils/converter/forbidden-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 
 router.route('/')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {

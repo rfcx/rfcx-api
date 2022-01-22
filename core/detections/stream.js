@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../utils/http-error-handler.js')
+const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const detectionsService = require('../_services/detections')
 const createDetectionsService = require('../_services/detections/create')
 const streamsService = require('../_services/streams')

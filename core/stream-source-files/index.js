@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../utils/http-error-handler.js')
+const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { hasRole } = require('../../common/middleware/authorization/authorization')
 const streamSourceFileService = require('../_services/streams/source-files')
 

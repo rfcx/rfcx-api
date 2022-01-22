@@ -8,7 +8,7 @@ const ApiConverter = require('../../../utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const Promise = require('bluebird')
 const sqlUtils = require('../../../utils/misc/sql')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const urls = require('../../../utils/misc/urls')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 

@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const checkInHelpers = require('../../_utils/rfcx-checkin')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')

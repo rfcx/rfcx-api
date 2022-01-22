@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ValidationError = require('../../../utils/converter/validation-error')

@@ -2,7 +2,7 @@ const router = require('express').Router()
 const Converter = require('../../../utils/converter/converter')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
 const classifierDeploymentsService = require('../../_services/classifiers/deployments')
-const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
+const { httpErrorHandler } = require('../../../common/error-handling/http.js')
 
 router.use(hasRole(['systemUser']))
 

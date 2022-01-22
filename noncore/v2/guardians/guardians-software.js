@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const { httpErrorResponse } = require('../../../utils/http-error-handler')
+const { httpErrorResponse } = require('../../../common/error-handling/http')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
 
