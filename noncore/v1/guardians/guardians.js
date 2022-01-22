@@ -1,7 +1,7 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
-const hash = require('../../../utils/misc/hash')
+const hash = require('../../../common/random/hash')
 const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')

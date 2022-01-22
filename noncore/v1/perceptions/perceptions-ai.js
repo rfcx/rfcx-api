@@ -9,7 +9,7 @@ const { ValidationError } = require('../../../common/error-handling/errors')
 const ApiConverter = require('../../_utils/api-converter')
 const urls = require('../../_utils/misc/urls')
 const sequelize = require('sequelize')
-const { randomGuid } = require('../../../utils/misc/hash')
+const { randomGuid } = require('../../../common/random/hash')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 /**

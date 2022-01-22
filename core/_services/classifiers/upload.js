@@ -1,5 +1,5 @@
 const storageService = process.env.PLATFORM === 'google' ? require('../storage/google') : require('../storage/amazon')
-const { randomString } = require('../../../utils/misc/hash')
+const { randomString } = require('../../../common/random/hash')
 
 module.exports = {
   async upload (file) {

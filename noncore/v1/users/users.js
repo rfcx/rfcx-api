@@ -1,7 +1,7 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
-const hash = require('../../../utils/misc/hash')
+const hash = require('../../../common/random/hash')
 const token = require('../../_utils/internal-rfcx/token.js').token
 const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')

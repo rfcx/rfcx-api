@@ -1,5 +1,5 @@
 const guardianService = require('../../noncore/_services/guardians/guardians-service')
-const hash = require('../../utils/misc/hash')
+const hash = require('../../common/random/hash')
 
 async function isTokenCorrect (guardianOrGuid, token) {
   const guardian = await (typeof guardianOrGuid === 'string' ? guardianService.getGuardianByGuid(guardianOrGuid, true) : Promise.resolve(guardianOrGuid))

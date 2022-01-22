@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const hash = require('../../../utils/misc/hash')
+const hash = require('../../../common/random/hash')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const { httpErrorHandler } = require('../../../common/error-handling/http.js')
 const passport = require('passport')

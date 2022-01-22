@@ -5,7 +5,7 @@ const moment = require('moment-timezone')
 const audioUtils = require('../../../../noncore/_utils/rfcx-audio').audioUtils
 const assetUtils = require('../../../../noncore/_utils/internal-rfcx/asset-utils.js').assetUtils
 const mathUtil = require('./math')
-const hash = require('../../../../utils/misc/hash')
+const hash = require('../../../../common/random/hash')
 const storageService = require('../../../_services/storage')
 
 const MEDIA_CACHE_ENABLED = `${process.env.MEDIA_CACHE_ENABLED}` === 'true'

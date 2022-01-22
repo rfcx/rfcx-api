@@ -11,7 +11,7 @@ const userService = require('../../../../common/users/users-service-legacy')
 const textGridService = require('../../textgrid/textgrid-service')
 const mailService = require('../../mail/mail-service')
 const aws = require('../../../_utils/external/aws.js').aws()
-const hash = require('../../../../utils/misc/hash')
+const hash = require('../../../../common/random/hash')
 const annotationsService = require('../../../../core/_services/annotations')
 const classificationService = require('../../../../core/_services/classifications')
 

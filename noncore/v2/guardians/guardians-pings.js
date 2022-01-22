@@ -9,7 +9,7 @@ const { ValidationError } = require('../../../common/error-handling/errors')
 
 const guardianMsgParsingUtils = require('../../_utils/rfcx-guardian/guardian-msg-parsing-utils').guardianMsgParsingUtils
 const pingRouter = require('../../_utils/rfcx-guardian/router-ping').pingRouter
-const { randomGuid } = require('../../../utils/misc/hash')
+const { randomGuid } = require('../../../common/random/hash')
 
 router.route('/:guardian_id/pings')
   .post(passport.authenticate('token', { session: false }), function (req, res) {

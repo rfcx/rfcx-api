@@ -1,5 +1,5 @@
 const request = require('request')
-const { randomGuid } = require('../../../utils/misc/hash')
+const { randomGuid } = require('../../../common/random/hash')
 const generator = require('generate-password')
 
 // a local storage for tokens

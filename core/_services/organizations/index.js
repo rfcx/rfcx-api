@@ -1,7 +1,7 @@
 const { Organization, Sequelize, User } = require('../../../models')
 const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
 const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
-const { randomId } = require('../../../utils/misc/hash')
+const { randomId } = require('../../../common/random/hash')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
 

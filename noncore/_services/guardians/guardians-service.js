@@ -1,7 +1,7 @@
 const models = require('../../_models')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const Promise = require('bluebird')
-const hash = require('../../../utils/misc/hash')
+const hash = require('../../../common/random/hash')
 
 function getGuardianByGuid (guid, ignoreMissing) {
   return models.Guardian

@@ -1,5 +1,5 @@
 const models = require('../../../noncore/_models')
-const hash = require('../../../utils/misc/hash')
+const hash = require('../../../common/random/hash')
 const regex = require('./utils/regex')
 
 exports.authenticateAs = function (req, token, done, authUser) {

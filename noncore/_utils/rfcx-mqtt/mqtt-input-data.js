@@ -1,6 +1,6 @@
 const fs = require('fs')
 const zlib = require('zlib')
-const hash = require('../../../utils/misc/hash')
+const hash = require('../../../common/random/hash')
 const aws = require('../external/aws.js').aws()
 const assetUtils = require('../internal-rfcx/asset-utils.js').assetUtils
 const Promise = require('bluebird')

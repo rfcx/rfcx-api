@@ -6,7 +6,7 @@ require('../common/config/inspector')
 const appId = 'rfcx-api-mqtt'
 
 const app = require('./app')
-const { randomGuid } = require('../utils/misc/hash')
+const { randomGuid } = require('../common/random/hash')
 
 const mqttCheckInRouter = require('../noncore/_utils/rfcx-mqtt/mqtt-checkin-router').mqttCheckInRouter
 const pingRouter = require('../noncore/_utils/rfcx-guardian/router-ping').pingRouter
