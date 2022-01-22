@@ -1,8 +1,8 @@
 const hash = require('../../../common/random/hash')
 const checkInHelpers = require('../rfcx-checkin')
-const pingRouter = require('../rfcx-guardian/router-ping.js').pingRouter
+const pingRouter = require('../rfcx-guardian/router-ping').pingRouter
 const { randomGuid } = require('../../../common/random/hash')
-const smsTwilio = require('../rfcx-guardian/guardian-sms-twilio.js').smsTwilio
+const smsTwilio = require('../rfcx-guardian/guardian-sms-twilio').smsTwilio
 const models = require('../../_models')
 
 exports.guardianMsgParsingUtils = {

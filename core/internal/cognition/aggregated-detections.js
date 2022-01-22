@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
 const Converter = require('../../../common/converter')
 const countQuery = require('./dao/count-query')
 

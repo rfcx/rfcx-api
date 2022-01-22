@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
 const streamDao = require('../../streams/dao')
 const projectsService = require('../../projects/dao')
 const rolesService = require('../../roles/dao')

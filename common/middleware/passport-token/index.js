@@ -1,10 +1,10 @@
 const TokenStrategy = require('passport-accesstoken').Strategy
 
 const authenticateAs = {
-  Guardian: require('./auth-as-guardian.js').authenticateAs,
-  User: require('./auth-as-user.js').authenticateAs,
-  RegistrationToken: require('./auth-with-registration-token.js').authenticateAs,
-  AnonymousToken: require('./auth-with-anonymous-token.js').authenticateAs
+  Guardian: require('./auth-as-guardian').authenticateAs,
+  User: require('./auth-as-user').authenticateAs,
+  RegistrationToken: require('./auth-with-registration-token').authenticateAs,
+  AnonymousToken: require('./auth-with-anonymous-token').authenticateAs
 }
 
 exports.TokenStrategy =

@@ -1,4 +1,4 @@
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
 const { randomId } = require('../../common/random/hash')
 const Converter = require('../../common/converter')

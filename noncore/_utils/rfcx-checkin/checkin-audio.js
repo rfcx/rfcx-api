@@ -3,12 +3,12 @@ const models = require('../../_models')
 const fs = require('fs')
 const zlib = require('zlib')
 const hash = require('../../../common/random/hash')
-const aws = require('../../_utils/external/aws.js').aws()
+const aws = require('../../_utils/external/aws').aws()
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
 const audioUtils = require('../rfcx-audio').audioUtils
-const assetUtils = require('../internal-rfcx/asset-utils.js').assetUtils
-const cachedFiles = require('../internal-rfcx/cached-files.js').cachedFiles
+const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
+const cachedFiles = require('../internal-rfcx/cached-files').cachedFiles
 const aiService = require('../../_services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')

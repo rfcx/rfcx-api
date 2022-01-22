@@ -4,7 +4,7 @@ const sqlUtils = require('../../../_utils/db/sql-cond-add')
 const neo4j = require('../../../_utils/neo4j/neo4j')
 const S3Service = require('../../legacy/s3/s3-service')
 const { randomGuid } = require('../../../../common/random/hash')
-const aws = require('../../../_utils/external/aws.js').aws()
+const aws = require('../../../_utils/external/aws').aws()
 
 function getPublicAis (opts) {
   opts = opts || {}

@@ -2,7 +2,7 @@ const Promise = require('bluebird')
 const fs = require('fs')
 const exec = require('child_process').exec
 const audioUtils = require('../rfcx-audio').audioUtils
-const assetUtils = require('../internal-rfcx/asset-utils.js').assetUtils
+const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
 
 exports.checkInAssets = {
 

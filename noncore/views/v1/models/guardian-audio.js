@@ -4,7 +4,7 @@ const moment = require('moment-timezone')
 const fs = require('fs')
 const hash = require('../../../../common/random/hash')
 const audioUtils = require('../../../_utils/rfcx-audio').audioUtils
-const assetUtils = require('../../../_utils/internal-rfcx/asset-utils.js').assetUtils
+const assetUtils = require('../../../_utils/internal-rfcx/asset-utils').assetUtils
 const validation = require('../../../_utils/misc/validation')
 const { GuardianSite, Guardian, GuardianAudioFormat } = require('../../../_models')
 

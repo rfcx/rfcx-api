@@ -4,12 +4,12 @@ const { httpErrorResponse } = require('../../../common/error-handling/http')
 const { ValidationError } = require('sequelize')
 const passport = require('passport')
 
-const msgSegUtils = require('../../_utils/rfcx-guardian/guardian-msg-parsing-utils.js').guardianMsgParsingUtils
-const smsTwilio = require('../../_utils/rfcx-guardian/guardian-sms-twilio.js').smsTwilio
-const sbdRockBlock = require('../../_utils/rfcx-guardian/guardian-sbd-rockblock.js').sbdRockBlock
-const swarmMsg = require('../../_utils/rfcx-guardian/guardian-swm.js').swarm
+const msgSegUtils = require('../../_utils/rfcx-guardian/guardian-msg-parsing-utils').guardianMsgParsingUtils
+const smsTwilio = require('../../_utils/rfcx-guardian/guardian-sms-twilio').smsTwilio
+const sbdRockBlock = require('../../_utils/rfcx-guardian/guardian-sbd-rockblock').sbdRockBlock
+const swarmMsg = require('../../_utils/rfcx-guardian/guardian-swm').swarm
 
-const segmentUtils = require('../../_utils/rfcx-guardian/guardian-segment-utils.js').segmentUtils
+const segmentUtils = require('../../_utils/rfcx-guardian/guardian-segment-utils').segmentUtils
 
 router.route('/segments/sms')
   .post(function (req, res) {

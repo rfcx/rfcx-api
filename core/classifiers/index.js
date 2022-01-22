@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { ValidationError } = require('../../common/error-handling/errors')
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
 const dao = require('./dao')
 const Converter = require('../../common/converter')

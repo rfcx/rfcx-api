@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
 const indicesService = require('../../indices/dao')
 const indexValuesService = require('../../indices/dao/values')
 const Converter = require('../../../common/converter')

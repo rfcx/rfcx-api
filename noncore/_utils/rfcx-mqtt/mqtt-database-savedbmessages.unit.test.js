@@ -1,5 +1,5 @@
 const { checkInDatabase: { saveDbMessages } } = require('./mqtt-database')
-const smsMessages = require('../rfcx-guardian/guardian-sms-database.js').messages
+const smsMessages = require('../rfcx-guardian/guardian-sms-database').messages
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 jest.mock('./mqtt-save-meta')

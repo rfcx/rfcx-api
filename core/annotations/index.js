@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const { EmptyResultError } = require('../../common/error-handling/errors')
 const { ValidationError } = require('../../common/error-handling/errors')
 const { ForbiddenError } = require('../../common/error-handling/errors')

@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 const Promise = require('bluebird')
 const csprng = require('csprng')
-const sha = require('sha.js')
+const sha = require('sha')
 const fs = require('fs')
 const pfs = Promise.promisifyAll(require('fs'))
 

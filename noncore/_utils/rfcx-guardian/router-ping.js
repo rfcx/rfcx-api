@@ -1,7 +1,7 @@
-const mqttPingProcess = require('../rfcx-mqtt/mqtt-ping-process.js').mqttPingProcess
-const checkInDatabase = require('../rfcx-mqtt/mqtt-database.js').checkInDatabase
-const mqttInstructions = require('../rfcx-mqtt/mqtt-instructions.js').mqttInstructions
-const guardianCommand = require('../rfcx-guardian/guardian-command-publish.js').guardianCommand
+const mqttPingProcess = require('../rfcx-mqtt/mqtt-ping-process').mqttPingProcess
+const checkInDatabase = require('../rfcx-mqtt/mqtt-database').checkInDatabase
+const mqttInstructions = require('../rfcx-mqtt/mqtt-instructions').mqttInstructions
+const guardianCommand = require('../rfcx-guardian/guardian-command-publish').guardianCommand
 const { expandAbbreviatedFieldNames } = require('../rfcx-mqtt/expand-abbreviated')
 
 function onMessagePing (pingObj, messageId) {

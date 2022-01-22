@@ -1,4 +1,4 @@
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const { query } = require('./dao')
 const usersService = require('../../common/users/fused')
 const rolesService = require('../roles/dao')

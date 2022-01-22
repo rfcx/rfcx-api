@@ -1,6 +1,6 @@
 const rolesService = require('../../../core/roles/dao')
 const { httpErrorResponse } = require('../../error-handling/http')
-const { httpErrorHandler } = require('../../error-handling/http.js')
+const { httpErrorHandler } = require('../../error-handling/http')
 
 /**
  * @typedef {string} Permission Supported values "C" (create), "R" (read), "U" (update), "D" (delete)

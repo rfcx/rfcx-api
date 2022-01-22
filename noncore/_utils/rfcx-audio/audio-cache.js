@@ -1,7 +1,7 @@
 const Promise = require('bluebird')
 const fs = require('fs')
 const hash = require('../../../common/random/hash')
-const aws = require('../../_utils/external/aws.js').aws()
+const aws = require('../../_utils/external/aws').aws()
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 exports.audioUtils = {

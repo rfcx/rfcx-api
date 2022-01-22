@@ -1,5 +1,5 @@
-const aws = require('../../../../_utils/external/aws.js').aws()
-const assetUtils = require('../../../../_utils/internal-rfcx/asset-utils.js').assetUtils
+const aws = require('../../../../_utils/external/aws').aws()
+const assetUtils = require('../../../../_utils/internal-rfcx/asset-utils').assetUtils
 
 exports.models = {
 
