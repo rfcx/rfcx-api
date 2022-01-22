@@ -1,5 +1,7 @@
 # API Deployment Notes
 
+## 1.1.0
+
 ## 1.0.31
 - Run `npm run sync-mysql` for new migration
 
