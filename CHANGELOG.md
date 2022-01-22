@@ -1,4 +1,4 @@
-## 1.0.31 (???)
+## 1.0.31 (2022-01-24)
 
 ### Features
 * **guardian**: Add last_deployed and battery_percent_internal fields for Guardians
