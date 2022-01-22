@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const classificationsService = require('../_services/classifications')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 
@@ -52,7 +52,7 @@ router.get('/:id/classifications', hasStreamPermission('R'), function (req, res)
   return params.validate()
     .then(async () => {
       const { limit, offset } = convertedParams
-      const classifications = await classificationsService.queryByStream(streamId, limit, offset)
+      const classifications = await dao.queryByStream(streamId, limit, offset)
       return res.json(classifications)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream classifications'))

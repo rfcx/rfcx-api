@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const classificationService = require('../_services/classifications')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -28,7 +28,7 @@ const Converter = require('../../common/converter')
  *         description: Not found
  */
 router.get('/:value', function (req, res) {
-  return classificationService.get(req.params.value)
+  return dao.get(req.params.value)
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classification'))
 })
@@ -96,7 +96,7 @@ router.get('/', function (req, res) {
     .then((params) => {
       const { keyword, levels, classifiers, limit, offset } = params
       const allClassifiers = classifiers && classifiers.length === 1 && classifiers[0] === '*'
-      return classificationService.queryByKeyword(keyword, levels, allClassifiers, classifiers, limit, offset)
+      return dao.queryByKeyword(keyword, levels, allClassifiers, classifiers, limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))
@@ -129,7 +129,7 @@ router.get('/', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/:value/characteristics', function (req, res) {
-  return classificationService.queryByParent(req.params.value, 'characteristic')
+  return dao.queryByParent(req.params.value, 'characteristic')
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting characteristics'))
 })

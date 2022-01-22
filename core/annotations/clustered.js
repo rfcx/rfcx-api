@@ -1,10 +1,10 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const annotationsService = require('../_services/annotations')
+const { httpErrorHandler } = require('../../common/error-handling/http')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const models = require('../_models')
-const rolesService = require('../_services/roles')
+const rolesService = require('../roles/dao')
 
 /**
  * @swagger
@@ -129,7 +129,7 @@ router.get('/', (req, res) => {
         isManual: is_manual,
         isPositive: is_positive
       }
-      return annotationsService.timeAggregatedQuery(
+      return dao.timeAggregatedQuery(
         annotation,
         {
           streamsOnlyPublic,

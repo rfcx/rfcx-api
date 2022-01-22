@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const projectsService = require('../_services/projects')
+const { update } = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -48,7 +48,7 @@ module.exports = (req, res) => {
   converter.convert('external_id').optional().toInt()
 
   return converter.validate()
-    .then((params) => projectsService.update(id, params, options))
+    .then((params) => update(id, params, options))
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed updating project'))
 }

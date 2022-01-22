@@ -1,12 +1,12 @@
-const { upload } = require('../../../core/_services/streams/source-file-upload')
-const streamsService = require('../../../core/_services/streams')
+const { upload } = require('../../../core/stream-source-files/bl/file-upload')
+const streamDao = require('../../../core/streams/dao')
 const S3Service = require('../../_services/legacy/s3/s3-service')
 const moment = require('moment-timezone')
 const path = require('path')
 
 // TODO this was called from v1/checkin and should not be called now
 function ingestGuardianAudio (audioInfo, dbGuardian) {
-  return streamsService.ensureStreamExistsForGuardian(dbGuardian)
+  return streamDao.ensureStreamExistsForGuardian(dbGuardian)
     .then(() => {
       const uploadData = {
         filename: path.basename(audioInfo.s3Path),

@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const streamsService = require('../_services/streams')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 const arbimonService = require('../_services/arbimon')
 
@@ -54,12 +54,12 @@ module.exports = (req, res) => {
   converter.convert('altitude').optional().toFloat()
 
   converter.validate()
-    .then((params) => streamsService.update(id, params, options))
+    .then((params) => dao.update(id, params, options))
     .then(async () => {
       // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
         try {
-          const updatedStream = await streamsService.get(id)
+          const updatedStream = await dao.get(id)
           const idToken = req.headers.authorization
           return await arbimonService.updateSite(updatedStream, idToken)
         } catch (err) {

@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http.js')
-const streamsService = require('../../_services/streams')
-const projectsService = require('../../_services/projects')
-const rolesService = require('../../_services/roles')
+const streamDao = require('../../streams/dao')
+const projectsService = require('../../projects/dao')
+const rolesService = require('../../roles/dao')
 const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
@@ -56,7 +56,7 @@ router.patch('/streams/:externalId', (req, res) => {
   params.convert('project_external_id').optional().toInt()
 
   return params.validate()
-    .then(() => streamsService.get({ external_id: externalId }))
+    .then(() => streamDao.get({ external_id: externalId }))
     .then(async stream => {
       const allowed = await rolesService.hasPermission(rolesService.UPDATE, user, stream, rolesService.STREAM)
       if (!allowed) {
@@ -70,8 +70,8 @@ router.patch('/streams/:externalId', (req, res) => {
         }
         convertedParams.project_id = externalProject.id
       }
-      await streamsService.update(stream.id, convertedParams)
-      return await streamsService.get(stream.id)
+      await streamDao.update(stream.id, convertedParams)
+      return await streamDao.get(stream.id)
     })
     .then(json => res.json(json))
     .catch(httpErrorHandler(req, res, 'Failed updating stream'))
@@ -100,13 +100,13 @@ router.patch('/streams/:externalId', (req, res) => {
  *         description: Stream not found
  */
 router.delete('/streams/:externalId', ensureUserSynced, (req, res) => {
-  streamsService.get({ external_id: req.params.externalId })
+  streamDao.get({ external_id: req.params.externalId })
     .then(async (stream) => {
       const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)
       if (!allowed) {
         throw new ForbiddenError('You do not have permission to delete this stream.')
       }
-      await streamsService.remove(stream.id)
+      await streamDao.remove(stream.id)
       return res.sendStatus(204)
     })
     .catch(httpErrorHandler(req, res, 'Failed deleting stream'))

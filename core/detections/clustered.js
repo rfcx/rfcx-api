@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const detectionsService = require('../_services/detections')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 const models = require('../_models')
 
@@ -116,7 +116,7 @@ router.get('/', (req, res) => {
       const { start, end, streams, classifications, interval, aggregate, field, descending, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
       const streamsOnlyPublic = convertedParams.streams_public
-      return detectionsService.timeAggregatedQuery(start, end, streams, streamsOnlyPublic, classifications, interval, aggregate, field, minConfidence, descending, limit, offset, user)
+      return dao.timeAggregatedQuery(start, end, streams, streamsOnlyPublic, classifications, interval, aggregate, field, minConfidence, descending, limit, offset, user)
     })
     .then(detections => res.json(detections))
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

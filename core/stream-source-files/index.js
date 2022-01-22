@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { hasRole } = require('../../common/middleware/authorization/authorization')
-const streamSourceFileService = require('../_services/streams/source-files')
+const dao = require('./dao')
 
 /**
  * @swagger
@@ -26,9 +26,9 @@ const streamSourceFileService = require('../_services/streams/source-files')
  *         description: Stream not found
  */
 router.delete('/:uuid', hasRole(['systemUser']), (req, res) => {
-  return streamSourceFileService.get(req.params.uuid)
+  return dao.get(req.params.uuid)
     .then(async (streamSourceFile) => {
-      await streamSourceFileService.remove(streamSourceFile)
+      await dao.remove(streamSourceFile)
     })
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting stream source file'))

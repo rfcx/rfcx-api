@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http.js')
-const segmentService = require('../../_services/streams/segments')
+const segmentDao = require('../../stream-segments/dao')
 const Converter = require('../../../common/converter')
 const { hasStreamPermission } = require('../../../common/middleware/authorization/roles')
 
@@ -68,7 +68,7 @@ router.get('/streams/:id/coverage', hasStreamPermission('R'), function (req, res
   return params.validate()
     .then(async () => {
       convertedParams.streamId = streamId
-      const data = await segmentService.getStreamCoverage(convertedParams)
+      const data = await segmentDao.getStreamCoverage(convertedParams)
       res.json(data)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream coverage'))

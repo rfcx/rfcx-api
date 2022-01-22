@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const Converter = require('../../common/converter')
-const subscriptionsService = require('../_services/subscriptions')
+const dao = require('./dao')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**
@@ -38,9 +38,9 @@ router.post('/:id/subscriptions', hasProjectPermission('R'), function (req, res)
 
   return params.validate()
     .then(async () => {
-      const subscriptionType = await subscriptionsService.getTypeByIdOrName(convertedParams.subscription)
-      await subscriptionsService.addSubscription(userId, subscriptionType.id, projectId, 'project')
-      return res.status(201).json(await subscriptionsService.query(userId, projectId, 'project'))
+      const subscriptionType = await dao.getTypeByIdOrName(convertedParams.subscription)
+      await dao.addSubscription(userId, subscriptionType.id, projectId, 'project')
+      return res.status(201).json(await dao.query(userId, projectId, 'project'))
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project subscription for user'))
 })
@@ -67,7 +67,7 @@ router.post('/:id/subscriptions', hasProjectPermission('R'), function (req, res)
 
 router.get('/:id/subscriptions', hasProjectPermission('R'), async function (req, res) {
   try {
-    return res.json(await subscriptionsService.query(req.rfcx.auth_token_info.id, req.params.id, 'project'))
+    return res.json(await dao.query(req.rfcx.auth_token_info.id, req.params.id, 'project'))
   } catch (e) {
     httpErrorHandler(req, res, 'Failed getting project subscriptions.')(e)
   }
@@ -102,9 +102,9 @@ router.delete('/:id/subscriptions', hasProjectPermission('R'), function (req, re
     .then(async () => {
       let subscriptionType
       if (convertedParams.subscription) {
-        subscriptionType = await subscriptionsService.getTypeByIdOrName(convertedParams.subscription)
+        subscriptionType = await dao.getTypeByIdOrName(convertedParams.subscription)
       }
-      await subscriptionsService.removeSubscription(userId, subscriptionType ? subscriptionType.id : null, projectId, 'project')
+      await dao.removeSubscription(userId, subscriptionType ? subscriptionType.id : null, projectId, 'project')
       return res.sendStatus(200)
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project subscription for user'))

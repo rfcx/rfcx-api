@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const streamsService = require('../_services/streams')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -43,7 +43,7 @@ module.exports = (req, res) => {
         readableBy: user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id,
         fields: params.fields
       }
-      return streamsService.get(id, options)
+      return dao.get(id, options)
     })
     .then(stream => res.json(stream))
     .catch(httpErrorHandler(req, res, 'Failed getting stream'))

@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const annotationsService = require('../_services/annotations')
-const classificationService = require('../_services/classifications')
+const dao = require('./dao')
+const classificationService = require('../classifications/dao')
 const Converter = require('../../common/converter')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
@@ -84,7 +84,7 @@ router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
       const isManual = convertedParams.is_manual
       const isPositive = convertedParams.is_positive
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query({ start, end, classifications, streamId, isManual, isPositive, user }, { limit, offset })
+      return dao.query({ start, end, classifications, streamId, isManual, isPositive, user }, { limit, offset })
     })
     .then((annotations) => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
@@ -154,7 +154,7 @@ router.post('/:id/annotations', ensureUserSynced, hasStreamPermission('U'), func
         isManual: is_manual,
         isPositive: is_positive
       }
-      return annotationsService.create(annotation)
+      return dao.create(annotation)
     })
     .then(annotation => res.status(201).json(annotation)) // TODO: the annotation is not any of our valid schemas
     .catch(httpErrorHandler(req, res, 'Failed creating annotation'))

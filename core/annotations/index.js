@@ -3,9 +3,9 @@ const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { EmptyResultError } = require('../../common/error-handling/errors')
 const { ValidationError } = require('../../common/error-handling/errors')
 const { ForbiddenError } = require('../../common/error-handling/errors')
-const rolesService = require('../_services/roles')
-const annotationsService = require('../_services/annotations')
-const classificationService = require('../_services/classifications')
+const rolesService = require('../roles/dao')
+const dao = require('./dao')
+const classificationService = require('../classifications/dao')
 const Converter = require('../../common/converter')
 const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
@@ -96,7 +96,7 @@ router.get('/', (req, res) => {
         }
       }
       const { start, end, classifications, limit, offset } = convertedParams
-      return annotationsService.query({ start, end, streamId, classifications, isManual, isPositive, user }, { limit, offset })
+      return dao.query({ start, end, streamId, classifications, isManual, isPositive, user }, { limit, offset })
     })
     .then(annotations => res.json(annotations))
     .catch(httpErrorHandler(req, res, 'Failed getting annotations'))
@@ -128,7 +128,7 @@ router.get('/:id', (req, res) => {
     return res.sendStatus(404)
   }
 
-  return annotationsService.get(annotationId)
+  return dao.get(annotationId)
     .then(async (annotation) => {
       const allowed = await rolesService.hasPermission(rolesService.READ, user, annotation.stream_id, rolesService.STREAM)
       if (!allowed) {
@@ -189,7 +189,7 @@ router.put('/:id', ensureUserSynced, (req, res) => {
   }
 
   return params.validate()
-    .then(() => annotationsService.get(annotationId))
+    .then(() => dao.get(annotationId))
     .then(async annotation => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
@@ -205,7 +205,7 @@ router.put('/:id', ensureUserSynced, (req, res) => {
     })
     .then(classificationId => {
       const { start, end, frequency_min, frequency_max } = convertedParams // eslint-disable-line camelcase
-      return annotationsService.update(annotationId, start, end, classificationId, frequency_min, frequency_max, userId)
+      return dao.update(annotationId, start, end, classificationId, frequency_min, frequency_max, userId)
     })
     .then(annotation => res.json(annotation)) // TODO: the annotation is not any of our valid schemas
     .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
@@ -240,7 +240,7 @@ router.delete('/:id', (req, res) => {
     return httpErrorHandler(req, res)(new EmptyResultError('Annotation not found'))
   }
 
-  return annotationsService.get(annotationId)
+  return dao.get(annotationId)
     .then(async (annotation) => {
       if (!annotation) {
         throw new EmptyResultError('Annotation not found')
@@ -249,7 +249,7 @@ router.delete('/:id', (req, res) => {
       if (!allowed) {
         throw new ForbiddenError('You do not have permission for this operation.')
       }
-      return annotationsService.remove(annotationId)
+      return dao.remove(annotationId)
     })
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting annotation'))

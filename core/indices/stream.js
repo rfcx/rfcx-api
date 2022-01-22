@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const indicesService = require('../_services/indices/values')
+const dao = require('./dao/values')
 const Converter = require('../../common/converter')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 
@@ -97,9 +97,9 @@ router.get('/:id/indices/:index/values', hasStreamPermission('R'), (req, res) =>
     .then(() => {
       const { start, end, interval, aggregate, descending, limit, offset } = convertedParams
       if (interval === undefined) {
-        return indicesService.query(streamId, index, start, end, descending, limit, offset)
+        return dao.query(streamId, index, start, end, descending, limit, offset)
       }
-      return indicesService.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, descending, limit, offset)
+      return dao.timeAggregatedQuery(streamId, index, start, end, interval, aggregate, descending, limit, offset)
         .then(values => values.map(x => ({ time: x.time_bucket, value: x.aggregated_value })))
     })
     .then(values => res.json(values))

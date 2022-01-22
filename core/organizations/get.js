@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const organizationsService = require('../_services/organizations')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -40,7 +40,7 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(params => {
       const options = { ...params, readableBy }
-      return organizationsService.get(req.params.id, options)
+      return dao.get(req.params.id, options)
     })
     .then(organization => res.json(organization))
     .catch(httpErrorHandler(req, res, 'Failed getting organization'))

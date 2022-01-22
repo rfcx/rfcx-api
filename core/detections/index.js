@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const detectionsService = require('../_services/detections')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -81,7 +81,7 @@ router.get('/', (req, res) => {
       const streamIds = convertedParams.streams
       const minConfidence = convertedParams.min_confidence
       const { start, end, classifications, classifiers, limit, offset } = convertedParams
-      const result = await detectionsService.query(start, end, streamIds, classifications, minConfidence, limit, offset, user, classifiers)
+      const result = await dao.query(start, end, streamIds, classifications, minConfidence, limit, offset, user, classifiers)
       return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

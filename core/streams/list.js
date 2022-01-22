@@ -1,9 +1,9 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const streamsService = require('../_services/streams')
+const dao = require('./dao')
 const usersService = require('../../common/users/fused')
 const Converter = require('../../common/converter')
 const { Stream } = require('../_models')
-const { CREATE, READ, UPDATE, DELETE } = require('../_services/roles')
+const { CREATE, READ, UPDATE, DELETE } = require('../roles/dao')
 
 /**
  * @swagger
@@ -140,7 +140,7 @@ module.exports = (req, res) => {
           : [...Stream.attributes.full, 'created_by', 'project', 'permissions'],
         permission
       }
-      const streamsData = await streamsService.query(filters, options)
+      const streamsData = await dao.query(filters, options)
       return res.header('Total-Items', streamsData.total).json(streamsData.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting streams'))

@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const projectsService = require('../_services/projects')
+const projectsService = require('../projects/dao')
 const usersFusedService = require('../../common/users/fused')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
-const rolesService = require('../_services/roles')
+const dao = require('./dao')
 const { hasProjectPermission } = require('../../common/middleware/authorization/roles')
 
 /**
@@ -29,7 +29,7 @@ const { hasProjectPermission } = require('../../common/middleware/authorization/
 
 router.get('/:id/users', hasProjectPermission('U'), async function (req, res) {
   try {
-    return res.json(await rolesService.getUsersForItem(req.params.id, rolesService.PROJECT))
+    return res.json(await dao.getUsersForItem(req.params.id, dao.PROJECT))
   } catch (e) {
     httpErrorHandler(req, res, 'Failed getting project permission.')(e)
   }
@@ -78,9 +78,9 @@ router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
       if (project.created_by_id === user.id) {
         throw new ForbiddenError('You can not assign role to project owner.')
       }
-      const role = await rolesService.getByName(convertedParams.role)
-      await rolesService.addRole(user.id, role.id, projectId, rolesService.PROJECT)
-      return res.status(201).json(await rolesService.getUserRoleForItem(projectId, user.id, rolesService.PROJECT))
+      const role = await dao.getByName(convertedParams.role)
+      await dao.addRole(user.id, role.id, projectId, dao.PROJECT)
+      return res.status(201).json(await dao.getUserRoleForItem(projectId, user.id, dao.PROJECT))
     })
     .catch(httpErrorHandler(req, res, 'Failed adding project role for user'))
 })
@@ -113,7 +113,7 @@ router.delete('/:id/users', hasProjectPermission('U'), function (req, res) {
   return params.validate()
     .then(async () => {
       const user = await usersFusedService.getByEmail(convertedParams.email)
-      await rolesService.removeRole(user.id, projectId, rolesService.PROJECT)
+      await dao.removeRole(user.id, projectId, dao.PROJECT)
       return res.sendStatus(200)
     })
     .catch(httpErrorHandler(req, res, 'Failed removing project role.'))

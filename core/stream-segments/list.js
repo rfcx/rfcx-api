@@ -1,5 +1,5 @@
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const streamSegmentService = require('../_services/streams/segments')
+const { httpErrorHandler } = require('../../common/error-handling/http')
+const streamSegmentDao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -79,7 +79,7 @@ module.exports = function (req, res) {
     .then(async (params) => {
       const { start, end, limit, offset, strict } = params
       const options = { readableBy, limit, offset, strict }
-      return streamSegmentService.query({ start, end, streamId }, options)
+      return streamSegmentDao.query({ start, end, streamId }, options)
     })
     .then((data) => res.header('Total-Items', data.count).json(data.results))
     .catch(httpErrorHandler(req, res, 'Failed getting stream segments'))

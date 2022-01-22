@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const organizationsService = require('../_services/organizations')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -45,7 +45,7 @@ module.exports = (req, res) => {
   converter.convert('is_public').optional().toBoolean()
 
   return converter.validate()
-    .then((params) => organizationsService.update(id, params, options))
+    .then((params) => dao.update(id, params, options))
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed updating organization'))
 }

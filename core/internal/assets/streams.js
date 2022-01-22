@@ -2,9 +2,9 @@ const path = require('path')
 const router = require('express').Router()
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
-const streamSegmentService = require('../../_services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity } = require('../../_services/streams/segment-utils/segment-file-parsing')
-const { getFile } = require('../../_services/streams/segment-utils/segment-file-utils')
+const streamSegmentDao = require('../../stream-segments/dao')
+const { parseFileNameAttrs, checkAttrsValidity } = require('../../stream-segments/bl/segment-file-parsing')
+const { getFile } = require('../../stream-segments/bl/segment-file-utils')
 const { gluedDateStrToMoment } = require('../../_utils/datetime/parse')
 
 /**
@@ -72,7 +72,7 @@ router.get('/streams/:attrs', function (req, res) {
     await checkAttrsValidity(req, attrs, fileExtension)
     const start = gluedDateStrToMoment(attrs.time.starts)
     const end = gluedDateStrToMoment(attrs.time.ends)
-    const queryData = await streamSegmentService.query({ streamId: attrs.streamId, start, end }, {
+    const queryData = await streamSegmentDao.query({ streamId: attrs.streamId, start, end }, {
       fields: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'stream_source_file', 'file_extension_id', 'file_extension'],
       strict: false,
       readableBy
@@ -81,7 +81,7 @@ router.get('/streams/:attrs', function (req, res) {
     if (!segments.length) {
       throw new EmptyResultError('No audio files found for selected time range.')
     }
-    const nextTimestamp = await streamSegmentService.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
+    const nextTimestamp = await streamSegmentDao.getNextSegmentTimeAfterSegment(segments[segments.length - 1], end)
     return await getFile(req, res, attrs, fileExtension, segments, nextTimestamp)
   }).catch(httpErrorHandler(req, res, 'Failed getting stream asset'))
 })

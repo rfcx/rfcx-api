@@ -1,6 +1,6 @@
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const Converter = require('../../common/converter')
-const createEventAndNotify = require('../_services/events/create-and-notify')
+const createEventAndNotify = require('./bl/create-and-notify')
 
 /**
  * @swagger

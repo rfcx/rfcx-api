@@ -1,9 +1,9 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { ForbiddenError } = require('../../common/error-handling/errors')
-const projectsService = require('../_services/projects')
+const dao = require('./dao')
 const { randomId } = require('../../common/random/hash')
 const Converter = require('../../common/converter')
-const { hasPermission, CREATE, ORGANIZATION } = require('../_services/roles')
+const { hasPermission, CREATE, ORGANIZATION } = require('../roles/dao')
 const arbimonService = require('../_services/arbimon')
 
 /**
@@ -72,7 +72,7 @@ module.exports = (req, res) => {
         }
       }
 
-      return await projectsService.create(project)
+      return await dao.create(project)
     })
     .then(project => res.location(`/projects/${project.id}`).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating project'))

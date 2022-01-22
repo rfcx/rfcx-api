@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http.js')
-const detectionsService = require('../../_services/detections/create')
+const detectionsService = require('../../detections/dao/create')
 const Converter = require('../../../common/converter')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
 

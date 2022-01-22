@@ -1,7 +1,6 @@
 const { ValidationError } = require('../../../common/error-handling/errors')
-const streamServicePath = '../../../core/_services/streams/index'
-jest.mock(streamServicePath)
-const { getStreamRangeToken } = require(streamServicePath)
+jest.mock('../../../core/streams/dao')
+const { getStreamRangeToken } = require('../../../core/streams/dao')
 
 const streamTokenStrategyServicePath = './service'
 jest.mock(streamTokenStrategyServicePath)

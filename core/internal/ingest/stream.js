@@ -1,9 +1,9 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../../common/error-handling/http.js')
-const streamsService = require('../../_services/streams')
-const streamSourceFileService = require('../../_services/streams/source-files')
-const streamSegmentService = require('../../_services/streams/segments')
-const fileFormatService = require('../../_services/streams/file-extensions')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
+const streamDao = require('../../streams/dao')
+const streamSourceFileDao = require('../../stream-source-files/dao')
+const streamSegmentDao = require('../../stream-segments/dao')
+const fileFormatDao = require('../../stream-segments/dao/file-extensions')
 const { sequelize } = require('../../_models')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
 const Converter = require('../../../common/converter')
@@ -72,15 +72,15 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           const sfParams = await sfConverter.validate() // validate stream_source_file attributes
           await segConverter.validate() // validate stream_segment[] attributes
 
-          const stream = await streamsService.get(streamId, { transaction })
+          const stream = await streamDao.get(streamId, { transaction })
           // Set missing stream_source_file attributes and create a db row
           sfParams.stream_id = streamId
-          streamSourceFileService.transformMetaAttr(sfParams)
-          const streamSourceFile = await streamSourceFileService.create(sfParams, { transaction })
+          streamSourceFileDao.transformMetaAttr(sfParams)
+          const streamSourceFile = await streamSourceFileDao.create(sfParams, { transaction })
 
           // Get file format ids
           const fileExtensions = [...new Set(segConverter.transformedArray.map(segment => segment.file_extension))]
-          const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatService.findOrCreate({ value: ext }, { transaction })))
+          const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatDao.findOrCreate({ value: ext }, { transaction })))
 
           // Set required stream_segment attributes and create a db row
           const segments = segConverter.transformedArray.map(segment => ({
@@ -89,12 +89,12 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             stream_source_file_id: streamSourceFile.id,
             file_extension_id: fileExtensionObjects.find(obj => obj.value === segment.file_extension).id
           }))
-          await Promise.all(segments.map(segment => streamSegmentService.create(segment, { transaction })))
+          await Promise.all(segments.map(segment => streamSegmentDao.create(segment, { transaction })))
 
           // Refresh stream max_sample rate, start and end if needed
           const minStart = moment.min(segConverter.transformedArray.map(s => s.start))
           const maxEnd = moment.max(segConverter.transformedArray.map(s => s.end))
-          await streamsService.refreshStreamBoundVars(stream, {
+          await streamDao.refreshStreamBoundVars(stream, {
             start: minStart.toDate(),
             end: maxEnd.toDate(),
             sampleRate: streamSourceFile.sample_rate

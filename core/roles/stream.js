@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const streamsService = require('../_services/streams')
+const streamDao = require('../streams/dao')
 const usersFusedService = require('../../common/users/fused')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
-const { getPermissions, getUsersForItem, getByName, addRole, getUserRoleForItem, removeRole, STREAM } = require('../_services/roles')
+const { getPermissions, getUsersForItem, getByName, addRole, getUserRoleForItem, removeRole, STREAM } = require('./dao')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 
 /**
@@ -109,7 +109,7 @@ router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const stream = await streamsService.get(streamId)
+      const stream = await streamDao.get(streamId)
       const user = await usersFusedService.getByEmail(convertedParams.email)
       await usersFusedService.ensureUserSynced(user)
       if (stream.created_by_id === user.id) {

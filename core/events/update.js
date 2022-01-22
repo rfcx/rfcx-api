@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const Converter = require('../../common/converter')
-const { update } = require('../_services/events')
+const { update } = require('./dao')
 
 /**
  * @swagger

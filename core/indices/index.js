@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const indicesService = require('../_services/indices')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -42,7 +42,7 @@ router.get('/', function (req, res) {
   params.validate()
     .then(transformedParams => {
       const { limit, offset } = transformedParams
-      return indicesService.query(limit, offset)
+      return dao.query(limit, offset)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifications'))

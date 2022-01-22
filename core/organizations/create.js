@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const organizationsService = require('../_services/organizations')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -43,7 +43,7 @@ module.exports = function (req, res) {
         ...params,
         createdById
       }
-      return organizationsService.create(organization)
+      return dao.create(organization)
     })
     .then(organization => res.location(`/organizations/${organization.id}`).sendStatus(201))
     .catch(httpErrorHandler(req, res, 'Failed creating organization'))

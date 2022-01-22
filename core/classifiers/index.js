@@ -2,11 +2,11 @@ const router = require('express').Router()
 const { ValidationError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
-const service = require('../_services/classifiers')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
-const { getIds } = require('../_services/classifications')
-const { parseClassifierOutputMapping } = require('../_services/classifiers/parsing')
-const { upload } = require('../_services/classifiers/upload')
+const { getIds } = require('../classifications/dao')
+const { parseClassifierOutputMapping } = require('./dao/parsing')
+const { upload } = require('./dao/upload')
 
 /**
  * @swagger
@@ -33,7 +33,7 @@ const { upload } = require('../_services/classifiers/upload')
  *         description: Not found
  */
 router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
-  return service.get(req.params.id, { joinRelations: true })
+  return dao.get(req.params.id, { joinRelations: true })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
 })
@@ -79,7 +79,7 @@ router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req,
     .then(() => {
       const { limit, offset } = transformedParams
       const attributes = { limit, offset }
-      return service.query(attributes)
+      return dao.query(attributes)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
@@ -160,7 +160,7 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
         activeProjects: transformedParams.activeProjects,
         activeStreams: transformedParams.activeStreams
       }
-      return service.create(classifier)
+      return dao.create(classifier)
     })
     .then(classifier => {
       res.location(`${req.baseUrl}${req.path}${classifier.id}`).sendStatus(201)
@@ -213,7 +213,7 @@ router.patch('/:id', function (req, res) {
   const createdById = req.rfcx.auth_token_info.id
   params.validate()
     .then((params) => {
-      return service.update(id, createdById, params)
+      return dao.update(id, createdById, params)
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))

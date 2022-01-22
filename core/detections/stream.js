@@ -1,9 +1,9 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const detectionsService = require('../_services/detections')
-const createDetectionsService = require('../_services/detections/create')
-const streamsService = require('../_services/streams')
-const { hasPermission, READ, UPDATE, STREAM } = require('../_services/roles')
+const { query } = require('./dao')
+const { create } = require('./dao/create')
+const streamDao = require('../streams/dao')
+const { hasPermission, READ, UPDATE, STREAM } = require('../roles/dao')
 const Converter = require('../../common/converter')
 const ArrayConverter = require('../../common/converter/array')
 const { ForbiddenError } = require('../../common/error-handling/errors')
@@ -77,14 +77,14 @@ router.get('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
-      // TODO add readableBy to detectionsService.query to avoid permission checks in route handler
+      // TODO add readableBy to dao.query to avoid permission checks in route handler
       if (!user.has_system_role && !user.stream_token && !await hasPermission(READ, user, streamId, STREAM)) {
         throw new ForbiddenError('You do not have permission to read this stream')
       }
 
       const { start, end, classifications, limit, offset } = convertedParams
       const minConfidence = convertedParams.min_confidence
-      const result = await detectionsService.query(start, end, streamId, classifications, minConfidence, limit, offset, user)
+      const result = await query(start, end, streamId, classifications, minConfidence, limit, offset, user)
       return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))
@@ -150,16 +150,16 @@ router.post('/:id/detections', function (req, res) {
 
   params.validate()
     .then(async () => {
-      // TODO add creatableBy to detectionsService.create to avoid permission checks and stream existance checks in route handler
+      // TODO add creatableBy to dao.create to avoid permission checks and stream existance checks in route handler
       if (user.has_system_role) {
         // Need to check that the stream exists (throws)
-        await streamsService.get(streamId, { fields: ['id'] })
+        await streamDao.get(streamId, { fields: ['id'] })
       } else if (!await hasPermission(UPDATE, user, streamId, STREAM)) {
         throw new ForbiddenError('You do not have permission to update this stream')
       }
 
       const detections = params.transformedArray.map(d => ({ ...d, streamId }))
-      await createDetectionsService.create(detections)
+      await create(detections)
       return res.sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))

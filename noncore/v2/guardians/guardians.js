@@ -12,7 +12,7 @@ const usersService = require('../../../common/users/users-service-legacy')
 const usersFusedService = require('../../../common/users/fused')
 const guardiansService = require('../../_services/guardians/guardians-service')
 const sitesService = require('../../_services/sites/sites-service')
-const streamsService = require('../../../core/_services/streams')
+const streamDao = require('../../../core/streams/dao')
 const arbimonService = require('../../../core/_services/arbimon')
 const Converter = require('../../../common/converter')
 const modelsLegacy = require('../../_models')
@@ -85,7 +85,7 @@ router.route('/:guid')
         timescaleTransaction = await models.sequelize.transaction()
 
         // Check the user has permission to write to stream
-        await streamsService.update(params.stream_id, {
+        await streamDao.update(params.stream_id, {
           latitude: params.latitude,
           longitude: params.longitude,
           altitude: params.altitude,

@@ -12,8 +12,8 @@ const textGridService = require('../../textgrid/textgrid-service')
 const mailService = require('../../mail/mail-service')
 const aws = require('../../../_utils/external/aws.js').aws()
 const hash = require('../../../../common/random/hash')
-const annotationsService = require('../../../../core/_services/annotations')
-const classificationService = require('../../../../core/_services/classifications')
+const annotationsService = require('../../../../core/annotations/dao')
+const classificationService = require('../../../../core/classifications/dao')
 
 function prepareOpts (req) {
   let order, dir

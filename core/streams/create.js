@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const streamsService = require('../_services/streams')
+const dao = require('./dao')
 const { randomId } = require('../../common/random/hash')
 const Converter = require('../../common/converter')
 const arbimonService = require('../_services/arbimon')
@@ -69,7 +69,7 @@ module.exports = (req, res) => {
       const options = {
         creatableBy: (user.is_super || user.has_system_role) ? undefined : user.id
       }
-      const createdStream = await streamsService.create(stream, options)
+      const createdStream = await dao.create(stream, options)
 
       return res.location(`/streams/${createdStream.id}`).sendStatus(201)
     })

@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const organizationsService = require('../_services/organizations')
+const dao = require('./dao')
 
 /**
  * @swagger
@@ -28,7 +28,7 @@ module.exports = (req, res) => {
   const deletableBy = user.is_super || user.has_system_role ? undefined : user.id
   const id = req.params.id
   const options = { deletableBy }
-  return organizationsService.remove(id, options)
+  return dao.remove(id, options)
     .then(() => res.sendStatus(204))
     .catch(httpErrorHandler(req, res, 'Failed deleting organization'))
 }

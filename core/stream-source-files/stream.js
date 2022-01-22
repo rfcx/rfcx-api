@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const streamSourceFileService = require('../_services/streams/source-files')
+const dao = require('./dao')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const auth0Service = require('../_services/auth0/auth0-service')
-const rolesService = require('../_services/roles')
+const rolesService = require('../roles/dao')
 
 /**
  * @swagger
@@ -89,7 +89,7 @@ router.get('/:id/stream-source-files', function (req, res) {
         offset: params.offset,
         fields: params.fields
       }
-      return streamSourceFileService.query(filters, options)
+      return dao.query(filters, options)
     })
     .then(data => {
       return res.header('Total-Items', data.total).json(data.results)

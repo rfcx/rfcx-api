@@ -1,8 +1,8 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
 const Converter = require('../../common/converter')
-const eventsService = require('../_services/events')
+const dao = require('./dao')
 
 router.post('/', authenticatedWithRoles('systemUser'), require('./create'))
 router.patch('/:id', authenticatedWithRoles('systemUser'), require('./update'))
@@ -108,7 +108,7 @@ router.get('/', (req, res) => {
         descending: params.descending,
         fields: params.fields
       }
-      return eventsService.query(filters, options)
+      return dao.query(filters, options)
     })
     .then(data => {
       res.header('Total-Items', data.total).json(data.results)
@@ -156,7 +156,7 @@ router.get('/:id', (req, res) => {
         readableBy: userIsSuper || hasSystemRole ? undefined : userId,
         fields: params.fields
       }
-      return eventsService.get(id, options)
+      return dao.get(id, options)
     })
     .then(event => res.json(event))
     .catch(httpErrorHandler(req, res, 'Failed getting event'))

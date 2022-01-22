@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const organizationsService = require('../_services/organizations')
+const dao = require('./dao')
 const usersService = require('../../common/users/fused')
 const Converter = require('../../common/converter')
 
@@ -99,7 +99,7 @@ module.exports = (req, res) => {
         sort,
         fields
       }
-      const organizationsData = await organizationsService.query(filters, options)
+      const organizationsData = await dao.query(filters, options)
       return res
         .header('Total-Items', organizationsData.total)
         .json(organizationsData.results)

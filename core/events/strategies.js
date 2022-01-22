@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const Converter = require('../../common/converter')
-const strategiesService = require('../_services/events/strategies')
+const strategiesService = require('./dao/strategies')
 
 /**
  * @swagger

@@ -14,7 +14,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const siteService = require('../../_services/sites/sites-service')
 const userService = require('../../../common/users/users-service-legacy')
 const guardiansService = require('../../_services/guardians/guardians-service')
-const streamsService = require('../../../core/_services/streams')
+const streamDao = require('../../../core/streams/dao')
 const arbimonService = require('../../../core/_services/arbimon')
 const Converter = require('../../../common/converter')
 
@@ -288,7 +288,7 @@ router.route('/register')
             params.is_private = true
           }
           const dbGuardian = await models.Guardian.create(params)
-          const dbStream = await streamsService.ensureStreamExistsForGuardian(dbGuardian)
+          const dbStream = await streamDao.ensureStreamExistsForGuardian(dbGuardian)
 
           if (arbimonService.isEnabled && req.headers.authorization) {
             const idToken = req.headers.authorization
@@ -298,7 +298,7 @@ router.route('/register')
               longitude: 0,
               altitude: 0
             }, idToken)
-            await streamsService.update(dbStream.id, { external_id: arbimonSite.site_id })
+            await streamDao.update(dbStream.id, { external_id: arbimonSite.site_id })
           }
           res.status(200).json(views.models.guardian(req, res, dbGuardian))
         }
@@ -335,8 +335,8 @@ router.route('/:guid')
         return guardiansService.updateGuardian(guardian, transformedParams)
       })
       .then(async (guardian) => {
-        const stream = await streamsService.ensureStreamExistsForGuardian(guardian)
-        await streamsService.update(stream.id, {
+        const stream = await streamDao.ensureStreamExistsForGuardian(guardian)
+        await streamDao.update(stream.id, {
           name: guardian.shortname,
           latitude: transformedParams.latitude,
           longitude: transformedParams.longitude,
