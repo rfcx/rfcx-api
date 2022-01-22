@@ -1,22 +1,7 @@
-.DS_Store
-
-# RFCx config files
-/common/config/env_vars.*
-!/common/config/env_vars.js.sample
-/common/config/config.json
-/common/config/service-account.json
-
-# Temporary cache directory
-/.tmp
-
-# Logs
-/logs
-/*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-
-coverage
 node_modules
+coverage
+.DS_Store
+.tmp
+*.log
+
+
