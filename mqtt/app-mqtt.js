@@ -23,8 +23,7 @@ const subscriptionOptions = {
 const checkinsTopicName = 'grd/+/chk'
 const pingsTopicName = 'grd/+/png'
 
-
-function listen() {
+function listen () {
   const app = mqtt.connect(connectionOptions)
 
   app.on('error', (err) => console.log('MQTT: Error', err))

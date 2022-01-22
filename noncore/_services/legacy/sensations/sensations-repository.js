@@ -38,8 +38,8 @@ module.exports = class SensationsRepository {
   }
 
   getCoverage (params) {
-    params.starting_after = timeUtils.momentToMysqlString(params.starting_after)
-    params.ending_before = timeUtils.momentToMysqlString(params.ending_before)
+    params.starting_after = momentToMysqlString(params.starting_after)
+    params.ending_before = momentToMysqlString(params.ending_before)
 
     const sql = 'SELECT\n' +
       ' min(t.time) as time,\n' +
