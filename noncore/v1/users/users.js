@@ -4,7 +4,7 @@ const router = express.Router()
 const hash = require('../../../utils/misc/hash')
 const token = require('../../_utils/internal-rfcx/token.js').token
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 const moment = require('moment')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
@@ -113,8 +113,8 @@ router.route('/logout')
           tokens_removed: tokensCount
         })
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => httpError(req, res, 500, e, 'Error in process of logout.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, 'Error in process of logout.'))
   })
 
 router.route('/request-access/app')
@@ -233,7 +233,7 @@ router.route('/send-reset-password-link')
       .catch(function (err) {
         if (err) {
           console.log(err)
-          httpError(req, res, 500, 'database')
+          httpErrorResponse(req, res, 500, 'database')
         }
       })
   })
@@ -249,14 +249,14 @@ router.route('/reset-password')
       .then(function (token) {
         if (!token) {
           // if user specified not existing token, then show a message and cancel password reset
-          httpError(req, res, 404, null, 'Such token doesn\'t exist. It might be expired or invalid.')
+          httpErrorResponse(req, res, 404, null, 'Such token doesn\'t exist. It might be expired or invalid.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         dbToken = token
         // if token is expired, then show this message to user and cancel password reset. Destroy this token.
         if (new Date(dbToken.expires_at) < new Date()) {
           dbToken.destroy()
-          httpError(req, res, 400, null, 'Your token has expired. Please start reset password process once again.')
+          httpErrorResponse(req, res, 400, null, 'Your token has expired. Please start reset password process once again.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         } else {
           // if everything is ok, then find user by specified in token id
@@ -271,7 +271,7 @@ router.route('/reset-password')
         // Also do the same if user is not RFCx user (e.g. auth0 user)
         if (!dbUser || dbUser.rfcx_system === false) {
           dbToken.destroy()
-          httpError(req, res, 400, null, 'Invalid token. Please start reset password process once again.')
+          httpErrorResponse(req, res, 400, null, 'Invalid token. Please start reset password process once again.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         // encrypt user's new password and save it
@@ -299,7 +299,7 @@ router.route('/reset-password')
       .catch(function (err) {
         if (err) {
           console.log(err)
-          httpError(req, res, 500, 'database')
+          httpErrorResponse(req, res, 500, 'database')
         }
       })
   })
@@ -309,17 +309,17 @@ router.route('/reset-password')
 router.route('/change-password')
   .post(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
     if (!req.body.guid) {
-      return httpError(req, res, 400, null, 'You need to specify user guid in request payload.')
+      return httpErrorResponse(req, res, 400, null, 'You need to specify user guid in request payload.')
     }
     if (!req.body.password) {
-      return httpError(req, res, 400, null, 'You need to specify current password in request payload.')
+      return httpErrorResponse(req, res, 400, null, 'You need to specify current password in request payload.')
     }
     if (!req.body.newPassword) {
-      return httpError(req, res, 400, null, 'You need to specify new password in request payload.')
+      return httpErrorResponse(req, res, 400, null, 'You need to specify new password in request payload.')
     }
     // user must be logged in with his account to change the password
     if (req.body.guid !== req.rfcx.auth_token_info.guid) {
-      return httpError(req, res, 403, null, 'You are not allowed to change stranger\'s password.')
+      return httpErrorResponse(req, res, 403, null, 'You are not allowed to change stranger\'s password.')
     }
     models.User
       .findOne({
@@ -327,15 +327,15 @@ router.route('/change-password')
       })
       .then(function (dbUser) {
         if (!dbUser) {
-          httpError(req, res, 404, null, 'User with specified guid not found.')
+          httpErrorResponse(req, res, 404, null, 'User with specified guid not found.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         if (dbUser.rfcx_system !== undefined && dbUser.rfcx_system === false) {
-          httpError(req, res, 403, null, 'You don\'t have required permissions.')
+          httpErrorResponse(req, res, 403, null, 'You don\'t have required permissions.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
-          httpError(req, res, 403, null, 'Password is incorrect.')
+          httpErrorResponse(req, res, 403, null, 'Password is incorrect.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         const passwordSalt = hash.randomHash(320)
@@ -359,7 +359,7 @@ router.route('/change-password')
       .catch(function (err) {
         if (err) {
           console.log(err)
-          httpError(req, res, 500, 'database')
+          httpErrorResponse(req, res, 500, 'database')
         }
       })
   })
@@ -390,18 +390,18 @@ router.route('/checkin')
         return usersService.createUserLocations(locations)
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Checkin couldn\'t be created. Please check input params.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Checkin couldn\'t be created. Please check input params.'))
   })
 
 router.route('/locations')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     return usersService.getLocations(req)
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Cannot get users locations'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Cannot get users locations'))
   })
 
 router.route('/lastcheckin')
@@ -505,8 +505,8 @@ router.route('/code')
           html: `<b>${userName}</b> has got access to <b>${transformedParams.code}</b> site with <b>${roles.join(', ')}</b> role. </br>User guid <b>${user.guid}</b>, user email ${user.email}`
         })
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log('\n\n', e, '\n\n'); httpError(req, res, 500, e, 'Invalid code.') })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log('\n\n', e, '\n\n'); httpErrorResponse(req, res, 500, e, 'Invalid code.') })
   })
 
 router.route('/accept-terms')
@@ -529,8 +529,8 @@ router.route('/accept-terms')
       .then(() => {
         res.status(200).json({ success: true })
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, 'Unable to save user acceptance.'))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, 'Unable to save user acceptance.'))
   })
 
 router.route('/delete')
@@ -564,8 +564,8 @@ router.route('/delete')
       .then(() => {
         res.status(200).json({ success: true })
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -599,7 +599,7 @@ router.route('/create')
       .then((user) => {
         res.status(200).json(user)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -650,7 +650,7 @@ router.route('/auth0/update-user')
       .then((body) => {
         res.status(200).json(body)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -731,7 +731,7 @@ router.route('/auth0/update-user/public')
       .then((data) => {
         res.status(200).json(body)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         console.error('/auth0/update-user/public error', err)
         res.status(500).json({ err })
@@ -766,7 +766,7 @@ router.route('/auth0/users/export-link')
         console.log('data for uploading users', data)
         res.status(200).json(data)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         console.log('\nerror\n', err)
         res.status(500).json({ err })
@@ -807,7 +807,7 @@ router.route('/auth0/update-users')
         console.log('data', data)
         res.status(200).json(data)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         console.log('\nerror\n', err)
         res.status(500).json({ err })
@@ -848,8 +848,8 @@ router.route('/reset-user-password')
       .then((body) => {
         res.status(200).json(body)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -883,8 +883,8 @@ router.route('/change-user-password')
       .then((data) => {
         res.status(200).json({ success: true })
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -900,7 +900,7 @@ router.route('/password-change')
       email = req.rfcx.auth_token_info.email
       guid = req.rfcx.auth_token_info.guid
     } catch (e) {
-      return httpError(req, res, 403, null, 'Unable to change password for your account.')
+      return httpErrorResponse(req, res, 403, null, 'Unable to change password for your account.')
     }
     let token
 
@@ -923,8 +923,8 @@ router.route('/password-change')
         token = null
         res.status(200).json({ success: true })
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => { httpErrorResponse(req, res, 400, null, e.message) })
       .catch((err) => { res.status(500).json({ err }) })
   })
 
@@ -936,7 +936,7 @@ router.route('/avatar-change')
       email = req.rfcx.auth_token_info.email
       guid = req.rfcx.auth_token_info.guid
     } catch (e) {
-      return httpError(req, res, 403, null, 'Unable to change avatar for your account.')
+      return httpErrorResponse(req, res, 403, null, 'Unable to change avatar for your account.')
     }
     return usersService.checkUserConnection(user_id, 'auth0')
       .then(() => {
@@ -987,9 +987,9 @@ router.route('/avatar-change')
         guid = null
         res.status(200).json({ url })
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ForbiddenError, e => { httpErrorResponse(req, res, 403, null, e.message) })
+      .catch(ValidationError, e => { httpErrorResponse(req, res, 400, null, e.message) })
       .catch((err) => { res.status(500).json({ err }) })
       .finally(() => {
         fileUtil.removeReqFiles(files)
@@ -1071,7 +1071,7 @@ router.route('/auth0/:user_guid/roles')
       .then((body) => {
         res.status(200).json(body)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -1094,7 +1094,7 @@ router.route('/auth0/:user_guid/roles')
       .then((body) => {
         res.status(200).json(body)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -1131,7 +1131,7 @@ router.route('/auth0/send-change-password-email')
       .then((body) => {
         res.status(200).json({ result: body })
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })
@@ -1146,9 +1146,9 @@ router.route('/:id/info')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Couldn't get user info.") })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get user info.") })
   })
 
 router.route('/info')
@@ -1160,9 +1160,9 @@ router.route('/info')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Couldn't get user info.") })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get user info.") })
   })
 
 // TO DO security measure to ensure that not any user can see any other user
@@ -1174,7 +1174,7 @@ router.route('/:user_id')
         limit: 1
       }).then(function (dbUser) {
         if (dbUser.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.users(req, res, dbUser))
         }
@@ -1204,9 +1204,9 @@ router.route('/:guid/sites')
         data.links.self += req.params.guid + '/sites'
         res.status(200).json(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Couldn't update user-sites relations.") })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't update user-sites relations.") })
   })
 
 // TO DO security measure to ensure that not any user can see any other user
@@ -1220,7 +1220,7 @@ router.route('/:user_id')
         where: { guid: req.params.user_id }
       }).then(function (dbUser) {
         if (!dbUser) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           // now let's update the user info....
           return usersService.updateUserInfo(dbUser, req.body)
@@ -1233,8 +1233,8 @@ router.route('/:user_id')
         data.links.self += req.params.user_id
         res.status(200).json(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch(function (err) {
         console.log('failed to update user | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to update user' }) }
@@ -1257,7 +1257,7 @@ router.route('/')
         })
         res.status(200).json(data)
       })
-      .catch(e => httpError(req, res, 500, e, 'Failed to return users.'))
+      .catch(e => httpErrorResponse(req, res, 500, e, 'Failed to return users.'))
   })
 
 module.exports = router

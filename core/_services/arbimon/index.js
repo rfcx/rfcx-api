@@ -1,7 +1,7 @@
 const rp = require('request-promise')
 const moment = require('moment')
 const arbimonBaseUrl = process.env.ARBIMON_BASE_URL
-const { rpErrorMatcher } = require('../../../utils/http-error-handler')
+const { rpErrorHandler } = require('../../../utils/http-error-handler')
 const { getSegmentRemotePath } = require('../streams/segment-file-utils')
 const { StreamSegment, StreamSourceFile, AudioCodec, FileExtension } = require('../../../models')
 const { getClientToken } = require('../auth0/auth0-service')
@@ -45,7 +45,7 @@ function createProject (project, idToken) {
     json: true
   }
 
-  return rp(options).catch(e => { throw rpErrorMatcher(e) })
+  return rp(options).catch(rpErrorHandler)
 }
 
 function createSite (stream, idToken) {
@@ -69,7 +69,7 @@ function createSite (stream, idToken) {
     json: true
   }
 
-  return rp(options).catch(e => { throw rpErrorMatcher(e) })
+  return rp(options).catch(rpErrorHandler)
 }
 
 function updateSite (opts, idToken) {
@@ -86,7 +86,7 @@ function updateSite (opts, idToken) {
     json: true
   }
 
-  return rp(options).catch(e => { throw rpErrorMatcher(e) })
+  return rp(options).catch(rpErrorHandler)
 }
 
 function deleteSite (id, idToken) {
@@ -100,7 +100,7 @@ function deleteSite (id, idToken) {
     json: true
   }
 
-  return rp(options).catch(e => { throw rpErrorMatcher(e) })
+  return rp(options).catch(rpErrorHandler)
 }
 
 function matchSegmentToRecording (segment, opts = {}) {
@@ -165,7 +165,7 @@ function createRecordings (body) {
   return getClientToken()
     .then((token) => {
       options.headers.authorization = `Bearer ${token}`
-      return rp(options).catch(e => { throw rpErrorMatcher(e) })
+      return rp(options).catch(rpErrorHandler)
     })
     .then((response) => console.log(`arbimon: createRecordings response: ${JSON.stringify(response)}`))
 }
@@ -193,7 +193,7 @@ function createUser (user, idToken) {
   return getClientToken()
     .then((token) => {
       options.headers.authorization = `Bearer ${token}`
-      return rp(options).catch(e => { throw rpErrorMatcher(e) })
+      return rp(options).catch(rpErrorHandler)
     })
 }
 

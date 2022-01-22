@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
 
@@ -29,10 +29,10 @@ router.route('/software/:software_role')
         res.status(200).json(viewSoftwareJson(dSoftware))
       })
       .catch(sequelize.EmptyResultError, function (err) {
-        httpError(req, res, 404, null, err.message)
+        httpErrorResponse(req, res, 404, null, err.message)
       })
       .catch(function (err) {
-        httpError(req, res, 500, err, 'Failed to get latest software versions')
+        httpErrorResponse(req, res, 500, err, 'Failed to get latest software versions')
       })
   })
 
@@ -76,10 +76,10 @@ router.route('/:guardian_id/software/:software_role')
         )
       })
       .catch(sequelize.EmptyResultError, function (err) {
-        httpError(req, res, 404, null, err.message)
+        httpErrorResponse(req, res, 404, null, err.message)
       })
       .catch(function (err) {
-        httpError(req, res, 500, err, 'Failed to get latest software versions')
+        httpErrorResponse(req, res, 500, err, 'Failed to get latest software versions')
       })
   })
 

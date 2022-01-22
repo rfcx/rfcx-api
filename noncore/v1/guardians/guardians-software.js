@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const passport = require('passport')
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
@@ -27,7 +27,7 @@ router.route('/:guid/software')
     models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
       .then((versionData) => {
         if (!versionData.length) {
-          httpError(req, res, 404, null, 'Guardian or software versions not found.')
+          httpErrorResponse(req, res, 404, null, 'Guardian or software versions not found.')
           return
         }
         const result = {}
@@ -42,7 +42,7 @@ router.route('/:guid/software')
         res.status(200).json(versions)
       })
       .catch(function (err) {
-        httpError(req, res, 500, err, 'Failed to get guardian software versions')
+        httpErrorResponse(req, res, 500, err, 'Failed to get guardian software versions')
       })
   })
 
@@ -70,10 +70,10 @@ router.route('/:guid/software/preferences')
         res.status(200).json(data)
       })
       .catch(sequelize.EmptyResultError, function (err) {
-        httpError(req, res, 404, null, err.message)
+        httpErrorResponse(req, res, 404, null, err.message)
       })
       .catch(function (err) {
-        httpError(req, res, 500, err, 'Failed to get guardian software preferences')
+        httpErrorResponse(req, res, 500, err, 'Failed to get guardian software preferences')
       })
   })
 
@@ -157,10 +157,10 @@ router.route('/:guardian_id/software/:software_role')
         )
       })
       .catch(sequelize.EmptyResultError, function (err) {
-        httpError(req, res, 404, null, err.message)
+        httpErrorResponse(req, res, 404, null, err.message)
       })
       .catch(function (err) {
-        httpError(req, res, 500, err, 'Failed to get latest software versions')
+        httpErrorResponse(req, res, 500, err, 'Failed to get latest software versions')
       })
   })
 

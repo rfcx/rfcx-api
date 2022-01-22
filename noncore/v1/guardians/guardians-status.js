@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const queryHelpers = require('../../_utils/rfcx-query')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
@@ -33,7 +33,7 @@ router.route('/:guardian_id/status')
         })
       }).catch(function (err) {
         console.log('failure to retrieve guardian: ' + err)
-        httpError(req, res, 404, 'database')
+        httpErrorResponse(req, res, 404, 'database')
       })
   })
 

@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const checkInHelpers = require('../../_utils/rfcx-checkin')
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
@@ -32,20 +32,20 @@ router.route('/:guardian_id/pings')
           })
 
           .catch(ValidationError, function (err) {
-            httpError(req, res, 400, null, err.message)
+            httpErrorResponse(req, res, 400, null, err.message)
           })
           .catch(sequelize.EmptyResultError, function (err) {
             console.error('Failed to save ping', err)
-            httpError(req, res, 404, null, err.message)
+            httpErrorResponse(req, res, 404, null, err.message)
           })
           .catch(function (err) {
             console.error('Failed to save ping', err)
-            httpError(req, res, 500, err, 'failed to save ping')
+            httpErrorResponse(req, res, 500, err, 'failed to save ping')
           })
       })
       .catch(function (err) {
         console.error('Failed to unzip json', err)
-        httpError(req, res, 500, err, 'failed to unzip json')
+        httpErrorResponse(req, res, 500, err, 'failed to unzip json')
       })
   })
 

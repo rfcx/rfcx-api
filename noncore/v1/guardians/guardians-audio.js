@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
@@ -36,7 +36,7 @@ router.route('/:guardian_id/audio')
             offset: req.rfcx.offset
           }).then(function (dbAudio) {
             if (dbAudio.length < 1) {
-              httpError(req, res, 404, 'database')
+              httpErrorResponse(req, res, 404, 'database')
             } else {
               views.models.guardianAudioJson(dbAudio)
                 .then(function (json) { res.status(200).json(json) })

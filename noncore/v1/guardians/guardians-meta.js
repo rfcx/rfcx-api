@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
@@ -250,11 +250,11 @@ router.route('/:guardian_id/meta/:meta_type')
             return null
           }).catch(function (err) {
             console.log('failure to retrieve meta data: ' + err)
-            httpError(req, res, 500, 'database')
+            httpErrorResponse(req, res, 500, 'database')
           })
       }).catch(function (err) {
         console.log('failure to retrieve guardian: ' + err)
-        httpError(req, res, 404, 'database')
+        httpErrorResponse(req, res, 404, 'database')
       })
   })
 
@@ -397,11 +397,11 @@ router.route('/:guardian_id/meta2/:meta_type')
             )
           }).catch(function (err) {
             console.log('failure to retrieve meta data: ' + err)
-            httpError(req, res, 500, 'database')
+            httpErrorResponse(req, res, 500, 'database')
           })
       }).catch(function (err) {
         console.log('failure to retrieve guardian: ' + err)
-        httpError(req, res, 404, 'database')
+        httpErrorResponse(req, res, 404, 'database')
       })
   })
 

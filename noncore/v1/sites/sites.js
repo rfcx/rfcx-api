@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 const sequelize = require('sequelize')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
@@ -36,12 +36,12 @@ router.route('/')
       })
       .then((dbSite) => {
         if (dbSite.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'))
         }
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(function (err) {
         console.log('failed to return site | ', err)
         if (err) { res.status(500).json({ msg: 'failed to return site' }) }
@@ -63,12 +63,12 @@ router.route('/admin')
       })
       .then((dbSite) => {
         if (dbSite.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'))
         }
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(function (err) {
         console.log('failed to return site | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return site' }) }
@@ -90,7 +90,7 @@ router.route('/statistics/audio')
       .spread((data) => {
         res.status(200).json(data)
       })
-      .catch(e => httpError(req, res, 500, e, "Couldn't get sites statistics."))
+      .catch(e => httpErrorResponse(req, res, 500, e, "Couldn't get sites statistics."))
   })
 
 router.route('/:site_id')
@@ -111,12 +111,12 @@ router.route('/:site_id')
       })
       .then((dbSite) => {
         if (dbSite.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.guardianSites(req, res, dbSite, req.query.extended === 'true'))
         }
       })
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
+      .catch(ForbiddenError, e => { httpErrorResponse(req, res, 403, null, e.message) })
       .catch((err) => {
         console.log('failed to return site | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return site' }) }
@@ -132,11 +132,11 @@ router.route('/kmz')
     const allowedExtensions = ['.kmz', '.kml']
     const file = req.files.file
     if (!file) {
-      return httpError(req, res, 400, null, 'No file provided.')
+      return httpErrorResponse(req, res, 400, null, 'No file provided.')
     }
     const extension = path.extname(file.originalname)
     if (!allowedExtensions.includes(extension)) {
-      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`)
+      return httpErrorResponse(req, res, 400, null, `Wrong file type. Allowed types are: ${allowedExtensions.join(', ')}`)
     }
     const filePath = req.files.file.path
     const isKML = (extension === '.kml')
@@ -180,7 +180,7 @@ router.route('/kmz')
         }
       })
       .then(() => { res.status(200).json(bounds) })
-      .catch(e => { console.log(e); httpError(req, res, 500, e, e.message || 'File couldn\'t be uploaded.') })
+      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, e.message || 'File couldn\'t be uploaded.') })
   })
 
 router.route('/:guid')
@@ -210,9 +210,9 @@ router.route('/:guid')
         return sitesService.formatSite(site, true)
       })
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Could not update the site.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not update the site.'))
   })
 
 router.route('/:site_id/bounds')
@@ -223,7 +223,7 @@ router.route('/:site_id/bounds')
       })
       .then(function (dbSite) {
         if (!dbSite) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           dbSite.bounds = {
             type: req.body.type,
@@ -268,8 +268,8 @@ router.route('/')
       .then((site) => {
         res.status(200).json(site)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })

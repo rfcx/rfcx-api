@@ -1,5 +1,5 @@
 const rolesService = require('../../../core/_services/roles')
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 
 /**
@@ -16,7 +16,7 @@ function hasPermission (permission, modelName) {
     return rolesService.hasPermission(permission, req.rfcx.auth_token_info, subjectId, modelName)
       .then(allowed => {
         if (!allowed) {
-          return httpError(req, res, 403, null, 'You do not have permission to access this item.')
+          return httpErrorResponse(req, res, 403, null, 'You do not have permission to access this item.')
         }
         next()
       })

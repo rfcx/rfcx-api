@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const passport = require('passport')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const Promise = require('bluebird')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
@@ -104,9 +104,9 @@ router.route('/')
       .then((data) => {
         res.status(200).send(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Could not find audio files.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find audio files.'))
   })
 
 router.route('/filter')
@@ -184,7 +184,7 @@ router.route('/download/zip')
         archive.finalize()
         return true
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(function (err) {
         console.log('failed to get audios | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to get audios' }) }
@@ -277,9 +277,9 @@ router.route('/labels')
       .then((data) => {
         res.status(200).send(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Could not find audio labels data.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find audio labels data.'))
   })
 
 router.route('/label-values')
@@ -288,9 +288,9 @@ router.route('/label-values')
       .then((data) => {
         res.status(200).send(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Could not find label values.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find label values.'))
   })
 
 router.route('/labels/download')
@@ -315,8 +315,8 @@ router.route('/labels/download')
       .then((zipPath) => {
         return fileUtil.serveFile(res, zipPath, 'annotations.zip', 'application/zip, application/octet-stream', !!req.query.inline)
       })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => { console.log(e); httpError(req, res, 500, e, 'Error while searching for annotations.') })
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, 'Error while searching for annotations.') })
   })
 
 router.route('/:audio_id')
@@ -377,9 +377,9 @@ router.route('/:guid/boxes')
       .then((data) => {
         res.status(200).send(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Could not create boxes for audio file.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not create boxes for audio file.'))
   })
 
 // implements a majority vote for each sample in the audio file
@@ -452,7 +452,7 @@ router.route('/nextafter/:audio_id')
       .then(function (dbAudio) {
         // if current audio or next audio was not found, return 404
         if (!dbAudio) {
-          return httpError(req, res, 404, 'database')
+          return httpErrorResponse(req, res, 404, 'database')
         }
         return guardianAudioJson(dbAudio)
           .then(function (audioJson) {
@@ -496,7 +496,7 @@ router.route('/prevbefore/:audio_id')
       .then(function (dbAudio) {
         // if current audio or next audio was not found, return 404
         if (!dbAudio) {
-          return httpError(req, res, 404, 'database')
+          return httpErrorResponse(req, res, 404, 'database')
         }
         return guardianAudioJson(dbAudio)
           .then(function (audioJson) {

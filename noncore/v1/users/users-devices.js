@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const ValidationError = require('../../../utils/converter/validation-error')
 const Converter = require('../../../utils/converter/converter')
 
@@ -19,7 +19,7 @@ router.route('/:user_id/device/register')
       .then((user) => {
 
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
         res.status(500).json({ err })
       })

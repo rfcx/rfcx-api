@@ -1,7 +1,7 @@
 // Hacks to override some of the dependencies in authorization.js
 process.env.NODE_LOG_LEVEL = 'error'
 jest.unmock('./authorization')
-jest.mock('../../../utils/http-errors', () => ({}))
+jest.mock('../../../utils/http-error-handler', () => ({}))
 jest.mock('../../../core/_services/auth0/auth0-service', () => ({
   getUserRolesFromToken (token) {
     return token.roles

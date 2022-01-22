@@ -1,7 +1,7 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const Converter = require('../../../utils/converter/converter')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const generator = require('generate-password')
@@ -43,18 +43,18 @@ router.route('/s/:hash')
   .get(function (req, res) {
     if (!redisEnabled) {
       console.error('Someone is trying to open hashed shortlink while Redis is disabled')
-      httpError(req, res, 501, null, 'This functionality is not available in the API.')
+      httpErrorResponse(req, res, 501, null, 'This functionality is not available in the API.')
       return
     }
     const hash = req.params.hash
     redis.getAsync(hash)
       .then((url) => {
         if (!url) {
-          return httpError(req, res, 404, null, 'Short link not found.')
+          return httpErrorResponse(req, res, 404, null, 'Short link not found.')
         }
         res.redirect(301, url)
       })
-      .catch(e => { httpError(req, res, 500, e, 'Error while getting the short link.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting the short link.'); console.log(e) })
   })
 
 router.route('/')
@@ -67,7 +67,7 @@ router.route('/')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     if (!redisEnabled) {
       console.error('Someone is trying to open hashed shortlink while Redis is disabled')
-      httpError(req, res, 501, null, 'This functionality is not available in the API.')
+      httpErrorResponse(req, res, 501, null, 'This functionality is not available in the API.')
       return
     }
     const transformedParams = {}
@@ -126,8 +126,8 @@ router.route('/')
 : ''}/${hash}`
         res.status(200).send(url)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while creating the short link.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while creating the short link.'); console.log(e) })
   })
 
 module.exports = router

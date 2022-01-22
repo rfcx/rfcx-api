@@ -1,7 +1,7 @@
 const express = require('express')
 const sequelize = require('sequelize')
 const models = require('../../_models')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
 const ValidationError = require('../../../utils/converter/validation-error')
 const reportsService = require('../../_services/reports/reports-service')
@@ -110,9 +110,9 @@ router.route('/report/audio/:guid').get(function (req, res) {
       const s3Path = attachmentService.getS3PathForType('audio', dbReport.reported_at)
       return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path, !!req.query.inline)
     })
-    .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-    .catch(e => httpError(req, res, 500, e, e.message || 'Could not find report audio.'))
+    .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+    .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+    .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find report audio.'))
 })
 
 router.route('/attachments/:guid').get(function (req, res) {
@@ -123,9 +123,9 @@ router.route('/attachments/:guid').get(function (req, res) {
       const s3Path = attachmentService.getS3PathForType(dbAttachment.Type.type, dbAttachment.reported_at)
       return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path, !!req.query.inline)
     })
-    .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-    .catch(e => httpError(req, res, 500, e, e.message || 'Could not find report audio.'))
+    .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+    .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+    .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find report audio.'))
 })
 
 module.exports = router

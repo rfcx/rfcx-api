@@ -4,7 +4,7 @@ const router = express.Router()
 const views = require('../../views/v1')
 const checkInHelpers = require('../../_utils/rfcx-checkin')
 const queueForPrediction = require('../../_utils/rfcx-analysis/queue-for-prediction')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const Promise = require('bluebird')
@@ -178,15 +178,15 @@ router.route('/:guardian_id/checkins')
         return res.status(200).json(returnJson)
       })
       .catch(ValidationError, function (err) {
-        httpError(req, res, 400, null, err.message)
+        httpErrorResponse(req, res, 400, null, err.message)
       })
       .catch(sequelize.EmptyResultError, function (err) {
         console.error('Failed to save checkin', err)
-        httpError(req, res, 404, null, err.message)
+        httpErrorResponse(req, res, 404, null, err.message)
       })
       .catch(function (err) {
         console.error('Failed to save checkin', err)
-        httpError(req, res, 500, err, 'failed to save checkin')
+        httpErrorResponse(req, res, 500, err, 'failed to save checkin')
       })
   })
 
@@ -211,18 +211,18 @@ router.route('/:guardian_id/checkins')
             offset: req.rfcx.offset
           }).then(function (dbCheckIn) {
             if (dbCheckIn.length < 1) {
-              httpError(req, res, 404, 'database')
+              httpErrorResponse(req, res, 404, 'database')
             } else {
               views.models.guardianCheckIns(req, res, dbCheckIn)
                 .then(function (json) { res.status(200).json(json) })
             }
           }).catch(function (err) {
             console.error(err)
-            if (err) { httpError(req, res, 500, 'database') }
+            if (err) { httpErrorResponse(req, res, 500, 'database') }
           })
       }).catch(function (err) {
         console.error(err)
-        if (err) { httpError(req, res, 500, 'database') }
+        if (err) { httpErrorResponse(req, res, 500, 'database') }
       })
   })
 

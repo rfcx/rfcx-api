@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const ValidationError = require('../../../utils/converter/validation-error')
 const pdfService = require('../../_services/pdf/pdf')
 const sequelize = require('sequelize')
@@ -22,9 +22,9 @@ router.route('/generate-with-pdfmake')
       .then((base64Str) => {
         res.send(base64Str)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(req, res, 500, e, 'Could not generate pdf from given object.') })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, 'Could not generate pdf from given object.') })
   })
 
 module.exports = router

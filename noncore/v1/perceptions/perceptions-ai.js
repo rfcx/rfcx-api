@@ -1,7 +1,7 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const PerceptionsAiService = require('../../_services/legacy/perceptions/perceptions-ai-service')
@@ -44,9 +44,9 @@ function processAiCreation (guid, req, res) {
       api.links.self = urls.getApiUrl(req) + '/perceptions/ai'
       res.status(200).json(api)
     })
-    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+    .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
     // catch-all for any other that is not based on user input
-    .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be created: ${e}`))
+    .catch(e => httpErrorResponse(req, res, 500, e, `Perception Ai couldn't be created: ${e}`))
 }
 
 router.route('/ai')
@@ -69,7 +69,7 @@ router.route('/ai')
       })
       .catch(function (err) {
         console.log('failed to return models | ', err)
-        httpError(req, res, 500, err, 'failed to return models')
+        httpErrorResponse(req, res, 500, err, 'failed to return models')
       })
   })
 
@@ -87,8 +87,8 @@ router.route('/ai/:id/precision/events')
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id + '/precision/events'
         res.status(200).json(api)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be found: ${e}`))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, `Perception Ai couldn't be found: ${e}`))
   })
 
 router.route('/ai/:id')
@@ -105,8 +105,8 @@ router.route('/ai/:id')
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id
         res.status(200).json(api)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be found: ${e}`))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, `Perception Ai couldn't be found: ${e}`))
   })
 
 router.route('/ai')
@@ -146,9 +146,9 @@ router.route('/ai/:id')
         api.links.self = urls.getApiUrl(req) + '/perceptions/ai/' + req.params.id
         res.status(200).json(api)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, `Perception Ai couldn't be updated: ${e}`))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, `Perception Ai couldn't be updated: ${e}`))
   })
 
 module.exports = router

@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
 const passport = require('passport')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const Promise = require('bluebird')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
@@ -23,7 +23,7 @@ router.route('/audio-collections/by-guids')
     const body = req.body
 
     if (!body.audios || !body.audios.length) {
-      return httpError(req, res, 400, null, 'Request does not contain audio guids')
+      return httpErrorResponse(req, res, 400, null, 'Request does not contain audio guids')
     }
 
     // Convert array of objects to object with keys
@@ -76,7 +76,7 @@ router.route('/audio-collections/by-guids')
       .bind({})
       .then(function (dbAudio) {
         if (!dbAudio.length) {
-          return httpError(req, res, 400, null, 'Database does not contain following guids')
+          return httpErrorResponse(req, res, 400, null, 'Database does not contain following guids')
         }
 
         this.dbAudio = dbAudio
@@ -200,7 +200,7 @@ router.route('/audio-collections/:id/data')
       .bind({})
       .then(function (dbGuardianAudioCollection) {
         if (!dbGuardianAudioCollection) {
-          return httpError(req, res, 404, null, 'Database does not contain following audio collection.')
+          return httpErrorResponse(req, res, 404, null, 'Database does not contain following audio collection.')
         }
         this.guids = dbGuardianAudioCollection.GuardianAudios.map(function (audio) {
           return audio.guid
@@ -216,7 +216,7 @@ router.route('/audio-collections/:id/data')
       })
       .then(function (dbAudioAnalysisTrainingSet) {
         if (!dbAudioAnalysisTrainingSet) {
-          return httpError(req, res, 404, null, 'Audio Collection is not associated with any Training Sets.')
+          return httpErrorResponse(req, res, 404, null, 'Audio Collection is not associated with any Training Sets.')
         }
         this.eventValue = dbAudioAnalysisTrainingSet.event_value
         return datafiltersService.getLabelsData({

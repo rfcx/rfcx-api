@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const hash = require('../../../utils/misc/hash')
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const { httpErrorHandler } = require('../../../utils/http-error-handler.js')
 const passport = require('passport')
 const Promise = require('bluebird')
@@ -49,9 +49,9 @@ router.route('/public')
       .then((data) => {
         res.status(200).send(data)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while getting guardians.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting guardians.'); console.log(e) })
   })
 
 router.route('/:guid')
@@ -60,9 +60,9 @@ router.route('/:guid')
       .then((guardian) => {
         res.send(guardiansService.formatGuardian(guardian))
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, `Error while getting guardian with guid "${req.params.guid}".`); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, `Error while getting guardian with guid "${req.params.guid}".`); console.log(e) })
   })
 
 router.route('/:guid')
@@ -187,9 +187,9 @@ router.route('/register')
         try {
           message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
         } catch (err) { }
-        httpError(req, res, 400, null, message)
+        httpErrorResponse(req, res, 400, null, message)
       } else if (e instanceof sequelize.EmptyResultError) {
-        httpError(req, res, 404, null, e.message)
+        httpErrorResponse(req, res, 404, null, e.message)
       } else {
         res.status(500).json({ message: e.message, error: { status: 500 } })
       }

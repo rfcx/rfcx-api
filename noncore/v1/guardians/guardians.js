@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const hash = require('../../../utils/misc/hash')
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 const Promise = require('bluebird')
 const sequelize = require('sequelize')
@@ -48,7 +48,7 @@ router.route('/')
       .bind({})
       .then(function (dbGuardian) {
         if (dbGuardian.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
           return null
         } else {
           return dbGuardian
@@ -130,7 +130,7 @@ router.route('/admin')
       .bind({})
       .then(function (dbGuardian) {
         if (dbGuardian.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
           return null
         } else {
           return dbGuardian
@@ -205,9 +205,9 @@ router.route('/my')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpError(req, res, 500, e, "Couldn't get your guardians.") })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get your guardians.") })
   })
 
 router.route('/:guardian_id')
@@ -219,7 +219,7 @@ router.route('/:guardian_id')
         limit: 1
       }).then(function (dbGuardian) {
         if (dbGuardian.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.guardian(req, res, dbGuardian))
         }
@@ -238,7 +238,7 @@ router.route('/:guardian_id/public-info')
       })
       .then(function (dbGuardian) {
         if (!dbGuardian) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.guardianPublicInfo(dbGuardian)[0])
         }
@@ -308,9 +308,9 @@ router.route('/register')
         try {
           message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
         } catch (err) { }
-        httpError(req, res, 400, null, message)
+        httpErrorResponse(req, res, 400, null, message)
       })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
       .catch(function (err) {
         console.log(err)
         res.status(500).json({ message: err.message, error: { status: 500 } })
@@ -359,11 +359,11 @@ router.route('/:guid')
       .then(function (json) {
         res.status(200).send(json)
       })
-      .catch(ForbiddenError, e => { httpError(req, res, 403, null, e.message) })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(sequelize.EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while updating the Guardian.') })
+      .catch(ForbiddenError, e => { httpErrorResponse(req, res, 403, null, e.message) })
+      .catch(ValidationError, e => { httpErrorResponse(req, res, 400, null, e.message) })
+      .catch(EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
+      .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while updating the Guardian.') })
   })
 
 module.exports = router

@@ -1,4 +1,4 @@
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const auth0Service = require('../../../core/_services/auth0/auth0-service')
 const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
@@ -11,7 +11,7 @@ function requireTokenType (type) {
   // curry
   return function (req, res, next) {
     if (req.rfcx.auth_token_info.type !== type) {
-      httpError(req, res, 403, 'token')
+      httpErrorResponse(req, res, 403, 'token')
       req.end()
     } else {
       next()

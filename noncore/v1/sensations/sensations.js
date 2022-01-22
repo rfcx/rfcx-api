@@ -3,7 +3,7 @@ const router = express.Router()
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const sensationsService = require('../../_services/legacy/sensations/sensations-service')
 const ValidationError = require('../../../utils/converter/validation-error')
 
@@ -25,9 +25,9 @@ router.route('/')
     sensationsService.createSensations(serviceParams)
       .then(result => res.status(200).json(result))
       // if the user supplied wrong arguments we want to give an error message and have a 400 error code
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       // catch-all for any other that is not based on user input
-      .catch(e => httpError(req, res, 500, e, "Sensations couldn't be created."))
+      .catch(e => httpErrorResponse(req, res, 500, e, "Sensations couldn't be created."))
   })
 
 module.exports = router

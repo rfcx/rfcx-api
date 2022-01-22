@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const token = require('../../_utils/internal-rfcx/token').token
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
@@ -59,7 +59,7 @@ router.route('/web')
         order: [['order', 'ASC']]
       }).then(function (dbAudioHighlights) {
         if (dbAudioHighlights.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json({ streams: views.models.guardianAudioHighlights(req, res, dbAudioHighlights) })
         }

@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const path = require('path')
 const passport = require('passport')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const archiveUtil = require('../../../utils/misc/archive')
 const dirUtil = require('../../../utils/misc/dir')
 const fileUtil = require('../../../utils/misc/file')
@@ -25,10 +25,10 @@ function query (req, res) {
     .then(function (json) {
       res.status(200).send(json)
     })
-    .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-    .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-    .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-    .catch(e => { httpError(req, res, 500, e, 'Error while searching events.'); console.log(e) })
+    .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+    .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+    .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+    .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching events.'); console.log(e) })
 }
 
 router.route('/')
@@ -46,8 +46,8 @@ router.route('/reviews')
       .then(function (json) {
         res.status(200).send(json)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while searching reviews.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching reviews.'); console.log(e) })
   })
 
 router.route('/reviews/ai-models')
@@ -56,8 +56,8 @@ router.route('/reviews/ai-models')
       .then((data) => {
         res.status(200).send(data)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Could not find AI models.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not find AI models.'); console.log(e) })
   })
 
 router.route('/reviews/download')
@@ -81,8 +81,8 @@ router.route('/reviews/download')
       .then((zipPath) => {
         return fileUtil.serveFile(res, zipPath, 'reviews.zip', 'application/zip, application/octet-stream', !!req.query.inline)
       })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => { console.log(e); httpError(req, res, 500, e, 'Error while searching reviews.') })
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, 'Error while searching reviews.') })
   })
 
 router.route('/:guid')
@@ -91,9 +91,9 @@ router.route('/:guid')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, 'Event with given guid not found.'))
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, 'Event with given guid not found.'))
   })
 
 router.route('/:guid/windows')
@@ -102,8 +102,8 @@ router.route('/:guid/windows')
       .then(function (json) {
         res.status(200).send(json)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while searching for event tags.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching for event tags.'); console.log(e) })
   })
 
 router.route('/:guid/trigger')
@@ -162,9 +162,9 @@ router.route('/:guid/trigger')
           }
         }
       })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while triggering event notification.'); console.log(e) })
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while triggering event notification.'); console.log(e) })
       .finally(() => {
         eventData = null
         guardian = null
@@ -211,9 +211,9 @@ router.route('/:guid/review')
         eventsServiceNeo4j.saveInTimescaleDB(event, winds, transformedParams.windows, req.rfcx.auth_token_info.owner_id)
         res.status(200).send({ success: true })
       })
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while saving review data.'); console.log(e) })
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while saving review data.'); console.log(e) })
   })
 
 module.exports = router

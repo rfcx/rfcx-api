@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const guid = require('../../../utils/misc/guid.js')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
@@ -214,17 +214,17 @@ router.route('/values')
         return eventValueService.getGuardianAudioEventValues(transformedParams)
       })
       .then((data) => { res.status(200).json(data) })
-      .catch(e => { httpError(req, res, 500, e, 'Could not return Guardian Audio Event Values.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return Guardian Audio Event Values.'); console.log(e) })
   })
 
 router.route('/values/hlk/:value')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return eventValueService.searchForHighLevelKeysImageAndDescription(req.params.value)
       .then((data) => { res.status(200).json(data) })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Could not return image and description for Guardian Audio Event Value.'); console.log(e) })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return image and description for Guardian Audio Event Value.'); console.log(e) })
   })
 
 router.route('/values/:value')
@@ -232,10 +232,10 @@ router.route('/values/:value')
     return eventValueService.getGuardianAudioEventValue(req.params.value, true)
       .then(eventValueService.formatGuardianAudioEventValue)
       .then((data) => { res.status(200).json(data) })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Could not return data for Guardian Audio Event Value.'); console.log(e) })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return data for Guardian Audio Event Value.'); console.log(e) })
   })
 
 router.route('/high-level-keys')
@@ -250,8 +250,8 @@ router.route('/high-level-keys')
         return eventValueService.searchForHighLevelKeys(transformedParams.search)
       })
       .then((data) => { res.status(200).json(data) })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Could not search for high level keys of audio labels.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not search for high level keys of audio labels.'); console.log(e) })
   })
 
 router.route('/types')
@@ -259,7 +259,7 @@ router.route('/types')
     eventTypeService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data) })
-      .catch(e => httpError(req, res, 500, e, 'Could not return Guardian Audio Event Types.'))
+      .catch(e => httpErrorResponse(req, res, 500, e, 'Could not return Guardian Audio Event Types.'))
   })
 
 router.route('/:guid')
@@ -272,9 +272,9 @@ router.route('/:guid')
       .then((data) => {
         res.status(200).json(data.events[0])
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, "GuardianAudioEvent couldn't be found."))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, "GuardianAudioEvent couldn't be found."))
   })
 
 router.route('/')
@@ -323,10 +323,10 @@ router.route('/')
 
     const attrsValidity = checkAttrValidity()
     if (!attrsValidity.status) {
-      return httpError(req, res, 400, null, attrsValidity.missingAttrsStr)
+      return httpErrorResponse(req, res, 400, null, attrsValidity.missingAttrsStr)
     }
     if (body.guid && !guid.isValid(body.guid)) {
-      return httpError(req, res, 400, null, 'Guardian Audio Event guid has incorrect format')
+      return httpErrorResponse(req, res, 400, null, 'Guardian Audio Event guid has incorrect format')
     }
 
     const promises = []
@@ -352,19 +352,19 @@ router.route('/')
       .bind({})
       .then(function (data) {
         if (!data[0]) {
-          httpError(req, res, 404, null, 'Audio with given guid not found')
+          httpErrorResponse(req, res, 404, null, 'Audio with given guid not found')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         if (!data[0].Guardian) {
-          httpError(req, res, 500, null, 'Audio is not associated with any Guardians')
+          httpErrorResponse(req, res, 500, null, 'Audio is not associated with any Guardians')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         if (!data[1]) {
-          httpError(req, res, 404, null, 'Model with given shortname/guid not found')
+          httpErrorResponse(req, res, 404, null, 'Model with given shortname/guid not found')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         if (!data[4]) {
-          httpError(req, res, 404, null, 'Reason for Creation with given name not found')
+          httpErrorResponse(req, res, 404, null, 'Reason for Creation with given name not found')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
 
@@ -514,9 +514,9 @@ router.route('/')
         if (err) {
           console.log(err)
           if (err.name && err.name === 'SequelizeValidationError') {
-            httpError(req, res, 400, null, 'Input data has incorrect format')
+            httpErrorResponse(req, res, 400, null, 'Input data has incorrect format')
           } else {
-            httpError(req, res, 500, 'database')
+            httpErrorResponse(req, res, 500, 'database')
           }
         }
       })
@@ -531,7 +531,7 @@ router.route('/:event_id/review')
         limit: 1
       }).then(function (dbEvent) {
         if (dbEvent.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           const reviewerInput = {
             classification: (req.body.classification != null) ? req.body.classification.toLowerCase() : null,
@@ -570,7 +570,7 @@ router.route('/:event_id/review')
       }).catch(function (err) {
         console.log(err)
         if (err) {
-          httpError(req, res, 500, 'database')
+          httpErrorResponse(req, res, 500, 'database')
         }
       })
   })
@@ -585,9 +585,9 @@ router.route('/:guid/comment')
       .then((data) => {
         res.status(200).json(data.events[0])
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log(e); httpError(req, res, 500, e, 'Error in process of saving comment for event') })
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, 'Error in process of saving comment for event') })
   })
 
 router.route('/:guid/confirm')
@@ -596,8 +596,8 @@ router.route('/:guid/confirm')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => httpError(req, res, 500, e, 'Could not update Event review.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, 'Could not update Event review.'))
   })
 
 router.route('/:guid/reject')
@@ -606,8 +606,8 @@ router.route('/:guid/reject')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => httpError(req, res, 500, e, 'Could not update Event review.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, 'Could not update Event review.'))
   })
 
 module.exports = router

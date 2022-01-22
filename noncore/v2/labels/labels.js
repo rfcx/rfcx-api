@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const ValidationError = require('../../../utils/converter/validation-error')
 const EmptyResultError = require('../../../utils/converter/empty-result-error')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
@@ -18,8 +18,8 @@ router.route('/sync')
       .then(function (json) {
         res.status(200).send(json)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while getting public AIs.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting public AIs.'); console.log(e) })
   })
 
 router.route('/collections')
@@ -28,8 +28,8 @@ router.route('/collections')
       .then(function (json) {
         res.status(200).send(json)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while getting public AICs.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting public AICs.'); console.log(e) })
   })
 
 router.route('/collections/:guid')
@@ -38,8 +38,8 @@ router.route('/collections/:guid')
       .then(function (json) {
         res.status(200).send(json)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while getting collection and ais by guid.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting collection and ais by guid.'); console.log(e) })
   })
 
 router.route('/create')
@@ -68,20 +68,20 @@ router.route('/create')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(ValidationError, e => { httpError(req, res, 400, null, e.message) })
-      .catch(EmptyResultError, e => { httpError(req, res, 404, null, e.message) })
-      .catch(e => { httpError(req, res, 500, e, 'Error while creating the AI.'); console.log(e) })
+      .catch(ValidationError, e => { httpErrorResponse(req, res, 400, null, e.message) })
+      .catch(EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while creating the AI.'); console.log(e) })
   })
 
 router.route('/:guid/upload-file')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     const file = req.files.file
     if (!file) {
-      return httpError(req, res, 400, null, 'No file provided.')
+      return httpErrorResponse(req, res, 400, null, 'No file provided.')
     }
     const extension = '.tar.gz'
     if (!file.originalname.endsWith(extension)) {
-      return httpError(req, res, 400, null, `Wrong file type. Allowed types are: ${extension}`)
+      return httpErrorResponse(req, res, 400, null, `Wrong file type. Allowed types are: ${extension}`)
     }
 
     const opts = {
@@ -91,9 +91,9 @@ router.route('/:guid/upload-file')
     }
     return aiService.uploadAIFile(opts)
       .then(result => res.status(200).json(result))
-      .catch(sequelize.EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'File couldn\'t be uploaded.'))
+      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'File couldn\'t be uploaded.'))
   })
 
 router.route('/:guid')
@@ -102,9 +102,9 @@ router.route('/:guid')
       .then((json) => {
         res.status(200).send(json)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, `Error while getting AI with guid "${req.params.guid}".`); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, `Error while getting AI with guid "${req.params.guid}".`); console.log(e) })
   })
 
 // AI model update
@@ -129,9 +129,9 @@ router.route('/:guid')
       .then(function (json) {
         res.status(200).send(json)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(EmptyResultError, e => httpError(req, res, 404, null, e.message))
-      .catch(e => { httpError(req, res, 500, e, 'Error while updating the AI.'); console.log(e) })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while updating the AI.'); console.log(e) })
   })
 
 module.exports = router

@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const httpError = require('../../../utils/http-errors')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const { ValidationError } = require('sequelize')
 const passport = require('passport')
 
@@ -28,7 +28,7 @@ router.route('/segments/sms')
           try {
             message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
           } catch (err) { }
-          httpError(req, res, 400, null, message)
+          httpErrorResponse(req, res, 400, null, message)
         })
         .catch(function (err) {
           console.error(err)
@@ -57,7 +57,7 @@ router.route('/segments/sbd')
           try {
             message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
           } catch (err) { }
-          httpError(req, res, 400, null, message)
+          httpErrorResponse(req, res, 400, null, message)
         })
         .catch(function (err) {
           console.error(err)
@@ -90,7 +90,7 @@ router.route('/segments/swm')
           try {
             message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
           } catch (err) { }
-          httpError(req, res, 400, null, message)
+          httpErrorResponse(req, res, 400, null, message)
         })
         .catch(function (err) {
           console.error(err)
@@ -109,7 +109,7 @@ router.route('/segments/:groupId')
     segmentUtils.getSegmentsFromGroupId(groupId)
       .then(segments => {
         if (segments.length === 0) {
-          httpError(req, res, 400, null, 'group id is not existing')
+          httpErrorResponse(req, res, 400, null, 'group id is not existing')
         }
         msgSegUtils.decodeSegmentsToJSON(segments)
           .then(result => {

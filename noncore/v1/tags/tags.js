@@ -8,7 +8,7 @@ const ApiConverter = require('../../../utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const Promise = require('bluebird')
 const sqlUtils = require('../../../utils/misc/sql')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const urls = require('../../../utils/misc/urls')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
@@ -268,19 +268,19 @@ router.route('/classified/byannotator')
     const body = req.body
 
     if (!body.annotatorGuid || !body.annotatorGuid.length) {
-      return httpError(req, res, 400, null, 'Request does not contain user guid')
+      return httpErrorResponse(req, res, 400, null, 'Request does not contain user guid')
     }
 
     if (!body.audioCollection && (!body.audioGuids || !body.audioGuids.length)) {
-      return httpError(req, res, 400, null, 'Request does not contain audio guids')
+      return httpErrorResponse(req, res, 400, null, 'Request does not contain audio guids')
     }
 
     if (!body.type || !body.type.length) {
-      return httpError(req, res, 400, null, 'Request does not contain tag type')
+      return httpErrorResponse(req, res, 400, null, 'Request does not contain tag type')
     }
 
     if (!body.value || !body.value.length) {
-      return httpError(req, res, 400, null, 'Request does not contain tag value')
+      return httpErrorResponse(req, res, 400, null, 'Request does not contain tag value')
     }
 
     function getAudioGuids () {
@@ -306,7 +306,7 @@ router.route('/classified/byannotator')
               resolve(audioGuids)
             })
             .catch(function () {
-              httpError(req, res, 404, null, 'Audio collection with given guid was not found')
+              httpErrorResponse(req, res, 404, null, 'Audio collection with given guid was not found')
             })
         } else {
           // if user specified only audio guids, then load only them

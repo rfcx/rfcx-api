@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
@@ -20,7 +20,7 @@ router.route('/donations/:donation_id')
         limit: 1
       }).then(function (dbAdoptProtectDonation) {
         if (dbAdoptProtectDonation.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.adoptProtectDonations(req, res, dbAdoptProtectDonation))
         }
@@ -39,7 +39,7 @@ router.route('/donations')
         limit: 1
       }).then(function (dbAdoptProtectDonation) {
         if (dbAdoptProtectDonation.length < 1) {
-          httpError(req, res, 404, 'database')
+          httpErrorResponse(req, res, 404, 'database')
         } else {
           res.status(200).json(views.models.adoptProtectDonations(req, res, dbAdoptProtectDonation))
         }
@@ -71,8 +71,8 @@ router.route('/stripe/charge')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Error while running charge on Stripe.'))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Error while running charge on Stripe.'))
   })
 
 router.route('/classy/access-token')
@@ -81,8 +81,8 @@ router.route('/classy/access-token')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => { console.log('errrr', e); httpError(req, res, 500, e, e.message || 'Error while getting Classy access token.') })
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => { console.log('errrr', e); httpErrorResponse(req, res, 500, e, e.message || 'Error while getting Classy access token.') })
   })
 
 router.route('/classy/save-stripe-donation')
@@ -124,8 +124,8 @@ router.route('/classy/save-stripe-donation')
       .then((data) => {
         res.status(200).json(data)
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Error while running saving Stripe donation in Classy.'))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Error while running saving Stripe donation in Classy.'))
   })
 
 router.route('/stripe/classy')
@@ -189,8 +189,8 @@ router.route('/stripe/classy')
           classy: classyData
         })
       })
-      .catch(ValidationError, e => httpError(req, res, 400, null, e.message))
-      .catch(e => httpError(req, res, 500, e, e.message || 'Error while processing the donation.'))
+      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
+      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Error while processing the donation.'))
   })
 
 module.exports = router

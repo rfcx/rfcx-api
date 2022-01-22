@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
 const passport = require('passport')
-const httpError = require('../../../utils/http-errors.js')
+const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const Promise = require('bluebird')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../../utils/api-converter')
@@ -15,11 +15,11 @@ router.route('/training-sets')
     const body = req.body
 
     if (!body.name) {
-      return httpError(req, res, 400, null, 'Request does not contain set name')
+      return httpErrorResponse(req, res, 400, null, 'Request does not contain set name')
     }
 
     if (!body.event_value) {
-      return httpError(req, res, 400, null, 'Request does not contain event value')
+      return httpErrorResponse(req, res, 400, null, 'Request does not contain event value')
     }
 
     const dataObj = {
