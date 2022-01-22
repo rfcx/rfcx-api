@@ -6,7 +6,6 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../_utils/api-converter')
 const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const models = require('../../_models')
-const flipCoin = require('../../../utils/misc/rand.js').flipCoin
 const sqlUtils = require('../../../utils/misc/sql')
 const csvUtils = require('../../_utils/misc/csv')
 const datafiltersService = require('../../_services/datafilters/datafilters-service')
@@ -146,9 +145,7 @@ function combineFilterOpts (req) {
   if (req.params.tagValue) {
     // if true then search for audios tagged with specified tag
     // Todo: for now we need more of the files for tags, so we'll always search for tags - we need to remove true soon
-    if (body.noRandomValues || flipCoin() || true) { // eslint-disable-line no-constant-condition
-      filterOpts.tagValues = req.params.tagValue
-    }
+    filterOpts.tagValues = req.params.tagValue
   }
 
   return filterOpts
