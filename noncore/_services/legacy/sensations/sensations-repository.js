@@ -1,9 +1,13 @@
 const sequelize = require('../../../_models').sequelize
-const timeUtils = require('../../../../utils/misc/datetime')
+
+function momentToMysqlString (mom) {
+  return mom.tz('UTC').format('YYYY-MM-DD HH:mm:ss.SSS')
+}
+
 module.exports = class SensationsRepository {
   create (params) {
-    params.starting_after = timeUtils.momentToMysqlString(params.starting_after)
-    params.ending_before = timeUtils.momentToMysqlString(params.ending_before)
+    params.starting_after = momentToMysqlString(params.starting_after)
+    params.ending_before = momentToMysqlString(params.ending_before)
 
     const sql = 'INSERT INTO `Sensations`(\n' +
         ' `time` ,\n' +

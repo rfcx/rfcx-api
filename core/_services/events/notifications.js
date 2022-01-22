@@ -3,7 +3,7 @@ const subscriptionTypes = require('../subscriptions/subscription-types')
 const mailService = require('../../../noncore/_services/mail/mail-service')
 const firebaseService = require('../../../noncore/_services/firebase/firebase-service')
 const moment = require('moment-timezone')
-const { getTzByLatLng } = require('../../../utils/misc/timezone')
+const { getTzByLatLng } = require('../../_utils/datetime/timezone')
 let emailTemplate
 
 /**

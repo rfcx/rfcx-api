@@ -176,18 +176,9 @@ module.exports = class Conversion {
     return this
   }
 
-  toQuantumTime () {
-    this.toMoment()
-    this.conversions.push(() => {
-      timeUtils.quantify(this.value)
-    })
-    return this
-  }
-
   toDateString () {
     this.toMoment()
     this.conversions.push(() => {
-      // timeUtils.quantify(this.value);
       this.value = moment(this.value).format('YYYY-MM-DD')
     })
     return this

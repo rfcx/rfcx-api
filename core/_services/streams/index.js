@@ -6,7 +6,7 @@ const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, D
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
 const { hashedCredentials } = require('../../../utils/misc/hash')
-const { getTzByLatLng } = require('../../../utils/misc/timezone')
+const { getTzByLatLng } = require('../../_utils/datetime/timezone')
 
 const availableIncludes = [
   User.include({ as: 'created_by' }),

@@ -5,6 +5,33 @@ const { ValidationError } = require('../../../../common/error-handling/errors')
 const models = require('../../../_models')
 const moment = require('moment-timezone')
 
+/**
+ * We round the time so that all times only have 0 or 500 miliseconds - our quantum of time
+ * @returns {moment} quantified time
+ */
+function quantify (mom) {
+  const miliseconds = mom.milliseconds()
+
+  // first trident (like quadrant but for three segments? )
+  if (miliseconds >= 0 && miliseconds < 250) {
+    mom.milliseconds(0)
+  }
+
+  // second trident
+  if (miliseconds >= 250 && miliseconds < 750) {
+    mom.milliseconds(500)
+  }
+
+  // third trident
+  if (miliseconds >= 750) {
+    // setting miliseconds above 999 will add the appropriate secs to the date
+    mom.milliseconds(1000)
+    mom.milliseconds(0)
+  }
+
+  return mom
+}
+
 function createSensations (params) {
   params = new Converter(params)
 
@@ -25,12 +52,14 @@ function createSensations (params) {
   params.convert('latitude').optional().default(1.0).toLatitude()
   params.convert('longitude').optional().default(1.0).toLongitude()
 
-  params.convert('starting_after').toQuantumTime()
-  params.convert('ending_before').toQuantumTime()
+  params.convert('starting_after').toMoment()
+  params.convert('ending_before').toMoment()
 
   // validate will create a promise, if everything is fine the promise resolves and we can go on in then
   // if not the promise is rejected and the caller needs to deal with ValidationError
   return params.validate().then(args => {
+    args.starting_after = quantify(args.starting_after)
+    args.ending_before = quantify(args.ending_before)
     return new SensationsRepository().create(args)
   })
 }
