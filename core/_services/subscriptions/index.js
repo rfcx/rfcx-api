@@ -1,4 +1,4 @@
-const { Organization, Project, Stream, User, UserProjectSubscription } = require('../../../models')
+const { Organization, Project, Stream, User, UserProjectSubscription } = require('../../_models')
 const subscriptionTypes = require('./subscription-types')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const ValidaionError = require('../../../common/error-handling/errors')

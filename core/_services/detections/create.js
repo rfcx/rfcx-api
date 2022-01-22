@@ -1,6 +1,6 @@
 const build = require('./create.build')
 const classifierService = require('../classifiers')
-const { Detection } = require('../../../models')
+const { Detection } = require('../../_models')
 
 async function create (rawDetections) {
   // Find dependent ids, filter rows

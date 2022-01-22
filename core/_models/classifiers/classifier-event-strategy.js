@@ -1,4 +1,4 @@
-const includeBuilder = require('../../core/_utils/db/include-builder')
+const includeBuilder = require('../../_utils/db/include-builder')
 
 module.exports = (sequelize, DataTypes) => {
   const ClassifierEventStrategy = sequelize.define('ClassifierEventStrategy', {

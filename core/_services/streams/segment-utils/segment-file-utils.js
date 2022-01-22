@@ -1,5 +1,5 @@
 const { runExec } = require('./shell')
-const models = require('../../../../models')
+const models = require('../../../_models')
 const path = require('path')
 const moment = require('moment-timezone')
 const audioUtils = require('../../../../noncore/_utils/rfcx-audio').audioUtils

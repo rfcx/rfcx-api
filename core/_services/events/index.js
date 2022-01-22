@@ -1,5 +1,5 @@
 const moment = require('moment')
-const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream } = require('../../../models')
+const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream } = require('../../_models')
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../_utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../roles')

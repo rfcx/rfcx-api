@@ -1,4 +1,4 @@
-const { FileExtension } = require('../../../models')
+const { FileExtension } = require('../../_models')
 
 /**
  * Find or create model for FileExtension based on input value

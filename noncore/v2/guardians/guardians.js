@@ -16,7 +16,7 @@ const streamsService = require('../../../core/_services/streams')
 const arbimonService = require('../../../core/_services/arbimon')
 const Converter = require('../../../common/converter')
 const modelsLegacy = require('../../_models')
-const models = require('../../../models')
+const models = require('../../../core/_models')
 const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 
 router.route('/public')

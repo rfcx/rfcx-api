@@ -1,4 +1,4 @@
-const models = require('../../../models')
+const models = require('../../_models')
 const { migrate, truncate, seed, seedValues } = require('../../../common/testing/sequelize')
 const service = require('./segments')
 const moment = require('moment')

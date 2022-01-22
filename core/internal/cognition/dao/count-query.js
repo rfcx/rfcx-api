@@ -1,4 +1,4 @@
-const { sequelize, Sequelize: { QueryTypes } } = require('../../../../models')
+const { sequelize, Sequelize: { QueryTypes } } = require('../../../_models')
 
 /**
  *

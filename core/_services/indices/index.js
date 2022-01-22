@@ -1,4 +1,4 @@
-const models = require('../../../models')
+const models = require('../../_models')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 function query (limit, offset) {

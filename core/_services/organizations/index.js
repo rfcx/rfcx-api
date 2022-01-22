@@ -1,4 +1,4 @@
-const { Organization, Sequelize, User } = require('../../../models')
+const { Organization, Sequelize, User } = require('../../_models')
 const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
 const { hasPermission, getAccessibleObjectsIDs, ORGANIZATION, CREATE, READ, UPDATE, DELETE } = require('../roles')
 const { randomId } = require('../../../common/random/hash')

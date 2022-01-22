@@ -1,4 +1,4 @@
-const includeBuilder = require('../../core/_utils/db/include-builder')
+const includeBuilder = require('../../_utils/db/include-builder')
 
 module.exports = function (sequelize, DataTypes) {
   const Project = sequelize.define('Project', {

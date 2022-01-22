@@ -1,4 +1,4 @@
-const models = require('../../../models')
+const models = require('../../_models')
 const streamsService = require('./index')
 const moment = require('moment')
 
