@@ -1,7 +1,7 @@
 const verboseLogging = (process.env.NODE_ENV !== 'production')
 const models = require('../../../noncore/_models')
 const hash = require('../../../utils/misc/hash')
-const regex = require('../../../utils/misc/regex.js')
+const regex = require('./utils/regex')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   // TO DO

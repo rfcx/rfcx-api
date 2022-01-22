@@ -5,7 +5,7 @@ const fs = require('fs')
 const hash = require('../../../../utils/misc/hash')
 const audioUtils = require('../../../_utils/rfcx-audio').audioUtils
 const assetUtils = require('../../../_utils/internal-rfcx/asset-utils.js').assetUtils
-const validation = require('../../../../utils/misc/validation.js')
+const validation = require('../../../_utils/misc/validation')
 const { GuardianSite, Guardian, GuardianAudioFormat } = require('../../../_models')
 
 exports.models = {

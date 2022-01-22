@@ -1,6 +1,6 @@
 const models = require('../../../noncore/_models')
 const hash = require('../../../utils/misc/hash')
-const regex = require('../../../utils/misc/regex.js')
+const regex = require('./utils/regex')
 
 exports.authenticateAs = function (req, token, done, authUser) {
   // The input 'token' (invite code) is actually the guid and token, concatenated.
