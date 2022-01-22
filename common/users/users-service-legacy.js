@@ -1,6 +1,6 @@
 const models = require('../../noncore/_models')
 const sequelize = require('sequelize')
-const Converter = require('../../utils/converter')
+const Converter = require('../converter')
 const Promise = require('bluebird')
 const sitesService = require('../../noncore/_services/sites/sites-service')
 const hash = require('../../utils/misc/hash')

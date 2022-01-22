@@ -20,7 +20,7 @@ const tokensService = require('../../_services/tokens/tokens-service')
 const sequelize = require('sequelize')
 const ApiConverter = require('../../../utils/api-converter')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const Converter = require('../../../utils/converter')
+const Converter = require('../../../common/converter')
 const path = require('path')
 const fileUtil = require('../../../utils/misc/file')
 

@@ -1,11 +1,11 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const detectionsService = require('../_services/detections')
 const createDetectionsService = require('../_services/detections/create')
 const streamsService = require('../_services/streams')
 const { hasPermission, READ, UPDATE, STREAM } = require('../_services/roles')
-const Converter = require('../../utils/converter')
-const ArrayConverter = require('../../utils/converter/array')
+const Converter = require('../../common/converter')
+const ArrayConverter = require('../../common/converter/array')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 
 /**

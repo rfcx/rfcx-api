@@ -1,4 +1,4 @@
-const Converter = require('../../../../utils/converter')
+const Converter = require('../../../../common/converter')
 const CognitionService = require('../cognitions/cognitions-service')
 const models = require('../../../_models')
 const aws = require('../../../_utils/external/aws').aws()

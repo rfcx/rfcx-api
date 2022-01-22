@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const streamSegmentService = require('../_services/streams/segments')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 
 /**
  * @swagger

@@ -1,7 +1,7 @@
 jest.mock('../../../models')
 const { StreamSegment } = require('../../../models')
-jest.mock('../../../utils/message-queue/sqs')
-const defaultMessageQueue = require('../../../utils/message-queue/sqs')
+jest.mock('../../../common/message-queue/sqs')
+const defaultMessageQueue = require('../../../common/message-queue/sqs')
 
 const service = require('./segments')
 // const { SEGMENT_CREATED } = require('../../tasks/event-names')

@@ -6,7 +6,7 @@ const { ForbiddenError } = require('../../common/error-handling/errors')
 const rolesService = require('../_services/roles')
 const annotationsService = require('../_services/annotations')
 const classificationService = require('../_services/classifications')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
 function isUuid (str) {

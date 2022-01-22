@@ -2,7 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const annotationsService = require('../_services/annotations')
 const classificationService = require('../_services/classifications')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
 const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 

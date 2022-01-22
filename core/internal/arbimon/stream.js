@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../common/error-handling/http.js')
 const streamsService = require('../../_services/streams')
 const projectsService = require('../../_services/projects')
 const rolesService = require('../../_services/roles')
-const Converter = require('../../../utils/converter')
+const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
 

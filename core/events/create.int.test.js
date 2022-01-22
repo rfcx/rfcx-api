@@ -2,7 +2,7 @@ const models = require('../../models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const moment = require('moment')
-const { slugToUuid } = require('../../utils/formatters/uuid')
+const { slugToUuid } = require('../_utils/formatters/uuid')
 const router = require('express').Router()
 
 const app = expressApp({ has_system_role: true })

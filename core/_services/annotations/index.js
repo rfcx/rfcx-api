@@ -1,6 +1,6 @@
 const moment = require('moment')
 const models = require('../../../models')
-const { propertyToFloat } = require('../../../utils/formatters/object-properties')
+const { propertyToFloat } = require('../../_utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
 const streamsService = require('../streams')
 const { getAccessibleObjectsIDs, STREAM } = require('../roles')

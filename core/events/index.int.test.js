@@ -3,7 +3,7 @@ const moment = require('moment')
 const routes = require('.')
 const models = require('../../models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
-const { uuidToSlug } = require('../../utils/formatters/uuid')
+const { uuidToSlug } = require('../_utils/formatters/uuid')
 
 const app = expressApp()
 

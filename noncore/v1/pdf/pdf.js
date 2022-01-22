@@ -6,7 +6,7 @@ const { ValidationError } = require('../../../common/error-handling/errors')
 const pdfService = require('../../_services/pdf/pdf')
 const sequelize = require('sequelize')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const Converter = require('../../../utils/converter')
+const Converter = require('../../../common/converter')
 
 router.route('/generate-with-pdfmake')
   .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {

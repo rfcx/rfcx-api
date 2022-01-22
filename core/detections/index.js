@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const detectionsService = require('../_services/detections')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 
 /**
  * @swagger

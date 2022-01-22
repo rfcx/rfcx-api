@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 const strategiesService = require('../_services/events/strategies')
 
 /**

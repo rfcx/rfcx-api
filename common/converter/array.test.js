@@ -1,5 +1,5 @@
 const ArrayConverter = require('./array')
-const { ValidationError } = require('../../common/error-handling/errors')
+const { ValidationError } = require('../error-handling/errors')
 
 test('empty returns empty', () => {
   const converter = new ArrayConverter([])

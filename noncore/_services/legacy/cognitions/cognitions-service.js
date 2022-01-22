@@ -1,4 +1,4 @@
-const Converter = require('../../../../utils/converter')
+const Converter = require('../../../../common/converter')
 const models = require('../../../_models')
 const Promise = require('bluebird')
 

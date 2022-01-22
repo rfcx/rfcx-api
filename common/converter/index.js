@@ -1,6 +1,6 @@
 const Conversion = require('./conversion')
-const { ValidationError } = require('../../common/error-handling/errors')
-const { toCamelObject } = require('../formatters/string-cases')
+const { ValidationError } = require('../error-handling/errors')
+const { toCamelObject } = require('../../core/_utils/formatters/string-cases')
 
 module.exports = class Converter {
   constructor (validatedObject, transformedObject, camelize) {

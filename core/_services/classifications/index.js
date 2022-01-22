@@ -1,6 +1,6 @@
 const models = require('../../../models')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
-const includedRelationReducer = require('../../../utils/formatters/included-relations')
+const includedRelationReducer = require('../../_utils/formatters/included-relations')
 
 function get (idOrValue) {
   const where = { [Number.isInteger(idOrValue) || /^\+?\d+$/.test(idOrValue) ? 'id' : 'value']: idOrValue }

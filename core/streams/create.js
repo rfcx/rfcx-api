@@ -1,7 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const streamsService = require('../_services/streams')
 const { randomId } = require('../../utils/misc/hash')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 const arbimonService = require('../_services/arbimon')
 
 /**

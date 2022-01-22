@@ -2,7 +2,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const projectsService = require('../_services/projects')
 const { randomId } = require('../../utils/misc/hash')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 const { hasPermission, CREATE, ORGANIZATION } = require('../_services/roles')
 const arbimonService = require('../_services/arbimon')
 

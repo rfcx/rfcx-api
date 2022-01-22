@@ -1,7 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const organizationsService = require('../_services/organizations')
 const usersService = require('../../common/users/fused')
-const Converter = require('../../utils/converter')
+const Converter = require('../../common/converter')
 
 /**
  * @swagger

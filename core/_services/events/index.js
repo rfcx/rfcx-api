@@ -1,7 +1,7 @@
 const moment = require('moment')
 const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrategy, Sequelize, Stream } = require('../../../models')
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
-const { isUuid, uuidToSlug, slugToUuid } = require('../../../utils/formatters/uuid')
+const { isUuid, uuidToSlug, slugToUuid } = require('../../_utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../roles')
 const pagedQuery = require('../../_utils/db/paged-query')
 const messageQueue = require('../../../common/message-queue/sns')
