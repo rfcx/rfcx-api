@@ -8,7 +8,7 @@ const Promise = require('bluebird')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../_utils/api-converter')
 const datafiltersService = require('../../_services/datafilters/datafilters-service')
-const csvUtils = require('../../../utils/misc/csv')
+const csvUtils = require('../../_utils/misc/csv')
 
 function filterExcludedGuids (originalArray, foundedArray) {
   return originalArray.filter(function (item) {

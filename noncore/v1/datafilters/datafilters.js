@@ -8,7 +8,7 @@ const requireUser = require('../../../common/middleware/authorization/authorizat
 const models = require('../../_models')
 const flipCoin = require('../../../utils/misc/rand.js').flipCoin
 const sqlUtils = require('../../../utils/misc/sql')
-const csvUtils = require('../../../utils/misc/csv')
+const csvUtils = require('../../_utils/misc/csv')
 const datafiltersService = require('../../_services/datafilters/datafilters-service')
 
 const condAdd = sqlUtils.condAdd

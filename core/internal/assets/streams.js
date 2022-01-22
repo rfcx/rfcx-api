@@ -3,8 +3,8 @@ const router = require('express').Router()
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const streamSegmentService = require('../../_services/streams/segments')
-const { parseFileNameAttrs, checkAttrsValidity } = require('../../_services/streams/segment-file-parsing')
-const { getFile } = require('../../_services/streams/segment-file-utils')
+const { parseFileNameAttrs, checkAttrsValidity } = require('../../_services/streams/segment-utils/segment-file-parsing')
+const { getFile } = require('../../_services/streams/segment-utils/segment-file-utils')
 const { gluedDateStrToMoment } = require('../../../utils/misc/datetime')
 
 /**

@@ -1,4 +1,4 @@
-const guid = require('../../utils/misc/guid')
+const guid = require('../../../utils/misc/guid')
 const Promise = require('bluebird')
 const path = require('path')
 const fs = require('fs')

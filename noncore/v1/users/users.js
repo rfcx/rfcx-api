@@ -22,7 +22,7 @@ const ApiConverter = require('../../_utils/api-converter')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../common/converter')
 const path = require('path')
-const fileUtil = require('../../../utils/misc/file')
+const fileUtil = require('../../_utils/misc/file')
 
 function removeExpiredResetPasswordTokens () {
   models.ResetPasswordToken

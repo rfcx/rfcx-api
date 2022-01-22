@@ -3,7 +3,7 @@ const models = require('../../../models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
 const request = require('supertest')
 
-jest.mock('../../_services/streams/segment-file-utils', () => (
+jest.mock('../../_services/streams/segment-utils/segment-file-utils', () => (
   {
     getFile: (_req, res) => {
       res.sendStatus(200)
