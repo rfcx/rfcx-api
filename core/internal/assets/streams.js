@@ -5,7 +5,7 @@ const { httpErrorHandler } = require('../../../common/error-handling/http')
 const streamSegmentService = require('../../_services/streams/segments')
 const { parseFileNameAttrs, checkAttrsValidity } = require('../../_services/streams/segment-utils/segment-file-parsing')
 const { getFile } = require('../../_services/streams/segment-utils/segment-file-utils')
-const { gluedDateStrToMoment } = require('../../../utils/misc/datetime')
+const { gluedDateStrToMoment } = require('../../_utils/datetime/parse')
 
 /**
   Spectrogram format (fspec):

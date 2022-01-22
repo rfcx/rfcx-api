@@ -4,7 +4,6 @@ const Converter = require('../converter')
 const Promise = require('bluebird')
 const sitesService = require('../../noncore/_services/sites/sites-service')
 const hash = require('../../utils/misc/hash')
-const guidUtil = require('../../utils/misc/guid')
 const sensationsService = require('../../noncore/_services/legacy/sensations/sensations-service')
 const moment = require('moment-timezone')
 const { ValidationError } = require('../../common/error-handling/errors')
@@ -115,7 +114,7 @@ function findOrCreateUser (data) {
 
 function combineNewUserData (opts) {
   const passwordData = getPasswordData(opts.password)
-  const guid = opts.guid || guidUtil.generate()
+  const guid = opts.guid || hash.randomGuid()
   return {
     guid,
     username: opts.username || guid,

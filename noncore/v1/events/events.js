@@ -3,7 +3,6 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
-const guid = require('../../../utils/misc/guid.js')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const Promise = require('bluebird')
@@ -325,7 +324,7 @@ router.route('/')
     if (!attrsValidity.status) {
       return httpErrorResponse(req, res, 400, null, attrsValidity.missingAttrsStr)
     }
-    if (body.guid && !guid.isValid(body.guid)) {
+    if (body.guid && !isValidGuid(body.guid)) {
       return httpErrorResponse(req, res, 400, null, 'Guardian Audio Event guid has incorrect format')
     }
 
@@ -609,5 +608,10 @@ router.route('/:guid/reject')
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(e => httpErrorResponse(req, res, 500, e, 'Could not update Event review.'))
   })
+
+function isValidGuid (guid) {
+  const regExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  return regExp.test(guid)
+}
 
 module.exports = router

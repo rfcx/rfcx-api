@@ -83,6 +83,16 @@ function randomId () {
   return randomString(12).toLowerCase()
 }
 
+function randomGuid () {
+  function s4 () {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1)
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4()
+}
+
 /**
    * return a SHA256 hash of salted password/token
    *
@@ -96,4 +106,4 @@ function hashedCredentials (salt, secret) {
   return sha256.update(salt + secret, 'utf8').digest('hex')
 }
 
-module.exports = { hashData, hashedCredentials, fileSha1, fileSha1Async, randomString, randomHash, randomId }
+module.exports = { hashData, hashedCredentials, fileSha1, fileSha1Async, randomString, randomHash, randomId, randomGuid }

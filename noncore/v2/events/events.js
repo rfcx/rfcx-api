@@ -6,12 +6,11 @@ const { httpErrorResponse } = require('../../../common/error-handling/http')
 const archiveUtil = require('../../_utils/misc/archive')
 const dirUtil = require('../../_utils/misc/dir')
 const fileUtil = require('../../_utils/misc/file')
-const guidUtil = require('../../../utils/misc/guid')
+const { randomGuid } = require('../../../utils/misc/hash')
 const eventsServiceNeo4j = require('../../_services/legacy/events/events-service-neo4j')
 const usersService = require('../../../common/users/users-service-legacy')
 const usersFusedService = require('../../../common/users/fused')
-const { ValidationError } = require('../../../common/error-handling/errors')
-const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const guardiansService = require('../../_services/guardians/guardians-service')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../common/converter')
@@ -62,7 +61,7 @@ router.route('/reviews/ai-models')
 
 router.route('/reviews/download')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
-    const tempGuid = guidUtil.generate()
+    const tempGuid = randomGuid()
     const reviewsPath = path.join(process.env.CACHE_DIRECTORY, 'reviews')
 
     return dirUtil.ensureDirExists(reviewsPath)

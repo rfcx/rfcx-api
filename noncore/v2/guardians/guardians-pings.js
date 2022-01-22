@@ -9,7 +9,7 @@ const { ValidationError } = require('../../../common/error-handling/errors')
 
 const guardianMsgParsingUtils = require('../../_utils/rfcx-guardian/guardian-msg-parsing-utils').guardianMsgParsingUtils
 const pingRouter = require('../../_utils/rfcx-guardian/router-ping').pingRouter
-const guidService = require('../../../utils/misc/guid')
+const { randomGuid } = require('../../../utils/misc/hash')
 
 router.route('/:guardian_id/pings')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
@@ -17,7 +17,7 @@ router.route('/:guardian_id/pings')
     checkInHelpers.gzip.unZipJson(req.body.json)
       .bind({})
       .then(function (json) {
-        let messageId = guidService.generate()
+        let messageId = randomGuid()
 
         const pingObj = guardianMsgParsingUtils.constructGuardianMsgObj(json, req.params.guardian_id, req.headers['x-auth-token'])
 

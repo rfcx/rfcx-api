@@ -10,11 +10,9 @@ const reportsService = require('../../_services/reports/reports-service')
 const attachmentService = require('../../_services/attachment/attachment-service')
 const usersService = require('../../../common/users/users-service-legacy')
 const sitesService = require('../../_services/sites/sites-service')
-const guid = require('../../../utils/misc/guid')
+const { randomGuid } = require('../../../utils/misc/hash')
 const Converter = require('../../../common/converter')
-const { ValidationError } = require('../../../common/error-handling/errors')
-const { ForbiddenError } = require('../../../common/error-handling/errors')
-const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { ValidationError, ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 
 router.route('/')
@@ -37,7 +35,7 @@ router.route('/')
       })
       .then((user) => {
         transformedParams.reporter = user.id
-        transformedParams.guid = guid.generate()
+        transformedParams.guid = randomGuid()
         return sitesService.getSiteByGuid(transformedParams.site)
       })
       .then((site) => {
@@ -154,7 +152,7 @@ router.route('/:guid/attachments')
         if (req.files && req.files.attachments) {
           req.files.attachments = Array.isArray(req.files.attachments) ? req.files.attachments : [req.files.attachments]
           req.files.attachments.forEach((file) => {
-            file.rfcxGuid = guid.generate()
+            file.rfcxGuid = randomGuid()
             const prom = attachmentService.uploadAttachment({
               filePath: file.path,
               fileName: `${file.rfcxGuid}${path.extname(file.originalname)}`,

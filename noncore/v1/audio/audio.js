@@ -19,12 +19,12 @@ const archiver = require('archiver')
 const moment = require('moment')
 const path = require('path')
 const fs = require('fs')
-const aws = require('../../_utils/external/aws.js').aws()
+const aws = require('../../_utils/external/aws').aws()
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const archiveUtil = require('../../_utils/misc/archive')
 const dirUtil = require('../../_utils/misc/dir')
 const fileUtil = require('../../_utils/misc/file')
-const guidUtil = require('../../../utils/misc/guid')
+const { randomGuid } = require('../../../utils/misc/hash')
 const audioService = require('../../_services/audio/audio-service')
 const boxesService = require('../../_services/audio/boxes-service')
 const Converter = require('../../../common/converter')
@@ -295,7 +295,7 @@ router.route('/label-values')
 
 router.route('/labels/download')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    const tempGuid = guidUtil.generate()
+    const tempGuid = randomGuid()
     const annotationsPath = path.join(process.env.CACHE_DIRECTORY, 'annotations')
 
     return dirUtil.ensureDirExists(annotationsPath)

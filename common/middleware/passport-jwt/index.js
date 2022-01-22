@@ -2,8 +2,8 @@ const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const jwksRsa = require('jwks-rsa-passport-edition')
 const userService = require('../../users/users-service-legacy')
-const usersFusedService = require('../..//users/fused')
-const guid = require('../../../utils/misc/guid')
+const usersFusedService = require('../../users/fused')
+const { randomGuid } = require('../../../utils/misc/hash')
 const { getUserRolesFromToken } = require('../../../core/_services/auth0/auth0-service')
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()
@@ -50,7 +50,7 @@ function checkDBUser (req, jwtPayload, done) {
     jwtPayload.email = 'userless@rfcx.org'
     jwtPayload.given_name = 'userless'
     jwtPayload.family_name = 'rfcx'
-    jwtPayload.guid = guid.generate()
+    jwtPayload.guid = randomGuid()
   }
 
   if (jwtPayload.email === 'anonymous-assistant@rfcx.org') {

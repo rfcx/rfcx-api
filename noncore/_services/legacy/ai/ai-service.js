@@ -3,7 +3,7 @@ const { EmptyResultError } = require('../../../../common/error-handling/errors')
 const sqlUtils = require('../../../_utils/db/sql-cond-add')
 const neo4j = require('../../../_utils/neo4j/neo4j')
 const S3Service = require('../../legacy/s3/s3-service')
-const guid = require('../../../../utils/misc/guid')
+const { randomGuid } = require('../../../../utils/misc/hash')
 const aws = require('../../../_utils/external/aws.js').aws()
 
 function getPublicAis (opts) {
@@ -153,7 +153,7 @@ function createAi (opts) {
     proms.push(Promise.resolve(session.run(createQuery, opts)))
   } else {
     const createQuery =
-      `CREATE (aic:aiCollection { name: "${opts.name}", guid: "${guid.generate()}", public: ${opts.public}, created: TIMESTAMP()})
+      `CREATE (aic:aiCollection { name: "${opts.name}", guid: "${randomGuid()}", public: ${opts.public}, created: TIMESTAMP()})
        CREATE (ai:ai { name:"${opts.name} v1", guid: "${opts.aiGuid}",
          stepSeconds: ${opts.stepSeconds}, minWindowsCount: ${opts.minWindowsCount}, maxWindowsCount: ${opts.maxWindowsCount},
          minConfidence: ${opts.minConfidence}, maxConfidence: ${opts.maxConfidence}, minBoxPercent: ${opts.minBoxPercent},

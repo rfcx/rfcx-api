@@ -2,7 +2,7 @@ const models = require('../../_models')
 const sequelize = require('sequelize')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
-const guid = require('../../../utils/misc/guid')
+const { randomGuid } = require('../../../utils/misc/hash')
 const sqlUtils = require('../../_utils/db/sql-cond-add')
 const attachmentService = require('../attachment/attachment-service')
 
@@ -289,7 +289,7 @@ function getReportByGuid (guid) {
 }
 
 function createReport (data) {
-  data.guid = data.guid ? data.guid : guid.generate()
+  data.guid = data.guid ? data.guid : randomGuid()
   return models.Report
     .create(data)
     .then(report => {

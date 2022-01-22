@@ -1,5 +1,5 @@
 const request = require('request')
-const guid = require('../../../utils/misc/guid')
+const { randomGuid } = require('../../../utils/misc/hash')
 const generator = require('generate-password')
 
 // a local storage for tokens
@@ -100,7 +100,7 @@ function createAuth0User (token, opts) {
         'Content-type': 'application/json'
       },
       body: {
-        user_id: opts.guid || guid.generate(),
+        user_id: opts.guid || randomGuid(),
         connection: process.env.AUTH0_DEFAULT_DB_CONNECTION,
         email: opts.email,
         password: opts.password,

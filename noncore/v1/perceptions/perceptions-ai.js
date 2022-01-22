@@ -9,7 +9,7 @@ const { ValidationError } = require('../../../common/error-handling/errors')
 const ApiConverter = require('../../_utils/api-converter')
 const urls = require('../../_utils/misc/urls')
 const sequelize = require('sequelize')
-const guidService = require('../../../utils/misc/guid.js')
+const { randomGuid } = require('../../../utils/misc/hash')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 /**
@@ -111,7 +111,7 @@ router.route('/ai/:id')
 
 router.route('/ai')
   .post(passport.authenticate('token', { session: false }), (req, res) => {
-    processAiCreation(guidService.generate(), req, res)
+    processAiCreation(randomGuid(), req, res)
   })
 
 router.route('/ai/:guid')

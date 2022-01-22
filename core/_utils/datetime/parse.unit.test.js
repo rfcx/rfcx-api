@@ -1,4 +1,4 @@
-const { gluedDateStrToMoment, gluedDateStrOrEpochToMoment } = require('./datetime')
+const { gluedDateStrToMoment, gluedDateStrOrEpochToMoment } = require('./parse')
 
 test('can parse compact-iso8601 without ms', () => {
   const dateString = '20210728T122655Z' // 28 July 2021 12:26:55

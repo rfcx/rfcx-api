@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const util = require('util')
 const moment = require('moment')
-const guidService = require('../../../../utils/misc/guid')
+const { randomGuid } = require('../../../../utils/misc/hash')
 
 const eventsFile = fs.createWriteStream(path.join(__dirname, '70-events.sql'), { flags: 'w' })
 
@@ -102,7 +102,7 @@ function printSql (streams, clasifiers) {
   for (const streamId in streams) {
     for (const classificationId in streams[streamId]) {
       streams[streamId][classificationId].forEach((event) => {
-        const guid = guidService.generate()
+        const guid = randomGuid()
         const strategyId = clasifiers[event.classifierId]
         const endDetectionId = event.endDetectionId || event.detectionId
         sql += `INSERT INTO public.events(id, start, "end", stream_id, classification_id, classifier_event_strategy_id, first_detection_id, last_detection_id, created_at, updated_at) VALUES ('${guid}', '${event.start.format(timeFormat)}', '${event.end.format(timeFormat)}', '${event.streamId}', ${event.classificationId}, ${strategyId}, '${event.detectionId}', '${endDetectionId}', 'NOW()', 'NOW()');\n`

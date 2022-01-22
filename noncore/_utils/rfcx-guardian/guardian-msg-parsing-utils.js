@@ -1,7 +1,7 @@
 const hash = require('../../../utils/misc/hash')
 const checkInHelpers = require('../rfcx-checkin')
 const pingRouter = require('../rfcx-guardian/router-ping.js').pingRouter
-const guidService = require('../../../utils/misc/guid.js')
+const { randomGuid } = require('../../../utils/misc/hash')
 const smsTwilio = require('../rfcx-guardian/guardian-sms-twilio.js').smsTwilio
 const models = require('../../_models')
 
@@ -235,7 +235,7 @@ async function processPing (jsonObj, guardianGuid, guardianPinCode, dbSegGrp, or
   const pingObj = exports.guardianMsgParsingUtils.constructGuardianMsgObj(jsonObj, guardianGuid, null)
   pingObj.meta.allow_without_auth_token = true
 
-  const messageId = guidService.generate()
+  const messageId = randomGuid()
   const result = await pingRouter.onMessagePing(pingObj, messageId)
 
   console.log(`assembleReceivedSegments: ping processed for group ${dbSegGrp.guid}`)

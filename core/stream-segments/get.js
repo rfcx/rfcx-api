@@ -1,7 +1,7 @@
-const { httpErrorHandler } = require('../../common/error-handling/http.js')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const { get } = require('../_services/streams/segments')
 const Converter = require('../../common/converter')
-const { gluedDateStrOrEpochToMoment } = require('../../utils/misc/datetime.js')
+const { gluedDateStrOrEpochToMoment } = require('../_utils/datetime/parse')
 
 /**
  * @swagger

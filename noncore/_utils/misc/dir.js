@@ -1,4 +1,4 @@
-const guid = require('../../../utils/misc/guid')
+const { randomGuid } = require('../../../utils/misc/hash')
 const Promise = require('bluebird')
 const path = require('path')
 const fs = require('fs')
@@ -7,7 +7,7 @@ function createTempDir (cacheSubDir) {
   cacheSubDir = cacheSubDir || 'random'
   return new Promise((resolve, reject) => {
     try {
-      const tempName = guid.generate() // temporary path
+      const tempName = randomGuid() // temporary path
       const cacheSubDirPath = path.join(process.env.CACHE_DIRECTORY, cacheSubDir)
       if (!fs.existsSync(cacheSubDirPath)) {
         fs.mkdirSync(cacheSubDirPath)
