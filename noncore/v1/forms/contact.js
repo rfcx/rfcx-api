@@ -4,7 +4,7 @@ const { httpErrorResponse } = require('../../../common/error-handling/http')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const sequelize = require('sequelize')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const mailService = require('../../_services/mail/mail-service')
 const contactMessagesService = require('../../_services/contact-messages/contact-messages-service')
 

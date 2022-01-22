@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const Converter = require('../../utils/converter/converter')
+const Converter = require('../../utils/converter')
 const guardianAuthService = require('./token')
 const guardiansService = require('../../noncore/_services/guardians/guardians-service')
 

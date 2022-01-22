@@ -5,7 +5,7 @@ const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const aiService = require('../../../services/legacy/ai/ai-service')
 const sequelize = require('sequelize')
 

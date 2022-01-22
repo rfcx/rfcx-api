@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { httpErrorResponse } = require('../../../utils/http-error-handler')
 const { ValidationError } = require('../../../common/error-handling/errors')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 
 router.route('/:user_id/device/register')
   .post((req, res) => {

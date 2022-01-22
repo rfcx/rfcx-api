@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http.js')
 const indicesService = require('../../_services/indices/values')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const heatmapGenerate = require('../../internal/explorer/heatmaps/generate')
 const heatmapDistribute = require('../../internal/explorer/heatmaps/distribute')
 const storageService = require('../../_services/storage')

@@ -4,8 +4,8 @@ const detectionsService = require('../_services/detections')
 const createDetectionsService = require('../_services/detections/create')
 const streamsService = require('../_services/streams')
 const { hasPermission, READ, UPDATE, STREAM } = require('../_services/roles')
-const Converter = require('../../utils/converter/converter')
-const ArrayConverter = require('../../utils/converter/array-converter')
+const Converter = require('../../utils/converter')
+const ArrayConverter = require('../../utils/converter/array')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 
 /**

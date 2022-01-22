@@ -6,7 +6,7 @@ const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const stripe = require('../../_utils/stripe/stripe')
 const classyService = require('../../_services/classy/classy')
 const { ValidationError } = require('../../../common/error-handling/errors')

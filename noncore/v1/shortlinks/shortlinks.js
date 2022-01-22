@@ -2,7 +2,7 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const { httpErrorResponse } = require('../../../common/error-handling/http')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const generator = require('generate-password')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'

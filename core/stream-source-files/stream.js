@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const streamSourceFileService = require('../_services/streams/source-files')
-const Converter = require('../../utils/converter/converter')
+const Converter = require('../../utils/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const auth0Service = require('../_services/auth0/auth0-service')
 const rolesService = require('../_services/roles')

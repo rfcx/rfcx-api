@@ -1,6 +1,6 @@
 const models = require('../../_models')
 const sequelize = require('sequelize')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const Promise = require('bluebird')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const eventValueService = require('../legacy/events/event-value-service')

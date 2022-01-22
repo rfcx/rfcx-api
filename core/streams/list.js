@@ -1,7 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const streamsService = require('../_services/streams')
 const usersService = require('../../common/users/fused')
-const Converter = require('../../utils/converter/converter')
+const Converter = require('../../utils/converter')
 const { Stream } = require('../../models')
 const { CREATE, READ, UPDATE, DELETE } = require('../_services/roles')
 

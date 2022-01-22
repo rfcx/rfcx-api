@@ -6,7 +6,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const { ValidationError } = require('../../../common/error-handling/errors')
 const auth0Service = require('../../../core/_services/auth0/auth0-service')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 
 router.route('/auth0/export-link')
   .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {

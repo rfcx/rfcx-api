@@ -14,7 +14,7 @@ const { ValidationError } = require('../../../common/error-handling/errors')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const guardiansService = require('../../_services/guardians/guardians-service')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const sequelize = require('sequelize')
 const earthRangerEnabled = `${process.env.EARTHRANGER_ENABLED}` === 'true'
 const earthRangerService = earthRangerEnabled ? require('../../_services/earthranger') : {}

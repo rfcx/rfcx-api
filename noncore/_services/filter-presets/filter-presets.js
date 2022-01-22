@@ -1,5 +1,5 @@
 const sequelize = require('sequelize')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const models = require('../../_models')
 const userService = require('../../../common/users/users-service-legacy')
 

@@ -1,4 +1,4 @@
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const Promise = require('bluebird')
 const mailing = require('./mailchimp-wrapper')
 const fs = require('fs')

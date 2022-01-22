@@ -9,7 +9,7 @@ const boxesService = require('../../_services/audio/boxes-service')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 
 router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {

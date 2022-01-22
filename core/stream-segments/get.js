@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { get } = require('../_services/streams/segments')
-const Converter = require('../../utils/converter/converter')
+const Converter = require('../../utils/converter')
 const { gluedDateStrOrEpochToMoment } = require('../../utils/misc/datetime.js')
 
 /**

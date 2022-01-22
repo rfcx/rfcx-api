@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http.js')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const userService = require('../../../common/users/users-service-legacy')
 const usersFusedService = require('../../../common/users/fused')
 const arbimonService = require('../../_services/arbimon')

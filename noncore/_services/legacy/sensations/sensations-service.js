@@ -1,5 +1,5 @@
 const sequelize = require('sequelize')
-const Converter = require('../../../../utils/converter/converter')
+const Converter = require('../../../../utils/converter')
 const SensationsRepository = require('./sensations-repository')
 const { ValidationError } = require('../../../../common/error-handling/errors')
 const models = require('../../../_models')

@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../../common/error-handling/http')
-const Converter = require('../../../utils/converter/converter')
+const Converter = require('../../../utils/converter')
 const reviewsService = require('../../_services/detections/reviews')
 
 /**

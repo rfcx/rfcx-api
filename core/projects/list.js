@@ -2,7 +2,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http.js')
 const { query } = require('../_services/projects')
 const usersService = require('../../common/users/fused')
 const rolesService = require('../_services/roles')
-const Converter = require('../../utils/converter/converter')
+const Converter = require('../../utils/converter')
 
 /**
  * @swagger

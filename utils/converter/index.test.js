@@ -1,4 +1,4 @@
-const Converter = require('./converter')
+const Converter = require('.')
 const moment = require('moment')
 
 test('empty returns empty', () => {
