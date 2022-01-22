@@ -60,6 +60,7 @@ describe('GET /streams', () => {
 
   test('reverse sorted results', async () => {
     const stream1 = await models.Stream.create({ id: 'guard1', name: 'GU01', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
+    await new Promise(resolve => setTimeout(resolve, 10)) // Force the updated at to not be the same
     const stream2 = await models.Stream.create({ id: 'guard2', name: 'GU02', latitude: 10.2, longitude: 101.2, createdById: seedValues.primaryUserId })
 
     const response = await request(app).get('/').query({ sort: '-updated_at' })
