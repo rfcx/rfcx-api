@@ -1,6 +1,7 @@
 ## 1.1.0 (2022-???)
 
 ### Features
+* **guardian**: Add `token` and `pinCode` to endpoint params for Companion to pre-register guardian
 
 ## 1.0.31 (2022-01-24)
 
