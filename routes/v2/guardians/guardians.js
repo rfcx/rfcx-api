@@ -142,6 +142,8 @@ router.route('/register')
     params.convert('guid').toString().toLowerCase()
     params.convert('shortname').optional().toString()
     params.convert('site').optional().toString()
+    params.convert('token').optional().toString()
+    params.convert('pinCode').optional().toString()
 
     const token = hash.randomString(40)
     const pinCode = hash.randomString(4)
@@ -150,6 +152,14 @@ router.route('/register')
       await params.validate()
 
       const guardianAttrs = { ...transformedParams, token, pinCode }
+
+      if (transformedParams.token != null) {
+        guardianAttrs.token = transformedParams.token
+      }
+
+      if (transformedParams.pinCode != null) {
+        guardianAttrs.pinCode = transformedParams.pinCode
+      }
 
       await usersFusedService.ensureUserSyncedFromToken(req)
 
