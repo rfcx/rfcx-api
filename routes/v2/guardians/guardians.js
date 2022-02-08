@@ -142,12 +142,14 @@ router.route('/register')
     params.convert('guid').toString().toLowerCase()
     params.convert('shortname').optional().toString()
     params.convert('site').optional().toString()
-
-    const token = hash.randomString(40)
-    const pinCode = hash.randomString(4)
+    params.convert('token').optional().toString()
+    params.convert('pin_code').optional().toString()
 
     try {
       await params.validate()
+
+      const token = transformedParams.token || hash.randomString(40)
+      const pinCode = transformedParams.pin_code || hash.randomString(4)
 
       const guardianAttrs = { ...transformedParams, token, pinCode }
 
