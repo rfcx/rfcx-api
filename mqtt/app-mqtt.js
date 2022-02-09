@@ -1,6 +1,6 @@
 const mqtt = require('mqtt')
 
-const { randomGuid } = require('../common/random/hash')
+const { randomGuid } = require('../common/crypto/random')
 const { mqttCheckInRouter } = require('../noncore/_utils/rfcx-mqtt/mqtt-checkin-router')
 const { pingRouter } = require('../noncore/_utils/rfcx-guardian/router-ping')
 

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const zlib = require('zlib')
-const hash = require('../../../common/random/hash')
+const { fileSha1 } = require('../misc/sha1')
+const random = require('../../../common/crypto/random')
 const aws = require('../external/aws').aws()
 const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
 const Promise = require('bluebird')
@@ -127,24 +128,24 @@ function cacheFileBufferToFile (fileBuffer, isGZipped, fileSha1Hash, fileExtensi
       if (fileBuffer.length === 0) {
         resolve(null)
       } else {
-        const tmpFilePath = process.env.CACHE_DIRECTORY + 'uploads/' + hash.randomString(36) + '.' + fileExtension + (isGZipped ? '.gz' : '')
+        const tmpFilePath = process.env.CACHE_DIRECTORY + 'uploads/' + random.randomString(36) + '.' + fileExtension + (isGZipped ? '.gz' : '')
 
         fs.writeFile(tmpFilePath, fileBuffer, 'binary', function (errWriteFile) {
           if (errWriteFile) { console.log(errWriteFile); reject(new Error(errWriteFile)) } else {
             try {
               if (!isGZipped) {
-                if ((fileSha1Hash == null) || (fileSha1Hash === hash.fileSha1(tmpFilePath))) {
+                if ((fileSha1Hash == null) || (fileSha1Hash === fileSha1(tmpFilePath))) {
                   resolve(tmpFilePath)
                 } else {
                   console.log('checksum mismatch: ' + tmpFilePath); reject(new Error('checksum mismatch: ' + tmpFilePath))
                 }
               } else {
                 try {
-                  const tmpFilePathUnZipped = process.env.CACHE_DIRECTORY + 'uploads/' + hash.randomString(36) + '.' + fileExtension
+                  const tmpFilePathUnZipped = process.env.CACHE_DIRECTORY + 'uploads/' + random.randomString(36) + '.' + fileExtension
                   const unZipStream = fs.createWriteStream(tmpFilePathUnZipped)
                   unZipStream.on('close', function () {
                     fs.unlink(tmpFilePath, () => { })
-                    if ((fileSha1Hash == null) || (fileSha1Hash === hash.fileSha1(tmpFilePathUnZipped))) {
+                    if ((fileSha1Hash == null) || (fileSha1Hash === fileSha1(tmpFilePathUnZipped))) {
                       resolve(tmpFilePathUnZipped)
                     } else {
                       console.log('checksum mismatch: ' + tmpFilePathUnZipped); reject(new Error('checksum mismatch: ' + tmpFilePathUnZipped))

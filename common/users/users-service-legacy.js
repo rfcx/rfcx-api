@@ -3,7 +3,8 @@ const sequelize = require('sequelize')
 const Converter = require('../converter')
 const Promise = require('bluebird')
 const sitesService = require('../../noncore/_services/sites/sites-service')
-const hash = require('../../common/random/hash')
+const random = require('../crypto/random')
+const { hashedCredentials } = require('../crypto/sha256')
 const sensationsService = require('../../noncore/_services/legacy/sensations/sensations-service')
 const moment = require('moment-timezone')
 const { ValidationError } = require('../../common/error-handling/errors')
@@ -114,7 +115,7 @@ function findOrCreateUser (data) {
 
 function combineNewUserData (opts) {
   const passwordData = getPasswordData(opts.password)
-  const guid = opts.guid || hash.randomGuid()
+  const guid = opts.guid || random.randomGuid()
   return {
     guid,
     username: opts.username || guid,
@@ -131,11 +132,11 @@ function combineNewUserData (opts) {
 }
 
 function getPasswordData (password) {
-  password = password || hash.randomString(50)
-  const passwordSalt = hash.randomHash(320)
+  password = password || random.randomString(50)
+  const passwordSalt = random.randomString(62)
   return {
     auth_password_salt: passwordSalt,
-    auth_password_hash: hash.hashedCredentials(passwordSalt, password),
+    auth_password_hash: hashedCredentials(passwordSalt, password),
     auth_password_updated_at: new Date()
   }
 }

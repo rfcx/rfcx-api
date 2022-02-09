@@ -1,7 +1,7 @@
-const hash = require('../../../common/random/hash')
+const { sha1 } = require('../misc/sha1')
 const checkInHelpers = require('../rfcx-checkin')
 const pingRouter = require('../rfcx-guardian/router-ping').pingRouter
-const { randomGuid } = require('../../../common/random/hash')
+const { randomGuid } = require('../../../common/crypto/random')
 const smsTwilio = require('../rfcx-guardian/guardian-sms-twilio').smsTwilio
 const models = require('../../_models')
 
@@ -134,7 +134,7 @@ exports.guardianMsgParsingUtils = {
     let msgGzipStr = msgJsonGzippedBuffer.toString('base64')
     const groupGuid = this.generateSegmentGroupGuid()
     const msgSegLengths = this.msgSegmentConstants().lengths
-    const fullMsgChecksumSnippet = hash.hashData(JSON.stringify(msgJsonObj)).substr(0, msgSegLengths.chkSumSnip)
+    const fullMsgChecksumSnippet = sha1(JSON.stringify(msgJsonObj)).substr(0, msgSegLengths.chkSumSnip)
     const segments = []
 
     let segIdDec = 0
@@ -206,7 +206,7 @@ exports.guardianMsgParsingUtils = {
     await models.GuardianMetaSegmentsGroup.destroy({ where: { id: dbSegGrp.id } })
     console.log(`assembleReceivedSegments: deleted segment group ${dbSegGrp.guid}`)
 
-    if (hash.hashData(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) !== dbSegGrp.checksum_snippet) {
+    if (sha1(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) !== dbSegGrp.checksum_snippet) {
       console.log(`assembleReceivedSegments: invalid checksum ${dbSegGrp.checksum_snippet} for group ${dbSegGrp.guid}`)
       return
     }

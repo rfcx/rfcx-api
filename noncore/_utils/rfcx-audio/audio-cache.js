@@ -1,6 +1,6 @@
 const Promise = require('bluebird')
 const fs = require('fs')
-const hash = require('../../../common/random/hash')
+const random = require('../../../common/crypto/random')
 const aws = require('../../_utils/external/aws').aws()
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 
@@ -13,7 +13,7 @@ exports.audioUtils = {
         const s3Bucket = s3NoProtocol.substr(0, s3NoProtocol.indexOf('/'))
         const s3Path = s3NoProtocol.substr(s3NoProtocol.indexOf('/'))
 
-        const hashName = hash.randomString(32)
+        const hashName = random.randomString(32)
         const audioFileExtension = s3Path.substr(1 + s3Path.lastIndexOf('.'))
         const sourceFilePath = process.env.CACHE_DIRECTORY + 'ffmpeg/' + hashName + '.' + audioFileExtension
 

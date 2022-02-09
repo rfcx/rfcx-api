@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const util = require('util')
 const moment = require('moment')
-const { randomGuid } = require('../../../../common/random/hash')
+const { randomGuid } = require('../../../../common/crypto/random')
 
 const eventsFile = fs.createWriteStream(path.join(__dirname, '70-events.sql'), { flags: 'w' })
 

@@ -5,7 +5,7 @@ const moment = require('moment-timezone')
 const audioUtils = require('../../../noncore/_utils/rfcx-audio').audioUtils
 const assetUtils = require('../../../noncore/_utils/internal-rfcx/asset-utils').assetUtils
 const mathUtil = require('./math')
-const hash = require('../../../common/random/hash')
+const random = require('../../../common/crypto/random')
 const storageService = require('../../_services/storage')
 
 const MEDIA_CACHE_ENABLED = `${process.env.MEDIA_CACHE_ENABLED}` === 'true'
@@ -89,7 +89,7 @@ function downloadSegments (segments) {
   for (const segment of segments) {
     const remotePath = getSegmentRemotePath(segment)
     const segmentExtension = getSegmentExtension(segment)
-    segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${hash.randomString(32)}${segmentExtension}`
+    segment.sourceFilePath = `${CACHE_DIRECTORY}ffmpeg/${random.randomString(32)}${segmentExtension}`
     downloadProms.push(storageService.download(storageService.buckets.streams, remotePath, segment.sourceFilePath))
   }
   return Promise.all(downloadProms)

@@ -11,7 +11,7 @@ const userService = require('../../../../common/users/users-service-legacy')
 const textGridService = require('../../textgrid/textgrid-service')
 const mailService = require('../../mail/mail-service')
 const aws = require('../../../_utils/external/aws').aws()
-const hash = require('../../../../common/random/hash')
+const { hashedCredentials } = require('../../../../common/crypto/sha256')
 const annotationsService = require('../../../../core/annotations/dao')
 const classificationService = require('../../../../core/classifications/dao')
 
@@ -522,7 +522,7 @@ function sendNotificationsForEvent (data) {
                           vars: [
                             {
                               name: 'unsubscribe_url',
-                              content: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}/v1/guardians/groups/unsubscribe/public?groups[]=${dbGuardianGroup.shortname}&email=${email}&token=${hash.hashedCredentials(userService.unsubscriptionSalt, email)}`
+                              content: `${process.env.REST_PROTOCOL}://${process.env.REST_HOST}/v1/guardians/groups/unsubscribe/public?groups[]=${dbGuardianGroup.shortname}&email=${email}&token=${hashedCredentials(userService.unsubscriptionSalt, email)}`
                             }
                           ]
                         }

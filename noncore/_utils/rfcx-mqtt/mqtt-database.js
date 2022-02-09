@@ -2,7 +2,8 @@ const models = require('../../_models')
 const fs = require('fs')
 const saveMeta = require('./mqtt-save-meta').saveMeta
 const smsMessages = require('../rfcx-guardian/guardian-sms-database').messages
-const hash = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
+const { sha1 } = require('../misc/sha1')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
 
@@ -53,7 +54,7 @@ exports.checkInDatabase = {
       } else if (checkInObj.meta.allow_without_auth_token) {
         console.log('auth token validation skipped for ' + checkInObj.json.guardian.guid)
         return checkInObj
-      } else if ((checkInObj.json.guardian.token != null) && (checkInObj.db.dbGuardian.auth_token_hash === hash.hashedCredentials(checkInObj.db.dbGuardian.auth_token_salt, checkInObj.json.guardian.token))) {
+      } else if ((checkInObj.json.guardian.token != null) && (checkInObj.db.dbGuardian.auth_token_hash === hashedCredentials(checkInObj.db.dbGuardian.auth_token_salt, checkInObj.json.guardian.token))) {
         console.log('auth token validated for ' + checkInObj.json.guardian.guid)
         return checkInObj
       }
@@ -285,7 +286,7 @@ exports.checkInDatabase = {
         }
       }
       prefsDb.blobForSha1 = prefsBlobArr.join('|')
-      prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
+      prefsDb.sha1 = sha1(prefsDb.blobForSha1)
 
       const prefsFindOrCreatePromises = []
       if ((prefsJson.sha1 !== '') && (prefsJson.sha1.substr(0, prefsSha1CharLimit) !== prefsDb.sha1.substr(0, prefsSha1CharLimit))) {
@@ -319,7 +320,7 @@ exports.checkInDatabase = {
                     }
                   }
                   prefsDb.blobForSha1 = prefsBlobArr.join('|')
-                  prefsDb.sha1 = hash.hashData(prefsDb.blobForSha1)
+                  prefsDb.sha1 = sha1(prefsDb.blobForSha1)
                   prefsReturnArray = [{ sha1: prefsDb.sha1.substr(0, prefsSha1CharLimit) }]
                 }).then(() => {
                   return Promise.all(prefsFindOrCreatePromises)

@@ -3,7 +3,7 @@ const { EmptyResultError } = require('../../../../common/error-handling/errors')
 const sqlUtils = require('../../../_utils/db/sql-cond-add')
 const neo4j = require('../../../_utils/neo4j/neo4j')
 const S3Service = require('../../legacy/s3/s3-service')
-const { randomGuid } = require('../../../../common/random/hash')
+const { randomGuid } = require('../../../../common/crypto/random')
 const aws = require('../../../_utils/external/aws').aws()
 
 function getPublicAis (opts) {

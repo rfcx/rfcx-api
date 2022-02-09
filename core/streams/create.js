@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
-const { randomId } = require('../../common/random/hash')
+const { randomId } = require('../../common/crypto/random')
 const Converter = require('../../common/converter')
 const arbimonService = require('../_services/arbimon')
 

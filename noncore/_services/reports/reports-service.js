@@ -2,7 +2,7 @@ const models = require('../../_models')
 const sequelize = require('sequelize')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
-const { randomGuid } = require('../../../common/random/hash')
+const { randomGuid } = require('../../../common/crypto/random')
 const sqlUtils = require('../../_utils/db/sql-cond-add')
 const attachmentService = require('../attachment/attachment-service')
 

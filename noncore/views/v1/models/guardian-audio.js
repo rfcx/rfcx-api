@@ -2,7 +2,7 @@ const Promise = require('bluebird')
 const exec = require('child_process').exec
 const moment = require('moment-timezone')
 const fs = require('fs')
-const hash = require('../../../../common/random/hash')
+const random = require('../../../../common/crypto/random')
 const audioUtils = require('../../../_utils/rfcx-audio').audioUtils
 const assetUtils = require('../../../_utils/internal-rfcx/asset-utils').assetUtils
 const validation = require('../../../_utils/misc/validation')
@@ -81,7 +81,7 @@ exports.models = {
   },
 
   guardianAudioSpectrogram: function (req, res, dbRow) {
-    const tmpFilePath = process.env.CACHE_DIRECTORY + 'ffmpeg/' + hash.randomString(32)
+    const tmpFilePath = process.env.CACHE_DIRECTORY + 'ffmpeg/' + random.randomString(32)
 
     const queryParams = parsePermittedQueryParams(req.query, (dbRow.capture_sample_count / dbRow.Format.sample_rate))
 

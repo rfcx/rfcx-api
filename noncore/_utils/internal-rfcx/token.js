@@ -1,6 +1,7 @@
 /* eslint camelcase: "off" */
 const Promise = require('bluebird')
-const hash = require('../../../common/random/hash')
+const random = require('../../../common/crypto/random')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const models = require('../../_models')
 
 exports.token = {
@@ -60,9 +61,9 @@ exports.token = {
     const minutes_until_expiration = ((options.minutes_until_expiration == null) ? 15 : parseInt(options.minutes_until_expiration))
     const expires_at = new Date((new Date()).valueOf() + (1000 * 60 * minutes_until_expiration))
 
-    const token = ((options.use_this_token_value == null) ? hash.randomString(token_length) : options.use_this_token_value)
-    const salt = hash.randomHash(320)
-    const tokenHash = hash.hashedCredentials(salt, token)
+    const token = ((options.use_this_token_value == null) ? random.randomString(token_length) : options.use_this_token_value)
+    const salt = random.randomString(62)
+    const tokenHash = hashedCredentials(salt, token)
 
     const output_token = {
       reference_tag: reference_tag,
@@ -91,7 +92,7 @@ exports.token = {
     } else if (whatKindOfToken === 'user') {
       dbTokenAttributes.user_id = owner_primary_key
     } else if (whatKindOfToken === 'registration') {
-      output_token.token_guid = hash.randomString(token_length)
+      output_token.token_guid = random.randomString(token_length)
       dbTokenAttributes.guid = output_token.token_guid
       dbTokenAttributes.created_for = output_token.created_for
       dbTokenAttributes.allowed_redemptions = output_token.allowed_redemptions

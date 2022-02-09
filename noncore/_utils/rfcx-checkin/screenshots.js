@@ -1,8 +1,8 @@
 const fs = require('fs')
 const Promise = require('bluebird')
 const models = require('../../_models')
-const hash = require('../../../common/random/hash')
-const aws = require('../../_utils/external/aws').aws()
+const { fileSha1 } = require('../misc/sha1')
+const aws = require('../external/aws').aws()
 const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
 
 exports.screenshots = {
@@ -24,7 +24,7 @@ exports.screenshots = {
           screenshot_id: null,
           uploadLocalPath: screenShotFiles[i].path,
           size: fs.statSync(screenShotFiles[i].path).size,
-          sha1Hash: hash.fileSha1(screenShotFiles[i].path),
+          sha1Hash: fileSha1(screenShotFiles[i].path),
           guardianSha1Hash: screenShotMeta[i][3],
           origin_id: timeStamp,
           timeStamp: timeStampDateObj,

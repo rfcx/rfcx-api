@@ -9,7 +9,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const sequelize = require('sequelize')
 const Converter = require('../../../common/converter')
 const Promise = require('bluebird')
-const hash = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
@@ -150,7 +150,7 @@ router.route('/groups/unsubscribe/public')
 
     params.validate()
       .then(() => {
-        if (transformedParams.token !== hash.hashedCredentials(usersService.unsubscriptionSalt, transformedParams.email)) {
+        if (transformedParams.token !== hashedCredentials(usersService.unsubscriptionSalt, transformedParams.email)) {
           throw new Error('Wrong token provided.')
         }
         return usersService.getUserBySubscriptionEmail(transformedParams.email)

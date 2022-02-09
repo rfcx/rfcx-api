@@ -1,7 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const dao = require('./dao')
-const { randomId } = require('../../common/random/hash')
+const { randomId } = require('../../common/crypto/random')
 const Converter = require('../../common/converter')
 const { hasPermission, CREATE, ORGANIZATION } = require('../roles/dao')
 const arbimonService = require('../_services/arbimon')

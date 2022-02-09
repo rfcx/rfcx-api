@@ -1,5 +1,5 @@
 const models = require('../../../noncore/_models')
-const hash = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const regex = require('./utils/regex')
 
 exports.authenticateAs = function (req, token, done, authUser) {
@@ -25,7 +25,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
         })
       } else if (dbToken.total_redemptions >= dbToken.allowed_redemptions) {
         return done(null, false, { message: 'invitation code has already been redeemed ' + dbToken.total_redemptions + ' time(s)' })
-      } else if ((dbToken.auth_token_hash === hash.hashedCredentials(dbToken.auth_token_salt, inviteToken)) &&
+      } else if ((dbToken.auth_token_hash === hashedCredentials(dbToken.auth_token_salt, inviteToken)) &&
         ((dbToken.only_allow_access_to == null) ||
           (regex.regExIndexOf(req.baseUrl + req.path, JSON.parse(dbToken.only_allow_access_to)) > -1)
         )

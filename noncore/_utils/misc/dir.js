@@ -1,4 +1,4 @@
-const { randomGuid } = require('../../../common/random/hash')
+const { randomGuid } = require('../../../common/crypto/random')
 const Promise = require('bluebird')
 const path = require('path')
 const fs = require('fs')

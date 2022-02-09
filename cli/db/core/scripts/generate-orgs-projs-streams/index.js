@@ -1,7 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const util = require('util')
-const { randomId } = require('../../../../common/random/hash')
+const { randomId } = require('../../../../common/crypto/random')
 const words = require('./vocabulary')
 
 const orgStream = fs.createWriteStream(path.join(__dirname, '05-organizations.sql'), { flags: 'w' })

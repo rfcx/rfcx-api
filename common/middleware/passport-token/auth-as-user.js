@@ -1,6 +1,6 @@
 const verboseLogging = (process.env.NODE_ENV !== 'production')
 const models = require('../../../noncore/_models')
-const hash = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const regex = require('./utils/regex')
 
 exports.authenticateAs = function (req, token, done, authUser) {
@@ -27,7 +27,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
                 .catch(function (err) {
                   console.log('failed to delete expired user token | ' + err)
                 })
-            } else if ((dbUser.Token[i].auth_token_hash === hash.hashedCredentials(dbUser.Token[i].auth_token_salt, token)) &&
+            } else if ((dbUser.Token[i].auth_token_hash === hashedCredentials(dbUser.Token[i].auth_token_salt, token)) &&
               ((dbUser.Token[i].only_allow_access_to == null) ||
                 (regex.regExIndexOf(req.baseUrl + req.path, JSON.parse(dbUser.Token[i].only_allow_access_to)) > -1))) {
               req.rfcx.auth_token_info = {

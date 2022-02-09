@@ -1,6 +1,6 @@
 const verboseLogging = (process.env.NODE_ENV !== 'production')
 const models = require('../../../noncore/_models')
-const hash = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const regex = require('./utils/regex')
 
 exports.authenticateAs = function (req, token, done, authUser) {
@@ -19,7 +19,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
           console.log('failed to delete anonymous token, but proceeding anyway... | ' + err)
           return done(null, false, { message: 'token is expired' })
         })
-      } else if ((dbToken.auth_token_hash === hash.hashedCredentials(dbToken.auth_token_salt, token)) &&
+      } else if ((dbToken.auth_token_hash === hashedCredentials(dbToken.auth_token_salt, token)) &&
         ((dbToken.only_allow_access_to == null) ||
           (regex.regExIndexOf(req.baseUrl + req.path, JSON.parse(dbToken.only_allow_access_to)) > -1)
         )

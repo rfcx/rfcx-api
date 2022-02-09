@@ -1,7 +1,8 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
-const hash = require('../../../common/random/hash')
+const random = require('../../../common/crypto/random')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const token = require('../../_utils/internal-rfcx/token').token
 const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
@@ -67,7 +68,7 @@ router.route('/login')
             })
           }
 
-          if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, userInput.pswd)) {
+          if (dbUser.auth_password_hash !== hashedCredentials(dbUser.auth_password_salt, userInput.pswd)) {
             return res.status(401).json({
               message: 'invalid email or password', error: { status: 401 }
             })
@@ -151,9 +152,9 @@ router.route('/register')
           dbUser.firstname = userInput.firstname
           dbUser.lastname = userInput.lastname
 
-          const passwordSalt = hash.randomHash(320)
+          const passwordSalt = random.randomString(62)
           dbUser.auth_password_salt = passwordSalt
-          dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, userInput.pswd)
+          dbUser.auth_password_hash = hashedCredentials(passwordSalt, userInput.pswd)
           dbUser.auth_password_updated_at = new Date()
           dbUser.save()
 
@@ -275,9 +276,9 @@ router.route('/reset-password')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
         // encrypt user's new password and save it
-        const passwordSalt = hash.randomHash(320)
+        const passwordSalt = random.randomString(62)
         dbUser.auth_password_salt = passwordSalt
-        dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, req.body.password)
+        dbUser.auth_password_hash = hashedCredentials(passwordSalt, req.body.password)
         dbUser.auth_password_updated_at = new Date()
         return dbUser.save()
       })
@@ -334,13 +335,13 @@ router.route('/change-password')
           httpErrorResponse(req, res, 403, null, 'You don\'t have required permissions.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
-        if (dbUser.auth_password_hash !== hash.hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
+        if (dbUser.auth_password_hash !== hashedCredentials(dbUser.auth_password_salt, req.body.password)) {
           httpErrorResponse(req, res, 403, null, 'Password is incorrect.')
           return Promise.reject() // eslint-disable-line prefer-promise-reject-errors
         }
-        const passwordSalt = hash.randomHash(320)
+        const passwordSalt = random.randomString(62)
         dbUser.auth_password_salt = passwordSalt
-        dbUser.auth_password_hash = hash.hashedCredentials(passwordSalt, req.body.newPassword)
+        dbUser.auth_password_hash = hashedCredentials(passwordSalt, req.body.newPassword)
         dbUser.auth_password_updated_at = new Date()
         return dbUser.save()
       })
@@ -831,7 +832,7 @@ router.route('/reset-user-password')
       })
       .then((data) => {
         token = data
-        password = hash.randomString(50)
+        password = random.randomString(50)
         return usersService.updateMySQLUserPassword(password, transformedParams.email, transformedParams.guid)
       })
       .then(() => {

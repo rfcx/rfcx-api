@@ -1,7 +1,8 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
-const hash = require('../../../common/random/hash')
+const random = require('../../../common/crypto/random')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
@@ -270,7 +271,7 @@ router.route('/register')
           )
           return true
         } else {
-          const tokenSalt = hash.randomHash(320)
+          const tokenSalt = random.randomString(62)
           const siteGuid = transformedParams.site_guid ? transformedParams.site_guid : 'derc' // "RFCx lab" (derc) by default
           const site = await siteService.getSiteByGuid(siteGuid)
           const params = {
@@ -279,7 +280,7 @@ router.route('/register')
             latitude: 0,
             longitude: 0,
             auth_token_salt: tokenSalt,
-            auth_token_hash: hash.hashedCredentials(tokenSalt, transformedParams.token),
+            auth_token_hash: hashedCredentials(tokenSalt, transformedParams.token),
             auth_token_updated_at: new Date(),
             site_id: site.id
           }

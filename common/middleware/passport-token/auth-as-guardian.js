@@ -1,6 +1,6 @@
 const verboseLogging = (process.env.NODE_ENV !== 'production')
 const models = require('../../../noncore/_models')
-const hash = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const regex = require('./utils/regex')
 
 exports.authenticateAs = function (req, token, done, authUser) {
@@ -21,7 +21,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
       } else if (regex.regExIndexOf(path, onlyAllowAccessTo) === -1) {
         console.log(`Invalid path for auth as guardian: ${path}`)
         return done(null, false, { message: 'invalid guardian/token combination' })
-      } else if (dbGuardian.auth_token_hash === hash.hashedCredentials(dbGuardian.auth_token_salt, token)) {
+      } else if (dbGuardian.auth_token_hash === hashedCredentials(dbGuardian.auth_token_salt, token)) {
         req.rfcx.auth_token_info = {
           type: 'guardian',
           id: dbGuardian.id,

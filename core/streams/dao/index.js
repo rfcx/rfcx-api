@@ -5,7 +5,7 @@ const projectsService = require('../../projects/dao')
 const { getAccessibleObjectsIDs, hasPermission, STREAM, PROJECT, READ, UPDATE, DELETE } = require('../../roles/dao')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
-const { hashedCredentials } = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
 const { getTzByLatLng } = require('../../_utils/datetime/timezone')
 
 const availableIncludes = [

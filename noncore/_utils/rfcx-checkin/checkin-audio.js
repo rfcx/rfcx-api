@@ -2,7 +2,7 @@ const Promise = require('bluebird')
 const models = require('../../_models')
 const fs = require('fs')
 const zlib = require('zlib')
-const hash = require('../../../common/random/hash')
+const { fileSha1 } = require('../misc/sha1')
 const aws = require('../../_utils/external/aws').aws()
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
@@ -12,7 +12,7 @@ const cachedFiles = require('../internal-rfcx/cached-files').cachedFiles
 const aiService = require('../../_services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')
-const urls = require('../../_utils/misc/urls')
+const urls = require('../misc/urls')
 
 exports.audio = {
 
@@ -93,7 +93,7 @@ exports.audio = {
         // when the output stream closes, proceed asynchronously...
         audioInfo.unZipStream.on('close', function () {
           // calculate checksum of unzipped file
-          audioInfo.sha1Hash = hash.fileSha1(audioInfo.unzipLocalPath)
+          audioInfo.sha1Hash = fileSha1(audioInfo.unzipLocalPath)
           // compare to checksum received from guardian
           if (audioInfo.sha1Hash === audioInfo.guardianSha1Hash) {
             resolve(audioInfo)

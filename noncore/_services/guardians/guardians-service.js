@@ -1,7 +1,8 @@
 const models = require('../../_models')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const Promise = require('bluebird')
-const hash = require('../../../common/random/hash')
+const { hashedCredentials } = require('../../../common/crypto/sha256')
+const random = require('../../../common/crypto/random')
 
 function getGuardianByGuid (guid, ignoreMissing) {
   return models.Guardian
@@ -105,9 +106,9 @@ async function createGuardian (attrs) {
 
   dbGuardian.shortname = attrs.shortname ? attrs.shortname : `RFCx Guardian (${attrs.guid.substr(0, 6).toUpperCase()})`
 
-  const tokenSalt = hash.randomHash(320)
+  const tokenSalt = random.randomString(62)
   dbGuardian.auth_token_salt = tokenSalt
-  dbGuardian.auth_token_hash = hash.hashedCredentials(tokenSalt, attrs.token)
+  dbGuardian.auth_token_hash = hashedCredentials(tokenSalt, attrs.token)
   dbGuardian.auth_token_updated_at = new Date()
   dbGuardian.auth_pin_code = attrs.pinCode
   dbGuardian.site_id = attrs.site_id || 1

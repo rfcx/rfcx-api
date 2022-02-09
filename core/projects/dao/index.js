@@ -1,7 +1,7 @@
 const { Stream, Project, User, Organization, Sequelize } = require('../../_models')
 const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { hasPermission, getAccessibleObjectsIDs, PROJECT, ORGANIZATION, READ, CREATE, UPDATE, DELETE } = require('../../roles/dao')
-const { randomId } = require('../../../common/random/hash')
+const { randomId } = require('../../../common/crypto/random')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { getSortFields } = require('../../_utils/db/sort')
 
