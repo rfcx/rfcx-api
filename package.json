@@ -17,8 +17,8 @@
     "start:noncore": "node core/main.js",
     "start:mqtt": "node mqtt/main.js",
     "start:tasks": "node tasks/main.js",
-    "migrate:core": "node cli/db/migrate.js core",
-    "migrate:noncore": "node cli/db/migrate.js noncore",
+    "migrate:core": "node core/_cli/migrate.js",
+    "migrate:noncore": "node noncore/_cli/migrate.js",
     "test": "eslint \"**/*.js\" && jest",
     "jest": "jest",
     "lint": "eslint \"**/*.js\""
