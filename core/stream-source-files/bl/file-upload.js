@@ -1,5 +1,5 @@
 const rp = require('request-promise')
-const auth0Service = require('../../_services/auth0/auth0-service')
+const auth0Service = require('../../../common/auth0/auth0-service')
 const { ValidationError } = require('../../../common/error-handling/errors').ValidationError
 
 function upload (data) {

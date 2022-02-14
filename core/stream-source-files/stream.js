@@ -3,7 +3,6 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
-const auth0Service = require('../_services/auth0/auth0-service')
 const rolesService = require('../roles/dao')
 
 /**
@@ -68,15 +67,10 @@ router.get('/:id/stream-source-files', function (req, res) {
 
   return converter.validate()
     .then(async (params) => {
-      const roles = auth0Service.getUserRolesFromToken(req.user)
-      if (roles.includes('systemUser')) {
+      if (user.has_system_role || await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)) {
         return params
       }
-      const allowed = await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
-      }
-      return params
+      throw new ForbiddenError('You do not have permission to access this stream.')
     })
     .then(params => {
       const filters = {

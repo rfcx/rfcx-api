@@ -4,7 +4,7 @@ const jwksRsa = require('jwks-rsa-passport-edition')
 const userService = require('../../users/users-service-legacy')
 const usersFusedService = require('../../users/fused')
 const { randomGuid } = require('../../../common/crypto/random')
-const { getUserRolesFromToken } = require('../../../core/_services/auth0/auth0-service')
+const { getUserRolesFromToken } = require('../../auth0/auth0-service')
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()
 

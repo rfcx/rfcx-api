@@ -4,7 +4,7 @@ const express = require('express')
 
 // Copied from StackOverflow - only to be used for testing
 async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
-  const migrations = fs.readdirSync(path.join(__dirname, '../../core/_migrations')).filter(filePath => filePath.endsWith('.js'))
+  const migrations = fs.readdirSync(path.join(__dirname, '../../core/_cli/migrations')).filter(filePath => filePath.endsWith('.js'))
   await sequelize.query(`CREATE TABLE IF NOT EXISTS ${table} (name VARCHAR(255) NOT NULL UNIQUE)`)
   const completedMigrations = await sequelize.query(`SELECT * FROM ${table}`, { type: Sequelize.QueryTypes.SELECT })
 
@@ -29,7 +29,7 @@ async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
   }
 
   for (const filename of migrations) {
-    const migration = require(path.join(__dirname, '../../core/_migrations', filename))
+    const migration = require(path.join(__dirname, '../../core/_cli/migrations', filename))
     try {
       await migration.up(sequelize.queryInterface, Sequelize)
       await sequelize.query(`INSERT INTO ${table} VALUES (:name)`, { type: Sequelize.QueryTypes.INSERT, replacements: { name: filename } })
