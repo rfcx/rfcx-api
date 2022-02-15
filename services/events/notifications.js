@@ -57,6 +57,7 @@ async function notify (event) {
     const subs = await query(null, event.stream.project.id, 'project')
     const splittedSubs = splitSubscriptions(subs)
     const data = {
+      streamId: event.stream.id,
       streamName: event.stream.name,
       classificationName: event.classification.title,
       time: moment.tz(event.start, getTzByLatLng(event.stream.latitude, event.stream.longitude)).format('HH:mm YYYY-MM-DD')
@@ -111,11 +112,11 @@ function sendEmails (emails, data) {
  */
 function sendPushNotifications (users, data) {
   const body = `A ${data.classificationName} detected on ${data.streamName} at ${data.time}`
-  const { streamName, time, latitude, longitude, classificationName } = data
+  const { streamId, streamName, time, latitude, longitude, classificationName } = data
   const opts = {
     app: 'rangerApp',
     topic: data.topic,
-    data: { streamName, time, latitude, longitude, classificationName },
+    data: { streamId, streamName, time, latitude, longitude, classificationName },
     title: 'Rainforest Connection',
     body
   }
