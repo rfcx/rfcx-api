@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const random = require('../../../common/crypto/random')
+const { randomString } = require('../../../common/crypto/random')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const passport = require('passport')
@@ -148,8 +148,8 @@ router.route('/register')
     try {
       await params.validate()
 
-      const token = transformedParams.token || hash.randomString(40)
-      const pinCode = transformedParams.pin_code || hash.randomString(4)
+      const token = transformedParams.token || randomString(40)
+      const pinCode = transformedParams.pin_code || randomString(4)
 
       const guardianAttrs = { ...transformedParams, token, pinCode }
 
