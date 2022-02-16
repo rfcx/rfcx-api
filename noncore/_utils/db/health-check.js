@@ -1,6 +1,6 @@
 const models = require('../../_models')
 const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
-const redis = redisEnabled ? require('../../v1/shortlinks/redisshortlinks/redis') : {}
+const redis = redisEnabled ? require('../../v1/shortlinks/redis') : {}
 
 function calcStatus (status, start) {
   return {
