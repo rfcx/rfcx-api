@@ -20,5 +20,5 @@ Core Tasks are background processes that listen to message queues for events and
 1. Define an event name in `event-names.js`
 2. Publish to `MessageQueue.default()` when the event occurs
 3. Create a new folder in the current directory for the task. Write a task handler to run when the event occurs.
-4. Import the _event name_ and the _task handler_ in `index.js` and add to the list of `tasks`.
+4. Import the _event name_ and the _task handler_ in `listen.js` and add to the list of `tasks`.
 

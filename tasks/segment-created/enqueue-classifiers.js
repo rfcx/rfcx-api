@@ -1,8 +1,8 @@
 const moment = require('moment')
-const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../models')
-const Cache = require('../../utils/cache')
-const streamService = require('../../services/streams')
-const projectService = require('../../services/projects')
+const { Classifier, ClassifierDeployment, Project, Stream, Sequelize: { Op }, sequelize } = require('../../core/_models')
+const Cache = require('../_utils/cache')
+const streamDao = require('../../core/streams/dao')
+const projectService = require('../../core/projects/dao')
 const classifierMessageQueue = require('./classifier-message-queue/default')
 
 const defaultPlatform = 'aws'
@@ -16,7 +16,7 @@ const cacheKeyGen = {
 async function enqueueClassifiers (streamId, start) {
   // Find the preferred platform for the stream
   const stream = await cache.get(cacheKeyGen.stream(streamId),
-    () => streamService.get(streamId, { fields: ['id', 'project_id'] }))
+    () => streamDao.get(streamId, { fields: ['id', 'project_id'] }))
   let preferredPlatform = defaultPlatform
   if (stream.project_id) {
     const project = await cache.get(cacheKeyGen.project(stream.project_id),

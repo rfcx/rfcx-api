@@ -1,0 +1,4 @@
+env_vars.*
+!env_vars.js.sample
+config.json
+service-account.json

@@ -1,0 +1,5 @@
+GET https://api.rfcx.org/v1/assets/audio/amplitude/c2355d62-0a49-444f-a7ee-33252ead3c39
+
+###
+
+GET http://localhost:8080/v1/assets/audio/amplitude/c2355d62-0a49-444f-a7ee-33252ead3c39
