@@ -19,6 +19,9 @@ module.exports = {
     require('./explorer/stream'),
     require('./explorer/stream-classifications')
   ],
+  guardians: [
+    require('./guardians')
+  ],
   ingest: [
     require('./ingest/stream')
   ],
