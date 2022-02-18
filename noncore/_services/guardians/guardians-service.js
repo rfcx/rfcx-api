@@ -26,6 +26,20 @@ function getGuardiansByGuids (guids, ignoreMissing) {
   return Promise.all(proms)
 }
 
+function getGuardianByStreamId (id, ignoreMissing) {
+  return models.Guardian
+    .findOne({
+      where: { stream_id: id },
+      include: [{ all: true }]
+    })
+    .then((item) => {
+      if (!item && !ignoreMissing) {
+        throw new EmptyResultError('Guardian with given stream id not found.')
+      }
+      return item
+    })
+}
+
 function formatGuardian (guardian) {
   const guardianFormatted = {
     guid: guardian.guid,
@@ -121,6 +135,7 @@ async function createGuardian (attrs) {
 module.exports = {
   getGuardianByGuid,
   getGuardiansByGuids,
+  getGuardianByStreamId,
   formatGuardian,
   formatGuardians,
   formatGuardianPublic,
