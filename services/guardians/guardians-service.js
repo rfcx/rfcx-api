@@ -25,6 +25,31 @@ function getGuardiansByGuids (guids, ignoreMissing) {
   return Promise.all(proms)
 }
 
+function getGuardianByStreamId (id, ignoreMissing) {
+  return models.Guardian
+    .findOne({
+      where: { stream_id: id },
+      // TODO: make includes editable if needed later
+      include: [
+        { model: models.GuardianSite, as: 'Site' }
+      ]
+    })
+    .then((item) => {
+      if (!item && !ignoreMissing) {
+        throw new EmptyResultError('Guardian with given stream id not found.')
+      }
+      return item
+    })
+}
+
+async function getGuardianInfoByStreamId (streamId) {
+  const guardian = await getGuardianByStreamId(streamId)
+  const where = { guardian_id: guardian.id, pref_key: 'api_protocol_escalation_order' }
+  const pref = await models.GuardianSoftwarePrefs.findOne({ where })
+  const type = !pref ? 'unknown' : (pref.pref_value.includes('sat') ? 'satellite' : 'cell')
+  return { guardian_guid: guardian.guid, deployed_at: guardian.deployed_at, type }
+}
+
 function formatGuardian (guardian) {
   const guardianFormatted = {
     guid: guardian.guid,
@@ -120,6 +145,8 @@ async function createGuardian (attrs) {
 module.exports = {
   getGuardianByGuid,
   getGuardiansByGuids,
+  getGuardianByStreamId,
+  getGuardianInfoByStreamId,
   formatGuardian,
   formatGuardians,
   formatGuardianPublic,

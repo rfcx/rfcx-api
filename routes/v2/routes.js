@@ -11,6 +11,9 @@ module.exports = {
     require('./guardians/guardians-segments'),
     require('./guardians/guardians-software')
   ],
+  streams: [
+    require('./streams')
+  ],
   tags: [
     require('./tags/tags')
   ]
