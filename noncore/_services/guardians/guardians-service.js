@@ -146,7 +146,6 @@ async function createGuardian (attrs) {
 module.exports = {
   getGuardianByGuid,
   getGuardiansByGuids,
-  getGuardianByStreamId,
   getGuardianInfoByStreamId,
   formatGuardian,
   formatGuardians,
