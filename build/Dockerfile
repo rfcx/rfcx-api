@@ -1,6 +1,6 @@
 FROM 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_base:latest
 
-RUN mkdir -p /tmp/rfcx-api/{uploads,test-assets,ffmpeg,zip}
+RUN ["/bin/bash", "-c", "mkdir -p /tmp/rfcx-api/{uploads,test-assets,ffmpeg,zip}"]
 
 # Dependencies
 WORKDIR /usr/src/app
