@@ -1,27 +1,4 @@
-const { randomGuid } = require('../../../common/crypto/random')
-const Promise = require('bluebird')
-const path = require('path')
 const fs = require('fs')
-
-function createTempDir (cacheSubDir) {
-  cacheSubDir = cacheSubDir || 'random'
-  return new Promise((resolve, reject) => {
-    try {
-      const tempName = randomGuid() // temporary path
-      const cacheSubDirPath = path.join(process.env.CACHE_DIRECTORY, cacheSubDir)
-      if (!fs.existsSync(cacheSubDirPath)) {
-        fs.mkdirSync(cacheSubDirPath)
-      }
-      const dir = path.join(cacheSubDirPath, tempName)
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir)
-      }
-      resolve(dir)
-    } catch (e) {
-      reject(e)
-    }
-  })
-}
 
 function ensureDirExists (dirPath) {
   return new Promise((resolve, reject) => {
@@ -37,6 +14,5 @@ function ensureDirExists (dirPath) {
 }
 
 module.exports = {
-  createTempDir,
   ensureDirExists
 }
