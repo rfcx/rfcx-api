@@ -71,35 +71,41 @@ router.route('/segments/sbd')
 
 router.route('/segments/swm')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
-    // To bypass test message for saving change on Swarm
-    if (req.body.deviceId === 0 && req.body.packetId === 0) {
+    console.info(`swarm segment: ${JSON.stringify(req.body)}`)
+
+    const deviceId = req.body.deviceId
+    const packetId = req.body.packetId
+
+    // Swarm test message
+    if (deviceId === 0 && packetId === 0) {
+      console.info('swarm segment: test detected')
       res.writeHead(200, { 'Content-Type': 'text/xml' }).end()
+      return
     }
 
-    if (swarmMsg.validateIncomingMessage(req)) {
-      console.info('Incoming Swarm message validated...')
-
-      const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'base64'), 'swm', req.body.deviceId)
-      segmentUtils.saveSegmentToDb(segObj)
-        .then(() => {
-          res.writeHead(200, { 'Content-Type': 'text/xml' })
-          res.end()
-        })
-        .catch(ValidationError, e => {
-          let message = 'Validation error'
-          try {
-            message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
-          } catch (err) { }
-          httpErrorResponse(req, res, 400, null, message)
-        })
-        .catch(function (err) {
-          console.error(err)
-          res.status(500).json({ message: err.message, error: { status: 500 } })
-        })
-    } else {
-      res.writeHead(401, { 'Content-Type': 'text/xml' })
-      res.end()
+    if (!swarmMsg.validateIncomingMessage(req)) {
+      console.error(`swarm segment: invalid message: ${deviceId} ${packetId}`)
     }
+
+    console.info(`swarm segment: validated ${deviceId} ${packetId}`)
+
+    const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'base64'), 'swm', deviceId)
+    segmentUtils.saveSegmentToDb(segObj)
+      .then(() => {
+        res.writeHead(200, { 'Content-Type': 'text/xml' }).end()
+      })
+      .catch(ValidationError, e => {
+        let message = 'Validation error'
+        try {
+          message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
+        } catch (_err) { }
+        console.error(`swarm segment: validation: ${message}`)
+        res.writeHead(400, { 'Content-Type': 'text/xml' }).send(`<ValidationError>${message}</ValidationError>`)
+      })
+      .catch(err => {
+        console.error(`swarm segment: ${JSON.stringify(err)}`)
+        res.writeHead(500, { 'Content-Type': 'text/xml' }).send(`<Error>${err.message}</Error>`)
+      })
   })
 
 // For debugging purposes
