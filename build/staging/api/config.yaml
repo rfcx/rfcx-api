@@ -39,7 +39,6 @@ data:
   MESSAGE_QUEUE_POSTFIX: 'staging'
   MQTT_BROKER_HOST: "rabbitmq-http"
   MQTT_BROKER_PORT: "1883"
-  NEO4J_ENABLED: "true"
   NEW_RELIC_LOG_LEVEL: "warning"
   NODE_ENV: "staging"
   NODE_HOME: "/opt/elasticbeanstalk/node-install/node-v6.10.0-linux-x64"
