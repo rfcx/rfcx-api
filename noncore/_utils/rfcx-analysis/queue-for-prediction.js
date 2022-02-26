@@ -2,6 +2,7 @@ const legacyQueueToNeo4jAndSqs = require('../rfcx-checkin/checkin-audio').audio.
 const aws = require('../../_utils/external/aws').aws()
 
 function queueForPrediction (audioInfo, guardian) {
+  console.info(`queueForPrediction: guardian ${guardian.guid} stream ${guardian.stream_id}`)
   if (!guardian.stream_id) {
     return Promise.resolve()
   }

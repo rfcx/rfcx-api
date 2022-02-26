@@ -63,6 +63,7 @@ exports.aws = function () {
     },
 
     publish: function (topic, message) {
+      console.info(`aws: publish: ${topic} ${JSON.stringify(message)}`)
       return new Promise(function (resolve, reject) {
         const TopicArn = that.snsTopicArn(topic)
         const Message = JSON.stringify(message)
