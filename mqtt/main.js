@@ -1,4 +1,4 @@
-console.info('MQTT: Starting...')
+console.info('info: MQTT: Starting...')
 const startTime = new Date()
 
 // Handle unhandled promises
@@ -15,5 +15,5 @@ const appMqtt = require('./app-mqtt')
 appMqtt.listen()
 const port = process.env.PORT || 8080
 appHttp.listen(port, () => {
-  console.info(`MQTT: Http server started ${new Date() - startTime}ms (port ${port}) (env ${process.env.NODE_ENV})`)
+  console.info(`info: MQTT: Http server started ${new Date() - startTime}ms (port ${port}) (env ${process.env.NODE_ENV})`)
 })
