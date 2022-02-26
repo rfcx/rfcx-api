@@ -19,7 +19,6 @@ exports.env = {
 
   // if PLATFORM is set to "google"
   // GOOGLE_APPLICATION_CREDENTIALS: "./config/service-account.json",
-  // PUBSUB_ENABLED: 'true',
 
   // MESSAGE_QUEUE_ENABLED: 'true'
   // MESSAGE_QUEUE_PREFIX: '',

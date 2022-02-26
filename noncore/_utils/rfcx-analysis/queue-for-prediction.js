@@ -1,31 +1,37 @@
 const legacyQueueToNeo4jAndSqs = require('../rfcx-checkin/checkin-audio').audio.queueForTaggingByActiveV3Models
-const pubsub = require('../../_utils/external/pubsub')
+const aws = require('../../_utils/external/aws').aws()
 
 function queueForPrediction (audioInfo, guardian) {
-  if (process.env.NEO4J_ENABLED === 'true' && guardian.stream_id) {
+  if (!guardian.stream_id) {
+    return Promise.resolve()
+  }
+  if (process.env.NEO4J_ENABLED === 'true') {
     return legacyQueueToNeo4jAndSqs(audioInfo, guardian)
   }
-  if (process.env.PUBSUB_ENABLED === 'true') {
-    const streamId = guardian.guid
-    const timestamp = audioInfo.dbAudioObj.measured_at
-    return getClassifiers(streamId)
-      .then(classifiers => Promise.all(
-        classifiers.map(c => publish(c, streamId, timestamp))))
-  }
-  return Promise.resolve()
+  const streamId = guardian.stream_id
+  const timestamp = audioInfo.dbAudioObj.measured_at
+  return getClassifiers(streamId)
+    .then(classifiers => Promise.all(
+      classifiers.map(c => publish(c, streamId, timestamp))))
 }
 
 function getClassifiers (streamId) {
-  return Promise.resolve(['chainsaw', 'vehicle']) // TODO: should get list of classifiers whitelisted for a stream
+  console.warn('NOT IMPLEMENTED: using chainsaw and vehicle only')
+  return Promise.resolve([ // TODO: should get list of active classifiers a stream
+    { platform: 'aws', name: 'chainsaw', version: 5 }
+  ])
 }
 
 function publish (classifier, streamId, timestamp) {
-  const topic = `prediction-${classifier}`
+  let topic = `classifier-${classifier.platform}-${classifier.name}-v${classifier.version}`
+  if (process.env.NODE_ENV !== 'production') {
+    topic += `-${process.env.NODE_ENV}`
+  }
   const message = {
     stream_id: streamId,
     start: timestamp
   }
-  return pubsub.publish(topic, message)
+  return aws.publish(topic, message)
 }
 
 module.exports = queueForPrediction
