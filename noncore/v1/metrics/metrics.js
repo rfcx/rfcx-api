@@ -18,7 +18,7 @@ router.route('/')
         res.status(200).json(Object.assign({}, { files: count }, times))
       })
       .catch(function (err) {
-        console.log('Error while getting metrics', err)
+        console.error('Error while getting metrics', err)
         res.status(500).json({ msg: err })
       })
   })

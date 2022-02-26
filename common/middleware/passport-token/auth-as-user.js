@@ -22,10 +22,10 @@ exports.authenticateAs = function (req, token, done, authUser) {
               dbUser.Token[i]
                 .destroy()
                 .then(function () {
-                  console.log('expired user token deleted')
+                  console.info('expired user token deleted')
                 })
                 .catch(function (err) {
-                  console.log('failed to delete expired user token | ' + err)
+                  console.error('failed to delete expired user token | ' + err)
                 })
             } else if ((dbUser.Token[i].auth_token_hash === hashedCredentials(dbUser.Token[i].auth_token_salt, token)) &&
               ((dbUser.Token[i].only_allow_access_to == null) ||
@@ -40,7 +40,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
               }
 
               if (verboseLogging) {
-                console.log('authenticated as user ' + req.rfcx.auth_token_info.guid)
+                console.info('authenticated as user ' + req.rfcx.auth_token_info.guid)
               }
               done(null, req.rfcx.auth_token_info)
               return null
@@ -48,11 +48,11 @@ exports.authenticateAs = function (req, token, done, authUser) {
           }
         }
       }
-      console.log('failed to match token with salted hash')
+      console.warn('failed to match token with salted hash')
       done(null, false, { message: 'invalid user/token combination' })
       return null
     }).catch(function (err) {
-      console.log('failed to find user | ' + JSON.stringify(err))
+      console.warn('failed to find user | ' + JSON.stringify(err))
       done(err)
       return null
     })

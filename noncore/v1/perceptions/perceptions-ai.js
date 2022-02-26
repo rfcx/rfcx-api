@@ -68,7 +68,7 @@ router.route('/ai')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to return models | ', err)
+        console.error('failed to return models | ', err)
         httpErrorResponse(req, res, 500, err, 'failed to return models')
       })
   })

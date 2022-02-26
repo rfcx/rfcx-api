@@ -29,7 +29,7 @@ jest.mock('../../_models', () => {
 
 beforeEach(async () => {
   await models.reset()
-  console.log = () => undefined
+  console.info = () => undefined
 })
 
 test('group is logged', async () => {

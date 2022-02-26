@@ -88,7 +88,7 @@ exports.mqttInputData = {
             })
         })
       } catch (errParsecheckInObj) {
-        console.log(errParsecheckInObj)
+        console.error(errParsecheckInObj)
         reject(errParsecheckInObj)
       }
     })
@@ -106,10 +106,10 @@ function saveAssetFileToS3 (assetType, checkInObj) {
         const s3Bucket = (assetType === 'audio') ? process.env.ASSET_BUCKET_AUDIO : process.env.ASSET_BUCKET_META
 
         aws.s3(s3Bucket).putFile(checkInObj[assetType].filePath, s3Path, function (s3SaveErr, s3Res) {
-          try { s3Res.resume() } catch (resumeErr) { console.log(resumeErr) }
+          try { s3Res.resume() } catch (resumeErr) { console.error(resumeErr) }
 
           if (s3SaveErr) {
-            console.log(s3SaveErr)
+            console.error(s3SaveErr)
             reject(new Error(s3SaveErr))
           } else if ((s3Res.statusCode === 200) && aws.s3ConfirmSave(s3Res, s3Path)) {
             resolve(checkInObj)
@@ -118,7 +118,7 @@ function saveAssetFileToS3 (assetType, checkInObj) {
           }
         })
       }
-    } catch (errSaveAssetToS3) { console.log(errSaveAssetToS3); reject(new Error(errSaveAssetToS3)) }
+    } catch (errSaveAssetToS3) { console.error(errSaveAssetToS3); reject(new Error(errSaveAssetToS3)) }
   })
 }
 
@@ -131,13 +131,13 @@ function cacheFileBufferToFile (fileBuffer, isGZipped, fileSha1Hash, fileExtensi
         const tmpFilePath = process.env.CACHE_DIRECTORY + 'uploads/' + random.randomString(36) + '.' + fileExtension + (isGZipped ? '.gz' : '')
 
         fs.writeFile(tmpFilePath, fileBuffer, 'binary', function (errWriteFile) {
-          if (errWriteFile) { console.log(errWriteFile); reject(new Error(errWriteFile)) } else {
+          if (errWriteFile) { console.error(errWriteFile); reject(new Error(errWriteFile)) } else {
             try {
               if (!isGZipped) {
                 if ((fileSha1Hash == null) || (fileSha1Hash === fileSha1(tmpFilePath))) {
                   resolve(tmpFilePath)
                 } else {
-                  console.log('checksum mismatch: ' + tmpFilePath); reject(new Error('checksum mismatch: ' + tmpFilePath))
+                  console.error('checksum mismatch: ' + tmpFilePath); reject(new Error('checksum mismatch: ' + tmpFilePath))
                 }
               } else {
                 try {
@@ -148,17 +148,17 @@ function cacheFileBufferToFile (fileBuffer, isGZipped, fileSha1Hash, fileExtensi
                     if ((fileSha1Hash == null) || (fileSha1Hash === fileSha1(tmpFilePathUnZipped))) {
                       resolve(tmpFilePathUnZipped)
                     } else {
-                      console.log('checksum mismatch: ' + tmpFilePathUnZipped); reject(new Error('checksum mismatch: ' + tmpFilePathUnZipped))
+                      console.error('checksum mismatch: ' + tmpFilePathUnZipped); reject(new Error('checksum mismatch: ' + tmpFilePathUnZipped))
                     }
                   })
                   fs.createReadStream(tmpFilePath).pipe(zlib.createGunzip()).pipe(unZipStream)
-                } catch (errFileUnZip) { console.log(errFileUnZip); reject(new Error(errFileUnZip)) }
+                } catch (errFileUnZip) { console.error(errFileUnZip); reject(new Error(errFileUnZip)) }
               }
-            } catch (errWriteFileInner) { console.log(errWriteFileInner); reject(new Error(errWriteFileInner)) }
+            } catch (errWriteFileInner) { console.error(errWriteFileInner); reject(new Error(errWriteFileInner)) }
           }
         })
       }
-    } catch (errCacheFileBufferToFile) { console.log(errCacheFileBufferToFile); reject(new Error(errCacheFileBufferToFile)) }
+    } catch (errCacheFileBufferToFile) { console.error(errCacheFileBufferToFile); reject(new Error(errCacheFileBufferToFile)) }
   })
 }
 
@@ -177,7 +177,7 @@ function strArrToJSArr (str, delimA, delimB) {
       return []
     }
   } catch (e) {
-    console.log(e)
+    console.error(e)
     return []
   }
 }

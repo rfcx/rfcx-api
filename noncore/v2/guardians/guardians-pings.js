@@ -25,7 +25,7 @@ router.route('/:guardian_id/pings')
           .then((result) => {
             res.status(200).json(result.obj)
 
-            console.log('rest message processed', messageId)
+            console.info('rest message processed', messageId)
             messageId = null
             result = null
             return true

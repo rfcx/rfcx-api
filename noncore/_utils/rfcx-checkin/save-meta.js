@@ -17,7 +17,7 @@ exports.saveMeta = {
 
     models.GuardianMetaCPU
       .bulkCreate(dbMetaCPU).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaCPU | ' + err)
+        console.error('failed to create GuardianMetaCPU | ' + err)
       })
   },
 
@@ -36,7 +36,7 @@ exports.saveMeta = {
 
     models.GuardianMetaBattery
       .bulkCreate(dbMetaBattery).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaBattery | ' + err)
+        console.error('failed to create GuardianMetaBattery | ' + err)
       })
   },
 
@@ -55,7 +55,7 @@ exports.saveMeta = {
 
     models.GuardianMetaPower
       .bulkCreate(dbMetaPower).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaPower | ' + err)
+        console.error('failed to create GuardianMetaPower | ' + err)
       })
   },
 
@@ -75,7 +75,7 @@ exports.saveMeta = {
 
     models.GuardianMetaNetwork
       .bulkCreate(dbMetaNetwork).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaNetwork | ' + err)
+        console.error('failed to create GuardianMetaNetwork | ' + err)
       })
   },
 
@@ -114,7 +114,7 @@ exports.saveMeta = {
 
     models.GuardianMetaDataTransfer
       .bulkCreate(dbMetaDataTransfer).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaDataTransfer | ' + err)
+        console.error('failed to create GuardianMetaDataTransfer | ' + err)
       })
   },
 
@@ -133,7 +133,7 @@ exports.saveMeta = {
 
     models.GuardianMetaOffline
       .bulkCreate(dbMetaOffline).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaOffline | ' + err)
+        console.error('failed to create GuardianMetaOffline | ' + err)
       })
   },
 
@@ -151,7 +151,7 @@ exports.saveMeta = {
 
     models.GuardianMetaLightMeter
       .bulkCreate(dbMetaLightMeter).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaLightMeter | ' + err)
+        console.error('failed to create GuardianMetaLightMeter | ' + err)
       })
   },
 
@@ -173,7 +173,7 @@ exports.saveMeta = {
 
     models.GuardianMetaAccelerometer
       .bulkCreate(dbMetaAccelerometer).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaAccelerometer | ' + err)
+        console.error('failed to create GuardianMetaAccelerometer | ' + err)
       })
   },
 
@@ -195,7 +195,7 @@ exports.saveMeta = {
 
     models.GuardianMetaGeoLocation
       .bulkCreate(dbMetaGeoLocation).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaGeoLocation | ' + err)
+        console.error('failed to create GuardianMetaGeoLocation | ' + err)
       })
   },
 
@@ -218,7 +218,7 @@ exports.saveMeta = {
       external_bytes_available: diskUsage.external.available,
       external_bytes_used: diskUsage.external.used
     }).then(function (dbGuardianMetaDiskUsage) { }).catch(function (err) {
-      console.log('failed to create GuardianMetaDiskUsage | ' + err)
+      console.error('failed to create GuardianMetaDiskUsage | ' + err)
     })
   },
 
@@ -231,7 +231,7 @@ exports.saveMeta = {
           dbPreviousCheckIn.request_latency_guardian = previousCheckIns[prvChkInInd][1]
           dbPreviousCheckIn.save()
         }).catch(function (err) {
-          console.log('error finding/updating previous checkin id: ' + previousCheckIns[prvChkInInd][0], err)
+          console.error('error finding/updating previous checkin id: ' + previousCheckIns[prvChkInInd][0], err)
         })
     }
   },
@@ -249,7 +249,7 @@ exports.saveMeta = {
 
     models.GuardianMetaReboot
       .bulkCreate(dbMetaRebootEvents).then(function () { }).catch(function (err) {
-        console.log('failed to create GuardianMetaReboot | ' + err)
+        console.error('failed to create GuardianMetaReboot | ' + err)
       })
   },
 
@@ -279,9 +279,9 @@ exports.saveMeta = {
                 }).spread(function (dbMetaSoftware, wasCreated) {
                   dbMetaSoftware.updated_at = new Date()
                   dbMetaSoftware.save()
-                }).catch(function (err) { console.log(err) })
-            }).catch(function (err) { console.log(err) })
-        }).catch(function (err) { console.log(err) })
+                }).catch(function (err) { console.error(err) })
+            }).catch(function (err) { console.error(err) })
+        }).catch(function (err) { console.error(err) })
     }
   }
 

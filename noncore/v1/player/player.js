@@ -40,7 +40,7 @@ router.route('/login')
 
         return null
       }).catch(function (err) {
-        console.log('error creating access token for audio player | ' + err)
+        console.error('error creating access token for audio player | ' + err)
         res.status(500).json({})
       })
     } else {
@@ -66,7 +66,7 @@ router.route('/web')
 
         return null
       }).catch(function (err) {
-        console.log('failed to find guardian audio highlights | ' + err)
+        console.error('failed to find guardian audio highlights | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to find guardian audio highlights' }) }
       })
   })

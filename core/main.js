@@ -1,4 +1,4 @@
-console.log('Core: Starting...')
+console.info('Core: Starting...')
 const startTime = new Date()
 
 // Handle unhandled promises
@@ -13,5 +13,5 @@ const app = require('./app')
 // Serve
 const port = process.env.PORT || 8080
 app.listen(port, () => {
-  console.log(`Core: Started ${new Date() - startTime}ms (port ${port}) (env ${process.env.NODE_ENV})`)
+  console.info(`Core: Started ${new Date() - startTime}ms (port ${port}) (env ${process.env.NODE_ENV})`)
 })

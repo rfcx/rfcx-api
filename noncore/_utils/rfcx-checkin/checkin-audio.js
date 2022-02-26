@@ -76,7 +76,7 @@ exports.audio = {
           }
         }
       } else {
-        console.log("couldn't match audio meta to uploaded content | " + audioMeta)
+        console.error("couldn't match audio meta to uploaded content | " + audioMeta)
       }
     }
     return audioInfo
@@ -98,12 +98,12 @@ exports.audio = {
           if (audioInfo.sha1Hash === audioInfo.guardianSha1Hash) {
             resolve(audioInfo)
           } else {
-            console.log('checksum mismatch on uploaded (and unzipped) audio file | ' + audioInfo.sha1Hash + ' - ' + audioInfo.guardianSha1Hash)
+            console.error('checksum mismatch on uploaded (and unzipped) audio file | ' + audioInfo.sha1Hash + ' - ' + audioInfo.guardianSha1Hash)
             reject(new Error())
           }
         })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })
@@ -206,9 +206,9 @@ exports.audio = {
           audioInfo.unzipLocalPath,
           audioInfo.s3Path,
           function (err, s3Res) {
-            try { s3Res.resume() } catch (resumeErr) { console.log(resumeErr) }
+            try { s3Res.resume() } catch (resumeErr) { console.error(resumeErr) }
             if (err) {
-              console.log(err)
+              console.error(err)
               reject(new Error(err))
             } else if ((s3Res.statusCode === 200) && aws.s3ConfirmSave(s3Res, audioInfo.s3Path)) {
               audioInfo.isSaved.s3 = true
@@ -257,9 +257,9 @@ exports.audio = {
   },
 
   rollBackCheckIn: function (audioInfo) {
-    models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo.sha1Hash } }).then(function (dbAudio) { dbAudio.destroy().then(function () { console.log('deleted incomplete audio entry') }) }).catch(function (err) { console.log('failed to delete incomplete audio entry | ' + err) })
+    models.GuardianAudio.findOne({ where: { sha1_checksum: audioInfo.sha1Hash } }).then(function (dbAudio) { dbAudio.destroy().then(function () { console.info('deleted incomplete audio entry') }) }).catch(function (err) { console.error('failed to delete incomplete audio entry | ' + err) })
 
-    models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function (dbCheckIn) { dbCheckIn.destroy().then(function () { console.log('deleted checkin entry') }) }).catch(function (err) { console.log('failed to delete checkin entry | ' + err) })
+    models.GuardianCheckIn.findOne({ where: { id: audioInfo.checkin_id } }).then(function (dbCheckIn) { dbCheckIn.destroy().then(function () { console.info('deleted checkin entry') }) }).catch(function (err) { console.error('failed to delete checkin entry | ' + err) })
 
     this.cleanupCheckInFiles(audioInfo)
   },
@@ -308,20 +308,20 @@ exports.audio = {
         return []
       }
     } catch (e) {
-      console.log(e)
+      console.error(e)
       return []
     }
   },
 
   cleanupCheckInFiles: function (audioInfo) {
     fs.stat(audioInfo.uploadLocalPath, function (err, stat) {
-      if (err == null) { fs.unlink(audioInfo.uploadLocalPath, function (e) { if (e) { console.log(e) } }) }
+      if (err == null) { fs.unlink(audioInfo.uploadLocalPath, function (e) { if (e) { console.error(e) } }) }
     })
     fs.stat(audioInfo.unzipLocalPath, function (err, stat) {
-      if (err == null) { fs.unlink(audioInfo.unzipLocalPath, function (e) { if (e) { console.log(e) } }) }
+      if (err == null) { fs.unlink(audioInfo.unzipLocalPath, function (e) { if (e) { console.error(e) } }) }
     })
     fs.stat(audioInfo.wavAudioLocalPath, function (err, stat) {
-      if (err == null) { fs.unlink(audioInfo.wavAudioLocalPath, function (e) { if (e) { console.log(e) } }) }
+      if (err == null) { fs.unlink(audioInfo.wavAudioLocalPath, function (e) { if (e) { console.error(e) } }) }
     })
   }
 

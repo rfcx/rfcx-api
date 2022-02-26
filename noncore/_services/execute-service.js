@@ -9,7 +9,7 @@ module.exports = function (req, res, serviceRequest, serviceFunction, message = 
     )
     .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
     .catch(function (err) {
-      console.log(`${message} | ` + err +
+      console.error(`${message} | ` + err +
         '| params: ' + util.inspect(req.params, false, null) +
         '| query: ' + util.inspect(req.query, false, null) +
         '| body: ' + util.inspect(req.body, false, null))

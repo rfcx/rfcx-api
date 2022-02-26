@@ -45,15 +45,15 @@ exports.models = {
       .then(function ({ sourceFilePath }) {
         if ((dbRow.Format.file_extension === outputFileExtension) &&
           (Math.round(1000 * queryParams.clipDuration) / 1000 === Math.round(1000 * clipDurationFull) / 1000)) {
-          console.log('serving ' + outputFileExtension + ' file without transcoding')
+          console.info('serving ' + outputFileExtension + ' file without transcoding')
           audioUtils.serveAudioFromFile(res, sourceFilePath, outputFileName, audioUtils.formatSettings[outputFileExtension].mime, !!req.query.inline)
             .then(function () {
               // should we do/log anything if we're successful?
             }).catch(function (err) {
-              console.log(err)
+              console.error(err)
             })
         } else {
-          console.log('transcoding ' + dbRow.Format.file_extension + ' audio to ' + outputFileExtension)
+          console.info('transcoding ' + dbRow.Format.file_extension + ' audio to ' + outputFileExtension)
 
           audioUtils.transcodeToFile(outputFileExtension, {
             enhanced: isOutputEnhanced,
@@ -68,14 +68,14 @@ exports.models = {
               .then(function () {
                 // should we do/log anything if we're successful?
               }).catch(function (err) {
-                console.log(err)
+                console.error(err)
               })
           }).catch(function (err) {
-            console.log(err)
+            console.error(err)
           })
         }
       }).catch(function (err) {
-        console.log(err)
+        console.error(err)
         res.status(500).json({ msg: 'failed to download audio' })
       })
   },
@@ -115,23 +115,23 @@ exports.models = {
 
         exec(ffmpegSox + ' && ' + imageMagick + ' && ' + pngCrush, function (err, stdout, stderr) {
           if (stderr.trim().length > 0) {
-            console.log({ stderr })
+            console.error({ stderr })
           }
           if (err) {
-            console.log({ err })
+            console.error({ err })
           }
 
-          fs.unlink(sourceFilePath, function (e) { if (e) { console.log(e) } })
-          fs.unlink(tmpFilePath + '-sox.png', function (e) { if (e) { console.log(e) } })
-          fs.unlink(tmpFilePath + '-rotated.png', function (e) { if (e) { console.log(e) } })
+          fs.unlink(sourceFilePath, function (e) { if (e) { console.error(e) } })
+          fs.unlink(tmpFilePath + '-sox.png', function (e) { if (e) { console.error(e) } })
+          fs.unlink(tmpFilePath + '-rotated.png', function (e) { if (e) { console.error(e) } })
 
           audioUtils.serveAudioFromFile(res, tmpFilePath + '-final.png', dbRow.guid + '.png', 'image/png', !!req.query.inline)
             .catch(function (err) {
-              console.log(err)
+              console.error(err)
             })
         })
       }).catch(function (err) {
-        console.log(err)
+        console.error(err)
         res.status(500).json({ msg: 'failed to download audio' })
       })
   },

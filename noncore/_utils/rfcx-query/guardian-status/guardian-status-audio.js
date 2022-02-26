@@ -23,7 +23,7 @@ exports.guardianStatusAudio = {
           })
         })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })
@@ -61,15 +61,15 @@ exports.guardianStatusAudio = {
 
                 return null
               }).catch(function (err) {
-                console.log(err)
+                console.error(err)
                 reject(new Error(err))
               })
           }).catch(function (err) {
-            console.log(err)
+            console.error(err)
             reject(new Error(err))
           })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })

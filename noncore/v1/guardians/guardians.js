@@ -103,7 +103,7 @@ router.route('/')
         }
       })
       .catch(function (err) {
-        console.log('failed to return guardians | ' + err)
+        console.error('failed to return guardians | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return guardians' }) }
       })
   })
@@ -185,7 +185,7 @@ router.route('/admin')
         }
       })
       .catch(function (err) {
-        console.log('failed to return guardians | ' + err)
+        console.error('failed to return guardians | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return guardians' }) }
       })
   })
@@ -208,7 +208,7 @@ router.route('/my')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get your guardians.") })
+      .catch(e => { console.error('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get your guardians.") })
   })
 
 router.route('/:guardian_id')
@@ -225,7 +225,7 @@ router.route('/:guardian_id')
           res.status(200).json(views.models.guardian(req, res, dbGuardian))
         }
       }).catch(function (err) {
-        console.log('failed to return guardian | ' + err)
+        console.error('failed to return guardian | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return guardian' }) }
       })
   })
@@ -245,7 +245,7 @@ router.route('/:guardian_id/public-info')
         }
       })
       .catch(function (err) {
-        console.log('failed to return guardian | ' + err)
+        console.error('failed to return guardian | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return guardian' }) }
       })
   })
@@ -313,7 +313,7 @@ router.route('/register')
       })
       .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
       .catch(function (err) {
-        console.log(err)
+        console.error(err)
         res.status(500).json({ message: err.message, error: { status: 500 } })
       })
   })

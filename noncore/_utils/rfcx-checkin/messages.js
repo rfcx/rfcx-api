@@ -37,13 +37,13 @@ exports.messages = {
           messageInfo.isSaved = true
           messageInfo.guid = dbGuardianMetaMessage.guid
           resolve(messageInfo)
-          console.log('message saved: ' + dbGuardianMetaMessage.guid)
+          console.info('message saved: ' + dbGuardianMetaMessage.guid)
         }).catch(function (err) {
-          console.log('error saving message: ' + messageInfo.android_id + ', ' + messageInfo.body + ', ' + err)
+          console.error('error saving message: ' + messageInfo.android_id + ', ' + messageInfo.body + ', ' + err)
           reject(new Error(err))
         })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })

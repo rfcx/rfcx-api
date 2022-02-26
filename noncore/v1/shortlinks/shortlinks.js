@@ -30,7 +30,7 @@ router.route('/:shortlink_id')
           dbShortLink.access_count = 1 + dbShortLink.access_count
           dbShortLink.save()
 
-          console.log("redirecting client to: '" + dbShortLink.url + "'")
+          console.info("redirecting client to: '" + dbShortLink.url + "'")
           res.redirect(301, dbShortLink.url)
         }).catch(function () {
           res.status(200).json({ shortlink: req.params.shortlink_id })
@@ -54,7 +54,7 @@ router.route('/s/:hash')
         }
         res.redirect(301, url)
       })
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting the short link.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting the short link.'); console.error(e) })
   })
 
 router.route('/')
@@ -127,7 +127,7 @@ router.route('/')
         res.status(200).send(url)
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while creating the short link.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while creating the short link.'); console.error(e) })
   })
 
 module.exports = router

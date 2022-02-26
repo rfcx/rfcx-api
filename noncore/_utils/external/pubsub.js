@@ -12,7 +12,7 @@ async function publish (topicName, message) {
     await client.createTopic(topicName)
   } catch (error) {
     if (error.code !== ERROR_TOPIC_ALREADY_EXISTS) {
-      console.log(error)
+      console.error(error)
     }
   }
 

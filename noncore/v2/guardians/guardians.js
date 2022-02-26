@@ -51,7 +51,7 @@ router.route('/public')
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting guardians.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting guardians.'); console.error(e) })
   })
 
 router.route('/:guid')
@@ -62,7 +62,7 @@ router.route('/:guid')
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
-      .catch(e => { httpErrorResponse(req, res, 500, e, `Error while getting guardian with guid "${req.params.guid}".`); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, `Error while getting guardian with guid "${req.params.guid}".`); console.error(e) })
   })
 
 router.route('/:guid')
@@ -183,7 +183,7 @@ router.route('/register')
         keystore_passphrase: process.env.GUARDIAN_KEYSTORE_PASSPHRASE
       })
     } catch (e) {
-      console.log('v2/guardians/register error', e)
+      console.error('v2/guardians/register error', e)
       if (e instanceof sequelize.ValidationError) {
         let message = 'Validation error'
         try {

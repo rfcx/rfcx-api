@@ -32,7 +32,7 @@ router.route('/:guardian_id/status')
           })
         })
       }).catch(function (err) {
-        console.log('failure to retrieve guardian: ' + err)
+        console.error('failure to retrieve guardian: ' + err)
         httpErrorResponse(req, res, 404, 'database')
       })
   })

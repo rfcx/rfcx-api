@@ -331,7 +331,7 @@ function processStatsByDates (req, res) {
       }
     })
     .catch(function (err) {
-      console.log('Error while searching Audio Events', arguments)
+      console.error('Error while searching Audio Events', arguments)
       res.status(500).json({ msg: err })
     })
 }

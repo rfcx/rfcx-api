@@ -35,8 +35,8 @@ exports.checkInAssets = {
                 if (wavStatErr !== null) { reject(wavStatErr) }
 
                 exec(process.env.SOX_PATH + 'i -s ' + wavFilePath, function (err, stdout, stderr) {
-                  if (stderr.trim().length > 0) { console.log(stderr) }
-                  if (err) { console.log(err); reject(err) }
+                  if (stderr.trim().length > 0) { console.error(stderr) }
+                  if (err) { console.error(err); reject(err) }
 
                   checkInObj.audio.meta.captureSampleCount = parseInt(stdout.trim())
                   assetUtils.deleteLocalFileFromFileSystem(wavFilePath)

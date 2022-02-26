@@ -37,7 +37,7 @@ router.route('/audio/:audio_id')
 
         return null
       }).catch(function (err) {
-        console.log('failed to return audio | ' + err)
+        console.error('failed to return audio | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
       })
   })
@@ -61,7 +61,7 @@ router.route('/audio/amplitude/:audio_id')
         const values = randomAmplitudeArray(numOfAmplitudes, 0.003)
         res.json([{ guid, offset: 0, duration, amplitude: { window_duration: 500, type: 'rms', values } }])
       }).catch(function (err) {
-        console.log('failed to return audio amplitude | ' + err)
+        console.error('failed to return audio amplitude | ' + err)
         res.status(500).json({ msg: 'failed to return audio amplitude' })
       })
   })
@@ -97,7 +97,7 @@ router.route('/screenshots/:screenshot_id')
 
         return null
       }).catch(function (err) {
-        console.log('failed to return screenshot | ' + err)
+        console.error('failed to return screenshot | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return screenshot' }) }
       })
   })

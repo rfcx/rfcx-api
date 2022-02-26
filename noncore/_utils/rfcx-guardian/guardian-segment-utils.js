@@ -55,7 +55,7 @@ exports.segmentUtils = {
           }
         }
       } else {
-        console.log("Failed to match PIN Code '" + segObj.guardian_pincode + "'")
+        console.info("Failed to match PIN Code '" + segObj.guardian_pincode + "'")
       }
     } else {
       const dbSegmentGrp = await models.GuardianMetaSegmentsGroup

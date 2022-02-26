@@ -14,7 +14,7 @@ const segmentUtils = require('../../_utils/rfcx-guardian/guardian-segment-utils'
 router.route('/segments/sms')
   .post(function (req, res) {
     if (smsTwilio.validateIncomingMessage(req)) {
-      console.log('Incoming Twilio message validated...')
+      console.info('Incoming Twilio message validated...')
 
       const segObj = msgSegUtils.parseMsgSegment(req.body.Body, 'sms', req.body.From)
 
@@ -43,7 +43,7 @@ router.route('/segments/sms')
 router.route('/segments/sbd')
   .post(function (req, res) {
     if (sbdRockBlock.validateIncomingMessage(req)) {
-      console.log('Incoming RockBlock message validated...')
+      console.info('Incoming RockBlock message validated...')
 
       const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'hex'), 'sbd', req.body.imei)
 
@@ -77,7 +77,7 @@ router.route('/segments/swm')
     }
 
     if (swarmMsg.validateIncomingMessage(req)) {
-      console.log('Incoming Swarm message validated...')
+      console.info('Incoming Swarm message validated...')
 
       const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'base64'), 'swm', req.body.deviceId)
       segmentUtils.saveSegmentToDb(segObj)

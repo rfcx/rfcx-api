@@ -21,11 +21,11 @@ if (!messageQueue.isEnabled()) {
 async function main () {
   // Print a menu of tasks
   const tasks = [SEGMENT_CREATED]
-  console.log('\nAvailable tasks\n---------------\n')
+  console.info('\nAvailable tasks\n---------------\n')
   tasks.forEach((task, i) => {
-    console.log(`${i + 1}. ${task}`)
+    console.info(`${i + 1}. ${task}`)
   })
-  console.log()
+  console.info()
   // User selects task
   const taskIndex = await question('Enter task number: ') - 1
   if (tasks[taskIndex] === SEGMENT_CREATED) {
@@ -41,6 +41,6 @@ async function main () {
 }
 
 main().then(() => {
-  console.log('\nDone!')
+  console.info('\nDone!')
   process.exit(0)
 })

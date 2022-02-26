@@ -176,7 +176,7 @@ async function main () {
   const userIds = await getUserIds()
   await prepareFiles()
   const usersObj = generateItems(userIds)
-  console.log('Generating organizations, projects, streams: 100% complete...')
+  console.info('Generating organizations, projects, streams: 100% complete...')
   randomSharing(userIds, usersObj)
   process.stdout.write('Generating user roles: 100% complete... \r')
   closeFiles()

@@ -157,7 +157,7 @@ exports.guardianMsgParsingUtils = {
     segments[0] = segHeaderZero + this.generateSegmentId(segments.length) + segments[0]
 
     // for (var i = 0; i < segments.length; i++) {
-    //   console.log(" - "+segments[i]+" ("+segments[i].length+")")
+    //   console.info(" - "+segments[i]+" ("+segments[i].length+")")
     // }
 
     return segments
@@ -198,23 +198,23 @@ exports.guardianMsgParsingUtils = {
       payload: JSON.stringify(jsonObj, null, 2)
     }
     await models.GuardianMetaSegmentsGroupLog.create(groupLog)
-    console.log(`assembleReceivedSegments: logged group ${dbSegGrp.guid}`)
+    console.info(`assembleReceivedSegments: logged group ${dbSegGrp.guid}`)
 
     await models.GuardianMetaSegmentsReceived.destroy({
       where: { id: { [models.Sequelize.Op.in]: dbSegs.map(s => s.id) } }
     })
     await models.GuardianMetaSegmentsGroup.destroy({ where: { id: dbSegGrp.id } })
-    console.log(`assembleReceivedSegments: deleted segment group ${dbSegGrp.guid}`)
+    console.info(`assembleReceivedSegments: deleted segment group ${dbSegGrp.guid}`)
 
     if (sha1(JSON.stringify(jsonObj)).substr(0, dbSegGrp.checksum_snippet.length) !== dbSegGrp.checksum_snippet) {
-      console.log(`assembleReceivedSegments: invalid checksum ${dbSegGrp.checksum_snippet} for group ${dbSegGrp.guid}`)
+      console.warn(`assembleReceivedSegments: invalid checksum ${dbSegGrp.checksum_snippet} for group ${dbSegGrp.guid}`)
       return
     }
 
     if (dbSegGrp.type === 'png') {
       return await processPing(jsonObj, guardianGuid, guardianPinCode, dbSegGrp, dbSegs[0].origin_address)
     } else {
-      console.log(`assembleReceivedSegments: unsupported type for group ${dbSegGrp.guid}`)
+      console.error(`assembleReceivedSegments: unsupported type for group ${dbSegGrp.guid}`)
     }
   },
 
@@ -238,13 +238,13 @@ async function processPing (jsonObj, guardianGuid, guardianPinCode, dbSegGrp, or
   const messageId = randomGuid()
   const result = await pingRouter.onMessagePing(pingObj, messageId)
 
-  console.log(`assembleReceivedSegments: ping processed for group ${dbSegGrp.guid}`)
+  console.info(`assembleReceivedSegments: ping processed for group ${dbSegGrp.guid}`)
 
   // TODO check if this should check if the message was from sms
   if (JSON.stringify(result.obj).length > 2 && dbSegGrp.protocol === 'sms' && originAddress !== undefined) {
     const segsForQueue = constructSegmentsGroup(guardianGuid, guardianPinCode, 'cmd', 'sms', result.obj, result.gzip)
     await Promise.all(segsForQueue.map(seg => smsTwilio.sendSms(seg, originAddress)))
-    console.log('assembleReceivedSegments: cmd sms sent', messageId)
+    console.info('assembleReceivedSegments: cmd sms sent', messageId)
   }
 }
 
