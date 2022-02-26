@@ -29,7 +29,7 @@ test('can save detections single payload', async () => {
   const step = 1000
   const confidencesRaw = ',,,0.98,,,,,,,,,,,,0.98,,,,0.95,,,,,,,,,,,0.90,,,,,0.97,,,,,,,,,,0.96,,,,,,'
   const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step}*${confidencesRaw}`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input], stream.id)
 
@@ -51,7 +51,7 @@ test('can save detections single payload abbreviated', async () => {
   const step = 1000
   const confidencesRaw = 'n3,0.98,n11,0.98,n3,0.95,n10,0.90,n4,0.97,n9,0.96,n6'
   const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step}*${confidencesRaw}`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input], stream.id)
 
@@ -76,7 +76,7 @@ test('can save detections multiple payloads', async () => {
   const confidencesRaw2 = ',,,,,,,,,0.98,,0.98,,,,,0.99,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,0.99,,,,,,,,0.98,,,,,,,,,,,,,,,,,,,,,,0.95,,,,'
   const input1 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start1}*${step}*${confidencesRaw1}`
   const input2 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start2}*${step}*${confidencesRaw2}`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input1, input2], stream.id)
 
@@ -101,7 +101,7 @@ test('can save detections multiple payloads abbreviated', async () => {
   const confidencesRaw2 = 'n9,0.98,n1,0.98,n4,0.99,n42,0.99,n7,0.98,n21,0.95,n4'
   const input1 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start1}*${step}*${confidencesRaw1}`
   const input2 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start2}*${step}*${confidencesRaw2}`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input1, input2], stream.id)
 
@@ -126,7 +126,7 @@ test('can save detections multiple payloads abbreviated and empty string', async
   const confidencesRaw2 = 'n9,,,0.98,n1,,0.98,n4,0.99,n42,0.99,n7,0.98,n21,0.95,n4'
   const input1 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start1}*${step}*${confidencesRaw1}`
   const input2 = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start2}*${step}*${confidencesRaw2}`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input1, input2], stream.id)
 
@@ -148,7 +148,7 @@ test('can save payload with bad step (*1000)', async () => {
   const step = 1000
   const confidencesRaw = ',,,0.98,,,,,,,,,,,,0.98,,,,0.95,,,,,,,,,,,0.90,,,,,0.97,,,,,,,,,,0.96,,,,,,'
   const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step * 1000}*${confidencesRaw}`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input], stream.id)
 
@@ -163,7 +163,7 @@ test('can save payload with bad step (*1000) abbreviated', async () => {
   const step = 1000
   const confidencesRaw = 'n3,0.98,n11,0.98,n3,0.95,n10,0.90,n4,0.97,n9,0.96,n6'
   const input = `${classifierOutput.outputClassName}*${classifier.name}-v${classifier.version}*${start}*${step * 1000}*${confidencesRaw}`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input], stream.id)
 
@@ -179,7 +179,7 @@ test('can save payload with missing -edge in classifier name (chainsaw-v5)', asy
   const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'ch', ignoreThreshold: 0.1 }
   await models.ClassifierOutput.create(classifierOutput)
   const input = `${classifierOutput.outputClassName}*chainsaw-v${classifier.version}*1420070745567*1000*0.98,`
-  console.error = jest.fn()
+  console.info = jest.fn()
 
   await Detections([input], stream.id)
 
