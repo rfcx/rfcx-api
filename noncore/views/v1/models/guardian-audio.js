@@ -115,10 +115,10 @@ exports.models = {
 
         exec(ffmpegSox + ' && ' + imageMagick + ' && ' + pngCrush, function (err, stdout, stderr) {
           if (stderr.trim().length > 0) {
-            console.log(stderr)
+            console.log({ stderr })
           }
           if (err) {
-            console.log(err)
+            console.log({ err })
           }
 
           fs.unlink(sourceFilePath, function (e) { if (e) { console.log(e) } })
@@ -126,9 +126,7 @@ exports.models = {
           fs.unlink(tmpFilePath + '-rotated.png', function (e) { if (e) { console.log(e) } })
 
           audioUtils.serveAudioFromFile(res, tmpFilePath + '-final.png', dbRow.guid + '.png', 'image/png', !!req.query.inline)
-            .then(function () {
-              // should we do/log anything if we're successful?
-            }).catch(function (err) {
+            .catch(function (err) {
               console.log(err)
             })
         })
