@@ -80,6 +80,8 @@ async function getActiveClassifiers (stream) {
     where
   }
 
+  console.log({ options })
+
   const classifiers = await Classifier.findAll(options)
   return classifiers.map(classifier => classifier.toJSON())
 }
