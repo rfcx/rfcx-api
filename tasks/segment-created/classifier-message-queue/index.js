@@ -28,6 +28,7 @@ class ClassifierMessageQueue extends MessageQueue {
    */
   async publish (platform, classifier, priority, message) {
     const queue = this.classifierQueueName(platform, classifier, priority)
+    console.info(`publish: ${queue} ${JSON.stringify(message)}`)
     return super.publish(queue, message)
   }
 }

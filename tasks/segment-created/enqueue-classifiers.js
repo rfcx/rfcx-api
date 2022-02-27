@@ -26,11 +26,15 @@ async function enqueueClassifiers (streamId, start) {
     }
   }
 
+  console.info({ stream, preferredPlatform })
+
   // Get the classifiers that are enabled for the stream
   const classifiers = await cache.get(cacheKeyGen.streamClassifiers(stream.id), () => getActiveClassifiers(stream))
 
   // Select the platform for each classifier
   const classifiersAndPlatforms = classifiers.map(classifier => ({ classifier, platform: selectPlatform(classifier, preferredPlatform) }))
+
+  console.info({ classifiers, classifiersAndPlatforms })
 
   // Queue the prediction service
   await Promise.all(classifiersAndPlatforms.map(cp => enqueue(cp.platform, cp.classifier, streamId, start)))
