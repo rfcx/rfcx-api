@@ -137,7 +137,7 @@ function create (segment, options = {}) {
   return StreamSegment.create(segment, { transaction })
     .then(() => {
       if (messageQueue.isEnabled()) {
-        const message = { id: segment.id, start: segment.start, stream_id: segment.stream_id }
+        const message = { id: segment.id, start: segment.start, streamId: segment.stream_id }
         return messageQueue.publish(SEGMENT_CREATED, message).catch((e) => {
           console.error('Stream segment service -> create -> publish failed', e.message || e)
         })

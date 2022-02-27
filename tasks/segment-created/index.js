@@ -10,7 +10,6 @@ const enqueueClassifiers = require('./enqueue-classifiers')
  * @return {boolean} true if the task succeeded
  */
 async function performTask (payload) {
-  console.info({ payload })
   const { start, streamId } = payload
 
   await enqueueClassifiers(streamId, start)
