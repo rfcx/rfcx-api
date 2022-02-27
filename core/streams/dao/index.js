@@ -45,7 +45,7 @@ async function get (idOrWhere, options = {}) {
   const transaction = options.transaction || null
 
   const stream = await Stream.findOne({ where, attributes, include, paranoid: false, transaction })
-  console.info({ stream, where })
+  console.info({ where, idOrWhere })
 
   if (!stream) {
     throw new EmptyResultError('Stream not found')
