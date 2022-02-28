@@ -71,35 +71,36 @@ router.route('/segments/sbd')
 
 router.route('/segments/swm')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
-    // To bypass test message for saving change on Swarm
-    if (req.body.deviceId === 0 && req.body.packetId === 0) {
-      res.writeHead(200, { 'Content-Type': 'text/xml' }).end()
+    console.info(`swarm segment: ${JSON.stringify(req.body)}`)
+
+    const deviceId = req.body.deviceId
+    const packetId = req.body.packetId
+
+    // Swarm test message
+    if (deviceId === 0 && packetId === 0) {
+      console.info('swarm segment: test detected')
+      res.sendStatus(200)
+      return
     }
 
-    if (swarmMsg.validateIncomingMessage(req)) {
-      console.log('Incoming Swarm message validated...')
-
-      const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'base64'), 'swm', req.body.deviceId)
-      segmentUtils.saveSegmentToDb(segObj)
-        .then(() => {
-          res.writeHead(200, { 'Content-Type': 'text/xml' })
-          res.end()
-        })
-        .catch(ValidationError, e => {
-          let message = 'Validation error'
-          try {
-            message = e.errors && e.errors.length ? e.errors.map((er) => er.message).join('; ') : e.message
-          } catch (err) { }
-          httpError(req, res, 400, null, message)
-        })
-        .catch(function (err) {
-          console.error(err)
-          res.status(500).json({ message: err.message, error: { status: 500 } })
-        })
-    } else {
-      res.writeHead(401, { 'Content-Type': 'text/xml' })
-      res.end()
+    if (!swarmMsg.validateIncomingMessage(req)) {
+      console.error(`swarm segment: ${deviceId} ${packetId} invalid message: ${deviceId} ${packetId}`)
+      res.sendStatus(400)
+      return
     }
+
+    console.info(`swarm segment: ${deviceId} ${packetId} validated`)
+
+    const segObj = msgSegUtils.parseMsgSegment(Buffer.from(req.body.data, 'base64'), 'swm', deviceId)
+    segmentUtils.saveSegmentToDb(segObj)
+      .then(() => {
+        console.info(`swarm segment: ${deviceId} ${packetId} processed`)
+        res.sendStatus(200)
+      })
+      .catch(err => {
+        console.error(`swarm segment: ${deviceId} ${packetId} failed ${JSON.stringify(err)}`)
+        res.sendStatus(200)
+      })
   })
 
 // For debugging purposes
