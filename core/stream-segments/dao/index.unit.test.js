@@ -32,7 +32,7 @@ test('Create segment triggers queue message', async () => {
   await service.create(segment)
 
   expect(defaultMessageQueue.publish).toHaveBeenCalledTimes(1)
-  expect(defaultMessageQueue.publish).toHaveBeenCalledWith(SEGMENT_CREATED, { id, start, stream_id: streamId })
+  expect(defaultMessageQueue.publish).toHaveBeenCalledWith(SEGMENT_CREATED, { id, start, streamId })
   expect(StreamSegment.create).toHaveBeenCalled()
 })
 
