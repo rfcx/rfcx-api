@@ -24,7 +24,7 @@ router.route('/generate-with-pdfmake')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, 'Could not generate pdf from given object.') })
+      .catch(e => { console.error('e', e); httpErrorResponse(req, res, 500, e, 'Could not generate pdf from given object.') })
   })
 
 module.exports = router

@@ -33,7 +33,7 @@ exports.assetUtils = {
 
   deleteLocalFileFromFileSystem: function (filePath) {
     fs.stat(filePath, function (err, stat) {
-      if (err == null) { fs.unlink(filePath, function (e) { if (e) { console.log(e) } }) }
+      if (err == null) { fs.unlink(filePath, function (e) { if (e) { console.error(e) } }) }
     })
   }
 

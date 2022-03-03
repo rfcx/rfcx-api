@@ -33,7 +33,7 @@ exports.mqttInstructions = {
                     resolve(checkInObj)
                   }
                 }).catch(function (err) {
-                  console.log('failed to update received instructions | ' + err)
+                  console.error('failed to update received instructions | ' + err)
                 })
               }
             }
@@ -41,7 +41,7 @@ exports.mqttInstructions = {
         } else {
           resolve(checkInObj)
         }
-      } catch (errReceivedInstruction) { console.log(errReceivedInstruction); reject(new Error(errReceivedInstruction)) }
+      } catch (errReceivedInstruction) { console.error(errReceivedInstruction); reject(new Error(errReceivedInstruction)) }
     })
   },
 
@@ -96,7 +96,7 @@ exports.mqttInstructions = {
                       resolve(checkInObj)
                     }
                   }).catch(function (err) {
-                    console.log('failed to update executed instructions | ' + err)
+                    console.error('failed to update executed instructions | ' + err)
                   })
 
                   // should we report some purge request to the guardian on the rtrn obj?
@@ -109,7 +109,7 @@ exports.mqttInstructions = {
         } else {
           resolve(checkInObj)
         }
-      } catch (errExecutedInstruction) { console.log(errExecutedInstruction); reject(new Error(errExecutedInstruction)) }
+      } catch (errExecutedInstruction) { console.error(errExecutedInstruction); reject(new Error(errExecutedInstruction)) }
     })
   },
 
@@ -159,9 +159,9 @@ exports.mqttInstructions = {
             }
             resolve(checkInObj)
           }).catch(function (err) {
-            console.log('failed to return queued instructions | ' + err)
+            console.error('failed to return queued instructions | ' + err)
           })
-      } catch (errUpdateInstruction) { console.log(errUpdateInstruction); reject(new Error(errUpdateInstruction)) }
+      } catch (errUpdateInstruction) { console.error(errUpdateInstruction); reject(new Error(errUpdateInstruction)) }
     })
   }
 

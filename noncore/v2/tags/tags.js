@@ -56,7 +56,7 @@ router.route('/')
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch(EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
       .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting tags'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting tags'); console.error(e) })
   })
 
 module.exports = router

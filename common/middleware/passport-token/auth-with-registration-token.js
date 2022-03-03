@@ -20,7 +20,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
         dbToken.destroy().then(function () {
           return done(null, false, { message: 'code/token is expired' })
         }).catch(function (err) {
-          console.log('failed to delete registration code/token, but proceeding anyway... | ' + err)
+          console.warn('failed to delete registration code/token, but proceeding anyway... | ' + err)
           return done(null, false, { message: 'code/token is expired' })
         })
       } else if (dbToken.total_redemptions >= dbToken.allowed_redemptions) {
@@ -38,17 +38,17 @@ exports.authenticateAs = function (req, token, done, authUser) {
           owner_guid: null
         }
 
-        console.log('authenticated with registration code/token: ' + req.rfcx.auth_token_info.guid)
+        console.info('authenticated with registration code/token: ' + req.rfcx.auth_token_info.guid)
 
         dbToken.increment('total_redemptions', { by: 1 })
 
         return done(null, req.rfcx.auth_token_info)
       } else {
-        console.log('failed to match token with salted hash')
+        console.warn('failed to match token with salted hash')
         return done(null, false, { message: 'invalid user/token combination' })
       }
     }).catch(function (err) {
-      console.log('failed to find anonymous token | ' + err)
+      console.warn('failed to find anonymous token | ' + err)
       return done(err)
     })
 }

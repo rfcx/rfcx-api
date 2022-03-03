@@ -13,7 +13,7 @@ exports.healthCheck = {
             resolve(dbRowCount.dataValues.count >= 0)
           } catch (e) { reject(e) }
         }).catch(function (err) {
-          console.log('failed to fetch row count | ' + err)
+          console.error('failed to fetch row count | ' + err)
           reject(new Error(err))
         })
     })
@@ -29,7 +29,7 @@ exports.healthCheck = {
         res.status(isConnected ? 200 : 500).json(rtrnJson)
       }).catch(function (err) {
         if (err) {
-          console.log(err.message)
+          console.error(err.message)
           rtrnJson.healthy = false
           res.status(500).json(rtrnJson)
         }

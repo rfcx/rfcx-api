@@ -304,7 +304,7 @@ function getAllUsersForExports (token, params) {
       body: body
     }, (err, response, body) => {
       if (err) {
-        console.log('err', err)
+        console.error('getAllUsersForExports', err)
         reject(err)
       } else if (!!body && !!body.error) {
         reject(body)
@@ -326,7 +326,7 @@ function getAjob (token, opts) {
       }
     }, (err, response, body) => {
       if (err) {
-        console.log('err', err)
+        console.error('getAjob', err)
         reject(err)
       } else if (!!body && !!body.error) {
         reject(body)

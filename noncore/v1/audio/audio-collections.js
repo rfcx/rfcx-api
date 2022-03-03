@@ -157,7 +157,7 @@ router.route('/audio-collections/by-guids')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to create audio collection | ' + err)
+        console.error('failed to create audio collection | ' + err)
         if (err) { res.status(500).json({ message: 'failed to create audio collection', error: { status: 500 } }) }
       })
   })
@@ -185,7 +185,7 @@ router.route('/audio-collections/:id')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to return audio collection | ' + err)
+        console.error('failed to return audio collection | ' + err)
         if (err) { res.status(500).json({ message: 'failed to return audio collection', error: { status: 500 } }) }
       })
   })

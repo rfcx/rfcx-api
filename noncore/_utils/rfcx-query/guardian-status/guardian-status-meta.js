@@ -21,7 +21,7 @@ exports.guardianStatusMeta = {
           })
         })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })
@@ -47,11 +47,11 @@ exports.guardianStatusMeta = {
               bytes_received: parseInt(dbStatus.dataValues.sum_bytes_received)
             })
           }).catch(function (err) {
-            console.log(err)
+            console.error(err)
             reject(new Error(err))
           })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })

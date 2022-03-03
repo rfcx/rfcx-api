@@ -191,7 +191,7 @@ router.route('/:guid/attachments')
       .then(result => res.status(200).json(result))
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, e.message || 'Could not save report attachments.') })
+      .catch(e => { console.error(e); httpErrorResponse(req, res, 500, e, e.message || 'Could not save report attachments.') })
   })
 
 router.route('/:guid')

@@ -23,23 +23,23 @@ exports.audioUtils = {
               return reject(new EmptyResultError(s3Res.statusMessage || 'File not found.'))
             }
             const tempWriteStream = fs.createWriteStream(sourceFilePath)
-            tempWriteStream.on('error', function (err) { console.log(err) })
+            tempWriteStream.on('error', function (err) { console.error(err) })
             s3Res.on('data', function (data) { tempWriteStream.write(data) })
             s3Res.on('end', function () { tempWriteStream.end() })
-            s3Res.on('error', function (err) { console.log(err) })
+            s3Res.on('error', function (err) { console.error(err) })
             tempWriteStream.on('finish', function () {
               fs.stat(sourceFilePath, function (statErr, fileStat) {
                 if (statErr == null) {
                   resolve({ sourceFilePath, headers: s3Res.headers })
                 } else {
-                  console.log('Audio file not found...')
+                  console.error('Audio file not found...')
                   reject(new Error())
                 }
               })
             })
           }).end()
       } catch (err) {
-        console.log('failed to download audio from s3 | ' + err)
+        console.error('failed to download audio from s3 | ' + err)
         reject(new Error(err))
       }
     })

@@ -22,7 +22,7 @@ async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
   const regex = /(create_hypertable|CREATE INDEX|ADD CONSTRAINT|DROP CONSTRAINT|DELETE FROM .* USING)/ // unsupported by sqlite
   sequelize.queryInterface.sequelize.query = (sql, options = {}) => {
     if (regex.test(sql)) {
-      // console.log('Skip unsupported query: ' + sql)
+      // console.error('Skip unsupported query: ' + sql)
       return Promise.resolve()
     }
     return query.call(sequelize.queryInterface.sequelize, sql, options)

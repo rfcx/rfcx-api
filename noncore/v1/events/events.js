@@ -54,7 +54,7 @@ router.route('/event')
         }
       })
       .catch(function (err) {
-        console.log('Error while searching Audio Events', err)
+        console.error('Error while searching Audio Events', err)
         res.status(500).json({ msg: err })
       })
   })
@@ -75,7 +75,7 @@ router.route('/event/datatable')
         res.status(200).send(json)
       })
       .catch(function (err) {
-        console.log('Error while searching Audio Events', err)
+        console.error('Error while searching Audio Events', err)
         res.status(500).json({ msg: err })
       })
   })
@@ -111,7 +111,7 @@ router.route('/stats/guardian')
         }
       })
       .catch(function (err) {
-        console.log('Error while searching Audio Events', arguments)
+        console.error('Error while searching Audio Events', arguments)
         res.status(500).json({ msg: err })
       })
   })
@@ -213,7 +213,7 @@ router.route('/values')
         return eventValueService.getGuardianAudioEventValues(transformedParams)
       })
       .then((data) => { res.status(200).json(data) })
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return Guardian Audio Event Values.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return Guardian Audio Event Values.'); console.error(e) })
   })
 
 router.route('/values/hlk/:value')
@@ -223,7 +223,7 @@ router.route('/values/hlk/:value')
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return image and description for Guardian Audio Event Value.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return image and description for Guardian Audio Event Value.'); console.error(e) })
   })
 
 router.route('/values/:value')
@@ -234,7 +234,7 @@ router.route('/values/:value')
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return data for Guardian Audio Event Value.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not return data for Guardian Audio Event Value.'); console.error(e) })
   })
 
 router.route('/high-level-keys')
@@ -250,7 +250,7 @@ router.route('/high-level-keys')
       })
       .then((data) => { res.status(200).json(data) })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not search for high level keys of audio labels.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not search for high level keys of audio labels.'); console.error(e) })
   })
 
 router.route('/types')
@@ -511,7 +511,7 @@ router.route('/')
       })
       .catch(function (err) {
         if (err) {
-          console.log(err)
+          console.error(err)
           if (err.name && err.name === 'SequelizeValidationError') {
             httpErrorResponse(req, res, 400, null, 'Input data has incorrect format')
           } else {
@@ -567,7 +567,7 @@ router.route('/:event_id/review')
             })
         }
       }).catch(function (err) {
-        console.log(err)
+        console.error(err)
         if (err) {
           httpErrorResponse(req, res, 500, 'database')
         }
@@ -586,7 +586,7 @@ router.route('/:guid/comment')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, 'Error in process of saving comment for event') })
+      .catch(e => { console.error(e); httpErrorResponse(req, res, 500, e, 'Error in process of saving comment for event') })
   })
 
 router.route('/:guid/confirm')

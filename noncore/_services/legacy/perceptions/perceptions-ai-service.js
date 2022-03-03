@@ -12,10 +12,10 @@ function uploadToS3 (localPath, s3Path) {
       try {
         s3Res.resume()
       } catch (resumeErr) {
-        console.log(resumeErr)
+        console.error(resumeErr)
       }
       if (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       } else if (s3Res.statusCode === 200) {
         resolve()

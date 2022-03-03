@@ -28,7 +28,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaCPU.bulkCreate(dbMetaCPU).catch(function (err) {
-      console.log('failed to create GuardianMetaCPU | ' + err)
+      console.error('failed to create GuardianMetaCPU | ' + err)
     })
   },
 
@@ -48,7 +48,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaBattery.bulkCreate(dbMetaBattery).catch(function (err) {
-      console.log('failed to create GuardianMetaBattery | ' + err)
+      console.error('failed to create GuardianMetaBattery | ' + err)
     })
   },
 
@@ -67,7 +67,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork).catch(function (err) {
-      console.log('failed to create GuardianMetaNetwork | ' + err)
+      console.error('failed to create GuardianMetaNetwork | ' + err)
     })
   },
 
@@ -106,7 +106,7 @@ exports.saveMeta = {
 
     return models.GuardianMetaDataTransfer
       .bulkCreate(dbMetaDataTransfer).catch(function (err) {
-        console.log('failed to create GuardianMetaDataTransfer | ' + err)
+        console.error('failed to create GuardianMetaDataTransfer | ' + err)
       })
   },
 
@@ -240,7 +240,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaMqttBrokerConnection.bulkCreate(dbMetaBrokerConnection).catch(function (err) {
-      console.log('failed to create GuardianMetaMqttBrokerConnection | ' + err)
+      console.error('failed to create GuardianMetaMqttBrokerConnection | ' + err)
     })
   },
 
@@ -270,7 +270,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaDiskUsage.bulkCreate(dbMetaDiskUsage).catch(function (err) {
-      console.log('failed to create GuardianMetaDataTransfer | ' + err)
+      console.error('failed to create GuardianMetaDataTransfer | ' + err)
     })
   },
 
@@ -301,7 +301,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaMemory.bulkCreate(dbMetaMemory).catch(function (err) {
-      console.log('failed to create GuardianMetaMemory | ' + err)
+      console.error('failed to create GuardianMetaMemory | ' + err)
     })
   },
 
@@ -363,7 +363,7 @@ exports.saveMeta = {
     }
 
     return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower).catch(function (err) {
-      console.log('failed to create GuardianMetaSentinelPower | ' + err)
+      console.error('failed to create GuardianMetaSentinelPower | ' + err)
     })
   },
 
@@ -420,7 +420,7 @@ exports.saveMeta = {
     dbMetaCheckInStatus.push(dbMetaCheckInStatusObj)
 
     return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus).catch(function (err) {
-      console.log('failed to create GuardianMetaCheckInStatus | ' + err)
+      console.error('failed to create GuardianMetaCheckInStatus | ' + err)
     })
   },
 
@@ -508,7 +508,7 @@ exports.saveMeta = {
       return
     }
     // TODO remove temporary logging to debug satellite guardians
-    console.log(`${guardianId}: detections payload: ${payloadArr.join('|')}`)
+    console.info(`${guardianId}: detections payload: ${payloadArr.join('|')}`)
 
     const expandedDetections = []
     for (const payload of payloadArr) {
@@ -530,7 +530,7 @@ exports.saveMeta = {
 
     if (expandedDetections.length > 0) {
       // TODO remove temporary logging to debug satellite guardians
-      console.log(`${guardianId}: detections payload: saving ${expandedDetections.length} detections`)
+      console.info(`${guardianId}: detections payload: saving ${expandedDetections.length} detections`)
 
       return detectionsService.create(expandedDetections)
     }

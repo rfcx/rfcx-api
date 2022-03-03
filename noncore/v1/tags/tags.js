@@ -74,7 +74,7 @@ function processOne (req, res) {
     return dbTag
   }).catch(function (err) {
     // creation failed... probable cause: uuid already existed, strange!
-    console.log('Error while saving Tag | ', err)
+    console.error('Error while saving Tag | ', err)
     if (err) {
       res.status(500).json({ msg: 'The tag could not be generated. Maybe your id was not unique?' })
     }
@@ -105,10 +105,10 @@ function processMany (req, res) {
     })
     .catch(function (err) {
       if (err.status && err.status === 403) {
-        console.log('You\'re not allowed to save tags for this file |', err)
+        console.warn('You\'re not allowed to save tags for this file |', err)
         res.status(403).json({ msg: err.msg || "You're not allowed to save tags for this file" })
       } else {
-        console.log('Error in process of tagging |', err)
+        console.error('Error in process of tagging |', err)
         res.status(500).json({ msg: 'Error in process of tagging save' })
       }
     })
@@ -171,7 +171,7 @@ router.route('/labels')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to return labels | ' + err)
+        console.error('failed to return labels | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return labels' }) }
       })
   })
@@ -191,7 +191,7 @@ router.route('/users')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to return users | ' + err)
+        console.error('failed to return users | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return users' }) }
       })
   })
@@ -211,7 +211,7 @@ router.route('/models')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to return models | ' + err)
+        console.error('failed to return models | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return models' }) }
       })
   })
@@ -236,7 +236,7 @@ router.route('/annotators')
           })
       })
       .catch(function (err) {
-        console.log('failed to return models | ' + err)
+        console.error('failed to return models | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return models' }) }
       })
   })
@@ -366,7 +366,7 @@ router.route('/classified/byannotator')
       .then(combineQuery)
       .then(runQuery)
       .catch(function (err) {
-        console.log('failed to return tags | ' + err)
+        console.error('failed to return tags | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return tags' }) }
       })
   })

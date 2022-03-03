@@ -34,11 +34,11 @@ router.route('/:site_id/images')
                 .then(function (json) { res.status(200).json(json) })
             }
           }).catch(function (err) {
-            console.log('failed to return events | ' + err)
+            console.error('failed to return events | ' + err)
             if (err) { res.status(500).json({ msg: 'failed to return events' }) }
           })
       }).catch(function (err) {
-        console.log('failed to find site | ' + err)
+        console.error('failed to find site | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to find site' }) }
       })
   })

@@ -26,45 +26,45 @@ const pingsTopicName = 'grd/+/png'
 function listen () {
   const app = mqtt.connect(connectionOptions)
 
-  app.on('error', (err) => console.log('MQTT: Error', err))
-  app.on('reconnect', () => console.log('MQTT: Reconnected'))
-  app.on('close', () => console.log('MQTT: Closed'))
+  app.on('error', (err) => console.error('MQTT: Error', err))
+  app.on('reconnect', () => console.info('MQTT: Reconnected'))
+  app.on('close', () => console.info('MQTT: Closed'))
 
   app.on('connect', function () {
-    console.log('MQTT: Connected (' + app.options.protocol + '://' + app.options.host + ':' + app.options.port + ') (' + process.env.NODE_ENV + ')')
+    console.info('MQTT: Connected (' + app.options.protocol + '://' + app.options.host + ':' + app.options.port + ') (' + process.env.NODE_ENV + ')')
     app.unsubscribe(checkinsTopicName, (err) => {
       if (err) {
-        console.log(`MQTT: could not unsubscribe from topic "${checkinsTopicName}"`, err)
+        console.error(`MQTT: could not unsubscribe from topic "${checkinsTopicName}"`, err)
         return
       }
-      console.log(`MQTT: unsubscribed from topic "${checkinsTopicName}"`)
+      console.info(`MQTT: unsubscribed from topic "${checkinsTopicName}"`)
       app.subscribe(checkinsTopicName, subscriptionOptions, (err, granted) => {
         if (err) {
-          console.log(`MQTT: could not subscribe to topic "${checkinsTopicName}"`, err)
+          console.error(`MQTT: could not subscribe to topic "${checkinsTopicName}"`, err)
           return
         }
-        console.log(`MQTT: subscribed to topic "${checkinsTopicName}"`, granted)
+        console.info(`MQTT: subscribed to topic "${checkinsTopicName}"`, granted)
       })
     })
     app.unsubscribe(pingsTopicName, (err) => {
       if (err) {
-        console.log(`MQTT: could not unsubscribe from topic "${pingsTopicName}"`, err)
+        console.error(`MQTT: could not unsubscribe from topic "${pingsTopicName}"`, err)
         return
       }
-      console.log(`MQTT: unsubscribed from topic "${pingsTopicName}"`)
+      console.info(`MQTT: unsubscribed from topic "${pingsTopicName}"`)
       app.subscribe(pingsTopicName, subscriptionOptions, (err, granted) => {
         if (err) {
-          console.log(`MQTT: could not subscribe to topic "${pingsTopicName}"`, err)
+          console.error(`MQTT: could not subscribe to topic "${pingsTopicName}"`, err)
           return
         }
-        console.log(`MQTT: subscribed to topic "${pingsTopicName}"`, granted)
+        console.info(`MQTT: subscribed to topic "${pingsTopicName}"`, granted)
       })
     })
   })
 
   app.on('message', (topic, data) => {
     let messageId = randomGuid()
-    console.log('MQTT: new mqtt message', topic, messageId)
+    console.info('MQTT: new mqtt message', topic, messageId)
 
     if (/grd\/.+\/chk/.test(topic)) {
       return mqttCheckInRouter.onMessageCheckin(data, messageId)
@@ -76,7 +76,7 @@ function listen () {
           app.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip)
           // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE ABOVE SHOULD BE REMOVED
 
-          console.log('MQTT: message processed', topic, messageId)
+          console.info('MQTT: message processed', topic, messageId)
           messageId = null
           result = null
           return true
@@ -94,7 +94,7 @@ function listen () {
             app.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
           }
 
-          console.log('MQTT: message processed', topic, messageId)
+          console.info('MQTT: message processed', topic, messageId)
           messageId = null
           result = null
           return true

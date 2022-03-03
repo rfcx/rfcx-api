@@ -19,7 +19,7 @@ exports.authenticateAs = function (req, token, done, authUser) {
       if (dbGuardian == null) {
         return done(null, false, { message: "this guardian doesn't exist in the database" })
       } else if (regex.regExIndexOf(path, onlyAllowAccessTo) === -1) {
-        console.log(`Invalid path for auth as guardian: ${path}`)
+        console.warn(`Invalid path for auth as guardian: ${path}`)
         return done(null, false, { message: 'invalid guardian/token combination' })
       } else if (dbGuardian.auth_token_hash === hashedCredentials(dbGuardian.auth_token_salt, token)) {
         req.rfcx.auth_token_info = {
@@ -29,14 +29,14 @@ exports.authenticateAs = function (req, token, done, authUser) {
           owner_id: dbGuardian.id,
           owner_guid: dbGuardian.guid
         }
-        if (verboseLogging) { console.log('authenticated as guardian ' + req.rfcx.auth_token_info.guid) }
+        if (verboseLogging) { console.info('authenticated as guardian ' + req.rfcx.auth_token_info.guid) }
         return done(null, req.rfcx.auth_token_info)
       } else {
-        console.log('Invalid token for auth as guardian: failed to match token with salted hash')
+        console.warn('Invalid token for auth as guardian: failed to match token with salted hash')
         return done(null, false, { message: 'invalid guardian/token combination' })
       }
     }).catch(function (err) {
-      console.log('failed to find guardian | ' + err)
+      console.warn('failed to find guardian | ' + err)
       return done(err)
     })
 }

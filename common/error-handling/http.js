@@ -50,7 +50,7 @@ function httpErrorHandler (req, res, fallbackMessage) {
     if (err instanceof EmptyResultError) {
       return httpErrorResponse(req, res, 404, null, err.message)
     }
-    console.log(err)
+    console.error('httpErrorHandler', err)
     return httpErrorResponse(req, res, 500, err, fallbackMessage)
   }
 }

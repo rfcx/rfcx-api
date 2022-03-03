@@ -249,11 +249,11 @@ router.route('/:guardian_id/meta/:meta_type')
 
             return null
           }).catch(function (err) {
-            console.log('failure to retrieve meta data: ' + err)
+            console.error('failure to retrieve meta data: ' + err)
             httpErrorResponse(req, res, 500, 'database')
           })
       }).catch(function (err) {
-        console.log('failure to retrieve guardian: ' + err)
+        console.error('failure to retrieve guardian: ' + err)
         httpErrorResponse(req, res, 404, 'database')
       })
   })
@@ -396,11 +396,11 @@ router.route('/:guardian_id/meta2/:meta_type')
               )
             )
           }).catch(function (err) {
-            console.log('failure to retrieve meta data: ' + err)
+            console.error('failure to retrieve meta data: ' + err)
             httpErrorResponse(req, res, 500, 'database')
           })
       }).catch(function (err) {
-        console.log('failure to retrieve guardian: ' + err)
+        console.error('failure to retrieve guardian: ' + err)
         httpErrorResponse(req, res, 404, 'database')
       })
   })

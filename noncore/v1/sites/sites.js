@@ -43,7 +43,7 @@ router.route('/')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(function (err) {
-        console.log('failed to return site | ', err)
+        console.error('failed to return site | ', err)
         if (err) { res.status(500).json({ msg: 'failed to return site' }) }
       })
   })
@@ -70,7 +70,7 @@ router.route('/admin')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(function (err) {
-        console.log('failed to return site | ' + err)
+        console.error('failed to return site | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return site' }) }
       })
   })
@@ -118,7 +118,7 @@ router.route('/:site_id')
       })
       .catch(ForbiddenError, e => { httpErrorResponse(req, res, 403, null, e.message) })
       .catch((err) => {
-        console.log('failed to return site | ' + err)
+        console.error('failed to return site | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return site' }) }
       })
   })
@@ -180,7 +180,7 @@ router.route('/kmz')
         }
       })
       .then(() => { res.status(200).json(bounds) })
-      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, e.message || 'File couldn\'t be uploaded.') })
+      .catch(e => { console.error(e); httpErrorResponse(req, res, 500, e, e.message || 'File couldn\'t be uploaded.') })
   })
 
 router.route('/:guid')
@@ -236,7 +236,7 @@ router.route('/:site_id/bounds')
         res.status(200).json(views.models.guardianSites(req, res, dbSite))
       })
       .catch(function (err) {
-        console.log('Error updating site bounds. Check params please | ' + err)
+        console.error('Error updating site bounds. Check params please | ' + err)
         if (err) { res.status(500).json({ msg: 'Error updating site bounds. Check params please.' }) }
       })
   })

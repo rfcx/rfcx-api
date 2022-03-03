@@ -25,7 +25,7 @@ router.route('/donations/:donation_id')
           res.status(200).json(views.models.adoptProtectDonations(req, res, dbAdoptProtectDonation))
         }
       }).catch(function (err) {
-        console.log('failed to return adopt protect donation | ' + err)
+        console.error('failed to return adopt protect donation | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return adopt protect donation' }) }
       })
   })
@@ -44,7 +44,7 @@ router.route('/donations')
           res.status(200).json(views.models.adoptProtectDonations(req, res, dbAdoptProtectDonation))
         }
       }).catch(function (err) {
-        console.log('failed to return adopt protect donation | ' + err)
+        console.error('failed to return adopt protect donation | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return adopt protect donation' }) }
       })
   })
@@ -82,7 +82,7 @@ router.route('/classy/access-token')
         res.status(200).json(data)
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log('errrr', e); httpErrorResponse(req, res, 500, e, e.message || 'Error while getting Classy access token.') })
+      .catch(e => { console.error('errrr', e); httpErrorResponse(req, res, 500, e, e.message || 'Error while getting Classy access token.') })
   })
 
 router.route('/classy/save-stripe-donation')

@@ -32,12 +32,12 @@ function removeExpiredResetPasswordTokens () {
     })
     .then(function (count) {
       if (count) {
-        console.log('Deleted ' + count + ' expired "reset password" token(s)')
+        console.info('Deleted ' + count + ' expired "reset password" token(s)')
       }
       return null
     })
     .catch(function (err) {
-      console.log(err)
+      console.error(err)
     })
 }
 
@@ -91,14 +91,14 @@ router.route('/login')
 
             return res.status(200).json(views.models.users(req, res, dbUser))
           }).catch(function (err) {
-            console.log(err)
+            console.error(err)
             res.status(500).json({
               message: err.message, error: { status: 500 }
             })
           })
         }
       }).catch(function (err) {
-        console.log(err)
+        console.error(err)
         res.status(500).json({
           message: err.message, error: { status: 500 }
         })
@@ -172,14 +172,14 @@ router.route('/register')
 
             res.status(200).json(views.models.users(req, res, dbUser))
           }).catch(function (err) {
-            console.log(err)
+            console.error(err)
             res.status(500).json({
               message: err.message, error: { status: 500 }
             })
           })
         }
       }).catch(function (err) {
-        console.log(err)
+        console.error(err)
         res.status(500).json({
           message: err.message, error: { status: 500 }
         })
@@ -233,7 +233,7 @@ router.route('/send-reset-password-link')
       })
       .catch(function (err) {
         if (err) {
-          console.log(err)
+          console.error(err)
           httpErrorResponse(req, res, 500, 'database')
         }
       })
@@ -299,7 +299,7 @@ router.route('/reset-password')
       })
       .catch(function (err) {
         if (err) {
-          console.log(err)
+          console.error(err)
           httpErrorResponse(req, res, 500, 'database')
         }
       })
@@ -359,7 +359,7 @@ router.route('/change-password')
       })
       .catch(function (err) {
         if (err) {
-          console.log(err)
+          console.error(err)
           httpErrorResponse(req, res, 500, 'database')
         }
       })
@@ -507,7 +507,7 @@ router.route('/code')
         })
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log('\n\n', e, '\n\n'); httpErrorResponse(req, res, 500, e, 'Invalid code.') })
+      .catch(e => { console.error('\n\n', e, '\n\n'); httpErrorResponse(req, res, 500, e, 'Invalid code.') })
   })
 
 router.route('/accept-terms')
@@ -764,12 +764,12 @@ router.route('/auth0/users/export-link')
         return auth0Service.getAjob(token, data)
       })
       .then((data) => {
-        console.log('data for uploading users', data)
+        console.info('data for uploading users', data)
         res.status(200).json(data)
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
-        console.log('\nerror\n', err)
+        console.error('\nerror\n', err)
         res.status(500).json({ err })
       })
   })
@@ -805,12 +805,12 @@ router.route('/auth0/update-users')
         return Promise.all(proms)
       })
       .then((data) => {
-        console.log('data', data)
+        console.info('data', data)
         res.status(200).json(data)
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch((err) => {
-        console.log('\nerror\n', err)
+        console.error('\nerror\n', err)
         res.status(500).json({ err })
       })
   })
@@ -1022,7 +1022,7 @@ router.route('/auth0/users')
         res.status(200).json(body)
       })
       .catch((err) => {
-        console.log('v1/users/auth0/users error', err)
+        console.error('v1/users/auth0/users error', err)
         res.status(500).json({ err })
       })
   })
@@ -1149,7 +1149,7 @@ router.route('/:id/info')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get user info.") })
+      .catch(e => { console.error('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get user info.") })
   })
 
 router.route('/info')
@@ -1163,7 +1163,7 @@ router.route('/info')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get user info.") })
+      .catch(e => { console.error('e', e); httpErrorResponse(req, res, 500, e, "Couldn't get user info.") })
   })
 
 // TO DO security measure to ensure that not any user can see any other user
@@ -1182,7 +1182,7 @@ router.route('/:user_id')
 
         return null
       }).catch(function (err) {
-        console.log('failed to return user | ' + err)
+        console.error('failed to return user | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return user' }) }
       })
   })
@@ -1207,7 +1207,7 @@ router.route('/:guid/sites')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Couldn't update user-sites relations.") })
+      .catch(e => { console.error('e', e); httpErrorResponse(req, res, 500, e, "Couldn't update user-sites relations.") })
   })
 
 // TO DO security measure to ensure that not any user can see any other user
@@ -1237,7 +1237,7 @@ router.route('/:user_id')
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch(function (err) {
-        console.log('failed to update user | ' + err)
+        console.error('failed to update user | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to update user' }) }
       })
     // } else {

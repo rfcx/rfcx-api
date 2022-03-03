@@ -131,7 +131,7 @@ function getGuardianCoverage (serviceRequest) {
     return models.GuardianSite.findOne({ where: { id: guardian.site_id } })
   }).then(site => {
     if (!site.timezone) {
-      console.log(`Site ${site.id} is missing the timezone, please add it!`)
+      console.error(`Site ${site.id} is missing the timezone, please add it!`)
       throw new Error("There's an error in the local time conversion of our database. Please contact the RFC admins. Thank you!")
     }
     params.starting_after = moment.tz(params.starting_after, site.timezone).tz('UTC').toISOString()

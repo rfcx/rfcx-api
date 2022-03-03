@@ -29,11 +29,11 @@ router.route('/:guardian_id/screenshots')
             res.status(200).json(views.models.guardianMetaScreenshots(req, res, dbScreenshots))
             return null
           }).catch(function (err) {
-            console.log('failed to return screenshots | ' + err)
+            console.error('failed to return screenshots | ' + err)
             if (err) { res.status(500).json({ msg: 'failed to return screenshots' }) }
           })
       }).catch(function (err) {
-        console.log('failed to find guardian | ' + err)
+        console.error('failed to find guardian | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to find guardian' }) }
       })
   })
