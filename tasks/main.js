@@ -1,4 +1,4 @@
-console.log('----------------------------------\nRFCX | main started')
+console.info('info: Tasks: Starting...')
 
 // Ensure unhandled promises are handled by the process
 require('../common/error-handling/process')
@@ -13,5 +13,5 @@ if (!messageQueue.isEnabled()) {
 
 const tasks = require('./listen')
 
-console.log('RFCX | Starting task server')
+console.info('info: Tasks: Listening...')
 tasks.listen(messageQueue)

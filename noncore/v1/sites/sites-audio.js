@@ -34,11 +34,11 @@ router.route('/:site_id/audio')
 
             return null
           }).catch(function (err) {
-            console.log('failed to return audio | ' + err)
+            console.error('failed to return audio | ' + err)
             if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
           })
       }).catch(function (err) {
-        console.log('failed to return site | ' + err)
+        console.error('failed to return site | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return site' }) }
       })
   })

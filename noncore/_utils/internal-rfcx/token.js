@@ -121,7 +121,7 @@ exports.token = {
               reject(e)
             }
           }).catch(function (err) {
-            console.log('failed to create anonymous token | ' + err)
+            console.error('failed to create anonymous token | ' + err)
             reject(new Error(err))
           })
       } else if (whatKindOfToken === 'user') {
@@ -135,7 +135,7 @@ exports.token = {
               reject(e)
             }
           }).catch(function (err) {
-            console.log('failed to create user token | ' + err)
+            console.error('failed to create user token | ' + err)
             reject(new Error(err))
           })
       } else if (whatKindOfToken === 'registration') {
@@ -149,7 +149,7 @@ exports.token = {
               reject(e)
             }
           }).catch(function (err) {
-            console.log('failed to create registration token | ' + err)
+            console.error('failed to create registration token | ' + err)
             reject(new Error(err))
           })
       } else {
@@ -165,30 +165,30 @@ exports.token = {
         .destroy({
           where: { auth_token_expires_at: { [models.Sequelize.Op.lt]: new Date() } }
         }).then(function (dbAffectedRows) {
-          console.log("deleted expired 'anonymous' tokens")
+          console.info("deleted expired 'anonymous' tokens")
           return null
         }).catch(function (err) {
-          console.log(err)
+          console.error(err)
         })
     } else if (whatKindOfToken === 'user') {
       return models.UserToken
         .destroy({
           where: { auth_token_expires_at: { [models.Sequelize.Op.lt]: new Date() } }
         }).then(function (dbAffectedRows) {
-          console.log("deleted expired 'user' tokens")
+          console.info("deleted expired 'user' tokens")
           return null
         }).catch(function (err) {
-          console.log(err)
+          console.error(err)
         })
     } else if (whatKindOfToken === 'registration') {
       return models.RegistrationToken
         .destroy({
           where: { auth_token_expires_at: { [models.Sequelize.Op.lt]: new Date() } }
         }).then(function (dbAffectedRows) {
-          console.log("deleted expired 'registration' tokens")
+          console.info("deleted expired 'registration' tokens")
           return null
         }).catch(function (err) {
-          console.log(err)
+          console.error(err)
         })
     }
   }

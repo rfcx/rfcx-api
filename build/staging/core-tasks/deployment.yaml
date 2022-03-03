@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-tasks
+  namespace: staging
+spec:
+  selector:
+    matchLabels:
+      app: core-tasks
+  template:
+    metadata:
+      labels:
+        app: core-tasks
+    spec:
+      containers:
+        - name: core-tasks
+          image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_staging:latest
+          args: ["npm", "run", "start:tasks"]
+          envFrom:
+            - secretRef:
+                name: api-secrets
+            - configMapRef:
+                name: api-configmap
+            - configMapRef:
+                name: core-tasks-configmap
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "300Mi"
+            requests:
+              cpu: "200m"
+              memory: "300Mi"

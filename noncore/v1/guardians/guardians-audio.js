@@ -44,11 +44,11 @@ router.route('/:guardian_id/audio')
 
             return null
           }).catch(function (err) {
-            console.log('failed to return audio | ' + err)
+            console.error('failed to return audio | ' + err)
             if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
           })
       }).catch(function (err) {
-        console.log('failed to find guardian | ' + err)
+        console.error('failed to find guardian | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to find guardian' }) }
       })
   })

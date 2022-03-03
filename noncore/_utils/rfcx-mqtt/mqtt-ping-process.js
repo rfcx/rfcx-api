@@ -19,12 +19,12 @@ exports.mqttPingProcess = {
             const pingObj = msgSegUtils.guardianMsgParsingUtils.constructGuardianMsgObj(JSON.parse(jsonBuffer.toString('utf8')), null, null)
             resolve(pingObj)
           } catch (errParsePingObj) {
-            console.log(errParsePingObj)
+            console.error(errParsePingObj)
             reject(errParsePingObj)
           }
         })
       } catch (errUnZipPingObj) {
-        console.log(errUnZipPingObj)
+        console.error(errUnZipPingObj)
         reject(errUnZipPingObj)
       }
     })

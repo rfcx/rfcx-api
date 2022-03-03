@@ -32,16 +32,16 @@ exports.audioUtils = {
               .on('end', function () {
                 res.end()
                 resolve(null)
-                fs.unlink(filePathToServe, function (e) { if (e) { console.log(e) } })
+                fs.unlink(filePathToServe, function (e) { if (e) { console.error(e) } })
               })
               .pipe(res, { end: true })
           } else {
-            console.log('Audio file not found...')
+            console.warn('Audio file not found...')
             reject(new Error())
           }
         })
       } catch (err) {
-        console.log('failed to serve audio file | ' + err)
+        console.warn('failed to serve audio file | ' + err)
         reject(new Error(err))
       }
     })

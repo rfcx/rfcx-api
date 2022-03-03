@@ -32,7 +32,7 @@ exports.models = {
         })
         resolve(result)
       } catch (err) {
-        console.log('Error in process of grouping tags for audio file |', err)
+        console.error('Error in process of grouping tags for audio file |', err)
         reject(new Error(err))
       }
     })
@@ -61,7 +61,7 @@ exports.models = {
 
         resolve(json)
       } catch (err) {
-        console.log('Error in process of counting tags for audio files |', err)
+        console.error('Error in process of counting tags for audio files |', err)
         reject(new Error(err))
       }
     })

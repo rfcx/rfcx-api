@@ -47,19 +47,19 @@ exports.guardianStatusCheckIns = {
                       }
                     })
                   }).catch(function (err) {
-                    console.log(err)
+                    console.error(err)
                     reject(new Error(err))
                   })
               }).catch(function (err) {
-                console.log(err)
+                console.error(err)
                 reject(new Error(err))
               })
           }).catch(function (err) {
-            console.log(err)
+            console.error(err)
             reject(new Error(err))
           })
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })

@@ -44,13 +44,13 @@ exports.screenshots = {
           aws.s3(process.env.ASSET_BUCKET_META).putFile(
             screenShotInfo.uploadLocalPath, screenShotInfo.s3Path,
             function (err, s3Res) {
-              try { s3Res.resume() } catch (resumeErr) { console.log(resumeErr) }
+              try { s3Res.resume() } catch (resumeErr) { console.error(resumeErr) }
               if (err) {
-                console.log(err)
+                console.error(err)
                 reject(new Error(err))
               } else if (s3Res.statusCode === 200) {
                 if (aws.s3ConfirmSave(s3Res, screenShotInfo.s3Path)) {
-                  fs.unlink(screenShotInfo.uploadLocalPath, function (e) { if (e) { console.log(e) } })
+                  fs.unlink(screenShotInfo.uploadLocalPath, function (e) { if (e) { console.error(e) } })
 
                   models.GuardianMetaScreenShot.create({
                     guardian_id: screenShotInfo.guardian_id,
@@ -64,24 +64,24 @@ exports.screenshots = {
                     screenShotInfo.screenshot_id = dbGuardianMetaScreenShot.guid
                     screenShotInfo.guid = dbGuardianMetaScreenShot.guid
                     resolve(screenShotInfo)
-                    console.log('screenshot saved: ' + screenShotInfo.origin_id)
+                    console.info('screenshot saved: ' + screenShotInfo.origin_id)
                   }).catch(function (err) {
-                    console.log('error saving screenshot to db: ' + screenShotInfo.origin_id + ', ' + err)
+                    console.error('error saving screenshot to db: ' + screenShotInfo.origin_id + ', ' + err)
                     reject(new Error(err))
                   })
                 }
               }
             })
         } else {
-          console.log('screenshot checksum failed (' + screenShotInfo.origin_id + ')')
+          console.error('screenshot checksum failed (' + screenShotInfo.origin_id + ')')
           // even if checksum fails, we still (at least for now) want
           // to instruct to the guardian to delete the screenshot and move on
           screenShotInfo.isSaved = true
-          fs.unlink(screenShotInfo.uploadLocalPath, function (e) { if (e) { console.log(e) } })
+          fs.unlink(screenShotInfo.uploadLocalPath, function (e) { if (e) { console.error(e) } })
           resolve(screenShotInfo)
         }
       } catch (err) {
-        console.log(err)
+        console.error(err)
         reject(new Error(err))
       }
     })

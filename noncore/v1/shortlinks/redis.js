@@ -9,20 +9,20 @@ const client = redis.createClient({
 })
 
 client.on('ready', () => {
-  console.log('Redis: ready')
+  console.info('Redis: ready')
 })
 
 client.on('connect', () => {
-  console.log(`Redis: connected to ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`)
+  console.info(`Redis: connected to ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`)
 })
 
 client.on('reconnecting', () => {
-  console.log(`Redis: reconnecting to ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`)
+  console.info(`Redis: reconnecting to ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`)
 })
 
 client.on('error', (err) => {
-  console.log('Redis: error', { err })
-  console.log('Redis: error', { err })
+  console.error('Redis: error', { err })
+  console.error('Redis: error', { err })
 })
 
 module.exports = client

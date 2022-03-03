@@ -47,7 +47,7 @@ router.route('/contact')
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
       .catch(ForbiddenError, e => httpErrorResponse(req, res, 403, null, e.message))
-      .catch(e => { console.log('e', e); httpErrorResponse(req, res, 500, e, "Email couldn't be sent.") })
+      .catch(e => { console.error('e', e); httpErrorResponse(req, res, 500, e, "Email couldn't be sent.") })
   })
 
 module.exports = router

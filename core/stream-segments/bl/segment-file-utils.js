@@ -362,7 +362,7 @@ function deleteFilesForStream (dbStream) {
           const key = `${ts.format('YYYY')}/${ts.format('MM')}/${ts.format('DD')}/${segment.stream_id}/${segment.id}${segmentExtension}`
           keys.push(key)
         })
-        console.log(`Deleting following files in ${storageService.buckets.streams} bucket:`, keys.join(', '))
+        console.info(`Deleting following files in ${storageService.buckets.streams} bucket:`, keys.join(', '))
         return storageService.deleteFiles(storageService.buckets.streams, keys)
       })
   })

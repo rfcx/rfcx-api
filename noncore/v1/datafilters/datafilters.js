@@ -91,7 +91,7 @@ function processSuccess (data, req, res) {
 
 function processError (err, req, res) {
   if (err) {
-    console.log('err', err)
+    console.error('err', err)
     res.status(500).json({ msg: err })
   }
 }

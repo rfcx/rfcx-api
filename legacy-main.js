@@ -1,4 +1,4 @@
-console.log('Legacy: Starting...')
+console.info('info: Legacy: Starting...')
 const startTime = new Date()
 
 // Handle unhandled promises
@@ -12,5 +12,5 @@ const app = require('./legacy-app')
 
 const port = process.env.PORT || 8080
 app.listen(port, () => {
-  console.log(`Legacy: Started ${new Date() - startTime}ms (port ${port}) (env ${process.env.NODE_ENV})`)
+  console.info(`info: Legacy: Started ${new Date() - startTime}ms (port ${port}) (env ${process.env.NODE_ENV})`)
 })

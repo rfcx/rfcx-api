@@ -108,22 +108,22 @@ exports.audioUtils = {
             }
             cmd.save(transcodedFilePath)
               .on('error', function (err, stdout, stderr) {
-                console.log('an error occurred: ' + err.message + ', stdout: ' + stdout + ', stderr: ' + stderr)
+                console.error('an error occurred: ' + err.message + ', stdout: ' + stdout + ', stderr: ' + stderr)
                 reject(err)
               })
               .on('end', function () {
                 if (!inputParams.keepFile) {
-                  fs.unlink(inputParams.sourceFilePath, function (e) { if (e) { console.log(e) } })
+                  fs.unlink(inputParams.sourceFilePath, function (e) { if (e) { console.error(e) } })
                 }
                 resolve(transcodedFilePath)
               })
           } else {
-            console.log('failed to locate source audio | ')
+            console.error('failed to locate source audio | ')
             reject(new Error())
           }
         })
       } catch (err) {
-        console.log('failed to transcode audio to ' + audioFormat + ' | ' + err)
+        console.error('failed to transcode audio to ' + audioFormat + ' | ' + err)
         reject(new Error(err))
       }
     })

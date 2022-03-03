@@ -92,7 +92,7 @@ exports.models = {
               reject(e)
             }
           }).catch(function (err) {
-            console.log('failed to create anonymous token | ' + err)
+            console.error('failed to create anonymous token | ' + err)
             reject(new Error(err))
           })
         }

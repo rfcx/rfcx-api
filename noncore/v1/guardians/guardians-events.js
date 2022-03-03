@@ -36,11 +36,11 @@ router.route('/:guardian_id/events')
 
             return null
           }).catch(function (err) {
-            console.log('failed to return events | ' + err)
+            console.error('failed to return events | ' + err)
             if (err) { res.status(500).json({ msg: 'failed to return events' }) }
           })
       }).catch(function (err) {
-        console.log('failed to find guardian | ' + err)
+        console.error('failed to find guardian | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to find guardian' }) }
       })
   })
@@ -79,11 +79,11 @@ router.route('/:guardian_id/events/lite')
 
             return null
           }).catch(function (err) {
-            console.log('failed to return events | ' + err)
+            console.error('failed to return events | ' + err)
             if (err) { res.status(500).json({ msg: 'failed to return events' }) }
           })
       }).catch(function (err) {
-        console.log('failed to find guardian | ' + err)
+        console.error('failed to find guardian | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to find guardian' }) }
       })
   })

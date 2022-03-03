@@ -24,7 +24,6 @@
     "lint": "eslint \"**/*.js\""
   },
   "dependencies": {
-    "@google-cloud/pubsub": "^2.5.0",
     "@google-cloud/storage": "^5.2.0",
     "@rfcx/message-queue": "^1.0.7",
     "@tmcw/togeojson": "^4.5.0",

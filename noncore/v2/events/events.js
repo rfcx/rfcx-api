@@ -27,7 +27,7 @@ function query (req, res) {
     .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
     .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
     .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-    .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching events.'); console.log(e) })
+    .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching events.'); console.error(e) })
 }
 
 router.route('/')
@@ -46,7 +46,7 @@ router.route('/reviews')
         res.status(200).send(json)
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching reviews.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching reviews.'); console.error(e) })
   })
 
 router.route('/reviews/ai-models')
@@ -56,7 +56,7 @@ router.route('/reviews/ai-models')
         res.status(200).send(data)
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not find AI models.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Could not find AI models.'); console.error(e) })
   })
 
 router.route('/reviews/download')
@@ -81,7 +81,7 @@ router.route('/reviews/download')
         return fileUtil.serveFile(res, zipPath, 'reviews.zip', 'application/zip, application/octet-stream', !!req.query.inline)
       })
       .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, 'Error while searching reviews.') })
+      .catch(e => { console.error(e); httpErrorResponse(req, res, 500, e, 'Error while searching reviews.') })
   })
 
 router.route('/:guid')
@@ -102,7 +102,7 @@ router.route('/:guid/windows')
         res.status(200).send(json)
       })
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching for event tags.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while searching for event tags.'); console.error(e) })
   })
 
 router.route('/:guid/trigger')
@@ -155,7 +155,7 @@ router.route('/:guid/trigger')
               },
               priority: 100
             })
-            console.log(`An acoustic_detection with ${eventData.label.label} was created for ${guardian.shortname} in EarthRanger service.`)
+            console.error(`An acoustic_detection with ${eventData.label.label} was created for ${guardian.shortname} in EarthRanger service.`)
           } catch (e) {
             console.error('Cannot send event to EarthRanger service', e.message)
           }
@@ -163,7 +163,7 @@ router.route('/:guid/trigger')
       })
       .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while triggering event notification.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while triggering event notification.'); console.error(e) })
       .finally(() => {
         eventData = null
         guardian = null
@@ -212,7 +212,7 @@ router.route('/:guid/review')
       })
       .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while saving review data.'); console.log(e) })
+      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while saving review data.'); console.error(e) })
   })
 
 module.exports = router

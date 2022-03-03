@@ -18,12 +18,12 @@ exports.guardianCommand = {
         }
 
         zlib.gzip(Buffer.from(JSON.stringify(checkInObj.rtrn.obj), 'utf8'), function (errJsonGzip, bufJsonGzip) {
-          if (errJsonGzip) { console.log(errJsonGzip); reject(new Error(errJsonGzip)) } else {
+          if (errJsonGzip) { console.error(errJsonGzip); reject(new Error(errJsonGzip)) } else {
             checkInObj.rtrn.gzip = bufJsonGzip
             resolve(checkInObj)
           }
         })
-      } catch (errProcessPublishJson) { console.log(errProcessPublishJson); reject(new Error(errProcessPublishJson)) }
+      } catch (errProcessPublishJson) { console.error(errProcessPublishJson); reject(new Error(errProcessPublishJson)) }
     })
   }
 

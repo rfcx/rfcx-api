@@ -123,7 +123,7 @@ router.route('/filter')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to return audios | ' + err)
+        console.error('failed to return audios | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audios' }) }
       })
   })
@@ -146,15 +146,15 @@ router.route('/download/zip')
     })
     archive.pipe(output)
     archive.on('error', function (err) {
-      console.log('failed to get audios | ' + err)
+      console.error('failed to get audios | ' + err)
       res.status(500).json({ msg: 'failed to get audios' })
     })
     output.on('close', () => {
-      console.log(archive.pointer() + ' total bytes')
-      console.log('archiver has been finalized and the output file descriptor has closed.')
+      console.info(archive.pointer() + ' total bytes')
+      console.info('archiver has been finalized and the output file descriptor has closed.')
       S3Service.putObject(zipPath, zipFilename, process.env.ASSET_BUCKET_ZIP)
         .then(function () {
-          fs.unlink(zipPath, function (err) { if (err) { console.log(err) } })
+          fs.unlink(zipPath, function (err) { if (err) { console.error(err) } })
           return aws.s3SignedUrl(process.env.ASSET_BUCKET_ZIP, zipFilename, 15)
         })
         .then(function (url) {
@@ -167,7 +167,7 @@ router.route('/download/zip')
     filter(req)
       .then(function (dbAudios) {
         if (!dbAudios.length) {
-          fs.unlink(zipPath, function (err) { if (err) { console.log(err) } })
+          fs.unlink(zipPath, function (err) { if (err) { console.error(err) } })
           throw new sequelize.EmptyResultError('No files were found for this query.')
         } else {
           return AudioService.getGuidsFromDbAudios(dbAudios)
@@ -186,7 +186,7 @@ router.route('/download/zip')
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(function (err) {
-        console.log('failed to get audios | ' + err)
+        console.error('failed to get audios | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to get audios' }) }
       })
   })
@@ -261,7 +261,7 @@ router.route('/filter/by-tags')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('failed to return audios | ' + err)
+        console.error('failed to return audios | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audios' }) }
       })
   })
@@ -316,7 +316,7 @@ router.route('/labels/download')
         return fileUtil.serveFile(res, zipPath, 'annotations.zip', 'application/zip, application/octet-stream', !!req.query.inline)
       })
       .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-      .catch(e => { console.log(e); httpErrorResponse(req, res, 500, e, 'Error while searching for annotations.') })
+      .catch(e => { console.error(e); httpErrorResponse(req, res, 500, e, 'Error while searching for annotations.') })
   })
 
 router.route('/:audio_id')
@@ -338,7 +338,7 @@ router.route('/:audio_id')
             res.status(200).json(audioJson)
           })
       }).catch(function (err) {
-        console.log('failed to return audio | ' + err)
+        console.error('failed to return audio | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
       })
   })
@@ -348,7 +348,7 @@ router.route('/:audio_id/createSensations')
     SensationsService.createSensationsFromGuardianAudio(req.params.audio_id)
       .then(sensations => res.status(200).json(sensations))
       .catch(err => {
-        console.log('Failed to create sensations | ' + err)
+        console.error('Failed to create sensations | ' + err)
         if (err) {
           res.status(500).json({ msg: 'failed to create sensations' })
         }
@@ -416,7 +416,7 @@ router.route('/:audio_id/labels')
           res.status(200).json(labelsJson)
         })
     }).catch(function (err) {
-      console.log('failed to return labels | ' + err)
+      console.error('failed to return labels | ' + err)
       if (err) { res.status(500).json({ msg: 'failed to return the right labels.' }) }
     })
   })
@@ -460,7 +460,7 @@ router.route('/nextafter/:audio_id')
           })
       })
       .catch(function (err) {
-        console.log('failed to return audio | ' + err)
+        console.error('failed to return audio | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
       })
   })
@@ -504,7 +504,7 @@ router.route('/prevbefore/:audio_id')
           })
       })
       .catch(function (err) {
-        console.log('failed to return audio | ' + err)
+        console.error('failed to return audio | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
       })
   })

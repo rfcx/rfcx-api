@@ -37,7 +37,7 @@ exports.smsTwilio = {
       to: toAddress
     }
     twilioClient(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-      .messages.create(smsOpts).then(message => console.log('SMS sent to ' + message.to + ' via Twilio: ' + message.body))
+      .messages.create(smsOpts).then(message => console.info('SMS sent to ' + message.to + ' via Twilio: ' + message.body))
   }
 
 }

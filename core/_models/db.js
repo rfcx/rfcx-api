@@ -41,7 +41,7 @@ const options = {
 
 if (process.env.NODE_ENV === 'development') {
   options.logging = function (str) {
-    console.log('\nPostgres QUERY--------------------\n', str, '\n----------------------------------')
+    console.info('\nPostgres QUERY--------------------\n', str, '\n----------------------------------')
   }
 }
 

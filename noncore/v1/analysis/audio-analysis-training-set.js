@@ -86,7 +86,7 @@ router.route('/training-sets')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('Failed to save training set | ' + err)
+        console.error('Failed to save training set | ' + err)
         if (err) { res.status(500).json({ message: err ? err.message : 'Failed to save training set', error: { status: 500 } }) }
       })
   })
@@ -107,7 +107,7 @@ router.route('/training-sets')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('Failed to return training sets | ' + err)
+        console.error('Failed to return training sets | ' + err)
         if (err) { res.status(500).json({ message: 'Failed to return training sets', error: { status: 500 } }) }
       })
   })
@@ -141,7 +141,7 @@ router.route('/training-sets/:id')
         res.status(200).json(api)
       })
       .catch(function (err) {
-        console.log('Failed to return training set | ' + err)
+        console.error('Failed to return training set | ' + err)
         if (err) { res.status(500).json({ message: 'Failed to return training set', error: { status: 500 } }) }
       })
   })

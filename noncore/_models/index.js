@@ -23,7 +23,7 @@ const options = env === 'test'
     }
 if (env === 'development') {
   options.logging = function (str) {
-    console.log('\nSQL QUERY----------------------------------\n', str, '\n----------------------------------')
+    console.info('\nSQL QUERY----------------------------------\n', str, '\n----------------------------------')
   }
 }
 

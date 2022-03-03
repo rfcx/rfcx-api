@@ -36,7 +36,7 @@ router.route('/methods')
           res.status(200).json(views.models.audioAnalysisMethods(req, res, dbAnalysisMethods))
         }
       }).catch(function (err) {
-        console.log('failed to return analysis methods | ' + err)
+        console.error('failed to return analysis methods | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return analysis methods' }) }
       })
   })
@@ -63,7 +63,7 @@ router.route('/models')
         return null
       })
       .catch(function (err) {
-        console.log('failed to return analysis models | ' + err)
+        console.error('failed to return analysis models | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return analysis models' }) }
       })
   })
@@ -105,7 +105,7 @@ router.route('/models/unclassified_by_users')
         return null
       })
       .catch(function (err) {
-        console.log('failed to return unclassified audio files | ' + err)
+        console.error('failed to return unclassified audio files | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return unclassified audio files' }) }
       })
   })
@@ -157,7 +157,7 @@ router.route('/models/precision')
         })
       })
       .catch(function (err) {
-        console.log('failed to return models precision | ' + err)
+        console.error('failed to return models precision | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return models precision' }) }
       })
   })
@@ -209,7 +209,7 @@ router.route('/models/recall')
         })
       })
       .catch(function (err) {
-        console.log('failed to return models precision | ' + err)
+        console.error('failed to return models precision | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return models precision' }) }
       })
   })
@@ -249,7 +249,7 @@ router.route('/models/:id')
         return null
       })
       .catch(function (err) {
-        console.log('failed to return analysis model | ' + err)
+        console.error('failed to return analysis model | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return analysis model' }) }
       })
   })
