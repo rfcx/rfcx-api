@@ -1,6 +1,6 @@
 const router = require('express').Router()
-const { getGuardianInfoByStreamId } = require('../../../services/guardians/guardians-service')
-const { httpErrorHandler } = require('../../../utils/http-error-handler')
+const { getGuardianInfoByStreamId } = require('../../_services/guardians/guardians-service')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
 
 router.get('/:id', (req, res) => {
   const streamId = req.params.id
