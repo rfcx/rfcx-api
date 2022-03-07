@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
-cd $SCRIPT_DIR/../..;
-
-
-$SCRIPT_DIR/_generic_token_create --use_this_token_value $1 --token_type blah --what_kind_of_token anonymous --how_many 1 --minutes_until_expiration 3600 --allowed_redemptions 3 --allow_garbage_collection true --only_allow_access_to "^/v1/users/register$"
-

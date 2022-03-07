@@ -19,13 +19,10 @@ If required node version is installed on your machine:
 nvm use
 ```
 
-### Dependencies
-Sometimes node modules may dissappear from remote storage. That's why we keep them in `node_modules` in our repo. You **shouldn't** run `npm install` on your machine. All required deps are already here.
-
 ### Env variables
 Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fill it with required vars. 
 
-### Run all the required services
+### Run all the required support services
 
 We can use docker-compose to setup local MySQL, TimescaleDB and Redis.
 
@@ -39,44 +36,19 @@ Stop containers:
 docker-compose down
 ```
 
-#### Alternatively, local TimescaleDB and re-use staging for other services
-
-You need to be connected to rfcx-ldap VPN to have access to the test/staging databases.
-
-You can run TimescaleDb Docker container locally.
-Clone and copy `./bin/timescaledb/.env.example` into `./bin/timescaledb/.env` and fill it with required vars.
-
-Create Docker volume for TimescaleDb:
-```
-docker volume create pgdata
-```
-
-To start TimescaleDb container run the following command in the project root:
-```
-./bin/timescaledb/start.sh
-```
-
-To stop TimescaleDb container run the following command:
-```
-docker stop rfcx-api-timescaledb
-```
-
-You can use [pgAdmin](https://www.pgadmin.org/download/) GUI Client to view your database.
-
-
 ### Create the database tables
 
 #### To run sync and migrations
 
-For MySQL (legacy):
+For MySQL (noncore):
 
 ```
-npm run sync-mysql
+npm run migrate:noncore
 ```
 
 For TimescaleDB (core):
 ```
-npm run sync-timescale
+npm run migrate:core
 ```
 
 ### Seed the database
@@ -90,13 +62,13 @@ Complicated! There is bin/mysql/seed.sql which contains super-minimal content fo
 If you are using a local dev environment with docker-compose then:
 
 ```
-./bin/timescaledb/seed.sh
+./core/_cli/seed.sh
 ```
 
 Otherwise, specify your host/user/pass/etc as arguments:
 
 ```
-./bin/timescaledb/seed.sh USERNAME PASSWORD HOSTNAME PORT DATABASENAME
+./core/_cli/seed.sh USERNAME PASSWORD HOSTNAME PORT DATABASENAME
 ```
 
 
@@ -104,34 +76,34 @@ Otherwise, specify your host/user/pass/etc as arguments:
 
 ### HTTP API
 
-To run the core API with auto-reload (requires nodemon  `npm i nodemon -g`):
+To run the core API with auto-reload:
 ```
 npm run dev:core
 ```
-To include the full API with v1/v2 endpoints:
+
+Similarly, for the non-core API (only v1/v2 endpoints, without core):
+```
+npm run dev:noncore
+```
+
+And to run the combined API:
 ```
 npm run dev
 ```
 
+Without live reload (how it runs in production):
+```
+npm start:core
+npm start:noncore
+npm start
+```
+
 ### MQTT API
-
-To run a development MQTT broker locally, first generate the required certs:
-
-```
-cd bin/mosquitto
-./generate_certs.sh
-```
-
-Then start the broker using docker (configuration for the broker is in `mosquitto.conf`):
-
-```
-./local_mqtt_broker.sh
-```
 
 To start the MQTT client and API, open another terminal then:
 
 ```
-npm run start.mqtt
+npm run start:mqtt
 ```
 
 ## Testing
@@ -161,5 +133,3 @@ Run ESLint: `npm run lint`
 Fix all fixable errors: `npm run lint:fix`
 
 Recommend developers to setup ESLint in their IDE. For VS Code, settings are included in the workspace settings already and lint/format automatically when the the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) is installed.
-
-
