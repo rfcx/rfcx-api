@@ -47,7 +47,8 @@ for (const routeName in internalRoutes) {
 
 // Support routes
 app.use('/docs', require('./core/_docs'))
-app.use(require('./noncore/v1/info'))
+app.use('/v1', require('./noncore/v1/info'))
+app.use(require('./core/info'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('./common/middleware/error')
