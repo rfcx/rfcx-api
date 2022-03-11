@@ -11,7 +11,6 @@ const urls = require('../../_utils/misc/urls')
 const sequelize = require('sequelize')
 const sqlUtils = require('../../_utils/db/sql-cond-add')
 const condAdd = sqlUtils.condAdd
-const SensationsService = require('../../_services/legacy/sensations/sensations-service')
 const AudioService = require('../../_services/audio/audio-service')
 const S3Service = require('../../_services/legacy/s3/s3-service')
 const pd = require('parallel-download')
@@ -340,18 +339,6 @@ router.route('/:audio_id')
       }).catch(function (err) {
         console.error('failed to return audio | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
-      })
-  })
-
-router.route('/:audio_id/createSensations')
-  .post(passport.authenticate('token', { session: false }), function (req, res) {
-    SensationsService.createSensationsFromGuardianAudio(req.params.audio_id)
-      .then(sensations => res.status(200).json(sensations))
-      .catch(err => {
-        console.error('Failed to create sensations | ' + err)
-        if (err) {
-          res.status(500).json({ msg: 'failed to create sensations' })
-        }
       })
   })
 

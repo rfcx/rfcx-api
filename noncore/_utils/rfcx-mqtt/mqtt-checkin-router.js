@@ -7,7 +7,6 @@ const mqttInstructions = require('../rfcx-mqtt/mqtt-instructions').mqttInstructi
 const guardianCommand = require('../rfcx-guardian/guardian-command-publish').guardianCommand
 const mqttStreams = require('../rfcx-mqtt/mqtt-streams')
 const queueForPrediction = require('../rfcx-analysis/queue-for-prediction')
-const SensationsService = require('../../_services/legacy/sensations/sensations-service')
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')
 
 function onMessageCheckin (data, messageId) {
@@ -87,12 +86,6 @@ function onMessageCheckin (data, messageId) {
     })
     .then((checkInObj) => {
       return checkInDatabase.finalizeCheckIn(checkInObj)
-    })
-    .then((checkInObj) => {
-      return SensationsService.createSensationsFromGuardianAudio(checkInObj.db.dbAudio.guid)
-        .then(() => {
-          return Promise.resolve(checkInObj)
-        })
     })
     .then((checkInObj) => {
       return mqttInstructions.updateReceivedGuardianInstructions(checkInObj)
