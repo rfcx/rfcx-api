@@ -49,8 +49,9 @@ jobs:
       - name: 'Setup: Load dependencies from cache'
         uses: actions/cache@c64c572235d810460d0d6876e9c705ad5002b353
         # v2 (2.1.6) @ 03 Nov 2021 https://github.com/actions/cache/tags
+        id: setup-npm-cache
         with:
-          path: "**/node_modules"
+          path: '**/node_modules'
           key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: npm-${{ runner.os }}
 
@@ -65,7 +66,7 @@ jobs:
           restore-keys: eslint-${{ runner.os }}
 
       - name: 'Setup: Install dependencies'
-        if: steps.npm-cache.outputs.cache-hit != 'true'
+        if: steps.setup-npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: 'Verify: Build'
