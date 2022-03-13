@@ -1,7 +1,10 @@
 name: 'Build'
 on:
   workflow_dispatch:
-  pull_request:
+  push:
+    branches-ignore: # ignore branches using the CD workflow
+      - master
+      - staging
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   Main:
