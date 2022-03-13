@@ -11,7 +11,7 @@ jobs:
         uses: actions/setup-node@270253e841af726300e85d718a5f606959b2903c
         # v2 (2.4.1) @ 03 Nov 2021 https://github.com/actions/setup-node/tags
         with:
-          node-version: '12'
+          node-version: '16'
 
       - name: 'Setup: ENV from job'
         run: |
