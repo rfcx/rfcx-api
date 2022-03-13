@@ -33,7 +33,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Setup: Print ID of previous run'
+      - name: 'Setup: Print result'
+        if: always()
+        run: 'echo "${{ steps.latest_run.outputs.data }}"'
+
+      - name: 'Setup: Store ID of previous run'
         if: always()
         run: 'echo "PREVIOUS_WORKFLOW_RUN_ID=`echo ${{ fromJson(steps.latest_run.outputs.data).workflow_runs[1].id }}`" >> $GITHUB_ENV'
 
@@ -95,7 +99,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Notify: Log conclusion of previous run'
+      - name: 'Notify: Store conclusion of previous run'
         if: always()
         run: 'echo "PREVIOUS_WORKFLOW_RUN_CONCLUSION=`echo ${{ fromJson(steps.latest_run_conclusion.outputs.data).conclusion }}`" >> $GITHUB_ENV'
 
