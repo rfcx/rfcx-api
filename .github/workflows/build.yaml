@@ -148,7 +148,7 @@ jobs:
         with:
           notify_when: 'failure,warning'
           status: ${{ job.status }}
-          notification_title: '❌ CI: Bio-Web <{repo_url}/tree/${{ env.BRANCH_NAME }}|${{ env.BRANCH_NAME }}>'
+          notification_title: '❌ CI: APIs <{repo_url}/tree/${{ env.BRANCH_NAME }}|${{ env.BRANCH_NAME }}>'
           message_format: '*FAILED* @ <{run_url}|${{ env.COMMIT_TITLE }}>'
           footer: 'Build: ${{ steps.build.outcome }} | Lint: ${{ steps.lint.outcome }} | Test: ${{ steps.test.outcome }}'
           mention_users_when: 'failure,warnings'
@@ -164,7 +164,7 @@ jobs:
         with:
           notify_when: 'success'
           status: ${{ job.status }}
-          notification_title: '✅ CI: Bio-Web <{repo_url}/tree/${{ env.BRANCH_NAME }}|${{ env.BRANCH_NAME }}>'
+          notification_title: '✅ CI: APIs <{repo_url}/tree/${{ env.BRANCH_NAME }}|${{ env.BRANCH_NAME }}>'
           message_format: '*SUCCESS* @ <{run_url}|${{ env.COMMIT_TITLE }}> - ${{ github.event.head_commit.author.name }} fixed the build!! (broken since ${{ fromJson(steps.latest_success.outputs.data).workflow_runs[0].head_commit.timestamp }})'
           footer: 'Build: ${{ steps.build.outcome }} | Lint: ${{ steps.lint.outcome }} | Test: ${{ steps.test.outcome }}'
         env:
