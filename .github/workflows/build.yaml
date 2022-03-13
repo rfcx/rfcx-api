@@ -69,10 +69,6 @@ jobs:
         if: steps.setup-npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: 'Verify: Build'
-        id: build
-        run: npm run build
-
       - name: 'Verify: Lint'
         id: lint
         run: npm run lint
