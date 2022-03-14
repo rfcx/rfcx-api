@@ -18,9 +18,9 @@ spec:
           args: ["npm", "run", "start:tasks"]
           envFrom:
             - secretRef:
-                name: api-secrets
+                name: api-secrets # TODO separate into core/noncore
             - configMapRef:
-                name: api-configmap
+                name: core-api-configmap
             - configMapRef:
                 name: core-tasks-configmap
           resources:

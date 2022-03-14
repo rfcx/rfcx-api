@@ -7,25 +7,21 @@ metadata:
     # Maximum request body size
     nginx.ingress.kubernetes.io/proxy-body-size: "1m"
 
-    # Timeout for communicating with service (in seconds)
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
-
     # Rate limiting
     # limit-rpm = limit each IP address to X requests per minute
     # limit-whitelist = do not rate limit clients in the IP range
     nginx.ingress.kubernetes.io/limit-rpm: "300"
-    # nginx.ingress.kubernetes.io/limit-whitelist: "comma separated list of CIDRs"
-
-  name: api-ingress
+  name: core-api-ingress
   namespace: staging
   labels:
-    app: "api"
+    app: api
 spec:
   rules:
     - host: staging-api.rfcx.org
       http:
         paths:
-          - backend:
-              serviceName: api-service
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: core-api-service
               servicePort: 80
