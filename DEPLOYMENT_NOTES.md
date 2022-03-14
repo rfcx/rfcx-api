@@ -1,5 +1,10 @@
 # API Deployment Notes
 
+## 1.1.1
+- Delete Kubernetes resources:
+  - api, api-service, api-ingress, api-config-map
+  - api-mqtt, api-mqtt-service, api-mqtt-ingress, api-mqtt-configmap
+
 ## 1.1.0
 - Significant refactoring/moved files - expect import errors
 
