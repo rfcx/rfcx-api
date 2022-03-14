@@ -64,7 +64,7 @@ router.route('/')
 
 // This route is used in the Dashboard to share long page urls. Also could be used manually by team members to create short urls like https://rf.cx/s/esyA7ho
 router.route('/')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     if (!redisEnabled) {
       console.error('Someone is trying to open hashed shortlink while Redis is disabled')
       httpErrorResponse(req, res, 501, null, 'This functionality is not available in the API.')

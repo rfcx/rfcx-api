@@ -6,7 +6,7 @@ const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 router.route('/:guardian_id/screenshots')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), function (req, res) {
     models.Guardian
       .findOne({
         where: { guid: req.params.guardian_id }

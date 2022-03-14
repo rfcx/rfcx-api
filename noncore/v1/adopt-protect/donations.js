@@ -50,7 +50,7 @@ router.route('/donations')
   })
 
 router.route('/stripe/charge')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -76,7 +76,7 @@ router.route('/stripe/charge')
   })
 
 router.route('/classy/access-token')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
     return classyService.requestAccessToken(process.env.CLASSY_CLIENT_ID, process.env.CLASSY_CLIENT_SECRET)
       .then((data) => {
         res.status(200).json(data)
@@ -86,7 +86,7 @@ router.route('/classy/access-token')
   })
 
 router.route('/classy/save-stripe-donation')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -129,7 +129,7 @@ router.route('/classy/save-stripe-donation')
   })
 
 router.route('/stripe/classy')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), (req, res) => {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 

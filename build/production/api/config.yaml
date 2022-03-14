@@ -18,7 +18,6 @@ data:
   NODE_LOG_LEVEL: "info"
   PREDICTION_SERVICE_ENABLED: "true"
   AUTH0_DOMAIN: "rfcx.eu.auth0.com"
-  AUTH0_CUSTOM_DOMAIN: "auth.rfcx.org"
   FFMPEG_PATH: "/usr/bin/ffmpeg"
   ASSET_BUCKET_AUDIO: "rfcx-ark"
   CLOUDWATCH_ENABLED: "true"

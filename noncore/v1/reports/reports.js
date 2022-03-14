@@ -16,7 +16,7 @@ const { ValidationError, ForbiddenError, EmptyResultError } = require('../../../
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 
 router.route('/')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -75,7 +75,7 @@ router.route('/')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return reportsService.getReportByGuid(req.params.guid)
       .then((dbReport) => {
         return reportsService.formatReport(dbReport)
@@ -87,7 +87,7 @@ router.route('/:guid')
   })
 
 router.route('/:guid')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -125,7 +125,7 @@ router.route('/:guid')
   })
 
 router.route('/:guid/attachments')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -195,7 +195,7 @@ router.route('/:guid/attachments')
   })
 
 router.route('/:guid')
-  .delete(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['reportAdmin']), function (req, res) {
+  .delete(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['reportAdmin']), function (req, res) {
     let dbReport
     return reportsService.getReportByGuid(req.params.guid)
       .then((data) => {
@@ -258,7 +258,7 @@ router.route('/:guid')
   })
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return reportsService.queryData(req)
       .then((data) => {
         res.status(200).send({

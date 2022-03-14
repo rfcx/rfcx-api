@@ -17,7 +17,7 @@ const Promise = require('bluebird')
 const path = require('path')
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const where = {}
     if (req.query.include_inactive !== 'true') {
       where.is_active = true
@@ -49,7 +49,7 @@ router.route('/')
   })
 
 router.route('/admin')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin', 'mobileAppAdmin']), (req, res) => {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['guardiansSitesAdmin', 'mobileAppAdmin']), (req, res) => {
     const where = {}
     if (req.query.include_inactive !== 'true') {
       where.is_active = true
@@ -94,7 +94,7 @@ router.route('/statistics/audio')
   })
 
 router.route('/:site_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
     return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
       .then((guids) => {
         const guid = req.params.site_id
@@ -124,7 +124,7 @@ router.route('/:site_id')
   })
 
 router.route('/kmz')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
     const bounds = {
       type: '',
       coordinates: []
@@ -184,7 +184,7 @@ router.route('/kmz')
   })
 
 router.route('/:guid')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -216,7 +216,7 @@ router.route('/:guid')
   })
 
 router.route('/:site_id/bounds')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
     models.GuardianSite
       .findOne({
         where: { guid: req.params.site_id }
@@ -242,7 +242,7 @@ router.route('/:site_id/bounds')
   })
 
 router.route('/')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 

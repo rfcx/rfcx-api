@@ -8,7 +8,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 router.route('/:guardian_id/meta/:meta_type')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const metaType = req.params.meta_type
     const modelLookUp = {
       cpu: {

@@ -31,16 +31,16 @@ function query (req, res) {
 }
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), query)
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'systemUser']), query)
 
 router.route('/search')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res, next) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res, next) {
     req.query = req.body
     next()
   }, query)
 
 router.route('/reviews')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return eventsServiceNeo4j.queryReviews(req)
       .then(function (json) {
         res.status(200).send(json)
@@ -50,7 +50,7 @@ router.route('/reviews')
   })
 
 router.route('/reviews/ai-models')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return eventsServiceNeo4j.getAiModelsForReviews(req)
       .then((data) => {
         res.status(200).send(data)
@@ -60,7 +60,7 @@ router.route('/reviews/ai-models')
   })
 
 router.route('/reviews/download')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
     const tempGuid = randomGuid()
     const reviewsPath = path.join(process.env.CACHE_DIRECTORY, 'reviews')
 
@@ -85,7 +85,7 @@ router.route('/reviews/download')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return eventsServiceNeo4j.getEventByGuid(req.params.guid)
       .then((data) => {
         res.status(200).json(data)
@@ -96,7 +96,7 @@ router.route('/:guid')
   })
 
 router.route('/:guid/windows')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
     return eventsServiceNeo4j.queryWindowsForEvent(req.params.guid)
       .then(function (json) {
         res.status(200).send(json)
@@ -106,7 +106,7 @@ router.route('/:guid/windows')
   })
 
 router.route('/:guid/trigger')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['systemUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['systemUser']), function (req, res) {
     let eventData, guardian
     return eventsServiceNeo4j.getEventInfoByGuid(req.params.guid)
       .bind({})
@@ -171,7 +171,7 @@ router.route('/:guid/trigger')
   })
 
 router.route('/:guid/review')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 

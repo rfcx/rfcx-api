@@ -24,7 +24,7 @@ const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware
 router.use(takeContentTypeFromFileExtMiddleware)
 
 router.route('/event')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
     const contentType = req.rfcx.content_type
     let isFile = false
     if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
@@ -60,7 +60,7 @@ router.route('/event')
   })
 
 router.route('/event/datatable')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return eventsService.queryDataTable(req)
       .then(function (data) {
         return views.models.guardianAudioEventsJson(req, res, data.events)
@@ -81,7 +81,7 @@ router.route('/event/datatable')
   })
 
 router.route('/stats/guardian')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const contentType = req.rfcx.content_type
     let isFile = false
     if (req.originalUrl.indexOf('.json') !== -1 || req.originalUrl.indexOf('.csv') !== -1) {
@@ -117,10 +117,10 @@ router.route('/stats/guardian')
   })
 
 router.route('/stats/dates')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), eventsService.processStatsByDates)
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), eventsService.processStatsByDates)
 
 router.route('/stats/weekly')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     if (!req.query) {
       req.query = {}
     }
@@ -132,7 +132,7 @@ router.route('/stats/weekly')
   })
 
 router.route('/stats/monthly')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     if (!req.query) {
       req.query = {}
     }
@@ -144,7 +144,7 @@ router.route('/stats/monthly')
   })
 
 router.route('/stats/half-year')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     if (!req.query) {
       req.query = {}
     }
@@ -156,7 +156,7 @@ router.route('/stats/half-year')
   })
 
 router.route('/stats/year')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     if (!req.query) {
       req.query = {}
     }
@@ -202,7 +202,7 @@ router.route('/tuning')
   })
 
 router.route('/values')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.query, transformedParams)
 
@@ -217,7 +217,7 @@ router.route('/values')
   })
 
 router.route('/values/hlk/:value')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return eventValueService.searchForHighLevelKeysImageAndDescription(req.params.value)
       .then((data) => { res.status(200).json(data) })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
@@ -227,7 +227,7 @@ router.route('/values/hlk/:value')
   })
 
 router.route('/values/:value')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return eventValueService.getGuardianAudioEventValue(req.params.value, true)
       .then(eventValueService.formatGuardianAudioEventValue)
       .then((data) => { res.status(200).json(data) })
@@ -238,7 +238,7 @@ router.route('/values/:value')
   })
 
 router.route('/high-level-keys')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.query, transformedParams)
 
@@ -254,7 +254,7 @@ router.route('/high-level-keys')
   })
 
 router.route('/types')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     eventTypeService
       .getGuardianAudioEventTypes()
       .then((data) => { res.status(200).json(data) })
@@ -262,7 +262,7 @@ router.route('/types')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     eventsService
       .getEventByGuid(req.params.guid)
       .then((event) => {
@@ -522,7 +522,7 @@ router.route('/')
   })
 
 router.route('/:event_id/review')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
     models.GuardianEvent
       .findAll({
         where: { guid: req.params.event_id },
@@ -575,7 +575,7 @@ router.route('/:event_id/review')
   })
 
 router.route('/:guid/comment')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
     eventsService
       .updateEventComment(req.params.guid, req.body.comment)
       .then((event) => {
@@ -590,7 +590,7 @@ router.route('/:guid/comment')
   })
 
 router.route('/:guid/confirm')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
     eventsService.updateEventReview(req.params.guid, true, req.rfcx.auth_token_info.owner_id)
       .then((data) => {
         res.status(200).json(data)
@@ -600,7 +600,7 @@ router.route('/:guid/confirm')
   })
 
 router.route('/:guid/reject')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
     eventsService.updateEventReview(req.params.guid, false, req.rfcx.auth_token_info.owner_id)
       .then((data) => {
         res.status(200).json(data)

@@ -15,7 +15,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 // returns guardian groups bases on accessibleSites user attribute
 router.route('/groups')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const params = {
       extended: true
     }
@@ -38,7 +38,7 @@ router.route('/groups')
   })
 
 router.route('/groups/admin')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), function (req, res) {
     guardianGroupService
       .getAllGroups(true)
       .then((dbGroups) => {
@@ -50,7 +50,7 @@ router.route('/groups/admin')
   })
 
 router.route('/group/:shortname')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'guardiansSitesAdmin']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'guardiansSitesAdmin']), (req, res) => {
     guardianGroupService
       .getGroupByShortname(req.params.shortname)
       .then((dbGroup) => {
@@ -63,7 +63,7 @@ router.route('/group/:shortname')
   })
 
 router.route('/groups/subscribe')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     let userId, email, guid
     try {
       userId = req.rfcx.auth_token_info.sub
@@ -112,7 +112,7 @@ router.route('/groups/subscribe')
   })
 
 router.route('/groups/unsubscribe')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     let email, guid
     try {
       email = req.rfcx.auth_token_info.email
@@ -173,7 +173,7 @@ router.route('/groups/unsubscribe/public')
   })
 
 router.route('/group')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), (req, res) => {
     guardianGroupService
       .createGroup(req.body)
       .then((dbGroup) => {
@@ -185,7 +185,7 @@ router.route('/group')
   })
 
 router.route('/group/:shortname')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), (req, res) => {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), (req, res) => {
     guardianGroupService
       .updateGroup(req.params.shortname, req.body)
       .then((dbGroup) => {
@@ -197,7 +197,7 @@ router.route('/group/:shortname')
   })
 
 router.route('/group/:shortname')
-  .delete(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardiansSitesAdmin']), (req, res) => {
+  .delete(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardiansSitesAdmin']), (req, res) => {
     guardianGroupService
       .deleteGroupByShortname(req.params.shortname)
       .then(() => { res.status(200).json({ success: true }) })

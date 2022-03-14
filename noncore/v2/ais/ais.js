@@ -15,7 +15,7 @@ const fileUtil = require('../../_utils/misc/file')
 const path = require('path')
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin', 'systemUser']), function (req, res) {
     return aiService.getPublicAis()
       .then(function (json) {
         res.status(200).send(json)
@@ -25,7 +25,7 @@ router.route('/')
   })
 
 router.route('/collections')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     return aiService.getPublicCollections(req.query)
       .then(function (json) {
         res.status(200).send(json)
@@ -35,7 +35,7 @@ router.route('/collections')
   })
 
 router.route('/collections/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     return aiService.getPublicCollectionAndAisByGuid(req.params.guid)
       .then(function (json) {
         res.status(200).send(json)
@@ -45,7 +45,7 @@ router.route('/collections/:guid')
   })
 
 router.route('/create')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -75,7 +75,7 @@ router.route('/create')
   })
 
 router.route('/:guid/sns-sqs')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     return aiService.getPublicAiByGuid(req.params.guid)
       .then(() => {
         return aiService.getSNSSQSInfo(req.params.guid)
@@ -89,7 +89,7 @@ router.route('/:guid/sns-sqs')
   })
 
 router.route('/:guid/sns-sqs')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     return aiService.getPublicAiByGuid(req.params.guid)
       .then(() => {
         return aiService.createSNSSQSStuff(req.params.guid)
@@ -103,7 +103,7 @@ router.route('/:guid/sns-sqs')
   })
 
 router.route('/:guid/upload-file')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     const file = req.files.file
     if (!file) {
       return httpErrorResponse(req, res, 400, null, 'No file provided.')
@@ -126,7 +126,7 @@ router.route('/:guid/upload-file')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return aiService.getPublicAiByGuid(req.params.guid)
       .then((json) => {
         res.status(200).send(json)
@@ -139,7 +139,7 @@ router.route('/:guid')
 // AI model update
 
 router.route('/:guid')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -165,7 +165,7 @@ router.route('/:guid')
   })
 
 router.route('/:guid/batch-analysis')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     let ai
 
     return aiService.getPublicAiByGuid(req.params.guid)
@@ -205,7 +205,7 @@ router.route('/:guid/batch-analysis')
   })
 
 router.route('/:guid/download')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const extension = '.tar.gz'
     const fileName = `${req.params.guid}${extension}`
     const aisPath = path.join(process.env.CACHE_DIRECTORY, 'ais')

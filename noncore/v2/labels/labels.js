@@ -13,7 +13,7 @@ const sequelize = require('sequelize')
  * Syncronizes MySQL GuardianAudioEventValues and GuardianAudioEventValueHighLevelKeys with :label and :highLevelKey:
  */
 router.route('/sync')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     return aiService.getPublicAis()
       .then(function (json) {
         res.status(200).send(json)
@@ -23,7 +23,7 @@ router.route('/sync')
   })
 
 router.route('/collections')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     return aiService.getPublicCollections()
       .then(function (json) {
         res.status(200).send(json)
@@ -33,7 +33,7 @@ router.route('/collections')
   })
 
 router.route('/collections/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     return aiService.getPublicCollectionAndAisByGuid(req.params.guid)
       .then(function (json) {
         res.status(200).send(json)
@@ -43,7 +43,7 @@ router.route('/collections/:guid')
   })
 
 router.route('/create')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -74,7 +74,7 @@ router.route('/create')
   })
 
 router.route('/:guid/upload-file')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     const file = req.files.file
     if (!file) {
       return httpErrorResponse(req, res, 400, null, 'No file provided.')
@@ -97,7 +97,7 @@ router.route('/:guid/upload-file')
   })
 
 router.route('/:guid')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return aiService.getPublicAiByGuid(req.params.guid)
       .then((json) => {
         res.status(200).send(json)
@@ -110,7 +110,7 @@ router.route('/:guid')
 // AI model update
 
 router.route('/:guid')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['aiAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 

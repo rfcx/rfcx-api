@@ -114,7 +114,7 @@ function processMany (req, res) {
     })
 }
 router.route('/')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     try {
       if (req.body.data.type === 'tags') {
         processMany(req, res)
@@ -262,7 +262,7 @@ router.route('/:tag_id')
   })
 
 router.route('/classified/byannotator')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const converter = new ApiConverter('tags', req)
 
     const body = req.body

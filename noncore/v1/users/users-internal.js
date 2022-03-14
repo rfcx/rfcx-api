@@ -9,7 +9,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const Converter = require('../../../common/converter')
 
 router.route('/auth0/export-link')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.query, transformedParams)
 
@@ -46,7 +46,7 @@ router.route('/auth0/export-link')
   })
 
 router.route('/auth0/fix-users-names')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 

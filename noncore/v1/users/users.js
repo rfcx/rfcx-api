@@ -366,7 +366,7 @@ router.route('/change-password')
   })
 
 router.route('/checkin')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['appUser', 'rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
     const singleMode = req.body.locations === undefined
@@ -397,7 +397,7 @@ router.route('/checkin')
   })
 
 router.route('/locations')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     return usersService.getLocations(req)
       .then(result => res.status(200).json(result))
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
@@ -406,7 +406,7 @@ router.route('/locations')
   })
 
 router.route('/lastcheckin')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     usersService.getAllUsers()
       .then(users => {
         const proms = []
@@ -435,12 +435,12 @@ router.route('/lastcheckin')
 // this request does nothing in terms of response, but it's created to check if user from jwt
 // exist in our database, and if not, create it
 router.route('/touchapi')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), async function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), async function (req, res) {
     res.status(200).json({ success: true })
   })
 
 router.route('/code')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
     const roles = ['rfcxUser']
@@ -511,7 +511,7 @@ router.route('/code')
   })
 
 router.route('/accept-terms')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), function (req, res) {
     const app = req.body.app || ''
 
     return auth0Service.getToken()
@@ -535,7 +535,7 @@ router.route('/accept-terms')
   })
 
 router.route('/delete')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -573,7 +573,7 @@ router.route('/delete')
   })
 
 router.route('/create')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -607,7 +607,7 @@ router.route('/create')
   })
 
 router.route('/auth0/create-user')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -633,7 +633,7 @@ router.route('/auth0/create-user')
   })
 
 router.route('/auth0/update-user')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -658,7 +658,7 @@ router.route('/auth0/update-user')
   })
 
 router.route('/auth0/update-user/public')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -740,7 +740,7 @@ router.route('/auth0/update-user/public')
   })
 
 router.route('/auth0/users/export-link')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.query, transformedParams)
 
@@ -775,7 +775,7 @@ router.route('/auth0/users/export-link')
   })
 
 router.route('/auth0/update-users')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -816,7 +816,7 @@ router.route('/auth0/update-users')
   })
 
 router.route('/reset-user-password')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -859,7 +859,7 @@ router.route('/reset-user-password')
 // Endpoint for admins to change other user password
 
 router.route('/change-user-password')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -894,7 +894,7 @@ router.route('/change-user-password')
 // Endpoint for standard user to change his/her password
 
 router.route('/password-change')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     let user_id, email, guid // eslint-disable-line camelcase
     try {
       user_id = req.rfcx.auth_token_info.sub // eslint-disable-line camelcase
@@ -930,7 +930,7 @@ router.route('/password-change')
   })
 
 router.route('/avatar-change')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     let user; let user_id; let email; let guid; let files = req.files // eslint-disable-line camelcase
     try {
       user_id = req.rfcx.auth_token_info.sub // eslint-disable-line camelcase
@@ -999,7 +999,7 @@ router.route('/avatar-change')
   })
 
 router.route('/auth0/users')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.query, transformedParams)
 
@@ -1028,7 +1028,7 @@ router.route('/auth0/users')
   })
 
 router.route('/auth0/roles')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     auth0Service.getAuthToken()
       .then((token) => {
         return auth0Service.getAllRoles(token)
@@ -1042,7 +1042,7 @@ router.route('/auth0/roles')
   })
 
 router.route('/auth0/clients')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     auth0Service.getToken()
       .then((token) => {
         return auth0Service.getAllClients(token)
@@ -1056,7 +1056,7 @@ router.route('/auth0/clients')
   })
 
 router.route('/auth0/:user_guid/roles')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -1079,7 +1079,7 @@ router.route('/auth0/:user_guid/roles')
   })
 
 router.route('/auth0/:user_guid/roles')
-  .delete(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .delete(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.query, transformedParams)
 
@@ -1102,7 +1102,7 @@ router.route('/auth0/:user_guid/roles')
   })
 
 router.route('/auth0/:user_guid/roles')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     auth0Service.getAuthToken()
       .then((token) => {
         return auth0Service.getUserRoles(token, req.params.user_guid)
@@ -1116,7 +1116,7 @@ router.route('/auth0/:user_guid/roles')
   })
 
 router.route('/auth0/send-change-password-email')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -1139,7 +1139,7 @@ router.route('/auth0/send-change-password-email')
   })
 
 router.route('/:id/info')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'usersAdmin']), function (req, res) {
     usersService.getUserByGuidOrEmail(req.params.id)
       .then((user) => {
         return usersService.formatUser(user)
@@ -1153,7 +1153,7 @@ router.route('/:id/info')
   })
 
 router.route('/info')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'usersAdmin']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'usersAdmin']), function (req, res) {
     usersService.getUserByGuidOrEmail(req.query.guid, req.query.email)
       .then((user) => {
         return usersService.formatUser(user)
@@ -1188,7 +1188,7 @@ router.route('/:user_id')
   })
 
 router.route('/:guid/sites')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'usersAdmin']), function (req, res) {
     const converter = new ApiConverter('user', req)
     const serviceParams = {
       sites: req.body.sites
@@ -1212,7 +1212,7 @@ router.route('/:guid/sites')
 
 // TO DO security measure to ensure that not any user can see any other user
 router.route('/:user_id')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['usersAdmin']), function (req, res) {
     const converter = new ApiConverter('user', req)
     // This must be replaced with AWS user roles
     // if (req.rfcx.auth_token_info.guid === req.params.user_id) {

@@ -50,7 +50,7 @@ function processAiCreation (guid, req, res) {
 }
 
 router.route('/ai')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const converter = new ApiConverter('ai', req)
 
     return models.AudioAnalysisModel

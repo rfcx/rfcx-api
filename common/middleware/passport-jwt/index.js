@@ -24,7 +24,6 @@ const baseOpts = {
 }
 
 const opts = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_DOMAIN}/` })
-const optsCustom = Object.assign({}, baseOpts, { issuer: `https://${process.env.AUTH0_CUSTOM_DOMAIN}/` })
 
 function combineUserData (jwtPayload, user) {
   return Object.assign({}, jwtPayload, {
@@ -87,10 +86,6 @@ function jwtCallback (req, jwtPayload, done) {
   checkDBUser(req, jwtPayload, done)
 }
 
-const jwtStrategy = new JwtStrategy(opts, jwtCallback)
-const jwtStrategyCustom = new JwtStrategy(optsCustom, jwtCallback)
-
 module.exports = {
-  JwtStrategy: jwtStrategy,
-  JwtStrategyCustom: jwtStrategyCustom
+  JwtStrategy: new JwtStrategy(opts, jwtCallback)
 }

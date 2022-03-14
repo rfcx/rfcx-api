@@ -9,7 +9,7 @@ const sequelize = require('sequelize')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 router.route('/:guid/software')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const query = `
       SELECT soft.role as role, ver.version as version
       FROM GuardianMetaSoftwareVersions AS metaver
@@ -47,7 +47,7 @@ router.route('/:guid/software')
   })
 
 router.route('/:guid/software/preferences')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), (req, res) => {
     models.Guardian.findOne({ where: { guid: req.params.guid } })
       .then(function (dbGuardian) {
         if (!dbGuardian) {

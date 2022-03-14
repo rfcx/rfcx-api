@@ -12,7 +12,7 @@ const hasRole = require('../../../common/middleware/authorization/authorization'
 const Converter = require('../../../common/converter')
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'systemUser']), function (req, res) {
     req.query.limit = req.query.limit || 1000
     req.query.starting_after_local = req.query.starting_after_local || moment().subtract(1, 'months').startOf('day').toISOString()
     req.query.starting_before_local = req.query.starting_before_local || moment().endOf('day').toISOString()

@@ -99,7 +99,7 @@ function getFilenameFromUrl (url) {
 }
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return audioService.queryData(req)
       .then((data) => {
         res.status(200).send(data)
@@ -267,7 +267,7 @@ router.route('/filter/by-tags')
   })
 
 router.route('/labels')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return boxesService.getData(req)
       .then((data) => {
         boxesService.calculateTimeOffsetsInSeconds(data.labels)
@@ -283,7 +283,7 @@ router.route('/labels')
   })
 
 router.route('/label-values')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return boxesService.getLabelValues(req)
       .then((data) => {
         res.status(200).send(data)
@@ -294,7 +294,7 @@ router.route('/label-values')
   })
 
 router.route('/labels/download')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const tempGuid = randomGuid()
     const annotationsPath = path.join(process.env.CACHE_DIRECTORY, 'annotations')
 
@@ -320,7 +320,7 @@ router.route('/labels/download')
   })
 
 router.route('/:audio_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },
@@ -356,7 +356,7 @@ router.route('/:audio_id/createSensations')
   })
 
 router.route('/:guid/boxes')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .post(passport.authenticate(['jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -422,7 +422,7 @@ router.route('/:audio_id/labels')
   })
 
 router.route('/nextafter/:audio_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },
@@ -466,7 +466,7 @@ router.route('/nextafter/:audio_id')
   })
 
 router.route('/prevbefore/:audio_id')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     models.GuardianAudio
       .findOne({
         where: { guid: req.params.audio_id },

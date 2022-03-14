@@ -20,7 +20,7 @@ const arbimonService = require('../../../core/_services/arbimon')
 const Converter = require('../../../common/converter')
 
 router.route('/')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const sitesQuery = {}
 
     return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
@@ -109,7 +109,7 @@ router.route('/')
   })
 
 router.route('/admin')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator', 'guardiansSitesAdmin']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardianCreator', 'guardiansSitesAdmin']), (req, res) => {
     const sitesQuery = {}
 
     if (req.query.sites) {
@@ -191,7 +191,7 @@ router.route('/admin')
   })
 
 router.route('/my')
-  .get(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     return userService.getUserByGuid(req.rfcx.auth_token_info.guid)
       .then((user) => {
         return models.Guardian
@@ -251,7 +251,7 @@ router.route('/:guardian_id/public-info')
   })
 
 router.route('/register')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser', 'guardianCreator']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser', 'guardianCreator']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 
@@ -321,7 +321,7 @@ router.route('/register')
 // Guardian update
 
 router.route('/:guid')
-  .post(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['guardianCreator']), function (req, res) {
+  .post(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['guardianCreator']), function (req, res) {
     const transformedParams = {}
     const params = new Converter(req.body, transformedParams)
 

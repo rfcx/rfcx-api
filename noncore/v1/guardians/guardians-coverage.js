@@ -7,7 +7,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
 router.route('/:guardian_id/coverage')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
+  .get(passport.authenticate(['token', 'jwt'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     const serviceReq = {
       guardian_id: req.params.guardian_id,
       starting_after: req.query.starting_after,
