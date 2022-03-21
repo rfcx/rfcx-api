@@ -1,5 +1,8 @@
 # API Deployment Notes
 
+## 1.1.1
+- Run `npm run sync-mysql` for new migration
+
 ## 1.1.0
 - Significant refactoring/moved files - expect import errors
 

@@ -1,3 +1,8 @@
+## 1.1.1 (2022-03-XX)
+
+### Features
+* **noncore**: Delete code related to Sensations data
+
 ## 1.1.0 (2022-03-08)
 
 ### Features

@@ -11,7 +11,6 @@ const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
-const SensationsService = require('../../_services/legacy/sensations/sensations-service')
 
 router.route('/:guardian_id/checkins')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
@@ -150,9 +149,6 @@ router.route('/:guardian_id/checkins')
               returnJson.audio.push({ id: info.timeStamp, guid: info.audio_guid })
               self.dbCheckIn.request_latency_api = (new Date()).valueOf() - req.rfcx.request_start_time
               return self.dbCheckIn.save()
-            })
-            .then(function () {
-              return SensationsService.createSensationsFromGuardianAudio(info.dbAudioObj.guid)
             })
             .then(function () {
               return checkInHelpers.audio.cleanupCheckInFiles(info)

@@ -9,8 +9,7 @@ module.exports = {
     require('./guardians/guardians-events'),
     require('./guardians/guardians-meta'),
     require('./guardians/guardians-screenshots'),
-    require('./guardians/guardians-status'),
-    require('./guardians/guardians-coverage')
+    require('./guardians/guardians-status')
   ],
   sites: [
     require('./sites/sites'),
@@ -52,9 +51,6 @@ module.exports = {
   ],
   datafilters: [
     require('./datafilters/datafilters')
-  ],
-  sensations: [
-    require('./sensations/sensations')
   ],
   perceptions: [
     require('./perceptions/perceptions-ai')

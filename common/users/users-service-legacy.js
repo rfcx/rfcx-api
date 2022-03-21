@@ -5,7 +5,6 @@ const Promise = require('bluebird')
 const sitesService = require('../../noncore/_services/sites/sites-service')
 const random = require('../crypto/random')
 const { hashedCredentials } = require('../crypto/sha256')
-const sensationsService = require('../../noncore/_services/legacy/sensations/sensations-service')
 const moment = require('moment-timezone')
 const { ValidationError } = require('../../common/error-handling/errors')
 const { ForbiddenError } = require('../../common/error-handling/errors')
@@ -350,16 +349,6 @@ function updateUserInfo (user, params) {
     .then(formatUser)
 }
 
-function getUserLastCheckin (user) {
-  return sensationsService.getLastCheckinByUserId(user.id)
-    .then(data => {
-      if (data.length) {
-        data[0].user = this.formatUser(user, true)
-      }
-      return data
-    })
-}
-
 function formatCheckin (checkin) {
   return {
     latitude: checkin.location.coordinates[0],
@@ -569,7 +558,6 @@ module.exports = {
   getAllUserSiteGuids,
   updateUserInfo,
   updateUserAtts,
-  getUserLastCheckin,
   formatCheckin,
   createUserLocation,
   createUserLocations,
