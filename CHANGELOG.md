@@ -1,4 +1,4 @@
-## 1.1.1 (2022-03-XX)
+## 1.1.1 (2022-03-21)
 
 ### Features
 * **noncore**: Delete code related to Sensations data
