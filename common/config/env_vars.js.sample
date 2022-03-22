@@ -118,11 +118,6 @@ exports.env = {
   // ARBIMON_ENABLED: 'false'
   // ARBIMON_BASE_URL: 'https://arbimon.rfcx.org/',
 
-  /// When `EARTHRANGER_ENABLED` is set to `true` then the other env vars are required.
-  // EARTHRANGER_ENABLED: 'false'
-  // EARTHRANGER_BASE_URL: 'https://sandbox.pamdas.org/',
-  // EARTHRANGER_ACCESS_TOKEN: '',
-
   /// Logging and metrics
   // NEW_RELIC_LICENSE_KEY: '',
   // NEW_RELIC_NO_CONFIG_FILE: 'true',
