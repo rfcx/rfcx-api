@@ -20,8 +20,7 @@ module.exports = {
   ],
   audio: [
     require('./audio/audio'),
-    require('./audio/audio-collections'),
-    require('./audio/audio-tags')
+    require('./audio/audio-collections')
   ],
   analysis: [
     require('./analysis/analysis'),

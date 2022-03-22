@@ -42,7 +42,6 @@ data:
   REST_HOST_SHORT: "rf.cx"
   ASSET_BUCKET_REPORT: "rfcx-report-production"
   PNGCRUSH_PATH: "/usr/bin/pngcrush"
-  NEO4J_ENABLED: "true"
   ASSET_BUCKET_ATTACHMENT: "rfcx-attachment-production"
   ASSET_BUCKET_AI: "rfcx-ai-dev"
   INGEST_BUCKET: "rfcx-streams-production"
