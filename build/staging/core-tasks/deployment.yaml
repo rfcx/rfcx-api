@@ -24,9 +24,9 @@ spec:
             - configMapRef:
                 name: core-tasks-configmap
           resources:
-            limits:
-              cpu: "500m"
-              memory: "300Mi"
             requests:
-              cpu: "200m"
-              memory: "300Mi"
+              memory: "128Mi"
+              cpu: "0.1"
+            limits:
+              memory: "512Mi"
+              cpu: "0.5"

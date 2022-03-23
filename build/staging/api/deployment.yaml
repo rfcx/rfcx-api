@@ -22,10 +22,10 @@ spec:
             name: api-configmap
         resources:
           requests:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "256Mi"
+            cpu: "0.1"
           limits:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "512Mi"
+            cpu: "0.5"
         ports:
         - containerPort: 80
