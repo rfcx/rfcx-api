@@ -9,7 +9,6 @@ const exec = util.promisify(require('child_process').exec)
 const audioUtils = require('../rfcx-audio').audioUtils
 const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
 const cachedFiles = require('../internal-rfcx/cached-files').cachedFiles
-const aiService = require('../../_services/legacy/ai/ai-service')
 
 const moment = require('moment-timezone')
 const urls = require('../misc/urls')
@@ -218,41 +217,6 @@ exports.audio = {
             }
           })
     })
-  },
-
-  queueForTaggingByActiveV3Models: function (audioInfo, dbGuardian) {
-    return aiService.getPublicAis({ isActive: true })
-      .then((ais) => {
-        return ais.filter((ai) => {
-          return ai.guardiansWhitelist && ai.guardiansWhitelist.length && ai.guardiansWhitelist.includes(dbGuardian.guid)
-        })
-      })
-      .then((ais) => {
-        const promises = []
-        ais.forEach((ai) => {
-          const name = aiService.combineTopicQueueNameForGuid(ai.guid)
-          const message = {
-            guid: audioInfo.audio_guid,
-            guardian_guid: dbGuardian.guid,
-            guardian_shortname: dbGuardian.shortname,
-            site_guid: dbGuardian.Site.guid,
-            site_timezone: dbGuardian.Site.timezone,
-            measured_at: audioInfo.dbAudioObj.measured_at,
-            file_extension: audioInfo.dbAudioObj.Format.file_extension,
-            capture_sample_count: audioInfo.dbAudioObj.capture_sample_count,
-            sample_rate: audioInfo.dbAudioObj.Format.sample_rate,
-            latitude: dbGuardian.latitude,
-            longitude: dbGuardian.longitude,
-            stream_id: dbGuardian.stream_id
-          }
-          const prom = aws.publish(name, message)
-            .then((data) => {
-              return data
-            })
-          promises.push(prom)
-        })
-        return Promise.all(promises)
-      })
   },
 
   rollBackCheckIn: function (audioInfo) {
