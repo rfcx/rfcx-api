@@ -51,9 +51,6 @@ module.exports = {
   datafilters: [
     require('./datafilters/datafilters')
   ],
-  perceptions: [
-    require('./perceptions/perceptions-ai')
-  ],
   'filter-presets': [
     require('./filter-presets/filter-presets')
   ],
