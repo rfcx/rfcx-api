@@ -1,5 +1,10 @@
 # API Deployment Notes
 
+## 1.1.2
+- Update Prediction Service to stop using legacy mode
+- Delete AI models page from the Guardian Monitoring
+- Delete redis deployment in k8s
+
 ## 1.1.1
 - Run `npm run sync-mysql` for new migration
 
