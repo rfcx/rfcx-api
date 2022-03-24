@@ -1,5 +1,4 @@
 const { adoptProtectDonations } = require('./models/adopt-protect').models
-const { guardianAudioHighlights } = require('./models/guardian-audio-highlights').models
 const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson, guardianAudioLabels, transformCreateAudioRequestToModel } = require('./models/guardian-audio').models
 const { guardianCheckIns } = require('./models/guardian-checkins').models
 const { guardianSites } = require('./models/guardian-sites').models
@@ -29,7 +28,6 @@ const { guardianSoftware } = require('./models/guardian-software/guardian-softwa
 module.exports = {
   models: {
     adoptProtectDonations,
-    guardianAudioHighlights,
     baseInclude,
     guardianAudioFile,
     guardianAudioSpectrogram,
