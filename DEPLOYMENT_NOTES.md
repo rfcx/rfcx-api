@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## 1.1.2
+- Run `npm run sync-mysql` for new migration
+- Run `update Guardians set last_ping = (select max(measured_at) from GuardianMetaBattery where guardian_id = Guardians.id) where last_ping is null;` after migrations
+
 ## 1.1.1
 - Run `npm run sync-mysql` for new migration
 
