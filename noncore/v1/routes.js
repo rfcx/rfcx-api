@@ -30,9 +30,6 @@ module.exports = {
     require('./users/users'),
     require('./users/users-internal')
   ],
-  events: [
-    require('./events/events')
-  ],
   shortlinks: [
     require('./shortlinks/shortlinks')
   ],
