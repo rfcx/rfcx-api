@@ -28,9 +28,6 @@ module.exports = {
   shortlinks: [
     require('./shortlinks/shortlinks')
   ],
-  player: [
-    require('./player/player')
-  ],
   assets: [
     require('./assets/assets')
   ],
