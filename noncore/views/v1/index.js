@@ -1,17 +1,10 @@
 const { adoptProtectDonations } = require('./models/adopt-protect').models
-const { DataFilterAudioGuidToJson } = require('./models/datafilters').models
-const { guardianAudioEventsJson, guardianAudioEventsByGuardianJson, guardianAudioEventsByDatesJson, guardianAudioEventsCSV, guardianAudioEventsByGuardianCSV, guardianAudioEventsByDatesCSV } = require('./models/guardian-audio-events').models
 const { guardianAudioHighlights } = require('./models/guardian-audio-highlights').models
 const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson, guardianAudioLabels, transformCreateAudioRequestToModel } = require('./models/guardian-audio').models
 const { guardianCheckIns } = require('./models/guardian-checkins').models
-const { guardianEvents, guardianEventsLite } = require('./models/guardian-events').models
 const { guardianSites } = require('./models/guardian-sites').models
 const { guardian, guardianPublicInfo } = require('./models/guardians').models
-const { groupTagsByCreator, countTagsByGuid } = require('./models/tags').models
 const { users, usersPublic } = require('./models/users').models
-const { audioAnalysisMethods } = require('./models/audio-analysis/audio-analysis-methods').models
-const { audioAnalysisTrainingSet, audioAnalysisTrainingSets } = require('./models/audio-analysis/audio-analysis-training-set').models
-const { guardianAudioCollection } = require('./models/guardian-audio/guardian-audio-collection').models
 const { guardianMetaMessages } = require('./models/guardian-meta/guardian-messages').models
 const { guardianMetaSentinelAccelerometer } = require('./models/guardian-meta/guardian-meta-accelerometer').models
 const { guardianMetaBattery } = require('./models/guardian-meta/guardian-meta-battery').models
@@ -36,13 +29,6 @@ const { guardianSoftware } = require('./models/guardian-software/guardian-softwa
 module.exports = {
   models: {
     adoptProtectDonations,
-    DataFilterAudioGuidToJson,
-    guardianAudioEventsJson,
-    guardianAudioEventsByGuardianJson,
-    guardianAudioEventsByDatesJson,
-    guardianAudioEventsCSV,
-    guardianAudioEventsByGuardianCSV,
-    guardianAudioEventsByDatesCSV,
     guardianAudioHighlights,
     baseInclude,
     guardianAudioFile,
@@ -51,19 +37,11 @@ module.exports = {
     guardianAudioLabels,
     transformCreateAudioRequestToModel,
     guardianCheckIns,
-    guardianEvents,
-    guardianEventsLite,
     guardianSites,
     guardian,
     guardianPublicInfo,
-    groupTagsByCreator,
-    countTagsByGuid,
     users,
     usersPublic,
-    audioAnalysisMethods,
-    audioAnalysisTrainingSet,
-    audioAnalysisTrainingSets,
-    guardianAudioCollection,
     guardianMetaMessages,
     guardianMetaSentinelAccelerometer,
     guardianMetaBattery,

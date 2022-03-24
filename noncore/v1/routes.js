@@ -19,12 +19,7 @@ module.exports = {
     require('./sites/sites-images')
   ],
   audio: [
-    require('./audio/audio'),
-    require('./audio/audio-collections')
-  ],
-  analysis: [
-    require('./analysis/analysis'),
-    require('./analysis/audio-analysis-training-set')
+    require('./audio/audio')
   ],
   users: [
     require('./users/users'),
@@ -41,12 +36,6 @@ module.exports = {
   ],
   reports: [
     require('./reports/reports')
-  ],
-  tags: [
-    require('./tags/tags')
-  ],
-  datafilters: [
-    require('./datafilters/datafilters')
   ],
   'filter-presets': [
     require('./filter-presets/filter-presets')
