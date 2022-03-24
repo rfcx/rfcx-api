@@ -56,6 +56,5 @@ data:
   CLOUDWATCH_LOGS_GROUP_NAME: "rfcx-api-production"
   FIREBASE_ENABLED: "true"
   USERS_BUCKET: "rfcx-users-production"
-  REDIS_ENABLED: "true"
   EARTHRANGER_ENABLED: "true"
   EARTHRANGER_BASE_URL: "https://osaconservation.pamdas.org/"

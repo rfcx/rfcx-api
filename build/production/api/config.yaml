@@ -51,7 +51,6 @@ data:
   INGEST_SERVICE_ENABLED: "true"
   GUARDIAN_BROKER_HOSTNAME: "api-mqtt.rfcx.org"
   GUARDIAN_API_SMS_ADDRESS: "+13467870964"
-  REDIS_ENABLED: "true"
   EARTHRANGER_ENABLED: "true"
   EARTHRANGER_BASE_URL: "https://osaconservation.pamdas.org/"
   ARBIMON_BASE_URL: "https://arbimon.rfcx.org/"
