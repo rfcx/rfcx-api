@@ -15,5 +15,6 @@ data:
   NODE_ENV: "staging"
   NODE_LOG_LEVEL: "debug"
   REST_PROTOCOL: "https"
+  PORT: "8081"
   REST_HOST: "staging-api.rfcx.org"
   USERS_BUCKET: "rfcx-users-production"
