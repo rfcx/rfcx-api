@@ -4,9 +4,6 @@ const startTime = new Date()
 // Handle unhandled promises
 require('../common/error-handling/process')
 
-// Check required env vars are set
-require('../common/config/inspector')
-
 // Load application
 const appHttp = require('./app-http')
 const appMqtt = require('./app-mqtt')
