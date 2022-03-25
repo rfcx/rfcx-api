@@ -655,6 +655,13 @@ exports.checkInDatabase = {
       .then(() => {
         return checkInObj
       })
+  },
+
+  recordPing: function (checkInObj) {
+    checkInObj.db.dbGuardian.last_ping = new Date()
+    return checkInObj.db.dbGuardian.save().then(() => {
+      return checkInObj
+    })
   }
 
 }

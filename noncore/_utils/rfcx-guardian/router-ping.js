@@ -14,6 +14,9 @@ function onMessagePing (pingObj, messageId) {
       return checkInDatabase.getDbSite(pingObj)
     })
     .then((pingObj) => {
+      return checkInDatabase.recordPing(pingObj)
+    })
+    .then((pingObj) => {
       return checkInDatabase.createDbSaveMeta(pingObj)
     })
     .then((pingObj) => {

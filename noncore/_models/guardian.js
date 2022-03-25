@@ -174,6 +174,10 @@ module.exports = function (sequelize, DataTypes) {
     last_deployed: {
       type: DataTypes.DATE(3),
       allowNull: true
+    },
+    last_ping: {
+      type: DataTypes.DATE(3),
+      allowNull: true
     }
   }, {
     indexes: [
