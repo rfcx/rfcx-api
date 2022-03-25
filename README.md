@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The API can be run in "regular" or "mqtt" modes. It requires connections to MySQL, TimescaleDB (Postgres) and Neo4j databases. It also has dependencies on AWS (S3 and SNS/SQS), Auth0, Firebase, Mailchimp/Mandrill, Stripe and Classy.
+The API can be run in "regular" or "mqtt" modes. It requires connections to MySQL and TimescaleDB (Postgres) databases. It also has dependencies on AWS (S3 and SNS/SQS), Auth0, Firebase, Mailchimp/Mandrill, Stripe and Classy.
 
 ## Project configuration for local development
 
