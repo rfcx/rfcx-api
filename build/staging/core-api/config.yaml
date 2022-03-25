@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-api-configmap
+  namespace: staging
+data:
+  ARBIMON_BASE_URL: "https://staging-arbimon.rfcx.org/"
+  ARBIMON_ENABLED: "true"
+  ASSET_BUCKET_AI: "rfcx-ai-dev"
+  CACHE_DIRECTORY: "/tmp/rfcx-api/"
+  INGEST_SERVICE_BASE_URL: "https://staging-ingest.rfcx.org/"
+  MESSAGE_QUEUE_ENABLED: 'true'
+  MESSAGE_QUEUE_POSTFIX: 'staging'
+  NEW_RELIC_APP_NAME: "Staging Core API"
+  NODE_ENV: "staging"
+  NODE_LOG_LEVEL: "debug"
+  REST_PROTOCOL: "https"
+  REST_HOST: "staging-api.rfcx.org"
+  USERS_BUCKET: "rfcx-users-production"

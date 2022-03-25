@@ -6,6 +6,9 @@
 - Delete redis deployment in k8s
 - Run `npm run sync-mysql` for new migration
 - Run `update Guardians set last_ping = (select max(measured_at) from GuardianMetaBattery where guardian_id = Guardians.id) where last_ping is null;` after migrations
+- Delete Kubernetes resources:
+  - api, api-service, api-ingress, api-config-map
+  - api-mqtt, api-mqtt-service, api-mqtt-ingress, api-mqtt-configmap
 
 ## 1.1.1
 - Run `npm run sync-mysql` for new migration

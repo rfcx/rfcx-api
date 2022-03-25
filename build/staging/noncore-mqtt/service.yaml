@@ -1,12 +1,12 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: api-service
+  name: noncore-mqtt-service
   namespace: staging
 spec:
   selector:
-    app: api
-  type: ClusterIP 
+    app: noncore-mqtt
+  type: ClusterIP
   ports:
   - name: node
     port: 80
