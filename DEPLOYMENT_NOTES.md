@@ -9,6 +9,8 @@
 - Delete Kubernetes resources:
   - api, api-service, api-ingress, api-config-map
   - api-mqtt, api-mqtt-service, api-mqtt-ingress, api-mqtt-configmap
+- Change http://api-service.staging.svc.cluster.local to http://core-api-service.staging.svc.cluster.local in Guardian API, Device API and Ingest Service
+- Change http://api-service.production.svc.cluster.local to http://core-api-service.production.svc.cluster.local in Guardian API, Device API and Ingest Service
 
 ## 1.1.1
 - Run `npm run sync-mysql` for new migration
