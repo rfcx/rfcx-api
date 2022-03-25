@@ -28,7 +28,7 @@ We can use docker-compose to setup local MySQL, TimescaleDB.
 
 Start containers:
 ```
-docker-compose up
+docker-compose up -d
 ```
 
 Stop containers:
