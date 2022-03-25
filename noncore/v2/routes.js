@@ -1,7 +1,4 @@
 module.exports = {
-  ais: [
-    require('./ais/ais')
-  ],
   events: [
     require('./events/events')
   ],
@@ -13,8 +10,5 @@ module.exports = {
   ],
   streams: [
     require('./streams')
-  ],
-  tags: [
-    require('./tags/tags')
   ]
 }

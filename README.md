@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The API can be run in "regular" or "mqtt" modes. It requires connections to Redis, MySQL, TimescaleDB (Postgres) and Neo4j databases. It also has dependencies on AWS (S3 and SNS/SQS), Auth0, Firebase, Mailchimp/Mandrill, Stripe and Classy.
+The API can be run in "regular" or "mqtt" modes. It requires connections to MySQL and TimescaleDB (Postgres) databases. It also has dependencies on AWS (S3 and SNS/SQS), Auth0, Firebase, Mailchimp/Mandrill, Stripe and Classy.
 
 ## Project configuration for local development
 
@@ -20,11 +20,11 @@ nvm use
 ```
 
 ### Env variables
-Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fill it with required vars. 
+Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fill it with required vars.
 
 ### Run all the required support services
 
-We can use docker-compose to setup local MySQL, TimescaleDB and Redis.
+We can use docker-compose to setup local MySQL, TimescaleDB.
 
 Start containers:
 ```

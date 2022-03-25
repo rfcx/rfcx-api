@@ -2,15 +2,12 @@ const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const requireUser = require('../../../common/middleware/authorization/authorization').requireTokenType('user')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const Promise = require('bluebird')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const ApiConverter = require('../../_utils/api-converter')
 const urls = require('../../_utils/misc/urls')
 const sequelize = require('sequelize')
-const sqlUtils = require('../../_utils/db/sql-cond-add')
-const condAdd = sqlUtils.condAdd
 const AudioService = require('../../_services/audio/audio-service')
 const S3Service = require('../../_services/legacy/s3/s3-service')
 const pd = require('parallel-download')
@@ -20,16 +17,9 @@ const path = require('path')
 const fs = require('fs')
 const aws = require('../../_utils/external/aws').aws()
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
-const archiveUtil = require('../../_utils/misc/archive')
-const dirUtil = require('../../_utils/misc/dir')
-const fileUtil = require('../../_utils/misc/file')
-const { randomGuid } = require('../../../common/crypto/random')
 const audioService = require('../../_services/audio/audio-service')
-const boxesService = require('../../_services/audio/boxes-service')
-const Converter = require('../../../common/converter')
 const { ValidationError } = require('../../../common/error-handling/errors')
-const { EmptyResultError } = require('../../../common/error-handling/errors')
-const { baseInclude, guardianAudioJson, guardianAudioLabels } = require('../../views/v1/models/guardian-audio').models
+const { baseInclude, guardianAudioJson } = require('../../views/v1/models/guardian-audio').models
 
 function filter (req) {
   let order = 'measured_at ASC'
@@ -190,134 +180,6 @@ router.route('/download/zip')
       })
   })
 
-router.route('/filter/by-tags')
-  .get(passport.authenticate('token', { session: false }), function (req, res) {
-    const converter = new ApiConverter('audio', req)
-
-    const filterOpts = {}
-
-    if (req.query.limit) {
-      filterOpts.limit = parseInt(req.query.limit)
-    }
-
-    if (req.query.tagType) {
-      filterOpts.tagType = req.query.tagType
-    }
-
-    if (req.query.tagValue) {
-      filterOpts.tagValue = req.query.tagValue
-    }
-
-    if (req.query.userGuid) {
-      filterOpts.userGuid = req.query.userGuid
-    }
-
-    if (req.query.modelGuid) {
-      filterOpts.modelGuid = req.query.modelGuid
-    }
-
-    if (req.query.minConfidence) {
-      filterOpts.minConfidence = parseFloat(req.query.minConfidence)
-    }
-
-    if (req.query.maxConfidence) {
-      filterOpts.maxConfidence = parseFloat(req.query.maxConfidence)
-    }
-
-    if (req.query.minCount) {
-      filterOpts.minCount = parseInt(req.query.minCount)
-    }
-
-    let sql = 'SELECT DISTINCT a.id as audioId, a.guid, count(a.id) as count FROM GuardianAudio a ' +
-                'LEFT JOIN GuardianAudioTags t on a.id=t.audio_id '
-
-    sql = condAdd(sql, filterOpts.userGuid, ' INNER JOIN Users u on u.id = t.tagged_by_user')
-    sql = condAdd(sql, filterOpts.modelGuid, ' INNER JOIN AudioAnalysisModels m on m.id = t.tagged_by_model')
-
-    sql = condAdd(sql, true, ' where 1=1')
-    sql = condAdd(sql, filterOpts.userGuid, ' and u.guid = :userGuid')
-    sql = condAdd(sql, filterOpts.modelGuid, ' and m.guid = :modelGuid')
-
-    sql = condAdd(sql, filterOpts.tagType, ' and t.type = :tagType')
-    sql = condAdd(sql, filterOpts.tagValue, ' and t.value = :tagValue')
-    sql = condAdd(sql, filterOpts.minConfidence, ' and t.confidence >= :minConfidence')
-    sql = condAdd(sql, filterOpts.maxConfidence, ' and t.confidence <= :maxConfidence')
-    sql = condAdd(sql, true, ' group by a.guid')
-    sql = condAdd(sql, filterOpts.minCount, ' HAVING count(a.id) >= :minCount')
-    sql = condAdd(sql, filterOpts.limit, ' LIMIT :limit')
-
-    return models.sequelize.query(sql,
-      { replacements: filterOpts, type: models.sequelize.QueryTypes.SELECT }
-    )
-      .then(function (dbAudio) {
-        const guids = dbAudio.map(function (item) {
-          return item.guid
-        })
-
-        const api = converter.cloneSequelizeToApi({ audios: guids })
-        api.links.self = urls.getBaseUrl(req) + req.originalUrl
-
-        res.status(200).json(api)
-      })
-      .catch(function (err) {
-        console.error('failed to return audios | ' + err)
-        if (err) { res.status(500).json({ msg: 'failed to return audios' }) }
-      })
-  })
-
-router.route('/labels')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    return boxesService.getData(req)
-      .then((data) => {
-        boxesService.calculateTimeOffsetsInSeconds(data.labels)
-        boxesService.combineAudioUrls(data.labels)
-        return data
-      })
-      .then((data) => {
-        res.status(200).send(data)
-      })
-      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find audio labels data.'))
-  })
-
-router.route('/label-values')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    return boxesService.getLabelValues(req)
-      .then((data) => {
-        res.status(200).send(data)
-      })
-      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find label values.'))
-  })
-
-router.route('/labels/download')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    const tempGuid = randomGuid()
-    const annotationsPath = path.join(process.env.CACHE_DIRECTORY, 'annotations')
-
-    return dirUtil.ensureDirExists(annotationsPath)
-      .then(() => {
-        return boxesService.queryData(req)
-      })
-      .then((labels) => {
-        if (!labels.length) {
-          throw new EmptyResultError('No annotations found for requested parameters.')
-        }
-        boxesService.calculateTimeOffsetsInSeconds(labels)
-        return boxesService.formatDataForDownload(labels, req.query.excludeYAxis === 'true')
-      })
-      .then((files) => {
-        return archiveUtil.archiveStrings(annotationsPath, `annotations-${tempGuid}.zip`, files)
-      })
-      .then((zipPath) => {
-        return fileUtil.serveFile(res, zipPath, 'annotations.zip', 'application/zip, application/octet-stream', !!req.query.inline)
-      })
-      .catch(EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-      .catch(e => { console.error(e); httpErrorResponse(req, res, 500, e, 'Error while searching for annotations.') })
-  })
-
 router.route('/:audio_id')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
     models.GuardianAudio
@@ -340,72 +202,6 @@ router.route('/:audio_id')
         console.error('failed to return audio | ' + err)
         if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
       })
-  })
-
-router.route('/:guid/boxes')
-  .post(passport.authenticate(['jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    const transformedParams = {}
-    const params = new Converter(req.body, transformedParams)
-
-    params.convert('boxes').toArray()
-
-    params.validate()
-      .bind({})
-      .then(() => {
-        return audioService.getAudioByGuid(req.params.guid)
-      })
-      .then((audio) => {
-        this.audio = audio
-        return audioService.removeBoxesForAudioFromUser(audio, req.rfcx.auth_token_info.owner_id)
-      })
-      .then(() => {
-        return audioService.createBoxesForAudio(this.audio, transformedParams.boxes, req.rfcx.auth_token_info.owner_id)
-      })
-      .then((data) => {
-        res.status(200).send(data)
-      })
-      .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not create boxes for audio file.'))
-  })
-
-// implements a majority vote for each sample in the audio file
-router.route('/:audio_id/labels')
-  .get(passport.authenticate('token', { session: false }), requireUser, function (req, res) {
-    // this is a greatest n per group for the greatest count of labels applied to each window
-    // it uses the id of the tag as a tiebreaker in case that equally many votes are cast
-    // for two or more labels
-    const sql = `SELECT c1.begins_at, c1.label, c1.votes FROM
-        (SELECT t.begins_at, t.value as label, count(t.value) as votes, min(t.id) as tagId from GuardianAudioTags t
-        INNER JOIN GuardianAudio a ON t.audio_id=a.id
-        where t.type='label'
-        and a.guid=:audi_id
-        group by t.audio_id, t.begins_at, t.value) c1
-        LEFT OUTER JOIN
-        (SELECT t.begins_at, t.value as label, count(t.value) as votes, min(t.id) as tagId from GuardianAudioTags t
-        INNER JOIN GuardianAudio a ON t.audio_id=a.id
-        where t.type='label'
-        and a.guid=:audio_id
-        group by t.audio_id, t.begins_at, t.value) c2
-        ON c1.begins_at=c2.begins_at and ( c1.votes < c2.votes or (c1.votes = c2.votes and c1.tagId < c2.tagId))
-        WHERE c2.begins_at IS NULL
-        ORDER BY c1.begins_at ASC`
-
-    const filter = {
-      audio_id: req.params.audio_id
-    }
-
-    models.sequelize.query(sql,
-      { replacements: filter, type: models.sequelize.QueryTypes.SELECT }
-    ).then(function (labels) {
-      return guardianAudioLabels(req, res, labels)
-        .then(function (labelsJson) {
-          res.status(200).json(labelsJson)
-        })
-    }).catch(function (err) {
-      console.error('failed to return labels | ' + err)
-      if (err) { res.status(500).json({ msg: 'failed to return the right labels.' }) }
-    })
   })
 
 router.route('/nextafter/:audio_id')

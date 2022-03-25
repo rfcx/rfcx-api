@@ -17,7 +17,6 @@ async function getStreams (attrs) {
 }
 
 async function getUploads (attrs) {
-  // TODO: we may want to think of caching these calculations in REDIS
   // cache will be cleared on each stream-segment creation request
   const statistics = { // create empty final object
     uploads: []
@@ -67,7 +66,6 @@ async function getUploads (attrs) {
 }
 
 async function getAnnotations (attrs) {
-  // TODO: we may want to think of caching these calculations in REDIS
   // cache will be cleared on each annotation creation request
   const statistics = {
     frequentClassifications: []
@@ -154,7 +152,6 @@ async function getAnnotations (attrs) {
 }
 
 async function getDetections (attrs) {
-  // TODO: we may want to think of caching these calculations in REDIS
   // cache will be cleared on each annotation creation request
   const statistics = {}
   const streams = await getStreams(attrs)
