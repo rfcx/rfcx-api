@@ -14,7 +14,7 @@
     "dev:tasks": "nodemon tasks/main.js",
     "start": "node legacy-main.js",
     "start:core": "node core/main.js",
-    "start:noncore": "node core/main.js",
+    "start:noncore": "node noncore/main.js",
     "start:mqtt": "node mqtt/main.js",
     "start:tasks": "node tasks/main.js",
     "migrate:core": "node core/_cli/migrate.js",
