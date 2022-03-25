@@ -30,7 +30,6 @@ for (const apiVersion in versionedRoutes) {
 
 // Support routes
 app.use('/v1', require('./v1/info'))
-app.use('/docs', require('./_docs'))
 
 // Catch errors
 const { notFound, exceptionOccurred } = require('../common/middleware/error')
