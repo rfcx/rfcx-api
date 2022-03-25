@@ -4,7 +4,7 @@ console.info('info: Tasks: Starting...')
 require('../common/error-handling/process')
 
 // check that all required env vars are set
-require('../common/config/inspector')
+require('../common/config')
 
 const messageQueue = require('../common/message-queue/sqs')
 if (!messageQueue.isEnabled()) {

@@ -1,4 +1,4 @@
-require('../common/config/inspector')
+require('../common/config')
 
 const readline = require('readline').createInterface({
   input: process.stdin,
