@@ -14,7 +14,7 @@ metadata:
   name: core-api-ingress
   namespace: staging
   labels:
-    app: api
+    app: core-api
 spec:
   rules:
     - host: staging-api.rfcx.org
@@ -37,7 +37,7 @@ metadata:
   name: noncore-api-ingress
   namespace: staging
   labels:
-    app: api
+    app: noncore-api
 spec:
   rules:
     - host: staging-api.rfcx.org
