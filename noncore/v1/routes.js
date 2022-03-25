@@ -9,8 +9,7 @@ module.exports = {
     require('./guardians/guardians-events'),
     require('./guardians/guardians-meta'),
     require('./guardians/guardians-screenshots'),
-    require('./guardians/guardians-status'),
-    require('./guardians/guardians-coverage')
+    require('./guardians/guardians-status')
   ],
   sites: [
     require('./sites/sites'),
@@ -20,44 +19,20 @@ module.exports = {
     require('./sites/sites-images')
   ],
   audio: [
-    require('./audio/audio'),
-    require('./audio/audio-collections'),
-    require('./audio/audio-tags')
-  ],
-  analysis: [
-    require('./analysis/analysis'),
-    require('./analysis/audio-analysis-training-set')
+    require('./audio/audio')
   ],
   users: [
     require('./users/users'),
     require('./users/users-internal')
   ],
-  events: [
-    require('./events/events')
-  ],
   shortlinks: [
     require('./shortlinks/shortlinks')
-  ],
-  player: [
-    require('./player/player')
   ],
   assets: [
     require('./assets/assets')
   ],
   reports: [
     require('./reports/reports')
-  ],
-  tags: [
-    require('./tags/tags')
-  ],
-  datafilters: [
-    require('./datafilters/datafilters')
-  ],
-  sensations: [
-    require('./sensations/sensations')
-  ],
-  perceptions: [
-    require('./perceptions/perceptions-ai')
   ],
   'filter-presets': [
     require('./filter-presets/filter-presets')

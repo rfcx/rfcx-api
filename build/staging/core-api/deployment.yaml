@@ -23,10 +23,10 @@ spec:
             name: core-api-configmap
         resources:
           requests:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "256Mi"
+            cpu: "0.05"
           limits:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "512Mi"
+            cpu: "0.5"
         ports:
         - containerPort: 80

@@ -1,6 +1,4 @@
 const models = require('../../_models')
-const redisEnabled = `${process.env.REDIS_ENABLED}` === 'true'
-const redis = redisEnabled ? require('../../v1/shortlinks/redis') : {}
 
 function calcStatus (status, start) {
   return {
@@ -19,41 +17,16 @@ async function mySQLConnected () {
   }
 }
 
-// redis.connected doesn't react to network changes in a good way, so we will send dummy request then.
-// We use Promise.race to have a default timeout of 3 seconds. Redis is very fast DB, so it should respond quicker than 3 sec.
-async function redisConnected () {
-  const start = Date.now()
-  let timeout
-  return Promise.race([
-    redis.getAsync('test'),
-    new Promise((resolve, reject) => { timeout = setTimeout(() => { reject(new Error()) }, 3000) })
-  ])
-    .then(() => {
-      clearTimeout(timeout)
-      return calcStatus(true, start)
-    })
-    .catch(() => {
-      return calcStatus(false, start)
-    })
-}
-
 async function check (req, res) {
   const rtrnJson = {
     status: false,
-    mysql: false,
-    ...redisEnabled && { redis: false }
+    mysql: false
   }
   if (req.query.headers === '1') { rtrnJson.http_headers = {}; for (const i in req.headers) { rtrnJson.http_headers[i] = req.headers[i] } }
   const proms = [mySQLConnected()]
-  if (redisEnabled) {
-    proms.push(redisConnected())
-  }
   return Promise.all(proms)
     .then((data) => {
       rtrnJson.mysql = data[0]
-      if (redisEnabled) {
-        rtrnJson.redis = data[1]
-      }
       rtrnJson.status = !data.includes(false)
       res.json(rtrnJson)
     })

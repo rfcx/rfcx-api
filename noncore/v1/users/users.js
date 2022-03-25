@@ -405,33 +405,6 @@ router.route('/locations')
       .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Cannot get users locations'))
   })
 
-router.route('/lastcheckin')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    usersService.getAllUsers()
-      .then(users => {
-        const proms = []
-        users.forEach(function (user) {
-          const prom = usersService.getUserLastCheckin(user)
-          proms.push(prom)
-        }, this)
-        return Promise.all(proms)
-      })
-      .then(checkins => {
-        // filter out empty results
-        checkins = checkins.filter((checkin) => {
-          return checkin.length
-        })
-        // format data
-        checkins = checkins.map(checkin => {
-          return usersService.formatCheckin(checkin[0])
-        })
-        return checkins
-      })
-      .then(data => {
-        res.status(200).json(data)
-      })
-  })
-
 // this request does nothing in terms of response, but it's created to check if user from jwt
 // exist in our database, and if not, create it
 router.route('/touchapi')

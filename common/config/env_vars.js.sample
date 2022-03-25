@@ -43,13 +43,6 @@ exports.env = {
   DB_PASSWORD: 'test',
   DB_PORT: 3306,
 
-  /// Neo4j database is required for endpoints related to legacy AIs, events, tags, sensations.
-  /// When `NEO4J_ENABLED` is set to true then URL, user and password are required.
-  // NEO4J_ENABLED: "true",
-  // NEO4J_URL: "bolt://neo4j.tools.rfcx.org:7688",
-  // NEO4J_USER: "",
-  // NEO4J_PASSWORD: "",
-
   POSTGRES_PORT: '5432',
   POSTGRES_HOSTNAME: '127.0.0.1',
   POSTGRES_SSL_ENABLED: 'false',
@@ -84,11 +77,6 @@ exports.env = {
 
   MQTT_BROKER_HOST: 'mqtt.rfcx.org',
 
-  /// When `REDIS_ENABLED` is set to `true` then the other Redis env vars are required.
-  // REDIS_ENABLED: "true"
-  // REDIS_HOST: "127.0.0.1",
-  // REDIS_PORT: "6379",
-
   /// Firebase features for sending notifications (not enabled by default)
   /// When `FIREBASE_ENABLED` is set to `true` then the other env vars are required.
   // FIREBASE_ENABLED: "true",
@@ -117,11 +105,6 @@ exports.env = {
   /// When `ARBIMON_ENABLED` is set to `true` then the other env vars are required.
   // ARBIMON_ENABLED: 'false'
   // ARBIMON_BASE_URL: 'https://arbimon.rfcx.org/',
-
-  /// When `EARTHRANGER_ENABLED` is set to `true` then the other env vars are required.
-  // EARTHRANGER_ENABLED: 'false'
-  // EARTHRANGER_BASE_URL: 'https://sandbox.pamdas.org/',
-  // EARTHRANGER_ACCESS_TOKEN: '',
 
   /// Logging and metrics
   // NEW_RELIC_LICENSE_KEY: '',

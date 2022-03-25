@@ -1,6 +1,6 @@
 {
   "name": "rfcx-api",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "license": "UNLICENSED",
   "private": false,
   "repository": {
@@ -52,7 +52,6 @@
     "mqtt": "^4.2.1",
     "multer": "0.1.8",
     "mysql2": "2.1.0",
-    "neo4j-driver": "1.7.3",
     "newrelic": "^7.0.2",
     "node-cache": "^5.1.2",
     "node-unzip-2": "0.2.8",
@@ -65,7 +64,6 @@
     "pg-hstore": "2.3.3",
     "probe-image-size": "5.0.0",
     "prom-client": "^12.0.0",
-    "redis": "2.8.0",
     "request": "2.88.2",
     "request-promise": "4.2.1",
     "roboto-font": "0.1.0",

@@ -1,3 +1,16 @@
+## 1.1.2 (2022-03-XX)
+
+### Performance improvements
+* **noncore**: Delete code related to old MySQL events
+* **noncore**: Delete code related to Neo4j events
+* **noncore**: Delete code related to old AI models
+* **noncore**: Delete Redis integration
+
+## 1.1.1 (2022-03-21)
+
+### Features
+* **noncore**: Delete code related to Sensations data
+
 ## 1.1.0 (2022-03-08)
 
 ### Features
