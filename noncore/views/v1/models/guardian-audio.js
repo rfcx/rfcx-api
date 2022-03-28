@@ -180,31 +180,6 @@ exports.models = {
     })
     return Promise.resolve(data)
   },
-  guardianAudioLabels: function (req, res, labels) {
-    return new Promise(function (resolve, reject) {
-      if (labels == null || !Array.isArray(labels) || labels.length === 0) {
-        reject(new Error('The returned labels were fewer than 1'))
-      }
-
-      let last = -2000
-      const expectedLength = 2000
-
-      for (let i = 0; i < labels.length; i++) {
-        const current = labels[i].begins_at
-        const length = current - last
-        if (length !== expectedLength) {
-          reject(new Error('The length of windows should be two thousand miliseconds but was ' + length))
-        }
-        last = current
-      }
-
-      const labelValues = labels.map(function (label) {
-        return label.label
-      })
-
-      resolve(labelValues)
-    })
-  },
 
   transformCreateAudioRequestToModel: function (reqObj) {
     return Promise.resolve().then(function () {

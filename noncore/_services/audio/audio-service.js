@@ -4,7 +4,6 @@ const audioUtils = require('../../_utils/rfcx-audio').audioUtils
 const models = require('../../_models')
 const sqlUtils = require('../../_utils/db/sql-cond-add')
 const sequelize = require('sequelize')
-const guardianGroupService = require('../guardians/guardian-group-service')
 
 const querySelect =
   'SELECT GuardianAudio.guid, GuardianAudio.measured_at, GuardianAudio.size, GuardianAudio.original_filename, ' +
@@ -80,24 +79,7 @@ function prepareOpts (req) {
     order: order || 'GuardianAudio.measured_at',
     dir: dir || 'ASC'
   }
-
-  if (opts.guardianGroups) {
-    return guardianGroupService.getGroupsByShortnames(opts.guardianGroups)
-      .then((groups) => {
-        const guardians = []
-        groups.forEach((group) => {
-          (group.Guardians || []).forEach((guardian) => {
-            if (!guardians.includes(guardian.guid)) {
-              guardians.push(guardian.guid)
-            }
-          })
-        })
-        opts.guardians = guardians
-        return opts
-      })
-  } else {
-    return Promise.resolve(opts)
-  }
+  return Promise.resolve(opts)
 }
 
 function addGetQueryParams (sql, opts) {

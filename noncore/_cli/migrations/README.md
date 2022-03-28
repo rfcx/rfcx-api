@@ -4,10 +4,10 @@ If you need to add any associations to another tables, put them into `defineRela
 
 #### To update existing table
 
-To alter a table or to drop a table, you will need to create migration file in `migrations-legacy`.
+To alter a table or to drop a table, you will need to create migration file in `noncore/_cli/migrations`.
 
 ```
-npx sequelize migration:create --migrations-path ./migrations-legacy --name remove-column-x
+npx sequelize migration:create --migrations-path ./noncore/_cli/migrations --name remove-column-x
 ```
 
 IMPORTANT: When adding a new column, you must check for existence before. (If not, the migration will fail when the table is created by a sequelize sync on a fresh install.) Template:
@@ -16,18 +16,20 @@ IMPORTANT: When adding a new column, you must check for existence before. (If no
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface.sequelize.transaction(async t => {
-      await queryInterface.sequelize.query(`
-        IF NOT EXISTS( 
-          SELECT NULL FROM information_schema.COLUMNS 
-          WHERE table_name = 'Guardians' AND column_name = 'stream_id' AND table_schema = 'rfcx_api'
-        ) THEN
-          ALTER TABLE Guardians ADD stream_id varchar(12) NULL;
-        END IF;`, { transaction: t })
+      const exists = await queryInterface.sequelize.query(`
+        SELECT 1 FROM information_schema.COLUMNS
+        WHERE table_name = 'Guardians' AND column_name = 'last_ping' AND table_schema = 'rfcx_api'
+      `, { plain: true, transaction: t })
+      if (!exists) {
+        await queryInterface.sequelize.query(`
+          ALTER TABLE Guardians ADD last_ping datetime(3) NULL AFTER last_check_in
+        `, { transaction: t })
+      }
     })
   },
 
   down: function (queryInterface, Sequelize) {
-    return queryInterface.removeColumn('Guardians', 'stream_id')
+    return queryInterface.removeColumn('Guardians', 'last_ping')
   }
 }
 ```

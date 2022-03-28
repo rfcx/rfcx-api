@@ -1,6 +1,7 @@
 const models = require('../../_models')
 const express = require('express')
 const router = express.Router()
+const moment = require('moment')
 const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
@@ -53,17 +54,17 @@ router.route('/:site_id/guardians')
       .then(() => {
         if (req.query.include_last_sync) {
           const proms = []
-          this.dbGuardians.forEach((dbGuardan) => {
-            const query = { where: { guardian_id: dbGuardan.id }, order: [['measured_at', 'DESC']] }
+          this.dbGuardians.forEach((dbGuardian) => {
+            dbGuardian.last_sync = dbGuardian.last_ping
+            const query = { where: { guardian_id: dbGuardian.id, measured_at: { [models.Sequelize.Op.gt]: moment().subtract(7, 'd').valueOf() } }, order: [['measured_at', 'DESC']] }
             proms.push(models.GuardianMetaBattery.findOne(query).then((dbMetaBattery) => {
               if (dbMetaBattery) {
-                dbGuardan.last_sync = dbMetaBattery.measured_at
-                dbGuardan.battery_percent_internal = dbMetaBattery.battery_percent
+                dbGuardian.battery_percent_internal = dbMetaBattery.battery_percent
               }
             }))
             proms.push(models.GuardianMetaSentinelPower.findOne(query).then((dbMetaSentinelPower) => {
               if (dbMetaSentinelPower) {
-                dbGuardan.battery_percent = dbMetaSentinelPower.battery_state_of_charge
+                dbGuardian.battery_percent = dbMetaSentinelPower.battery_state_of_charge
               }
             }))
           })

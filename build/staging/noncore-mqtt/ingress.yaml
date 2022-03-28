@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: noncore-mqtt-ingress
+  namespace: staging
+  labels:
+    app: noncore-mqtt
+spec:
+  rules:
+    - host: staging-checkin-http.rfcx.org # TODO Remove external access if possible
+      http:
+        paths:
+          - backend:
+              serviceName: noncore-mqtt-service
+              servicePort: 80

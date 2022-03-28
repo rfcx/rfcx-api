@@ -2,7 +2,6 @@ const { create } = require('../dao')
 const streamDao = require('../../streams/dao')
 const classificationsService = require('../../classifications/dao')
 const { notify } = require('./notifications')
-const { createEvent: createLegacyEvent } = require('../../../noncore/_services/legacy/events/events-service-neo4j')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { slugToUuid } = require('../../_utils/formatters/uuid')
 
@@ -31,14 +30,6 @@ async function createAndNotify (eventData) {
     console.error('Failed notifying event:', err.message)
   }
 
-  // Legacy support
-  if (process.env.NEO4J_ENABLED === 'true') {
-    try {
-      await createLegacyEvent(eventWithStreamAndClassification)
-    } catch (err) {
-      console.error('Failed creating legacy event:', err.message)
-    }
-  }
   return eventId
 }
 

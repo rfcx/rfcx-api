@@ -5,7 +5,7 @@ const startTime = new Date()
 require('./common/error-handling/process')
 
 // Check required env vars are set
-require('./common/config/inspector')
+require('./common/config')
 
 // Load application
 const app = require('./legacy-app')

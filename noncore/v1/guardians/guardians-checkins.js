@@ -3,7 +3,6 @@ const express = require('express')
 const router = express.Router()
 const views = require('../../views/v1')
 const checkInHelpers = require('../../_utils/rfcx-checkin')
-const queueForPrediction = require('../../_utils/rfcx-analysis/queue-for-prediction')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
@@ -11,7 +10,6 @@ const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const strArrToJSArr = checkInHelpers.audio.strArrToJSArr
-const SensationsService = require('../../_services/legacy/sensations/sensations-service')
 
 router.route('/:guardian_id/checkins')
   .post(passport.authenticate('token', { session: false }), function (req, res) {
@@ -152,15 +150,7 @@ router.route('/:guardian_id/checkins')
               return self.dbCheckIn.save()
             })
             .then(function () {
-              return SensationsService.createSensationsFromGuardianAudio(info.dbAudioObj.guid)
-            })
-            .then(function () {
               return checkInHelpers.audio.cleanupCheckInFiles(info)
-            })
-            .then(function () {
-              if (self.dbGuardian) {
-                return queueForPrediction(info, self.dbGuardian)
-              }
             })
             .then(function () {
               if (process.env.INGEST_SERVICE_ENABLED === 'true') {

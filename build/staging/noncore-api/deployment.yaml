@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: noncore-api
+  namespace: staging
+spec:
+  selector:
+    matchLabels:
+      app: noncore-api
+  template:
+    metadata:
+      labels:
+        app: noncore-api
+    spec:
+      containers:
+      - name: noncore-api
+        image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_staging:latest
+        args: ["npm", "run", "start:noncore"]
+        envFrom:
+        - secretRef:
+            name: api-secrets # TODO separate into core/noncore
+        - configMapRef:
+            name: noncore-api-configmap
+        resources:
+          requests:
+            memory: "700Mi"
+            cpu: "600m"
+          limits:
+            memory: "700Mi"
+            cpu: "600m"
+        ports:
+        - containerPort: 80
