@@ -10,7 +10,7 @@ jobs:
 
   prepare:
     name: 'Prepare'
-    uses: rfcx/.github/workflows/notify-prepare.yaml@master
+    uses: rfcx/cicd/workflows/notify-prepare.yaml@master
     with:
       repo: rfcx-api
       workflow-id: ci-on-push.yml
@@ -28,7 +28,7 @@ jobs:
     name: 'Notify'
     if: ${{ always() }}
     needs: [prepare, build]
-    uses: rfcx/.github/workflows/notify-send.yaml@master
+    uses: rfcx/cicd/workflows/notify-send.yaml@master
     with:
       repo: rfcx-api
       branch-name: ${{ needs.prepare.outputs.branch-name }}
