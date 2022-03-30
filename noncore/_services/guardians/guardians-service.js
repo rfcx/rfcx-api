@@ -3,6 +3,8 @@ const { EmptyResultError } = require('../../../common/error-handling/errors')
 const Promise = require('bluebird')
 const { hashedCredentials } = require('../../../common/crypto/sha256')
 const random = require('../../../common/crypto/random')
+const { hasPermission, READ, STREAM } = require('../../../core/roles/dao')
+const moment = require('moment')
 
 function getGuardianByGuid (guid, ignoreMissing) {
   return models.Guardian
@@ -41,6 +43,106 @@ function getGuardianByStreamId (id, ignoreMissing) {
       }
       return item
     })
+}
+
+async function list (options = {}) {
+  return await models.Guardian.findAll({
+    where: options.where,
+    order: options.order,
+    limit: options.limit,
+    offset: options.offset
+  })
+}
+
+async function getLastAudio (id) {
+  return await models.GuardianAudio
+    .findOne({
+      order: [['measured_at', 'DESC']],
+      include: [{
+        model: models.Guardian,
+        as: 'Guardian',
+        where: { id }
+      }]
+    })
+}
+
+async function getGuardianMetaHardware (id) {
+  return await models.GuardianMetaHardware
+    .findOne({
+      where: { guardian_id: id },
+      attributes: ['phone_imei', 'phone_sim_number', 'phone_sim_serial']
+    })
+}
+
+async function getGuardianMetaBattery (id) {
+  return await models.GuardianMetaBattery
+    .findOne({
+      where: {
+        guardian_id: id,
+        measured_at: { [models.Sequelize.Op.gt]: moment().subtract(7, 'd').valueOf() }
+      },
+      order: [['measured_at', 'DESC']]
+    })
+}
+
+async function getGuardianMetaSentinelPower (id) {
+  return await models.GuardianMetaSentinelPower
+    .findOne({
+      where: {
+        guardian_id: id,
+        measured_at: { [models.Sequelize.Op.gt]: moment().subtract(7, 'd').valueOf() }
+      },
+      order: [['measured_at', 'DESC']]
+    })
+}
+
+async function checkUserPermissions (guardians, userId) {
+  if (!userId) {
+    return
+  }
+  const g = guardians.filter(async (guardian) => {
+    const streamId = guardian.stream_id
+    return await hasPermission(READ, userId, streamId, STREAM)
+  })
+  return g
+}
+
+async function listMonitoringData (options = {}) {
+  let guardians = await list(options)
+  if (!guardians.length) {
+    return []
+  }
+  guardians = await checkUserPermissions(guardians, options.readableBy)
+  if (!guardians.length) {
+    return []
+  }
+  if (options.lastAudio !== undefined && options.lastAudio === true) {
+    for (const guardian of guardians) {
+      const audio = await getLastAudio(guardian.id)
+      guardian.last_audio = {
+        guid: (audio && audio.guid) || null,
+        measured_at: (audio && audio.measured_at) || null
+      }
+    }
+  }
+  if (options.includeHardware !== undefined && options.includeHardware === true) {
+    for (const guardian of guardians) {
+      const hardware = await getGuardianMetaHardware(guardian.id)
+      guardian.phone_imei = (hardware && hardware.phone_imei) || null
+      guardian.phone_sim_number = (hardware && hardware.phone_sim_number) || null
+      guardian.phone_sim_serial = (hardware && hardware.phone_sim_serial) || null
+    }
+  }
+  if (options.includeLastSync !== undefined && options.includeLastSync === true) {
+    for (const guardian of guardians) {
+      guardian.last_sync = guardian.last_ping
+      const metaBattery = await getGuardianMetaBattery(guardian.id)
+      guardian.battery_percent_internal = (metaBattery && metaBattery.battery_percent) || null
+      const metaPower = await getGuardianMetaSentinelPower(guardian.id)
+      guardian.battery_percent = (metaPower && metaPower.battery_state_of_charge) || null
+    }
+  }
+  return guardians
 }
 
 async function getGuardianInfoByStreamId (streamId) {
@@ -144,6 +246,8 @@ async function createGuardian (attrs) {
 }
 
 module.exports = {
+  list,
+  listMonitoringData,
   getGuardianByGuid,
   getGuardiansByGuids,
   getGuardianByStreamId,

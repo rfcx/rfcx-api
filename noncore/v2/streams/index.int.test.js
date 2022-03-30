@@ -73,3 +73,11 @@ test('not yet deployed guardian', async () => {
   expect(response.statusCode).toBe(200)
   expect(response.body.deployed_at).toBeNull()
 })
+
+describe('GET /streams', () => {
+  test('no results', async () => {
+    const response = await request(app).get('/')
+
+    expect(response.statusCode).toBe(500)
+  })
+})
