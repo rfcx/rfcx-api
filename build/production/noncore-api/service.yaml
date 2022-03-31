@@ -1,12 +1,12 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: api-service
+  name: noncore-api-service
   namespace: production
 spec:
   selector:
-    app: api
-  type: ClusterIP 
+    app: noncore-api
+  type: ClusterIP
   ports:
   - name: node
     port: 80

@@ -17,15 +17,15 @@ metadata:
     nginx.ingress.kubernetes.io/limit-rpm: "1000"
     # nginx.ingress.kubernetes.io/limit-whitelist: "comma separated list of CIDRs"
 
-  name: api-media-ingress
+  name: media-api-ingress
   namespace: production
   labels:
-    app: "api-media"
+    app: "media-api"
 spec:
   rules:
     - host: media-api.rfcx.org
       http:
         paths:
           - backend:
-              serviceName: api-media-service
+              serviceName: media-api-service
               servicePort: 80

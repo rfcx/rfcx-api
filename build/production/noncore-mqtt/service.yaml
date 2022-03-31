@@ -1,11 +1,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: media-api-service
+  name: noncore-mqtt-service
   namespace: production
 spec:
   selector:
-    app: media-api
+    app: noncore-mqtt
   type: ClusterIP
   ports:
   - name: node

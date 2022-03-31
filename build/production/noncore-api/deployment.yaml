@@ -1,33 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: media-api
+  name: noncore-api
   namespace: production
 spec:
   selector:
     matchLabels:
-      app: media-api
+      app: noncore-api
   template:
     metadata:
       labels:
-        app: media-api
+        app: noncore-api
     spec:
       containers:
-      - name: api
+      - name: noncore-api
         image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_production:latest
+        args: ["npm", "run", "start:noncore"]
         envFrom:
         - secretRef:
-            name: api-secrets
+            name: api-secrets # TODO separate into core/noncore
         - configMapRef:
-            name: core-api-configmap
-        - configMapRef:
-            name: media-api-configmap
+            name: noncore-api-configmap
         resources:
           requests:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "384Mi"
+            cpu: "0.2"
           limits:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "512Mi"
+            cpu: "0.5"
         ports:
         - containerPort: 80
