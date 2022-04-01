@@ -12,7 +12,6 @@ data:
   ASSET_BUCKET_ZIP: "rfcx-zip"
   ASSET_URLBASE: "https://staging-api.rfcx.org/v1/assets"
   CACHE_DIRECTORY: "/tmp/rfcx-api/"
-  DASHBOARD_BASE_URL: "https://staging-dashboard.rfcx.org/#/"
   DB_PORT: "3306"
   FIREBASE_ENABLED: "true"
   GUARDIAN_API_SMS_ADDRESS: "+14154803657"

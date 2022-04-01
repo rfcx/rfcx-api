@@ -59,10 +59,6 @@ exports.env = {
 
   SEQUELIZE_VERBOSE: false,
 
-  // it must have /#/ at the end
-  CONSOLE_BASE_URL: 'http://localhost:3000/#/',
-  DASHBOARD_BASE_URL: 'http://localhost:5555/#/',
-
   MEDIA_API_BASE_URL: 'https://media-api.rfcx.org/',
 
   NODE_LOG_LEVEL: 'info', // error, warn, info, debug

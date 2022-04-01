@@ -1,12 +1,12 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: api-media-service
+  name: media-api-service
   namespace: production
 spec:
   selector:
-    app: api-media
-  type: ClusterIP 
+    app: media-api
+  type: ClusterIP
   ports:
   - name: node
     port: 80
