@@ -21,6 +21,5 @@ data:
   MAILCHIMP_API_URL: "https://us9.api.mailchimp.com/3.0/"
   MESSAGE_QUEUE_ENABLED: 'true'
   NEW_RELIC_APP_NAME: "Noncore API"
-  PORT: "8081"
   REST_HOST_SHORT: "rf.cx"
   USERS_BUCKET: "rfcx-users-production"

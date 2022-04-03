@@ -13,6 +13,5 @@ data:
   NODE_ENV: "production"
   NODE_LOG_LEVEL: "debug"
   REST_PROTOCOL: "https"
-  PORT: "8081"
   REST_HOST: "api.rfcx.org"
   USERS_BUCKET: "rfcx-users-production"
