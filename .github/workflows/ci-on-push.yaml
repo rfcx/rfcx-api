@@ -13,13 +13,13 @@ jobs:
     uses: rfcx/cicd/.github/workflows/notify-prepare.yaml@master
     with:
       repo: rfcx-api
-      workflow-id: ci-on-push.yml
+      workflow-id: ci-on-push.yaml
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
   build:
-    name: 'Build'
-    uses: ./.github/workflows/lint-test.yaml
+    name: 'Build, Lint, Test'
+    uses: ./.github/workflows/reusable-build-lint-test.yaml
     with:
       runs-on: ubuntu-20.04
       branch-name: ${{ needs.prepare.outputs.branch-name }}
@@ -32,7 +32,7 @@ jobs:
     with:
       repo: rfcx-api
       branch-name: ${{ needs.prepare.outputs.branch-name }}
-      workflow-id: ci-on-push.yml
+      workflow-id: ci-on-push.yaml
       previous-run-id: ${{ needs.prepare.outputs.previous-run-id }}
       status: ${{ needs.build.result }}
       notification-title: 'CI: APIs'
