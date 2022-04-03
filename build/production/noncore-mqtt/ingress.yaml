@@ -1,15 +1,15 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: api-mqtt-ingress
+  name: noncore-mqtt-ingress
   namespace: production
   labels:
-    app: "api-mqtt"
+    app: noncore-mqtt
 spec:
   rules:
     - host: mqtt.rfcx.org
       http:
         paths:
           - backend:
-              serviceName: api-mqtt-service
+              serviceName: noncore-mqtt-service
               servicePort: 80

@@ -1,34 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-mqtt
+  name: noncore-mqtt
   namespace: production
 spec:
   selector:
     matchLabels:
-      app: api-mqtt
+      app: noncore-mqtt
   template:
     metadata:
       labels:
-        app: api-mqtt
+        app: noncore-mqtt
     spec:
       containers:
-        - name: api-mqtt
+        - name: noncore-mqtt
           image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_production:latest
           args: ["npm", "run", "start:mqtt"]
           envFrom:
             - secretRef:
-                name: api-secrets
+                name: api-rabbitmq-secrets # TODO separate into core/noncore
             - configMapRef:
-                name: api-configmap
+                name: noncore-api-configmap
             - configMapRef:
-                name: api-mqtt-configmap
+                name: noncore-mqtt-configmap
           ports:
             - containerPort: 3000
           resources:
-            limits:
-              cpu: "500m"
-              memory: "300Mi"
             requests:
-              cpu: "500m"
-              memory: "300Mi"
+              memory: "128Mi"
+              cpu: "0.05"
+            limits:
+              memory: "256Mi"
+              cpu: "0.2"

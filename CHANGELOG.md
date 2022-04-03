@@ -1,4 +1,4 @@
-## 1.1.2 (2022-03-XX)
+## 1.1.2 (2022-04-01)
 
 ### Performance improvements
 * **noncore**: Delete code related to old MySQL events

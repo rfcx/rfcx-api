@@ -20,7 +20,7 @@ spec:
             - secretRef:
                 name: api-secrets
             - configMapRef:
-                name: api-configmap
+                name: core-api-configmap
             - configMapRef:
                 name: core-tasks-configmap
           resources:

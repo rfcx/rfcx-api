@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0" # TODO: Set a limit
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600" # TODO: Reduce
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/limit-rpm: "300"
+  name: core-api-ingress
+  namespace: production
+  labels:
+    app: core-api
+spec:
+  rules:
+    - host: api.rfcx.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: core-api-service
+              servicePort: 80

@@ -1,13 +1,13 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: mosquitto-service
+  name: noncore-api-service
   namespace: production
 spec:
   selector:
-    app: mosquitto
-  type: ClusterIP 
+    app: noncore-api
+  type: ClusterIP
   ports:
   - name: node
-    port: 1883
-    targetPort: 1883
+    port: 80
+    targetPort: 8080

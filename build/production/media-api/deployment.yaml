@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api
+  name: media-api
   namespace: production
 spec:
   selector:
     matchLabels:
-      app: api
+      app: media-api
   template:
     metadata:
       labels:
-        app: api
+        app: media-api
     spec:
       containers:
       - name: api
@@ -19,7 +19,9 @@ spec:
         - secretRef:
             name: api-secrets
         - configMapRef:
-            name: api-configmap
+            name: core-api-configmap
+        - configMapRef:
+            name: media-api-configmap
         resources:
           requests:
             memory: "700Mi"
