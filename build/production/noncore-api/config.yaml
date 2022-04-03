@@ -11,7 +11,6 @@ data:
   ASSET_BUCKET_REPORT: "rfcx-report-production"
   ASSET_BUCKET_ZIP: "rfcx-zip"
   ASSET_URLBASE: "https://assets.rfcx.org"
-  CACHE_DIRECTORY: "/tmp/rfcx-api/"
   DB_PORT: "3306"
   FIREBASE_ENABLED: "true"
   GUARDIAN_API_SMS_ADDRESS: "+13467870964"

@@ -7,7 +7,6 @@ data:
   ARBIMON_BASE_URL: "https://arbimon.rfcx.org/"
   ARBIMON_ENABLED: "true"
   ASSET_BUCKET_AI: "rfcx-ai-dev"
-  CACHE_DIRECTORY: "/tmp/rfcx-api/"
   INGEST_SERVICE_BASE_URL: "http://ingest-service-service.production.svc.cluster.local/"
   MESSAGE_QUEUE_ENABLED: 'true'
   NEW_RELIC_APP_NAME: "Core API"
