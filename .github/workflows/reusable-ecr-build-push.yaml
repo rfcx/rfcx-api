@@ -1,0 +1,99 @@
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Platform to execute on
+        type: string
+        default: ubuntu-latest
+        required: false
+      region:
+        description: AWS region
+        type: string
+        default: eu-west-1
+        required: false
+      registry:
+        description: AWS ECR registry
+        type: string
+        default: '887044485231.dkr.ecr.eu-west-1.amazonaws.com'
+        required: false
+      dockerfile:
+        description: Path of dockerfile
+        type: string
+        required: true
+      targets:
+        description: Array of targets to build from the dockerfile
+        type: string
+        required: true
+      target-suffix: 
+        description: Append to the target to form the AWS ECR repository name (e.g. /staging)
+        type: string
+        required: true
+      build-args:
+        description: Build arguments to pass to Docker build
+        type: string
+        required: false
+    secrets:
+      aws-access-key-id:
+        description: AWS Access Key ID
+        required: true
+      aws-secret-access-key:
+        description: AWS Secret Access Key
+        required: true
+    outputs:
+      short-sha: 
+        description: Git commit short SHA
+        value: ${{ steps.git-meta.outputs.short-sha }}
+jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    strategy:
+      matrix:
+        target: ${{ fromJson(inputs.targets) }}
+      fail-fast: true
+      max-parallel: 1
+    outputs:
+      short-sha: ${{ steps.git-meta.outputs.short-sha }}
+    steps:
+      - name: 'Test matrix'
+        run: echo "Running ${{ matrix.target }}"
+
+      # - name: 'Setup: Docker Buildx'
+      #   uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
+      #   # v1 (1.6.0) @ 12 Nov 2021 https://github.com/docker/setup-buildx-action/tags
+
+      # - name: 'Setup: Configure AWS credentials'
+      #   uses: aws-actions/configure-aws-credentials@0d9a5be0dceea74e09396820e1e522ba4a110d2f
+      #   # v1 (1.5.11) @ 03 Nov 2021 https://github.com/aws-actions/configure-aws-credentials/tags
+      #   with:
+      #     aws-access-key-id: ${{ secrets.aws-access-key-id }}
+      #     aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+      #     aws-region: ${{ inputs.aws-region }}
+
+      # - name: 'Setup: Git checkout'
+      #   uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+      #   # v2 (2.4.0) @ 03 Nov 2021 https://github.com/actions/checkout/tags
+
+      # - name: 'Setup: Git meta'
+      #   id: git-meta
+      #   run: |
+      #     echo "::set-output name=short-sha::`git rev-parse --short HEAD`"
+
+      # - name: 'Setup: Login to ECR'
+      #   uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
+      #   # v1 (1.3.3) @ 03 Nov 2021 https://github.com/aws-actions/amazon-ecr-login/tags
+
+      # - name: 'Build: Core'
+      #   uses: docker/build-push-action@a66e35b9cbcf4ad0ea91ffcaf7bbad63ad9e0229
+      #   # v2 (2.7.0) @ 12 Nov 2021 https://github.com/docker/build-push-action/tags
+      #   with:
+      #     context: .
+      #     file: build/Dockerfile
+      #     target: ${{ matrix.target }}
+      #     build-args: ${{ inputs.build-args }}
+      #     push: true
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
+      #     tags: |
+      #       ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.repository-suffix }}:latest
+      #       ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.repository-suffix }}:${{ github.run_number }}
+      #       ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.repository-suffix }}:${{ steps.git-meta.outputs.short-sha }}
