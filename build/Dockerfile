@@ -1,5 +1,7 @@
 FROM 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_base:latest
 
+ENV SOX_PATH="/usr/bin/sox"
+
 RUN ["/bin/bash", "-c", "mkdir -p /tmp/rfcx-api/{uploads,test-assets,ffmpeg,zip}"]
 
 # Dependencies
