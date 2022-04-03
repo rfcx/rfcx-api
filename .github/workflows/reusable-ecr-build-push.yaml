@@ -82,18 +82,18 @@ jobs:
         uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
         # v1 (1.3.3) @ 03 Nov 2021 https://github.com/aws-actions/amazon-ecr-login/tags
 
-      # - name: 'Build and Push'
-      #   uses: docker/build-push-action@a66e35b9cbcf4ad0ea91ffcaf7bbad63ad9e0229
-      #   # v2 (2.7.0) @ 12 Nov 2021 https://github.com/docker/build-push-action/tags
-      #   with:
-      #     context: .
-      #     file: build/Dockerfile
-      #     target: ${{ matrix.target }}
-      #     build-args: ${{ inputs.build-args }}
-      #     push: true
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
-      #     tags: |
-      #       ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:latest
-      #       ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:${{ github.run_number }}
-      #       ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:${{ steps.git-meta.outputs.short-sha }}
+      - name: 'Build and Push'
+        uses: docker/build-push-action@a66e35b9cbcf4ad0ea91ffcaf7bbad63ad9e0229
+        # v2 (2.7.0) @ 12 Nov 2021 https://github.com/docker/build-push-action/tags
+        with:
+          context: .
+          file: build/Dockerfile
+          target: ${{ matrix.target }}
+          build-args: ${{ inputs.build-args }}
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:latest
+            ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:${{ github.run_number }}
+            ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:${{ steps.git-meta.outputs.short-sha }}
