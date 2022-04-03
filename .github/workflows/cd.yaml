@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - staging
+      - feature/migrate-to-ga
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
 
@@ -50,7 +51,7 @@ jobs:
 
   deploy:
     name: 'Deploy'
-    needs: [build]
+    needs: [build, configure]
     runs-on: ubuntu-latest
     steps:
       - name: 'TODO'
@@ -67,7 +68,7 @@ jobs:
       branch-name: ${{ needs.prepare.outputs.branch-name }}
       workflow-id: cd.yaml
       previous-run-id: ${{ needs.prepare.outputs.previous-run-id }}
-      status: ${{ needs.build.result }}
+      status: ${{ needs.deploy.result }}
       notification-title: 'CD: APIs'
       notification-footer: "Buid: ${{ needs.build.result || 'n/a' }} | Deploy: ${{ needs.deploy.result || 'n/a' }}"
     secrets:
