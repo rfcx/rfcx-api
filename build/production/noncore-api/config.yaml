@@ -24,5 +24,4 @@ data:
   NEW_RELIC_APP_NAME: "Noncore API"
   PORT: "8081"
   REST_HOST_SHORT: "rf.cx"
-  SOX_PATH: "/usr/bin/sox"
   USERS_BUCKET: "rfcx-users-production"
