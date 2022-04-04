@@ -24,10 +24,15 @@ on:
         description: Array of targets to build from the dockerfile
         type: string
         required: true
-      target-suffix: 
-        description: Append to the target to form the AWS ECR repository name (e.g. /staging)
+      tag:
+        description: Image tag
         type: string
         required: true
+      tag-latest:
+        description: Add the `latest` tag to the image
+        type: boolean
+        default: false
+        required: false
       build-args:
         description: Build arguments to pass to Docker build
         type: string
@@ -94,6 +99,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
-            ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:latest
-            ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:${{ github.run_number }}
-            ${{ inputs.registry }}/${{ matrix.target }}${{ inputs.target-suffix }}:${{ steps.git-meta.outputs.short-sha }}
+            ${{ inputs.registry }}/${{ matrix.target }}:${{ inputs.tag }}
+            ${{ inputs.registry }}/${{ matrix.target }}:${{ github.run_number }}
+            ${{ inputs.registry }}/${{ matrix.target }}:${{ steps.git-meta.outputs.short-sha }}
+
+      - name: 'Set latest tag'
+        if: ${{ inputs.tag-latest == true }}
+        run: |
+          docker tag ${{ inputs.registry }}/${{ matrix.target }}:${{ steps.git-meta.outputs.short-sha }} ${{ inputs.registry }}/${{ matrix.target }}:latest
+          docker push ${{ inputs.registry }}/${{ matrix.target }}:latest

@@ -28,14 +28,13 @@ jobs:
       - name: 'Conditional environment'
         id: configuration
         run: |
-            if [[ "${{ needs.prepare.outputs.branch-name }}" == "master" ]]; then
-                echo "::set-output name=namespace::production"
-                echo "::set-output name=ecr-repository-postfix::"
-            fi
-            if [[ "${{ needs.prepare.outputs.branch-name }}" == "staging" ]]; then
-                echo "::set-output name=namespace::staging"
-                echo "::set-output name=ecr-repository-postfix::/staging"
-            fi
+          if [[ "${{ needs.prepare.outputs.branch-name }}" == "master" ]]; then
+            echo "::set-output name=namespace::production"
+          elif [[ "${{ needs.prepare.outputs.branch-name }}" == "staging" ]]; then
+            echo "::set-output name=namespace::staging"
+          else
+            echo "::set-output name=namespace::testing"
+          fi
 
   build:
     name: 'Build and Push'
@@ -44,7 +43,8 @@ jobs:
     with:
       dockerfile: build/Dockerfile
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
-      target-suffix: ${{ needs.configure.outputs.ecr-repository-postfix }}
+      tag: ${{ needs.configure.outputs.namespace }}
+      tag-latest: ${{ needs.configure.outputs.namespace == "production" }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
