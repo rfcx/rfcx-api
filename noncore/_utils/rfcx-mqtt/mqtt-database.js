@@ -195,7 +195,7 @@ exports.checkInDatabase = {
       }
     }
     return Promise.all(proms)
-      .then(() => {
+      .then(async () => {
         // parse list of purged assets from guardian, delete them from database and return list
         const dbMetaPurgedAssets = []
         const metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
@@ -230,17 +230,10 @@ exports.checkInDatabase = {
           }
         }
 
-        return Promise.all(promsExchLogs)
-          .then(() => {
-            if (dbMetaPurgedAssets.length > 0) {
-              const proms = dbMetaPurgedAssets.map((item) => {
-                return models.GuardianMetaAssetExchangeLog.destroy({ where: item })
-              })
-              return Promise.all(proms)
-            } else {
-              return Promise.all(promsExchLogs)
-            }
-          })
+        await Promise.all(promsExchLogs)
+        if (dbMetaPurgedAssets.length > 0) {
+          await models.GuardianMetaAssetExchangeLog.destroy({ where: { [models.Sequelize.Op.or]: dbMetaPurgedAssets } })
+        }
       })
       .then(() => {
         if ((checkInObj.json.checkins_to_verify != null) && (checkInObj.json.checkins_to_verify.length > 0)) {

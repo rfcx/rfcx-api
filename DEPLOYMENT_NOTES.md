@@ -1,5 +1,8 @@
 # API Deployment Notes
 
+## 1.1.3
+- Run `npm run migrate:noncore` for new migration
+
 ## 1.1.2
 - Update Prediction Service to stop using legacy mode
 - Delete AI models page from the Guardian Monitoring
