@@ -104,7 +104,7 @@ jobs:
             ${{ inputs.registry }}/${{ matrix.target }}:${{ steps.git-meta.outputs.short-sha }}
 
       - name: 'Set latest tag'
-        if: ${{ inputs.tag-latest == true }}
+        if: ${{ inputs.tag-latest }}
         run: |
           docker tag ${{ inputs.registry }}/${{ matrix.target }}:${{ steps.git-meta.outputs.short-sha }} ${{ inputs.registry }}/${{ matrix.target }}:latest
           docker push ${{ inputs.registry }}/${{ matrix.target }}:latest

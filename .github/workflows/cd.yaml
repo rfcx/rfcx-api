@@ -44,7 +44,7 @@ jobs:
       dockerfile: build/Dockerfile
       targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
       tag: ${{ needs.configure.outputs.namespace }}
-      tag-latest: ${{ needs.configure.outputs.namespace == "production" }}
+      tag-latest: ${{ needs.configure.outputs.namespace == 'production' }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
