@@ -1,15 +1,19 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
   name: noncore-mqtt-ingress
   namespace: staging
   labels:
     app: noncore-mqtt
 spec:
   rules:
-    - host: staging-checkin-http.rfcx.org # TODO Remove external access if possible
+    - host: staging-api.rfcx.org
       http:
         paths:
-          - backend:
+          - path: /(internal/rabbitmq/.*)
+            pathType: Prefix
+            backend:
               serviceName: noncore-mqtt-service
               servicePort: 80
