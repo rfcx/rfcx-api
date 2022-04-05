@@ -1,3 +1,8 @@
+## 1.1.3 (2022-04-XX)
+
+### Bug Fixes
+* **mqtt** Refactor GuardianMetaAssetExchangeLogs clearance by making it in one query
+
 ## 1.1.2 (2022-04-01)
 
 ### Performance improvements
