@@ -232,7 +232,6 @@ exports.checkInDatabase = {
           }
         }
         if (dbMetaPurgedAssets.length > 0) {
-          console.log('delete dbMetaPurgedAssets', dbMetaPurgedAssets)
           await models.GuardianMetaAssetExchangeLog.destroy({ where: { [models.Sequelize.Op.or]: dbMetaPurgedAssets } })
         }
       })
