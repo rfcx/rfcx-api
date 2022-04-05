@@ -24,7 +24,7 @@ spec:
             - configMapRef:
                 name: noncore-mqtt-configmap
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
           resources:
             requests:
               memory: "128Mi"
