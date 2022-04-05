@@ -7,7 +7,6 @@ data:
   ARBIMON_BASE_URL: "https://staging-arbimon.rfcx.org/"
   ARBIMON_ENABLED: "true"
   ASSET_BUCKET_AI: "rfcx-ai-dev"
-  CACHE_DIRECTORY: "/tmp/rfcx-api/"
   INGEST_SERVICE_BASE_URL: "https://staging-ingest.rfcx.org/"
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_POSTFIX: 'staging'
@@ -15,7 +14,5 @@ data:
   NODE_ENV: "staging"
   NODE_LOG_LEVEL: "debug"
   REST_PROTOCOL: "https"
-  PORT: "8081"
   REST_HOST: "staging-api.rfcx.org"
-  SOX_PATH: "/usr/bin/sox"
   USERS_BUCKET: "rfcx-users-production"
