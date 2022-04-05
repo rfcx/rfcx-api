@@ -196,19 +196,6 @@ exports.checkInDatabase = {
     }
     return Promise.all(proms)
       .then(async () => {
-        // parse list of purged assets from guardian, delete them from database and return list
-        const dbMetaPurgedAssets = []
-        const metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
-        for (const asstInd in metaPurgedAssets) {
-          if (metaPurgedAssets[asstInd][1] != null) {
-            dbMetaPurgedAssets.push({
-              guardian_id: guardianId,
-              asset_type: metaPurgedAssets[asstInd][0],
-              asset_id: metaPurgedAssets[asstInd][1]
-            })
-            purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1].toString() })
-          }
-        }
         // parse list of audio ids marked as 'sent' by guardian, confirm that they are present in exchange log table
         const promsExchLogs = []
         if (checkInObj.json.checkins_to_verify != null) {
@@ -229,8 +216,21 @@ exports.checkInDatabase = {
             promsExchLogs.push(prom)
           }
         }
-
         await Promise.all(promsExchLogs)
+
+        // parse list of purged assets from guardian, delete them from database and return list
+        const dbMetaPurgedAssets = []
+        const metaPurgedAssets = strArrToJSArr(checkInObj.json.purged, '|', '*')
+        for (const asstInd in metaPurgedAssets) {
+          if (metaPurgedAssets[asstInd][1] != null) {
+            dbMetaPurgedAssets.push({
+              guardian_id: guardianId,
+              asset_type: metaPurgedAssets[asstInd][0],
+              asset_id: metaPurgedAssets[asstInd][1]
+            })
+            purgedReturnArray.push({ type: metaPurgedAssets[asstInd][0], id: metaPurgedAssets[asstInd][1].toString() })
+          }
+        }
         if (dbMetaPurgedAssets.length > 0) {
           await models.GuardianMetaAssetExchangeLog.destroy({ where: { [models.Sequelize.Op.or]: dbMetaPurgedAssets } })
         }
