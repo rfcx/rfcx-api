@@ -1,0 +1,43 @@
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Platform to execute on
+        type: string
+        default: ubuntu-latest
+        required: false
+      tag: 
+        description: Image tag to deploy
+        type: string
+        required: true
+      namespace:
+        description: Kubernetes namespace
+        type: string
+        required: true
+    secrets:
+      kube-config:
+        description: KUBE_CONFIG file
+        required: true
+jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: 'Deploy: Set image version'
+        run: |
+          find build -name "*.yaml" -exec sed -i s/:latest/:${{ inputs.tag }}/g {} +
+
+      - name: 'Deploy: Kubernetes apply'
+        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+        env:
+          KUBE_CONFIG: ${{ secrets.kube-config }}
+        with:
+          args: apply -f ./build/${{ inputs.namespace }}
+
+      - name: 'Deploy: Kubernetes verify'
+        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+        env:
+          KUBE_CONFIG: ${{ secrets.kube-config }}
+        with:
+          args: kubectl rollout status deployment core-api --namespace=${{ inputs.namespace }}
