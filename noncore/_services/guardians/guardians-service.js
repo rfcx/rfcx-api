@@ -8,7 +8,10 @@ function getGuardianByGuid (guid, ignoreMissing) {
   return models.Guardian
     .findOne({
       where: { guid: guid },
-      include: [{ all: true }]
+      // TODO: make includes editable if needed later
+      include: [
+        { model: models.GuardianSite, as: 'Site' }
+      ]
     })
     .then((item) => {
       if (!item && !ignoreMissing) {
