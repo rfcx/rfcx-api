@@ -54,6 +54,8 @@ jobs:
     needs: [build, configure]
     uses: ./.github/workflows/reusable-k8s-deploy.yaml
     with:
+      tag: ${{ needs.build.outputs.short-sha }}
+      namespace: ${{ needs.configure.outputs.namespace }}
     secrets:
       kube-config: ${{ secrets.KUBE_CONFIG_SUPER }}
 
