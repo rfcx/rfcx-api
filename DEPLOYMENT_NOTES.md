@@ -1,7 +1,8 @@
 # API Deployment Notes
 
 ## 1.1.3
-- Remove configuration from Jenkins for "Core, Media, MQTT APIs"
+- Remove configuration from Jenkins for "Core, Media, MQTT APIs" _before_ merging to master
+- Delete api_production, api_staging, api_testing _after_ deployment
 
 ## 1.1.2
 - Update Prediction Service to stop using legacy mode
