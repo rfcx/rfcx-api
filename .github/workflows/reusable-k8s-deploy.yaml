@@ -36,7 +36,7 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.kube-config }}
         with:
-          args: apply -f build/${{ inputs.namespace }}
+          args: apply -R -f build/${{ inputs.namespace }}
 
       - name: 'Deploy: Kubernetes verify core-api'
         # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
