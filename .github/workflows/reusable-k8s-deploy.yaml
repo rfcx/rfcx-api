@@ -36,12 +36,48 @@ jobs:
         env:
           KUBE_CONFIG: ${{ secrets.kube-config }}
         with:
-          args: apply -f ./build/${{ inputs.namespace }}
+          args: apply -f build/${{ inputs.namespace }}
 
-      - name: 'Deploy: Kubernetes verify'
+      - name: 'Deploy: Kubernetes verify core-api'
         # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
         uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
         env:
           KUBE_CONFIG: ${{ secrets.kube-config }}
         with:
-          args: kubectl rollout status deployment core-api --namespace=${{ inputs.namespace }}
+          args: rollout status deployment/core-api --namespace=${{ inputs.namespace }}
+      
+      - name: 'Deploy: Kubernetes verify core-tasks'
+        if: ${{ inputs.namespace != 'testing' }}
+        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+        env:
+          KUBE_CONFIG: ${{ secrets.kube-config }}
+        with:
+          args: rollout status deployment/core-tasks --namespace=${{ inputs.namespace }}
+        
+      - name: 'Deploy: Kubernetes verify media-api'
+        if: ${{ inputs.namespace == 'production' }}
+        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+        env:
+          KUBE_CONFIG: ${{ secrets.kube-config }}
+        with:
+          args: rollout status deployment/media-api --namespace=${{ inputs.namespace }}
+
+      - name: 'Deploy: Kubernetes verify noncore-api'
+        if: ${{ inputs.namespace != 'testing' }}
+        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+        env:
+          KUBE_CONFIG: ${{ secrets.kube-config }}
+        with:
+          args: rollout status deployment/noncore-api --namespace=${{ inputs.namespace }}
+
+      - name: 'Deploy: Kubernetes verify noncore-mqtt'
+        if: ${{ inputs.namespace != 'testing' }}
+        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+        env:
+          KUBE_CONFIG: ${{ secrets.kube-config }}
+        with:
+          args: rollout status deployment/noncore-mqtt --namespace=${{ inputs.namespace }}
