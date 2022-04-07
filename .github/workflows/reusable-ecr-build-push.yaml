@@ -63,20 +63,20 @@ jobs:
         run: echo "Running ${{ matrix.target }}"
 
       - name: 'Setup: Docker Buildx'
-        uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
         # v1 (1.6.0) @ 12 Nov 2021 https://github.com/docker/setup-buildx-action/tags
+        uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
 
       - name: 'Setup: Configure AWS credentials'
-        uses: aws-actions/configure-aws-credentials@0d9a5be0dceea74e09396820e1e522ba4a110d2f
-        # v1 (1.5.11) @ 03 Nov 2021 https://github.com/aws-actions/configure-aws-credentials/tags
+        # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
+        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           aws-region: ${{ inputs.aws-region }}
 
       - name: 'Setup: Git checkout'
-        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
         # v3 (3.0.0) @ 02 Mar 2022 https://github.com/actions/checkout/tags
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
 
       - name: 'Setup: Git meta'
         id: git-meta
@@ -84,12 +84,12 @@ jobs:
           echo "::set-output name=short-sha::`git rev-parse --short HEAD`"
 
       - name: 'Setup: Login to ECR'
-        uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
         # v1 (1.3.3) @ 03 Nov 2021 https://github.com/aws-actions/amazon-ecr-login/tags
+        uses: aws-actions/amazon-ecr-login@aaf69d68aa3fb14c1d5a6be9ac61fe15b48453a2
 
       - name: 'Build and Push'
-        uses: docker/build-push-action@a66e35b9cbcf4ad0ea91ffcaf7bbad63ad9e0229
-        # v2 (2.7.0) @ 12 Nov 2021 https://github.com/docker/build-push-action/tags
+        # v2 (2.10.0) @ 15 Mar 2022 https://github.com/docker/build-push-action/tags
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: .
           file: build/Dockerfile
