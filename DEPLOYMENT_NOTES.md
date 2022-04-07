@@ -1,5 +1,8 @@
 # API Deployment Notes
 
+## 1.1.3
+- Remove configuration from Jenkins for "Core, Media, MQTT APIs"
+
 ## 1.1.2
 - Update Prediction Service to stop using legacy mode
 - Delete AI models page from the Guardian Monitoring
