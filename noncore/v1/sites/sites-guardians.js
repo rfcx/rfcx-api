@@ -14,47 +14,34 @@ const userService = require('../../../common/users/users-service-legacy')
 
 router.route('/:site_id/guardians')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
-    return userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
-      .then((guids) => {
+    userService.getAllUserSiteGuids(req.rfcx.auth_token_info.guid)
+      .then(async (guids) => {
         const guid = req.params.site_id
         if (!guids.includes(guid)) {
           throw new ForbiddenError(`You are not allowed to get guardians for site with guid ${guid}`)
         }
-        return models.GuardianSite
-          .findOne({
-            where: { guid }
-          })
-      })
-      .bind({})
-      .then((dbSite) => {
+        const dbSite = await models.GuardianSite.findOne({ where: { guid } })
         if (!dbSite) {
           throw new sequelize.EmptyResultError(`No site "${req.params.site_id}" was found.`)
         }
-        this.dbSite = dbSite
-        return models.Guardian.findAll({
+        const dbGuardians = await models.Guardian.findAll({
           where: {
             site_id: dbSite.id,
             ...req.query.is_visible !== undefined ? { is_visible: req.query.is_visible === 'true' } : {}
           },
-          include: [],
           order: [['last_check_in', 'DESC']],
           limit: req.rfcx.limit,
           offset: req.rfcx.offset
         })
-      })
-      .then((dbGuardians) => {
         if (!dbGuardians.length) {
-          throw new sequelize.EmptyResultError(`No guardians were found for site "${this.dbSite.guid}".`)
+          throw new sequelize.EmptyResultError(`No guardians were found for site "${dbSite.guid}".`)
         }
         dbGuardians.forEach((dbGuardian) => {
-          dbGuardian.Site = this.dbSite
+          dbGuardian.Site = dbSite
         })
-        this.dbGuardians = dbGuardians
-      })
-      .then(() => {
         if (req.query.include_last_sync) {
           const proms = []
-          this.dbGuardians.forEach((dbGuardian) => {
+          dbGuardians.forEach((dbGuardian) => {
             dbGuardian.last_sync = dbGuardian.last_ping
             const query = { where: { guardian_id: dbGuardian.id, measured_at: { [models.Sequelize.Op.gt]: moment().subtract(7, 'd').valueOf() } }, order: [['measured_at', 'DESC']] }
             proms.push(models.GuardianMetaBattery.findOne(query).then((dbMetaBattery) => {
@@ -68,14 +55,12 @@ router.route('/:site_id/guardians')
               }
             }))
           })
-          return Promise.all(proms)
+          await Promise.all(proms)
         }
-        return Promise.resolve()
-      })
-      .then(() => {
+
         if (req.query.include_hardware) {
           const proms = []
-          this.dbGuardians.forEach((dbGuardan) => {
+          dbGuardians.forEach((dbGuardan) => {
             const prom = models.GuardianMetaHardware.findOne({
               where: { guardian_id: dbGuardan.id },
               attributes: ['phone_imei', 'phone_sim_number', 'phone_sim_serial']
@@ -90,14 +75,12 @@ router.route('/:site_id/guardians')
               })
             proms.push(prom)
           })
-          return Promise.all(proms)
+          await Promise.all(proms)
         }
-        return Promise.resolve()
-      })
-      .then(() => {
+
         if (req.query.last_audio) {
           const proms = []
-          this.dbGuardians.forEach(function (guardian) {
+          dbGuardians.forEach(function (guardian) {
             const prom = models.GuardianAudio
               .findOne({
                 order: [['measured_at', 'DESC']],
@@ -120,12 +103,9 @@ router.route('/:site_id/guardians')
               })
             proms.push(prom)
           })
-          return Promise.all(proms)
+          await Promise.all(proms)
         }
-        return Promise.resolve()
-      })
-      .then(() => {
-        res.status(200).json(views.models.guardian(req, res, this.dbGuardians))
+        res.status(200).json(views.models.guardian(req, res, dbGuardians))
       })
       .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
       .catch(ForbiddenError, e => { httpErrorResponse(req, res, 403, null, e.message) })
