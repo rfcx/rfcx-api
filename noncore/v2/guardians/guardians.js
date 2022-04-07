@@ -18,6 +18,44 @@ const Converter = require('../../../common/converter')
 const modelsLegacy = require('../../_models')
 const models = require('../../../core/_models')
 const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
+const views = require('../../views/v1')
+
+router.route('/')
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+    const user = req.rfcx.auth_token_info
+    const converter = new Converter(req.query, {}, true)
+    converter.convert('projects').toArray()
+    converter.convert('last_audio').optional().toBoolean()
+    converter.convert('include_hardware').optional().toBoolean()
+    converter.convert('include_last_sync').optional().toBoolean()
+    converter.convert('is_visible').optional().toBoolean()
+    converter.convert('offset').default(0).toInt()
+    converter.convert('limit').default(100).toInt()
+
+    return converter.validate()
+      .then(params => {
+        const { projects, limit, offset, lastAudio, isVisible, includeLastSync, includeHardware } = params
+        const where = {
+          project_id: {
+            [models.Sequelize.Op.in]: projects
+          },
+          ...isVisible !== undefined ? { is_visible: isVisible === 'true' } : {}
+        }
+        const options = {
+          readableBy: user && (user.is_super || user.has_system_role || user.has_stream_token) ? undefined : user.id,
+          where,
+          order: [['last_check_in', 'DESC']],
+          limit,
+          offset,
+          lastAudio,
+          includeLastSync,
+          includeHardware
+        }
+        return guardiansService.listMonitoringData(options)
+      })
+      .then(dbGuardian => res.status(200).json(views.models.guardian(req, res, dbGuardian)))
+      .catch(httpErrorHandler(req, res, 'Failed getting guardians'))
+  })
 
 router.route('/public')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -96,7 +134,10 @@ router.route('/:guid')
           }
           throw e
         })
-
+        const stream = await streamDao.get(params.stream_id, { fields: ['project_id'] })
+        if (stream.project_id !== undefined) {
+          params.project_id = stream.project_id
+        }
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
 
         // Update the last deployed timestamp whenever stream id changes

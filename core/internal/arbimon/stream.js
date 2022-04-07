@@ -6,6 +6,7 @@ const rolesService = require('../../roles/dao')
 const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
+const guardiansService = require('../../../noncore/_services/guardians/guardians-service')
 
 /**
  * @swagger
@@ -71,6 +72,15 @@ router.patch('/streams/:externalId', (req, res) => {
         convertedParams.project_id = externalProject.id
       }
       await streamDao.update(stream.id, convertedParams)
+      // Update project_id in MySQL Guardians
+      if (convertedParams.project_id) {
+        try {
+          const dbGuardian = await guardiansService.getGuardianByStreamId(stream.id, true)
+          await guardiansService.updateGuardian(dbGuardian, { project_id: convertedParams.project_id })
+        } catch (error) {
+          console.error(`Error updating guardian project (stream: ${stream.id})`)
+        }
+      }
       return await streamDao.get(stream.id)
     })
     .then(json => res.json(json))
