@@ -31,7 +31,7 @@ RUN apt update \
 RUN  add-apt-repository ppa:jonathonf/ffmpeg-4 && \
      apt update && \
      apt install -y  ffmpeg libsox-fmt-all && \
-     curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
+     curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
      apt update && \
      apt install -y nodejs && \
      curl -o /tmp/sox-14.4.2.tar.gz https://jztkft.dl.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.gz && \
@@ -78,3 +78,6 @@ RUN ./configure --with-opus=yes  --with-flac=yes --with-oggvorbis=yes && \
 WORKDIR /tmp
 
 RUN rm -rf /tmp/*
+
+ENV SOX_PATH="/usr/bin/sox"
+ENV FFMPEG_PATH="/usr/bin/ffmpeg"
