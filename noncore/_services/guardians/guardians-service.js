@@ -177,7 +177,9 @@ function formatGuardian (guardian) {
           timezone: guardian.Site.timezone
         }
       : null,
-    stream_id: guardian.stream_id
+    stream_id: guardian.stream_id,
+    project_id: guardian.project_id,
+    timezone: guardian.timezone
   }
   return guardianFormatted
 }

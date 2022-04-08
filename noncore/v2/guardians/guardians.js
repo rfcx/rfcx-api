@@ -138,7 +138,7 @@ router.route('/:guid')
         if (stream.project_id !== undefined) {
           params.project_id = stream.project_id
         }
-        if (params.latitude !== undefined && params.longitude) {
+        if (params.latitude !== undefined && params.longitude !== undefined) {
           params.timezone = stream.timezone
         }
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
