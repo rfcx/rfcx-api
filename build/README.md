@@ -106,6 +106,14 @@ kubectl rollout restart deployment/api --namespace staging
 
 Note you might need to restart multiple APIs (replace `api` with the name of the deployment from the k8s yaml deployment file -- e.g. `api-mqtt`, `api-media`, etc).
 
+## Base image
+
+The base image is manually published. After making changes to Dockerfile.base, run
+
+```
+docker build -t 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-base -f build/Dockerfile.base .
+docker push 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-base
+```
 
 ## FAQs
 

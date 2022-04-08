@@ -1,4 +1,4 @@
-FROM 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_base:latest as build
+FROM 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-base:latest as build
 
 RUN ["/bin/bash", "-c", "mkdir -p /tmp/rfcx-api/{uploads,test-assets,ffmpeg,zip}"]
 ENV CACHE_DIRECTORY="/tmp/rfcx-api/"
