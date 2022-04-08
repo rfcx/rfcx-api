@@ -134,9 +134,12 @@ router.route('/:guid')
           }
           throw e
         })
-        const stream = await streamDao.get(params.stream_id, { fields: ['project_id'] })
+        const stream = await streamDao.get(params.stream_id, { fields: ['project_id', 'timezone'] })
         if (stream.project_id !== undefined) {
           params.project_id = stream.project_id
+        }
+        if (params.latitude !== undefined && params.longitude) {
+          params.timezone = stream.timezone
         }
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
 

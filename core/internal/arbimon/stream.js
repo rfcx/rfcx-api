@@ -7,6 +7,7 @@ const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
 const guardiansService = require('../../../noncore/_services/guardians/guardians-service')
+const { getTzByLatLng } = require('../../_utils/datetime/timezone')
 
 /**
  * @swagger
@@ -72,11 +73,15 @@ router.patch('/streams/:externalId', (req, res) => {
         convertedParams.project_id = externalProject.id
       }
       await streamDao.update(stream.id, convertedParams)
-      // Update project_id in MySQL Guardians
-      if (convertedParams.project_id) {
+      // Update project_id, timezone in MySQL Guardians
+      if (convertedParams.project_id || (convertedParams.latitude !== undefined && convertedParams.longitude)) {
         try {
           const dbGuardian = await guardiansService.getGuardianByStreamId(stream.id, true)
-          await guardiansService.updateGuardian(dbGuardian, { project_id: convertedParams.project_id })
+          const options = {
+            ...convertedParams.project_id !== undefined && { project_id: convertedParams.project_id },
+            ...convertedParams.latitude !== undefined && convertedParams.longitude !== undefined && { timezone: getTzByLatLng(convertedParams.latitude, convertedParams.longitude) }
+          }
+          await guardiansService.updateGuardian(dbGuardian, options)
         } catch (error) {
           console.error(`Error updating guardian project (stream: ${stream.id})`)
         }

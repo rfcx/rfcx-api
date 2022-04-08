@@ -1,5 +1,10 @@
 # API Deployment Notes
 
+## 1.1.3
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20220407000001-add-project_id-to-guardian`
+  - `20220408000001-add-timezone-to-guardian`
+
 ## 1.1.2
 - Update Prediction Service to stop using legacy mode
 - Delete AI models page from the Guardian Monitoring

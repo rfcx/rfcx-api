@@ -211,7 +211,7 @@ function formatGuardiansPublic (guardians) {
 }
 
 function updateGuardian (guardian, attrs, options = {}) {
-  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'stream_id', 'project_id', 'last_deployed']
+  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'stream_id', 'project_id', 'last_deployed', 'timezone']
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
       guardian[allowedAttr] = attrs[allowedAttr]
