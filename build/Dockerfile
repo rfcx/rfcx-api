@@ -60,21 +60,16 @@ WORKDIR /tmp/flac-1.3.2
 RUN ./configure && make && make install
 
 WORKDIR /tmp/sox-14.4.2/
-RUN ./configure --with-opus=yes  --with-flac=yes --with-oggvorbis=yes && \
-    make -s && \
-    make install && \
-    ln -s /usr/local/bin/sox /usr/bin/sox && \
-    apt -y upgrade && \
-    rm -rf /var/lib/apt/lists/*
-
-WORKDIR /tmp
-RUN rm -rf /tmp/*
-
-ENV SOX_PATH="/usr/bin/sox"
+RUN ./configure --with-opus=yes  --with-flac=yes --with-oggvorbis=yes && make -s && make install
+ENV SOX_PATH="/usr/local/bin/sox"
 ENV FFMPEG_PATH="/usr/bin/ffmpeg"
 
-RUN ["/bin/bash", "-c", "mkdir -p /tmp/rfcx-api/{uploads,test-assets,ffmpeg,zip}"]
-ENV CACHE_DIRECTORY="/tmp/rfcx-api/"
+WORKDIR /tmp
+RUN apt -y upgrade && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/* && \
+    /bin/bash -c mkdir -p /tmp/{uploads,test-assets,ffmpeg,zip}
+ENV CACHE_DIRECTORY="/tmp/"
 
 
 # -- Application build --
