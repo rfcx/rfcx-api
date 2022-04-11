@@ -68,7 +68,7 @@ WORKDIR /tmp
 RUN apt -y upgrade && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* && \
-    /bin/bash -c mkdir -p /tmp/{uploads,test-assets,ffmpeg,zip}
+    /bin/bash -c "mkdir -p /tmp/{uploads,test-assets,ffmpeg,zip}"
 ENV CACHE_DIRECTORY="/tmp/"
 
 
