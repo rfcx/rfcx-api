@@ -1,4 +1,4 @@
-const { upload } = require('../../../core/stream-source-files/bl/file-upload')
+const { upload } = require('../internal-rfcx/ingest-file-upload')
 const guardiansService = require('../../_services/guardians/guardians-service')
 const S3Service = require('../../_services/legacy/s3/s3-service')
 const moment = require('moment-timezone')
