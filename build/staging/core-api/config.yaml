@@ -10,7 +10,7 @@ data:
   INGEST_BUCKET: "rfcx-streams-staging"
   INGEST_SERVICE_BASE_URL: "https://staging-ingest.rfcx.org/"
   MESSAGE_QUEUE_ENABLED: 'true'
-  MESSAGE_QUEUE_POSTFIX: 'staging'
+  MESSAGE_QUEUE_PREFIX: 'staging'
   NEW_RELIC_APP_NAME: "Staging Core API"
   NODE_ENV: "staging"
   NODE_LOG_LEVEL: "debug"
