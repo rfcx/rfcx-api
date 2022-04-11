@@ -19,7 +19,6 @@ data:
   DB_NAME: "rfcx_api"
   DB_PORT: "3306"
   INGEST_BUCKET: "rfcx-streams-staging"
-  INGEST_SERVICE_BASE_URL: "http://ingest-service-service.staging.svc.cluster.local/"
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_PREFIX: 'staging'
   NEW_RELIC_APP_NAME: "Staging Core API"
