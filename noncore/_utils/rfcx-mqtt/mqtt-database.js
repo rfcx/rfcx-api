@@ -629,6 +629,7 @@ exports.checkInDatabase = {
 
   finalizeCheckIn: function (checkInObj) {
     try {
+      checkInObj.db.dbGuardian.last_ping = new Date()
       checkInObj.db.dbGuardian.last_check_in = new Date()
       checkInObj.db.dbGuardian.check_in_count = 1 + checkInObj.db.dbGuardian.check_in_count
       checkInObj.db.dbCheckIn.request_latency_api = (new Date()).valueOf() - checkInObj.meta.startTime.valueOf()
