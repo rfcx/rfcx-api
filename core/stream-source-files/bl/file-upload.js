@@ -1,6 +1,6 @@
 const rp = require('request-promise')
 const auth0Service = require('../../../common/auth0/auth0-service')
-const { ValidationError } = require('../../../common/error-handling/errors').ValidationError
+const { ValidationError } = require('../../../common/error-handling/errors')
 
 function upload (data) {
   const missingAttrs = ['filename', 'timestamp', 'stream', 'checksum'].filter(x => data[x] === undefined)

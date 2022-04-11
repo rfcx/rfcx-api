@@ -4,5 +4,4 @@ metadata:
   name: noncore-mqtt-configmap
   namespace: staging
 data:
-  AWS_QUEUE_CONCURRENCY: "10"
   NEW_RELIC_APP_NAME: "Staging MQTT API"

@@ -42,4 +42,4 @@ data:
   REST_PROTOCOL: "https"
   REST_HOST: "staging-api.rfcx.org"
   REST_HOST_SHORT: "rf.cx"
-  USERS_BUCKET: "rfcx-users-production"
+  USERS_BUCKET: "rfcx-users-staging"
