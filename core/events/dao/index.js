@@ -5,7 +5,7 @@ const { isUuid, uuidToSlug, slugToUuid } = require('../../_utils/formatters/uuid
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../../roles/dao')
 const pagedQuery = require('../../_utils/db/paged-query')
 const messageQueue = require('../../../common/message-queue/sns')
-const { EVENT_CREATED, EVENT_UPDATED } = require('../../../tasks/event-names')
+const { EVENT_CREATED, EVENT_UPDATED } = require('../../../common/message-queue/event-names')
 
 const availableIncludes = [
   Stream.include(),

@@ -1,7 +1,7 @@
 const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../_models')
 const { hasPermission, READ, STREAM } = require('../../roles/dao')
 const messageQueue = require('../../../common/message-queue/sqs')
-const { SEGMENT_CREATED } = require('../../../tasks/event-names')
+const { SEGMENT_CREATED } = require('../../../common/message-queue/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 
