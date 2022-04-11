@@ -81,13 +81,14 @@ ENV CACHE_DIRECTORY="/tmp/rfcx-api/"
 FROM base as build
 
 # Dependencies
-WORKDIR /usr/src/app
-COPY package.json package-lock.json /usr/src/app/
+WORKDIR /app
+COPY package.json package-lock.json /app/
 RUN npm ci
 
-# Application code
-COPY . /usr/src/app
-
+# Application code (TODO move core and noncore below)
+COPY common /app/common
+COPY core /app/core
+COPY noncore /app/noncore
 
 # -- Core --
 FROM build as core-api
@@ -95,6 +96,7 @@ EXPOSE 8080
 CMD ["npm", "run", "start:core"]
 
 FROM build as core-tasks
+COPY tasks /app/tasks
 CMD ["npm", "run", "start:tasks"]
 
 
@@ -104,5 +106,6 @@ EXPOSE 8080
 CMD ["npm", "run", "start:noncore"]
 
 FROM build as noncore-mqtt
+COPY mqtt /app/mqtt
 EXPOSE 8080
 CMD ["npm", "run", "start:mqtt"]
