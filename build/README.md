@@ -6,46 +6,38 @@
 
 ### First time setup
 
-0. Ensure you have Docker authenticated to AWS
+1. Ensure you have Docker authenticated to AWS
    ```
    aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 887044485231.dkr.ecr.eu-west-1.amazonaws.com
    ```
    
-1. Build the image (replace `2` with the next version) (or skip this step to use an existing image)
+2. Build the image
    ```
-   docker build -t api_development -f build/http/Dockerfile .
-   docker tag api_development 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_development:2
-   docker push 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_development:2
-   ```
-
-2. Deploy the timescale db:
-   ```
-   kubectl apply -f build/timescaledb/development/deploy.yaml
-   kubectl apply -f build/timescaledb/development/service.yaml
+   docker build -t core-api -f build/Dockerfile .
+   docker tag core-api 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:testing
+   docker push 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:testing
    ```
 
-3. Create the secrets file:
+3. Create the secrets file
    (TODO)
 
-4. Deploy the API:
+4. Deploy the API
    ```
-   kubectl apply -f build/http/development/deploy.yaml
-   kubectl apply -f build/http/development/service.yaml
-   kubectl apply -f build/http/development/ingress.yaml
+   kubectl apply -f build/development
    ```
 
 ### Update
 
-1. Build the image (replace `2` with the next version)
+1. Build the image
    ```
-   docker build -t api_development -f build/http/Dockerfile .
-   docker tag api_development 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_development:2
-   docker push 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_development:2
+   docker build -t core-api -f build/Dockerfile .
+   docker tag core-api 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:testing
+   docker push 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-api:testing
    ```
 
 2. Deploy to server
    ```
-   kubectl apply -f build/http/development/deploy.yaml
+   kubectl apply -f build/development
    ```
 
 
@@ -105,15 +97,6 @@ kubectl rollout restart deployment/api --namespace staging
 ```
 
 Note you might need to restart multiple APIs (replace `api` with the name of the deployment from the k8s yaml deployment file -- e.g. `api-mqtt`, `api-media`, etc).
-
-## Base image
-
-The base image is manually published. After making changes to Dockerfile.base, run
-
-```
-docker build -t 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-base -f build/Dockerfile.base .
-docker push 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api-base
-```
 
 ## FAQs
 
