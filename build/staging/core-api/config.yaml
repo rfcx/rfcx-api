@@ -7,6 +7,7 @@ data:
   ARBIMON_BASE_URL: "https://staging-arbimon.rfcx.org/"
   ARBIMON_ENABLED: "true"
   ASSET_BUCKET_AI: "rfcx-ai-dev"
+  INGEST_BUCKET: "rfcx-streams-staging"
   INGEST_SERVICE_BASE_URL: "https://staging-ingest.rfcx.org/"
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_POSTFIX: 'staging'

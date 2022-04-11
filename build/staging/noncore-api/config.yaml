@@ -15,6 +15,7 @@ data:
   FIREBASE_ENABLED: "true"
   GUARDIAN_API_SMS_ADDRESS: "+14154803657"
   GUARDIAN_BROKER_HOSTNAME: "staging-api-mqtt.rfcx.org"
+  INGEST_BUCKET: "rfcx-streams-staging"
   INGEST_SERVICE_ENABLED: "true"
   NODE_ENV: "staging"
   NODE_LOG_LEVEL: "debug"

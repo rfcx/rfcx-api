@@ -15,6 +15,7 @@ data:
   FIREBASE_ENABLED: "true"
   GUARDIAN_API_SMS_ADDRESS: "+13467870964"
   GUARDIAN_BROKER_HOSTNAME: "api-mqtt.rfcx.org"
+  INGEST_BUCKET: "rfcx-streams-production"
   INGEST_SERVICE_ENABLED: "true"
   NODE_ENV: "production"
   NODE_LOG_LEVEL: "debug"
