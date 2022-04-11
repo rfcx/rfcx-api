@@ -35,8 +35,6 @@ exports.env = {
   ASSET_BUCKET_AI: 'rfcx-ai-staging',
   ASSET_URLBASE: 'http://localhost:8080/v1/assets',
 
-  PLAYER_PASSCODES: '0000,1111',
-
   DB_HOSTNAME: '127.0.0.1',
   DB_NAME: 'rfcx_api',
   DB_USERNAME: 'root',
