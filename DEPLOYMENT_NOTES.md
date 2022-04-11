@@ -1,7 +1,9 @@
 # API Deployment Notes
 
 ## 1.1.3
+- Remove configuration from Jenkins for "Core, Media, MQTT APIs" _before_ merging to master
 - Run `npm run migrate:noncore` for new migration
+- Delete api_production, api_staging, api_testing repositories from ECR _after_ deployment
 
 ## 1.1.2
 - Update Prediction Service to stop using legacy mode
