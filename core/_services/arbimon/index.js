@@ -170,6 +170,7 @@ function createRecordings (body) {
     .then((response) => {
       if (response !== 'Created') {
         console.error(`arbimon createRecordings: req: ${JSON.stringify(body)} res: ${JSON.stringify(response)}`)
+        throw Error('Unable to create recordings in Arbimon')
       }
     })
 }
