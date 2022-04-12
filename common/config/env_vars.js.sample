@@ -22,7 +22,6 @@ exports.env = {
 
   // MESSAGE_QUEUE_ENABLED: 'true'
   // MESSAGE_QUEUE_PREFIX: '',
-  // MESSAGE_QUEUE_POSTFIX: '',
   // MESSAGE_QUEUE_ENDPOINT: 'http://127.0.0.1:9324',
 
   BUCKET_ANALYSIS: 'rfcx-analysis',
