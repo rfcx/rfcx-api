@@ -1,3 +1,4 @@
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const models = require('../../_models')
 const msgSegUtils = require('./guardian-msg-parsing-utils').guardianMsgParsingUtils
 
@@ -28,6 +29,9 @@ exports.segmentUtils = {
         .findOne({
           where: { guid: segObj.guardian_guid }
         })
+      if (dbGuardian === null) {
+        throw new EmptyResultError('Guardian not found')
+      }
 
       if (segObj.guardian_pincode === dbGuardian.auth_pin_code) {
         const guardianMetaSegGrp = await models.GuardianMetaSegmentsGroup
