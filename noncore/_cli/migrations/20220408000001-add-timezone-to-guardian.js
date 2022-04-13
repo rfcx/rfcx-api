@@ -16,7 +16,7 @@ module.exports = {
         for (const guardian of guardians[0]) {
           if (guardian.latitude === undefined || guardian.longitude === undefined) {
             console.log(`Guardian "${guardian.id}" coordinates are invalid`, guardian.latitude, guardian.longitude)
-            return
+            continue
           }
           const timezone = getTzByLatLng(guardian.latitude, guardian.longitude)
           await queryInterface.sequelize.query(`UPDATE Guardians SET timezone="${timezone}" WHERE id=${guardian.id}`, { transaction })

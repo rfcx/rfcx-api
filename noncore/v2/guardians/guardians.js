@@ -4,10 +4,8 @@ const { randomString } = require('../../../common/crypto/random')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const passport = require('passport')
-const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const { ValidationError } = require('../../../common/error-handling/errors')
-const { hasRole } = require('../../../common/middleware/authorization/authorization')
 const usersService = require('../../../common/users/users-service-legacy')
 const usersFusedService = require('../../../common/users/fused')
 const guardiansService = require('../../_services/guardians/guardians-service')
@@ -35,61 +33,13 @@ router.route('/')
     return converter.validate()
       .then(params => {
         const { projects, limit, offset, lastAudio, isVisible, includeLastSync, includeHardware } = params
-        const where = {
-          project_id: {
-            [models.Sequelize.Op.in]: projects
-          },
-          ...isVisible !== undefined ? { is_visible: isVisible === 'true' } : {}
-        }
-        const options = {
-          readableBy: user && (user.is_super || user.has_system_role || user.has_stream_token) ? undefined : user.id,
-          where,
-          order: [['last_check_in', 'DESC']],
-          limit,
-          offset,
-          lastAudio,
-          includeLastSync,
-          includeHardware
-        }
-        return guardiansService.listMonitoringData(options)
+        const readableBy = user && (user.is_super || user.has_system_role || user.has_stream_token) ? undefined : user.id
+        const order = [['last_check_in', 'DESC']]
+        const where = { project_id: { [models.Sequelize.Op.in]: projects }, ...isVisible !== undefined ? { is_visible: isVisible === 'true' } : {} }
+        return guardiansService.listMonitoringData({ readableBy, where, order, limit, offset, lastAudio, includeLastSync, includeHardware })
       })
       .then(dbGuardian => res.status(200).json(views.models.guardian(req, res, dbGuardian)))
       .catch(httpErrorHandler(req, res, 'Failed getting guardians'))
-  })
-
-router.route('/public')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    const transformedParams = {}
-    const params = new Converter(req.query, transformedParams)
-
-    params.convert('guids').toArray()
-
-    return params.validate()
-      .then(() => {
-        const proms = []
-        const resObj = {}
-        transformedParams.guids.forEach((guid) => {
-          resObj[guid] = null // null by default
-          const prom = guardiansService.getGuardianByGuid(guid, true)
-            .then((guardian) => {
-              if (guardian) {
-                resObj[guid] = guardiansService.formatGuardianPublic(guardian)
-              }
-              return guardian
-            })
-          proms.push(prom)
-        })
-        return Promise.all(proms)
-          .then(() => {
-            return resObj
-          })
-      })
-      .then((data) => {
-        res.status(200).send(data)
-      })
-      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting guardians.'); console.error(e) })
   })
 
 router.route('/:guid')
