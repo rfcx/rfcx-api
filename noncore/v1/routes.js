@@ -31,9 +31,6 @@ module.exports = {
   assets: [
     require('./assets/assets')
   ],
-  reports: [
-    require('./reports/reports')
-  ],
   metrics: [
     require('./metrics/metrics')
   ],

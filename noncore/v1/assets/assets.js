@@ -1,12 +1,6 @@
 const express = require('express')
-const sequelize = require('sequelize')
 const models = require('../../_models')
-const { httpErrorResponse } = require('../../../common/error-handling/http')
 const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
-const { ValidationError } = require('../../../common/error-handling/errors')
-const reportsService = require('../../_services/reports/reports-service')
-const attachmentService = require('../../_services/attachment/attachment-service')
-const audioService = require('../../_services/audio/audio-service')
 const { baseInclude, guardianAudioFile, guardianAudioSpectrogram, guardianAudioJson } = require('../../views/v1/models/guardian-audio').models
 const { guardianMetaScreenshotFile, guardianMetaScreenshots } = require('../../views/v1/models/guardian-meta/guardian-meta-screenshots').models
 
@@ -101,31 +95,5 @@ router.route('/screenshots/:screenshot_id')
         if (err) { res.status(500).json({ msg: 'failed to return screenshot' }) }
       })
   })
-
-router.route('/report/audio/:guid').get(function (req, res) {
-  return reportsService.getReportByGuid(req.params.guid)
-    .then((dbReport) => {
-      const filename = `${req.params.guid}.${req.rfcx.content_type}`
-      const s3Bucket = process.env.ASSET_BUCKET_REPORT
-      const s3Path = attachmentService.getS3PathForType('audio', dbReport.reported_at)
-      return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path, !!req.query.inline)
-    })
-    .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-    .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-    .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find report audio.'))
-})
-
-router.route('/attachments/:guid').get(function (req, res) {
-  return attachmentService.getAttachmentByGuid(req.params.guid)
-    .then((dbAttachment) => {
-      const filename = `${req.params.guid}.${req.rfcx.content_type}`
-      const s3Bucket = process.env.ASSET_BUCKET_ATTACHMENT
-      const s3Path = attachmentService.getS3PathForType(dbAttachment.Type.type, dbAttachment.reported_at)
-      return audioService.serveAudioFromS3(res, filename, s3Bucket, s3Path, !!req.query.inline)
-    })
-    .catch(sequelize.EmptyResultError, e => httpErrorResponse(req, res, 404, null, e.message))
-    .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-    .catch(e => httpErrorResponse(req, res, 500, e, e.message || 'Could not find report audio.'))
-})
 
 module.exports = router

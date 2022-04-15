@@ -5,7 +5,6 @@ metadata:
   namespace: production
 data:
   ASSET_BUCKET_AI: "rfcx-ai-dev"
-  ASSET_BUCKET_ATTACHMENT: "rfcx-attachment-production"
   ASSET_BUCKET_AUDIO: "rfcx-ark"
   ASSET_BUCKET_META: "rfcx-guardian-meta-production"
   ASSET_BUCKET_REPORT: "rfcx-report-production"

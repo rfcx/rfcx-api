@@ -109,8 +109,6 @@ function defineRelationships (models) {
 
   models.ResetPasswordToken.belongsTo(models.User, { as: 'User', foreignKey: 'user_id' })
 
-  models.UserLocation.belongsTo(models.User, { as: 'Location', foreignKey: 'user_id' })
-
   models.User.hasMany(models.UserToken, { as: 'Token', foreignKey: 'user_id' })
   models.User.belongsToMany(models.GuardianSite, { through: 'UserSiteRelation' })
   models.User.belongsTo(models.GuardianSite, { as: 'DefaultSite', foreignKey: 'default_site' })

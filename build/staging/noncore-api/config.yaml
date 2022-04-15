@@ -5,7 +5,6 @@ metadata:
   namespace: staging
 data:
   ASSET_BUCKET_AI: "rfcx-ai-dev"
-  ASSET_BUCKET_ATTACHMENT: "rfcx-attachment-staging"
   ASSET_BUCKET_AUDIO: "rfcx-guardian-ark-staging"
   ASSET_BUCKET_META: "rfcx-guardian-meta-staging"
   ASSET_BUCKET_REPORT: "rfcx-report-staging"
