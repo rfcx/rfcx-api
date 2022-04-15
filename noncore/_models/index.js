@@ -31,8 +31,6 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, pr
 sequelize.authenticate() // check connection
 
 const db = {
-  AttachmentType: require('./attachment/attachment-type')(sequelize, Sequelize),
-  Attachment: require('./attachment/attachment')(sequelize, Sequelize),
   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -115,8 +113,6 @@ const db = {
   Guardian: require('./guardian')(sequelize, Sequelize),
   HealthCheck: require('./health-check')(sequelize, Sequelize),
   Language: require('./language')(sequelize, Sequelize),
-  ReportAttachmentRelation: require('./report-attachment-relation')(sequelize, Sequelize),
-  Report: require('./report')(sequelize, Sequelize),
   ShortLink: require('./shortlink')(sequelize, Sequelize),
   SourceType: require('./source-type')(sequelize, Sequelize)
 }
