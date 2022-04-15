@@ -132,7 +132,7 @@ async function createGuardian (attrs) {
   }
   const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs }) // eslint-disable-line no-unused-vars
 
-  dbGuardian.shortname = attrs.shortname ? attrs.shortname : `RFCx Guardian (${attrs.guid.substr(0, 6).toUpperCase()})`
+  dbGuardian.shortname = attrs.shortname ? attrs.shortname : `X New Device (${attrs.guid.substr(0, 6).toUpperCase()})`
 
   const tokenSalt = random.randomString(62)
   dbGuardian.auth_token_salt = tokenSalt
