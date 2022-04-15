@@ -2,9 +2,7 @@
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    return queryInterface.sequelize.transaction(async transaction => {
-      await queryInterface.sequelize.query('DROP TABLE IF EXISTS FilterPresets;', { transaction })
-    })
+    return queryInterface.sequelize.query('DROP TABLE IF EXISTS FilterPresets;')
   },
 
   down: function () {
