@@ -24,9 +24,6 @@ function defineRelationships (models) {
   models.SpeciesName.belongsTo(models.Language, { as: 'Language', foreignKey: 'language' })
   models.SpeciesName.belongsTo(models.Classification, { as: 'Species', foreignKey: 'species' })
 
-  models.FilterPreset.belongsTo(models.User, { foreignKey: 'created_by', as: 'UserCreated' })
-  models.FilterPreset.belongsTo(models.User, { foreignKey: 'updated_by', as: 'UserUpdated' })
-
   models.GuardianAudioBox.belongsTo(models.GuardianAudio, { as: 'Audio', foreignKey: 'audio_id' })
   models.GuardianAudioBox.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: 'value' })
   models.GuardianAudioBox.belongsTo(models.User, { as: 'User', foreignKey: 'created_by' })

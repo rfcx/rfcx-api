@@ -43,7 +43,6 @@ const db = {
   Classification: require('./classification/classification')(sequelize, Sequelize),
   SpeciesName: require('./classification/species-name')(sequelize, Sequelize),
   ContactMessage: require('./contact-message/contact-message')(sequelize, Sequelize),
-  FilterPreset: require('./filter-preset/filter-preset')(sequelize, Sequelize),
   GuardianAudioBox: require('./guardian-audio/guardian-audio-box')(sequelize, Sequelize),
   GuardianAudioCollection: require('./guardian-audio/guardian-audio-collection')(sequelize, Sequelize),
   GuardianAudioCollectionsRelations: require('./guardian-audio/guardian-audio-collections-relations')(sequelize, Sequelize),
