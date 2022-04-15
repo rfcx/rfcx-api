@@ -94,8 +94,6 @@ const db = {
   Organization: require('./organization/organization')(sequelize, Sequelize),
   AnonymousToken: require('./token/anonymous-token')(sequelize, Sequelize),
   RegistrationToken: require('./token/registration-token')(sequelize, Sequelize),
-  ResetPasswordToken: require('./token/reset-password-token')(sequelize, Sequelize),
-  UserToken: require('./token/user-token')(sequelize, Sequelize),
   User: require('./user/user')(sequelize, Sequelize),
   UserGuardianGroupSubscription: require('./user/user-group-subscriptions')(sequelize, Sequelize),
   UserSiteRelation: require('./user/user-relations')(sequelize, Sequelize),

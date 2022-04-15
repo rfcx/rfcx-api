@@ -1,7 +1,7 @@
 ## 1.1.4 (2022-04-XX)
 
 ### Performance improvements
-* **noncore**: Delete code and table related to FilterPresets, Reports with Attachments
+* **noncore**: Delete code and table related to FilterPresets, Reports with Attachments, UserLocations, UserTokens, ResetPasswordTokens
 * **noncore**: Delete and stub endpoints for /v1/sites and /v1/guardians
 
 ## 1.1.3 (2022-04-05)

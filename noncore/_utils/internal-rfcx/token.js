@@ -10,10 +10,6 @@ exports.token = {
     return this.createToken('anonymous', options)
   },
 
-  createUserToken: function (options) {
-    return this.createToken('user', options)
-  },
-
   createRegistrationToken: function (options) {
     options.token_length = ((options.token_length == null) ? 4 : options.token_length)
     return this.createToken('registration', options)
@@ -124,20 +120,6 @@ exports.token = {
             console.error('failed to create anonymous token | ' + err)
             reject(new Error(err))
           })
-      } else if (whatKindOfToken === 'user') {
-        // create token in db
-        return models.UserToken
-          .create(dbTokenAttributes)
-          .then(function (dbToken) {
-            try {
-              return resolve(returnTokenObj)
-            } catch (e) {
-              reject(e)
-            }
-          }).catch(function (err) {
-            console.error('failed to create user token | ' + err)
-            reject(new Error(err))
-          })
       } else if (whatKindOfToken === 'registration') {
         // create token in db
         return models.RegistrationToken
@@ -166,16 +148,6 @@ exports.token = {
           where: { auth_token_expires_at: { [models.Sequelize.Op.lt]: new Date() } }
         }).then(function (dbAffectedRows) {
           console.info("deleted expired 'anonymous' tokens")
-          return null
-        }).catch(function (err) {
-          console.error(err)
-        })
-    } else if (whatKindOfToken === 'user') {
-      return models.UserToken
-        .destroy({
-          where: { auth_token_expires_at: { [models.Sequelize.Op.lt]: new Date() } }
-        }).then(function (dbAffectedRows) {
-          console.info("deleted expired 'user' tokens")
           return null
         }).catch(function (err) {
           console.error(err)
