@@ -8,8 +8,6 @@ const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
-const usersService = require('../../../common/users/users-service-legacy')
-const usersFusedService = require('../../../common/users/fused')
 const guardiansService = require('../../_services/guardians/guardians-service')
 const sitesService = require('../../_services/sites/sites-service')
 const streamDao = require('../../../core/streams/dao')
@@ -151,15 +149,12 @@ router.route('/register')
       const token = transformedParams.token || randomString(40)
       const pinCode = transformedParams.pin_code || randomString(4)
 
-      const guardianAttrs = { ...transformedParams, token, pinCode }
-
-      await usersFusedService.ensureUserSyncedFromToken(req)
-
-      // Obtain creator info
-      const dbUser = await usersService.getUserFromTokenInfo(req.rfcx.auth_token_info)
-      if (dbUser) {
-        guardianAttrs.creator_id = dbUser.id
-        guardianAttrs.is_private = true
+      const guardianAttrs = {
+        ...transformedParams,
+        token,
+        pinCode,
+        creator_id: req.rfcx.auth_token_info.id,
+        is_private: true
       }
 
       // Obtain site info

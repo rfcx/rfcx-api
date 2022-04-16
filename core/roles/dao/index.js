@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const usersService = require('../../../common/users/fused')
+const usersService = require('../../../common/users')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 
 const ORGANIZATION = 'organization'
@@ -112,7 +112,7 @@ async function getPermissions (userOrId, itemOrId, itemName) {
     }
   }
   const originalItem = { ...item }
-  const user = await (userIsPrimitive ? usersService.getByParams({ id: userId }) : Promise.resolve(userOrId))
+  const user = await (userIsPrimitive ? usersService.getUserByParams({ id: userId }) : Promise.resolve(userOrId))
   if (user.is_super || item.created_by_id === userId) {
     return [CREATE, READ, UPDATE, DELETE]
   }

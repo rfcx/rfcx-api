@@ -5,7 +5,6 @@ const projectsService = require('../../projects/dao')
 const rolesService = require('../../roles/dao')
 const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
-const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger
@@ -99,7 +98,7 @@ router.patch('/streams/:externalId', (req, res) => {
  *       404:
  *         description: Stream not found
  */
-router.delete('/streams/:externalId', ensureUserSynced, (req, res) => {
+router.delete('/streams/:externalId', (req, res) => {
   streamDao.get({ external_id: req.params.externalId })
     .then(async (stream) => {
       const allowed = await rolesService.hasPermission('D', req.rfcx.auth_token_info, stream, rolesService.STREAM)

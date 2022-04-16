@@ -1,10 +1,9 @@
 const router = require('express').Router()
-const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
-router.post('/', ensureUserSynced, require('./create'))
+router.post('/', require('./create'))
 router.get('/', require('./list'))
 router.get('/:id', require('./get'))
-router.patch('/:id', ensureUserSynced, require('./update'))
-router.delete('/:id', ensureUserSynced, require('./remove'))
+router.patch('/:id', require('./update'))
+router.delete('/:id', require('./remove'))
 
 module.exports = router
