@@ -1,9 +1,15 @@
 # API Deployment Notes
 
-## 1.1.3
+## 1.1.4
 - Run `npm run sync-timescale` to apply the following migrations:
   - `20220407000001-add-project_id-to-guardian`
   - `20220408000001-add-timezone-to-guardian`
+
+## 1.1.3
+- Remove configuration from Jenkins for "Core, Media, MQTT APIs" _before_ merging to master
+- Run `npm run migrate:noncore` for new migration
+- Delete api_production, api_staging, api_testing repositories from ECR _after_ deployment
+- Delete api-secrets and api-rabbitmq-secrets _after_ deployment
 
 ## 1.1.2
 - Update Prediction Service to stop using legacy mode
@@ -14,6 +20,7 @@
 - Delete Kubernetes resources:
   - api, api-service, api-ingress, api-config-map
   - api-mqtt, api-mqtt-service, api-mqtt-ingress, api-mqtt-configmap
+  - api-media, api-media-configmap, api-media-ingress, api-media-service
 - Change http://api-service.staging.svc.cluster.local to http://core-api-service.staging.svc.cluster.local in Guardian API, Device API and Ingest Service
 - Change http://api-service.production.svc.cluster.local to http://core-api-service.production.svc.cluster.local in Guardian API, Device API and Ingest Service
 

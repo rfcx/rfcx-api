@@ -1,4 +1,14 @@
-## 1.1.2 (2022-03-XX)
+## 1.1.4 (2022-04-XX)
+
+### Features
+* **noncore**: Endpoint for getting guardians by project id
+
+## 1.1.3 (2022-04-05)
+
+### Bug Fixes
+* **mqtt** Refactor GuardianMetaAssetExchangeLogs clearance by making it in one query
+
+## 1.1.2 (2022-04-01)
 
 ### Performance improvements
 * **noncore**: Delete code related to old MySQL events

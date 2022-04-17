@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: api-mqtt-configmap
-  namespace: production
-data:
-  NEW_RELIC_APP_NAME: "MQTT API"
-  

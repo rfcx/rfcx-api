@@ -14,11 +14,11 @@ spec:
     spec:
       containers:
         - name: core-tasks
-          image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_staging:latest
+          image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-tasks:latest
           args: ["npm", "run", "start:tasks"]
           envFrom:
             - secretRef:
-                name: api-secrets # TODO separate into core/noncore
+                name: core-secrets
             - configMapRef:
                 name: core-api-configmap
             - configMapRef:

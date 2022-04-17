@@ -14,13 +14,13 @@ spec:
     spec:
       containers:
         - name: core-tasks
-          image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/api_production:latest
+          image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/core-tasks:latest
           args: ["npm", "run", "start:tasks"]
           envFrom:
             - secretRef:
                 name: api-secrets
             - configMapRef:
-                name: api-configmap
+                name: core-api-configmap
             - configMapRef:
                 name: core-tasks-configmap
           resources:

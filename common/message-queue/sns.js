@@ -11,7 +11,7 @@ if (isEnabled) {
   const { MessageQueue } = require('@rfcx/message-queue')
   messageQueue = new MessageQueue('sns', {
     endpoint: process.env.MESSAGE_QUEUE_ENDPOINT,
-    topicPostfix: process.env.MESSAGE_QUEUE_POSTFIX
+    topicPrefix: process.env.MESSAGE_QUEUE_PREFIX
   })
   messageQueue.isEnabled = () => true
 } else {

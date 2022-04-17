@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-api
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: media-api
+  template:
+    metadata:
+      labels:
+        app: media-api
+    spec:
+      containers:
+      - name: api
+        image: 887044485231.dkr.ecr.eu-west-1.amazonaws.com/media-api:latest
+        envFrom:
+        - secretRef:
+            name: api-secrets
+        - configMapRef:
+            name: core-api-configmap
+        - configMapRef:
+            name: media-api-configmap
+        resources:
+          requests:
+            memory: "700Mi"
+            cpu: "600m"
+          limits:
+            memory: "700Mi"
+            cpu: "600m"
+        ports:
+        - containerPort: 80

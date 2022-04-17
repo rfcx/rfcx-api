@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-api-configmap
+  namespace: production
+data:
+  ARBIMON_BASE_URL: "https://arbimon.rfcx.org/"
+  ARBIMON_ENABLED: "true"
+  ASSET_BUCKET_AI: "rfcx-ai-dev"
+  AUTH0_AUTHZ_AUDIENCE: "urn:auth0-authz-api"
+  AUTH0_CLOUD_AUDIENCE: "https://rfcx.org"
+  AUTH0_CUSTOM_DOMAIN: "auth.rfcx.org"
+  AUTH0_DEFAULT_DB_CONNECTION: "Username-Password-Authentication"
+  AUTH0_DOMAIN: "rfcx.eu.auth0.com"
+  AUTH0_EXTENSION_URL: "rfcx.eu.webtask.io/adf6e2f2b84784b57522e3b19dfc9201/api"
+  AWS_ACCOUNT_ID: "887044485231"
+  AWS_REGION_ID: "eu-west-1"
+  DB_HOSTNAME: "rfcx-api-production.cluster-c5wfntyhgru5.eu-west-1.rds.amazonaws.com"
+  DB_NAME: "rfcx_api"
+  DB_PORT: "3306"
+  INGEST_BUCKET: "rfcx-streams-production"
+  MESSAGE_QUEUE_ENABLED: 'true'
+  NEW_RELIC_APP_NAME: "Core API"
+  NODE_ENV: "production"
+  NODE_LOG_LEVEL: "debug"
+  POSTGRES_DB: "core"
+  POSTGRES_HOSTNAME: "production-rfcx-ed93.a.timescaledb.io"
+  POSTGRES_PORT: "13894"
+  POSTGRES_SSL_ENABLED: "true"
+  REST_PROTOCOL: "https"
+  REST_HOST: "api.rfcx.org"
+  STREAMS_CACHE_BUCKET: "rfcx-streams-cache-production"
+  USERS_BUCKET: "rfcx-users-production"

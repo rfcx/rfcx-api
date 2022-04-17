@@ -67,6 +67,7 @@ function listen () {
     console.info('MQTT: new mqtt message', topic, messageId)
 
     if (/grd\/.+\/chk/.test(topic)) {
+      const start = Date.now()
       return mqttCheckInRouter.onMessageCheckin(data, messageId)
         .then((result) => {
           app.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
@@ -76,7 +77,7 @@ function listen () {
           app.publish(`guardians/${result.guardian_guid}/guardian/checkins`, result.gzip)
           // AFTER ALL Q2 2020 GUARDIANS HAVE EXPIRED, THE LINE ABOVE SHOULD BE REMOVED
 
-          console.info('MQTT: message processed', topic, messageId)
+          console.info(`MQTT: checkin message processed in ${(Date.now() - start) / 1000} seconds. Topic: "${topic}". Message id: "${messageId}"'`)
           messageId = null
           result = null
           return true
@@ -88,13 +89,14 @@ function listen () {
           console.error('MQTT: message error', err)
         })
     } else if (/grd\/.+\/png/.test(topic)) {
+      const start = Date.now()
       return pingRouter.onMqttMessagePing(data, messageId)
         .then((result) => {
           if (Object.keys(result.obj).length > 0) {
             app.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
           }
 
-          console.info('MQTT: message processed', topic, messageId)
+          console.info(`MQTT: ping message processed in ${(Date.now() - start) / 1000} seconds. Topic: "${topic}". Message id: "${messageId}"'`)
           messageId = null
           result = null
           return true

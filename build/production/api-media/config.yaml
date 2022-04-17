@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: api-media-configmap
-  namespace: production
-data:
-  NEW_RELIC_APP_NAME: "Media API"
