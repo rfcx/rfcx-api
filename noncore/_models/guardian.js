@@ -171,6 +171,14 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(12),
       allowNull: true
     },
+    project_id: {
+      type: DataTypes.STRING(12),
+      allowNull: true
+    },
+    timezone: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     last_deployed: {
       type: DataTypes.DATE(3),
       allowNull: true

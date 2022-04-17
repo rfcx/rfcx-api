@@ -18,6 +18,7 @@ const guardiansService = require('../../_services/guardians/guardians-service')
 const streamDao = require('../../../core/streams/dao')
 const arbimonService = require('../../../core/_services/arbimon')
 const Converter = require('../../../common/converter')
+const { getTzByLatLng } = require('../../../core/_utils/datetime/timezone')
 
 router.route('/')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
@@ -329,10 +330,14 @@ router.route('/:guid')
     params.convert('latitude').optional().toFloat()
     params.convert('longitude').optional().toFloat()
     params.convert('is_visible').optional().toBoolean()
+    params.convert('project_id').optional().toString()
 
     params.validate()
     return guardiansService.getGuardianByGuid(req.params.guid)
       .then((guardian) => {
+        if (transformedParams.latitude !== undefined && transformedParams.longitude !== undefined) {
+          transformedParams.timezone = getTzByLatLng(guardian.latitude, guardian.longitude)
+        }
         return guardiansService.updateGuardian(guardian, transformedParams)
       })
       .then(async (guardian) => {

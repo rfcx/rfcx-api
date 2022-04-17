@@ -1,5 +1,10 @@
 # API Deployment Notes
 
+## 1.1.4
+- Run `npm run sync-timescale` to apply the following migrations:
+  - `20220407000001-add-project_id-to-guardian`
+  - `20220408000001-add-timezone-to-guardian`
+
 ## 1.1.3
 - Remove configuration from Jenkins for "Core, Media, MQTT APIs" _before_ merging to master
 - Run `npm run migrate:noncore` for new migration
