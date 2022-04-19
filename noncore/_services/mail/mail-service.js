@@ -29,12 +29,12 @@ function sendEmail (serviceRequest) {
   serviceRequest.convert('text').optional().default('').toString()
   serviceRequest.convert('html').optional().default('').toString()
   serviceRequest.convert('subject').optional().toString()
-  serviceRequest.convert('from_email').optional().toString()
-  serviceRequest.convert('from_name').optional().toString()
-  serviceRequest.convert('merge_language').optional().toString()
+  serviceRequest.convert('from_email').toString().default('noreply@rfcx.org')
+  serviceRequest.convert('from_name').toString().default('Rainforest Connection')
+  serviceRequest.convert('merge_language').toString().default('handlebars')
   serviceRequest.convert('to').toArray()
   serviceRequest.convert('global_merge_vars').optional().toArray()
-  serviceRequest.convert('merge_vars').optional().toArray()
+  serviceRequest.convert('merge_vars').toArray().default([])
   serviceRequest.convert('important').optional().toBoolean()
   serviceRequest.convert('bcc_address').optional().toString()
 
@@ -44,10 +44,10 @@ function sendEmail (serviceRequest) {
     })
 }
 
-function renderContactFormEmail (opts) {
+function renderTemplate (tmplPath, opts) {
   return new Promise((resolve, reject) => {
     try {
-      const source = fs.readFileSync(path.join(__dirname, '../../views/email/contact-form.handlebars'), 'utf8')
+      const source = fs.readFileSync(path.join(__dirname, tmplPath), 'utf8')
       const template = handlebars.compile(source)
       resolve(template(opts))
     } catch (e) {
@@ -56,8 +56,17 @@ function renderContactFormEmail (opts) {
   })
 }
 
+function renderContactFormEmail (opts) {
+  return renderTemplate('../../views/email/contact-form.handlebars', opts)
+}
+
+function getEventAlertHtml (opts) {
+  return renderTemplate('../../views/email/event-alert.handlebars', opts)
+}
+
 module.exports = {
   sendMessage,
   sendEmail,
-  renderContactFormEmail
+  renderContactFormEmail,
+  getEventAlertHtml
 }
