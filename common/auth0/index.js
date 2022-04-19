@@ -81,7 +81,7 @@ function getNewClientToken () {
   return requestTokenFromAuth0(process.env.AUTH0_CLOUD_AUDIENCE)
 }
 
-function createAuth0User (token, opts) {
+async function createAuth0User (opts) {
   if (!opts.password) {
     opts.password = generator.generate({
       length: 20,
@@ -91,6 +91,7 @@ function createAuth0User (token, opts) {
       excludeSimilarCharacters: true
     })
   }
+  const token = await getToken()
   return new Promise(function (resolve, reject) {
     request({
       method: 'POST',
@@ -115,7 +116,41 @@ function createAuth0User (token, opts) {
         },
         email_verified: false,
         verify_email: false,
-        app_metadata: {}
+        app_metadata: {
+          ...opts.invited === true ? { invited: true } : {}
+        }
+      }
+    }, (err, response, body) => {
+      if (err) {
+        reject(err)
+      } else if (!!body && !!body.error) {
+        reject(body.error)
+      } else {
+        resolve([body, response.statusCode])
+      }
+    })
+  })
+}
+
+async function createPasswordChangeTicket (email) {
+  const token = await getToken()
+  const ttl = 2592000 // 30 days
+  return new Promise(function (resolve, reject) {
+    request({
+      method: 'POST',
+      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/tickets/password-change`,
+      json: true,
+      headers: {
+        authorization: `Bearer ${token}`,
+        'Content-type': 'application/json'
+      },
+      body: {
+        email,
+        client_id: process.env.AUTH0_CLIENT_ID,
+        connection_id: process.env.AUTH0_DEFAULT_DB_CONNECTION_ID,
+        ttl_sec: ttl,
+        mark_email_as_verified: true,
+        includeEmailInRedirect: false
       }
     }, (err, response, body) => {
       if (err) {
@@ -123,7 +158,7 @@ function createAuth0User (token, opts) {
       } else if (!!body && !!body.error) {
         reject(body)
       } else {
-        resolve(body)
+        resolve({ url: body, ttl })
       }
     })
   })
@@ -463,7 +498,7 @@ function getUserRoles (token, userGuid) {
   })
 }
 
-function sendChangePasswordEmail (token, email) {
+async function sendChangePasswordEmail (email) {
   return new Promise((resolve, reject) => {
     const options = {
       method: 'POST',
@@ -487,6 +522,11 @@ function sendChangePasswordEmail (token, email) {
     })
   })
 }
+
+sendChangePasswordEmail('sr.rassokhin@gmail.com')
+  .then((d) => {
+    console.log('\n\n', d, '\n\n')
+  })
 
 function getUserRolesFromToken (token) {
   if (token.roles) { return token.roles }
@@ -529,6 +569,7 @@ module.exports = {
   getAuthToken,
   getClientToken,
   createAuth0User,
+  createPasswordChangeTicket,
   updateAuth0User,
   getUsers,
   getAllRoles,

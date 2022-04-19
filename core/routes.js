@@ -46,5 +46,8 @@ module.exports = {
   ],
   indices: [
     require('./indices')
+  ],
+  users: [
+    require('./users')
   ]
 }

@@ -1,7 +1,4 @@
-const { ValidationError } = require('./errors')
-const { ForbiddenError } = require('./errors')
-const { EmptyResultError } = require('./errors')
-const { UnauthorizedError } = require('./errors')
+const { ValidationError, ForbiddenError, EmptyResultError, UnauthorizedError, ConflictError } = require('./errors')
 
 const options = {
   400: {
@@ -14,6 +11,10 @@ const options = {
   404: {
     default: 'Not Found',
     database: 'Record Not Found'
+  },
+  409: {
+    default: 'Conflict',
+    database: 'Record already exists'
   },
   500: {
     default: 'Internal Server Error',
@@ -49,6 +50,9 @@ function httpErrorHandler (req, res, fallbackMessage) {
     }
     if (err instanceof EmptyResultError) {
       return httpErrorResponse(req, res, 404, null, err.message)
+    }
+    if (err instanceof ConflictError) {
+      return httpErrorResponse(req, res, 409, null, err.message)
     }
     console.error('httpErrorHandler', err)
     return httpErrorResponse(req, res, 500, err, fallbackMessage)

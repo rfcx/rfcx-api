@@ -6,7 +6,7 @@ passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const { ValidationError } = require('../../../common/error-handling/errors')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const usersService = require('../../../common/users')
-const auth0Service = require('../../../common/auth0/auth0-service')
+const auth0Service = require('../../../common/auth0')
 const sequelize = require('sequelize')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 const Converter = require('../../../common/converter')
@@ -57,12 +57,9 @@ router.route('/auth0/create-user')
 
     params.validate()
       .then(() => {
-        return auth0Service.getToken()
+        return auth0Service.createAuth0User(transformedParams)
       })
-      .then((token) => {
-        return auth0Service.createAuth0User(token, transformedParams)
-      })
-      .then((body) => {
+      .then(([body, statusCode]) => {
         res.status(200).json(body)
       })
       .catch((err) => {
@@ -377,10 +374,7 @@ router.route('/auth0/send-change-password-email')
 
     params.validate()
       .then(() => {
-        return auth0Service.getToken()
-      })
-      .then((token) => {
-        return auth0Service.sendChangePasswordEmail(token, req.body.email)
+        return auth0Service.sendChangePasswordEmail(req.body.email)
       })
       .then((body) => {
         res.status(200).json({ result: body })

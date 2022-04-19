@@ -60,7 +60,7 @@ router.post('/new-login', hasRole(['systemUser']), function (req, res) {
       return userService.findOrCreateUser({
         ...params,
         username: params.user_id
-      }).spread(async (user) => {
+      }).spread(async () => {
         await arbimonService.createUser(params)
         res.sendStatus(200)
       })

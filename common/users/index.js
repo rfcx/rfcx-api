@@ -17,8 +17,8 @@ function findOrCreateUser (defaults) {
   const where = { [Sequelize.Op.or]: { guid: defaults.guid, email: defaults.email } }
   return User
     .findOrCreate({ where, defaults })
-    .spread((user) => {
-      return user
+    .spread((user, created) => {
+      return [user, created]
     })
 }
 

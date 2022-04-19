@@ -1,5 +1,5 @@
 const { httpErrorResponse } = require('../../error-handling/http')
-const auth0Service = require('../../auth0/auth0-service')
+const auth0Service = require('../../auth0')
 const passport = require('passport')
 passport.use(require('../passport-token').TokenStrategy)
 passport.use('jwt', require('../passport-jwt').JwtStrategy)
