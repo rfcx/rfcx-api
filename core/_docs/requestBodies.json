@@ -608,5 +608,22 @@
     "required": [
       "name"
     ]
+  },
+  "User": {
+    "type": "object",
+    "properties": {
+      "firstname": {
+        "type": "string",
+        "example": "John"
+      },
+      "lastname": {
+        "type": "string",
+        "example": "Doe"
+      },
+      "email": {
+        "type": "string",
+        "example": "johndoe@rfcx.org"
+      }
+    }
   }
 }

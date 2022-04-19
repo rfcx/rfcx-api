@@ -15,7 +15,7 @@ async function createInCoreAndAuth0 (data) {
     throw new ValidationError('Can not create user')
   }
   if (statusCode === 201) {
-    await sendChangePasswordEmail(user.email)
+    await sendChangePasswordEmail(user.email) // because user has "invited" flag, the "change password" email will view Invitation content.
   }
   return user
 }

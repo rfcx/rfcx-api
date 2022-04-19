@@ -25,6 +25,8 @@ const createInCoreAndAuth0 = require('./bl/create-and-invite')
  *         description: Created
  *       400:
  *         description: Invalid query parameters
+ *       409:
+ *         description: User already exists
  */
 module.exports = function (req, res, next) {
   const converter = new Converter(req.body, {}, true)
