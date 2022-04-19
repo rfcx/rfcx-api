@@ -114,6 +114,7 @@ function saveAssetFileToS3 (assetType, checkInObj) {
           } else if ((s3Res.statusCode === 200) && aws.s3ConfirmSave(s3Res, s3Path)) {
             resolve(checkInObj)
           } else {
+            console.error('S3 Save result', s3Res)
             reject(new Error('asset file (' + assetType + ') could not be saved to s3'))
           }
         })
