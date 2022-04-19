@@ -11,7 +11,6 @@ data:
   AUTH0_CLOUD_AUDIENCE: "https://rfcx.org"
   AUTH0_CUSTOM_DOMAIN: "auth.rfcx.org"
   AUTH0_DEFAULT_DB_CONNECTION: "Username-Password-Authentication"
-  AUTH0_DEFAULT_DB_CONNECTION_ID: "con_PV871DvLknTaowmO"
   AUTH0_DOMAIN: "rfcx.eu.auth0.com"
   AUTH0_EXTENSION_URL: "rfcx.eu.webtask.io/adf6e2f2b84784b57522e3b19dfc9201/api"
   AWS_ACCOUNT_ID: "887044485231"
