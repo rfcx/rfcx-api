@@ -71,48 +71,9 @@ function renderContactFormEmail (opts) {
   })
 }
 
-function getDetectionAlertHtml () {
-  return new Promise((resolve, reject) => {
-    try {
-      const source = fs.readFileSync(path.join(__dirname, '../../views/email/detection-alert.handlebars'), 'utf8')
-      resolve(source)
-    } catch (e) {
-      reject(e)
-    }
-  })
-}
-
-function getEventAlertHtml () {
-  return new Promise((resolve, reject) => {
-    try {
-      const source = fs.readFileSync(path.join(__dirname, '../../views/email/event-alert.handlebars'), 'utf8')
-      resolve(source)
-    } catch (e) {
-      reject(e)
-    }
-  })
-}
-
-function registerToAppWaitingList (serviceRequest) {
-  const params = {}
-  serviceRequest = new Converter(serviceRequest, params)
-
-  serviceRequest.convert('email_address').toString()
-  serviceRequest.convert('requested_os').optional().default('iOS').toString()
-
-  return serviceRequest.validate().then(() => {
-    return mailing.subsribeToList(process.env.MAILCHIMP_APP_WAITING_LIST, params.email_address)
-  }).then(() => {
-    return { email_address: params.email_address, method: 'subscribe_to_list', success: true }
-  })
-}
-
 module.exports = {
-  registerToAppWaitingList,
   sendTextMail,
   sendMessage,
   sendEmail,
-  renderContactFormEmail,
-  getDetectionAlertHtml,
-  getEventAlertHtml
+  renderContactFormEmail
 }
