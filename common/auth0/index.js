@@ -112,13 +112,12 @@ async function createAuth0User (opts) {
         user_metadata: {
           given_name: opts.firstname,
           family_name: opts.lastname,
-          name: `${opts.firstname} ${opts.lastname}`
+          name: `${opts.firstname} ${opts.lastname}`,
+          ...opts.invited === true ? { invited: true } : {}
         },
         email_verified: false,
         verify_email: false,
-        app_metadata: {
-          ...opts.invited === true ? { invited: true } : {}
-        }
+        app_metadata: {}
       }
     }, (err, response, body) => {
       if (err) {
@@ -127,38 +126,6 @@ async function createAuth0User (opts) {
         reject(body.error)
       } else {
         resolve([body, response.statusCode])
-      }
-    })
-  })
-}
-
-async function createPasswordChangeTicket (email) {
-  const token = await getToken()
-  const ttl = 2592000 // 30 days
-  return new Promise(function (resolve, reject) {
-    request({
-      method: 'POST',
-      uri: `https://${process.env.AUTH0_DOMAIN}/api/v2/tickets/password-change`,
-      json: true,
-      headers: {
-        authorization: `Bearer ${token}`,
-        'Content-type': 'application/json'
-      },
-      body: {
-        email,
-        client_id: process.env.AUTH0_CLIENT_ID,
-        connection_id: process.env.AUTH0_DEFAULT_DB_CONNECTION_ID,
-        ttl_sec: ttl,
-        mark_email_as_verified: true,
-        includeEmailInRedirect: false
-      }
-    }, (err, response, body) => {
-      if (err) {
-        reject(err)
-      } else if (!!body && !!body.error) {
-        reject(body)
-      } else {
-        resolve({ url: body, ttl })
       }
     })
   })
@@ -523,11 +490,6 @@ async function sendChangePasswordEmail (email) {
   })
 }
 
-sendChangePasswordEmail('sr.rassokhin@gmail.com')
-  .then((d) => {
-    console.log('\n\n', d, '\n\n')
-  })
-
 function getUserRolesFromToken (token) {
   if (token.roles) { return token.roles }
   const rfcxAppMetaUrl = 'https://rfcx.org/app_metadata'
@@ -569,7 +531,6 @@ module.exports = {
   getAuthToken,
   getClientToken,
   createAuth0User,
-  createPasswordChangeTicket,
   updateAuth0User,
   getUsers,
   getAllRoles,
