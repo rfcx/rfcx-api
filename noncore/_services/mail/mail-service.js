@@ -1,23 +1,8 @@
 const Converter = require('../../../common/converter')
-const Promise = require('bluebird')
 const mailing = require('./mailchimp-wrapper')
 const fs = require('fs')
 const path = require('path')
 const handlebars = require('handlebars')
-
-function sendTextMail (serviceRequest) {
-  const params = {}
-  serviceRequest = new Converter(serviceRequest, params)
-  serviceRequest.convert('email_address').toString()
-  serviceRequest.convert('recipient_name').optional().default('').toString()
-  serviceRequest.convert('subject').toString()
-  serviceRequest.convert('message').toString()
-
-  return serviceRequest.validate()
-    .then(() => {
-      return mailing.sendMail(params.email_address, params.recipient_name, params.subject, params.message)
-    })
-}
 
 function sendMessage (serviceRequest) {
   const params = {}
@@ -72,7 +57,6 @@ function renderContactFormEmail (opts) {
 }
 
 module.exports = {
-  sendTextMail,
   sendMessage,
   sendEmail,
   renderContactFormEmail
