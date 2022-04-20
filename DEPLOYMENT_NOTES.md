@@ -3,9 +3,11 @@
 ## 1.1.4
 - Check that POST-Login auth0 webhook /users/new-login works correctly
 - Check that all features of the Android Stream app work fine
-- Run `npm run sync-timescale` to apply the following migrations:
+- Run `npm run migrate:noncore` to apply the following migrations:
   - `20220407000001-add-project_id-to-guardian`
   - `20220408000001-add-timezone-to-guardian`
+- Run `npm run migrate:core` to apply the following migrations:
+  - `20220421000001-enable-auto-increment-users`
 
 ## 1.1.3
 - Remove configuration from Jenkins for "Core, Media, MQTT APIs" _before_ merging to master
