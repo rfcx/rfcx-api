@@ -35,7 +35,10 @@ router.route('/')
         const { project, limit, offset, lastAudio, isVisible, includeLastSync, includeHardware } = params
         const readableBy = user && (user.is_super || user.has_system_role || user.has_stream_token) ? undefined : user.id
         const order = [['last_check_in', 'DESC']]
-        const where = project !== undefined ? { project_id: project === 'null' ? { [models.Sequelize.Op.is]: null } : project, ...isVisible !== undefined ? { is_visible: isVisible === 'true' } : {} } : null
+        const where = {
+          ...project !== undefined && { project_id: project === 'null' ? { [models.Sequelize.Op.is]: null } : project },
+          ...isVisible !== undefined && { is_visible: isVisible === 'true' }
+        }
         return guardiansService.listMonitoringData({ readableBy, where, order, limit, offset, lastAudio, includeLastSync, includeHardware })
       })
       .then(dbGuardian => res.status(200).json(views.models.guardian(req, res, dbGuardian)))
