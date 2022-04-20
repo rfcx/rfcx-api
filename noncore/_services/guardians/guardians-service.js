@@ -96,7 +96,9 @@ async function checkUserPermissions (guardians, userId) {
   }
   const g = guardians.filter(async (guardian) => {
     const projectId = guardian.project_id
-    if (!projectId) { return }
+    if (!projectId) {
+      return true
+    }
     return await hasPermission(READ, userId, projectId, PROJECT)
   })
   return g
