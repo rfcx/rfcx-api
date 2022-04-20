@@ -2,6 +2,7 @@
 
 ### Features
 * **noncore**: Add POST /users endpoint
+* **noncore**: Endpoint for getting guardians by project id
 
 ### Performance improvements
 * **noncore**: Delete code and table related to FilterPresets, Reports with Attachments, UserLocations, UserTokens, ResetPasswordTokens

@@ -3,6 +3,7 @@ const { EmptyResultError } = require('../../../common/error-handling/errors')
 const Promise = require('bluebird')
 const { hashedCredentials } = require('../../../common/crypto/sha256')
 const random = require('../../../common/crypto/random')
+const { hasPermission, READ, PROJECT } = require('../../../core/roles/dao')
 
 function getGuardianByGuid (guid, ignoreMissing) {
   return models.Guardian
@@ -46,6 +47,98 @@ function getGuardianByStreamId (id, ignoreMissing) {
     })
 }
 
+async function list (options = {}) {
+  const { where, order, limit, offset } = options
+  return await models.Guardian.findAll({ where, order, limit, offset })
+}
+
+async function getLastAudio (id) {
+  return await models.GuardianAudio
+    .findOne({
+      order: [['measured_at', 'DESC']],
+      where: { guardian_id: id }
+    })
+}
+
+async function getGuardianMetaHardware (id) {
+  return await models.GuardianMetaHardware
+    .findOne({
+      where: { guardian_id: id },
+      attributes: ['phone_imei', 'phone_sim_number', 'phone_sim_serial']
+    })
+}
+
+async function getGuardianMetaBattery (id) {
+  return await models.GuardianMetaBattery
+    .findOne({
+      where: {
+        guardian_id: id,
+        measured_at: { [models.Sequelize.Op.gt]: Date.now() - 604800000 }
+      },
+      order: [['measured_at', 'DESC']]
+    })
+}
+
+async function getGuardianMetaSentinelPower (id) {
+  return await models.GuardianMetaSentinelPower
+    .findOne({
+      where: {
+        guardian_id: id,
+        measured_at: { [models.Sequelize.Op.gt]: Date.now() - 604800000 }
+      },
+      order: [['measured_at', 'DESC']]
+    })
+}
+
+async function checkUserPermissions (guardians, userId) {
+  if (!userId) {
+    return
+  }
+  const g = guardians.filter(async (guardian) => {
+    const projectId = guardian.project_id
+    return await hasPermission(READ, userId, projectId, PROJECT)
+  })
+  return g
+}
+
+async function listMonitoringData (options = {}) {
+  let guardians = await list(options)
+  if (!guardians.length) {
+    return []
+  }
+  guardians = await checkUserPermissions(guardians, options.readableBy)
+  if (!guardians.length) {
+    return []
+  }
+  if (options.lastAudio === true) {
+    for (const guardian of guardians) {
+      const audio = await getLastAudio(guardian.id)
+      guardian.last_audio = {
+        guid: (audio && audio.guid) || null,
+        measured_at: (audio && audio.measured_at) || null
+      }
+    }
+  }
+  if (options.includeHardware === true) {
+    for (const guardian of guardians) {
+      const hardware = await getGuardianMetaHardware(guardian.id)
+      guardian.phone_imei = (hardware && hardware.phone_imei) || null
+      guardian.phone_sim_number = (hardware && hardware.phone_sim_number) || null
+      guardian.phone_sim_serial = (hardware && hardware.phone_sim_serial) || null
+    }
+  }
+  if (options.includeLastSync === true) {
+    for (const guardian of guardians) {
+      guardian.last_sync = guardian.last_ping
+      const metaBattery = await getGuardianMetaBattery(guardian.id)
+      guardian.battery_percent_internal = (metaBattery && metaBattery.battery_percent) || null
+      const metaPower = await getGuardianMetaSentinelPower(guardian.id)
+      guardian.battery_percent = (metaPower && metaPower.battery_state_of_charge) || null
+    }
+  }
+  return guardians
+}
+
 async function getGuardianInfoByStreamId (streamId) {
   const guardian = await getGuardianByStreamId(streamId)
   const where = { guardian_id: guardian.id, pref_key: 'api_protocol_escalation_order' }
@@ -78,7 +171,9 @@ function formatGuardian (guardian) {
           timezone: guardian.Site.timezone
         }
       : null,
-    stream_id: guardian.stream_id
+    stream_id: guardian.stream_id,
+    project_id: guardian.project_id,
+    timezone: guardian.timezone
   }
   return guardianFormatted
 }
@@ -112,7 +207,7 @@ function formatGuardiansPublic (guardians) {
 }
 
 function updateGuardian (guardian, attrs, options = {}) {
-  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'stream_id', 'last_deployed']
+  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'stream_id', 'project_id', 'last_deployed', 'timezone']
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
       guardian[allowedAttr] = attrs[allowedAttr]
@@ -121,7 +216,7 @@ function updateGuardian (guardian, attrs, options = {}) {
   const transaction = options.transaction || null
   return guardian.save({ transaction })
     .then(() => {
-      return guardian.reload({ include: [{ all: true }], transaction })
+      return guardian.reload({ include: [{ model: models.GuardianSite, as: 'Site' }], transaction })
     })
 }
 
@@ -132,7 +227,7 @@ async function createGuardian (attrs) {
   }
   const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs }) // eslint-disable-line no-unused-vars
 
-  dbGuardian.shortname = attrs.shortname ? attrs.shortname : `RFCx Guardian (${attrs.guid.substr(0, 6).toUpperCase()})`
+  dbGuardian.shortname = attrs.shortname ? attrs.shortname : `X New Device (${attrs.guid.substr(0, 6).toUpperCase()})`
 
   const tokenSalt = random.randomString(62)
   dbGuardian.auth_token_salt = tokenSalt
@@ -147,6 +242,8 @@ async function createGuardian (attrs) {
 }
 
 module.exports = {
+  list,
+  listMonitoringData,
   getGuardianByGuid,
   getGuardiansByGuids,
   getGuardianByStreamId,
