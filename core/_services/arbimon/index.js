@@ -118,7 +118,8 @@ function createRecordings (body) {
       'Content-Type': 'application/json'
     },
     body,
-    json: true
+    json: true,
+    timeout: 10000
   }
 
   return getClientToken()
