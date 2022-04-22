@@ -3,6 +3,9 @@
 ### Features
 * **noncore**: Endpoint for getting guardians by project id
 
+### Performance improvements
+* **core**: Replace db query with existing attributes mapping for ingest endpoint
+
 ## 1.1.3 (2022-04-05)
 
 ### Bug Fixes
