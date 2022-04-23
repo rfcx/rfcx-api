@@ -23,7 +23,6 @@ jobs:
     needs: [prepare]
     outputs:
       namespace: ${{ steps.configuration.outputs.namespace }}
-      ecr-repository-postfix: ${{ steps.configuration.outputs.ecr-repository-postfix }}
     steps:
       - name: 'Conditional environment'
         id: configuration
@@ -71,7 +70,7 @@ jobs:
       previous-run-id: ${{ needs.prepare.outputs.previous-run-id }}
       status: ${{ needs.deploy.result }}
       notification-title: 'CD: APIs'
-      notification-footer: "Buid: ${{ needs.build.result || 'n/a' }} | Deploy: ${{ needs.deploy.result || 'n/a' }}"
+      notification-footer: "Build: ${{ needs.build.result || 'n/a' }} | Deploy: ${{ needs.deploy.result || 'n/a' }}"
     secrets:
       slack-webhook: ${{ secrets.SLACK_ALERT_COREDT_WEBHOOK }}
       github-token: ${{ secrets.GITHUB_TOKEN }}
