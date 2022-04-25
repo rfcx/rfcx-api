@@ -30,4 +30,12 @@ class UnauthorizedError extends Error {
   }
 }
 
-module.exports = { ValidationError, EmptyResultError, ForbiddenError, UnauthorizedError }
+class ConflictError extends Error {
+  constructor (message) {
+    super(message)
+    this.message = message
+    this.name = 'ConflictError'
+  }
+}
+
+module.exports = { ValidationError, EmptyResultError, ForbiddenError, UnauthorizedError, ConflictError }

@@ -2,6 +2,12 @@ const includeBuilder = require('../../_utils/db/include-builder')
 
 module.exports = function (sequelize, DataTypes) {
   const User = sequelize.define('User', {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      allowNull: false,
+      primaryKey: true
+    },
     guid: {
       type: DataTypes.UUID,
       unique: true,

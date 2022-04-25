@@ -1,6 +1,7 @@
 const request = require('request')
 const { randomGuid } = require('../crypto/random')
 const generator = require('generate-password')
+const { ForbiddenError } = require('../error-handling/errors')
 
 // a local storage for tokens
 const tokens = {
@@ -80,7 +81,7 @@ function getNewClientToken () {
   return requestTokenFromAuth0(process.env.AUTH0_CLOUD_AUDIENCE)
 }
 
-function createAuth0User (token, opts) {
+async function createAuth0User (opts) {
   if (!opts.password) {
     opts.password = generator.generate({
       length: 20,
@@ -90,6 +91,7 @@ function createAuth0User (token, opts) {
       excludeSimilarCharacters: true
     })
   }
+  const token = await getToken()
   return new Promise(function (resolve, reject) {
     request({
       method: 'POST',
@@ -110,7 +112,8 @@ function createAuth0User (token, opts) {
         user_metadata: {
           given_name: opts.firstname,
           family_name: opts.lastname,
-          name: `${opts.firstname} ${opts.lastname}`
+          name: `${opts.firstname} ${opts.lastname}`,
+          ...opts.invited === true ? { invited: true } : {}
         },
         email_verified: false,
         verify_email: false,
@@ -120,9 +123,9 @@ function createAuth0User (token, opts) {
       if (err) {
         reject(err)
       } else if (!!body && !!body.error) {
-        reject(body)
+        reject(body.error)
       } else {
-        resolve(body)
+        resolve([body, response.statusCode])
       }
     })
   })
@@ -462,7 +465,7 @@ function getUserRoles (token, userGuid) {
   })
 }
 
-function sendChangePasswordEmail (token, email) {
+async function sendChangePasswordEmail (email) {
   return new Promise((resolve, reject) => {
     const options = {
       method: 'POST',
@@ -513,6 +516,16 @@ function hasAnyRoleFromArray (expectedRoles, roles) {
   return false
 }
 
+function checkUserConnection (userId, connection, errorMessage) {
+  return new Promise((resolve, reject) => {
+    const connectionType = userId.split('|')[0]
+    if (connectionType !== connection) {
+      throw new ForbiddenError(errorMessage || 'Operation not supported for your account type.')
+    }
+    return resolve()
+  })
+}
+
 module.exports = {
   getToken,
   getAuthToken,
@@ -532,5 +545,6 @@ module.exports = {
   getAllUsersForExports,
   getAjob,
   getUserRolesFromToken,
-  hasAnyRoleFromArray
+  hasAnyRoleFromArray,
+  checkUserConnection
 }

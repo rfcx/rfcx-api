@@ -1,8 +1,4 @@
 function defineRelationships (models) {
-  models.Attachment.belongsTo(models.AttachmentType, { as: 'Type', foreignKey: 'type_id' })
-  models.Attachment.belongsTo(models.User, { as: 'User', foreignKey: 'user_id' })
-  models.Attachment.belongsToMany(models.Report, { through: models.ReportAttachmentRelation })
-
   models.AudioAnalysisEntry.belongsTo(models.GuardianAudio, { as: 'Audio', foreignKey: 'guardian_audio_id' })
   models.AudioAnalysisEntry.belongsTo(models.AudioAnalysisModel, { as: 'AI', foreignKey: 'audio_analysis_model_id' })
   models.AudioAnalysisEntry.belongsTo(models.AudioAnalysisState, { as: 'State', foreignKey: 'state' })
@@ -23,9 +19,6 @@ function defineRelationships (models) {
 
   models.SpeciesName.belongsTo(models.Language, { as: 'Language', foreignKey: 'language' })
   models.SpeciesName.belongsTo(models.Classification, { as: 'Species', foreignKey: 'species' })
-
-  models.FilterPreset.belongsTo(models.User, { foreignKey: 'created_by', as: 'UserCreated' })
-  models.FilterPreset.belongsTo(models.User, { foreignKey: 'updated_by', as: 'UserUpdated' })
 
   models.GuardianAudioBox.belongsTo(models.GuardianAudio, { as: 'Audio', foreignKey: 'audio_id' })
   models.GuardianAudioBox.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: 'value' })
@@ -114,11 +107,6 @@ function defineRelationships (models) {
 
   models.Organization.hasMany(models.GuardianSite, { as: 'Site', foreignKey: 'organization' })
 
-  models.ResetPasswordToken.belongsTo(models.User, { as: 'User', foreignKey: 'user_id' })
-
-  models.UserLocation.belongsTo(models.User, { as: 'Location', foreignKey: 'user_id' })
-
-  models.User.hasMany(models.UserToken, { as: 'Token', foreignKey: 'user_id' })
   models.User.belongsToMany(models.GuardianSite, { through: 'UserSiteRelation' })
   models.User.belongsTo(models.GuardianSite, { as: 'DefaultSite', foreignKey: 'default_site' })
   models.User.belongsToMany(models.GuardianGroup, { through: 'UserGuardianGroupSubscription' })
@@ -165,11 +153,6 @@ function defineRelationships (models) {
   models.Guardian.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: 'site_id' })
   models.Guardian.belongsToMany(models.GuardianGroup, { through: models.GuardianGroupRelation })
   models.Guardian.belongsTo(models.User, { as: 'User', foreignKey: 'creator' })
-
-  models.Report.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: 'site' })
-  models.Report.belongsTo(models.GuardianAudioEventValue, { as: 'Value', foreignKey: 'value' })
-  models.Report.belongsTo(models.User, { foreignKey: 'reporter' })
-  models.Report.belongsToMany(models.Attachment, { through: models.ReportAttachmentRelation })
 }
 
 module.exports = defineRelationships

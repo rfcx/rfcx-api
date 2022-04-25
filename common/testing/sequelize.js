@@ -1,10 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const express = require('express')
+const excludedMigrations = [
+  '20220421000001-enable-auto-increment-users.js'
+]
 
 // Copied from StackOverflow - only to be used for testing
 async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
-  const migrations = fs.readdirSync(path.join(__dirname, '../../core/_cli/migrations')).filter(filePath => filePath.endsWith('.js'))
+  const migrations = fs.readdirSync(path.join(__dirname, '../../core/_cli/migrations')).filter(filePath => filePath.endsWith('.js')).filter(filePath => !excludedMigrations.includes(filePath))
   await sequelize.query(`CREATE TABLE IF NOT EXISTS ${table} (name VARCHAR(255) NOT NULL UNIQUE)`)
   const completedMigrations = await sequelize.query(`SELECT * FROM ${table}`, { type: Sequelize.QueryTypes.SELECT })
 
@@ -45,19 +48,40 @@ async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
 const primaryUserId = 1
 const primaryUserGuid = 'abc123'
 const primaryUserEmail = 'jb@astonmartin.com'
+const primaryUserFirstname = 'James'
+const primaryUserLastname = 'Bond'
 const otherUserId = 2
 const otherUserGuid = 'def456'
+const otherUserEmail = 'em@astonmartin.com'
+const otherUserFirstname = 'Eve'
+const otherUserLastname = 'Moneypenny'
 const anotherUserId = 3
 const anotherUserGuid = 'ghy789'
+const anotherUserEmail = 'big@bobby.com'
+const anotherUserFirstname = 'Big'
+const anotherUserLastname = 'Bobby'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
-const seedValues = { primaryUserId, primaryUserGuid, primaryUserEmail, otherUserId, otherUserGuid, anotherUserId, anotherUserGuid, roleAdmin, roleMember, roleGuest }
+const seedValues = {
+  primaryUserId,
+  primaryUserGuid,
+  primaryUserEmail,
+  primaryUserFirstname,
+  primaryUserLastname,
+  otherUserId,
+  otherUserGuid,
+  anotherUserId,
+  anotherUserGuid,
+  roleAdmin,
+  roleMember,
+  roleGuest
+}
 
 async function seed (models) {
-  await models.User.create({ id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: 'James', lastname: 'Bond', email: primaryUserEmail })
-  await models.User.create({ id: otherUserId, guid: otherUserGuid, username: 'em', firstname: 'Eve', lastname: 'Moneypenny', email: 'em@astonmartin.com' })
-  await models.User.create({ id: anotherUserId, guid: anotherUserGuid, username: 'st', firstname: 'Big', lastname: 'Bobby', email: 'big@bobby.com' })
+  await models.User.create({ id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: primaryUserFirstname, lastname: primaryUserLastname, email: primaryUserEmail })
+  await models.User.create({ id: otherUserId, guid: otherUserGuid, username: 'em', firstname: otherUserFirstname, lastname: otherUserLastname, email: otherUserEmail })
+  await models.User.create({ id: anotherUserId, guid: anotherUserGuid, username: 'st', firstname: anotherUserFirstname, lastname: anotherUserLastname, email: anotherUserEmail })
   await models.Role.create({ id: roleAdmin, name: 'Admin' })
   await models.Role.create({ id: roleMember, name: 'Member' })
   await models.Role.create({ id: roleGuest, name: 'Guest' })

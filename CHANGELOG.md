@@ -1,9 +1,12 @@
 ## 1.1.4 (2022-04-XX)
 
 ### Features
+* **noncore**: Add POST /users endpoint
 * **noncore**: Endpoint for getting guardians by project id
 
 ### Performance improvements
+* **noncore**: Delete code and table related to FilterPresets, Reports with Attachments, UserLocations, UserTokens, ResetPasswordTokens
+* **noncore**: Delete and stub endpoints for /v1/sites and /v1/guardians
 * **core**: Replace db query with existing attributes mapping for ingest endpoint
 
 ### Bug Fixes

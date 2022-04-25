@@ -3,7 +3,7 @@ const moment = require('moment')
 const arbimonBaseUrl = process.env.ARBIMON_BASE_URL
 const { rpErrorHandler } = require('../../../common/error-handling/http')
 const { getSegmentRemotePath } = require('../../stream-segments/bl/segment-file-utils')
-const { getClientToken } = require('../../../common/auth0/auth0-service')
+const { getClientToken } = require('../../../common/auth0')
 
 const isEnabled = `${process.env.ARBIMON_ENABLED}` === 'true'
 

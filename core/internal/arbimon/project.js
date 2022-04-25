@@ -4,7 +4,6 @@ const projectsService = require('../../projects/dao')
 const rolesService = require('../../roles/dao')
 const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
-const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger
@@ -42,7 +41,7 @@ const ensureUserSynced = require('../../../common/middleware/legacy/ensure-user-
  *       404:
  *         description: Stream not found
  */
-router.patch('/projects/:externalId', ensureUserSynced, (req, res) => {
+router.patch('/projects/:externalId', (req, res) => {
   const user = req.rfcx.auth_token_info
   const projectId = req.params.externalId
   const convertedParams = {}

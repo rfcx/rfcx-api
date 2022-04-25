@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const streamDao = require('../streams/dao')
-const usersFusedService = require('../../common/users/fused')
+const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const { getPermissions, getUsersForItem, getByName, addRole, getUserRoleForItem, removeRole, STREAM } = require('./dao')
@@ -110,8 +110,7 @@ router.put('/:id/users', hasStreamPermission('U'), function (req, res) {
   return params.validate()
     .then(async () => {
       const stream = await streamDao.get(streamId)
-      const user = await usersFusedService.getByEmail(convertedParams.email)
-      await usersFusedService.ensureUserSynced(user)
+      const user = await usersService.getUserByEmail(convertedParams.email)
       if (stream.created_by_id === user.id) {
         throw new ForbiddenError('You can not assign role to stream owner.')
       }
@@ -149,7 +148,7 @@ router.delete('/:id/users', hasStreamPermission('U'), function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const user = await usersFusedService.getByEmail(convertedParams.email)
+      const user = await usersService.getUserByEmail(convertedParams.email)
       await removeRole(user.id, streamId, STREAM)
       return res.sendStatus(200)
     })

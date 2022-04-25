@@ -2,8 +2,7 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const { hasRole } = require('../../../common/middleware/authorization/authorization')
 const Converter = require('../../../common/converter')
-const userService = require('../../../common/users/users-service-legacy')
-const usersFusedService = require('../../../common/users/fused')
+const userService = require('../../../common/users')
 const arbimonService = require('../../_services/arbimon')
 
 /**
@@ -60,10 +59,8 @@ router.post('/new-login', hasRole(['systemUser']), function (req, res) {
     .then(async (params) => {
       return userService.findOrCreateUser({
         ...params,
-        username: params.user_id,
-        rfcx_system: false
-      }).spread(async (user) => {
-        await usersFusedService.ensureUserSynced(user)
+        username: params.user_id
+      }).spread(async () => {
         await arbimonService.createUser(params)
         res.sendStatus(200)
       })

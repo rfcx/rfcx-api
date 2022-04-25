@@ -4,7 +4,6 @@ const dao = require('./dao')
 const classificationService = require('../classifications/dao')
 const Converter = require('../../common/converter')
 const { hasStreamPermission } = require('../../common/middleware/authorization/roles')
-const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
 /**
  * @swagger
@@ -126,7 +125,7 @@ router.get('/:id/annotations', hasStreamPermission('R'), function (req, res) {
  *       404:
  *         description: Stream not found
  */
-router.post('/:id/annotations', ensureUserSynced, hasStreamPermission('U'), function (req, res) {
+router.post('/:id/annotations', hasStreamPermission('U'), function (req, res) {
   const streamId = req.params.id
   const userId = req.rfcx.auth_token_info.id
   const convertedParams = {}

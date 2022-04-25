@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { query } = require('./dao')
-const usersService = require('../../common/users/fused')
+const usersService = require('../../common/users')
 const rolesService = require('../roles/dao')
 const Converter = require('../../common/converter')
 

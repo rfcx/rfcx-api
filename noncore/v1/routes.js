@@ -30,12 +30,6 @@ module.exports = {
   assets: [
     require('./assets/assets')
   ],
-  reports: [
-    require('./reports/reports')
-  ],
-  'filter-presets': [
-    require('./filter-presets/filter-presets')
-  ],
   metrics: [
     require('./metrics/metrics')
   ],
