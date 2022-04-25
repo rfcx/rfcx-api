@@ -1,10 +1,13 @@
 const fs = require('fs')
 const path = require('path')
 const express = require('express')
+const excludedMigrations = [
+  '20220421000001-enable-auto-increment-users.js'
+]
 
 // Copied from StackOverflow - only to be used for testing
 async function migrate (sequelize, Sequelize, table = '`SequelizeMeta`') {
-  const migrations = fs.readdirSync(path.join(__dirname, '../../core/_cli/migrations')).filter(filePath => filePath.endsWith('.js'))
+  const migrations = fs.readdirSync(path.join(__dirname, '../../core/_cli/migrations')).filter(filePath => filePath.endsWith('.js')).filter(filePath => !excludedMigrations.includes(filePath))
   await sequelize.query(`CREATE TABLE IF NOT EXISTS ${table} (name VARCHAR(255) NOT NULL UNIQUE)`)
   const completedMigrations = await sequelize.query(`SELECT * FROM ${table}`, { type: Sequelize.QueryTypes.SELECT })
 
