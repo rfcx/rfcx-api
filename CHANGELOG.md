@@ -7,6 +7,10 @@
 ### Performance improvements
 * **noncore**: Delete code and table related to FilterPresets, Reports with Attachments, UserLocations, UserTokens, ResetPasswordTokens
 * **noncore**: Delete and stub endpoints for /v1/sites and /v1/guardians
+* **core**: Replace db query with existing attributes mapping for ingest endpoint
+
+### Bug Fixes
+* **core**: Set arbimon ingestion request timeout to 10 seconds
 
 ## 1.1.3 (2022-04-05)
 

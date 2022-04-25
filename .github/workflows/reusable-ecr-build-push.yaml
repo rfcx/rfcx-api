@@ -19,7 +19,8 @@ on:
       dockerfile:
         description: Path of dockerfile
         type: string
-        required: true
+        default: 'Dockerfile'
+        required: false
       targets:
         description: Array of targets to build from the dockerfile
         type: string
@@ -92,7 +93,7 @@ jobs:
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: .
-          file: build/Dockerfile
+          file: ${{ inputs.dockerfile }}
           target: ${{ matrix.target }}
           build-args: ${{ inputs.build-args }}
           push: true
