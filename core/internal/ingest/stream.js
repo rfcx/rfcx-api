@@ -101,7 +101,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           }, { transaction })
 
           if (arbimonService.isEnabled) {
-            await arbimonService.createRecordingsFromSegments(segments, { transaction })
+            await arbimonService.createRecordingsFromSegments(sfParams, segments, { transaction })
           }
 
           await transaction.commit()
