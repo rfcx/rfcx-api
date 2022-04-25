@@ -92,7 +92,7 @@ async function getGuardianMetaSentinelPower (id) {
 
 async function checkUserPermissions (guardians, userId) {
   if (!userId) {
-    return
+    return guardians
   }
   const g = guardians.filter(async (guardian) => {
     const projectId = guardian.project_id
