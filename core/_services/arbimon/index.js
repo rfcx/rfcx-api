@@ -52,7 +52,7 @@ function createSite (stream, idToken) {
 
 function updateSite (opts, idToken) {
   const body = {};
-  ['name', 'latitude', 'longitude', 'altitude'].forEach((attr) => { body[attr] = opts[attr] })
+  ['name', 'latitude', 'longitude', 'altitude', 'project_id'].forEach((attr) => { body[attr] = opts[attr] })
   const options = {
     method: 'PATCH',
     url: `${arbimonBaseUrl}api/integration/sites/${opts.id}`,

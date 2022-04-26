@@ -142,6 +142,17 @@ async function listMonitoringData (options = {}) {
   return guardians
 }
 
+async function getGuardianLatestSoftwareVersion (softwareRoleId) {
+  return await models.GuardianSoftwareVersion
+    .findOne({
+      where: {
+        software_role_id: softwareRoleId,
+        is_available: true
+      },
+      order: [['version', 'DESC']]
+    })
+}
+
 async function getGuardianInfoByStreamId (streamId) {
   const guardian = await getGuardianByStreamId(streamId)
   const where = { guardian_id: guardian.id, pref_key: 'api_protocol_escalation_order' }
@@ -176,7 +187,8 @@ function formatGuardian (guardian) {
       : null,
     stream_id: guardian.stream_id,
     project_id: guardian.project_id,
-    timezone: guardian.timezone
+    timezone: guardian.timezone,
+    is_updatable: guardian.is_updatable
   }
   return guardianFormatted
 }
@@ -210,7 +222,7 @@ function formatGuardiansPublic (guardians) {
 }
 
 function updateGuardian (guardian, attrs, options = {}) {
-  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'stream_id', 'project_id', 'last_deployed', 'timezone']
+  const allowedAttrs = ['shortname', 'latitude', 'longitude', 'is_visible', 'stream_id', 'project_id', 'last_deployed', 'timezone', 'is_updatable']
   allowedAttrs.forEach((allowedAttr) => {
     if (attrs[allowedAttr] !== undefined) {
       guardian[allowedAttr] = attrs[allowedAttr]
@@ -256,5 +268,6 @@ module.exports = {
   formatGuardianPublic,
   formatGuardiansPublic,
   updateGuardian,
-  createGuardian
+  createGuardian,
+  getGuardianLatestSoftwareVersion
 }
