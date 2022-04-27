@@ -34,8 +34,6 @@ RUN  add-apt-repository ppa:jonathonf/ffmpeg-4 && \
      curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
      apt update && \
      apt install -y nodejs && \
-     curl -o /tmp/sox-14.4.2.tar.gz https://jztkft.dl.sourceforge.net/project/sox/sox/14.4.2/sox-14.4.2.tar.gz && \
-     tar xzf /tmp/sox-14.4.2.tar.gz -C /tmp && \
      curl -o /tmp/libogg-1.3.4.tar.gz https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-1.3.4.tar.gz && \
      tar xzf /tmp/libogg-1.3.4.tar.gz -C /tmp && \
      curl -o /tmp/libvorbis-1.3.7.tar.gz https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-1.3.7.tar.gz && \
@@ -57,9 +55,7 @@ RUN ./configure && make && make install
 WORKDIR /tmp/flac-1.3.2
 RUN ./configure && make && make install
 
-WORKDIR /tmp/sox-14.4.2/
-RUN ./configure --with-opus=yes  --with-flac=yes --with-oggvorbis=yes && make -s && make install
-ENV SOX_PATH="/usr/local/bin/sox"
+ENV SOX_PATH="/usr/bin/sox"
 ENV FFMPEG_PATH="/usr/bin/ffmpeg"
 ENV IMAGEMAGICK_PATH="/usr/bin/convert"
 ENV PNGCRUSH_PATH="/usr/bin/pngcrush"
