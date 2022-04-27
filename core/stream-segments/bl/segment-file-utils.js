@@ -217,7 +217,7 @@ async function makeSpectrogram (sourcePath, outputPath, filename, fileExtension,
 }
 
 function renderSpectrogram (sourcePath, outputPath, monochrome, width, height, windowFunc, zAxis) {
-  return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram -r ${monochrome === 'true' ? '-lm' : '-h'} -o  ${outputPath} -x ${width} -y ${height} -w ${windowFunc} -z ${zAxis} -s`)
+  return runExec(`${SOX_PATH} ${sourcePath} -n spectrogram ${monochrome === 'true' ? '-lm' : '-h'} -o  ${outputPath} -x ${width} -y ${height} -w ${windowFunc} -z ${zAxis} -s`)
 }
 
 function hzToPx (height, sampleRate, hz) {
