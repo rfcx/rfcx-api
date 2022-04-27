@@ -7,7 +7,6 @@ const rolesService = require('../roles/dao')
 const dao = require('./dao')
 const classificationService = require('../classifications/dao')
 const Converter = require('../../common/converter')
-const ensureUserSynced = require('../../common/middleware/legacy/ensure-user-synced')
 
 function isUuid (str) {
   return str.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/g) !== null
@@ -172,7 +171,7 @@ router.get('/:id', (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.put('/:id', ensureUserSynced, (req, res) => {
+router.put('/:id', (req, res) => {
   const annotationId = req.params.id
   const user = req.rfcx.auth_token_info
   const userId = user.id

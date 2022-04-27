@@ -4,12 +4,8 @@ const { randomString } = require('../../../common/crypto/random')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const passport = require('passport')
-const Promise = require('bluebird')
 const sequelize = require('sequelize')
 const { ValidationError } = require('../../../common/error-handling/errors')
-const { hasRole } = require('../../../common/middleware/authorization/authorization')
-const usersService = require('../../../common/users/users-service-legacy')
-const usersFusedService = require('../../../common/users/fused')
 const guardiansService = require('../../_services/guardians/guardians-service')
 const sitesService = require('../../_services/sites/sites-service')
 const streamDao = require('../../../core/streams/dao')
@@ -18,40 +14,33 @@ const Converter = require('../../../common/converter')
 const modelsLegacy = require('../../_models')
 const models = require('../../../core/_models')
 const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
+const views = require('../../views/v1')
 
-router.route('/public')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), function (req, res) {
-    const transformedParams = {}
-    const params = new Converter(req.query, transformedParams)
+router.route('/')
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), function (req, res) {
+    const user = req.rfcx.auth_token_info
+    const converter = new Converter(req.query, {}, true)
+    converter.convert('project').optional().toString()
+    converter.convert('last_audio').optional().toBoolean()
+    converter.convert('include_hardware').optional().toBoolean()
+    converter.convert('include_last_sync').optional().toBoolean()
+    converter.convert('is_visible').optional().toBoolean()
+    converter.convert('offset').default(0).toInt()
+    converter.convert('limit').default(100).toInt()
 
-    params.convert('guids').toArray()
-
-    return params.validate()
-      .then(() => {
-        const proms = []
-        const resObj = {}
-        transformedParams.guids.forEach((guid) => {
-          resObj[guid] = null // null by default
-          const prom = guardiansService.getGuardianByGuid(guid, true)
-            .then((guardian) => {
-              if (guardian) {
-                resObj[guid] = guardiansService.formatGuardianPublic(guardian)
-              }
-              return guardian
-            })
-          proms.push(prom)
-        })
-        return Promise.all(proms)
-          .then(() => {
-            return resObj
-          })
+    return converter.validate()
+      .then(params => {
+        const { project, limit, offset, lastAudio, isVisible, includeLastSync, includeHardware } = params
+        const readableBy = user && (user.is_super || user.has_system_role || user.has_stream_token) ? undefined : user.id
+        const order = [['last_check_in', 'DESC']]
+        const where = {
+          ...project !== undefined && { project_id: project === 'null' ? { [models.Sequelize.Op.is]: null } : project },
+          ...isVisible !== undefined && { is_visible: isVisible === 'true' }
+        }
+        return guardiansService.listMonitoringData({ readableBy, where, order, limit, offset, lastAudio, includeLastSync, includeHardware })
       })
-      .then((data) => {
-        res.status(200).send(data)
-      })
-      .catch(ValidationError, e => httpErrorResponse(req, res, 400, null, e.message))
-      .catch(sequelize.EmptyResultError, e => { httpErrorResponse(req, res, 404, null, e.message) })
-      .catch(e => { httpErrorResponse(req, res, 500, e, 'Error while getting guardians.'); console.error(e) })
+      .then(dbGuardian => res.status(200).json(views.models.guardian(req, res, dbGuardian)))
+      .catch(httpErrorHandler(req, res, 'Failed getting guardians'))
   })
 
 router.route('/:guid')
@@ -96,7 +85,13 @@ router.route('/:guid')
           }
           throw e
         })
-
+        const stream = await streamDao.get(params.stream_id, { fields: ['project_id', 'timezone'] })
+        if (stream.project_id !== undefined) {
+          params.project_id = stream.project_id
+        }
+        if (params.latitude !== undefined && params.longitude !== undefined) {
+          params.timezone = stream.timezone
+        }
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
 
         // Update the last deployed timestamp whenever stream id changes
@@ -151,15 +146,12 @@ router.route('/register')
       const token = transformedParams.token || randomString(40)
       const pinCode = transformedParams.pin_code || randomString(4)
 
-      const guardianAttrs = { ...transformedParams, token, pinCode }
-
-      await usersFusedService.ensureUserSyncedFromToken(req)
-
-      // Obtain creator info
-      const dbUser = await usersService.getUserFromTokenInfo(req.rfcx.auth_token_info)
-      if (dbUser) {
-        guardianAttrs.creator_id = dbUser.id
-        guardianAttrs.is_private = true
+      const guardianAttrs = {
+        ...transformedParams,
+        token,
+        pinCode,
+        creator_id: req.rfcx.auth_token_info.id,
+        is_private: true
       }
 
       // Obtain site info

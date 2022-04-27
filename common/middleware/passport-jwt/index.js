@@ -1,10 +1,9 @@
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const jwksRsa = require('jwks-rsa-passport-edition')
-const userService = require('../../users/users-service-legacy')
-const usersFusedService = require('../../users/fused')
+const userService = require('../../users')
 const { randomGuid } = require('../../../common/crypto/random')
-const { getUserRolesFromToken } = require('../../auth0/auth0-service')
+const { getUserRolesFromToken } = require('../../auth0')
 
 const jwtExtractor = ExtractJwt.fromAuthHeaderAsBearerToken()
 
@@ -66,20 +65,14 @@ function checkDBUser (req, jwtPayload, done) {
     guid: jwtPayload.guid || (jwtPayload[rfcxAppMetaUrl] ? jwtPayload[rfcxAppMetaUrl].guid : ''),
     email: jwtPayload.email,
     firstname: jwtPayload.given_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.given_name : ''),
-    lastname: jwtPayload.family_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.family_name : ''),
-    rfcx_system: false
+    lastname: jwtPayload.family_name || (jwtPayload.user_metadata ? jwtPayload.user_metadata.family_name : '')
+  }).then(([user, created]) => {
+    req.rfcx.auth_token_info = combineUserData(jwtPayload, user)
+    done(null, req.rfcx.auth_token_info)
+    return true
+  }).catch(e => {
+    done(e)
   })
-    .spread(async (user, created) => {
-      req.rfcx.auth_token_info = combineUserData(jwtPayload, user)
-      if (!created && !jwtPayload.isStaticUser) {
-        await usersFusedService.ensureUserSyncedFromToken(req)
-      }
-      done(null, req.rfcx.auth_token_info)
-      return true
-    })
-    .catch(e => {
-      done(e)
-    })
 }
 
 function jwtCallback (req, jwtPayload, done) {

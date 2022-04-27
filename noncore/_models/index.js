@@ -31,8 +31,6 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, pr
 sequelize.authenticate() // check connection
 
 const db = {
-  AttachmentType: require('./attachment/attachment-type')(sequelize, Sequelize),
-  Attachment: require('./attachment/attachment')(sequelize, Sequelize),
   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -43,7 +41,6 @@ const db = {
   Classification: require('./classification/classification')(sequelize, Sequelize),
   SpeciesName: require('./classification/species-name')(sequelize, Sequelize),
   ContactMessage: require('./contact-message/contact-message')(sequelize, Sequelize),
-  FilterPreset: require('./filter-preset/filter-preset')(sequelize, Sequelize),
   GuardianAudioBox: require('./guardian-audio/guardian-audio-box')(sequelize, Sequelize),
   GuardianAudioCollection: require('./guardian-audio/guardian-audio-collection')(sequelize, Sequelize),
   GuardianAudioCollectionsRelations: require('./guardian-audio/guardian-audio-collections-relations')(sequelize, Sequelize),
@@ -94,15 +91,11 @@ const db = {
   GuardianSoftwarePrefs: require('./guardian-software/guardian-software-prefs')(sequelize, Sequelize),
   GuardianSoftwareVersion: require('./guardian-software/guardian-software-version')(sequelize, Sequelize),
   GuardianSoftware: require('./guardian-software/guardian-software')(sequelize, Sequelize),
-  Location: require('./location/location')(sequelize, Sequelize),
   Organization: require('./organization/organization')(sequelize, Sequelize),
   AnonymousToken: require('./token/anonymous-token')(sequelize, Sequelize),
   RegistrationToken: require('./token/registration-token')(sequelize, Sequelize),
-  ResetPasswordToken: require('./token/reset-password-token')(sequelize, Sequelize),
-  UserToken: require('./token/user-token')(sequelize, Sequelize),
   User: require('./user/user')(sequelize, Sequelize),
   UserGuardianGroupSubscription: require('./user/user-group-subscriptions')(sequelize, Sequelize),
-  UserLocation: require('./user/user-location')(sequelize, Sequelize),
   UserSiteRelation: require('./user/user-relations')(sequelize, Sequelize),
   AdoptProtectDonation: require('./adopt-protect-donation')(sequelize, Sequelize),
   Device: require('./device')(sequelize, Sequelize),
@@ -116,8 +109,6 @@ const db = {
   Guardian: require('./guardian')(sequelize, Sequelize),
   HealthCheck: require('./health-check')(sequelize, Sequelize),
   Language: require('./language')(sequelize, Sequelize),
-  ReportAttachmentRelation: require('./report-attachment-relation')(sequelize, Sequelize),
-  Report: require('./report')(sequelize, Sequelize),
   ShortLink: require('./shortlink')(sequelize, Sequelize),
   SourceType: require('./source-type')(sequelize, Sequelize)
 }

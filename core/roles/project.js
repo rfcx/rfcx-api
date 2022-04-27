@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const projectsService = require('../projects/dao')
-const usersFusedService = require('../../common/users/fused')
+const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const dao = require('./dao')
@@ -73,8 +73,7 @@ router.put('/:id/users', hasProjectPermission('U'), function (req, res) {
   return params.validate()
     .then(async () => {
       const project = await projectsService.get(projectId)
-      const user = await usersFusedService.getByEmail(convertedParams.email)
-      await usersFusedService.ensureUserSynced(user)
+      const user = await usersService.getUserByEmail(convertedParams.email)
       if (project.created_by_id === user.id) {
         throw new ForbiddenError('You can not assign role to project owner.')
       }
@@ -112,7 +111,7 @@ router.delete('/:id/users', hasProjectPermission('U'), function (req, res) {
 
   return params.validate()
     .then(async () => {
-      const user = await usersFusedService.getByEmail(convertedParams.email)
+      const user = await usersService.getUserByEmail(convertedParams.email)
       await dao.removeRole(user.id, projectId, dao.PROJECT)
       return res.sendStatus(200)
     })

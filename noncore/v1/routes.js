@@ -14,7 +14,6 @@ module.exports = {
   sites: [
     require('./sites/sites'),
     require('./sites/sites-audio'),
-    require('./sites/sites-guardians'),
     require('./sites/sites-events'),
     require('./sites/sites-images')
   ],
@@ -30,12 +29,6 @@ module.exports = {
   ],
   assets: [
     require('./assets/assets')
-  ],
-  reports: [
-    require('./reports/reports')
-  ],
-  'filter-presets': [
-    require('./filter-presets/filter-presets')
   ],
   metrics: [
     require('./metrics/metrics')

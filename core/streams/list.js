@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
-const usersService = require('../../common/users/fused')
+const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const { Stream } = require('../_models')
 const { CREATE, READ, UPDATE, DELETE } = require('../roles/dao')
