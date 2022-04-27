@@ -61,7 +61,7 @@ RUN ./configure && make && make install
 
 WORKDIR /tmp/sox-14.4.2/
 RUN ./configure --with-opus=yes  --with-flac=yes --with-oggvorbis=yes && make -s && make install
-ENV SOX_PATH="/usr/bin/sox"
+ENV SOX_PATH="/usr/local/bin/sox"
 ENV FFMPEG_PATH="/usr/bin/ffmpeg"
 ENV IMAGEMAGICK_PATH="/usr/bin/convert"
 ENV PNGCRUSH_PATH="/usr/bin/pngcrush"
