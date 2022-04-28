@@ -76,7 +76,7 @@ router.route('/:guid')
         timescaleTransaction = await models.sequelize.transaction()
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
         // Check if stream exists or create a new one
-        const existingStream = await streamDao.ensureStreamExistsForGuardian(guardian)
+        const existingStream = await streamDao.get(guardian.stream_id, { fields: ['id'] })
         await streamDao.update(existingStream.id, {
           latitude: params.latitude,
           longitude: params.longitude,

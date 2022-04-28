@@ -12,7 +12,7 @@ const guardiansService = require('../../../noncore/_services/guardians/guardians
 router.route('/:guid/software')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const query = `
-      SELECT soft.role as role, ver.version as version, metaver.software_id, g.is_updatable
+      SELECT soft.role as role, ver.version as version, metaver.software_id
       FROM GuardianMetaSoftwareVersions AS metaver
       INNER JOIN (
         SELECT MAX(last_checkin_at) as last_checkin, software_id, version_id, guardian_id
@@ -36,8 +36,7 @@ router.route('/:guid/software')
           const lastVersionRow = await guardiansService.getGuardianLatestSoftwareVersion(item.software_id)
           result[item.role] = {
             version: item.version,
-            latest_version: lastVersionRow.version,
-            is_updatable: item.is_updatable
+            latest_version: lastVersionRow.version
           }
         }
         return result
