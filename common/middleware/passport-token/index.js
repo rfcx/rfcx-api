@@ -29,7 +29,6 @@ exports.TokenStrategy =
           break
         }
       }
-
       switch (authUser.type) {
         case 'token':
           return authenticateAs.AnonymousToken(req, token, done, authUser)
