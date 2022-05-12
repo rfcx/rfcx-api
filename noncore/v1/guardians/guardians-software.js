@@ -7,11 +7,12 @@ const { httpErrorResponse } = require('../../../common/error-handling/http')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const sequelize = require('sequelize')
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
+const guardiansService = require('../../../noncore/_services/guardians/guardians-service')
 
 router.route('/:guid/software')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const query = `
-      SELECT soft.role as role, ver.version as version
+      SELECT soft.role as role, ver.version as version, metaver.software_id
       FROM GuardianMetaSoftwareVersions AS metaver
       INNER JOIN (
         SELECT MAX(last_checkin_at) as last_checkin, software_id, version_id, guardian_id
@@ -25,17 +26,19 @@ router.route('/:guid/software')
     `
 
     models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
-      .then((versionData) => {
+      .then(async (versionData) => {
         if (!versionData.length) {
           httpErrorResponse(req, res, 404, null, 'Guardian or software versions not found.')
           return
         }
         const result = {}
-        versionData.forEach((item) => {
+        for (const item of versionData) {
+          const lastVersionRow = await guardiansService.getGuardianLatestSoftwareVersion(item.software_id)
           result[item.role] = {
-            version: item.version
+            version: item.version,
+            latest_version: lastVersionRow.version
           }
-        })
+        }
         return result
       })
       .then((versions) => {

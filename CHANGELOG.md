@@ -1,3 +1,11 @@
+## 1.1.6 (2022-05-XX)
+
+### Features
+* **noncore**: Update is_updatable value in the Guardians table
+
+### Bug Fixes
+* **noncore**: Fixed the issue with updating guardians data
+
 ## 1.1.5 (2022-05-12)
 
 ### Bug Fixes
