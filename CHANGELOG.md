@@ -1,4 +1,9 @@
-## 1.1.4 (2022-04-XX)
+## 1.1.5 (2022-05-12)
+
+### Bug Fixes
+* **core**: Send segmentCreated event at the end of transaction
+
+## 1.1.4 (2022-04-28)
 
 ### Features
 * **noncore**: Add POST /users endpoint

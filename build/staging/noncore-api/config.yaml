@@ -25,7 +25,7 @@ data:
   GUARDIAN_API_SMS_ADDRESS: "+14154803657"
   GUARDIAN_BROKER_HOSTNAME: "staging-api-mqtt.rfcx.org"
   INGEST_BUCKET: "rfcx-streams-staging"
-  INGEST_SERVICE_BASE_URL: "http://ingest-service-service.staging.svc.cluster.local/"
+  INGEST_SERVICE_BASE_URL: "http://ingest-service-api-service.staging.svc.cluster.local/"
   INGEST_SERVICE_ENABLED: "true"
   MAILCHIMP_API_URL: "https://us9.api.mailchimp.com/3.0/"
   MESSAGE_QUEUE_ENABLED: 'true'
