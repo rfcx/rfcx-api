@@ -1,3 +1,11 @@
+## 1.1.6 (2022-05-XX)
+
+### Features
+* **noncore**: Update is_updatable value in the Guardians table
+
+### Bug Fixes
+* **noncore**: Fixed the issue with updating guardians data
+
 ## 1.1.5 (2022-05-12)
 
 ### Bug Fixes
@@ -8,7 +16,6 @@
 ### Features
 * **noncore**: Add POST /users endpoint
 * **noncore**: Endpoint for getting guardians by project id
-* **noncore**: Update is_updatable value in the Guardians table
 
 ### Performance improvements
 * **noncore**: Delete code and table related to FilterPresets, Reports with Attachments, UserLocations, UserTokens, ResetPasswordTokens
@@ -17,7 +24,6 @@
 
 ### Bug Fixes
 * **core**: Set arbimon ingestion request timeout to 10 seconds
-* **noncore**: Fixed the issue with updating guardians data
 
 ## 1.1.3 (2022-04-05)
 
