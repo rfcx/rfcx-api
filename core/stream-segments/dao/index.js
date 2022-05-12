@@ -135,18 +135,24 @@ async function query (filters, options = {}) {
 function create (segment, options = {}) {
   const transaction = options.transaction
   return StreamSegment.create(segment, { transaction })
-    .then(() => {
-      if (messageQueue.isEnabled()) {
-        const message = { id: segment.id, start: segment.start, streamId: segment.stream_id }
-        return messageQueue.publish(SEGMENT_CREATED, message).catch((e) => {
-          console.error('Stream segment service -> create -> publish failed', e.message || e)
-        })
-      }
-    })
     .catch((e) => {
       console.error('Stream segment service -> create -> error', e)
       throw new ValidationError('Cannot create stream segment with provided data')
     })
+}
+
+/**
+ * Notify about new segment
+ * @param {*} segment Stream segment object
+ */
+function notify (segment) {
+  if (!messageQueue.isEnabled()) {
+    return
+  }
+  const message = { id: segment.id, start: segment.start, streamId: segment.stream_id }
+  return messageQueue.publish(SEGMENT_CREATED, message).catch((e) => {
+    console.error('Stream segment service -> publish failed', e.message || e)
+  })
 }
 
 /**
@@ -236,6 +242,7 @@ module.exports = {
   get,
   query,
   create,
+  notify,
   getStreamCoverage,
   getNextSegmentTimeAfterSegment,
   removeDuplicates

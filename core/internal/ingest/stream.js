@@ -104,6 +104,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             await arbimonService.createRecordingsFromSegments(sfParams, segments, { transaction })
           }
 
+          await Promise.all(segments.map(segment => streamSegmentDao.notify(segment)))
           await transaction.commit()
           return res.location(`/stream-source-files/${streamSourceFile.id}`).sendStatus(201)
         })
