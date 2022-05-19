@@ -1,4 +1,4 @@
-## 1.1.6 (2022-05-XX)
+## 1.1.6 (2022-05-19)
 
 ### Features
 * **noncore**: Update is_updatable value in the Guardians table
