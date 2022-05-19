@@ -62,7 +62,9 @@ async function create (data, opts = {}) {
       return item
     })
     .catch((e) => {
-      console.error('Source file service -> create -> error', e)
+      if (e instanceof ValidationError === false) {
+        console.error('Source file service -> create -> error', e)
+      }
       throw new ValidationError('Cannot create source file with provided data.')
     })
 }
