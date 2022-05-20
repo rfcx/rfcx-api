@@ -17,7 +17,7 @@ test('parse bme688 sensor', () => {
 
   const result = parse(raw)
 
-  expect(result.sensor).toBe('bm')
+  expect(result.component).toBe('bm')
   expect(result.timestamp.toISOString()).toBe('2015-01-01T02:41:13.642Z')
   expect(result.values).toHaveLength(4)
   expect(result.values[0]).toEqual(expect.any(Number))
