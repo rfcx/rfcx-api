@@ -1,3 +1,8 @@
+## 1.1.7 (2022-05-??)
+
+### Features
+* **noncore**: Ping payload accepts sensor values
+
 ## 1.1.6 (2022-05-19)
 
 ### Features
