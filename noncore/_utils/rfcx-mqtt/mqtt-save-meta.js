@@ -578,8 +578,6 @@ exports.saveMeta = {
     return models.GuardianMetaNetwork.bulkCreate(dbMetaNetwork)
   },
 
-  SensorValues: function (payloadArr, guardianId) {
-
-  }
+  SensorValues: require('./mqtt-save-meta-sensorvalues')
 
 }

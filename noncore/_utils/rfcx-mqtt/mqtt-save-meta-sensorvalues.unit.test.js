@@ -21,6 +21,7 @@ jest.mock('../../_models', () => {
         let wasInserted = false
         if (sensor === undefined) {
           sensor = options.where
+          sensor.id = sensors.length === 0 ? 1 : (sensors[sensors.length - 1].id + 1)
           sensors.push(sensor)
           wasInserted = true
         }
@@ -34,6 +35,7 @@ jest.mock('../../_models', () => {
         let wasInserted = false
         if (sensorComponent === undefined) {
           sensorComponent = options.where
+          sensorComponent.id = sensorComponents.length === 0 ? 1 : (sensorComponents[sensorComponents.length - 1].id + 1)
           sensorComponents.push(sensorComponent)
           wasInserted = true
         }
@@ -94,9 +96,8 @@ test('can save sensor values', async () => {
 
   const results = await models.GuardianMetaSensorValue.findAll()
   expect(results.length).toBe(3)
-
   results.forEach((it, index) => {
-    expect(it.measured_at).toEqual(timestamp.toDate())
+    expect(moment(it.measured_at).toDate()).toEqual(timestamp.toDate())
     expect(it.value).toBe(payloadAsArray[0].values[index])
   })
 })
