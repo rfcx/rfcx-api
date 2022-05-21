@@ -62,24 +62,24 @@ beforeEach(async () => {
 
 test('can create a new sensor component', async () => {
   const timestamp = moment.utc()
-  const payloadAsArray = [
+  const payloadArray = [
     { component: 'ab', timestamp, values: [12.345, 6.789, 0.12345] }
   ]
 
-  await SensorValues(payloadAsArray, 'xyz')
+  await SensorValues(payloadArray, 'xyz')
 
   const results = await models.GuardianMetaSensorComponent.findAll()
   expect(results).toHaveLength(1)
-  expect(results[0].shortname).toBe(payloadAsArray[0].component)
+  expect(results[0].shortname).toBe(payloadArray[0].component)
 })
 
 test('can create a new sensor', async () => {
   const timestamp = moment.utc()
-  const payloadAsArray = [
+  const payloadArray = [
     { component: 'ab', timestamp, values: [12.345, 6.789, 0.12345] }
   ]
 
-  await SensorValues(payloadAsArray, 'xyz')
+  await SensorValues(payloadArray, 'xyz')
 
   const results = await models.GuardianMetaSensor.findAll()
   expect(results).toHaveLength(3)
@@ -88,16 +88,16 @@ test('can create a new sensor', async () => {
 
 test('can save sensor values', async () => {
   const timestamp = moment.utc()
-  const payloadAsArray = [
+  const payloadArray = [
     { component: 'ab', timestamp, values: [12.345, 6.789, 0.12345] }
   ]
 
-  await SensorValues(payloadAsArray, 'xyz')
+  await SensorValues(payloadArray, 'xyz')
 
   const results = await models.GuardianMetaSensorValue.findAll()
   expect(results.length).toBe(3)
   results.forEach((it, index) => {
     expect(moment(it.measured_at).toDate()).toEqual(timestamp.toDate())
-    expect(it.value).toBe(payloadAsArray[0].values[index])
+    expect(it.value).toBe(payloadArray[0].values[index])
   })
 })
