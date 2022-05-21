@@ -6,6 +6,7 @@ const { hashedCredentials } = require('../../../common/crypto/sha256')
 const { sha1 } = require('../misc/sha1')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
+const { parse: parseSensorValues } = require('./mqtt-sensorvalues-parse')
 
 exports.checkInDatabase = {
 
@@ -145,6 +146,7 @@ exports.checkInDatabase = {
 
       saveMeta.CheckInStatus(strArrToJSArr(checkInObj.json.checkins, '|', '*'), guardianId, checkInObj.json.measured_at),
 
+      saveMeta.SensorValues((checkInObj.json.s ? checkInObj.json.s.split('|') : []).map(p => parseSensorValues(p)), guardianId),
       saveMeta.SentinelPower(strArrToJSArr(checkInObj.json.sentinel_power, '|', '*'), guardianId, checkInId),
       saveMeta.SentinelSensor('accelerometer', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
       saveMeta.SentinelSensor('compass', strArrToJSArr(checkInObj.json.sentinel_sensor, '|', '*'), guardianId, checkInId),
