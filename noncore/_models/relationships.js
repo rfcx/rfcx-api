@@ -96,6 +96,9 @@ function defineRelationships (models) {
   models.GuardianMetaSegmentsGroup.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaSegmentsGroupLog.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaSegmentsQueue.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  models.GuardianMetaSensorValue.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  models.GuardianMetaSensorValue.belongsTo(models.GuardianMetaSensor, { as: 'Sensor', foreignKey: 'sensor_id' })
+  models.GuardianMetaSensor.belongsTo(models.GuardianMetaSensorComponent, { as: 'Component', foreignKey: 'component_id' })
 
   models.GuardianMetaSentinelPower.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaSentinelAccelerometer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
