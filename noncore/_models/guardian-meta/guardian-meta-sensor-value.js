@@ -8,14 +8,6 @@ module.exports = function (sequelize, DataTypes) {
     value: {
       type: DataTypes.FLOAT,
       allowNull: false
-    },
-    sensor_type_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: {
-        isFloat: true,
-        min: 0
-      }
     }
   }, {
     tableName: 'GuardianMetaSensorValues'
