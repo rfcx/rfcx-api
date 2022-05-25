@@ -119,7 +119,7 @@ function createRecordings (body) {
     },
     body,
     json: true,
-    timeout: 10000
+    timeout: 20000
   }
 
   return getClientToken()
