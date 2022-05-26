@@ -141,7 +141,7 @@ async function query (filters, options = {}) {
       }
     }
     if (options.onlyDeleted) {
-      where.deletedAt = {
+      where.deleted_at = {
         [Sequelize.Op.ne]: null
       }
     }
