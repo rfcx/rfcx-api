@@ -7,6 +7,7 @@ const Converter = require('../../common/converter')
 const { getIds } = require('../classifications/dao')
 const { parseClassifierOutputMapping } = require('./dao/parsing')
 const { upload } = require('./dao/upload')
+const { getSignedUrl } = require('./dao/download')
 
 /**
  * @swagger
@@ -217,6 +218,36 @@ router.patch('/:id', function (req, res) {
     })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))
+})
+
+/**
+ * /classifier/{id}/file
+ *  get:
+ *    summary: Downlaod a classifier file
+ *    tags:
+ *      - classifiers
+ *     parameters:
+ *       - name: id
+ *         description: Classifier identifier
+ *         in: path
+ *         type: string
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: A classifier file
+ *         content:
+ *           file
+ *       404:
+ *         description: Not found
+ */
+router.get('/:id/file', function (req, res) {
+  const classifierId = req.params.id
+
+  getSignedUrl(classifierId)
+    .then(signedUrl => {
+      res.redirect(signedUrl)
+    })
+    .catch(httpErrorHandler(req, res, `Failed downloading classifiers id ${classifierId}`))
 })
 
 module.exports = router

@@ -33,15 +33,18 @@ const availableIncludes = [
 /**
  * Searches for classifier with given uuid
  * @param {integer} id
- * @param {*} opts additional function params
+ * @param {*} options additional function params
+ * @param {boolean} options.joinRelations Join the classifier related relation
+ * @param {string[]} options.attributes Custom attributes
  * @returns {*} classifier model item
+ * @throws EmptyResultError when classifier not found
  */
-function get (id, opts = {}) {
+function get (id, options = {}) {
   return models.Classifier
     .findOne({
       where: { id },
-      attributes: models.Classifier.attributes.full,
-      include: opts && opts.joinRelations ? availableIncludes : []
+      attributes: options && options.attributes ? options.attributes : models.Classifier.attributes.full,
+      include: options && options.joinRelations ? availableIncludes : []
     })
     .then(classifier => {
       if (!classifier) {
@@ -57,6 +60,9 @@ function get (id, opts = {}) {
         data.activeProjects = data.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj) // eslint-disable-line camelcase
       }
       return data
+    })
+    .catch(() => {
+      throw new EmptyResultError('Classifier with given id not found.')
     })
 }
 
