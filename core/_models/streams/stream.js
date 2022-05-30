@@ -86,7 +86,6 @@ module.exports = function (sequelize, DataTypes) {
     paranoid: true,
     timestamps: true,
     underscored: true,
-    deletedAt: 'deleted_at',
     hooks: {
       afterCreate: async (stream, option) => {
         await updateMinMaxLatLngFromCreate(stream)
