@@ -1,2 +1,2 @@
-GET http://localhost:8080/v1/guardians/c9d541166e12/meta/segments?starting_after=2022-05-29T02:33:58.587&ending_before=2022-05-30T14:33:58.587&limit=300
+GET http://localhost:8080/v1/guardians/c9d541166e12/meta/segments?segment_type=swm&starting_after=2022-05-29T02:33:58.587&ending_before=2022-05-30T14:33:58.587&limit=300
 Authorization: Bearer xyz
