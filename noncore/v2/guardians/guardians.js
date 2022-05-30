@@ -75,36 +75,37 @@ router.route('/:guid')
         mysqlTransaction = await modelsLegacy.sequelize.transaction()
         timescaleTransaction = await models.sequelize.transaction()
         const guardian = await guardiansService.getGuardianByGuid(req.params.guid)
-        // Check if stream exists or create a new one
-        const existingStream = await streamDao.get(guardian.stream_id, { fields: ['id'] })
-        await streamDao.update(existingStream.id, {
-          latitude: params.latitude,
-          longitude: params.longitude,
-          altitude: params.altitude,
-          is_public: params.is_visible,
-          project_id: params.project_id
-        }, { updatableBy, transaction: timescaleTransaction }).catch(e => {
-          if (e instanceof EmptyResultError || e instanceof ForbiddenError) {
-            throw new ValidationError('stream id does not exist or is not updatable by user')
+        const streamId = params.stream_id || guardian.stream_id
+        if (streamId) {
+          const stream = await streamDao.get(streamId, { fields: ['id', 'project_id', 'timezone'] })
+          await streamDao.update(streamId, {
+            latitude: params.latitude,
+            longitude: params.longitude,
+            altitude: params.altitude,
+            is_public: params.is_visible,
+            project_id: params.project_id
+          }, { updatableBy, transaction: timescaleTransaction }).catch(e => {
+            if (e instanceof EmptyResultError || e instanceof ForbiddenError) {
+              throw new ValidationError('stream id does not exist or is not updatable by user')
+            }
+            throw e
+          })
+          if (!params.project_id && stream.project_id !== undefined) {
+            params.project_id = stream.project_id
           }
-          throw e
-        })
-        const stream = await streamDao.get(existingStream.id, { fields: ['project_id', 'timezone'] })
-        if (!params.project_id && stream.project_id !== undefined) {
-          params.project_id = stream.project_id
-        }
-        if (params.latitude !== undefined && params.longitude !== undefined) {
-          params.timezone = stream.timezone
+          if (params.latitude !== undefined && params.longitude !== undefined) {
+            params.timezone = stream.timezone
+          }
         }
 
         // Update the last deployed timestamp whenever stream id changes
-        if (guardian.stream_id === null || guardian.stream_id !== params.stream_id) {
+        if ((!guardian.stream_id && params.stream_id) || (guardian.stream_id !== params.stream_id)) {
           params.last_deployed = models.sequelize.literal('CURRENT_TIMESTAMP')
         }
         const updatedGuardian = await guardiansService.updateGuardian(guardian, params, { transaction: mysqlTransaction })
-        if (arbimonService.isEnabled) {
+        if (arbimonService.isEnabled && guardian.stream_id) {
           await arbimonService.updateSite({
-            id: params.stream_id ? params.stream_id : existingStream.id,
+            id: guardian.stream_id,
             name: params.shortname,
             latitude: params.latitude,
             longitude: params.longitude,
