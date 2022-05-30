@@ -2,6 +2,7 @@
 
 ### Features
 * **noncore**: Ping payload accepts sensor values
+* **noncore**: Segments count endpoint for Guardian diagnostics
 
 ## 1.1.6 (2022-05-19)
 
