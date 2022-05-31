@@ -39,6 +39,9 @@ function computedAdditions (stream) {
  * @throws ForbiddenError when `readableBy` user does not have read permission on the stream
  */
 async function get (idOrWhere, options = {}) {
+  if (idOrWhere === undefined || idOrWhere === null) {
+    throw new ValidationError('Unable to get stream with provided data')
+  }
   const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
   const attributes = options.fields && options.fields.length > 0 ? Stream.attributes.full.filter(a => options.fields.includes(a)) : Stream.attributes.full
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
