@@ -2,7 +2,11 @@
 
 ### Features
 * **noncore**: Ping payload accepts sensor values
+* **noncore**: Segments count endpoint for Guardian diagnostics
 * **core**: Classifier download by id endpoint
+
+### Bug Fixes
+* **core**: only_deleted param of stream endpoint using `deletedAt` instead of `deleted_at`
 
 ## 1.1.6 (2022-05-19)
 
