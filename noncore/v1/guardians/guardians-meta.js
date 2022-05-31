@@ -7,6 +7,29 @@ const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
 
+router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  const guardianGuid = req.params.guardian_id
+  const segmentType = req.query.segment_type || ''
+  const startingAfter = req.rfcx.starting_after || ''
+  const endingBefore = req.rfcx.ending_before || ''
+  const limit = (req.query.limit == null) ? 1 : Math.min(5000, parseInt(req.query.limit))
+
+  const sql = `
+    select DATE_FORMAT(s.created_at, '%Y-%m-%d %H:00') created_at_hour, sum(s.segment_count) segment_count 
+    from GuardianMetaSegmentsGroupLogs s join Guardians g on g.id = s.guardian_id
+    where g.guid = $1 and s.created_at > $2 and s.created_at <= $3 and s.protocol = $4
+    group by 1 order by 1
+    limit $5`
+  const bind = [guardianGuid, startingAfter, endingBefore, segmentType, limit]
+
+  models.sequelize.query(sql, { bind, type: models.sequelize.QueryTypes.SELECT }).then((results) => {
+    res.json(results)
+  }).catch(function (err) {
+    console.error('failure to retrieve meta data: ' + err)
+    httpErrorResponse(req, res, 500, 'database')
+  })
+})
+
 router.route('/:guardian_id/meta/:meta_type')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const metaType = req.params.meta_type
