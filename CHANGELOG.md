@@ -2,6 +2,7 @@
 
 ### Features
 * **noncore**: Ping payload accepts sensor values
+* **core**: Classifier download by id endpoint
 
 ## 1.1.6 (2022-05-19)
 
