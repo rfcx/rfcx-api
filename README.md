@@ -20,7 +20,7 @@ nvm use
 ```
 
 ### Env variables
-Clone and copy `./config/env_vars.js.sample` into `./config/env_vars.js` and fill it with required vars.
+Clone and copy `./common/config/env_vars.js.sample` into `./common/config/env_vars.js` and fill it with required vars.
 
 ### Run all the required support services
 
