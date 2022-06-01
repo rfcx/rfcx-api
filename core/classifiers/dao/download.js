@@ -11,7 +11,7 @@ async function getSignedUrl (classifierId) {
   const classifierUrl = classifier.model_url
   const match = classifierUrl.match(/^s3:\/\/(?<bucket>[a-z][a-z0-9-]*)\/(?<path>.+)$/)
   if (!match) {
-    throw new EmptyResultError('Classifier with given id not found.')
+    throw new EmptyResultError('Classifier model url not recognised')
   }
   const classifierBucket = match.groups.bucket
   const storagePath = match.groups.path

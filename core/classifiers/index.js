@@ -236,7 +236,10 @@ router.patch('/:id', function (req, res) {
  *       200:
  *         description: A classifier file
  *         content:
- *           file
+ *           application/zip:
+ *             schema:
+ *               type: string
+ *               format: binary
  *       404:
  *         description: Not found
  */
