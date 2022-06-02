@@ -7,6 +7,7 @@
 
 ### Bug Fixes
 * **core**: only_deleted param of stream endpoint using `deletedAt` instead of `deleted_at`
+* **noncore**: sbd segments assembling will fail if there is no `data` in `req.body`
 
 ## 1.1.6 (2022-05-19)
 
