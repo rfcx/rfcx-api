@@ -35,6 +35,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     segmentsCompleted: {
       type: DataTypes.INTEGER,
+      defaultValue: 0,
       allowNull: false
     },
     status: { // 10 waiting, 20 running, 30 done, 40 error
