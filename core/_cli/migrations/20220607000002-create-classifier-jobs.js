@@ -12,7 +12,6 @@ module.exports = {
         project_id: {
           type: Sequelize.STRING(12),
           allowNull: false,
-          primaryKey: true,
           references: {
             model: {
               tableName: 'projects'
@@ -21,7 +20,7 @@ module.exports = {
           }
         },
         query_streams: {
-          type: Sequelize.STRING,
+          type: Sequelize.ARRAY(Sequelize.STRING),
           allowNull: true
         },
         query_start: {
@@ -53,7 +52,6 @@ module.exports = {
         created_by_id: {
           type: Sequelize.INTEGER,
           allowNull: false,
-          primaryKey: true,
           references: {
             model: {
               tableName: 'users'

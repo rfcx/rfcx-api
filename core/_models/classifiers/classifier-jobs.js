@@ -10,11 +10,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     projectId: {
       type: DataTypes.STRING(12),
-      allowNull: false,
-      primaryKey: true
+      allowNull: false
     },
     queryStreams: {
-      type: DataTypes.STRING,
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true
     },
     queryStart: {
@@ -38,15 +37,14 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0,
       allowNull: false
     },
-    status: { // 10 waiting, 20 running, 30 done, 40 error
+    status: { // 0 initialized, 10 waiting, 20 running, 30 done, 40 error
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false
     },
     createdById: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
+      allowNull: false
     },
     createdAt: {
       type: DataTypes.DATE,
