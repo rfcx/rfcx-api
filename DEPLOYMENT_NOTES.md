@@ -1,5 +1,9 @@
 # API Deployment Notes
 
+## 1.1.7
+- Run `npm run migrate:core` to apply the following migrations:
+  - `20220607000002-create-classifier-jobs`
+
 ## 1.1.4
 - Check that POST-Login auth0 webhook /users/new-login works correctly
 - Check that all features of the Android Stream app work fine
