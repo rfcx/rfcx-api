@@ -42,6 +42,7 @@ module.exports = {
         },
         segments_completed: {
           type: Sequelize.INTEGER,
+          defaultValue: 0,
           allowNull: false
         },
         status: {
