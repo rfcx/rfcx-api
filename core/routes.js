@@ -44,6 +44,9 @@ module.exports = {
   'clustered-detections': [
     require('./detections/clustered')
   ],
+  'clustered-events': [
+    require('./events/clustered')
+  ],
   indices: [
     require('./indices')
   ],

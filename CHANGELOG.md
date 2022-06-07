@@ -1,3 +1,8 @@
+## 1.1.8 (2022-06-XX)
+
+### Features
+* **core**: Add `/clustered-events` endpoint
+
 ## 1.1.7 (2022-06-06)
 
 ### Features
