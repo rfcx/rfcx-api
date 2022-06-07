@@ -20,7 +20,7 @@ module.exports = {
           }
         },
         query_streams: {
-          type: Sequelize.ARRAY(Sequelize.STRING),
+          type: Sequelize.STRING,
           allowNull: true
         },
         query_start: {
@@ -32,7 +32,7 @@ module.exports = {
           allowNull: true
         },
         query_hours: {
-          type: Sequelize.ARRAY(Sequelize.INTEGER),
+          type: Sequelize.STRING,
           allowNull: true
         },
         segments_total: {
@@ -68,11 +68,11 @@ module.exports = {
           allowNull: false
         },
         started_at: {
-          type: Sequelize.DATE(3),
+          type: Sequelize.DATE,
           allowNull: true
         },
         completed_at: {
-          type: Sequelize.DATE(3),
+          type: Sequelize.DATE,
           allowNull: true
         }
       }, { transaction })
@@ -80,7 +80,6 @@ module.exports = {
       await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_status" ON classifier_jobs using btree (status);', { transaction })
       await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_created_by_id" ON classifier_jobs using btree (created_by_id);', { transaction })
       await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_created_at" ON classifier_jobs using btree (created_at);', { transaction })
-      await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_completed_at" ON classifier_jobs using btree (completed_at);', { transaction })
     })
   },
   down: (queryInterface, Sequelize) => {

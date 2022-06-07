@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     queryStreams: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.STRING,
       allowNull: true
     },
     queryStart: {
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     queryHours: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     segmentsTotal: {
@@ -46,14 +46,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
     startedAt: {
       type: DataTypes.DATE,
       allowNull: true
@@ -64,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     underscored: true,
-    timestamps: false
+    timestamps: true
   })
   ClassifierJobs.associate = function (models) {
     ClassifierJobs.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })

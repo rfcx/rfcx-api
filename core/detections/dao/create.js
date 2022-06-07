@@ -1,5 +1,5 @@
 const build = require('../bl/build')
-const classifierService = require('../../classifiers/dao')
+const classifierService = require('../../classifiers/index/dao')
 const { Detection } = require('../../_models')
 
 async function create (rawDetections) {

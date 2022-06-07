@@ -1,4 +1,4 @@
-const classifierService = require('../../classifiers/dao')
+const classifierService = require('../../classifiers/index/dao')
 const { Op } = require('sequelize')
 
 async function addClassifiers (rawDetections) {
