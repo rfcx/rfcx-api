@@ -30,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     segmentsTotal: {
       type: DataTypes.INTEGER,
+      defaultValue: -1, // Unknown
       allowNull: false
     },
     segmentsCompleted: {

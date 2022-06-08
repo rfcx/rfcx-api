@@ -1,6 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const dao = require('./dao/index')
-const classifierService = require('./bl/index')
+const { create } = require('./dao')
 const Converter = require('../../common/converter')
 
 /**
@@ -43,14 +42,10 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async (params) => {
-      const { projectId, queryStreams, queryStart, queryEnd, queryHours } = params
+      const creatableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
       const createdById = user.id
-      const readableBy = await classifierService.getPermissableBy(user)
-      const streamsNames = await classifierService.getStreamsNames(queryStreams)
-      const segmentsTotal = await classifierService.getSegmentsCount(projectId, queryStreams, queryStart, queryEnd, queryHours)
-      const classifierJob = await classifierService.getClassifierJobParams(projectId, streamsNames, queryStart, queryEnd, queryHours, createdById, segmentsTotal)
-      const result = await dao.create(classifierJob, readableBy)
-
+      const job = { ...params, createdById }
+      const result = await create(job, { creatableBy })
       return res.location(`/classifier-jobs/${result.id}`).sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating classifier job'))

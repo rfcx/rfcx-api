@@ -1,6 +1,6 @@
 const { ClassifierJob, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
-const { getAccessibleObjectsIDs, hasPermission, PROJECT, UPDATE } = require('../../roles/dao')
+const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
 
@@ -54,13 +54,16 @@ async function query (filters, options = {}) {
 /**
  * Create a new classifier job
  * @param {ClassifierJob} job
- * @param {*} options
+ * @param {*} options Additional create options
+ * @param {number|undefined} options.creatableBy Allow only if the given user id has permission to create on the project
+ * @throws ForbiddenError when `creatableBy` user does not have create permission on the project
+ * @throws ValidationError when the project does not exist
  */
 async function create (job, options = {}) {
-  if (job.projectId && options.creatableBy && !(await hasPermission(UPDATE, options.creatableBy, job.projectId, PROJECT))) {
+  if (options.creatableBy && !(await hasPermission(CREATE, options.creatableBy, job.projectId, PROJECT).catch(() => { throw new ValidationError('project does not exist') }))) {
     throw new ForbiddenError()
   }
-  return ClassifierJob.create(job)
+  return await ClassifierJob.create(job)
     .catch((e) => {
       console.error('error', e)
       throw new ValidationError('Cannot create classifier job with provided data.')

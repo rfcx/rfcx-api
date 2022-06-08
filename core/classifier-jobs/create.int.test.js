@@ -36,7 +36,7 @@ async function commonSetup () {
 }
 
 describe('POST /classifiers-jobs', () => {
-  test.only('job created and location header returns an integer id', async () => {
+  test('job created and location header returns an integer id', async () => {
     const requestBody = {
       project_id: 'testproject1'
     }
@@ -45,12 +45,12 @@ describe('POST /classifiers-jobs', () => {
 
     expect(response.statusCode).toBe(201)
     expect(response.header.location).toMatch(/^\/classifier-jobs\/[0-9]+$/)
-    const id = response.header.location.replace('/', '')
+    const id = response.header.location.replace('/classifier-jobs/', '')
     const job = await models.ClassifierJob.findByPk(id)
     expect(job.project_id).toBe(requestBody.project_id)
   })
 
-  test('put all fields', async () => {
+  test('can set all fields', async () => {
     const requestBody = {
       project_id: 'testproject1',
       query_streams: 'LilSjZJkRK20',
@@ -137,16 +137,6 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(400)
   })
 
-  test('query streams is empty', async () => {
-    const requestBody = {
-      project_id: 'testproject1',
-      query_streams: 'LilSjZJkRK22'
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-    expect(response.statusCode).toBe(400)
-  })
-
   test('user is not project member', async () => {
     const requestBody = {
       project_id: 'testproject2',
@@ -185,32 +175,6 @@ describe('POST /classifiers-jobs', () => {
 
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
-  })
-
-  test('streams do not exist in a project', async () => {
-    const requestBody = {
-      project_id: 'testproject2',
-      query_streams: 'LilSjZJkRK20',
-      query_start: '2021-01-02',
-      query_end: '2021-01-02',
-      query_hours: '11,22'
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-    expect(response.statusCode).toBe(400)
-  })
-
-  test('check two streams in the query', async () => {
-    const requestBody = {
-      project_id: 'testproject1',
-      query_streams: 'LilSjZJkRK20, LilSjZJkRK21',
-      query_start: '2021-01-02',
-      query_end: '2021-01-02',
-      query_hours: '1,2'
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-    expect(response.statusCode).toBe(201)
   })
 
   test('missing project id', async () => {
