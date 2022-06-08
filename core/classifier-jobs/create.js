@@ -17,10 +17,10 @@ const Converter = require('../../common/converter')
  *       content:
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierJob'
+ *             $ref: '#/components/requestBodies/ClassifierJobs'
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierJob'
+ *             $ref: '#/components/requestBodies/ClassifierJobs'
  *     responses:
  *       201:
  *         description: Created
@@ -33,6 +33,7 @@ const Converter = require('../../common/converter')
  *         description: Invalid query parameters
  */
 module.exports = (req, res) => {
+  const user = req.rfcx.auth_token_info
   const converter = new Converter(req.body, {}, true)
   converter.convert('project_id').toString().minLength(12).maxLength(12)
   converter.convert('query_streams').optional().toString()
@@ -43,15 +44,14 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async (params) => {
       const { projectId, queryStreams, queryStart, queryEnd, queryHours } = params
-      const user = req.rfcx.auth_token_info
       const createdById = user.id
-      const readableBy = await classifierService.getReadableBy(user)
+      const readableBy = await classifierService.getPermissableBy(user)
       const streamsNames = await classifierService.getStreamsNames(queryStreams)
       const segmentsTotal = await classifierService.getSegmentsCount(projectId, queryStreams, queryStart, queryEnd, queryHours)
       const classifierJob = await classifierService.getClassifierJobParams(projectId, streamsNames, queryStart, queryEnd, queryHours, createdById, segmentsTotal)
-      const createdJob = await dao.create(classifierJob, readableBy)
+      const result = await dao.create(classifierJob, readableBy)
 
-      return res.location(`/classifier-jobs/${createdJob.id}`).sendStatus(201)
+      return res.location(`/classifier-jobs/${result.id}`).sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating classifier job'))
 }

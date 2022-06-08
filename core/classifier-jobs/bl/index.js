@@ -75,14 +75,14 @@ async function getStreamsNames (queryStreams) {
   return streamsNames
 }
 
-async function getReadableBy (user) {
-  const readableBy = user && (user.is_super || user.has_system_role || user.has_stream_token) ? undefined : user.id
-  return readableBy
+async function getPermissableBy (user) {
+  const permissableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+  return permissableBy
 }
 
 module.exports = {
   getClassifierJobParams,
   getSegmentsCount,
   getStreamsNames,
-  getReadableBy
+  getPermissableBy
 }
