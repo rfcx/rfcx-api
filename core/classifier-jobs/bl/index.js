@@ -1,4 +1,4 @@
-const models = require('../../../_models')
+const models = require('../../_models')
 const moment = require('moment')
 
 async function getClassifierJobParams (projectId, streamsNames, queryStart, queryEnd, queryHours, createdById, segmentsTotal) {

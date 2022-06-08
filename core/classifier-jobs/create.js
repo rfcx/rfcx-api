@@ -1,12 +1,12 @@
-const { httpErrorHandler } = require('../../../common/error-handling/http')
+const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao/index')
 const classifierService = require('./bl/index')
-const Converter = require('../../../common/converter')
+const Converter = require('../../common/converter')
 
 /**
  * @swagger
  *
- * /jobs:
+ * /classifier-jobs:
  *   post:
  *     summary: Create a classifier job
  *     tags:
@@ -26,7 +26,7 @@ const Converter = require('../../../common/converter')
  *         description: Created
  *         headers:
  *           Location:
- *             description: Path of the created resource (e.g. `/jobs/123`)
+ *             description: Path of the created resource (e.g. `/classifier-jobs/123`)
  *             schema:
  *               type: string
  *       400:
@@ -51,7 +51,7 @@ module.exports = (req, res) => {
       const classifierJob = await classifierService.getClassifierJobParams(projectId, streamsNames, queryStart, queryEnd, queryHours, createdById, segmentsTotal)
       const createdJob = await dao.create(classifierJob, readableBy)
 
-      return res.location(`/jobs/${createdJob.id}`).sendStatus(201)
+      return res.location(`/classifier-jobs/${createdJob.id}`).sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating classifier job'))
 }

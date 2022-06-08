@@ -1,6 +1,6 @@
-const routes = require('../index')
-const models = require('../../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
+const routes = require('./index')
+const models = require('../_models')
+const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()

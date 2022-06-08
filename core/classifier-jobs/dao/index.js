@@ -1,6 +1,6 @@
-const { ClassifierJobs } = require('../../../_models')
-const { ForbiddenError, ValidationError } = require('../../../../common/error-handling/errors')
-const { hasPermission, PROJECT, UPDATE } = require('../../../roles/dao')
+const { ClassifierJobs } = require('../../_models')
+const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
+const { hasPermission, PROJECT, UPDATE } = require('../../roles/dao')
 
 /**
  * Create a stream
