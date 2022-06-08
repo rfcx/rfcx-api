@@ -23,8 +23,7 @@ async function commonSetup () {
   const STREAM_2 = { id: 'LilSjZJkRK21', name: 'Classifier job test 2', start: '2021-02-01T01:00:00.000Z', end: '2021-03-01T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT.id }
   await models.Project.create(PROJECT)
   await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT.id, role_id: seedValues.roleMember })
-  await models.Stream.create(STREAM_1)
-  await models.Stream.create(STREAM_2)
+  await models.Stream.bulkCreate([STREAM_1, STREAM_2])
   await models.AudioFileFormat.create({ id: 1, value: 'wav' })
   await models.AudioCodec.create({ id: 1, value: 'wav' })
   await models.FileExtension.create({ id: 1, value: '.wav' })

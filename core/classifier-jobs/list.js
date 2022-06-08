@@ -71,7 +71,7 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async params => {
-      const { status, projects, limit, offset, sort } = params
+      const { status, projects, limit, offset, sort, fields } = params
       const permissableBy = await classifierService.getPermissableBy(user)
       let createdBy = params.createdBy
       if (createdBy === 'me') {
@@ -80,7 +80,7 @@ module.exports = (req, res) => {
         createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
       const filters = { projects, status, createdBy }
-      const options = { permissableBy, limit, offset, sort }
+      const options = { permissableBy, limit, offset, sort, fields }
       const result = await dao.query(filters, options)
       const { total, results } = result
       return res.header('Total-Items', total).json(results)

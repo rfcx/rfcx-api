@@ -37,6 +37,7 @@ module.exports = {
         },
         segments_total: {
           type: Sequelize.INTEGER,
+          defaultValue: -1,
           allowNull: false
         },
         segments_completed: {

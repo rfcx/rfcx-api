@@ -4,6 +4,10 @@ const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
 
+const availableIncludes = [
+  ClassifierJob.include({ attributes: ClassifierJob.attributes.full })
+]
+
 /**
  * Get a list of classifier jobs matching the filters
  * @param {*} filters Classifier jobs attributes
@@ -19,30 +23,34 @@ const pagedQuery = require('../../_utils/db/paged-query')
 async function query (filters, options = {}) {
   const where = {}
 
-  if (filters.projects) {
+  if (options.permissableBy) {
+    const projectIds = await getAccessibleObjectsIDs(options.permissableBy, PROJECT, filters.projects)
     where.projectId = {
-      [Sequelize.Op.in]: options.projects
+      [Sequelize.Op.in]: projectIds
+    }
+  } else if (filters.projects) {
+    where.projectId = {
+      [Sequelize.Op.in]: filters.projects
     }
   }
 
   if (filters.status) {
-    where.status = options.status
+    where.status = filters.status
   }
 
   if (filters.createdBy) {
-    where.createdById = options.createdBy
+    where.createdById = filters.createdBy
   }
 
-  if (options.permissableBy) {
-    where.id = {
-      [Sequelize.Op.in]: await getAccessibleObjectsIDs(options.permissableBy, PROJECT, 'R', true)
-    }
-  }
-
+  const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.full
+  const attributes = { ...classifierAttributes, exclude: ['created_by_id', 'project_id'] }
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
   const order = getSortFields(options.sort || '-created_at')
 
   const result = await pagedQuery(ClassifierJob, {
     where,
+    attributes,
+    include,
     order,
     limit: options.limit,
     offset: options.offset
