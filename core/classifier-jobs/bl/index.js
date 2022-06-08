@@ -38,11 +38,11 @@ async function getSegmentsCount (projectId, queryStreams, queryStart, queryEnd, 
               [models.Sequelize.Op.or]:
               {
                 [models.Sequelize.Op.and]: [
+                  // TODO: Update parsing hours logic.
                   models.Sequelize.literal(`extract(hour from "StreamSegment"."start") >= ${hours[0]}`),
                   models.Sequelize.literal(`extract(hour from "StreamSegment"."start") <= ${hours[hours.length - 1]}`)
                 ]
               }
-              // TODO: Update parsing hours logic.
               // {
               //   [models.Sequelize.Op.and]: [
               //     models.Sequelize.literal('extract(hour from "StreamSegment"."start") >= 17'),
