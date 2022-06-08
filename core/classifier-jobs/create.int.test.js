@@ -1,6 +1,6 @@
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
@@ -10,6 +10,7 @@ app.use('/', routes)
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
+  muteConsole('warn')
 })
 beforeEach(async () => {
   await truncate(models)
@@ -116,7 +117,7 @@ describe('POST /classifiers-jobs', () => {
       project_id: 'testproject1',
       query_streams: 'LilSjZJkRK20',
       query_start: '2020-01-02',
-      query_end: '2020-01-02',
+      query_end: '2020-01-01',
       query_hours: '1,2'
     }
 
@@ -128,16 +129,6 @@ describe('POST /classifiers-jobs', () => {
     const requestBody = {
       project_id: 'testproject2',
       query_streams: 'LilSjZJkRK23'
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-    expect(response.statusCode).toBe(400)
-  })
-
-  test('user token is expired', async () => {
-    const requestBody = {
-      project_id: 'testproject1',
-      query_streams: 'LilSjZJkRK20'
     }
 
     const response = await request(app).post('/').send(requestBody)

@@ -1,6 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { create } = require('./dao')
 const Converter = require('../../common/converter')
+const { ValidationError } = require('../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -42,6 +43,9 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async (params) => {
+      if (params.queryStart && params.queryEnd && params.queryStart.isAfter(params.queryEnd)) {
+        throw new ValidationError('start is after end')
+      }
       const creatableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
       const createdById = user.id
       const job = { ...params, createdById }
