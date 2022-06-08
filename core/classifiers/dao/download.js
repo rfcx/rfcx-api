@@ -1,5 +1,5 @@
-const storageService = require('../../../_services/storage')
-const { EmptyResultError } = require('../../../../common/error-handling/errors')
+const storageService = require('../../_services/storage')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { get } = require('./index')
 
 /**

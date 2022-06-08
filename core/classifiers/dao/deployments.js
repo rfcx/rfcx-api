@@ -1,8 +1,8 @@
-const { EmptyResultError } = require('../../../../common/error-handling/errors')
-const { Classifier, ClassifierDeployment, Sequelize } = require('../../../_models')
-const pagedQuery = require('../../../_utils/db/paged-query')
-const { getSortFields } = require('../../../_utils/db/sort')
-const { toCamelObject } = require('../../../_utils/formatters/string-cases')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { Classifier, ClassifierDeployment, Sequelize } = require('../../_models')
+const pagedQuery = require('../../_utils/db/paged-query')
+const { getSortFields } = require('../../_utils/db/sort')
+const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
   Classifier.include({ attributes: Classifier.attributes.full })

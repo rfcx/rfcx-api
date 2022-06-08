@@ -1,6 +1,6 @@
-const models = require('../../../_models')
-const { EmptyResultError } = require('../../../../common/error-handling/errors')
-const pagedQuery = require('../../../_utils/db/paged-query')
+const models = require('../../_models')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
+const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
   {

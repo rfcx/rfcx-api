@@ -1,5 +1,5 @@
 const request = require('supertest')
-const routes = require('./index')
+const routes = require('.')
 const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 
