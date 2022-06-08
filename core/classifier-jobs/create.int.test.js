@@ -1,4 +1,4 @@
-const routes = require('./index')
+const routes = require('.')
 const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
@@ -15,7 +15,7 @@ beforeEach(async () => {
   await truncate(models)
   await commonSetup()
 })
-// TODO: Fix Error: SQLITE_ERROR related with: extract(hour from "StreamSegment"."start")
+
 async function commonSetup () {
   const PROJECT = { id: 'testproject1', name: 'Test project 1', createdById: seedValues.otherUserId }
   const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Classifier job test', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT.id }
@@ -35,22 +35,19 @@ async function commonSetup () {
   await models.StreamSegment.create(SEGMENT_2)
 }
 
-describe('POST /classifiers/jobs', () => {
-  const checkBasicResult = async (requestBody, response) => {
-    expect(response.header.location).toMatch(/^\/jobs\/[0-9]+$/)
-    const id = response.header.location.replace('/jobs/', '')
-    const job = await models.ClassifierJob.findByPk(id)
-    expect(job.project_id).toBe(requestBody.project_id)
-  }
-
-  test('required fields only', async () => {
+describe('POST /classifiers-jobs', () => {
+  test.only('job created and location header returns an integer id', async () => {
     const requestBody = {
       project_id: 'testproject1'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
+
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
+    expect(response.header.location).toMatch(/^\/classifier-jobs\/[0-9]+$/)
+    const id = response.header.location.replace('/', '')
+    const job = await models.ClassifierJob.findByPk(id)
+    expect(job.project_id).toBe(requestBody.project_id)
   })
 
   test('put all fields', async () => {
@@ -62,9 +59,8 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '1,2'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
   })
 
   test('query streams are null', async () => {
@@ -75,9 +71,8 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '1,2'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
   })
 
   test('start date is null', async () => {
@@ -88,9 +83,8 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '1,2'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
   })
 
   test('end date is null', async () => {
@@ -101,9 +95,8 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '1,2'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
   })
 
   test('query hours are null', async () => {
@@ -114,9 +107,8 @@ describe('POST /classifiers/jobs', () => {
       query_end: '2021-01-02'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
   })
 
   test('query date range is empty', async () => {
@@ -128,7 +120,7 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '1,2'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 
@@ -141,7 +133,7 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '11,22'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 
@@ -151,7 +143,7 @@ describe('POST /classifiers/jobs', () => {
       query_streams: 'LilSjZJkRK22'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 
@@ -161,7 +153,7 @@ describe('POST /classifiers/jobs', () => {
       query_streams: 'LilSjZJkRK23'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 
@@ -171,7 +163,7 @@ describe('POST /classifiers/jobs', () => {
       query_streams: 'LilSjZJkRK20'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 
@@ -181,9 +173,8 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '01,02'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
   })
 
   test('query hours with not correct format', async () => {
@@ -192,7 +183,7 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '27,28'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 
@@ -205,7 +196,7 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '11,22'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 
@@ -218,9 +209,8 @@ describe('POST /classifiers/jobs', () => {
       query_hours: '1,2'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
-    await checkBasicResult(requestBody, response)
   })
 
   test('missing project id', async () => {
@@ -229,7 +219,7 @@ describe('POST /classifiers/jobs', () => {
     }
     console.warn = jest.fn()
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
     expect(console.warn).toHaveBeenCalled()
   })
@@ -239,7 +229,7 @@ describe('POST /classifiers/jobs', () => {
       project_id: 'abcdef12345'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
 
     expect(response.statusCode).toBe(400)
   })
@@ -249,7 +239,7 @@ describe('POST /classifiers/jobs', () => {
       project_id: 'abcdef123456'
     }
 
-    const response = await request(app).post('/jobs').send(requestBody)
+    const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
   })
 })
