@@ -54,7 +54,7 @@ const classifierService = require('./bl/index')
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/ClassifierJobs'
+ *                 $ref: '#/components/schemas/ClassifierJob'
  *       400:
  *         description: Invalid query parameters
  */

@@ -1,4 +1,4 @@
-const { ClassifierJobs, Sequelize } = require('../../_models')
+const { ClassifierJob, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, UPDATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -41,26 +41,26 @@ async function query (filters, options = {}) {
 
   const order = getSortFields(options.sort || '-created_at')
 
-  const classifierJobsQuery = await pagedQuery(ClassifierJobs, {
+  const result = await pagedQuery(ClassifierJob, {
     where,
     order,
     limit: options.limit,
     offset: options.offset
   })
 
-  return classifierJobsQuery
+  return result
 }
 
 /**
  * Create a new classifier job
- * @param {ClassifierJobs} job
+ * @param {ClassifierJob} job
  * @param {*} options
  */
 async function create (job, options = {}) {
   if (job.projectId && options.creatableBy && !(await hasPermission(UPDATE, options.creatableBy, job.projectId, PROJECT))) {
     throw new ForbiddenError()
   }
-  return ClassifierJobs.create(job)
+  return ClassifierJob.create(job)
     .catch((e) => {
       console.error('error', e)
       throw new ValidationError('Cannot create classifier job with provided data.')

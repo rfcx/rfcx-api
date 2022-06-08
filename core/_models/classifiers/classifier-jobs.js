@@ -1,7 +1,7 @@
 const includeBuilder = require('../../_utils/db/include-builder')
 
 module.exports = (sequelize, DataTypes) => {
-  const ClassifierJobs = sequelize.define('ClassifierJobs', {
+  const ClassifierJob = sequelize.define('ClassifierJob', {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -58,11 +58,11 @@ module.exports = (sequelize, DataTypes) => {
     underscored: true,
     timestamps: true
   })
-  ClassifierJobs.associate = function (models) {
-    ClassifierJobs.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })
-    ClassifierJobs.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
+  ClassifierJob.associate = function (models) {
+    ClassifierJob.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })
+    ClassifierJob.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
-  ClassifierJobs.attributes = {
+  ClassifierJob.attributes = {
     full: [
       'id',
       'project_id',
@@ -81,6 +81,6 @@ module.exports = (sequelize, DataTypes) => {
     ],
     lite: ['id', 'project_id', 'segments_completed', 'segments_total', 'created_by_id', 'created_at', 'completed_at']
   }
-  ClassifierJobs.include = includeBuilder(ClassifierJobs, 'classifier_jobs', ClassifierJobs.attributes.lite)
-  return ClassifierJobs
+  ClassifierJob.include = includeBuilder(ClassifierJob, 'classifier_jobs', ClassifierJob.attributes.lite)
+  return ClassifierJob
 }

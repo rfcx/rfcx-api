@@ -11,7 +11,7 @@ const models = {
   ClassifierActiveStream: require('./classifiers/classifier-active-stream')(sequelize, Sequelize),
   ClassifierDeployment: require('./classifiers/classifier-deployment')(sequelize, Sequelize),
   ClassifierEventStrategy: require('./classifiers/classifier-event-strategy')(sequelize, Sequelize),
-  ClassifierJobs: require('./classifiers/classifier-jobs')(sequelize, Sequelize),
+  ClassifierJob: require('./classifiers/classifier-jobs')(sequelize, Sequelize),
   ClassifierOutput: require('./classifiers/classifier-output')(sequelize, Sequelize),
   Classifier: require('./classifiers/classifier')(sequelize, Sequelize),
   Detection: require('./detections/detection')(sequelize, Sequelize),

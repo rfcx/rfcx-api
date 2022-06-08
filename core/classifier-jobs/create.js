@@ -17,10 +17,10 @@ const Converter = require('../../common/converter')
  *       content:
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierJobs'
+ *             $ref: '#/components/requestBodies/ClassifierJob'
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierJobs'
+ *             $ref: '#/components/requestBodies/ClassifierJob'
  *     responses:
  *       201:
  *         description: Created
