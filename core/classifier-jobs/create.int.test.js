@@ -124,19 +124,6 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(400)
   })
 
-  test('query hours is empty', async () => {
-    const requestBody = {
-      project_id: 'testproject1',
-      query_streams: 'LilSjZJkRK20',
-      query_start: '2021-01-02',
-      query_end: '2021-01-02',
-      query_hours: '11,22'
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-    expect(response.statusCode).toBe(400)
-  })
-
   test('user is not project member', async () => {
     const requestBody = {
       project_id: 'testproject2',
