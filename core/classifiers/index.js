@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { ValidationError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
 const dao = require('./dao')
 const Converter = require('../../common/converter')
 const { getIds } = require('../classifications/dao')
@@ -33,7 +32,7 @@ const { getSignedUrl } = require('./dao/download')
  *       404:
  *         description: Not found
  */
-router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get('/:id', function (req, res) {
   return dao.get(req.params.id, { joinRelations: true })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
@@ -70,7 +69,7 @@ router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (r
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get('/', function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.query, transformedParams)
   params.convert('limit').default(100).toInt()
@@ -118,7 +117,7 @@ router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req,
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/', function (req, res) {
   const transformedParams = {}
   const params = new Converter(req.body, transformedParams, true)
   params.convert('name').toString()
