@@ -1,5 +1,8 @@
 # API Deployment Notes
 
+## 1.1.8
+- Check that public website contact form works fine
+
 ## 1.1.7
 - Run `npm run migrate:core` to apply the following migrations:
   - `20220607000002-create-classifier-jobs`
