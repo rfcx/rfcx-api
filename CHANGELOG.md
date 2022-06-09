@@ -3,6 +3,9 @@
 ### Features
 * **core**: Add `/clustered-events` endpoint
 
+### Bug Fixes
+* **noncore**: Fix contact form error handling
+
 ## 1.1.7 (2022-06-06)
 
 ### Features
