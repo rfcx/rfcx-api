@@ -17,9 +17,9 @@ beforeEach(async () => {
 })
 
 async function commonSetup () {
-  const CLASSIFIER_MODEL = { id: 1, name: 'chainsaw', external_id: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '', is_public: true }
-  const CLASSIFIER_MODEL_2 = { id: 2, name: 'dogbark', external_id: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', is_public: false }
-  const CLASSIFIER_MODEL_3 = { id: 3, name: 'pr-parrot', external_id: '843cb81d-03b9-07e1-5184-931c95265215', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', is_public: true }
+  const CLASSIFIER_MODEL = { id: 1, name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true }
+  const CLASSIFIER_MODEL_2 = { id: 2, name: 'dogbark', externalId: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false }
+  const CLASSIFIER_MODEL_3 = { id: 3, name: 'pr-parrot', externalId: '843cb81d-03b9-07e1-5184-931c95265215', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true }
   await models.Classifier.bulkCreate([CLASSIFIER_MODEL, CLASSIFIER_MODEL_2, CLASSIFIER_MODEL_3])
 }
 
@@ -53,7 +53,7 @@ describe('GET /classifiers', () => {
 
     const response = await request(app).get('/').query(query)
     expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(3)
+    expect(response.body.length).toEqual(2)
   })
 
   test('get correct classifiers models with created by me filter', async () => {

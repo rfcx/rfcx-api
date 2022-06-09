@@ -91,7 +91,7 @@ async function query (filters, options = {}) {
   }
 
   if (options.isPublic) {
-    where.is_public = true
+    where.isPublic = true
   }
 
   if (filters.ids) {
