@@ -2,7 +2,6 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
 const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
-const classifierService = require('./bl/index')
 
 /**
  * @swagger
@@ -11,7 +10,7 @@ const classifierService = require('./bl/index')
  *   get:
  *     summary: Get list of classifier jobs
  *     tags:
- *       - jobs
+ *       - classifier-jobs
  *     parameters:
  *       - name: status
  *         description: Status of the job (0 initialized, 10 waiting, 20 running, 30 done, 40 error)
@@ -23,7 +22,7 @@ const classifierService = require('./bl/index')
  *         in: query
  *         type: array
  *       - name: created_by
- *         description: Match classifier jobs based on creator (can be `me` or a user guid)
+ *         description: Match classifier jobs based on creator (can be `me` or a user email)
  *         in: query
  *       - name: limit
  *         description: Maximum number of results to return
@@ -72,12 +71,12 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async params => {
       const { status, projects, limit, offset, sort, fields } = params
-      const permissableBy = await classifierService.getPermissableBy(user)
+      const permissableBy = usersService.getPermissableBy(user)
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = permissableBy
       } else if (createdBy) {
-        createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
+        createdBy = (await usersService.getUserByEmail(createdBy)) || -1 // user doesn't exist
       }
       const filters = { projects, status, createdBy }
       const options = { permissableBy, limit, offset, sort, fields }

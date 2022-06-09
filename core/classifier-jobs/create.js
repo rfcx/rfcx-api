@@ -10,7 +10,7 @@ const { ValidationError } = require('../../common/error-handling/errors')
  *   post:
  *     summary: Create a classifier job
  *     tags:
- *       - jobs
+ *       - classifier-jobs
  *     requestBody:
  *       description: Job object
  *       required: true

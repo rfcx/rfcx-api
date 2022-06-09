@@ -58,6 +58,13 @@ async function getSegmentsCount (projectId, queryStreams, queryStart, queryEnd, 
   return count
 }
 
+async function getClassifierJobsCountByStatus (filter) {
+  const count = await models.ClassifierJob.count({
+    where: { status: filter.status !== undefined ? filter.status : 0 }
+  })
+  return count
+}
+
 async function getProjectStreamsIds (projectId) {
   const streams = await models.Stream.findAll({ where: { project_id: projectId }, attributes: ['id'] })
   const streamsIds = streams.map(stream => stream.id)
@@ -75,14 +82,9 @@ async function getStreamsNames (queryStreams) {
   return streamsNames
 }
 
-async function getPermissableBy (user) {
-  const permissableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
-  return permissableBy
-}
-
 module.exports = {
   getClassifierJobParams,
+  getClassifierJobsCountByStatus,
   getSegmentsCount,
-  getStreamsNames,
-  getPermissableBy
+  getStreamsNames
 }

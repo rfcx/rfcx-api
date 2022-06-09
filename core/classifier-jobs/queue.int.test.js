@@ -34,113 +34,40 @@ async function commonSetup () {
   await models.ClassifierJob.bulkCreate([JOB_1, JOB_2, JOB_3, JOB_4])
 }
 
-describe('GET /classifier-jobs', () => {
+describe('GET /classifier-jobs/queue', () => {
   test('returns successfully', async () => {
-    const response = await request(app).get('/')
+    const response = await request(app).get('/queue')
 
     const result = response.body
     expect(response.statusCode).toBe(200)
     expect(result).toBeDefined()
-    expect(Array.isArray(result)).toBe(true)
+    expect(typeof result === 'object').toBe(true)
+    expect(Object.keys(result)[0]).toEqual('total')
   })
 
-  test('can set all fields', async () => {
+  test('can set status field', async () => {
     const query = {
-      projects: ['testproject1'],
-      status: 0,
-      created_by: 'me',
-      limit: 2,
-      offset: 0,
-      sort: '-updated_at',
-      fields: ['projectId', 'queryStreams']
+      status: 0
     }
 
-    const response = await request(app).get('/').query(query)
+    const response = await request(app).get('/queue').query(query)
     expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual([])
+    expect(response.body.total).toEqual(2)
   })
 
-  test('not exist project', async () => {
-    const query = {
-      projects: ['testproject11']
-    }
-
-    const response = await request(app).get('/').query(query)
+  test('return waiting jobs without status is equal 0 to the filter', async () => {
+    const response = await request(app).get('/queue')
     expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual('')
+    expect(response.body.total).toEqual(2)
   })
 
-  test('get correct classifiers jobs for one project', async () => {
-    const query = {
-      projects: ['testproject1']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('get correct classifiers jobs for several projects', async () => {
-    const query = {
-      projects: ['testproject1', 'testproject2']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(3)
-  })
-
-  test('get correct classifiers jobs for exist and not exist projects', async () => {
-    const query = {
-      projects: ['testproject1', 'testproject22']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('get correct classifiers jobs filtered by 30 (done) status', async () => {
+  test('return different status in the fiels', async () => {
     const query = {
       status: 30
     }
 
-    const response = await request(app).get('/').query(query)
+    const response = await request(app).get('/queue').query(query)
     expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('sort option is working well', async () => {
-    const query = {
-      sort: '-updated_at'
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(4)
-    expect(response.body[0].updated_at).toEqual('2022-10-07T08:07:49.158Z')
-  })
-
-  test('fields option is working well', async () => {
-    const query = {
-      fields: ['project_id', 'query_streams']
-    }
-    const expectedFields = ['projectId', 'queryStreams']
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(4)
-    expectedFields.forEach(actualProperty => expect(Object.keys(response.body[0])).toContain(actualProperty))
-  })
-
-  test('created_by filter is working well', async () => {
-    const query = {
-      created_by: 'me'
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(1)
-    expect(response.body[0].projectId).toEqual('testproject3')
+    expect(response.body.total).toEqual(2)
   })
 })

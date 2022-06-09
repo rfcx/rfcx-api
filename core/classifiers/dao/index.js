@@ -79,26 +79,35 @@ function get (id, options = {}) {
  * @param {number} options.offset Number of results to skip
  */
 async function query (filters, options = {}) {
-  const where = {}
-
-  if (filters.keyword) {
-    where.name = {
-      [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
+  const ifExist = (filter) => {
+    return filter && filter !== undefined
+  }
+  const where = {
+    [models.Sequelize.Op.and]: {
+      ...ifExist(filters.keyword) && {
+        name: {
+          [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
+        }
+      },
+      ...ifExist(filters.createdBy) && {
+        createdById: filters.createdBy
+      },
+      ...ifExist(options.isPublic) && {
+        isPublic: true
+      },
+      ...ifExist(filters.ids) && {
+        id: filters.ids
+      },
+      ...ifExist(filters.externalIds) && {
+        externalId: filters.externalIds
+      }
+    },
+    ...(!ifExist(filters.createdBy) && !ifExist(options.isPublic)) && {
+      [models.Sequelize.Op.or]: {
+        isPublic: true,
+        createdById: options.permissableBy
+      }
     }
-  }
-  if (filters.createdBy) {
-    where.createdById = filters.createdBy
-  }
-
-  if (options.isPublic) {
-    where.isPublic = true
-  }
-
-  if (filters.ids) {
-    where.id = filters.ids
-  }
-  if (filters.externalIds) {
-    where.externalId = filters.externalIds
   }
 
   const attributes = options.fields && options.fields.length > 0 ? models.Classifier.attributes.full.filter(a => options.fields.includes(a)) : models.Classifier.attributes.lite
@@ -276,15 +285,9 @@ async function updateActiveProjects (update, transaction) {
   })), { transaction })
 }
 
-async function getPermissableBy (user) {
-  const permissableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
-  return permissableBy
-}
-
 module.exports = {
   get,
   query,
   create,
-  update,
-  getPermissableBy
+  update
 }

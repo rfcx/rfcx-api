@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { ValidationError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
+const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const { getIds } = require('../classifications/dao')
 const { parseClassifierOutputMapping } = require('./dao/parsing')
@@ -80,7 +81,7 @@ router.get('/', function (req, res) {
   return converter.validate()
     .then(async params => {
       const { isPublic, limit, offset } = params
-      const permissableBy = await dao.getPermissableBy(user)
+      const permissableBy = await usersService.getPermissableBy(user)
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = permissableBy

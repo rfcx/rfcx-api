@@ -23,14 +23,19 @@ const availableIncludes = [
 async function query (filters, options = {}) {
   const where = {}
 
-  if (options.permissableBy) {
-    const projectIds = await getAccessibleObjectsIDs(options.permissableBy, PROJECT, filters.projects)
+  const accessibleProjects = options.permissableBy ? await getAccessibleObjectsIDs(options.permissableBy, PROJECT, filters.projects) : null
+  let projectIds
+  if (filters.projects && filters.projects.length) {
+    projectIds = accessibleProjects ? filters.projects.filter(p => accessibleProjects.includes(p)) : filters.projects
+  } else if (accessibleProjects) {
+    projectIds = accessibleProjects
+  }
+  if (projectIds && projectIds.length === 0) {
+    return []
+  }
+  if (projectIds) {
     where.projectId = {
       [Sequelize.Op.in]: projectIds
-    }
-  } else if (filters.projects) {
-    where.projectId = {
-      [Sequelize.Op.in]: filters.projects
     }
   }
 
