@@ -1,6 +1,7 @@
 const models = require('../../_models')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
+const { getAccessibleObjectsIDs, PROJECT } = require('../../roles/dao')
 
 const availableIncludes = [
   {
@@ -88,6 +89,16 @@ async function query (filters, options = {}) {
   }
   if (filters.createdBy) {
     where.createdById = filters.createdBy
+  }
+
+  if (options.onlyPublic) {
+    where.is_public = true
+  } else {
+    if (options.permissableBy) {
+      where.id = {
+        [models.Sequelize.Op.in]: await getAccessibleObjectsIDs(options.permissableBy, PROJECT)
+      }
+    }
   }
   if (filters.ids) {
     where.id = filters.ids
@@ -271,9 +282,15 @@ async function updateActiveProjects (update, transaction) {
   })), { transaction })
 }
 
+async function getPermissableBy (user) {
+  const permissableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+  return permissableBy
+}
+
 module.exports = {
   get,
   query,
   create,
-  update
+  update,
+  getPermissableBy
 }

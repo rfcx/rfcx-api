@@ -7,6 +7,7 @@ const { getIds } = require('../classifications/dao')
 const { parseClassifierOutputMapping } = require('./dao/parsing')
 const { upload } = require('./dao/upload')
 const { getSignedUrl } = require('./dao/download')
+const usersService = require('../../common/users')
 
 /**
  * @swagger
@@ -70,18 +71,28 @@ router.get('/:id', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', function (req, res) {
-  const transformedParams = {}
-  const params = new Converter(req.query, transformedParams)
-  params.convert('limit').default(100).toInt()
-  params.convert('offset').default(0).toInt()
+  const user = req.rfcx.auth_token_info
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('created_by').optional().toString()
+  converter.convert('only_public').optional().toBoolean()
+  converter.convert('limit').default(100).toInt()
+  converter.convert('offset').default(0).toInt()
 
-  params.validate()
-    .then(() => {
-      const { limit, offset } = transformedParams
-      const attributes = { limit, offset }
-      return dao.query(attributes)
+  return converter.validate()
+    .then(async params => {
+      const { onlyPublic, limit, offset } = params
+      const permissableBy = await dao.getPermissableBy(user)
+      let createdBy = params.createdBy
+      if (createdBy === 'me') {
+        createdBy = permissableBy
+      } else if (createdBy) {
+        createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
+      }
+      const filters = { createdBy }
+      const options = { onlyPublic, permissableBy, limit, offset }
+      const result = await dao.query(filters, options)
+      return res.json(result.results)
     })
-    .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
 
