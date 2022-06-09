@@ -35,7 +35,7 @@ describe('GET /classifiers', () => {
 
   test('can set all fields', async () => {
     const query = {
-      only_public: true,
+      is_public: true,
       created_by: 'me',
       limit: 2,
       offset: 0
@@ -46,14 +46,14 @@ describe('GET /classifiers', () => {
     expect(response.body.length).toEqual(1)
   })
 
-  test('get correct classifiers models with only_public filter', async () => {
+  test('get correct classifiers models with is_public filter', async () => {
     const query = {
-      only_public: true
+      is_public: true
     }
 
     const response = await request(app).get('/').query(query)
     expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
+    expect(response.body.length).toEqual(3)
   })
 
   test('get correct classifiers models with created by me filter', async () => {

@@ -7,7 +7,6 @@ const { getIds } = require('../classifications/dao')
 const { parseClassifierOutputMapping } = require('./dao/parsing')
 const { upload } = require('./dao/upload')
 const { getSignedUrl } = require('./dao/download')
-const usersService = require('../../common/users')
 
 /**
  * @swagger
@@ -85,8 +84,6 @@ router.get('/', function (req, res) {
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = permissableBy
-      } else if (createdBy) {
-        createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
       const filters = { createdBy }
       const options = { onlyPublic, permissableBy, limit, offset }
