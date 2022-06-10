@@ -60,28 +60,6 @@ async function getGuardianMetaHardware (id) {
     })
 }
 
-async function getGuardianMetaBattery (id) {
-  return await models.GuardianMetaBattery
-    .findOne({
-      where: {
-        guardian_id: id,
-        measured_at: { [models.Sequelize.Op.gt]: Date.now() - 604800000 }
-      },
-      order: [['measured_at', 'DESC']]
-    })
-}
-
-async function getGuardianMetaSentinelPower (id) {
-  return await models.GuardianMetaSentinelPower
-    .findOne({
-      where: {
-        guardian_id: id,
-        measured_at: { [models.Sequelize.Op.gt]: Date.now() - 604800000 }
-      },
-      order: [['measured_at', 'DESC']]
-    })
-}
-
 async function checkUserPermissions (guardians, userId) {
   if (!userId) {
     return guardians
@@ -111,15 +89,6 @@ async function listMonitoringData (options = {}) {
       guardian.phone_imei = (hardware && hardware.phone_imei) || null
       guardian.phone_sim_number = (hardware && hardware.phone_sim_number) || null
       guardian.phone_sim_serial = (hardware && hardware.phone_sim_serial) || null
-    }
-  }
-  if (options.includeLastSync === true) {
-    for (const guardian of guardians) {
-      guardian.last_sync = guardian.last_ping
-      const metaBattery = await getGuardianMetaBattery(guardian.id)
-      guardian.battery_percent_internal = (metaBattery && metaBattery.battery_percent) || null
-      const metaPower = await getGuardianMetaSentinelPower(guardian.id)
-      guardian.battery_percent = (metaPower && metaPower.battery_state_of_charge) || null
     }
   }
   return guardians
