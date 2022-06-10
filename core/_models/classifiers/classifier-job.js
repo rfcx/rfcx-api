@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0,
       allowNull: false
     },
-    status: { // 0 waiting, 20 running, 30 done, 40 error
+    status: { // 0 waiting, 20 running, 30 done, 40 error, 50 cancelled
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false

@@ -13,7 +13,7 @@ const Converter = require('../../common/converter')
  *       - classifier-jobs
  *     parameters:
  *       - name: status
- *         description: Status of the job (0 initialized, 10 waiting, 20 running, 30 done, 40 error)
+ *         description: Status of the job (0 waiting, 20 running, 30 done, 40 error, 50 cancelled)
  *         in: query
  *         type: int
  *         default: 0
@@ -72,13 +72,15 @@ module.exports = (req, res) => {
     .then(async params => {
       const { status, projects, limit, offset, sort, fields } = params
       const permissableBy = usersService.getPermissableBy(user)
-      let createdBy = params.createdBy
-      if (createdBy === 'me') {
-        createdBy = permissableBy
-      } else if (createdBy) {
-        createdBy = (await usersService.getUserByEmail(createdBy)) || -1 // user doesn't exist
+      const filters = {
+        projects,
+        status,
+        ...params.createdBy && {
+          createdBy: params.createdBy === 'me'
+            ? permissableBy
+            : (await usersService.getUserByEmail(params.createdBy)) || -1 // user doesn't exist
+        }
       }
-      const filters = { projects, status, createdBy }
       const options = { permissableBy, limit, offset, sort, fields }
       const result = await dao.query(filters, options)
       const { total, results } = result

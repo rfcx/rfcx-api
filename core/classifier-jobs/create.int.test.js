@@ -63,7 +63,7 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  test('query streams are null', async () => {
+  test('can omit optional query_streams', async () => {
     const requestBody = {
       project_id: 'testproject1',
       query_start: '2021-01-02',
@@ -75,7 +75,7 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  test('start date is null', async () => {
+  test('can omit optional query_start', async () => {
     const requestBody = {
       project_id: 'testproject1',
       query_streams: 'LilSjZJkRK20',
@@ -87,7 +87,7 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  test('end date is null', async () => {
+  test('can omit optional query_end', async () => {
     const requestBody = {
       project_id: 'testproject1',
       query_streams: 'LilSjZJkRK20',
@@ -99,7 +99,7 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  test('query hours are null', async () => {
+  test('can omit optional query_hours', async () => {
     const requestBody = {
       project_id: 'testproject1',
       query_streams: 'LilSjZJkRK20',

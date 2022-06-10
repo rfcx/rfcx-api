@@ -18,7 +18,7 @@ const availableIncludes = [
  * @param {string} options.sort Order the results by one or more columns
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
- * @param {number} options.permissableBy Include only streams permissable by the given user id
+ * @param {number} options.permissableBy Include only classifier jobs permissable by the given user id
  */
 async function query (filters, options = {}) {
   const where = {}
