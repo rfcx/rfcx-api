@@ -60,11 +60,6 @@ const anotherUserGuid = 'ghy789'
 const anotherUserEmail = 'big@bobby.com'
 const anotherUserFirstname = 'Big'
 const anotherUserLastname = 'Bobby'
-const forbiddenUserId = 4
-const forbiddenUserGuid = 'why790'
-const forbiddenUserEmail = 'not@me.com'
-const forbiddenUserFirstname = 'Not'
-const forbiddenUserLastname = 'Me'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
@@ -78,7 +73,6 @@ const seedValues = {
   otherUserGuid,
   anotherUserId,
   anotherUserGuid,
-  forbiddenUserId,
   roleAdmin,
   roleMember,
   roleGuest
@@ -88,7 +82,6 @@ async function seed (models) {
   await models.User.create({ id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: primaryUserFirstname, lastname: primaryUserLastname, email: primaryUserEmail })
   await models.User.create({ id: otherUserId, guid: otherUserGuid, username: 'em', firstname: otherUserFirstname, lastname: otherUserLastname, email: otherUserEmail })
   await models.User.create({ id: anotherUserId, guid: anotherUserGuid, username: 'st', firstname: anotherUserFirstname, lastname: anotherUserLastname, email: anotherUserEmail })
-  await models.User.create({ id: forbiddenUserId, guid: forbiddenUserGuid, username: 'nm', firstname: forbiddenUserFirstname, lastname: forbiddenUserLastname, email: forbiddenUserEmail })
   await models.Role.create({ id: roleAdmin, name: 'Admin' })
   await models.Role.create({ id: roleMember, name: 'Member' })
   await models.Role.create({ id: roleGuest, name: 'Guest' })

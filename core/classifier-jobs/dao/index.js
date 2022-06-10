@@ -18,10 +18,10 @@ const availableIncludes = [
  * @param {string} options.sort Order the results by one or more columns
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
- * @param {number} options.permissableBy Include only classifier jobs permissable by the given user id
+ * @param {number} options.readableBy Include only classifier jobs readable by the given user id
  */
 async function query (filters, options = {}) {
-  const accessibleProjects = options.permissableBy ? await getAccessibleObjectsIDs(options.permissableBy, PROJECT, filters.projects) : undefined
+  const accessibleProjects = options.readableBy ? await getAccessibleObjectsIDs(options.readableBy, PROJECT, filters.projects) : undefined
   const filterProjects = Array.isArray(filters.projects) ? filters.projects : undefined
   const projectIds = accessibleProjects && filterProjects
     ? accessibleProjects.filter(p => filters.projects.includes(p))

@@ -30,8 +30,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     segmentsTotal: {
       type: DataTypes.INTEGER,
-      defaultValue: -1, // Unknown
-      allowNull: false
+      allowNull: true
     },
     segmentsCompleted: {
       type: DataTypes.INTEGER,
@@ -56,8 +55,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     }
   }, {
-    underscored: true,
-    timestamps: true
+    underscored: true
   })
   ClassifierJob.associate = function (models) {
     ClassifierJob.belongsTo(models.Project, { as: 'project', foreignKey: 'project_id' })

@@ -77,6 +77,7 @@ function get (id, options = {}) {
  * @param {*} options Query options
  * @param {string[]} options.fields Attributes and relations to include in results
  * @param {number} filters.accessibleClassifiers Where classifiers are public and created by the given user id (user public and private classifiers)
+ * @param {number} options.readableBy Include only classifiers readable by the given user id
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
@@ -106,7 +107,7 @@ async function query (filters, options = {}) {
     ...options.accessibleClassifiers && {
       [models.Sequelize.Op.or]: {
         isPublic: true,
-        createdById: options.permissableBy
+        createdById: options.readableBy
       }
     }
   }

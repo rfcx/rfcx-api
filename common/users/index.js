@@ -136,11 +136,6 @@ function formatUser (user) {
   }
 }
 
-function getPermissableBy (user) {
-  const permissableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
-  return permissableBy
-}
-
 module.exports = {
   findOrCreateUser,
   getUserByParams,
@@ -153,6 +148,5 @@ module.exports = {
   uploadImageFile,
   deleteImageFile,
   prepareUserUrlPicture,
-  formatUser,
-  getPermissableBy
+  formatUser
 }

@@ -59,6 +59,7 @@ const Converter = require('../../common/converter')
  */
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
+  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('status').optional().toInt()
   converter.convert('projects').optional().toArray()
@@ -71,17 +72,16 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async params => {
       const { status, projects, limit, offset, sort, fields } = params
-      const permissableBy = usersService.getPermissableBy(user)
       const filters = {
         projects,
         status,
         ...params.createdBy && {
           createdBy: params.createdBy === 'me'
-            ? permissableBy
+            ? readableBy
             : (await usersService.getUserByEmail(params.createdBy)) || -1 // user doesn't exist
         }
       }
-      const options = { permissableBy, limit, offset, sort, fields }
+      const options = { readableBy, limit, offset, sort, fields }
       const result = await dao.query(filters, options)
       const { total, results } = result
       return res.header('Total-Items', total).json(results)

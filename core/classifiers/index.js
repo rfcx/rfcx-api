@@ -2,7 +2,6 @@ const router = require('express').Router()
 const { ValidationError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
-const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 const { getIds } = require('../classifications/dao')
 const { parseClassifierOutputMapping } = require('./dao/parsing')
@@ -72,6 +71,7 @@ router.get('/:id', function (req, res) {
  */
 router.get('/', function (req, res) {
   const user = req.rfcx.auth_token_info
+  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('created_by').optional().toString()
   converter.convert('is_public').optional().toBoolean()
@@ -81,15 +81,14 @@ router.get('/', function (req, res) {
   return converter.validate()
     .then(async params => {
       const { createdBy, isPublic, limit, offset } = params
-      const permissableBy = await usersService.getPermissableBy(user)
       const filters = {
         isPublic,
         ...createdBy && createdBy === 'me' && {
-          createdBy: permissableBy
+          createdBy: readableBy
         }
       }
       const options = {
-        permissableBy,
+        readableBy,
         limit,
         offset,
         ...(!createdBy && isPublic === undefined) && {
