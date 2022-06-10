@@ -12,6 +12,9 @@ jest.mock('../../_models', () => {
         return Promise.resolve()
       }
     },
+    Guardian: {
+      update: () => Promise.resolve()
+    },
     reset: () => {
       while (sentinelPower.length) {
         sentinelPower.pop()
