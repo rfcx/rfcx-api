@@ -52,14 +52,6 @@ async function list (options = {}) {
   return await models.Guardian.findAll({ where, order, limit, offset })
 }
 
-async function getLastAudio (id) {
-  return await models.GuardianAudio
-    .findOne({
-      order: [['measured_at', 'DESC']],
-      where: { guardian_id: id }
-    })
-}
-
 async function getGuardianMetaHardware (id) {
   return await models.GuardianMetaHardware
     .findOne({
