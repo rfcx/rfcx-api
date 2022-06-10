@@ -260,6 +260,9 @@
   "DetectionCluster": {
     "$ref": "#/components/schemas/Cluster"
   },
+  "EventCluster": {
+    "$ref": "#/components/schemas/Cluster"
+  },
   "Review": {
     "properties": {
       "positive": {
