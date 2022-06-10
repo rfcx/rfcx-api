@@ -4,9 +4,9 @@ const moment = require('moment')
 async function getClassifierJobParams (projectId, streamsNames, queryStart, queryEnd, queryHours, createdById, segmentsTotal) {
   const classifierJob = {
     projectId: projectId,
-    ...streamsNames && streamsNames !== undefined && { queryStreams: streamsNames.join(',') },
-    ...queryStart && queryStart !== undefined && { queryStart: moment.utc(queryStart).format('YYYY-MM-DD') },
-    ...queryEnd && queryEnd !== undefined && { queryEnd: moment.utc(queryEnd).format('YYYY-MM-DD') },
+    ...streamsNames && { queryStreams: streamsNames.join(',') },
+    ...queryStart && { queryStart: moment.utc(queryStart).format('YYYY-MM-DD') },
+    ...queryEnd && { queryEnd: moment.utc(queryEnd).format('YYYY-MM-DD') },
     queryHours: queryHours,
     createdById,
     status: 0,
@@ -16,39 +16,23 @@ async function getClassifierJobParams (projectId, streamsNames, queryStart, quer
 }
 
 async function getSegmentsCount (projectId, queryStreams, queryStart, queryEnd, queryHours) {
-  let items
-  if (queryStreams === undefined) {
-    items = await getProjectStreamsIds(projectId)
-  } else {
-    items = queryStreams.split(',')
-  }
-  let hours
-  if (queryHours !== undefined) {
-    hours = queryHours.split(',').map(Number)
-  }
+  const items = (queryStreams === undefined)
+    ? await getProjectStreamsIds(projectId)
+    : queryStreams.split(',')
+  const hours = (queryHours !== undefined)
+    ? queryHours.split(',').map(Number)
+    : undefined
   const count = await models.StreamSegment.count({
     where: {
       [models.Sequelize.Op.and]: {
-        stream_id: items,
+        ...items && { stream_id: items },
         start: {
           [models.Sequelize.Op.and]: {
-            ...queryStart && queryStart !== undefined && { [models.Sequelize.Op.gte]: queryStart },
-            ...queryEnd && queryEnd !== undefined && { [models.Sequelize.Op.lte]: queryEnd },
-            ...queryHours && queryHours !== undefined && {
-              [models.Sequelize.Op.or]:
-              {
-                [models.Sequelize.Op.and]: [
-                  // TODO: Update parsing hours logic.
-                  models.Sequelize.literal(`extract(hour from "StreamSegment"."start") >= ${hours[0]}`),
-                  models.Sequelize.literal(`extract(hour from "StreamSegment"."start") <= ${hours[hours.length - 1]}`)
-                ]
-              }
-              // {
-              //   [models.Sequelize.Op.and]: [
-              //     models.Sequelize.literal('extract(hour from "StreamSegment"."start") >= 17'),
-              //     models.Sequelize.literal('extract(hour from "StreamSegment"."start") < 22')
-              //   ]
-              // }
+            ...queryStart && { [models.Sequelize.Op.gte]: queryStart },
+            ...queryEnd && { [models.Sequelize.Op.lte]: queryEnd },
+            // TODO: Check with IN (...) or = ANY(...)
+            ...queryHours && {
+              [models.Sequelize.Op.and]: models.Sequelize.literal(`extract(hour from "StreamSegment"."start") ANY(${hours})`)
             }
           }
         }
