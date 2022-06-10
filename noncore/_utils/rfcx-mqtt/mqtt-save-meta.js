@@ -310,7 +310,7 @@ exports.saveMeta = {
     })
   },
 
-  SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
+  SentinelPower: async function (metaSntnlPwr, guardianId, checkInId) {
     const sntnlPwrEntries = { }
 
     for (const duInd in metaSntnlPwr) {
@@ -366,6 +366,11 @@ exports.saveMeta = {
         })
       }
     }
+
+    const lastBattery = dbMetaSentinelPower.sort((a, b) => { return b.measured_at - a.measured_at })[0]
+    await models.Guardian.update({
+      last_battery_main: lastBattery ? lastBattery.battery_state_of_charge : null
+    }, { where: { id: guardianId } })
 
     return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower).catch(function (err) {
       console.error('failed to create GuardianMetaSentinelPower | ' + err)
