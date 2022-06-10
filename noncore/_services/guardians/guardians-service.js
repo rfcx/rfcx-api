@@ -113,15 +113,6 @@ async function listMonitoringData (options = {}) {
   if (!guardians.length) {
     return []
   }
-  if (options.lastAudio === true) {
-    for (const guardian of guardians) {
-      const audio = await getLastAudio(guardian.id)
-      guardian.last_audio = {
-        guid: (audio && audio.guid) || null,
-        measured_at: (audio && audio.measured_at) || null
-      }
-    }
-  }
   if (options.includeHardware === true) {
     for (const guardian of guardians) {
       const hardware = await getGuardianMetaHardware(guardian.id)

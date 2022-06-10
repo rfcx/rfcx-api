@@ -46,7 +46,7 @@ exports.models = {
               name: dbRow.Site.name
             }
           : null,
-        last_audio: dbRow.last_audio ? dbRow.last_audio : null,
+        last_audio: dbRow.last_audio_sync ? { measured_at: dbRow.last_audio_sync } : null,
         notes: dbRow.notes || null,
         phone_imei: dbRow.phone_imei || null,
         phone_sim_number: dbRow.phone_sim_number || null,

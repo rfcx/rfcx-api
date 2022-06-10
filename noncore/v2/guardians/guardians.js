@@ -21,7 +21,6 @@ router.route('/')
     const user = req.rfcx.auth_token_info
     const converter = new Converter(req.query, {}, true)
     converter.convert('project').optional().toString()
-    converter.convert('last_audio').optional().toBoolean()
     converter.convert('include_hardware').optional().toBoolean()
     converter.convert('include_last_sync').optional().toBoolean()
     converter.convert('is_visible').optional().toBoolean()
