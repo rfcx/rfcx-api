@@ -21,30 +21,19 @@ const availableIncludes = [
  * @param {number} options.permissableBy Include only classifier jobs permissable by the given user id
  */
 async function query (filters, options = {}) {
-  const where = {}
+  const accessibleProjects = options.permissableBy ? await getAccessibleObjectsIDs(options.permissableBy, PROJECT, filters.projects) : undefined
+  const filterProjects = Array.isArray(filters.projects) ? filters.projects : undefined
+  const projectIds = accessibleProjects && filterProjects
+    ? accessibleProjects.filter(p => filters.projects.includes(p))
+    : accessibleProjects ?? filterProjects
 
-  const accessibleProjects = options.permissableBy ? await getAccessibleObjectsIDs(options.permissableBy, PROJECT, filters.projects) : null
-  let projectIds
-  if (filters.projects && filters.projects.length) {
-    projectIds = accessibleProjects ? filters.projects.filter(p => accessibleProjects.includes(p)) : filters.projects
-  } else if (accessibleProjects) {
-    projectIds = accessibleProjects
-  }
-  if (projectIds && projectIds.length === 0) {
-    return []
-  }
-  if (projectIds) {
-    where.projectId = {
-      [Sequelize.Op.in]: projectIds
-    }
-  }
+  // Early return if projectIds set, but empty (no accessible projects)
+  if (projectIds && projectIds.length === 0) { return [] }
 
-  if (filters.status) {
-    where.status = filters.status
-  }
-
-  if (filters.createdBy) {
-    where.createdById = filters.createdBy
+  const where = {
+    projectId: { [Sequelize.Op.in]: projectIds },
+    ...filters.status && { status: filters.status },
+    ...filters.createdBy && { createdById: filters.createdBy }
   }
 
   const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.full

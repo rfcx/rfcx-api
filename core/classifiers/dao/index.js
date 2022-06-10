@@ -81,32 +81,32 @@ function get (id, options = {}) {
  * @param {number} options.offset Number of results to skip
  */
 async function query (filters, options = {}) {
-  const ifExist = (filter) => {
+  const ifExists = (filter) => {
     return filter && filter !== undefined
   }
   const where = {
-    ...(ifExist(filters.keyword) || ifExist(filters.createdBy) || ifExist(filters.isPublic) || ifExist(filters.ids) || ifExist(filters.externalIds)) && {
+    ...(ifExists(filters.keyword) || ifExists(filters.createdBy) || ifExists(filters.isPublic) || ifExists(filters.ids) || ifExists(filters.externalIds)) && {
       [models.Sequelize.Op.and]: {
-        ...ifExist(filters.keyword) && {
+        ...ifExists(filters.keyword) && {
           name: {
             [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
           }
         },
-        ...ifExist(filters.createdBy) && {
+        ...ifExists(filters.createdBy) && {
           createdById: filters.createdBy
         },
-        ...ifExist(filters.isPublic) && {
+        ...ifExists(filters.isPublic) && {
           isPublic: true
         },
-        ...ifExist(filters.ids) && {
+        ...ifExists(filters.ids) && {
           id: filters.ids
         },
-        ...ifExist(filters.externalIds) && {
+        ...ifExists(filters.externalIds) && {
           externalId: filters.externalIds
         }
       }
     },
-    ...ifExist(options.accessibleClassifiers) && {
+    ...ifExists(options.accessibleClassifiers) && {
       [models.Sequelize.Op.or]: {
         isPublic: true,
         createdById: options.permissableBy
