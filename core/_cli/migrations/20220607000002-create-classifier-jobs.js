@@ -76,10 +76,7 @@ module.exports = {
           allowNull: true
         }
       }, { transaction })
-      await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_project_id" ON classifier_jobs using btree (project_id);', { transaction })
       await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_status" ON classifier_jobs using btree (status);', { transaction })
-      await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_created_by_id" ON classifier_jobs using btree (created_by_id);', { transaction })
-      await queryInterface.sequelize.query('CREATE INDEX "classifier_jobs_created_at" ON classifier_jobs using btree (created_at);', { transaction })
     })
   },
   down: (queryInterface, Sequelize) => {
