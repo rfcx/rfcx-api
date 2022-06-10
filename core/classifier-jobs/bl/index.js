@@ -58,9 +58,9 @@ async function getSegmentsCount (projectId, queryStreams, queryStart, queryEnd, 
   return count
 }
 
-async function getClassifierJobsCountByStatus (filter) {
+async function getClassifierJobsCountByStatus (status = 0) {
   const count = await models.ClassifierJob.count({
-    where: { status: filter.status !== undefined ? filter.status : 0 }
+    where: { status }
   })
   return count
 }

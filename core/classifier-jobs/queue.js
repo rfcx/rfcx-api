@@ -30,8 +30,7 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async params => {
       const { status } = params
-      const filters = { status }
-      const result = await classifierService.getClassifierJobsCountByStatus(filters)
+      const result = await classifierService.getClassifierJobsCountByStatus(status)
       return res.json({ total: result })
     })
     .catch(httpErrorHandler(req, res, 'Failed getting total number of classifier jobs'))
