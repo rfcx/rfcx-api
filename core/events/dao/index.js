@@ -3,6 +3,8 @@ const { Classification, Classifier, ClassifierEventStrategy, Event, EventStrateg
 const { EmptyResultError, ValidationError, ForbiddenError } = require('../../../common/error-handling/errors')
 const { isUuid, uuidToSlug, slugToUuid } = require('../../_utils/formatters/uuid')
 const { getAccessibleObjectsIDs, hasPermission, READ, UPDATE, STREAM } = require('../../roles/dao')
+const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
+const { propertyToFloat } = require('../../_utils/formatters/object-properties')
 const pagedQuery = require('../../_utils/db/paged-query')
 const messageQueue = require('../../../common/message-queue/sns')
 const { EVENT_CREATED, EVENT_UPDATED } = require('../../../common/message-queue/event-names')
@@ -45,7 +47,7 @@ function create (eventData) {
 }
 
 /**
- * Get a list of events matching the filters
+ * Constructs Sequelize FindOptions object which can be used for operatons like findAll, count, etc
  * @param {string} id
  * @param {*} filters Additional query options
  * @param {string[]} filters.streamIds Filter by one or more stream identifiers
@@ -57,9 +59,10 @@ function create (eventData) {
  * @param {boolean} options.descending Order the results in descending date order
  * @param {number} options.limit
  * @param {number} options.offset
- * @returns {Event[]} Events
+ * @returns {FindOptions} FindOptions
  */
-async function query (filters, options) {
+
+async function getFindOptions (filters, options) {
   const attributes = options.fields && options.fields.length > 0 ? Event.attributes.full.filter(a => options.fields.includes(a)) : Event.attributes.lite
   let includes = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes.filter(i => i.as === 'classification')
 
@@ -88,7 +91,7 @@ async function query (filters, options) {
     includes = forceIncludeForWhere(includes, 'classifier_event_strategy')
   }
 
-  const query = {
+  return {
     where,
     attributes,
     include: includes,
@@ -96,8 +99,26 @@ async function query (filters, options) {
     limit: options.limit,
     order: [['start', options.descending ? 'DESC' : 'ASC']]
   }
+}
 
-  return pagedQuery(Event, query)
+/**
+ * Get a list of events matching the filters
+ * @param {string} id
+ * @param {*} filters Additional query options
+ * @param {string[]} filters.streamIds Filter by one or more stream identifiers
+ * @param {string[]} filters.classificationValues Filter by one or more classification values
+ * @param {string[]} filters.classifierIds Filter by one or more classifier identifiers
+ * @param {*} options Additional get options
+ * @param {number} options.readableBy Include only if the event is accessible to the given user id
+ * @param {string[]} options.fields Attributes and relations to include in results (defaults to lite attributes)
+ * @param {boolean} options.descending Order the results in descending date order
+ * @param {number} options.limit
+ * @param {number} options.offset
+ * @returns {Event[]} Events
+ */
+async function query (filters, options) {
+  const findOptions = await getFindOptions(filters, options)
+  return pagedQuery(Event, findOptions)
     .then(data => ({ total: data.total, results: data.results.map(format) }))
 }
 
@@ -178,9 +199,44 @@ function format (event) {
   return event
 }
 
+/**
+ * Get a list of clustered events
+ * @param {*} filters
+ * @param {string} filters.start
+ * @param {string} filters.end
+ * @param {string | string[]} filters.streams Stream id or list of stream ids
+ * @param {string | string[]} filters.classifications Classification or list of classifications
+ * @param {string} filters.interval Time interval for aggregate results
+ * @param {string} filters.aggregate Aggregate function to apply
+ * @param {string} filters.field Column or field to apply the function
+ * @param {*} options
+ * @param {number} options.limit Maximum number to get
+ * @param {number} options.offset Number of resuls to skip
+ * @param {boolean} options.descending Order the result by descending time
+ * @param {object} options.readableBy Include only if the event is accessible to the given user id
+ * @returns {ClusteredEvent[]} Clustered events
+ */
+async function timeAggregatedQuery (filters, options) {
+  const timeBucketAttribute = 'time_bucket'
+  const aggregatedValueAttribute = 'aggregated_value'
+  const { interval, aggregate, field, descending } = options
+  const findOptions = await getFindOptions(filters, options)
+  const queryOptions = {
+    ...findOptions,
+    attributes: timeAggregatedQueryAttributes(interval, aggregate, field, 'Event', 'start', timeBucketAttribute, aggregatedValueAttribute),
+    order: [Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
+    group: [timeBucketAttribute].concat(Sequelize.col('classification.id')),
+    raw: true,
+    nest: true
+  }
+  return Event.findAll(queryOptions)
+    .then(events => events.map(propertyToFloat(aggregatedValueAttribute)))
+}
+
 module.exports = {
   create,
   query,
   get,
-  update
+  update,
+  timeAggregatedQuery
 }
