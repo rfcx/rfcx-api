@@ -71,10 +71,12 @@ function get (id, options = {}) {
  * @param {*} filters Classifier attributes to filter
  * @param {string} filters.keyword Where keyword is found (in the classifier name)
  * @param {number} filters.createdBy Where created by the given user id
+ * @param {number} filters.isPublic Where classifiers are public
  * @param {number[]} filters.ids Where the identifier is matched in the array
  * @param {string[]} filters.externalIds Where the external identifier is matched in the array
  * @param {*} options Query options
  * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {number} filters.accessibleClassifiers Where classifiers are public and created by the given user id (user public and private classifiers)
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
@@ -83,26 +85,28 @@ async function query (filters, options = {}) {
     return filter && filter !== undefined
   }
   const where = {
-    [models.Sequelize.Op.and]: {
-      ...ifExist(filters.keyword) && {
-        name: {
-          [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
+    ...(ifExist(filters.keyword) || ifExist(filters.createdBy) || ifExist(filters.isPublic) || ifExist(filters.ids) || ifExist(filters.externalIds)) && {
+      [models.Sequelize.Op.and]: {
+        ...ifExist(filters.keyword) && {
+          name: {
+            [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
+          }
+        },
+        ...ifExist(filters.createdBy) && {
+          createdById: filters.createdBy
+        },
+        ...ifExist(filters.isPublic) && {
+          isPublic: true
+        },
+        ...ifExist(filters.ids) && {
+          id: filters.ids
+        },
+        ...ifExist(filters.externalIds) && {
+          externalId: filters.externalIds
         }
-      },
-      ...ifExist(filters.createdBy) && {
-        createdById: filters.createdBy
-      },
-      ...ifExist(options.isPublic) && {
-        isPublic: true
-      },
-      ...ifExist(filters.ids) && {
-        id: filters.ids
-      },
-      ...ifExist(filters.externalIds) && {
-        externalId: filters.externalIds
       }
     },
-    ...(!ifExist(filters.createdBy) && !ifExist(options.isPublic)) && {
+    ...ifExist(options.accessibleClassifiers) && {
       [models.Sequelize.Op.or]: {
         isPublic: true,
         createdById: options.permissableBy

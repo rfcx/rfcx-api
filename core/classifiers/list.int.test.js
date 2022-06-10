@@ -47,7 +47,7 @@ describe('GET /classifiers', () => {
     expect(response.body.length).toEqual(1)
   })
 
-  test('get public + created by me classifiers models without query', async () => {
+  test('get public classifiers and created by the given user id (user public and private classifiers)', async () => {
     const response = await request(app).get('/')
 
     const result = response.body
@@ -56,7 +56,7 @@ describe('GET /classifiers', () => {
     expect(response.body.length).toEqual(3)
   })
 
-  test('get correct classifiers models with is_public filter', async () => {
+  test('get correct classifiers models with a public filter', async () => {
     const query = {
       is_public: true
     }
@@ -66,7 +66,7 @@ describe('GET /classifiers', () => {
     expect(response.body.length).toEqual(2)
   })
 
-  test('get correct classifiers models with created by me filter', async () => {
+  test('get correct classifiers models with a created by me filter', async () => {
     const query = {
       created_by: 'me'
     }

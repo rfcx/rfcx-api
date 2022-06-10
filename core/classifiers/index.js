@@ -82,12 +82,16 @@ router.get('/', function (req, res) {
     .then(async params => {
       const { isPublic, limit, offset } = params
       const permissableBy = await usersService.getPermissableBy(user)
+      let accessibleClassifiers
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = permissableBy
       }
-      const filters = { createdBy }
-      const options = { isPublic, permissableBy, limit, offset }
+      if (!createdBy && isPublic === undefined) {
+        accessibleClassifiers = true
+      }
+      const filters = { createdBy, isPublic }
+      const options = { permissableBy, limit, offset, accessibleClassifiers }
       const result = await dao.query(filters, options)
       return res.json(result.results)
     })
