@@ -32,7 +32,7 @@ exports.saveMeta = {
     })
   },
 
-  Battery: function (metaBattery, guardianId, checkInId) {
+  Battery: async function (metaBattery, guardianId, checkInId) {
     const dbMetaBattery = []
 
     for (const battInd in metaBattery) {
@@ -46,6 +46,11 @@ exports.saveMeta = {
         is_fully_charged: (metaBattery[battInd][4] === '1') ? true : ((metaBattery[battInd][4] === '0') ? false : null)
       })
     }
+
+    const lastBattery = dbMetaBattery.sort((a, b) => { return b.measured_at - a.measured_at })[0]
+    await models.Guardian.update({
+      last_battery_internal: lastBattery ? lastBattery.battery_percent : null
+    }, { where: { id: guardianId } })
 
     return models.GuardianMetaBattery.bulkCreate(dbMetaBattery).catch(function (err) {
       console.error('failed to create GuardianMetaBattery | ' + err)
