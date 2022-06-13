@@ -76,3 +76,20 @@ module.exports = {
   query,
   create
 }
+
+/**
+ * Update a classifier job
+ */
+async function update (id, job) {
+  return await ClassifierJob.update(job, { where: { id } })
+    .catch((e) => {
+      console.error('error', e)
+      throw new ValidationError('Cannot update classifier job with provided data.')
+    })
+}
+
+module.exports = {
+  query,
+  create,
+  update
+}
