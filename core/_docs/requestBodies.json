@@ -153,6 +153,22 @@
       }
     }
   },
+  "ClassifierResult": {
+    "type": "object",
+    "properties": {
+      "analyzedMinutes": {
+        "type": "integer",
+        "description": "Number of minutes of recording analyzed in this batch",
+        "example": 100
+      },
+      "detections": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/requestBodies/Detection"
+        }
+      }
+    }
+  },
   "Detection": {
     "type": "object",
     "properties": {
