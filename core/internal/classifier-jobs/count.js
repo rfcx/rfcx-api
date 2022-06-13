@@ -1,18 +1,18 @@
-const { httpErrorHandler } = require('../../common/error-handling/http')
-const classifierService = require('./bl')
-const Converter = require('../../common/converter')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
+const { count } = require('./bl')
+const Converter = require('../../../common/converter')
 
 /**
  * @swagger
  *
  * /classifier-jobs/queue:
  *   get:
- *     summary: Get total number of waiting jobs across all projects and all users
+ *     summary: Get total number of jobs across all projects and all users
  *     tags:
  *       - classifier-jobs
  *     responses:
  *       200:
- *         description: Count of waiting jobs across all projects and all users
+ *         description: Count of jobs across all projects and all users
  *         content:
  *           application/json:
  *             schema:
@@ -30,7 +30,7 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async params => {
       const { status } = params
-      const result = await classifierService.getClassifierJobsCountByStatus(status)
+      const result = await count(status)
       return res.json({ total: result })
     })
     .catch(httpErrorHandler(req, res, 'Failed getting total number of classifier jobs'))

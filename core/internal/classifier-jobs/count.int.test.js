@@ -1,6 +1,6 @@
-const routes = require('./index')
-const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const routes = require('.')
+const models = require('../../_models')
+const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
@@ -34,9 +34,9 @@ async function commonSetup () {
   await models.ClassifierJob.bulkCreate([JOB_1, JOB_2, JOB_3, JOB_4])
 }
 
-describe('GET /classifier-jobs/queue', () => {
+describe('GET /internal/classifier-jobs/count', () => {
   test('returns successfully', async () => {
-    const response = await request(app).get('/queue')
+    const response = await request(app).get('/count')
 
     const result = response.body
     expect(response.statusCode).toBe(200)
@@ -50,13 +50,13 @@ describe('GET /classifier-jobs/queue', () => {
       status: 0
     }
 
-    const response = await request(app).get('/queue').query(query)
+    const response = await request(app).get('/count').query(query)
     expect(response.statusCode).toBe(200)
     expect(response.body.total).toEqual(2)
   })
 
   test('return waiting jobs without status is equal 0 to the filter', async () => {
-    const response = await request(app).get('/queue')
+    const response = await request(app).get('/count')
     expect(response.statusCode).toBe(200)
     expect(response.body.total).toEqual(2)
   })
@@ -66,7 +66,7 @@ describe('GET /classifier-jobs/queue', () => {
       status: 30
     }
 
-    const response = await request(app).get('/queue').query(query)
+    const response = await request(app).get('/count').query(query)
     expect(response.statusCode).toBe(200)
     expect(response.body.total).toEqual(2)
   })
