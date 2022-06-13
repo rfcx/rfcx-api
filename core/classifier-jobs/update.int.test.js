@@ -60,6 +60,24 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated1.status).toBe(status)
       expect(jobUpdated2.status).toBe(status)
     })
+
+    test('sets completed_at when status becomes DONE', async () => {
+      // Arrange
+      const jobUpdate = { status: CLASSIFIER_JOB_STATUS.DONE }
+
+      // Act
+      const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+      const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+
+      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+
+      // Assert
+      expect(response1.statusCode).toBe(200)
+      expect(response2.statusCode).toBe(200)
+      expect(jobUpdated1.completedAt).toBeTruthy()
+      expect(jobUpdated2.completedAt).toBeTruthy()
+    })
   })
 
   describe('invalid usage', () => {

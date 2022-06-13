@@ -49,6 +49,10 @@ module.exports = async (req, res) => {
       return res.status(400).send('Use POST /classifier-jobs/dequeue to start a job')
     }
 
+    if (params.status === CLASSIFIER_JOB_STATUS.DONE) {
+      params.completedAt = new Date()
+    }
+
     // Call DAO & return
     await update(id, params)
     return res.sendStatus(200)
