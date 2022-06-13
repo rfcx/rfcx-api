@@ -1,6 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { update } = require('./dao')
 const Converter = require('../../common/converter')
+const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
 
 /**
  * @swagger
@@ -43,9 +44,14 @@ module.exports = async (req, res) => {
     converter.convert('status').optional().toInt()
     const params = await converter.validate()
 
+    if (params.status === CLASSIFIER_JOB_STATUS.RUNNING) {
+      console.warn(`WARN: PATCH /classifier-jobs/${id} Invalid parameters`)
+      return res.status(400).send('Use POST /classifier-jobs/dequeue to start a job')
+    }
+
     // Call DAO & return
-    const result = await update(id, params)
-    return res.json(result)
+    await update(id, params)
+    return res.sendStatus(200)
   } catch (err) {
     console.error(err)
     httpErrorHandler(req, res, 'Failed to update classifier jobs')
