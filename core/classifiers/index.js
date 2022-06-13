@@ -118,6 +118,11 @@ router.get('/', function (req, res) {
  *         description: Invalid query parameters
  */
 router.post('/', function (req, res) {
+  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+    console.warn('WARN: POST /classifiers Forbidden')
+    return res.sendStatus(403)
+  }
+
   const transformedParams = {}
   const params = new Converter(req.body, transformedParams, true)
   params.convert('name').toString()
@@ -195,6 +200,7 @@ router.post('/', function (req, res) {
 router.patch('/:id', function (req, res) {
   const id = req.params.id
 
+  // TODO: Only the owner can change it?
   if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
     console.warn(`WARN: PATCH /classifiers/${id} Forbidden`)
     return res.sendStatus(403)
@@ -243,13 +249,19 @@ router.patch('/:id', function (req, res) {
  *         description: Not found
  */
 router.get('/:id/file', function (req, res) {
-  const classifierId = req.params.id
+  const id = req.params.id
 
-  getSignedUrl(classifierId)
+  // TODO: Only the owner can download it?
+  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+    console.warn(`WARN: GET /classifiers/${id}/file Forbidden`)
+    return res.sendStatus(403)
+  }
+
+  getSignedUrl(id)
     .then(signedUrl => {
       res.redirect(signedUrl)
     })
-    .catch(httpErrorHandler(req, res, `Failed downloading classifiers id ${classifierId}`))
+    .catch(httpErrorHandler(req, res, `Failed downloading classifiers id ${id}`))
 })
 
 module.exports = router
