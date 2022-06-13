@@ -42,7 +42,7 @@ module.exports = (req, res) => {
 
   const jobId = req.params.id
   return createResults(jobId, req.body)
-    .then(() => res.sendStatus(500))
+    .then(() => res.sendStatus(200))
     .catch(httpErrorHandler(req, res, 'Failed updating classifier job'))
 
   // const converter = new Converter(req.body, {}, true)
