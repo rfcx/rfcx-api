@@ -8,6 +8,9 @@ module.exports = {
   classifiers: [
     require('./classifiers')
   ],
+  'classifier-jobs': [
+    require('./classifier-jobs')
+  ],
   detections: [
     require('./detections')
   ],

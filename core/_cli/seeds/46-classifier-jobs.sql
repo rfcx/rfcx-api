@@ -1,0 +1,1 @@
+INSERT INTO public.classifier_jobs (id, project_id, query_streams, query_start, query_end, query_hours, segments_total, segments_completed, "status", created_by_id, created_at, updated_at, started_at, completed_at) VALUES (1, 'bbbbbbbbbbb7', 'Classifier job test', '2021-01-02', '2021-01-02', '1,2', 2, 0, 0, 3150, NOW(), NOW(), null, null);
