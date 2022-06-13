@@ -1,6 +1,6 @@
 const routes = require('./index')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
 
@@ -32,6 +32,7 @@ async function seedTestData () {
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
+  muteConsole('warn')
 })
 
 beforeEach(async () => {
@@ -93,7 +94,6 @@ describe('PATCH /classifier-jobs/:id', () => {
       // Act
       const response1 = await request(superUserApp).patch(`/${JOB_DONE.id}`).send(jobUpdate)
       const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_DONE.id)
-      console.log(jobUpdated1)
 
       // Assert
       expect(response1.statusCode).toBe(200)
