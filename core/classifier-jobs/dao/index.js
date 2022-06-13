@@ -72,11 +72,6 @@ async function create (job, options = {}) {
     })
 }
 
-module.exports = {
-  query,
-  create
-}
-
 /**
  * Update a classifier job
  */
