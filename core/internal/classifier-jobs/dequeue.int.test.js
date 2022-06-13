@@ -3,6 +3,7 @@ const models = require('../../_models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
 const request = require('supertest')
 const { randomId } = require('../../../common/crypto/random')
+const { WAITING, RUNNING, DONE } = require('../../classifier-jobs/classifier-job-status')
 
 const app = expressApp()
 
@@ -47,12 +48,24 @@ describe('POST /internal/classifier-jobs/dequeue', () => {
   test('does not return non-waiting jobs', async () => {
     const { project } = await commonSetup()
     // Completed job
-    await models.ClassifierJob.create({ status: 40, projectId: project.id, queryStreams: 'RAG4,RAG5,RAG1*', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ status: DONE, projectId: project.id, queryStreams: 'RAG4,RAG5,RAG1*', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
     // Running job
-    await models.ClassifierJob.create({ status: 30, projectId: project.id, queryStreams: 'GUG1', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ status: RUNNING, projectId: project.id, queryStreams: 'GUG1', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
 
     const response = await request(app).post('/dequeue')
 
     expect(response.body).toHaveLength(0)
+  })
+
+  test('updates job status to running', async () => {
+    const { project } = await commonSetup()
+    const job = await models.ClassifierJob.create({ projectId: project.id, createdById: seedValues.otherUserId })
+
+    const response = await request(app).post('/dequeue')
+
+    expect(response.body[0].id).toBe(job.id)
+    const updatedJob = await models.ClassifierJob.findByPk(job.id)
+    expect(updatedJob.status).toBe(RUNNING)
+    expect(response.body[0].status).toBe(RUNNING)
   })
 })

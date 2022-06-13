@@ -24,10 +24,13 @@ const { dequeue } = require('./bl')
  */
 module.exports = (req, res) => {
   const converter = new Converter(req.query, {}, true)
+  converter.convert('max_concurrency').default(1).toInt()
+  converter.convert('limit').optional().toInt()
 
   return converter.validate()
     .then(async params => {
-      const jobs = await dequeue()
+      const { maxConcurrency, limit } = params
+      const jobs = await dequeue(maxConcurrency, limit | maxConcurrency)
       return res.json(jobs)
     })
     .catch(httpErrorHandler(req, res, 'Failed dequeue classifier jobs'))
