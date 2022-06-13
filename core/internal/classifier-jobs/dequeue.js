@@ -1,5 +1,6 @@
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const Converter = require('../../../common/converter')
+const { dequeue } = require('./bl')
 
 /**
  * @swagger
@@ -26,7 +27,8 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async params => {
-      return res.json([])
+      const jobs = await dequeue()
+      return res.json(jobs)
     })
     .catch(httpErrorHandler(req, res, 'Failed dequeue classifier jobs'))
 }

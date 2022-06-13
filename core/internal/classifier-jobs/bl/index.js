@@ -6,6 +6,11 @@ async function count (status = 0) {
   })
 }
 
+async function dequeue () {
+  return await models.ClassifierJob.findAll({ limit: 1, order: [['created_at']] })
+}
+
 module.exports = {
-  count
+  count,
+  dequeue
 }
