@@ -40,16 +40,17 @@ beforeEach(async () => {
 })
 
 describe('PATCH /classifier-jobs/:id', () => {
+  // Setup normal & super-user apps
   const app = expressApp().use('/', routes)
   const superUserApp = expressApp({ is_super: true }).use('/', routes)
 
   // Split valid & invalid target status
-  const { RUNNING, ...VALID_STATUS_UPDATE_OBJ } = CLASSIFIER_JOB_STATUS
-  const INVALID_STATUS_UPDATE = [RUNNING]
-  const VALID_STATUS_UPDATE = Object.values(VALID_STATUS_UPDATE_OBJ)
+  const { RUNNING, ...VALID_STATUS_UPDATE } = CLASSIFIER_JOB_STATUS
+  const { DONE, ...VALID_EXCEPT_DONE } = VALID_STATUS_UPDATE
+  const INVALID_STATUS_UPDATE = { RUNNING }
 
   describe('valid usage', () => {
-    test.each(VALID_STATUS_UPDATE)('can update status to %s', async (status) => {
+    test.each(Object.entries(VALID_STATUS_UPDATE))('can update status to %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -67,7 +68,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.status).toBe(status)
     })
 
-    test('sets completed_at when status becomes DONE', async () => {
+    test(`sets completed_at when status becomes DONE (${CLASSIFIER_JOB_STATUS.DONE})`, async () => {
       // Arrange
       const jobUpdate = { status: CLASSIFIER_JOB_STATUS.DONE }
 
@@ -85,11 +86,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.completedAt).toBeTruthy()
     })
 
-    test.each([
-      CLASSIFIER_JOB_STATUS.CANCELLED,
-      CLASSIFIER_JOB_STATUS.ERROR,
-      CLASSIFIER_JOB_STATUS.WAITING
-    ])('clears completed_at when status becomes %s', async (status) => {
+    test.each(Object.entries(VALID_EXCEPT_DONE))('clears completed_at when status becomes %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -105,7 +102,7 @@ describe('PATCH /classifier-jobs/:id', () => {
   })
 
   describe('invalid usage', () => {
-    test.each(INVALID_STATUS_UPDATE)('400 if trying to update status to %s', async (status) => {
+    test.each(Object.entries(INVALID_STATUS_UPDATE))('400 if trying to update status to %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -141,7 +138,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
     })
 
-    test('404 if job does not exist', async () => {
+    test('404 if classifier-job does not exist', async () => {
       // Arrange
       const notJobId = 10000
       const notJob = await models.ClassifierJob.findByPk(notJobId)
