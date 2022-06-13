@@ -3,6 +3,7 @@ const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
+const { DONE } = require('../classifier-job-status')
 
 const availableIncludes = [
   Classifier.include({ attributes: Classifier.attributes.lite })
@@ -83,13 +84,20 @@ async function create (job, options = {}) {
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the job
  */
 async function update (id, job, options = {}) {
-  const existingJob = await ClassifierJob.findByPk(id)
+  // Check the job is updatable
+  const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
   if (!existingJob) {
     throw new EmptyResultError('Classifier job not found')
   }
   if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
     throw new ForbiddenError('User is not the classifier job creator')
   }
+
+  // Set/clear completedAt
+  if (job.status) {
+    job.completedAt = job.status === DONE ? new Date() : null
+  }
+
   await ClassifierJob.update(job, { where: { id } })
 }
 
