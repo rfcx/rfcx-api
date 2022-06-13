@@ -73,29 +73,18 @@ router.get('/', function (req, res) {
   const user = req.rfcx.auth_token_info
   const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
-  converter.convert('created_by').optional().toString()
-  converter.convert('is_public').optional().toBoolean()
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
 
   return converter.validate()
     .then(async params => {
-      const { createdBy, isPublic, limit, offset } = params
-      const filters = {
-        isPublic,
-        ...createdBy && createdBy === 'me' && {
-          createdBy: readableBy
-        }
-      }
+      const { limit, offset } = params
       const options = {
         readableBy,
         limit,
-        offset,
-        ...(!createdBy && isPublic === undefined) && {
-          accessibleClassifiers: true
-        }
+        offset
       }
-      const result = await dao.query(filters, options)
+      const result = await dao.query({}, options)
       return res.json(result.results)
     })
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))

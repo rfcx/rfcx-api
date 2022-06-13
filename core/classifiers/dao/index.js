@@ -71,44 +71,36 @@ function get (id, options = {}) {
  * @param {*} filters Classifier attributes to filter
  * @param {string} filters.keyword Where keyword is found (in the classifier name)
  * @param {number} filters.createdBy Where created by the given user id
- * @param {number} filters.isPublic Where classifiers are public
  * @param {number[]} filters.ids Where the identifier is matched in the array
  * @param {string[]} filters.externalIds Where the external identifier is matched in the array
  * @param {*} options Query options
  * @param {string[]} options.fields Attributes and relations to include in results
- * @param {number} filters.accessibleClassifiers Where classifiers are public and created by the given user id (user public and private classifiers)
  * @param {number} options.readableBy Include only classifiers readable by the given user id
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
 async function query (filters, options = {}) {
-  const where = {
-    ...(filters.keyword || filters.createdBy || filters.isPublic || filters.ids || filters.externalIds) && {
-      [models.Sequelize.Op.and]: {
-        ...filters.keyword && {
-          name: {
-            [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
-          }
-        },
-        ...filters.createdBy && {
-          createdById: filters.createdBy
-        },
-        ...filters.isPublic && {
-          isPublic: true
-        },
-        ...filters.ids && {
-          id: filters.ids
-        },
-        ...filters.externalIds && {
-          externalId: filters.externalIds
-        }
-      }
-    },
-    ...options.accessibleClassifiers && {
-      [models.Sequelize.Op.or]: {
-        isPublic: true,
-        createdById: options.readableBy
-      }
+  const where = {}
+  if (filters.keyword) {
+    where.name = {
+      [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
+    }
+  }
+  if (filters.createdBy) {
+    where.createdById = filters.createdBy
+  }
+  if (filters.ids) {
+    where.id = filters.ids
+  }
+  if (filters.externalIds) {
+    where.externalId = filters.externalIds
+  }
+
+  // When readableBy is specified, only return public classifiers or classifiers created by the user
+  if (options.readableBy) {
+    where[models.Sequelize.Op.or] = {
+      isPublic: true,
+      createdById: options.readableBy
     }
   }
 

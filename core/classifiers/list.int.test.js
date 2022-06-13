@@ -25,58 +25,21 @@ async function commonSetup () {
 }
 
 describe('GET /classifiers', () => {
-  test('returns successfully', async () => {
+  test('response is an array', async () => {
     const response = await request(app).get('/')
 
-    const result = response.body
     expect(response.statusCode).toBe(200)
-    expect(result).toBeDefined()
-    expect(Array.isArray(result)).toBe(true)
-  })
-
-  test('can set all fields', async () => {
-    const query = {
-      is_public: true,
-      created_by: 'me',
-      limit: 2,
-      offset: 0
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(1)
+    expect(Array.isArray(response.body)).toBe(true)
   })
 
   test('get public classifiers and created by the given user id (user public and private classifiers)', async () => {
     const response = await request(app).get('/')
 
-    const result = response.body
     expect(response.statusCode).toBe(200)
-    expect(result).toBeDefined()
-    expect(response.body.length).toEqual(3)
+    expect(response.body).toHaveLength(3)
   })
 
-  test('get correct classifiers models with a public filter', async () => {
-    const query = {
-      is_public: true
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('get correct classifiers models with a created by me filter', async () => {
-    const query = {
-      created_by: 'me'
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('limit and offset work well', async () => {
+  test('set the limit and offset', async () => {
     const query = {
       limit: 1,
       offset: 2
@@ -84,7 +47,7 @@ describe('GET /classifiers', () => {
 
     const response = await request(app).get('/').query(query)
     expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(1)
+    expect(response.body).toHaveLength(1)
     expect(response.body[0].id).toEqual(4)
   })
 })
