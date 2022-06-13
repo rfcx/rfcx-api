@@ -176,6 +176,60 @@ describe('GET /streams', () => {
     expect(response.body.length).toBe(3)
   })
 
+  test('filter by name without *', async () => {
+    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
+    await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(app).get('/').query({ name: 'cherry creek' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].name).toEqual('cherry creek')
+  })
+
+  test('filter by name with * at the beginning', async () => {
+    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
+    await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(app).get('/').query({ name: '*creek' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].name).toEqual(expect.stringContaining('creek'))
+    expect(response.body[1].name).toEqual(expect.stringContaining('creek'))
+  })
+
+  test('filter by name with * at the end', async () => {
+    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
+    await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(app).get('/').query({ name: 'cherry*' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].name).toEqual(expect.stringContaining('cherry'))
+    expect(response.body[1].name).toEqual(expect.stringContaining('cherry'))
+  })
+
+  test('filter by name with * in between', async () => {
+    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
+    await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
+    await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
+    await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
+
+    const response = await request(app).get('/').query({ name: '*cobs*' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].name).toEqual('jacobs creek')
+  })
+
   test('filter by keyword', async () => {
     models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
     await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
