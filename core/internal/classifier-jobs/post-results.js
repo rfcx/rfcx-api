@@ -1,3 +1,5 @@
+const Converter = require('../../../common/converter')
+const ArrayConverter = require('../../../common/converter/array')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const { createResults } = require('./dao/create-results')
 
@@ -40,19 +42,26 @@ module.exports = (req, res) => {
     return res.sendStatus(403)
   }
 
+  // Validate params
   const jobId = req.params.id
-  return createResults(jobId, req.body)
-    .then(() => res.sendStatus(200))
+
+  const converter1 = new Converter(req.body, {}, true)
+  converter1.convert('analyzedMinutes').toInt()
+
+  const converter2 = new ArrayConverter(req.body.detections)
+  converter2.convert('streamId').toString()
+  converter2.convert('classifier').toString()
+  converter2.convert('classification').toString()
+  converter2.convert('start').toMomentUtc()
+  converter2.convert('end').toMomentUtc()
+  converter2.convert('confidence').toFloat()
+
+  // Call DAO & return
+  return Promise.all([converter1.validate(), converter2.validate()])
+    .then(async ([paramsAnalyzedMinutes, paramsDetections]) => {
+      const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
+      await createResults(jobId, params)
+      return res.sendStatus(201)
+    })
     .catch(httpErrorHandler(req, res, 'Failed updating classifier job'))
-
-  // const converter = new Converter(req.body, {}, true)
-  // converter.convert('status').optional().toInt().default(0)
-
-  // return converter.validate()
-  //   .then(async params => {
-  //     const { status } = params
-  //     const result = await count(status)
-  //     return res.json({ total: result })
-  //   })
-  //   .catch(httpErrorHandler(req, res, 'Failed getting total number of classifier jobs'))
 }

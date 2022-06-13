@@ -72,14 +72,12 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
   }
 
   describe('valid usage', () => {
-    test('saves detections', async () => {
+    test('201 on success', async () => {
       // Act
       const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(VALID_JOB_RESULT)
-      const detections = await models.Detection.findAll({ where: { classifier_id: JOB_RUNNING.classifierId } })
 
       // Assert
-      expect(response1.statusCode).toBe(200)
-      expect(detections.length).toBe(VALID_JOB_RESULT.detections.length)
+      expect(response1.statusCode).toBe(201)
     })
 
     test('saves analyzed minutes', async () => {
@@ -94,14 +92,46 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       const job2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
 
       // Assert
-      expect(response1.statusCode).toBe(200)
-      expect(response2.statusCode).toBe(200)
+      expect(response1.statusCode).toBe(201)
+      expect(response2.statusCode).toBe(201)
       expect(job1.minutesCompleted).toBe(result1.analyzedMinutes)
       expect(job2.minutesCompleted).toBe(result1.analyzedMinutes + result2.analyzedMinutes)
+    })
+
+    test('saves detections', async () => {
+      // Act
+      const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(VALID_JOB_RESULT)
+      const detections = await models.Detection.findAll({ where: { classifier_id: JOB_RUNNING.classifierId } })
+
+      // Assert
+      expect(response1.statusCode).toBe(201)
+      expect(detections.length).toBe(VALID_JOB_RESULT.detections.length)
     })
   })
 
   describe('invalid usage', () => {
+    test('400 if invalid analyzedMinutes', async () => {
+      // Arrange
+      const result1 = { analyzedMinutes: 'potato', detections: [] }
+
+      // Act
+      const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result1)
+
+      // Assert
+      expect(response1.statusCode).toBe(400)
+    })
+
+    test('400 if invalid detections', async () => {
+      // Arrange
+      const result1 = { analyzedMinutes: 15_000, detections: 'potato' }
+
+      // Act
+      const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result1)
+
+      // Assert
+      expect(response1.statusCode).toBe(400)
+    })
+
     test('403 if not super-user', async () => {
       // Act
       const response1 = await request(app).post(`/${JOB_RUNNING.id}/results`).send(VALID_JOB_RESULT)
