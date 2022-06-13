@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const dao = require('./dao')
+const { query } = require('./dao')
 const usersService = require('../../common/users')
 const Converter = require('../../common/converter')
 
@@ -22,7 +22,7 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: array
  *       - name: created_by
- *         description: Match classifier jobs based on creator (can be `me` or a user email)
+ *         description: Match classifier jobs based on creator (only supports `me`)
  *         in: query
  *       - name: limit
  *         description: Maximum number of results to return
@@ -72,17 +72,10 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async params => {
       const { status, projects, limit, offset, sort, fields } = params
-      const filters = {
-        projects,
-        status,
-        ...params.createdBy && {
-          createdBy: params.createdBy === 'me'
-            ? readableBy
-            : (await usersService.getUserByEmail(params.createdBy)) || -1 // user doesn't exist
-        }
-      }
+      const createdBy = params.createdBy === 'me' ? readableBy : undefined
+      const filters = { projects, status, createdBy }
       const options = { readableBy, limit, offset, sort, fields }
-      const result = await dao.query(filters, options)
+      const result = await query(filters, options)
       const { total, results } = result
       return res.header('Total-Items', total).json(results)
     })
