@@ -26,9 +26,9 @@ const JOB_RUNNING = { id: 123, status: CLASSIFIER_JOB_STATUS.RUNNING, classifier
 const JOBS = [JOB_RUNNING]
 
 async function seedTestData () {
-  await models.Classification.bulkCreate(CLASSIFICATIONS).catch(err => console.error(err))
-  await models.Classifier.bulkCreate(CLASSIFIERS).catch(err => console.error(err))
-  await models.ClassifierOutput.bulkCreate(CLASSIFIER_OUTPUTS).catch(err => console.error(err))
+  await models.Classification.bulkCreate(CLASSIFICATIONS)
+  await models.Classifier.bulkCreate(CLASSIFIERS)
+  await models.ClassifierOutput.bulkCreate(CLASSIFIER_OUTPUTS)
   await models.Project.bulkCreate(PROJECTS)
   await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
   await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest })
@@ -80,6 +80,24 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       // Assert
       expect(response1.statusCode).toBe(200)
       expect(detections.length).toBe(VALID_JOB_RESULT.detections.length)
+    })
+
+    test('saves analyzed minutes', async () => {
+      // Arrange
+      const result1 = { ...VALID_JOB_RESULT, analyzedMinutes: 15_000, detections: [] }
+      const result2 = { ...VALID_JOB_RESULT, analyzedMinutes: 25_000, detections: [] }
+
+      // Act
+      const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result1)
+      const job1 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+      const response2 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result2)
+      const job2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+
+      // Assert
+      expect(response1.statusCode).toBe(200)
+      expect(response2.statusCode).toBe(200)
+      expect(job1.minutesCompleted).toBe(result1.analyzedMinutes)
+      expect(job2.minutesCompleted).toBe(result1.analyzedMinutes + result2.analyzedMinutes)
     })
   })
 
