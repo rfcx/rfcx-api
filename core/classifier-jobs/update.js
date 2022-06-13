@@ -28,24 +28,26 @@ const Converter = require('../../common/converter')
  *       403:
  *         description: Insufficient privileges
  */
-module.exports = (req, res) => {
-  const id = req.params.id
+module.exports = async (req, res) => {
+  try {
+    const id = req.params.id
 
-  // Check authorization
-  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-    console.warn(`WARN: PATCH /classifier-jobs/${id} Forbidden`)
-    return res.sendStatus(403)
+    // Check authorization
+    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+      console.warn(`WARN: PATCH /classifier-jobs/${id} Forbidden`)
+      return res.sendStatus(403)
+    }
+
+    // Validate params
+    const converter = new Converter(req.body, {}, true)
+    converter.convert('status').optional().toInt()
+    const params = await converter.validate()
+
+    // Call DAO & return
+    const result = await update(id, params)
+    return res.json(result)
+  } catch (err) {
+    console.error(err)
+    httpErrorHandler(req, res, 'Failed to update classifier jobs')
   }
-
-  // Extract params
-  const converter = new Converter(req.body, {}, true)
-  converter.convert('status').optional().toInt()
-
-  // Call DAO
-  return converter.validate()
-    .then(async params => {
-      const result = await update(id, params)
-      return res.json(result)
-    })
-    .catch(httpErrorHandler(req, res, 'Failed getting a list of classifier jobs'))
 }
