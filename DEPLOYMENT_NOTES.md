@@ -1,12 +1,12 @@
 # API Deployment Notes
 
-## 1.1.8
-- Check that public website contact form works fine
-
-## 1.1.7
+## 1.1.9
 - Run `npm run migrate:core` to apply the following migrations:
   - `20220607000002-create-classifier-jobs`
-  - `20226090000001-add-is-public-to-classifiers`
+  - `20220609000001-add-is-public-to-classifiers`
+
+## 1.1.8
+- Check that public website contact form works fine
 
 ## 1.1.4
 - Check that POST-Login auth0 webhook /users/new-login works correctly
