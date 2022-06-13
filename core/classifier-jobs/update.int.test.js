@@ -10,18 +10,6 @@ const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Test stream', start: '2021-01-02T0
 const JOB_WAITING = { id: 123, projectId: PROJECT.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_RUNNING = { id: 124, projectId: PROJECT.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 20, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 
-const app = expressApp().use('/', routes)
-const superUserApp = expressApp({ is_super: true }).use('/', routes)
-
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
-})
-beforeEach(async () => {
-  await truncate(models)
-  await seedTestData()
-})
-
 async function seedTestData () {
   // Projects & users
   await models.Project.bulkCreate([PROJECT])
@@ -35,7 +23,20 @@ async function seedTestData () {
   await models.ClassifierJob.bulkCreate([JOB_WAITING, JOB_RUNNING])
 }
 
+beforeAll(async () => {
+  await migrate(models.sequelize, models.Sequelize)
+  await seed(models)
+})
+
+beforeEach(async () => {
+  await truncate(models)
+  await seedTestData()
+})
+
 describe('PATCH /classifier-jobs/:id', () => {
+  const app = expressApp().use('/', routes)
+  const superUserApp = expressApp({ is_super: true }).use('/', routes)
+
   // Split valid & invalid target status
   const { RUNNING, ...VALID_STATUS_UPDATE_OBJ } = CLASSIFIER_JOB_STATUS
   const INVALID_STATUS_UPDATE = [RUNNING]
