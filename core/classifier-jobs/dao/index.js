@@ -1,11 +1,11 @@
-const { ClassifierJob, Sequelize } = require('../../_models')
+const { ClassifierJob, Classifier, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
-  ClassifierJob.include({ attributes: ClassifierJob.attributes.full })
+  Classifier.include({ attributes: Classifier.attributes.lite })
 ]
 
 /**
