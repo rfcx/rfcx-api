@@ -9,7 +9,7 @@ module.exports = {
     require('./classifiers')
   ],
   'classifier-jobs': [
-    require('./classifier-jobs/index')
+    require('./classifier-jobs')
   ],
   detections: [
     require('./detections')
