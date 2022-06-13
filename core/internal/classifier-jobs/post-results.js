@@ -1,4 +1,5 @@
-// const Converter = require('../../../common/converter')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
+const { createResults } = require('./dao/create-results')
 
 /**
  * @swagger
@@ -39,8 +40,10 @@ module.exports = (req, res) => {
     return res.sendStatus(403)
   }
 
-  return res.sendStatus(500)
-  // const jobId = req.params.jobId
+  const jobId = req.params.id
+  return createResults(jobId, req.body)
+    .then(() => res.sendStatus(500))
+    .catch(httpErrorHandler(req, res, 'Failed updating classifier job'))
 
   // const converter = new Converter(req.body, {}, true)
   // converter.convert('status').optional().toInt().default(0)

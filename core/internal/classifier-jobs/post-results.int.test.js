@@ -41,13 +41,13 @@ beforeEach(async () => {
 describe('POST /internal/classifier-jobs/:id/results', () => {
   // Setup normal & super-user apps
   const app = expressApp().use('/', routes)
-  // const superUserApp = expressApp({ is_super: true }).use('/', routes)
+  const superUserApp = expressApp({ is_super: true }).use('/', routes)
 
   describe('valid usage', () => {
   })
 
   describe('invalid usage', () => {
-    test('403 if not super user', async () => {
+    test('403 if not super-user', async () => {
       // Arrange
       const jobResult = {
         analyzedMinutes: 10_000,
@@ -73,6 +73,36 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       // Assert
       expect(response1.statusCode).toBe(403)
       expect(jobUpdated1.minutesCompleted).toBe(0)
+    })
+
+    test('404 if classifier-job does not exist', async () => {
+      // Arrange
+      const notJobId = 10000
+      const notJob = await models.ClassifierJob.findByPk(notJobId)
+      expect(notJob).toBeNull() // Pre-condition: Job does not exist
+
+      const jobResult = {
+        analyzedMinutes: 50_000,
+        detections: [{
+          classifier: 1,
+          classification: 'obscurus',
+          start: '2021-01-02T01:32:07.000Z',
+          end: '2021-01-02T01:32:09.000Z',
+          confidence: 0.975123
+        }, {
+          classifier: 1,
+          classification: 'obscurus',
+          start: '2021-01-02T01:33:49.000Z',
+          end: '2021-01-02T01:33:50.000Z',
+          confidence: 0.921955
+        }]
+      }
+
+      // Act
+      const response1 = await request(superUserApp).post(`/${notJobId}/results`).send(jobResult)
+
+      // Assert
+      expect(response1.statusCode).toBe(404)
     })
   })
 })
