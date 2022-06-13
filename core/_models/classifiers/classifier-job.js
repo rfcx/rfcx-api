@@ -28,16 +28,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    segmentsTotal: {
+    minutesTotal: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    segmentsCompleted: {
+    minutesCompleted: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false
     },
-    status: { // 0 waiting, 20 running, 30 done, 40 error, 50 cancelled
+    status: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false
@@ -69,8 +69,8 @@ module.exports = (sequelize, DataTypes) => {
       'query_start',
       'query_end',
       'query_hours',
-      'segments_total',
-      'segments_completed',
+      'minutes_total',
+      'minutes_completed',
       'status',
       'created_by_id',
       'created_at',
@@ -78,7 +78,7 @@ module.exports = (sequelize, DataTypes) => {
       'started_at',
       'completed_at'
     ],
-    lite: ['id', 'project_id', 'segments_completed', 'segments_total', 'created_by_id', 'created_at', 'completed_at']
+    lite: ['id', 'project_id', 'minutes_completed', 'minutes_total', 'created_by_id', 'created_at', 'completed_at']
   }
   ClassifierJob.include = includeBuilder(ClassifierJob, 'classifier_jobs', ClassifierJob.attributes.lite)
   return ClassifierJob
