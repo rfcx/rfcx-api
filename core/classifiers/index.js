@@ -78,12 +78,7 @@ router.get('/', function (req, res) {
 
   return converter.validate()
     .then(async params => {
-      const { limit, offset } = params
-      const options = {
-        readableBy,
-        limit,
-        offset
-      }
+      const options = { ...params, readableBy }
       const result = await dao.query({}, options)
       return res.json(result.results)
     })
