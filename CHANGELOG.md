@@ -1,3 +1,9 @@
+## 1.1.9 (2022-06-??)
+
+### Features
+* **core**: Create and list classifier jobs (`/classifier-jobs` endpoint)
+* **core**: Access to classifiers can be public (open to all) or private (only the creator)
+
 ## 1.1.8 (2022-06-10)
 
 ### Features
