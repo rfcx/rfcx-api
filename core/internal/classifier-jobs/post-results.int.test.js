@@ -43,31 +43,30 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
   const app = expressApp().use('/', routes)
   const superUserApp = expressApp({ is_super: true }).use('/', routes)
 
+  const VALID_JOB_RESULT = {
+    analyzedMinutes: 50_000,
+    detections: [{
+      classifier: 1,
+      classification: 'obscurus',
+      start: '2021-01-02T01:32:07.000Z',
+      end: '2021-01-02T01:32:09.000Z',
+      confidence: 0.975123
+    }, {
+      classifier: 1,
+      classification: 'obscurus',
+      start: '2021-01-02T01:33:49.000Z',
+      end: '2021-01-02T01:33:50.000Z',
+      confidence: 0.921955
+    }]
+  }
+
   describe('valid usage', () => {
   })
 
   describe('invalid usage', () => {
     test('403 if not super-user', async () => {
-      // Arrange
-      const jobResult = {
-        analyzedMinutes: 10_000,
-        detections: [{
-          classifier: 1,
-          classification: 'obscurus',
-          start: '2021-01-02T01:32:07.000Z',
-          end: '2021-01-02T01:32:09.000Z',
-          confidence: 0.975123
-        }, {
-          classifier: 1,
-          classification: 'obscurus',
-          start: '2021-01-02T01:33:49.000Z',
-          end: '2021-01-02T01:33:50.000Z',
-          confidence: 0.921955
-        }]
-      }
-
       // Act
-      const response1 = await request(app).post(`/${JOB_RUNNING.id}/results`).send(jobResult)
+      const response1 = await request(app).post(`/${JOB_RUNNING.id}/results`).send(VALID_JOB_RESULT)
       const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
 
       // Assert
@@ -81,25 +80,8 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       const notJob = await models.ClassifierJob.findByPk(notJobId)
       expect(notJob).toBeNull() // Pre-condition: Job does not exist
 
-      const jobResult = {
-        analyzedMinutes: 50_000,
-        detections: [{
-          classifier: 1,
-          classification: 'obscurus',
-          start: '2021-01-02T01:32:07.000Z',
-          end: '2021-01-02T01:32:09.000Z',
-          confidence: 0.975123
-        }, {
-          classifier: 1,
-          classification: 'obscurus',
-          start: '2021-01-02T01:33:49.000Z',
-          end: '2021-01-02T01:33:50.000Z',
-          confidence: 0.921955
-        }]
-      }
-
       // Act
-      const response1 = await request(superUserApp).post(`/${notJobId}/results`).send(jobResult)
+      const response1 = await request(superUserApp).post(`/${notJobId}/results`).send(VALID_JOB_RESULT)
 
       // Assert
       expect(response1.statusCode).toBe(404)
