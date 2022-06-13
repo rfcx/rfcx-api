@@ -8,6 +8,7 @@
 
 ### Features
 * **core**: Add `/clustered-events` endpoint
+* **core**: Add `name` query string to `/streams` to support query stream name with * (star)
 
 ### Bug Fixes
 * **noncore**: Fix contact form error handling

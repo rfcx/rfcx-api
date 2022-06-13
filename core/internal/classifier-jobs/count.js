@@ -5,7 +5,7 @@ const Converter = require('../../../common/converter')
 /**
  * @swagger
  *
- * /classifier-jobs/queue:
+ * /internal/classifier-jobs/count:
  *   get:
  *     summary: Get total number of jobs across all projects and all users
  *     tags:
