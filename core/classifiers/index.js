@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const { ValidationError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { authenticatedWithRoles } = require('../../common/middleware/authorization/authorization')
 const dao = require('./dao')
 const Converter = require('../../common/converter')
 const { getIds } = require('../classifications/dao')
@@ -33,7 +32,7 @@ const { getSignedUrl } = require('./dao/download')
  *       404:
  *         description: Not found
  */
-router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.get('/:id', function (req, res) {
   return dao.get(req.params.id, { joinRelations: true })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
@@ -70,19 +69,19 @@ router.get('/:id', authenticatedWithRoles('rfcxUser', 'systemUser'), function (r
  *       400:
  *         description: Invalid query parameters
  */
-router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
-  const transformedParams = {}
-  const params = new Converter(req.query, transformedParams)
-  params.convert('limit').default(100).toInt()
-  params.convert('offset').default(0).toInt()
+router.get('/', function (req, res) {
+  const user = req.rfcx.auth_token_info
+  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+  const converter = new Converter(req.query, {}, true)
+  converter.convert('limit').default(100).toInt()
+  converter.convert('offset').default(0).toInt()
 
-  params.validate()
-    .then(() => {
-      const { limit, offset } = transformedParams
-      const attributes = { limit, offset }
-      return dao.query(attributes)
+  return converter.validate()
+    .then(async params => {
+      const options = { ...params, readableBy }
+      const result = await dao.query({}, options)
+      return res.json(result.results)
     })
-    .then(data => res.json(data))
     .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
 
@@ -118,7 +117,12 @@ router.get('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req,
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req, res) {
+router.post('/', function (req, res) {
+  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+    console.warn('WARN: POST /classifiers Forbidden')
+    return res.sendStatus(403)
+  }
+
   const transformedParams = {}
   const params = new Converter(req.body, transformedParams, true)
   params.convert('name').toString()
@@ -196,6 +200,7 @@ router.post('/', authenticatedWithRoles('rfcxUser', 'systemUser'), function (req
 router.patch('/:id', function (req, res) {
   const id = req.params.id
 
+  // TODO: Only the owner can change it?
   if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
     console.warn(`WARN: PATCH /classifiers/${id} Forbidden`)
     return res.sendStatus(403)
@@ -244,13 +249,19 @@ router.patch('/:id', function (req, res) {
  *         description: Not found
  */
 router.get('/:id/file', function (req, res) {
-  const classifierId = req.params.id
+  const id = req.params.id
 
-  getSignedUrl(classifierId)
+  // TODO: Only the owner can download it?
+  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+    console.warn(`WARN: GET /classifiers/${id}/file Forbidden`)
+    return res.sendStatus(403)
+  }
+
+  getSignedUrl(id)
     .then(signedUrl => {
       res.redirect(signedUrl)
     })
-    .catch(httpErrorHandler(req, res, `Failed downloading classifiers id ${classifierId}`))
+    .catch(httpErrorHandler(req, res, `Failed downloading classifiers id ${id}`))
 })
 
 module.exports = router

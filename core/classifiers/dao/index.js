@@ -75,12 +75,12 @@ function get (id, options = {}) {
  * @param {string[]} filters.externalIds Where the external identifier is matched in the array
  * @param {*} options Query options
  * @param {string[]} options.fields Attributes and relations to include in results
+ * @param {number} options.readableBy Include only classifiers readable by the given user id
  * @param {number} options.limit Maximum results to include
  * @param {number} options.offset Number of results to skip
  */
 async function query (filters, options = {}) {
   const where = {}
-
   if (filters.keyword) {
     where.name = {
       [models.Sequelize.Op.iLike]: `%${filters.keyword}%`
@@ -94,6 +94,14 @@ async function query (filters, options = {}) {
   }
   if (filters.externalIds) {
     where.externalId = filters.externalIds
+  }
+
+  // When readableBy is specified, only return public classifiers or classifiers created by the user
+  if (options.readableBy) {
+    where[models.Sequelize.Op.or] = {
+      isPublic: true,
+      createdById: options.readableBy
+    }
   }
 
   const attributes = options.fields && options.fields.length > 0 ? models.Classifier.attributes.full.filter(a => options.fields.includes(a)) : models.Classifier.attributes.lite

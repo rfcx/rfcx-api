@@ -149,6 +149,8 @@ Run Jest on integration tests (any file named `*.int.test.js`): `npm run jest in
 
 Run Jest on specific folder/file: `npm run jest routes/core/streams`
 
+Run Jest on specific folder/file with local environments: `npx jest routes/core/streams`
+
 ### Linting
 
 Run ESLint: `npm run lint`
