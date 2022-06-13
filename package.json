@@ -87,6 +87,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "jest": "^26.0.1",
+    "nodemon": "^2.0.16",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",
     "sqlite3": "^5.0.2",
