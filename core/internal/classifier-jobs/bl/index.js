@@ -7,7 +7,10 @@ async function count (status = 0) {
 }
 
 async function dequeue () {
-  return await models.ClassifierJob.findAll({ limit: 1, order: [['created_at']] })
+  const where = { status: 0 }
+  const limit = 1
+  const order = [['created_at']]
+  return await models.ClassifierJob.findAll({ where, limit, order })
 }
 
 module.exports = {

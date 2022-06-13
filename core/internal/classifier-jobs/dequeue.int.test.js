@@ -33,12 +33,26 @@ describe('POST /internal/classifier-jobs/dequeue', () => {
 
   test('returns the oldest waiting job', async () => {
     const { project } = await commonSetup()
+    // Newer job
     await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', projectId: project.id, createdById: seedValues.otherUserId })
+    // Older job
     const firstJob = await models.ClassifierJob.create({ created_at: '2022-01-02 03:15', projectId: project.id, createdById: seedValues.otherUserId })
 
     const response = await request(app).post('/dequeue')
 
     expect(response.body).toHaveLength(1)
     expect(response.body[0].id).toBe(firstJob.id)
+  })
+
+  test('does not return non-waiting jobs', async () => {
+    const { project } = await commonSetup()
+    // Completed job
+    await models.ClassifierJob.create({ status: 40, projectId: project.id, queryStreams: 'RAG4,RAG5,RAG1*', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
+    // Running job
+    await models.ClassifierJob.create({ status: 30, projectId: project.id, queryStreams: 'GUG1', queryStart: '2021-03-13', queryEnd: '2022-04-01', createdById: seedValues.otherUserId })
+
+    const response = await request(app).post('/dequeue')
+
+    expect(response.body).toHaveLength(0)
   })
 })
