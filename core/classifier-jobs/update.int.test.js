@@ -5,22 +5,28 @@ const request = require('supertest')
 const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
 
 // Test data
-const PROJECT = { id: 'testproject1', name: 'Test project', createdById: seedValues.otherUserId }
-const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Test stream', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT.id }
-const JOB_WAITING = { id: 123, projectId: PROJECT.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_RUNNING = { id: 124, projectId: PROJECT.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 20, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const PROJECT_1 = { id: 'testproject1', name: 'Test project', createdById: seedValues.otherUserId }
+const PROJECTS = [PROJECT_1]
+
+const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Test stream', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT_1.id }
+const STREAMS = [STREAM_1]
+
+const JOB_WAITING = { id: 123, status: CLASSIFIER_JOB_STATUS.WAITING, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_RUNNING = { id: 124, status: CLASSIFIER_JOB_STATUS.RUNNING, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_DONE = { id: 125, status: CLASSIFIER_JOB_STATUS.DONE, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE]
 
 async function seedTestData () {
   // Projects & users
-  await models.Project.bulkCreate([PROJECT])
-  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT.id, role_id: seedValues.roleMember })
-  await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: PROJECT.id, role_id: seedValues.roleGuest })
+  await models.Project.bulkCreate(PROJECTS)
+  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
+  await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest })
 
   // Streams
-  await models.Stream.bulkCreate([STREAM_1])
+  await models.Stream.bulkCreate(STREAMS)
 
   // Jobs
-  await models.ClassifierJob.bulkCreate([JOB_WAITING, JOB_RUNNING])
+  await models.ClassifierJob.bulkCreate(JOBS)
 }
 
 beforeAll(async () => {
