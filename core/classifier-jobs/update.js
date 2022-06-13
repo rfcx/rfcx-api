@@ -17,10 +17,10 @@ const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierJob'
+ *             $ref: '#/components/requestBodies/ClassifierJobUpdate'
  *         application/x-www-form-urlencoded:
  *           schema:
- *             $ref: '#/components/requestBodies/ClassifierJob'
+ *             $ref: '#/components/requestBodies/ClassifierJobUpdate'
  *     responses:
  *       200:
  *         description: Updated
@@ -28,6 +28,8 @@ const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
  *         description: Invalid parameters
  *       403:
  *         description: Insufficient privileges
+ *       404:
+ *         description: Not found
  */
 module.exports = async (req, res) => {
   try {
