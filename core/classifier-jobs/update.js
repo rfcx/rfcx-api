@@ -55,8 +55,8 @@ module.exports = async (req, res) => {
       : null
 
     // Call DAO & return
-    await update(id, params)
-    return res.sendStatus(200)
+    const updateCount = await update(id, params)
+    return res.sendStatus(updateCount > 0 ? 200 : 404)
   } catch (err) {
     console.error(err)
     httpErrorHandler(req, res, 'Failed to update classifier jobs')

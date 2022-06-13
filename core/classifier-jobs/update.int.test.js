@@ -105,7 +105,7 @@ describe('PATCH /classifier-jobs/:id', () => {
   })
 
   describe('invalid usage', () => {
-    test.each(INVALID_STATUS_UPDATE)('cannot update status to %s', async (status) => {
+    test.each(INVALID_STATUS_UPDATE)('400 if trying to update status to %s', async (status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -123,7 +123,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
     })
 
-    test('normal user cannot update', async () => {
+    test('403 if not super user', async () => {
       // Arrange
       const jobUpdate = { status: CLASSIFIER_JOB_STATUS.DONE }
 
@@ -139,6 +139,21 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(response2.statusCode).toBe(403)
       expect(jobUpdated1.status).toBe(JOB_WAITING.status)
       expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
+    })
+
+    test('404 if job does not exist', async () => {
+      // Arrange
+      const notJobId = 10000
+      const notJob = await models.ClassifierJob.findByPk(notJobId)
+      expect(notJob).toBeNull() // Pre-condition: Job does not exist
+
+      const jobUpdate = { status: CLASSIFIER_JOB_STATUS.DONE }
+
+      // Act
+      const response1 = await request(superUserApp).patch(`/${notJobId}`).send(jobUpdate)
+
+      // Assert
+      expect(response1.statusCode).toBe(404)
     })
   })
 })
