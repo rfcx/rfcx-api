@@ -188,6 +188,16 @@
       }
     }
   },
+  "ClassifierJobUpdate": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "integer",
+        "description": "Status to move the job to: 0 (waiting), 30 (done), 40 (error), 50 (cancelled); cannot be set to 20 (running)",
+        "example": "30"
+      }
+    }
+  },
   "ClassifierResult": {
     "type": "object",
     "properties": {
