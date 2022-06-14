@@ -3,6 +3,7 @@
 ### Features
 * **core**: Create and list classifier jobs (`/classifier-jobs` endpoint)
 * **core**: Access to classifiers can be public (open to all) or private (only the creator)
+* **core**: Dequeue classifier jobs (`POST /internal/classifier-jobs/dequeue`)
 
 ## 1.1.8 (2022-06-10)
 
