@@ -3,9 +3,21 @@ const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
-const app = expressApp()
+const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
+const CLASSIFIERS = [CLASSIFIER_1]
 
-app.use('/', routes)
+const PROJECT = { id: 'testproject1', name: 'Test project', createdById: seedValues.otherUserId }
+const PROJECT_2 = { id: 'testproject2', name: 'Test project 2', createdById: seedValues.otherUserId }
+const PROJECT_3 = { id: 'testproject3', name: 'Test project 3', createdById: seedValues.primaryUserId }
+const PROJECT_4 = { id: 'testproject4', name: 'Test project 4', createdById: seedValues.anotherUserId }
+const PROJECTS = [PROJECT, PROJECT_2, PROJECT_3, PROJECT_4]
+
+const JOB_1 = { projectId: PROJECT.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_2 = { projectId: PROJECT.id, queryStreams: 'Test stream', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '11,13', segmentsTotal: 4, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-10-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_3 = { projectId: PROJECT_2.id, queryStreams: 'Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.otherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_4 = { projectId: PROJECT_3.id, queryStreams: 'Test stream 3', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.primaryUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_5 = { projectId: PROJECT_4.id, queryStreams: 'Not accessible project', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.anotherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOBS = [JOB_1, JOB_2, JOB_3, JOB_4, JOB_5]
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
@@ -13,33 +25,23 @@ beforeAll(async () => {
 })
 beforeEach(async () => {
   await truncate(models)
-  await commonSetup()
+  await seedTestData()
 })
 
-async function commonSetup () {
-  const PROJECT = { id: 'testproject1', name: 'Test project', createdById: seedValues.otherUserId }
-  const PROJECT_2 = { id: 'testproject2', name: 'Test project 2', createdById: seedValues.otherUserId }
-  const PROJECT_3 = { id: 'testproject3', name: 'Test project 3', createdById: seedValues.primaryUserId }
-  const PROJECT_4 = { id: 'testproject4', name: 'Test project 4', createdById: seedValues.anotherUserId }
-  const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Test stream', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT.id }
-  const STREAM_2 = { id: 'LilSjZJkRK21', name: 'Test stream 2', start: '2021-02-01T01:00:00.000Z', end: '2021-03-01T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT.id }
-  const STREAM_3 = { id: 'LilSjZJkRK22', name: 'Test stream 3', start: '2021-02-01T01:00:00.000Z', end: '2021-03-01T05:00:00.000Z', isPublic: true, createdById: seedValues.anotherUserId, projectId: PROJECT.id }
-  const STREAM_4 = { id: 'LilSjZJkRK24', name: 'Not accessible stream', start: '2021-02-01T01:00:00.000Z', end: '2021-03-01T05:00:00.000Z', isPublic: true, createdById: seedValues.anotherUserId, projectId: PROJECT.id }
-  const JOB_1 = { projectId: PROJECT.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
-  const JOB_2 = { projectId: PROJECT.id, queryStreams: 'Test stream', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '11,13', segmentsTotal: 4, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-10-07T08:07:49.158Z', startedAt: null, completedAt: null }
-  const JOB_3 = { projectId: PROJECT_2.id, queryStreams: 'Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.otherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-  const JOB_4 = { projectId: PROJECT_3.id, queryStreams: 'Test stream 3', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.primaryUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-  const JOB_5 = { projectId: PROJECT_4.id, queryStreams: 'Not accessible project', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.anotherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-  await models.Project.bulkCreate([PROJECT, PROJECT_2, PROJECT_3, PROJECT_4])
+async function seedTestData () {
+  await models.Classifier.bulkCreate(CLASSIFIERS)
+  await models.Project.bulkCreate(PROJECTS)
   await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT.id, role_id: seedValues.roleMember })
   await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_2.id, role_id: seedValues.roleGuest })
   await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_3.id, role_id: seedValues.roleAdmin })
   await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: PROJECT_4.id, role_id: seedValues.roleAdmin })
-  await models.Stream.bulkCreate([STREAM_1, STREAM_2, STREAM_3, STREAM_4])
-  await models.ClassifierJob.bulkCreate([JOB_1, JOB_2, JOB_3, JOB_4, JOB_5])
+  await models.ClassifierJob.bulkCreate(JOBS)
 }
 
 describe('GET /classifier-jobs', () => {
+  const app = expressApp()
+  app.use('/', routes)
+
   test('returns successfully', async () => {
     const response = await request(app).get('/')
 
@@ -51,7 +53,7 @@ describe('GET /classifier-jobs', () => {
 
   test('can set all fields', async () => {
     const query = {
-      projects: ['testproject1'],
+      projects: [PROJECT.id],
       status: 0,
       created_by: 'me',
       limit: 2,
@@ -77,7 +79,7 @@ describe('GET /classifier-jobs', () => {
 
   test('get correct classifiers jobs for one project', async () => {
     const query = {
-      projects: ['testproject1']
+      projects: [PROJECT.id]
     }
 
     const response = await request(app).get('/').query(query)
@@ -87,7 +89,7 @@ describe('GET /classifier-jobs', () => {
 
   test('get correct classifiers jobs for several projects', async () => {
     const query = {
-      projects: ['testproject1', 'testproject2']
+      projects: [PROJECT.id, PROJECT_2.id]
     }
 
     const response = await request(app).get('/').query(query)
@@ -97,7 +99,7 @@ describe('GET /classifier-jobs', () => {
 
   test('get correct classifiers jobs for exist and not exist projects', async () => {
     const query = {
-      projects: ['testproject1', 'testproject22']
+      projects: [PROJECT.id, 'testproject22']
     }
 
     const response = await request(app).get('/').query(query)
@@ -107,7 +109,7 @@ describe('GET /classifier-jobs', () => {
 
   test('if project ids set, but empty (no accessible projects)', async () => {
     const query = {
-      projects: ['testproject4']
+      projects: [PROJECT_4.id]
     }
 
     const response = await request(app).get('/').query(query)
