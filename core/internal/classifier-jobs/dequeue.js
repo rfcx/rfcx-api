@@ -7,9 +7,20 @@ const { dequeue } = require('./bl')
  *
  * /internal/classifier-jobs/dequeue:
  *   post:
- *     summary: Remove 1 or more jobs from the front of the queue (atomically)
+ *     summary: Remove 1 or more jobs from the front of the queue (atomically) up to the `concurrency`
  *     tags:
  *       - classifier-jobs
+ *     parameters:
+ *       - name: concurrency
+ *         description: Maximum number of running jobs, system-wide (dequeued + running jobs will not exceed this)
+ *         in: query
+ *         type: int
+ *         default: 1
+ *       - name: limit
+ *         description: Maximum number of jobs to dequeue
+ *         in: query
+ *         type: int
+ *         default: (use concurrency)
  *     responses:
  *       200:
  *         description: List of dequeued jobs
@@ -24,13 +35,13 @@ const { dequeue } = require('./bl')
  */
 module.exports = (req, res) => {
   const converter = new Converter(req.query, {}, true)
-  converter.convert('max_concurrency').default(1).toInt()
+  converter.convert('concurrency').default(1).toInt()
   converter.convert('limit').optional().toInt()
 
   return converter.validate()
     .then(async params => {
-      const { maxConcurrency, limit } = params
-      const jobs = await dequeue(maxConcurrency, limit | maxConcurrency)
+      const { concurrency, limit } = params
+      const jobs = await dequeue(concurrency, limit || concurrency)
       return res.json(jobs)
     })
     .catch(httpErrorHandler(req, res, 'Failed dequeue classifier jobs'))
