@@ -76,7 +76,7 @@ module.exports = (req, res) => {
       const options = { readableBy, limit, offset, sort, fields }
       const result = await query(filters, options)
       const { total, results } = result
-      return res.header('Total-Items', total).json(results)
+      return res.header('Access-Control-Expose-Headers', 'Total-Items').header('Total-Items', total).json(results)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting a list of classifier jobs'))
 }

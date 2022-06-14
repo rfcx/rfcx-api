@@ -52,7 +52,7 @@ module.exports = (req, res) => {
       const creatableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
 
       const result = await create(job, { creatableBy })
-      return res.location(`/classifier-jobs/${result.id}`).sendStatus(201)
+      return res.header('Access-Control-Expose-Headers', 'Location').location(`/classifier-jobs/${result.id}`).sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating classifier job'))
 }
