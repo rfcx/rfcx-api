@@ -198,6 +198,63 @@
       }
     }
   },
+  "ClassifierResult": {
+    "type": "object",
+    "properties": {
+      "analyzedMinutes": {
+        "type": "integer",
+        "description": "Number of minutes of recording analyzed in this batch",
+        "example": 100
+      },
+      "detections": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/requestBodies/ClassifierResultDetection"
+        }
+      }
+    },
+    "required": ["analyzedMinutes", "detections"]
+  },
+  "ClassifierResultDetection": {
+    "type": "object",
+    "properties": {
+      "streamId": {
+        "type": "string",
+        "description": "Classifier identifier",
+        "example": "1"
+      },
+      "classifier": {
+        "type": "string",
+        "description": "Classifier identifier",
+        "example": "1"
+      },
+      "classification": {
+        "type": "string",
+        "description": "Classification value",
+        "example": "obscurus"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "confidence": {
+        "type": "float",
+        "example": 0.975123
+      }
+    },
+    "required": [
+      "streamId",
+      "classifier",
+      "classification",
+      "start",
+      "end",
+      "confidence"
+    ]
+  },
   "Detection": {
     "type": "object",
     "properties": {
@@ -224,13 +281,7 @@
         "example": 0.975123
       }
     },
-    "required": [
-      "classification",
-      "classifier",
-      "start",
-      "end",
-      "confidence"
-    ]
+    "required": ["classification", "classifier", "start", "end", "confidence"]
   },
   "DetectionsCompact": {
     "type": "object",
