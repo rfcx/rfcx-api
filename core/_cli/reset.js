@@ -7,7 +7,6 @@ const { Sequelize, QueryTypes } = require('sequelize')
 
 const SCHEMA_SEQUELIZE = 'sequelize'
 const TABLE_SEQUELIZE_MIGRATIONS = 'migrations'
-const IS_SSL = false // Could be added to env
 
 if (fs.existsSync(path.join(__dirname, '/../../common/config/env_vars.js'))) {
   const { env } = require(path.join(__dirname, '/../../common/config/env_vars.js'))
@@ -21,7 +20,7 @@ async function main () {
 
 function getSequelize () {
   console.info('CLI: Creating sequelize')
-
+  const isSsl = process.env.POSTGRES_SSL_ENABLED === 'true'
   const options = {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
@@ -30,7 +29,7 @@ function getSequelize () {
     dialect: 'postgres',
     dialectModule: pg,
     dialectOptions: {
-      ssl: IS_SSL
+      ssl: isSsl
         ? {
             require: true,
             rejectUnauthorized: false // https://github.com/brianc/node-postgres/issues/2009
