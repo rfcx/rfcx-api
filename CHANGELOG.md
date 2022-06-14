@@ -5,6 +5,9 @@
 * **core**: Access to classifiers can be public (open to all) or private (only the creator)
 * **core**: Dequeue classifier jobs (`POST /internal/classifier-jobs/dequeue`)
 
+### Bug Fixes
+* **noncore**: Fix sensor values table not support Infineon sensor
+
 ## 1.1.8 (2022-06-10)
 
 ### Features
