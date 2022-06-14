@@ -156,6 +156,11 @@
   "ClassifierJob": {
     "type": "object",
     "properties": {
+      "classifier_id": {
+        "type": "integer",
+        "description": "A classifier id",
+        "example": "123"
+      },
       "project_id": {
         "type": "string",
         "description": "A project id",
