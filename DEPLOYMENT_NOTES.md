@@ -1,13 +1,15 @@
 # API Deployment Notes
 
 ## 1.1.9
-
 - Check that guardian software request works fine
 - Check that `last_audio_sync` column is updated on guardian checkin
 - Check that `last_battery_internal` and `last_battery_main` columns are updated on guardian mqtt checkin
 - Check that `last_battery_internal` and `last_battery_main` columns are updated on guardian satellite checkin
 - Check that `last_battery_internal` and `last_battery_main` columns are updated on guardian software request
 - Check that `v2/guardians` endpoint returns correct data for `last_audio`, `battery_percent_internal` and `battery_percent`
+- Run `npm run migrate:core` to apply the following migrations:
+  - `20220607000002-create-classifier-jobs`
+  - `20220609000001-add-is-public-to-classifiers`
 
 ## 1.1.8
 - Check that public website contact form works fine

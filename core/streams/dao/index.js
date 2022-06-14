@@ -99,6 +99,12 @@ async function query (filters, options = {}) {
   const where = {}
 
   // Filters (restrict results - can use multiple filters safely)
+  if (filters.name) {
+    where.name = {
+      [Sequelize.Op.iLike]: `${filters.name.replace(/^\*/, '%').replace(/\*$/, '%')}`
+    }
+  }
+
   if (filters.keyword) {
     where.name = {
       [Sequelize.Op.iLike]: `%${filters.keyword}%`

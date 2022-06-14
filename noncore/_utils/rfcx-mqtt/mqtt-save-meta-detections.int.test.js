@@ -14,7 +14,7 @@ beforeEach(async () => {
 async function commonSetup () {
   const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
   await models.Stream.create(stream)
-  const classification = { id: 6, value: 'vehicle', title: 'Vehicle', type_id: 1, source_id: 1 }
+  const classification = { id: 6, value: 'vehicle', title: 'Vehicle', typeId: 1, sourceId: 1 }
   await models.Classification.create(classification)
   const classifier = { id: 3, externalId: 'cccddd', name: 'vehicle', version: 5, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
   await models.Classifier.create(classifier)

@@ -14,8 +14,12 @@ const { CREATE, READ, UPDATE, DELETE } = require('../roles/dao')
  *     tags:
  *       - streams
  *     parameters:
+ *       - name: name
+ *         description: Match exact streams with name (support *)
+ *         in: query
+ *         type: string
  *       - name: keyword
- *         description: Match streams with name
+ *         description: Match streams with name contain with keyword
  *         in: query
  *         type: string
  *       - name: organizations
@@ -102,6 +106,7 @@ module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const permissableBy = user.is_super || user.has_system_role ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
+  converter.convert('name').optional().toString()
   converter.convert('keyword').optional().toString()
   converter.convert('organizations').optional().toArray()
   converter.convert('projects').optional().toArray()
@@ -119,14 +124,14 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async params => {
-      const { keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields, permission } = params
+      const { name, keyword, organizations, projects, start, end, updatedAfter, onlyPublic, onlyDeleted, limit, offset, sort, fields, permission } = params
       let createdBy = params.createdBy
       if (createdBy === 'me') {
         createdBy = permissableBy
       } else if (createdBy) {
         createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
-      const filters = { keyword, organizations, projects, start, end, createdBy, updatedAfter }
+      const filters = { name, keyword, organizations, projects, start, end, createdBy, updatedAfter }
       const options = {
         permissableBy,
         onlyPublic,

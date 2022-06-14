@@ -33,6 +33,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     lastExecutedAt: {
       type: DataTypes.DATE(3)
+    },
+    isPublic: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
     }
   }, {
     underscored: true

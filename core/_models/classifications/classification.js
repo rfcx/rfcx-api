@@ -18,6 +18,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       unique: false
     },
+    typeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true
+    },
     description: {
       type: DataTypes.TEXT,
       allowNull: true

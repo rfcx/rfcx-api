@@ -1,13 +1,20 @@
-## 1.1.9 (2022-06-XX)
+## 1.1.9 (2022-06-??)
 
 ### Features
 * **noncore**: Add `last_audio_sync`, `last_battery_internal` and `last_battery_main` to `Guardian` table and refresh them on checkins
 * **noncore**: Use data from `last_audio_sync`, `last_battery_internal` and `last_battery_main` in `v2/guardians` endpoint
+* **core**: Create and list classifier jobs (`/classifier-jobs` endpoint)
+* **core**: Access to classifiers can be public (open to all) or private (only the creator)
+* **core**: Dequeue classifier jobs (`POST /internal/classifier-jobs/dequeue`)
+
+### Bug Fixes
+* **noncore**: Fix sensor values table not support Infineon sensor
 
 ## 1.1.8 (2022-06-10)
 
 ### Features
 * **core**: Add `/clustered-events` endpoint
+* **core**: Add `name` query string to `/streams` to support query stream name with * (star)
 
 ### Bug Fixes
 * **noncore**: Fix contact form error handling

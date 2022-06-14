@@ -19,7 +19,7 @@ beforeEach(async () => {
 
 describe('POST /events', () => {
   test('invalid stream id', async () => {
-    const classification = { id: 1, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
+    const classification = { id: 1, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }
     await models.Classification.create(classification)
     const classifier = { id: 2, name: 'chainsaw', version: 2, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 'unknown' }
     await models.Classifier.create(classifier)
@@ -67,7 +67,7 @@ describe('POST /events', () => {
   test('required fields only', async () => {
     const stream = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
     await models.Stream.create(stream)
-    const classification = { id: 1, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
+    const classification = { id: 1, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }
     await models.Classification.create(classification)
     const classifier = { id: 2, name: 'chainsaw', version: 2, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 'unknown' }
     await models.Classifier.create(classifier)

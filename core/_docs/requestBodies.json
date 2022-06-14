@@ -153,6 +153,108 @@
       }
     }
   },
+  "ClassifierJob": {
+    "type": "object",
+    "properties": {
+      "classifier_id": {
+        "type": "integer",
+        "description": "A classifier id",
+        "example": "123"
+      },
+      "project_id": {
+        "type": "string",
+        "description": "A project id",
+        "example": "qwe2jDgX49"
+      },
+      "query_streams": {
+        "type": "string",
+        "description": "Limit audio to be processed, using a comma-separated list of stream identifiers name-queries",
+        "example": "SR*"
+      },
+      "query_start": {
+        "type": "date",
+        "description": "Limit audio to be processed, to only include audio after this date (inclusive)",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "query_end": {
+        "type": "string",
+        "description": "Limit audio to be processed, to only include audio before this date (exclusive)",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "query_hours": {
+        "type": "string",
+        "description": "Limit audio to be processed, using a comma-separated list of hours-of-day",
+        "example": "0,1,2,3,4,5,18,19,20,21,22,23,24"
+      }
+    }
+  },
+  "ClassifierJobUpdate": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "integer",
+        "description": "Status to move the job to: 0 (waiting), 30 (done), 40 (error), 50 (cancelled); cannot be set to 20 (running)",
+        "example": "30"
+      }
+    }
+  },
+  "ClassifierResult": {
+    "type": "object",
+    "properties": {
+      "analyzedMinutes": {
+        "type": "integer",
+        "description": "Number of minutes of recording analyzed in this batch",
+        "example": 100
+      },
+      "detections": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/requestBodies/ClassifierResultDetection"
+        }
+      }
+    },
+    "required": ["analyzedMinutes", "detections"]
+  },
+  "ClassifierResultDetection": {
+    "type": "object",
+    "properties": {
+      "streamId": {
+        "type": "string",
+        "description": "Classifier identifier",
+        "example": "1"
+      },
+      "classifier": {
+        "type": "string",
+        "description": "Classifier identifier",
+        "example": "1"
+      },
+      "classification": {
+        "type": "string",
+        "description": "Classification value",
+        "example": "obscurus"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "end": {
+        "type": "date",
+        "example": "2020-05-12T07:30:22.500Z"
+      },
+      "confidence": {
+        "type": "float",
+        "example": 0.975123
+      }
+    },
+    "required": [
+      "streamId",
+      "classifier",
+      "classification",
+      "start",
+      "end",
+      "confidence"
+    ]
+  },
   "Detection": {
     "type": "object",
     "properties": {
@@ -179,13 +281,7 @@
         "example": 0.975123
       }
     },
-    "required": [
-      "classification",
-      "classifier",
-      "start",
-      "end",
-      "confidence"
-    ]
+    "required": ["classification", "classifier", "start", "end", "confidence"]
   },
   "DetectionsCompact": {
     "type": "object",

@@ -11,6 +11,7 @@
     "dev": "npm run dev:core",
     "dev:core": "nodemon core/main.js",
     "dev:noncore": "nodemon noncore/main.js",
+    "dev:reset": "docker compose up -d && npm run reset:core && npm run migrate:core && ./core/_cli/seed.sh && npm run dev:core",
     "dev:tasks": "nodemon tasks/main.js",
     "start": "npm run start:core",
     "start:core": "node core/main.js",
@@ -19,6 +20,7 @@
     "start:tasks": "node tasks/main.js",
     "migrate:core": "node core/_cli/migrate.js",
     "migrate:noncore": "node noncore/_cli/migrate.js",
+    "reset:core": "node core/_cli/reset.js",
     "test": "eslint \"**/*.js\" && jest",
     "jest": "jest",
     "lint": "eslint \"**/*.js\""
@@ -87,6 +89,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "jest": "^26.0.1",
+    "nodemon": "^2.0.16",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",
     "sqlite3": "^5.0.2",

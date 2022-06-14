@@ -5,6 +5,9 @@ module.exports = {
   assets: [
     require('./assets/streams')
   ],
+  'classifier-jobs': [
+    require('./classifier-jobs')
+  ],
   cognition: [
     require('./cognition/aggregated-detections')
   ],
