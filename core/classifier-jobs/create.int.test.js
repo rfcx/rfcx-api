@@ -3,39 +3,33 @@ const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
-const app = expressApp()
+const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
+const CLASSIFIERS = [CLASSIFIER_1]
 
-app.use('/', routes)
+const PROJECT_1 = { id: 'testproject1', name: 'Test project 1', createdById: seedValues.otherUserId }
+const PROJECTS = [PROJECT_1]
+
+async function seedTestData () {
+  await models.Classifier.bulkCreate(CLASSIFIERS)
+  await models.Project.bulkCreate(PROJECTS)
+  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
+}
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
-  muteConsole('warn')
+  // muteConsole('warn')
 })
+
 beforeEach(async () => {
   await truncate(models)
-  await commonSetup()
+  await seedTestData()
 })
 
-async function commonSetup () {
-  const PROJECT = { id: 'testproject1', name: 'Test project 1', createdById: seedValues.otherUserId }
-  const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Classifier job test', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT.id }
-  const STREAM_2 = { id: 'LilSjZJkRK21', name: 'Classifier job test 2', start: '2021-02-01T01:00:00.000Z', end: '2021-03-01T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT.id }
-  await models.Project.create(PROJECT)
-  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT.id, role_id: seedValues.roleMember })
-  await models.Stream.bulkCreate([STREAM_1, STREAM_2])
-  await models.AudioFileFormat.create({ id: 1, value: 'wav' })
-  await models.AudioCodec.create({ id: 1, value: 'wav' })
-  await models.FileExtension.create({ id: 1, value: '.wav' })
-  const SOURCE_FILE = await models.StreamSourceFile.create({ stream_id: STREAM_1.id, filename: '20210102_010000.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
-  const SOURCE_FILE_2 = await models.StreamSourceFile.create({ stream_id: STREAM_1.id, filename: '20210102_020000.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
-  const SEGMENT = { stream_id: STREAM_1.id, start: '2021-01-02T01:00:00.000Z', end: '2021-03-01T01:01:00.000Z', stream_source_file_id: SOURCE_FILE.id, sample_count: 720000, file_extension_id: 1 }
-  const SEGMENT_2 = { stream_id: STREAM_1.id, start: '2021-01-02T02:00:00.000Z', end: '2021-01-02T02:01:00.000Z', stream_source_file_id: SOURCE_FILE_2.id, sample_count: 720000, file_extension_id: 1 }
-  await models.StreamSegment.create(SEGMENT)
-  await models.StreamSegment.create(SEGMENT_2)
-}
-
 describe('POST /classifiers-jobs', () => {
+  const app = expressApp()
+  app.use('/', routes)
+
   test('job created and location header returns an integer id', async () => {
     const requestBody = {
       project_id: 'testproject1'
@@ -52,7 +46,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('can set all fields', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_streams: 'LilSjZJkRK20',
       query_start: '2021-01-02',
       query_end: '2021-01-02',
@@ -65,7 +60,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('can omit optional query_streams', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_start: '2021-01-02',
       query_end: '2021-01-02',
       query_hours: '1,2'
@@ -77,7 +73,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('can omit optional query_start', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_streams: 'LilSjZJkRK20',
       query_end: '2021-01-02',
       query_hours: '1,2'
@@ -89,7 +86,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('can omit optional query_end', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_streams: 'LilSjZJkRK20',
       query_start: '2021-01-02',
       query_hours: '1,2'
@@ -101,7 +99,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('can omit optional query_hours', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_streams: 'LilSjZJkRK20',
       query_start: '2021-01-02',
       query_end: '2021-01-02'
@@ -113,7 +112,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('query date range is empty', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_streams: 'LilSjZJkRK20',
       query_start: '2020-01-02',
       query_end: '2020-01-01',
@@ -126,7 +126,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('user is not project member', async () => {
     const requestBody = {
-      project_id: 'testproject2',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_streams: 'LilSjZJkRK23'
     }
 
@@ -136,7 +137,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('query hours with correct format', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_hours: '01,02'
     }
 
@@ -146,7 +148,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('query hours with not correct format', async () => {
     const requestBody = {
-      project_id: 'testproject1',
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
       query_hours: '27,28'
     }
 
@@ -156,6 +159,7 @@ describe('POST /classifiers-jobs', () => {
 
   test('missing project id', async () => {
     const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
       query_streams: ['LilSjZJkRK20']
     }
     console.warn = jest.fn()
@@ -167,6 +171,7 @@ describe('POST /classifiers-jobs', () => {
 
   test('returns 400 when project id length is not correct', async () => {
     const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
       project_id: 'abcdef12345'
     }
 
@@ -177,6 +182,7 @@ describe('POST /classifiers-jobs', () => {
 
   test('returns 400 when project id is not exist', async () => {
     const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
       project_id: 'abcdef123456'
     }
 
