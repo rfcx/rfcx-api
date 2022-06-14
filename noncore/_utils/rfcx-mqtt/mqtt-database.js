@@ -378,6 +378,9 @@ exports.checkInDatabase = {
           }
         })
           .then(() => {
+            return models.Guardian.update({ last_audio_sync: checkInObj.audio.meta.measuredAt }, { where: { id: checkInObj.db.dbGuardian.id } })
+          })
+          .then(() => {
             checkInObj.db.dbAudio = dbAudio
             checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] })
             return checkInObj

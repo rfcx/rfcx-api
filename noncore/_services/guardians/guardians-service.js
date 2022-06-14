@@ -52,41 +52,11 @@ async function list (options = {}) {
   return await models.Guardian.findAll({ where, order, limit, offset })
 }
 
-async function getLastAudio (id) {
-  return await models.GuardianAudio
-    .findOne({
-      order: [['measured_at', 'DESC']],
-      where: { guardian_id: id }
-    })
-}
-
 async function getGuardianMetaHardware (id) {
   return await models.GuardianMetaHardware
     .findOne({
       where: { guardian_id: id },
       attributes: ['phone_imei', 'phone_sim_number', 'phone_sim_serial']
-    })
-}
-
-async function getGuardianMetaBattery (id) {
-  return await models.GuardianMetaBattery
-    .findOne({
-      where: {
-        guardian_id: id,
-        measured_at: { [models.Sequelize.Op.gt]: Date.now() - 604800000 }
-      },
-      order: [['measured_at', 'DESC']]
-    })
-}
-
-async function getGuardianMetaSentinelPower (id) {
-  return await models.GuardianMetaSentinelPower
-    .findOne({
-      where: {
-        guardian_id: id,
-        measured_at: { [models.Sequelize.Op.gt]: Date.now() - 604800000 }
-      },
-      order: [['measured_at', 'DESC']]
     })
 }
 
@@ -113,30 +83,12 @@ async function listMonitoringData (options = {}) {
   if (!guardians.length) {
     return []
   }
-  if (options.lastAudio === true) {
-    for (const guardian of guardians) {
-      const audio = await getLastAudio(guardian.id)
-      guardian.last_audio = {
-        guid: (audio && audio.guid) || null,
-        measured_at: (audio && audio.measured_at) || null
-      }
-    }
-  }
   if (options.includeHardware === true) {
     for (const guardian of guardians) {
       const hardware = await getGuardianMetaHardware(guardian.id)
       guardian.phone_imei = (hardware && hardware.phone_imei) || null
       guardian.phone_sim_number = (hardware && hardware.phone_sim_number) || null
       guardian.phone_sim_serial = (hardware && hardware.phone_sim_serial) || null
-    }
-  }
-  if (options.includeLastSync === true) {
-    for (const guardian of guardians) {
-      guardian.last_sync = guardian.last_ping
-      const metaBattery = await getGuardianMetaBattery(guardian.id)
-      guardian.battery_percent_internal = (metaBattery && metaBattery.battery_percent) || null
-      const metaPower = await getGuardianMetaSentinelPower(guardian.id)
-      guardian.battery_percent = (metaPower && metaPower.battery_state_of_charge) || null
     }
   }
   return guardians

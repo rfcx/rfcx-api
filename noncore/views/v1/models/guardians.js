@@ -37,16 +37,16 @@ exports.models = {
             last_checkin_at: dbRow.last_update_check_in
           }
         },
-        last_sync: dbRow.last_sync ? dbRow.last_sync : null,
-        battery_percent_internal: dbRow.battery_percent_internal,
-        battery_percent: dbRow.battery_percent,
+        last_sync: dbRow.last_ping ? dbRow.last_ping : null,
+        battery_percent: dbRow.last_battery_main,
+        battery_percent_internal: dbRow.last_battery_internal,
         site: dbRow.Site
           ? {
               guid: dbRow.Site.guid,
               name: dbRow.Site.name
             }
           : null,
-        last_audio: dbRow.last_audio ? dbRow.last_audio : null,
+        last_audio: dbRow.last_audio_sync ? { measured_at: dbRow.last_audio_sync } : null,
         notes: dbRow.notes || null,
         phone_imei: dbRow.phone_imei || null,
         phone_sim_number: dbRow.phone_sim_number || null,

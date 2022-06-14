@@ -21,23 +21,21 @@ router.route('/')
     const user = req.rfcx.auth_token_info
     const converter = new Converter(req.query, {}, true)
     converter.convert('project').optional().toString()
-    converter.convert('last_audio').optional().toBoolean()
     converter.convert('include_hardware').optional().toBoolean()
-    converter.convert('include_last_sync').optional().toBoolean()
     converter.convert('is_visible').optional().toBoolean()
     converter.convert('offset').default(0).toInt()
     converter.convert('limit').default(100).toInt()
 
     return converter.validate()
       .then(params => {
-        const { project, limit, offset, lastAudio, isVisible, includeLastSync, includeHardware } = params
+        const { project, limit, offset, isVisible, includeHardware } = params
         const readableBy = user && (user.is_super || user.has_system_role || user.has_stream_token) ? undefined : user.id
         const order = [['last_check_in', 'DESC']]
         const where = {
           ...project !== undefined && { project_id: project === 'null' ? { [models.Sequelize.Op.is]: null } : project },
           ...isVisible !== undefined && { is_visible: isVisible === 'true' }
         }
-        return guardiansService.listMonitoringData({ readableBy, where, order, limit, offset, lastAudio, includeLastSync, includeHardware })
+        return guardiansService.listMonitoringData({ readableBy, where, order, limit, offset, includeHardware })
       })
       .then(dbGuardian => res.status(200).json(views.models.guardian(req, res, dbGuardian)))
       .catch(httpErrorHandler(req, res, 'Failed getting guardians'))

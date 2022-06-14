@@ -186,6 +186,32 @@ module.exports = function (sequelize, DataTypes) {
     last_ping: {
       type: DataTypes.DATE(3),
       allowNull: true
+    },
+    last_audio_sync: {
+      type: DataTypes.DATE(3),
+      allowNull: true,
+      defaultValue: null,
+      validate: {
+        isDate: { msg: 'last_audio_sync for Guardian should have type Date' }
+      }
+    },
+    last_battery_main: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+      validate: {
+        isInt: true,
+        min: 0
+      }
+    },
+    last_battery_internal: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+      validate: {
+        isInt: true,
+        min: 0
+      }
     }
   }, {
     indexes: [

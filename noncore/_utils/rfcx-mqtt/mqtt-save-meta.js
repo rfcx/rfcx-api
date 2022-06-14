@@ -32,7 +32,7 @@ exports.saveMeta = {
     })
   },
 
-  Battery: function (metaBattery, guardianId, checkInId) {
+  Battery: async function (metaBattery, guardianId, checkInId) {
     const dbMetaBattery = []
 
     for (const battInd in metaBattery) {
@@ -46,6 +46,11 @@ exports.saveMeta = {
         is_fully_charged: (metaBattery[battInd][4] === '1') ? true : ((metaBattery[battInd][4] === '0') ? false : null)
       })
     }
+
+    const lastBattery = dbMetaBattery.sort((a, b) => { return b.measured_at - a.measured_at })[0]
+    await models.Guardian.update({
+      last_battery_internal: lastBattery ? lastBattery.battery_percent : null
+    }, { where: { id: guardianId } })
 
     return models.GuardianMetaBattery.bulkCreate(dbMetaBattery).catch(function (err) {
       console.error('failed to create GuardianMetaBattery | ' + err)
@@ -305,7 +310,7 @@ exports.saveMeta = {
     })
   },
 
-  SentinelPower: function (metaSntnlPwr, guardianId, checkInId) {
+  SentinelPower: async function (metaSntnlPwr, guardianId, checkInId) {
     const sntnlPwrEntries = { }
 
     for (const duInd in metaSntnlPwr) {
@@ -361,6 +366,11 @@ exports.saveMeta = {
         })
       }
     }
+
+    const lastBattery = dbMetaSentinelPower.sort((a, b) => { return b.measured_at - a.measured_at })[0]
+    await models.Guardian.update({
+      last_battery_main: lastBattery ? lastBattery.battery_state_of_charge : null
+    }, { where: { id: guardianId } })
 
     return models.GuardianMetaSentinelPower.bulkCreate(dbMetaSentinelPower).catch(function (err) {
       console.error('failed to create GuardianMetaSentinelPower | ' + err)

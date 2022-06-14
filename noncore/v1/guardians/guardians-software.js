@@ -89,55 +89,36 @@ router.route('/:guardian_id/software/:software_role')
     const inquiringGuardianBattery = parseInt(req.query.battery)
     const inquiringGuardianTimeStamp = new Date(parseInt(req.query.timestamp))
 
-    models.Guardian
-      .findOne({
-        where: { guid: req.params.guardian_id }
-      })
-      .bind({})
-      .then(function (dbGuardian) {
-        if (!dbGuardian) {
+    models.Guardian.findOne({ where: { guid: req.params.guardian_id } })
+      .then(async (guardian) => {
+        if (!guardian) {
           console.error('Guardian with given guid not found', { req: req.guid })
           throw new sequelize.EmptyResultError('Guardian with given guid not found.')
         }
-        this.dbGuardian = dbGuardian
-        return models.GuardianSoftware.findOne({
-          where: { role: req.query.role }
-        })
-      })
-      .then(function (dbSoftware) {
-        if (!dbSoftware) {
+        const software = await models.GuardianSoftware.findOne({ where: { role: req.query.role } })
+        if (!software) {
           console.error('Software with given guid not found', { req: req.guid })
           throw new sequelize.EmptyResultError('Software with given guid not found.')
         }
-        this.dbSoftware = dbSoftware
-        return models.GuardianSoftwareVersion.findOne({
-          where: {
-            software_role_id: dbSoftware.id,
-            version: req.query.version
-          }
-        })
-      })
-      .then(function (dbSoftwareVersion) {
-        if (!dbSoftwareVersion) {
+        const softwareVersion = await models.GuardianSoftwareVersion.findOne({ where: { software_role_id: software.id, version: req.query.version } })
+        if (!softwareVersion) {
           console.error('SoftwareVersion with given guid not found', { req: req.guid })
           throw new sequelize.EmptyResultError('SoftwareVersion with given guid not found.')
         }
-        return models.GuardianMetaUpdateCheckIn.create({
-          guardian_id: this.dbGuardian.id,
-          version_id: dbSoftwareVersion.id,
-          role_id: this.dbSoftware.id
+        await models.GuardianMetaUpdateCheckIn.create({
+          guardian_id: guardian.id,
+          version_id: softwareVersion.id,
+          role_id: software.id
         })
-      })
-      .then(function (dbGuardianMetaUpdateCheckIn) {
-        return models.GuardianMetaBattery.create({
-          guardian_id: this.dbGuardian.id,
+        await models.GuardianMetaBattery.create({
+          guardian_id: guardian.id,
           check_in_id: null,
           measured_at: inquiringGuardianTimeStamp,
           battery_percent: inquiringGuardianBattery,
           battery_temperature: null
         })
-      })
-      .then(function (dbGuardianMetaBattery) {
+        await models.Guardian.update({ last_battery_internal: inquiringGuardianBattery || null }, { where: { id: guardian.id } })
+
         const dbQuery = {
           is_available: true
         }
@@ -148,15 +129,13 @@ router.route('/:guardian_id/software/:software_role')
         } else {
           dbQuery.role = softwareRole
         }
-        return models.GuardianSoftware.findAll({
+        const result = await models.GuardianSoftware.findAll({
           where: dbQuery,
           include: [{ all: true }],
           order: [['current_version_id', 'ASC']]
         })
-      })
-      .then(function (dSoftware) {
         res.status(200).json(
-          (this.dbGuardian.is_updatable) ? views.models.guardianSoftware(req, res, dSoftware) : []
+          (this.dbGuardian.is_updatable) ? views.models.guardianSoftware(req, res, result) : []
         )
       })
       .catch(sequelize.EmptyResultError, function (err) {
