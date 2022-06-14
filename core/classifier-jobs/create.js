@@ -35,6 +35,7 @@ const { ValidationError } = require('../../common/error-handling/errors')
 module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const converter = new Converter(req.body, {}, true)
+  converter.convert('classifier_id').toInt()
   converter.convert('project_id').toString().minLength(12).maxLength(12)
   converter.convert('query_streams').optional().toString()
   converter.convert('query_start').optional().toMomentUtc()
@@ -46,9 +47,10 @@ module.exports = (req, res) => {
       if (params.queryStart && params.queryEnd && params.queryStart.isAfter(params.queryEnd)) {
         throw new ValidationError('start is after end')
       }
-      const creatableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
       const createdById = user.id
       const job = { ...params, createdById }
+      const creatableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+
       const result = await create(job, { creatableBy })
       return res.location(`/classifier-jobs/${result.id}`).sendStatus(201)
     })
