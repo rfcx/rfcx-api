@@ -32,7 +32,8 @@ describe('POST /classifiers-jobs', () => {
 
   test('job created and location header returns an integer id', async () => {
     const requestBody = {
-      project_id: 'testproject1'
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id
     }
 
     const response = await request(app).post('/').send(requestBody)
@@ -127,7 +128,7 @@ describe('POST /classifiers-jobs', () => {
   test('user is not project member', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
-      project_id: PROJECT_1.id,
+      project_id: 'testproject2',
       query_streams: 'LilSjZJkRK23'
     }
 
