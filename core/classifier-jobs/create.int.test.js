@@ -18,7 +18,7 @@ async function seedTestData () {
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
-  // muteConsole('warn')
+  muteConsole('warn')
 })
 
 beforeEach(async () => {
