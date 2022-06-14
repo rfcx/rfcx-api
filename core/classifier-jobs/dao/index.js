@@ -1,8 +1,9 @@
 const { ClassifierJob, Classifier, Sequelize } = require('../../_models')
-const { ForbiddenError, ValidationError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
+const { DONE } = require('../classifier-job-status')
 
 const availableIncludes = [
   Classifier.include({ attributes: Classifier.attributes.lite })
@@ -72,7 +73,36 @@ async function create (job, options = {}) {
     })
 }
 
+/**
+ * Update a classifier job
+ * @param {integer} id
+ * @param {ClassifierJob} job
+ * @param {integer} job.status
+ * @param {*} options
+ * @param {number} options.updatableBy Update only if job is updatable by the given user id
+ * @throws EmptyResultError when job not found
+ * @throws ForbiddenError when `updatableBy` user does not have update permission on the job
+ */
+async function update (id, job, options = {}) {
+  // Check the job is updatable
+  const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
+  if (!existingJob) {
+    throw new EmptyResultError('Classifier job not found')
+  }
+  if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
+    throw new ForbiddenError('User is not the classifier job creator')
+  }
+
+  // Set/clear completedAt
+  if (job.status) {
+    job.completedAt = job.status === DONE ? new Date() : null
+  }
+
+  await ClassifierJob.update(job, { where: { id } })
+}
+
 module.exports = {
   query,
-  create
+  create,
+  update
 }
