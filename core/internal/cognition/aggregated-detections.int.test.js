@@ -20,7 +20,7 @@ async function commonSetup () {
   for (let i = 0; i < streamIds.length; i++) {
     await models.Stream.create({ id: streamIds[i], name: `Tembe ${i + 1}`, createdById: seedValues.primaryUserId })
   }
-  const classification = { id: 7718, value: 'chainsaw', title: 'Chainsaw', type_id: 1, source_id: 1 }
+  const classification = { id: 7718, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }
   await models.Classification.create(classification)
   const classifier = { id: 88, externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
   await models.Classifier.create(classifier)

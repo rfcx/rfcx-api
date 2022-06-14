@@ -153,6 +153,41 @@
       }
     }
   },
+  "ClassifierJob": {
+    "type": "object",
+    "properties": {
+      "classifier_id": {
+        "type": "integer",
+        "description": "A classifier id",
+        "example": "123"
+      },
+      "project_id": {
+        "type": "string",
+        "description": "A project id",
+        "example": "qwe2jDgX49"
+      },
+      "query_streams": {
+        "type": "string",
+        "description": "Limit audio to be processed, using a comma-separated list of stream identifiers name-queries",
+        "example": "SR*"
+      },
+      "query_start": {
+        "type": "date",
+        "description": "Limit audio to be processed, to only include audio after this date (inclusive)",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "query_end": {
+        "type": "string",
+        "description": "Limit audio to be processed, to only include audio before this date (exclusive)",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "query_hours": {
+        "type": "string",
+        "description": "Limit audio to be processed, using a comma-separated list of hours-of-day",
+        "example": "0,1,2,3,4,5,18,19,20,21,22,23,24"
+      }
+    }
+  },
   "ClassifierResult": {
     "type": "object",
     "properties": {
