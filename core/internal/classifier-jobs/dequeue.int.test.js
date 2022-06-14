@@ -14,16 +14,18 @@ beforeEach(async () => {
   await truncate(models)
 })
 
+function withIds (obj) {
+  return {
+    ...Object.fromEntries(Object.entries(obj).map(([k, v]) => [k + 'Id', v.id])),
+    ...obj
+  }
+}
+
 async function commonSetup () {
   const classifier = await models.Classifier.create({ name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true })
   const project = await models.Project.create({ id: randomId(), name: 'Finnish Bears', createdById: seedValues.otherUserId })
 
-  return {
-    classifier,
-    classifierId: classifier.id,
-    project,
-    projectId: project.id
-  }
+  return withIds({ classifier, project })
 }
 
 describe('POST /internal/classifier-jobs/dequeue', () => {
