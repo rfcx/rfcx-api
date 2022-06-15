@@ -35,7 +35,7 @@ const { getSignedUrl } = require('./dao/download')
 router.get('/:id', function (req, res) {
   return dao.get(req.params.id, { joinRelations: true })
     .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res, 'Failed getting classifier'))
+    .catch(httpErrorHandler(req, res))
 })
 
 /**
@@ -70,19 +70,21 @@ router.get('/:id', function (req, res) {
  *         description: Invalid query parameters
  */
 router.get('/', function (req, res) {
-  const user = req.rfcx.auth_token_info
-  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('limit').default(100).toInt()
   converter.convert('offset').default(0).toInt()
 
   return converter.validate()
     .then(async params => {
+      const user = req.rfcx.auth_token_info
+      const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+
       const options = { ...params, readableBy }
-      const result = await dao.query({}, options)
-      return res.json(result.results)
+      const { results } = await dao.query({}, options)
+
+      return res.json(results)
     })
-    .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
+    .catch(httpErrorHandler(req, res))
 })
 
 /**
