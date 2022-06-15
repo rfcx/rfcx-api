@@ -47,21 +47,23 @@ module.exports = (req, res) => {
   const jobId = req.params.id
 
   const converter1 = new Converter(req.body, {}, true)
-  converter1.convert('analyzedMinutes').toInt()
+  converter1.convert('analyzed_minutes').toInt()
 
   const converter2 = new ArrayConverter(req.body.detections)
-  converter2.convert('streamId').toString()
+  converter2.convert('stream_id').toString()
   converter2.convert('classifier').toString()
   converter2.convert('classification').toString()
   converter2.convert('start').toMomentUtc()
   converter2.convert('end').toMomentUtc()
   converter2.convert('confidence').toFloat()
 
-  // Call DAO & return
   return Promise.all([converter1.validate(), converter2.validate()])
-    .then(async ([paramsAnalyzedMinutes, paramsDetections]) => {
-      const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
-      await createResults(jobId, params)
+    .then(async ([paramsAnalyzedMinutes, paramDetections]) => {
+      // Convert snake to camel
+      const detections = paramDetections.map(({ stream_id: streamId, ...rest }) => ({ streamId, ...rest }))
+
+      // Call DAO & return
+      await createResults(jobId, paramsAnalyzedMinutes.analyzedMinutes, detections)
       return res.sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed updating classifier job'))

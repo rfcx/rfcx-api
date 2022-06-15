@@ -53,16 +53,16 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
   const superUserApp = expressApp({ is_super: true }).use('/', routes)
 
   const VALID_JOB_RESULT = {
-    analyzedMinutes: 5_000,
+    analyzed_minutes: 5_000,
     detections: [{
-      streamId: STREAM_1.id,
+      stream_id: STREAM_1.id,
       classifier: JOB_RUNNING.classifierId,
       classification: CLASSIFIER_OUTPUT_1.outputClassName,
       start: '2021-01-02T01:32:07.000Z',
       end: '2021-01-02T01:32:09.000Z',
       confidence: 0.975123
     }, {
-      streamId: STREAM_1.id,
+      stream_id: STREAM_1.id,
       classifier: JOB_RUNNING.classifierId,
       classification: CLASSIFIER_OUTPUT_2.outputClassName,
       start: '2021-01-02T01:33:49.000Z',
@@ -82,8 +82,8 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
 
     test('saves analyzed minutes', async () => {
       // Arrange
-      const result1 = { ...VALID_JOB_RESULT, analyzedMinutes: 15_000, detections: [] }
-      const result2 = { ...VALID_JOB_RESULT, analyzedMinutes: 25_000, detections: [] }
+      const result1 = { ...VALID_JOB_RESULT, analyzed_minutes: 15_000, detections: [] }
+      const result2 = { ...VALID_JOB_RESULT, analyzed_minutes: 25_000, detections: [] }
 
       // Act
       const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result1)
@@ -94,8 +94,8 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       // Assert
       expect(response1.statusCode).toBe(201)
       expect(response2.statusCode).toBe(201)
-      expect(job1.minutesCompleted).toBe(result1.analyzedMinutes)
-      expect(job2.minutesCompleted).toBe(result1.analyzedMinutes + result2.analyzedMinutes)
+      expect(job1.minutesCompleted).toBe(result1.analyzed_minutes)
+      expect(job2.minutesCompleted).toBe(result1.analyzed_minutes + result2.analyzed_minutes)
     })
 
     test('saves detections', async () => {
@@ -110,9 +110,9 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
   })
 
   describe('invalid usage', () => {
-    test('400 if invalid analyzedMinutes', async () => {
+    test('400 if invalid analyzed_minutes', async () => {
       // Arrange
-      const result1 = { analyzedMinutes: 'potato', detections: [] }
+      const result1 = { analyzed_minutes: 'potato', detections: [] }
 
       // Act
       const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result1)
@@ -123,7 +123,7 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
 
     test('400 if invalid detections', async () => {
       // Arrange
-      const result1 = { analyzedMinutes: 15_000, detections: 'potato' }
+      const result1 = { analyzed_minutes: 15_000, detections: 'potato' }
 
       // Act
       const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result1)

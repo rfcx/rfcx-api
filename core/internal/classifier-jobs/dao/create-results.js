@@ -2,7 +2,7 @@ const { EmptyResultError } = require('../../../../common/error-handling/errors')
 const { ClassifierJob, sequelize } = require('../../../_models')
 const { create } = require('../../../detections/dao/create')
 
-async function createResults (jobId, { analyzedMinutes, detections }) {
+async function createResults (jobId, analyzedMinutes, detections) {
   // Check job exists
   const job = await ClassifierJob.findByPk(jobId, { raw: true })
   if (!job) {
