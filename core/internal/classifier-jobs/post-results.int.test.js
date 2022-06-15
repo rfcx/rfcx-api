@@ -2,7 +2,7 @@ const routes = require('./index')
 const models = require('../../_models')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../common/testing/sequelize')
 const request = require('supertest')
-const CLASSIFIER_JOB_STATUS = require('../../classifier-jobs/classifier-job-status')
+const { RUNNING } = require('../../classifier-jobs/classifier-job-status')
 
 // Test data
 const CLASSIFICATION_1 = { id: 100001, value: 'aureus', title: 'Canis aureus', typeId: 1 }
@@ -22,7 +22,7 @@ const PROJECTS = [PROJECT_1]
 const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Test stream', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT_1.id }
 const STREAMS = [STREAM_1]
 
-const JOB_RUNNING = { id: 123, status: CLASSIFIER_JOB_STATUS.RUNNING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test*', queryStart: '2021-01-01', queryEnd: '2022-01-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: '2022-09-07T08:07:49.158Z', completedAt: null }
+const JOB_RUNNING = { id: 123, status: RUNNING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test*', queryStart: '2021-01-01', queryEnd: '2022-01-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: '2022-09-07T08:07:49.158Z', completedAt: null }
 const JOBS = [JOB_RUNNING]
 
 async function seedTestData () {
