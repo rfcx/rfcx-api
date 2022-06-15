@@ -266,7 +266,6 @@ exports.checkInDatabase = {
 
     const prefsDb = { sha1: '', vals: {}, cnt: 0, blobForSha1: '' }
     const prefsJson = { sha1: checkInObj.json.prefs.sha1, vals: checkInObj.json.prefs.vals, cnt: 0 }
-    console.log('\n\ncheckInObj.json.prefs.vals', checkInObj.json.prefs.vals, '\n\n')
     const prefsSha1CharLimit = prefsJson.sha1.length
     for (const prefKey in prefsJson.vals) { prefsJson.cnt++ } // eslint-disable-line no-unused-vars
 
