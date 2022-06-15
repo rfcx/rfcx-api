@@ -69,7 +69,7 @@ async function create (job, options = {}) {
   return await ClassifierJob.create(job)
     .catch((e) => {
       console.error('error', e)
-      throw new ValidationError('Cannot create classifier job with provided data.')
+      throw new ValidationError('Cannot create classifier job with provided data')
     })
 }
 
@@ -87,10 +87,10 @@ async function update (id, job, options = {}) {
   // Check the job is updatable
   const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
   if (!existingJob) {
-    throw new EmptyResultError('Classifier job not found')
+    throw new EmptyResultError()
   }
   if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
-    throw new ForbiddenError('User is not the classifier job creator')
+    throw new ForbiddenError()
   }
 
   // Set/clear completedAt

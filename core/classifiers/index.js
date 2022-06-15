@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { ValidationError } = require('../../common/error-handling/errors')
+const { ValidationError, ForbiddenError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
 const Converter = require('../../common/converter')
@@ -117,60 +117,59 @@ router.get('/', function (req, res) {
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/', function (req, res) {
-  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-    console.warn('WARN: POST /classifiers Forbidden')
-    return res.sendStatus(403)
+router.post('/', async (req, res) => {
+  try {
+    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+      throw ForbiddenError()
+    }
+
+    const converter = new Converter(req.body, {}, true)
+    converter.convert('name').toString()
+    converter.convert('version').toInt()
+    converter.convert('external_id').optional().toString()
+    converter.convert('classification_values').toArray()
+    converter.convert('active_projects').optional().toArray()
+    converter.convert('active_streams').optional().toArray()
+    const params = await converter.validate()
+
+    // Upload model if included
+    let modelUrl = ''
+    if (req.files && req.files.file) {
+      const file = req.files.file
+      if (!file.originalname.endsWith('.tar.gz')) {
+        throw new ValidationError('File must be .tar.gz')
+      }
+      modelUrl = await upload(file)
+    }
+
+    // Get the classification ids for each output (or error if not found)
+    const outputMappings = params.classification_values.map(parseClassifierOutputMapping)
+    let serverIds = {}
+    try {
+      serverIds = await getIds(outputMappings.map(value => value.to))
+    } catch (_) {
+      throw new ValidationError('Classification values not found')
+    }
+    const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
+
+    const createdById = req.rfcx.auth_token_info.id
+    const classifier = {
+      name: params.name,
+      version: params.version,
+      externalId: params.external_id,
+      modelUrl,
+      createdById,
+      outputs,
+      activeProjects: params.activeProjects,
+      activeStreams: params.activeStreams
+    }
+
+    const result = await dao.create(classifier)
+
+    res.location(`${req.baseUrl}${req.path}${result.id}`).sendStatus(201)
+  } catch (err) {
+    httpErrorHandler(req, res)
   }
-
-  const transformedParams = {}
-  const params = new Converter(req.body, transformedParams, true)
-  params.convert('name').toString()
-  params.convert('version').toInt()
-  params.convert('external_id').optional().toString()
-  params.convert('classification_values').toArray()
-  params.convert('active_projects').optional().toArray()
-  params.convert('active_streams').optional().toArray()
-
-  params.validate()
-    .then(async () => {
-      // Upload model if included
-      let modelUrl = ''
-      if (req.files && req.files.file) {
-        const file = req.files.file
-        if (!file.originalname.endsWith('.tar.gz')) {
-          throw new ValidationError('File must be .tar.gz')
-        }
-        modelUrl = await upload(file)
-      }
-
-      // Get the classification ids for each output (or error if not found)
-      const outputMappings = transformedParams.classification_values.map(parseClassifierOutputMapping)
-      let serverIds = {}
-      try {
-        serverIds = await getIds(outputMappings.map(value => value.to))
-      } catch (_) {
-        throw new ValidationError('Classification values not found')
-      }
-      const outputs = outputMappings.map(value => ({ className: value.from, id: serverIds[value.to] }))
-
-      const createdById = req.rfcx.auth_token_info.id
-      const classifier = {
-        name: transformedParams.name,
-        version: transformedParams.version,
-        externalId: transformedParams.external_id,
-        modelUrl,
-        createdById,
-        outputs,
-        activeProjects: transformedParams.activeProjects,
-        activeStreams: transformedParams.activeStreams
-      }
-      return dao.create(classifier)
-    })
-    .then(classifier => {
-      res.location(`${req.baseUrl}${req.path}${classifier.id}`).sendStatus(201)
-    })
-    .catch(httpErrorHandler(req, res, 'Failed searching for classifiers'))
 })
 
 /**
@@ -196,33 +195,37 @@ router.post('/', function (req, res) {
  *         description: Updated
  *       400:
  *         description: Invalid query parameters
+ *       403:
+ *         description: Insufficient privileges
  */
-router.patch('/:id', function (req, res) {
-  const id = req.params.id
+router.patch('/:id', async (req, res) => {
+  try {
+    const id = req.params.id
 
-  // TODO: Only the owner can change it?
-  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-    console.warn(`WARN: PATCH /classifiers/${id} Forbidden`)
-    return res.sendStatus(403)
+    // Check authorization
+    // TODO: Only the owner can change it?
+    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+      throw new ForbiddenError()
+    }
+
+    const converter = new Converter(req.body, {}, true)
+    converter.convert('name').optional().toString()
+    converter.convert('version').optional().toInt()
+    converter.convert('external_id').optional().toString()
+    converter.convert('status').optional().toInt()
+    converter.convert('platform').optional().toString().default('aws')
+    converter.convert('deployment_parameters').optional().toString({ emptyStringToNull: true })
+    converter.convert('active_projects').optional().toArray()
+    converter.convert('active_streams').optional().toArray()
+    const params = await converter.validate()
+
+    // Call DAO & return
+    const createdById = req.rfcx.auth_token_info.id
+    await dao.update(id, createdById, params)
+    return res.sendStatus(200)
+  } catch (err) {
+    httpErrorHandler(req, res)
   }
-
-  const params = new Converter(req.body, {}, true)
-  params.convert('name').optional().toString()
-  params.convert('version').optional().toInt()
-  params.convert('external_id').optional().toString()
-  params.convert('status').optional().toInt()
-  params.convert('platform').optional().toString().default('aws')
-  params.convert('deployment_parameters').optional().toString({ emptyStringToNull: true })
-  params.convert('active_projects').optional().toArray()
-  params.convert('active_streams').optional().toArray()
-
-  const createdById = req.rfcx.auth_token_info.id
-  params.validate()
-    .then((params) => {
-      return dao.update(id, createdById, params)
-    })
-    .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res, 'Failed updating classifiers'))
 })
 
 /**
@@ -248,20 +251,21 @@ router.patch('/:id', function (req, res) {
  *       404:
  *         description: Not found
  */
-router.get('/:id/file', function (req, res) {
-  const id = req.params.id
+router.get('/:id/file', async (req, res) => {
+  try {
+    // Check authorization
+    // TODO: Only the owner can download it?
+    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+      throw new ForbiddenError()
+    }
 
-  // TODO: Only the owner can download it?
-  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-    console.warn(`WARN: GET /classifiers/${id}/file Forbidden`)
-    return res.sendStatus(403)
+    const id = req.params.id
+    const signedUrl = await getSignedUrl(id)
+
+    return res.redirect(signedUrl)
+  } catch (err) {
+    httpErrorHandler(req, res)
   }
-
-  getSignedUrl(id)
-    .then(signedUrl => {
-      res.redirect(signedUrl)
-    })
-    .catch(httpErrorHandler(req, res, `Failed downloading classifiers id ${id}`))
 })
 
 module.exports = router
