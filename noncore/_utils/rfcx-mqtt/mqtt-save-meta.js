@@ -48,7 +48,6 @@ exports.saveMeta = {
     }
 
     const lastBattery = dbMetaBattery.sort((a, b) => { return b.measured_at - a.measured_at })[0]
-    console.log('\n\nlast_battery_internal', lastBattery, guardianId, '\n\n')
     await models.Guardian.update({
       last_battery_internal: lastBattery ? lastBattery.battery_percent : null
     }, { where: { id: guardianId } })
@@ -369,7 +368,6 @@ exports.saveMeta = {
     }
 
     const lastBattery = dbMetaSentinelPower.sort((a, b) => { return b.measured_at - a.measured_at })[0]
-    console.log('\n\nlast_battery_main update', lastBattery, guardianId, '\n\n')
     await models.Guardian.update({
       last_battery_main: lastBattery ? lastBattery.battery_state_of_charge : null
     }, { where: { id: guardianId } })
