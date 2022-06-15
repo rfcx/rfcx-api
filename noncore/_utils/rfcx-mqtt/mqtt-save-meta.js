@@ -35,7 +35,6 @@ exports.saveMeta = {
   Battery: async function (metaBattery, guardianId, checkInId) {
     const dbMetaBattery = []
 
-    console.log('\n\nmetaBattery', metaBattery, '\n\n')
     for (const battInd in metaBattery) {
       dbMetaBattery.push({
         guardian_id: guardianId,
