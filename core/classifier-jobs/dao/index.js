@@ -22,8 +22,8 @@ const availableIncludes = [
  * @param {number} options.readableBy Include only classifier jobs readable by the given user id
  */
 async function query (filters, options = {}) {
-  const accessibleProjects = options.readableBy ? await getAccessibleObjectsIDs(options.readableBy, PROJECT, filters.projects) : undefined
-  const filterProjects = Array.isArray(filters.projects) ? filters.projects : undefined
+  const accessibleProjects = options.readableBy ? await getAccessibleObjectsIDs(options.readableBy, PROJECT, filters.projects) : null
+  const filterProjects = Array.isArray(filters.projects) ? filters.projects : null
   const projectIds = accessibleProjects && filterProjects
     ? accessibleProjects.filter(p => filters.projects.includes(p))
     : accessibleProjects ?? filterProjects
@@ -33,8 +33,8 @@ async function query (filters, options = {}) {
 
   const where = {
     projectId: { [Sequelize.Op.in]: projectIds },
-    ...filters.status && { status: filters.status },
-    ...filters.createdBy && { createdById: filters.createdBy }
+    ...filters.status !== undefined && { status: filters.status },
+    ...filters.createdBy !== undefined && { createdById: filters.createdBy }
   }
 
   const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.full

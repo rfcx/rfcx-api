@@ -2,6 +2,7 @@ const routes = require('./index')
 const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
+const { WAITING, DONE } = require('./classifier-job-status')
 
 const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 const CLASSIFIERS = [CLASSIFIER_1]
@@ -12,11 +13,11 @@ const PROJECT_3 = { id: 'testproject3', name: 'Test project 3', createdById: see
 const PROJECT_4 = { id: 'testproject4', name: 'Test project 4', createdById: seedValues.anotherUserId }
 const PROJECTS = [PROJECT_1, PROJECT_2, PROJECT_3, PROJECT_4]
 
-const JOB_1 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_2 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '11,13', segmentsTotal: 4, segmentsCompleted: 0, status: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-10-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_3 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_2.id, queryStreams: 'Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.otherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_4 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_3.id, queryStreams: 'Test stream 3', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.primaryUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_5 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_4.id, queryStreams: 'Not accessible project', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, status: 30, createdById: seedValues.anotherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_1 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, status: WAITING, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_2 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, status: WAITING, queryStreams: 'Test stream', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '11,13', segmentsTotal: 4, segmentsCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-10-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_3 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_2.id, status: DONE, queryStreams: 'Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, createdById: seedValues.otherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_4 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_3.id, status: DONE, queryStreams: 'Test stream 3', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, createdById: seedValues.primaryUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_5 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_4.id, status: DONE, queryStreams: 'Not accessible project', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', segmentsTotal: 2, segmentsCompleted: 0, createdById: seedValues.anotherUserId, createdAt: '2022-06-08T08:07:49.158Z', updatedAt: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOBS = [JOB_1, JOB_2, JOB_3, JOB_4, JOB_5]
 
 beforeAll(async () => {
@@ -117,9 +118,19 @@ describe('GET /classifier-jobs', () => {
     expect(response.body.length).toEqual(0)
   })
 
-  test('get correct classifiers jobs filtered by 30 (done) status', async () => {
+  test('get correct classifiers jobs filtered by WAITING (0) status', async () => {
     const query = {
-      status: 30
+      status: WAITING
+    }
+
+    const response = await request(app).get('/').query(query)
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toEqual(2)
+  })
+
+  test('get correct classifiers jobs filtered by DONE (30) status', async () => {
+    const query = {
+      status: DONE
     }
 
     const response = await request(app).get('/').query(query)
