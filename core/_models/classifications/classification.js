@@ -20,8 +20,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     typeId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: true
+      allowNull: false
     },
     description: {
       type: DataTypes.TEXT,

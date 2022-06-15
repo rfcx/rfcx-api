@@ -45,7 +45,7 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async (params) => {
       if (params.queryStart && params.queryEnd && params.queryStart.isAfter(params.queryEnd)) {
-        throw new ValidationError('start is after end')
+        throw new ValidationError('query_start must be before query_end')
       }
       const createdById = user.id
       const job = { ...params, createdById }
