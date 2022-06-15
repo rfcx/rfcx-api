@@ -10,6 +10,7 @@ const { dequeue } = require('./bl')
  *     summary: Remove 1 or more jobs from the front of the queue (atomically) up to the `concurrency`
  *     tags:
  *       - classifier-jobs
+ *       - internal
  *     parameters:
  *       - name: concurrency
  *         description: Maximum number of running jobs, system-wide (dequeued + running jobs will not exceed this)

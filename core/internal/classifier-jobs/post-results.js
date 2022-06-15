@@ -12,6 +12,7 @@ const { createResults } = require('./dao/create-results')
  *     tags:
  *       - classifier-jobs
  *       - detections
+ *       - internal
  *     parameters:
  *       - name: id
  *         description: Classifier Job identifier
