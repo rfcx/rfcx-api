@@ -111,7 +111,7 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  test('query date range is empty', async () => {
+  test('400 if query_start after query_end', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
@@ -123,6 +123,7 @@ describe('POST /classifiers-jobs', () => {
 
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
+    expect(response.text).toMatch(/query_start must be before query_end/)
   })
 
   test('user is not project member', async () => {
