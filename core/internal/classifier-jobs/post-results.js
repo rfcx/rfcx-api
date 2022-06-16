@@ -64,6 +64,6 @@ module.exports = async (req, res) => {
     await createResults(jobId, params)
     return res.sendStatus(201)
   } catch (err) {
-    httpErrorHandler(req, res)
+    return httpErrorHandler(req, res)(err)
   }
 }

@@ -170,7 +170,7 @@ router.post('/', async (req, res) => {
 
     res.location(`${req.baseUrl}${req.path}${result.id}`).sendStatus(201)
   } catch (err) {
-    httpErrorHandler(req, res)
+    return httpErrorHandler(req, res)(err)
   }
 })
 
@@ -226,7 +226,7 @@ router.patch('/:id', async (req, res) => {
     await dao.update(id, createdById, params)
     return res.sendStatus(200)
   } catch (err) {
-    httpErrorHandler(req, res)
+    return httpErrorHandler(req, res)(err)
   }
 })
 
@@ -266,7 +266,7 @@ router.get('/:id/file', async (req, res) => {
 
     return res.redirect(signedUrl)
   } catch (err) {
-    httpErrorHandler(req, res)
+    return httpErrorHandler(req, res)(err)
   }
 })
 

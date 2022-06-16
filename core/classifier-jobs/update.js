@@ -54,6 +54,6 @@ module.exports = async (req, res) => {
 
     return res.sendStatus(200)
   } catch (err) {
-    httpErrorHandler(req, res)
+    return httpErrorHandler(req, res)(err)
   }
 }
