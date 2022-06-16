@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
   try {
     // Check authorization
     if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-      throw ForbiddenError()
+      throw new ForbiddenError()
     }
 
     // Validate params

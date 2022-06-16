@@ -122,7 +122,7 @@ router.get('/', function (req, res) {
 router.post('/', async (req, res) => {
   try {
     if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-      throw ForbiddenError()
+      throw new ForbiddenError()
     }
 
     const converter = new Converter(req.body, {}, true)
