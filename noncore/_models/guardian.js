@@ -196,20 +196,20 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     last_battery_main: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: null,
       validate: {
-        isInt: true,
+        isFloat: true,
         min: 0
       }
     },
     last_battery_internal: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: null,
       validate: {
-        isInt: true,
+        isFloat: true,
         min: 0
       }
     }
