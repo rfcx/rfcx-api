@@ -57,6 +57,7 @@ module.exports = async (req, res) => {
     converter2.convert('end').toMomentUtc()
     converter2.convert('confidence').toFloat()
     const paramsDetections = await converter2.validate()
+      .then(detections => detections.map(d => ({ ...d, streamId: d.stream_id })))
 
     const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
 
