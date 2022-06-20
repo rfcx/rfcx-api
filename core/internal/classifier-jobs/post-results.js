@@ -13,6 +13,7 @@ const { createResults } = require('./dao/create-results')
  *     tags:
  *       - classifier-jobs
  *       - detections
+ *       - internal
  *     parameters:
  *       - name: id
  *         description: Classifier Job identifier
@@ -45,17 +46,18 @@ module.exports = async (req, res) => {
 
     // Validate params
     const converter1 = new Converter(req.body, {}, true)
-    converter1.convert('analyzedMinutes').toInt()
+    converter1.convert('analyzed_minutes').toInt()
     const paramsAnalyzedMinutes = await converter1.validate()
 
     const converter2 = new ArrayConverter(req.body.detections)
-    converter2.convert('streamId').toString()
+    converter2.convert('stream_id').toString()
     converter2.convert('classifier').toString()
     converter2.convert('classification').toString()
     converter2.convert('start').toMomentUtc()
     converter2.convert('end').toMomentUtc()
     converter2.convert('confidence').toFloat()
     const paramsDetections = await converter2.validate()
+      .then(detections => detections.map(d => ({ ...d, streamId: d.stream_id })))
 
     const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
 

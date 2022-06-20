@@ -15,7 +15,6 @@ const Converter = require('../../common/converter')
  *         description: Status of the job (0 waiting, 20 running, 30 done, 40 error, 50 cancelled)
  *         in: query
  *         type: int
- *         default: 0
  *       - name: projects
  *         description: Match classifier jobs belonging to one or more projects (by id)
  *         in: query

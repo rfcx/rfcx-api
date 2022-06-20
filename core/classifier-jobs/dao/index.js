@@ -94,7 +94,7 @@ async function update (id, job, options = {}) {
   }
 
   // Set/clear completedAt
-  if (job.status) {
+  if (job.status !== undefined) {
     job.completedAt = job.status === DONE ? new Date() : null
   }
 

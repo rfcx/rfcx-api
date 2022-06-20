@@ -3,6 +3,7 @@ const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
+const { WAITING, RUNNING, DONE } = require('./classifier-job-status')
 
 // Test data
 const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
@@ -14,9 +15,9 @@ const PROJECTS = [PROJECT_1]
 const STREAM_1 = { id: 'LilSjZJkRK20', name: 'Test stream', start: '2021-01-02T01:00:00.000Z', end: '2021-01-02T05:00:00.000Z', isPublic: true, createdById: seedValues.otherUserId, projectId: PROJECT_1.id }
 const STREAMS = [STREAM_1]
 
-const JOB_WAITING = { id: 123, status: CLASSIFIER_JOB_STATUS.WAITING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_RUNNING = { id: 124, status: CLASSIFIER_JOB_STATUS.RUNNING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_DONE = { id: 125, status: CLASSIFIER_JOB_STATUS.DONE, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_WAITING = { id: 123, status: WAITING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_RUNNING = { id: 124, status: RUNNING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_DONE = { id: 125, status: DONE, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: '2022-10-03T09:03:00.000Z' }
 const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE]
 
 async function seedTestData () {
@@ -68,9 +69,9 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.status).toBe(status)
     })
 
-    test(`sets completed_at when status becomes DONE (${CLASSIFIER_JOB_STATUS.DONE})`, async () => {
+    test(`sets completed_at when status becomes DONE (${DONE})`, async () => {
       // Arrange
-      const jobUpdate = { status: CLASSIFIER_JOB_STATUS.DONE }
+      const jobUpdate = { status: DONE }
 
       // Act
       const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
@@ -98,6 +99,29 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(response1.statusCode).toBe(200)
       expect(jobUpdated1.completedAt).toBeNull()
     })
+
+    test('leaves completed_at unchanged when status unchanged', async () => {
+      // Arrange
+      const jobUpdate = {}
+
+      // Act
+      const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+      const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+      const response3 = await request(superUserApp).patch(`/${JOB_DONE.id}`).send(jobUpdate)
+
+      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id, { raw: true })
+      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id, { raw: true })
+      const jobUpdated3 = await models.ClassifierJob.findByPk(JOB_DONE.id, { raw: true })
+
+      // Assert
+      expect(response1.statusCode).toBe(200)
+      expect(response2.statusCode).toBe(200)
+      expect(response3.statusCode).toBe(200)
+      // TODO - Find a better way to compare Date|null
+      expect(new Date(jobUpdated1.completedAt)).toEqual(new Date(JOB_WAITING.completedAt))
+      expect(new Date(jobUpdated2.completedAt)).toEqual(new Date(JOB_RUNNING.completedAt))
+      expect(new Date(jobUpdated3.completedAt)).toEqual(new Date(JOB_DONE.completedAt))
+    })
   })
 
   describe('invalid usage', () => {
@@ -121,7 +145,7 @@ describe('PATCH /classifier-jobs/:id', () => {
 
     test('403 if not super user', async () => {
       // Arrange
-      const jobUpdate = { status: CLASSIFIER_JOB_STATUS.DONE }
+      const jobUpdate = { status: DONE }
 
       // Act
       const response1 = await request(app).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
@@ -143,7 +167,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       const notJob = await models.ClassifierJob.findByPk(notJobId)
       expect(notJob).toBeNull() // Pre-condition: Job does not exist
 
-      const jobUpdate = { status: CLASSIFIER_JOB_STATUS.DONE }
+      const jobUpdate = { status: DONE }
 
       // Act
       const response1 = await request(superUserApp).patch(`/${notJobId}`).send(jobUpdate)
