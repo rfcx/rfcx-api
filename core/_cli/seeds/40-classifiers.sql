@@ -5,7 +5,7 @@ INSERT INTO public.classifiers (id, external_id, name, version, created_at, upda
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (5, '8a9710c2-1056-e169-df6e-68aba3889719', 'vehicle-rfcx', 1, NOW(), NOW(), 8, 'theano', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (6, '549f141d-78de-875b-f83c-c7236b133600', 'disturbance-a', 1, NOW(), NOW(), 8, 'hitachi1', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (7, '2b2c2f0f-eb34-bb69-027b-556ca8a42a63', 'kungfu-gunshot', 3, NOW(), NOW(), 8, 'tf2', '');
-INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (8, '2c72afc0-532e-f31e-50dd-d948054cd6ca', 'chainsaw', 1, NOW(), NOW(), 8, 'tf2', '');
+INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url, is_public) VALUES (8, '2c72afc0-532e-f31e-50dd-d948054cd6ca', 'chainsaw', 1, NOW(), NOW(), 8, 'tf2', '', true);
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (34, '8fab7d0f-d22e-abf4-966e-1bc729d57683', 'vehicle', 1, NOW(), NOW(), 8, 'tf2', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (35, 'bc94853d-aa46-42e6-7db1-77f71aa4dafb', 'vehicle', 2, NOW(), NOW(), 8, 'tf2', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (37, '32cc270b-30e3-6c2b-b66a-86d47510df29', 'dogbark', 10, NOW(), NOW(), 8, 'tf2', '');
@@ -18,7 +18,7 @@ INSERT INTO public.classifiers (id, external_id, name, version, created_at, upda
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (76, '9b204ce1-9a80-add9-91b7-522f5b616f4b', 'gunshot', 2, NOW(), NOW(), 8, 'tf2', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (77, '57ad5c2e-d68e-58ce-8f0b-42c3ac791e7a', 'gunshot', 3, NOW(), NOW(), 8, 'tf2', '');
 INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (74, '8d5976d0-0863-b2ec-30de-42014879e813', 'dogbark', 12, NOW(), NOW(), 8, 'tf2', '');
-INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (79, 'f6701043-2cdb-3891-d2a6-67671f2def70', 'vehicle', 4, NOW(), NOW(), 8, 'tf2', '');
-INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url) VALUES (78, 'a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d', 'gunshot', 4, NOW(), NOW(), 8, 'tf2', '');
+INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url, is_public) VALUES (79, 'f6701043-2cdb-3891-d2a6-67671f2def70', 'vehicle', 4, NOW(), NOW(), 8, 'tf2', '', true);
+INSERT INTO public.classifiers (id, external_id, name, version, created_at, updated_at, created_by_id, model_runner, model_url, is_public) VALUES (78, 'a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d', 'gunshot', 4, NOW(), NOW(), 8, 'tf2', '', true);
 
 ALTER SEQUENCE classifiers_id_seq RESTART WITH 80;

@@ -6,7 +6,7 @@ async function createResults (jobId, analyzedMinutes, detections) {
   // Check job exists
   const job = await ClassifierJob.findByPk(jobId, { raw: true })
   if (!job) {
-    throw new EmptyResultError('Classifier job not found')
+    throw new EmptyResultError()
   }
 
   // Save detections

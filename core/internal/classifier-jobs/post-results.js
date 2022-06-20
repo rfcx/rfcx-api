@@ -1,5 +1,6 @@
 const Converter = require('../../../common/converter')
 const ArrayConverter = require('../../../common/converter/array')
+const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const { createResults } = require('./dao/create-results')
 
@@ -36,35 +37,34 @@ const { createResults } = require('./dao/create-results')
  *       404:
  *         description: Job not found
  */
-module.exports = (req, res) => {
-  // Check authorization
-  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-    console.warn(`WARN: ${req.method} ${req.path} Forbidden`)
-    return res.sendStatus(403)
+module.exports = async (req, res) => {
+  try {
+    // Check authorization
+    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+      throw new ForbiddenError()
+    }
+
+    // Validate params
+    const converter1 = new Converter(req.body, {}, true)
+    converter1.convert('analyzed_minutes').toInt()
+    const paramsAnalyzedMinutes = await converter1.validate()
+
+    const converter2 = new ArrayConverter(req.body.detections)
+    converter2.convert('stream_id').toString()
+    converter2.convert('classifier').toString()
+    converter2.convert('classification').toString()
+    converter2.convert('start').toMomentUtc()
+    converter2.convert('end').toMomentUtc()
+    converter2.convert('confidence').toFloat()
+    const paramsDetections = await converter2.validate()
+
+    const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
+
+    // Call DAO & return
+    const jobId = req.params.id
+    await createResults(jobId, params)
+    return res.sendStatus(201)
+  } catch (err) {
+    return httpErrorHandler(req, res)(err)
   }
-
-  // Validate params
-  const jobId = req.params.id
-
-  const converter1 = new Converter(req.body, {}, true)
-  converter1.convert('analyzed_minutes').toInt()
-
-  const converter2 = new ArrayConverter(req.body.detections)
-  converter2.convert('stream_id').toString()
-  converter2.convert('classifier').toString()
-  converter2.convert('classification').toString()
-  converter2.convert('start').toMomentUtc()
-  converter2.convert('end').toMomentUtc()
-  converter2.convert('confidence').toFloat()
-
-  return Promise.all([converter1.validate(), converter2.validate()])
-    .then(async ([paramsAnalyzedMinutes, paramDetections]) => {
-      // Convert snake to camel
-      const detections = paramDetections.map(({ stream_id: streamId, ...rest }) => ({ streamId, ...rest }))
-
-      // Call DAO & return
-      await createResults(jobId, paramsAnalyzedMinutes.analyzedMinutes, detections)
-      return res.sendStatus(201)
-    })
-    .catch(httpErrorHandler(req, res, 'Failed updating classifier job'))
 }

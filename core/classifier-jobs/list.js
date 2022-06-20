@@ -56,8 +56,6 @@ const Converter = require('../../common/converter')
  *         description: Invalid query parameters
  */
 module.exports = (req, res) => {
-  const user = req.rfcx.auth_token_info
-  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('status').optional().toInt()
   converter.convert('projects').optional().toArray()
@@ -70,12 +68,16 @@ module.exports = (req, res) => {
   return converter.validate()
     .then(async params => {
       const { status, projects, limit, offset, sort, fields } = params
+
+      const user = req.rfcx.auth_token_info
+      const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
       const createdBy = params.createdBy === 'me' ? readableBy : undefined
+
       const filters = { projects, status, createdBy }
       const options = { readableBy, limit, offset, sort, fields }
-      const result = await query(filters, options)
-      const { total, results } = result
+      const { total, results } = await query(filters, options)
+
       return res.header('Access-Control-Expose-Headers', 'Total-Items').header('Total-Items', total).json(results)
     })
-    .catch(httpErrorHandler(req, res, 'Failed getting a list of classifier jobs'))
+    .catch(httpErrorHandler(req, res))
 }

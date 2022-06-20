@@ -6,7 +6,7 @@ const pagedQuery = require('../../_utils/db/paged-query')
 const { DONE } = require('../classifier-job-status')
 
 const availableIncludes = [
-  Classifier.include({ attributes: Classifier.attributes.lite })
+  Classifier.include({ attributes: ['id', 'name'] })
 ]
 
 /**
@@ -37,9 +37,9 @@ async function query (filters, options = {}) {
     ...filters.createdBy !== undefined && { createdById: filters.createdBy }
   }
 
-  const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.full
+  const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
   const attributes = { ...classifierAttributes, exclude: ['created_by_id', 'project_id'] }
-  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const order = getSortFields(options.sort || '-created_at')
 
   const result = await pagedQuery(ClassifierJob, {
@@ -69,7 +69,7 @@ async function create (job, options = {}) {
   return await ClassifierJob.create(job)
     .catch((e) => {
       console.error('error', e)
-      throw new ValidationError('Cannot create classifier job with provided data.')
+      throw new ValidationError('Cannot create classifier job with provided data')
     })
 }
 
@@ -87,10 +87,10 @@ async function update (id, job, options = {}) {
   // Check the job is updatable
   const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
   if (!existingJob) {
-    throw new EmptyResultError('Classifier job not found')
+    throw new EmptyResultError()
   }
   if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
-    throw new ForbiddenError('User is not the classifier job creator')
+    throw new ForbiddenError()
   }
 
   // Set/clear completedAt
