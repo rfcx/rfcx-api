@@ -120,23 +120,26 @@ router.get('/', (req, res) => {
  *       404:
  *         description: Annotation not found
  */
-router.get('/:id', (req, res) => {
-  const user = req.rfcx.auth_token_info
-  const annotationId = req.params.id
-  if (!isUuid(annotationId)) {
-    return res.sendStatus(404)
-  }
+router.get('/:id', async (req, res) => {
+  try {
+    const user = req.rfcx.auth_token_info
+    const annotationId = req.params.id
 
-  return dao.get(annotationId)
-    .then(async (annotation) => {
-      const allowed = await rolesService.hasPermission(rolesService.READ, user, annotation.stream_id, rolesService.STREAM)
-      if (!allowed) {
-        throw new ForbiddenError('You do not have permission to access this stream.')
-      }
-      return annotation
-    })
-    .then(annotation => res.json(annotation))
-    .catch(httpErrorHandler(req, res, 'Failed updating annotation'))
+    if (!isUuid(annotationId)) {
+      throw new EmptyResultError()
+    }
+
+    const annotation = await dao.get(annotationId)
+    const allowed = await rolesService.hasPermission(rolesService.READ, user, annotation.stream_id, rolesService.STREAM)
+
+    if (!allowed) {
+      throw new ForbiddenError('You do not have permission to access this stream.')
+    }
+
+    res.json(annotation)
+  } catch (err) {
+    httpErrorHandler(req, res, 'Failed updating annotation')
+  }
 })
 
 /**

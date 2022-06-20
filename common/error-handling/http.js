@@ -37,10 +37,10 @@ function httpErrorResponse (req, res, code, context, mes) {
   }
   const logger = code >= 400 && code <= 499 ? console.warn : console.error
   logger(`Http handler: request ${req.guid}, message "${message}", context ${JSON.stringify(context)}`)
-  res.status(code).json(json)
+  return res.status(code).json(json)
 }
 
-function httpErrorHandler (req, res, fallbackMessage) {
+function httpErrorHandler (req, res, fallbackMessage = 'Internal Server Error') {
   return (err) => {
     if (err instanceof ValidationError) {
       return httpErrorResponse(req, res, 400, null, err.message)

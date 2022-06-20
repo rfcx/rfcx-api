@@ -1,7 +1,8 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { update } = require('./dao')
 const Converter = require('../../common/converter')
-const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
+const { RUNNING } = require('./classifier-job-status')
+const { ForbiddenError, ValidationError } = require('../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -31,26 +32,28 @@ const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
  *       404:
  *         description: Not found
  */
-module.exports = (req, res) => {
-  const id = req.params.id
+module.exports = async (req, res) => {
+  try {
+    // Check authorization
+    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
+      throw new ForbiddenError()
+    }
 
-  // Check authorization
-  if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-    console.warn(`WARN: PATCH /classifier-jobs/${id} Forbidden`)
-    return res.sendStatus(403)
-  }
+    // Validate params
+    const converter = new Converter(req.body, {}, true)
+    converter.convert('status').optional().toInt()
+    const params = await converter.validate()
 
-  // Validate params
-  const converter = new Converter(req.body, {}, true)
-  converter.convert('status').optional().toInt()
-  converter.validate().then(async (params) => {
-    if (params.status === CLASSIFIER_JOB_STATUS.RUNNING) {
-      console.warn(`WARN: PATCH /classifier-jobs/${id} Invalid parameters`)
-      return res.status(400).send('Use POST /classifier-jobs/dequeue to start a job')
+    if (params.status === RUNNING) {
+      throw new ValidationError('Use POST /classifier-jobs/dequeue to start a job')
     }
 
     // Call DAO & return
+    const id = req.params.id
     await update(id, params)
+
     return res.sendStatus(200)
-  }).catch(httpErrorHandler(req, res, 'Failed updating classifier job'))
+  } catch (err) {
+    return httpErrorHandler(req, res)(err)
+  }
 }
