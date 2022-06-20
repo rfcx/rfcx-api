@@ -184,7 +184,7 @@
       "query_hours": {
         "type": "string",
         "description": "Limit audio to be processed, using a comma-separated list of hours-of-day",
-        "example": "0,1,2,3,4,5,18,19,20,21,22,23,24"
+        "example": "0,1,2,3,4,5,18,19,20,21,22,23"
       }
     }
   },
@@ -201,7 +201,7 @@
   "ClassifierResult": {
     "type": "object",
     "properties": {
-      "analyzedMinutes": {
+      "analyzed_minutes": {
         "type": "integer",
         "description": "Number of minutes of recording analyzed in this batch",
         "example": 100
@@ -213,14 +213,14 @@
         }
       }
     },
-    "required": ["analyzedMinutes", "detections"]
+    "required": ["analyzed_minutes", "detections"]
   },
   "ClassifierResultDetection": {
     "type": "object",
     "properties": {
-      "streamId": {
+      "stream_id": {
         "type": "string",
-        "description": "Classifier identifier",
+        "description": "Stream identifier",
         "example": "1"
       },
       "classifier": {
@@ -247,7 +247,7 @@
       }
     },
     "required": [
-      "streamId",
+      "stream_id",
       "classifier",
       "classification",
       "start",

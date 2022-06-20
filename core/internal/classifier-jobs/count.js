@@ -10,6 +10,7 @@ const Converter = require('../../../common/converter')
  *     summary: Get total number of jobs across all projects and all users
  *     tags:
  *       - classifier-jobs
+ *       - internal
  *     responses:
  *       200:
  *         description: Count of jobs across all projects and all users
