@@ -93,7 +93,7 @@ async function update (id, job, options = {}) {
     throw new ForbiddenError()
   }
   if (job.status === CANCELLED && existingJob.status !== WAITING) {
-    throw new ForbiddenError()
+    throw new ForbiddenError('Not allow cancel the current job')
   }
 
   // Set/clear completedAt
