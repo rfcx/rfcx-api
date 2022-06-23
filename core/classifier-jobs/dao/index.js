@@ -3,7 +3,7 @@ const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
-const { DONE } = require('../classifier-job-status')
+const { DONE, WAITING, CANCELLED } = require('../classifier-job-status')
 
 const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] })
@@ -90,6 +90,9 @@ async function update (id, job, options = {}) {
     throw new EmptyResultError()
   }
   if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
+    throw new ForbiddenError()
+  }
+  if (job.status === CANCELLED && existingJob.status !== WAITING) {
     throw new ForbiddenError()
   }
 

@@ -3,7 +3,7 @@ const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
-const { WAITING, RUNNING, DONE } = require('./classifier-job-status')
+const { WAITING, RUNNING, DONE, CANCELLED, ERROR } = require('./classifier-job-status')
 
 // Test data
 const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
@@ -18,7 +18,10 @@ const STREAMS = [STREAM_1]
 const JOB_WAITING = { id: 123, status: WAITING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_RUNNING = { id: 124, status: RUNNING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_DONE = { id: 125, status: DONE, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: '2022-10-03T09:03:00.000Z' }
-const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE]
+const JOB_ERROR = { id: 126, status: ERROR, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_CANCELLED = { id: 127, status: CANCELLED, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED]
+const UNCANCELLABLE_JOBS = { JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED }
 
 async function seedTestData () {
   await models.Classifier.bulkCreate(CLASSIFIERS)
@@ -47,11 +50,12 @@ describe('PATCH /classifier-jobs/:id', () => {
 
   // Split valid & invalid target status
   const { RUNNING, ...VALID_STATUS_UPDATE } = CLASSIFIER_JOB_STATUS
-  const { DONE, ...VALID_EXCEPT_DONE } = VALID_STATUS_UPDATE
+  const { CANCELLED, ...VALID_EXCEPT_CANCEL } = VALID_STATUS_UPDATE
+  const VALID_EXCEPT_RUNNING_DONE_AND_CANCEL = { WAITING, ERROR }
   const INVALID_STATUS_UPDATE = { RUNNING }
 
   describe('valid usage', () => {
-    test.each(Object.entries(VALID_STATUS_UPDATE))('can update status to %s (%s)', async (label, status) => {
+    test.each(Object.entries(VALID_EXCEPT_CANCEL))('can update status to %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -67,6 +71,20 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(response2.statusCode).toBe(200)
       expect(jobUpdated1.status).toBe(status)
       expect(jobUpdated2.status).toBe(status)
+    })
+
+    test('can update cancel status from waiting status', async () => {
+      // Arrange
+      const jobUpdate = { status: CANCELLED }
+
+      // Act
+      const response = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+
+      const jobUpdated = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+
+      // Assert
+      expect(response.statusCode).toBe(200)
+      expect(jobUpdated.status).toBe(CANCELLED)
     })
 
     test(`sets completed_at when status becomes DONE (${DONE})`, async () => {
@@ -87,7 +105,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.completedAt).toBeTruthy()
     })
 
-    test.each(Object.entries(VALID_EXCEPT_DONE))('clears completed_at when status becomes %s (%s)', async (label, status) => {
+    test.each(Object.entries(VALID_EXCEPT_RUNNING_DONE_AND_CANCEL))('clears completed_at when status becomes %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -159,6 +177,20 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(response2.statusCode).toBe(403)
       expect(jobUpdated1.status).toBe(JOB_WAITING.status)
       expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
+    })
+
+    test.each(Object.entries(UNCANCELLABLE_JOBS))('403 if update to cancel and current status is %s', async (label, job) => {
+      // Arrange
+      const jobUpdate = { status: CANCELLED }
+
+      // Act
+      const response = await request(app).patch(`/${job.id}`).send(jobUpdate)
+
+      const jobUpdated = await models.ClassifierJob.findByPk(job.id)
+
+      // Assert
+      expect(response.statusCode).toBe(403)
+      expect(jobUpdated.status).toBe(job.status)
     })
 
     test('404 if classifier-job does not exist', async () => {
