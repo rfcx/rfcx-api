@@ -21,7 +21,6 @@ const JOB_DONE = { id: 125, status: DONE, classifierId: CLASSIFIER_1.id, project
 const JOB_ERROR = { id: 126, status: ERROR, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_CANCELLED = { id: 127, status: CANCELLED, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED]
-const UNCANCELLABLE_JOBS = { JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED }
 
 async function seedTestData () {
   await models.Classifier.bulkCreate(CLASSIFIERS)
@@ -48,6 +47,9 @@ describe('PATCH /classifier-jobs/:id', () => {
   const app = expressApp().use('/', routes)
   const superUserApp = expressApp({ is_super: true }).use('/', routes)
 
+  // Setup uncancellable job
+  const UNCANCELLABLE_JOBS = { JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED }
+
   // Split valid & invalid target status
   const { RUNNING, ...VALID_STATUS_UPDATE } = CLASSIFIER_JOB_STATUS
   const { CANCELLED, ...VALID_EXCEPT_CANCEL } = VALID_STATUS_UPDATE
@@ -73,7 +75,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.status).toBe(status)
     })
 
-    test('can update cancel status from waiting status', async () => {
+    test('can update status to CANCELLED (50) from WAITING (0)', async () => {
       // Arrange
       const jobUpdate = { status: CANCELLED }
 
@@ -179,7 +181,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
     })
 
-    test.each(Object.entries(UNCANCELLABLE_JOBS))('403 if update to cancel and current status is %s', async (label, job) => {
+    test.each(Object.entries(UNCANCELLABLE_JOBS))('403 if trying to update status to CANCELLED (50) from %s', async (label, job) => {
       // Arrange
       const jobUpdate = { status: CANCELLED }
 
