@@ -29,7 +29,7 @@ async function commonSetup () {
   return withIds({ classifier, project })
 }
 
-describe('POST /internal/classifier-jobs/dequeue', () => {
+describe.skip('POST /internal/classifier-jobs/dequeue', () => {
   const app = expressApp()
   app.use('/', routes)
 
