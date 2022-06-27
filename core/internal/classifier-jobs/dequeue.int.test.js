@@ -4,6 +4,7 @@ const { migrate, truncate, expressApp, seed, seedValues } = require('../../../co
 const request = require('supertest')
 const { randomId } = require('../../../common/crypto/random')
 const { RUNNING, DONE } = require('../../classifier-jobs/classifier-job-status')
+const moment = require('moment')
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
@@ -54,7 +55,7 @@ describe('POST /internal/classifier-jobs/dequeue', () => {
 
   test('updates job status to running', async () => {
     const { classifierId, projectId } = await commonSetup()
-    const job = await models.ClassifierJob.create({ projectId, classifierId, createdById: seedValues.otherUserId })
+    const job = await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', projectId, classifierId, createdById: seedValues.otherUserId })
 
     const response = await request(app).post('/dequeue')
 
@@ -62,6 +63,19 @@ describe('POST /internal/classifier-jobs/dequeue', () => {
     const updatedJob = await models.ClassifierJob.findByPk(job.id)
     expect(updatedJob.status).toBe(RUNNING)
     expect(response.body[0].status).toBe(RUNNING)
+  })
+
+  test('return jobs created more than or equal to 2 minutes', async () => {
+    // Arrange
+    const { classifierId, projectId } = await commonSetup()
+    await models.ClassifierJob.create({ created_at: moment().format('YYYY-MM-DD HH:mm'), classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: moment().subtract(2, 'minute').format('YYYY-MM-DD HH:mm'), classifierId, projectId, createdById: seedValues.otherUserId })
+
+    // Act
+    const response = await request(app).post('/dequeue').query({ concurrency: '2' })
+
+    // Assert
+    expect(response.body).toHaveLength(1)
   })
 
   test('does not return non-waiting jobs', async () => {
@@ -92,11 +106,11 @@ describe('POST /internal/classifier-jobs/dequeue', () => {
   test('returns no more than the concurrency', async () => {
     const { classifierId, projectId } = await commonSetup()
     // Running jobs (2)
-    await models.ClassifierJob.create({ status: RUNNING, classifierId, projectId, createdById: seedValues.otherUserId })
-    await models.ClassifierJob.create({ status: RUNNING, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', status: RUNNING, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', status: RUNNING, classifierId, projectId, createdById: seedValues.otherUserId })
     // Waiting jobs (2)
-    await models.ClassifierJob.create({ classifierId, projectId, createdById: seedValues.otherUserId })
-    await models.ClassifierJob.create({ classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', classifierId, projectId, createdById: seedValues.otherUserId })
 
     const response = await request(app).post('/dequeue').query({ concurrency: '3' })
 
@@ -106,11 +120,11 @@ describe('POST /internal/classifier-jobs/dequeue', () => {
   test('respects limit', async () => {
     const { classifierId, projectId } = await commonSetup()
     // Running job
-    await models.ClassifierJob.create({ status: RUNNING, classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', status: RUNNING, classifierId, projectId, createdById: seedValues.otherUserId })
     // Waiting jobs (3)
-    await models.ClassifierJob.create({ classifierId, projectId, createdById: seedValues.otherUserId })
-    await models.ClassifierJob.create({ classifierId, projectId, createdById: seedValues.otherUserId })
-    await models.ClassifierJob.create({ classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', classifierId, projectId, createdById: seedValues.otherUserId })
+    await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', classifierId, projectId, createdById: seedValues.otherUserId })
 
     const response = await request(app).post('/dequeue').query({ concurrency: '4', limit: '2' })
 

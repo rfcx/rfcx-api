@@ -14,7 +14,7 @@ async function dequeue (maxConcurrency, maxRows) {
       SELECT id FROM (
         SELECT id, status, created_at 
         FROM classifier_jobs 
-        WHERE status in (:waiting,:running) 
+        WHERE status in (:waiting,:running) AND created_at <= NOW() - INTERVAL '2 minutes'
         ORDER BY status DESC, created_at 
         LIMIT :maxConcurrency
       ) waiting_classifier_jobs
