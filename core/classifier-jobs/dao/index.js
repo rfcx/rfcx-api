@@ -3,11 +3,14 @@ const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
-const { DONE, WAITING, CANCELLED } = require('../classifier-job-status')
+const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
 
 const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] })
 ]
+
+const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
+const ALLOWED_SOURCE_STATUSES = [CANCELLED, WAITING, ERROR]
 
 /**
  * Get a list of classifier jobs matching the filters
@@ -84,6 +87,8 @@ async function create (job, options = {}) {
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the job
  */
 async function update (id, job, options = {}) {
+  const status = job.status
+
   // Check the job is updatable
   const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
   if (!existingJob) {
@@ -92,13 +97,19 @@ async function update (id, job, options = {}) {
   if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
     throw new ForbiddenError()
   }
-  if (job.status === CANCELLED && existingJob.status !== WAITING) {
-    throw new ForbiddenError('Not allow cancel the current job')
+  // If is not super user or system user
+  if (options.updatableBy !== undefined && status !== undefined) {
+    if (!ALLOWED_TARGET_STATUSES.includes(status)) {
+      throw new ValidationError(`cannot change status to ${status}`)
+    }
+    if (!ALLOWED_SOURCE_STATUSES.includes(status)) {
+      throw new ValidationError(`cannot change status of jobs in status ${status}`)
+    }
   }
 
   // Set/clear completedAt
-  if (job.status !== undefined) {
-    job.completedAt = job.status === DONE ? new Date() : null
+  if (status !== undefined) {
+    job.completedAt = status === DONE ? new Date() : null
   }
 
   await ClassifierJob.update(job, { where: { id } })

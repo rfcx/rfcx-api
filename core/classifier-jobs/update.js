@@ -35,9 +35,8 @@ const { ForbiddenError, ValidationError } = require('../../common/error-handling
 module.exports = async (req, res) => {
   try {
     // Check authorization
-    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-      throw new ForbiddenError()
-    }
+    const user = req.rfcx.auth_token_info
+    const updatableBy = user && (user.has_system_role || user.is_super) ? undefined : user.id
 
     // Validate params
     const converter = new Converter(req.body, {}, true)
@@ -50,7 +49,7 @@ module.exports = async (req, res) => {
 
     // Call DAO & return
     const id = req.params.id
-    await update(id, params)
+    await update(id, params, { updatableBy })
 
     return res.sendStatus(200)
   } catch (err) {
