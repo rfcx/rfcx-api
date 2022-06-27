@@ -98,7 +98,7 @@ async function update (id, job, options = {}) {
     throw new ForbiddenError()
   }
   // If is not super user or system user
-  if (options.updatableBy !== undefined && status !== undefined) {
+  if (options.updatableBy && status) {
     if (!ALLOWED_TARGET_STATUSES.includes(status)) {
       throw new ValidationError(`cannot change status to ${status}`)
     }

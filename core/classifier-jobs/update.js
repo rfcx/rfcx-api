@@ -2,7 +2,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const { update } = require('./dao')
 const Converter = require('../../common/converter')
 const { RUNNING } = require('./classifier-job-status')
-const { ForbiddenError, ValidationError } = require('../../common/error-handling/errors')
+const { ValidationError } = require('../../common/error-handling/errors')
 
 /**
  * @swagger
