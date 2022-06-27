@@ -1,5 +1,4 @@
-const models = require('../../_models')
-const { ClassifierJob, Classifier, Sequelize } = require('../../_models')
+const { sequelize, ClassifierJob, Classifier, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -90,7 +89,7 @@ async function create (job, options = {}) {
 async function update (id, job, options = {}) {
   const status = job.status
 
-  return models.sequelize.transaction(async transaction => {
+  return sequelize.transaction(async transaction => {
     // Check the job is updatable
     const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'], transaction })
     if (!existingJob) {
