@@ -44,20 +44,19 @@ beforeEach(async () => {
 
 describe('PATCH /classifier-jobs/:id', () => {
   // Setup normal & super-user apps
-  const app = expressApp().use('/', routes)
+  const hasPermissionApp = expressApp({ id: seedValues.otherUserId }).use('/', routes)
+  const noPermissionApp = expressApp({ id: seedValues.anotherUserId }).use('/', routes)
   const superUserApp = expressApp({ is_super: true }).use('/', routes)
-
-  // Setup uncancellable job
-  const UNCANCELLABLE_JOBS = { JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED }
+  const allApps = { hasPermissionApp, noPermissionApp, superUserApp }
 
   // Split valid & invalid target status
   const { RUNNING, ...VALID_STATUS_UPDATE } = CLASSIFIER_JOB_STATUS
-  const { CANCELLED, ...VALID_EXCEPT_CANCEL } = VALID_STATUS_UPDATE
-  const VALID_EXCEPT_RUNNING_DONE_AND_CANCEL = { WAITING, ERROR }
-  const INVALID_STATUS_UPDATE = { RUNNING }
+  const HAS_PERMISSION_VALID_TARGET_STATUS = { CANCELLED, WAITING }
+  const HAS_PERMISSION_INVALID_TARGET_STATUS = { DONE }
+  const CLEAR_COMPLETE_AT_STATUS = { WAITING, ERROR }
 
   describe('valid usage', () => {
-    test.each(Object.entries(VALID_EXCEPT_CANCEL))('can update status to %s (%s)', async (label, status) => {
+    test.each(Object.entries(VALID_STATUS_UPDATE))('super user can update status to %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -73,6 +72,28 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(response2.statusCode).toBe(200)
       expect(jobUpdated1.status).toBe(status)
       expect(jobUpdated2.status).toBe(status)
+    })
+
+    test.each(Object.entries(HAS_PERMISSION_VALID_TARGET_STATUS))('has permission user can update status to %s (%s)', async (label, status) => {
+      // Arrange
+      const jobUpdate = { status }
+
+      // Act
+      const response1 = await request(hasPermissionApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+      const response2 = await request(hasPermissionApp).patch(`/${JOB_ERROR.id}`).send(jobUpdate)
+      const response3 = await request(hasPermissionApp).patch(`/${JOB_CANCELLED.id}`).send(jobUpdate)
+
+      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_ERROR.id)
+      const jobUpdated3 = await models.ClassifierJob.findByPk(JOB_CANCELLED.id)
+
+      // Assert
+      expect(response1.statusCode).toBe(200)
+      expect(response2.statusCode).toBe(200)
+      expect(response3.statusCode).toBe(200)
+      expect(jobUpdated1.status).toBe(status)
+      expect(jobUpdated2.status).toBe(status)
+      expect(jobUpdated3.status).toBe(status)
     })
 
     test('can update status to CANCELLED (50) from WAITING (0)', async () => {
@@ -107,7 +128,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.completedAt).toBeTruthy()
     })
 
-    test.each(Object.entries(VALID_EXCEPT_RUNNING_DONE_AND_CANCEL))('clears completed_at when status becomes %s (%s)', async (label, status) => {
+    test.each(Object.entries(CLEAR_COMPLETE_AT_STATUS))('clears completed_at when status becomes %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -145,13 +166,13 @@ describe('PATCH /classifier-jobs/:id', () => {
   })
 
   describe('invalid usage', () => {
-    test.each(Object.entries(INVALID_STATUS_UPDATE))('400 if trying to update status to %s (%s)', async (label, status) => {
+    test.each(Object.entries(allApps))('400 if trying to update status with %s to RUNNING (20)', async (label, app) => {
       // Arrange
-      const jobUpdate = { status }
+      const jobUpdate = { status: RUNNING }
 
       // Act
-      const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
-      const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+      const response1 = await request(app).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+      const response2 = await request(app).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
 
       const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
       const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
@@ -163,13 +184,34 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
     })
 
-    test('403 if not super user', async () => {
+    test.each(Object.entries(HAS_PERMISSION_INVALID_TARGET_STATUS))('400 if has permission user update status to %s (%s)', async (label, status) => {
       // Arrange
-      const jobUpdate = { status: DONE }
+      const jobUpdate = { status }
 
       // Act
-      const response1 = await request(app).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
-      const response2 = await request(app).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+      const response1 = await request(hasPermissionApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+      const response2 = await request(hasPermissionApp).patch(`/${JOB_ERROR.id}`).send(jobUpdate)
+      const response3 = await request(hasPermissionApp).patch(`/${JOB_CANCELLED.id}`).send(jobUpdate)
+
+      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_ERROR.id)
+      const jobUpdated3 = await models.ClassifierJob.findByPk(JOB_CANCELLED.id)
+
+      expect(response1.statusCode).toBe(400)
+      expect(response2.statusCode).toBe(400)
+      expect(response3.statusCode).toBe(400)
+      expect(jobUpdated1.status).toBe(WAITING)
+      expect(jobUpdated2.status).toBe(ERROR)
+      expect(jobUpdated3.status).toBe(CANCELLED)
+    })
+
+    test.each(Object.entries(VALID_STATUS_UPDATE))('403 if no permission user update status to %s (%s)', async (label, status) => {
+      // Arrange
+      const jobUpdate = { status }
+
+      // Act
+      const response1 = await request(noPermissionApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+      const response2 = await request(noPermissionApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
 
       const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
       const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
@@ -177,22 +219,8 @@ describe('PATCH /classifier-jobs/:id', () => {
       // Assert
       expect(response1.statusCode).toBe(403)
       expect(response2.statusCode).toBe(403)
-      expect(jobUpdated1.status).toBe(JOB_WAITING.status)
-      expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
-    })
-
-    test.each(Object.entries(UNCANCELLABLE_JOBS))('403 if trying to update status to CANCELLED (50) from %s', async (label, job) => {
-      // Arrange
-      const jobUpdate = { status: CANCELLED }
-
-      // Act
-      const response = await request(app).patch(`/${job.id}`).send(jobUpdate)
-
-      const jobUpdated = await models.ClassifierJob.findByPk(job.id)
-
-      // Assert
-      expect(response.statusCode).toBe(403)
-      expect(jobUpdated.status).toBe(job.status)
+      expect(jobUpdated1.status).toBe(WAITING)
+      expect(jobUpdated2.status).toBe(RUNNING)
     })
 
     test('404 if classifier-job does not exist', async () => {

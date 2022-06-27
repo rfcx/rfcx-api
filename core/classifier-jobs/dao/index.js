@@ -100,10 +100,10 @@ async function update (id, job, options = {}) {
   // If is not super user or system user
   if (options.updatableBy && status) {
     if (!ALLOWED_TARGET_STATUSES.includes(status)) {
-      throw new ValidationError(`cannot change status to ${status}`)
+      throw new ValidationError(`cannot update status to ${status}`)
     }
     if (!ALLOWED_SOURCE_STATUSES.includes(status)) {
-      throw new ValidationError(`cannot change status of jobs in status ${status}`)
+      throw new ValidationError(`cannot update status of jobs in status ${status}`)
     }
   }
 

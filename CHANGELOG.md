@@ -6,7 +6,7 @@
 * **core**: Create and list classifier jobs (`/classifier-jobs` endpoint)
 * **core**: Access to classifiers can be public (open to all) or private (only the creator)
 * **core**: Dequeue classifier jobs (`POST /internal/classifier-jobs/dequeue`)
-* **core**: Prevent to cancel job when the current status is not waiting
+* **core**: Prevent to update job status if the user is not system_user, super user, or the creator of the job
 
 ### Bug Fixes
 * **noncore**: Fix sensor values table not support Infineon sensor
