@@ -1,3 +1,4 @@
+const models = require('../../_models')
 const { ClassifierJob, Classifier, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
@@ -89,30 +90,32 @@ async function create (job, options = {}) {
 async function update (id, job, options = {}) {
   const status = job.status
 
-  // Check the job is updatable
-  const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
-  if (!existingJob) {
-    throw new EmptyResultError()
-  }
-  if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
-    throw new ForbiddenError()
-  }
-  // If is not super user or system user
-  if (options.updatableBy && status) {
-    if (!ALLOWED_TARGET_STATUSES.includes(status)) {
-      throw new ValidationError(`cannot update status to ${status}`)
+  return models.sequelize.transaction(async transaction => {
+    // Check the job is updatable
+    const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'], transaction })
+    if (!existingJob) {
+      throw new EmptyResultError()
     }
-    if (!ALLOWED_SOURCE_STATUSES.includes(status)) {
-      throw new ValidationError(`cannot update status of jobs in status ${status}`)
+    if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
+      throw new ForbiddenError()
     }
-  }
+    // If is not super user or system user
+    if (options.updatableBy && status) {
+      if (!ALLOWED_TARGET_STATUSES.includes(status)) {
+        throw new ValidationError(`cannot update status to ${status}`)
+      }
+      if (!ALLOWED_SOURCE_STATUSES.includes(status)) {
+        throw new ValidationError(`cannot update status of jobs in status ${status}`)
+      }
+    }
 
-  // Set/clear completedAt
-  if (status !== undefined) {
-    job.completedAt = status === DONE ? new Date() : null
-  }
+    // Set/clear completedAt
+    if (status !== undefined) {
+      job.completedAt = status === DONE ? new Date() : null
+    }
 
-  await ClassifierJob.update(job, { where: { id } })
+    await ClassifierJob.update(job, { where: { id }, transaction })
+  })
 }
 
 module.exports = {
