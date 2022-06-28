@@ -145,7 +145,7 @@ router.post('/', async (req, res) => {
     }
 
     // Get the classification ids for each output (or error if not found)
-    const outputMappings = params.classification_values.map(parseClassifierOutputMapping)
+    const outputMappings = params.classificationValues.map(parseClassifierOutputMapping)
     let serverIds = {}
     try {
       serverIds = await getIds(outputMappings.map(value => value.to))
@@ -158,7 +158,7 @@ router.post('/', async (req, res) => {
     const classifier = {
       name: params.name,
       version: params.version,
-      externalId: params.external_id,
+      externalId: params.externalId,
       modelUrl,
       createdById,
       outputs,
