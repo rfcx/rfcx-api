@@ -1,4 +1,4 @@
-## 1.1.9 (2022-06-??)
+## 1.1.9 (2022-06-28)
 
 ### Features
 * **noncore**: Add `last_audio_sync`, `last_battery_internal` and `last_battery_main` to `Guardian` table and refresh them on checkins
