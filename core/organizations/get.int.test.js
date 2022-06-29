@@ -33,7 +33,6 @@ describe('GET /organizations/:id', () => {
     const response = await request(app).get('/n0tAn0rg')
 
     expect(response.statusCode).toBe(404)
-    expect(console.warn).toHaveBeenCalled()
   })
 
   test('forbidden', async () => {
@@ -44,7 +43,6 @@ describe('GET /organizations/:id', () => {
     const response = await request(app).get(`/${org.id}`)
 
     expect(response.statusCode).toBe(403)
-    expect(console.warn).toHaveBeenCalled()
   })
 
   test('readable by organization guest', async () => {
