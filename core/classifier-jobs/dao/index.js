@@ -97,21 +97,21 @@ async function update (id, newJob, options = {}) {
       throw new ForbiddenError()
     }
     // If is not super user or system user
-    if (options.updatableBy && newJob.status) {
+    if (options.updatableBy && newJob.status !== undefined) {
       if (!ALLOWED_TARGET_STATUSES.includes(newJob.status)) {
         throw new ValidationError(`cannot update status to ${newJob.status}`)
       }
-      if (!ALLOWED_SOURCE_STATUSES.includes(newJob.status)) {
+      if (!ALLOWED_SOURCE_STATUSES.includes(existingJob.status)) {
         throw new ValidationError(`cannot update status of jobs in status ${newJob.status}`)
       }
     }
 
     // Set/clear completedAt
-    if (job.status !== undefined) {
-      job.completedAt = job.status === DONE ? new Date() : null
+    if (newJob.status !== undefined) {
+      newJob.completedAt = newJob.status === DONE ? new Date() : null
     }
 
-    await ClassifierJob.update(job, { where: { id }, transaction })
+    await ClassifierJob.update(newJob, { where: { id }, transaction })
   })
 }
 
