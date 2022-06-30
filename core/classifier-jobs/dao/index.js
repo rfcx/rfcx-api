@@ -86,9 +86,7 @@ async function create (job, options = {}) {
  * @throws EmptyResultError when job not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the job
  */
-async function update (id, job, options = {}) {
-  const status = job.status
-
+async function update (id, newJob, options = {}) {
   return sequelize.transaction(async transaction => {
     // Check the job is updatable
     const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'], transaction })
@@ -99,18 +97,18 @@ async function update (id, job, options = {}) {
       throw new ForbiddenError()
     }
     // If is not super user or system user
-    if (options.updatableBy && status) {
-      if (!ALLOWED_TARGET_STATUSES.includes(status)) {
-        throw new ValidationError(`cannot update status to ${status}`)
+    if (options.updatableBy && newJob.status) {
+      if (!ALLOWED_TARGET_STATUSES.includes(newJob.status)) {
+        throw new ValidationError(`cannot update status to ${newJob.status}`)
       }
-      if (!ALLOWED_SOURCE_STATUSES.includes(status)) {
-        throw new ValidationError(`cannot update status of jobs in status ${status}`)
+      if (!ALLOWED_SOURCE_STATUSES.includes(newJob.status)) {
+        throw new ValidationError(`cannot update status of jobs in status ${newJob.status}`)
       }
     }
 
     // Set/clear completedAt
-    if (status !== undefined) {
-      job.completedAt = status === DONE ? new Date() : null
+    if (job.status !== undefined) {
+      job.completedAt = job.status === DONE ? new Date() : null
     }
 
     await ClassifierJob.update(job, { where: { id }, transaction })

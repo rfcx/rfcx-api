@@ -50,13 +50,13 @@ describe('PATCH /classifier-jobs/:id', () => {
   const allApps = { hasPermissionApp, noPermissionApp, superUserApp }
 
   // Split valid & invalid target status
-  const { RUNNING, ...VALID_STATUS_UPDATE } = CLASSIFIER_JOB_STATUS
+  const { RUNNING, ...STATUS_EXCEPT_RUNNING } = CLASSIFIER_JOB_STATUS
   const HAS_PERMISSION_VALID_TARGET_STATUS = { CANCELLED, WAITING }
   const HAS_PERMISSION_INVALID_TARGET_STATUS = { DONE }
   const CLEAR_COMPLETE_AT_STATUS = { WAITING, ERROR }
 
   describe('valid usage', () => {
-    test.each(Object.entries(VALID_STATUS_UPDATE))('super user can update status to %s (%s)', async (label, status) => {
+    test.each(Object.entries(STATUS_EXCEPT_RUNNING))('super user can update status to %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
@@ -205,7 +205,7 @@ describe('PATCH /classifier-jobs/:id', () => {
       expect(jobUpdated3.status).toBe(CANCELLED)
     })
 
-    test.each(Object.entries(VALID_STATUS_UPDATE))('403 if no permission user update status to %s (%s)', async (label, status) => {
+    test.each(Object.entries(STATUS_EXCEPT_RUNNING))('403 if no permission user update status to %s (%s)', async (label, status) => {
       // Arrange
       const jobUpdate = { status }
 
