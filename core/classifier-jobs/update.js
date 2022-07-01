@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
     // Validate params
     const converter = new Converter(req.body, {}, true)
     converter.convert('status').optional().toInt()
+    converter.convert('minutes_total').optional().toInt()
     const params = await converter.validate()
 
     if (params.status === RUNNING) {
