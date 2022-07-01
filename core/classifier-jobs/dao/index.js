@@ -1,13 +1,16 @@
-const { ClassifierJob, Classifier, Sequelize } = require('../../_models')
+const { sequelize, ClassifierJob, Classifier, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
-const { DONE } = require('../classifier-job-status')
+const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
 
 const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] })
 ]
+
+const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
+const ALLOWED_SOURCE_STATUSES = [CANCELLED, WAITING, ERROR]
 
 /**
  * Get a list of classifier jobs matching the filters
@@ -74,6 +77,25 @@ async function create (job, options = {}) {
 }
 
 /**
+ * Search for classifier job with given id
+ * @param {integer} id Classifier job id
+ * @param {*} options
+ * @param {string[]} options.attributes Custom attributes
+ * @param {transaction} options.transaction Sql transaction
+ * @throws EmptyResultError when job not found
+ */
+async function get (id, options = {}) {
+  const job = await ClassifierJob.findByPk(id, {
+    attributes: options && options.attributes ? options.attributes : ClassifierJob.attributes.full,
+    transaction: options.transaction
+  })
+  if (!job) {
+    throw new EmptyResultError()
+  }
+  return job
+}
+
+/**
  * Update a classifier job
  * @param {integer} id
  * @param {ClassifierJob} job
@@ -83,26 +105,35 @@ async function create (job, options = {}) {
  * @throws EmptyResultError when job not found
  * @throws ForbiddenError when `updatableBy` user does not have update permission on the job
  */
-async function update (id, job, options = {}) {
-  // Check the job is updatable
-  const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
-  if (!existingJob) {
-    throw new EmptyResultError()
-  }
-  if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
-    throw new ForbiddenError()
-  }
+async function update (id, newJob, options = {}) {
+  return sequelize.transaction(async transaction => {
+    // Check the job is updatable
+    const existingJob = await get(id, { transaction })
+    if (options.updatableBy && existingJob.created_by_id !== options.updatableBy) {
+      throw new ForbiddenError()
+    }
+    // If is not super user or system user
+    if (options.updatableBy && newJob.status !== undefined) {
+      if (!ALLOWED_TARGET_STATUSES.includes(newJob.status)) {
+        throw new ValidationError(`Cannot update status to ${newJob.status}`)
+      }
+      if (!ALLOWED_SOURCE_STATUSES.includes(existingJob.status)) {
+        throw new ValidationError(`Cannot update status of jobs in status ${newJob.status}`)
+      }
+    }
 
-  // Set/clear completedAt
-  if (job.status !== undefined) {
-    job.completedAt = job.status === DONE ? new Date() : null
-  }
+    // Set/clear completedAt
+    if (newJob.status !== undefined) {
+      newJob.completedAt = newJob.status === DONE ? new Date() : null
+    }
 
-  await ClassifierJob.update(job, { where: { id } })
+    await ClassifierJob.update(newJob, { where: { id }, transaction })
+  })
 }
 
 module.exports = {
   query,
   create,
+  get,
   update
 }

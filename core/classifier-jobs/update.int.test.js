@@ -3,7 +3,7 @@ const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const CLASSIFIER_JOB_STATUS = require('./classifier-job-status')
-const { WAITING, RUNNING, DONE } = require('./classifier-job-status')
+const { WAITING, RUNNING, DONE, CANCELLED, ERROR } = require('./classifier-job-status')
 
 // Test data
 const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
@@ -18,7 +18,9 @@ const STREAMS = [STREAM_1]
 const JOB_WAITING = { id: 123, status: WAITING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_RUNNING = { id: 124, status: RUNNING, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_DONE = { id: 125, status: DONE, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: '2022-10-03T09:03:00.000Z' }
-const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE]
+const JOB_ERROR = { id: 126, status: ERROR, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_CANCELLED = { id: 127, status: CANCELLED, classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOBS = [JOB_WAITING, JOB_RUNNING, JOB_DONE, JOB_ERROR, JOB_CANCELLED]
 
 async function seedTestData () {
   await models.Classifier.bulkCreate(CLASSIFIERS)
@@ -42,138 +44,226 @@ beforeEach(async () => {
 
 describe('PATCH /classifier-jobs/:id', () => {
   // Setup normal & super-user apps
-  const app = expressApp().use('/', routes)
+  const hasPermissionApp = expressApp({ id: seedValues.otherUserId }).use('/', routes)
+  const noPermissionApp = expressApp({ id: seedValues.anotherUserId }).use('/', routes)
   const superUserApp = expressApp({ is_super: true }).use('/', routes)
+  const allApps = { hasPermissionApp, noPermissionApp, superUserApp }
 
   // Split valid & invalid target status
-  const { RUNNING, ...VALID_STATUS_UPDATE } = CLASSIFIER_JOB_STATUS
-  const { DONE, ...VALID_EXCEPT_DONE } = VALID_STATUS_UPDATE
-  const INVALID_STATUS_UPDATE = { RUNNING }
+  const { RUNNING, ...STATUS_EXCEPT_RUNNING } = CLASSIFIER_JOB_STATUS
+  const CLEAR_COMPLETE_AT_STATUS = { WAITING, ERROR }
+
+  const ALLOWED_SOURCE_STATUS_JOBS = { JOB_WAITING, JOB_ERROR, JOB_CANCELLED }
+  const NOT_ALLOWED_SOURCE_STATUS_JOBS = { JOB_RUNNING, JOB_DONE }
 
   describe('valid usage', () => {
-    test.each(Object.entries(VALID_STATUS_UPDATE))('can update status to %s (%s)', async (label, status) => {
-      // Arrange
-      const jobUpdate = { status }
+    describe('superuser', () => {
+      test.each(Object.entries(STATUS_EXCEPT_RUNNING))('super user can update status to %s (%s)', async (label, status) => {
+        // Arrange
+        const jobUpdate = { status }
 
-      // Act
-      const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
-      const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+        // Act
+        const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+        const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
 
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
-      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+        const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+        const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
 
-      // Assert
-      expect(response1.statusCode).toBe(200)
-      expect(response2.statusCode).toBe(200)
-      expect(jobUpdated1.status).toBe(status)
-      expect(jobUpdated2.status).toBe(status)
+        // Assert
+        expect(response1.statusCode).toBe(200)
+        expect(response2.statusCode).toBe(200)
+        expect(jobUpdated1.status).toBe(status)
+        expect(jobUpdated2.status).toBe(status)
+      })
+
+      test('can update status to CANCELLED (50) from WAITING (0)', async () => {
+        // Arrange
+        const jobUpdate = { status: CANCELLED }
+
+        // Act
+        const response = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.status).toBe(CANCELLED)
+      })
+
+      test(`sets completed_at when status becomes DONE (${DONE})`, async () => {
+        // Arrange
+        const jobUpdate = { status: DONE }
+
+        // Act
+        const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+        const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+
+        const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+        const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+
+        // Assert
+        expect(response1.statusCode).toBe(200)
+        expect(response2.statusCode).toBe(200)
+        expect(jobUpdated1.completedAt).toBeTruthy()
+        expect(jobUpdated2.completedAt).toBeTruthy()
+      })
+
+      test.each(Object.entries(CLEAR_COMPLETE_AT_STATUS))('clears completed_at when status becomes %s (%s)', async (label, status) => {
+        // Arrange
+        const jobUpdate = { status }
+
+        // Act
+        const response = await request(superUserApp).patch(`/${JOB_DONE.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(JOB_DONE.id)
+
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.completedAt).toBeNull()
+      })
+
+      test('leaves completed_at unchanged when status unchanged', async () => {
+        // Arrange
+        const jobUpdate = {}
+
+        // Act
+        const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+        const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+        const response3 = await request(superUserApp).patch(`/${JOB_DONE.id}`).send(jobUpdate)
+
+        const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id, { raw: true })
+        const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id, { raw: true })
+        const jobUpdated3 = await models.ClassifierJob.findByPk(JOB_DONE.id, { raw: true })
+
+        // Assert
+        expect(response1.statusCode).toBe(200)
+        expect(response2.statusCode).toBe(200)
+        expect(response3.statusCode).toBe(200)
+        // TODO - Find a better way to compare Date|null
+        expect(new Date(jobUpdated1.completedAt)).toEqual(new Date(JOB_WAITING.completedAt))
+        expect(new Date(jobUpdated2.completedAt)).toEqual(new Date(JOB_RUNNING.completedAt))
+        expect(new Date(jobUpdated3.completedAt)).toEqual(new Date(JOB_DONE.completedAt))
+      })
     })
 
-    test(`sets completed_at when status becomes DONE (${DONE})`, async () => {
-      // Arrange
-      const jobUpdate = { status: DONE }
+    describe('has permission user', () => {
+      test.each(Object.entries(ALLOWED_SOURCE_STATUS_JOBS))('has permission user can update status to CANCELLED (50) from %s', async (label, job) => {
+        // Arrange
+        const jobUpdate = { status: CANCELLED }
 
-      // Act
-      const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
-      const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+        // Act
+        const response1 = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
+        const jobUpdated1 = await models.ClassifierJob.findByPk(job.id)
 
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
-      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+        // Assert
+        expect(response1.statusCode).toBe(200)
+        expect(jobUpdated1.status).toBe(CANCELLED)
+      })
 
-      // Assert
-      expect(response1.statusCode).toBe(200)
-      expect(response2.statusCode).toBe(200)
-      expect(jobUpdated1.completedAt).toBeTruthy()
-      expect(jobUpdated2.completedAt).toBeTruthy()
-    })
+      test.each(Object.entries(ALLOWED_SOURCE_STATUS_JOBS))('has permission user can update status to WAITING (20) from %s', async (label, job) => {
+        // Arrange
+        const jobUpdate = { status: WAITING }
 
-    test.each(Object.entries(VALID_EXCEPT_DONE))('clears completed_at when status becomes %s (%s)', async (label, status) => {
-      // Arrange
-      const jobUpdate = { status }
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(job.id)
 
-      // Act
-      const response1 = await request(superUserApp).patch(`/${JOB_DONE.id}`).send(jobUpdate)
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_DONE.id)
-
-      // Assert
-      expect(response1.statusCode).toBe(200)
-      expect(jobUpdated1.completedAt).toBeNull()
-    })
-
-    test('leaves completed_at unchanged when status unchanged', async () => {
-      // Arrange
-      const jobUpdate = {}
-
-      // Act
-      const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
-      const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
-      const response3 = await request(superUserApp).patch(`/${JOB_DONE.id}`).send(jobUpdate)
-
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id, { raw: true })
-      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id, { raw: true })
-      const jobUpdated3 = await models.ClassifierJob.findByPk(JOB_DONE.id, { raw: true })
-
-      // Assert
-      expect(response1.statusCode).toBe(200)
-      expect(response2.statusCode).toBe(200)
-      expect(response3.statusCode).toBe(200)
-      // TODO - Find a better way to compare Date|null
-      expect(new Date(jobUpdated1.completedAt)).toEqual(new Date(JOB_WAITING.completedAt))
-      expect(new Date(jobUpdated2.completedAt)).toEqual(new Date(JOB_RUNNING.completedAt))
-      expect(new Date(jobUpdated3.completedAt)).toEqual(new Date(JOB_DONE.completedAt))
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.status).toBe(WAITING)
+      })
     })
   })
 
   describe('invalid usage', () => {
-    test.each(Object.entries(INVALID_STATUS_UPDATE))('400 if trying to update status to %s (%s)', async (label, status) => {
-      // Arrange
-      const jobUpdate = { status }
+    describe('general', () => {
+      test.each(Object.entries(allApps))('400 if trying to update status with %s to RUNNING (20)', async (label, app) => {
+        // Arrange
+        const jobUpdate = { status: RUNNING }
 
-      // Act
-      const response1 = await request(superUserApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
-      const response2 = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+        // Act
+        const response1 = await request(app).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+        const response2 = await request(app).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
 
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
-      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+        const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+        const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
 
-      // Assert
-      expect(response1.statusCode).toBe(400)
-      expect(response2.statusCode).toBe(400)
-      expect(jobUpdated1.status).toBe(JOB_WAITING.status)
-      expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
+        // Assert
+        expect(response1.statusCode).toBe(400)
+        expect(response2.statusCode).toBe(400)
+        expect(jobUpdated1.status).toBe(JOB_WAITING.status)
+        expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
+      })
+
+      test.each(Object.entries(STATUS_EXCEPT_RUNNING))('403 if no permission user update status to %s (%s)', async (label, status) => {
+        // Arrange
+        const jobUpdate = { status }
+
+        // Act
+        const response1 = await request(noPermissionApp).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
+        const response2 = await request(noPermissionApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+
+        const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
+        const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+
+        // Assert
+        expect(response1.statusCode).toBe(403)
+        expect(response2.statusCode).toBe(403)
+        expect(jobUpdated1.status).toBe(WAITING)
+        expect(jobUpdated2.status).toBe(RUNNING)
+      })
+
+      test('404 if classifier-job does not exist', async () => {
+        // Arrange
+        const notJobId = 10000
+        const notJob = await models.ClassifierJob.findByPk(notJobId)
+        expect(notJob).toBeNull() // Pre-condition: Job does not exist
+
+        const jobUpdate = { status: DONE }
+
+        // Act
+        const response = await request(superUserApp).patch(`/${notJobId}`).send(jobUpdate)
+
+        // Assert
+        expect(response.statusCode).toBe(404)
+      })
     })
+    describe('has permission user', () => {
+      test.each(Object.entries(NOT_ALLOWED_SOURCE_STATUS_JOBS))('400 if has permission user update status to CANCELLED (50) from %s', async (label, job) => {
+        // Arrange
+        const jobUpdate = { status: CANCELLED }
 
-    test('403 if not super user', async () => {
-      // Arrange
-      const jobUpdate = { status: DONE }
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(job.id)
 
-      // Act
-      const response1 = await request(app).patch(`/${JOB_WAITING.id}`).send(jobUpdate)
-      const response2 = await request(app).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+        // Assert
+        expect(response.statusCode).toBe(400)
+        expect(jobUpdated.status).toBe(job.status)
+      })
 
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_WAITING.id)
-      const jobUpdated2 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+      test.each(Object.entries(NOT_ALLOWED_SOURCE_STATUS_JOBS))('400 if has permission user update status to WAITING (20) from %s', async (label, job) => {
+        // Arrange
+        const jobUpdate = { status: WAITING }
 
-      // Assert
-      expect(response1.statusCode).toBe(403)
-      expect(response2.statusCode).toBe(403)
-      expect(jobUpdated1.status).toBe(JOB_WAITING.status)
-      expect(jobUpdated2.status).toBe(JOB_RUNNING.status)
-    })
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(job.id)
 
-    test('404 if classifier-job does not exist', async () => {
-      // Arrange
-      const notJobId = 10000
-      const notJob = await models.ClassifierJob.findByPk(notJobId)
-      expect(notJob).toBeNull() // Pre-condition: Job does not exist
+        // Assert
+        expect(response.statusCode).toBe(400)
+        expect(jobUpdated.status).toBe(job.status)
+      })
 
-      const jobUpdate = { status: DONE }
+      test.each(Object.entries(ALLOWED_SOURCE_STATUS_JOBS))('400 if has permission user update status to DONE (30) from %s', async (label, job) => {
+        // Arrange
+        const jobUpdate = { status: DONE }
 
-      // Act
-      const response1 = await request(superUserApp).patch(`/${notJobId}`).send(jobUpdate)
+        // Act
+        const response = await request(hasPermissionApp).patch(`/${job.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(job.id)
 
-      // Assert
-      expect(response1.statusCode).toBe(404)
+        expect(response.statusCode).toBe(400)
+        expect(jobUpdated.status).toBe(job.status)
+      })
     })
   })
 })
