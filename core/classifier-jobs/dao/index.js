@@ -77,11 +77,17 @@ async function create (job, options = {}) {
 }
 
 /**
- * search for classifier job with given id
- * @param {*} id classifier job id
+ * Search for classifier job with given id
+ * @param {integer} id Classifier job id
+ * @param {*} options
+ * @param {transaction} options.transaction Sql transaction
+ * @throws EmptyResultError when job not found
  */
-async function get (id) {
-  const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
+async function get (id, options = {}) {
+  const existingJob = await ClassifierJob.findByPk(id, {
+    fields: ['createdById'],
+    transaction: options.transaction
+  })
   if (!existingJob) {
     throw new EmptyResultError()
   }
@@ -101,7 +107,7 @@ async function get (id) {
 async function update (id, newJob, options = {}) {
   return sequelize.transaction(async transaction => {
     // Check the job is updatable
-    const existingJob = await get(id)
+    const existingJob = await get(id, { transaction })
     if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
       throw new ForbiddenError()
     }
