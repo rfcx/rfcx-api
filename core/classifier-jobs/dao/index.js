@@ -77,6 +77,18 @@ async function create (job, options = {}) {
 }
 
 /**
+ * search for classifier job with given id
+ * @param {*} id classifier job id
+ */
+async function get (id) {
+  const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'] })
+  if (!existingJob) {
+    throw new EmptyResultError()
+  }
+  return existingJob
+}
+
+/**
  * Update a classifier job
  * @param {integer} id
  * @param {ClassifierJob} job
@@ -89,20 +101,17 @@ async function create (job, options = {}) {
 async function update (id, newJob, options = {}) {
   return sequelize.transaction(async transaction => {
     // Check the job is updatable
-    const existingJob = await ClassifierJob.findByPk(id, { fields: ['createdById'], transaction })
-    if (!existingJob) {
-      throw new EmptyResultError()
-    }
+    const existingJob = await get(id)
     if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
       throw new ForbiddenError()
     }
     // If is not super user or system user
     if (options.updatableBy && newJob.status !== undefined) {
       if (!ALLOWED_TARGET_STATUSES.includes(newJob.status)) {
-        throw new ValidationError(`cannot update status to ${newJob.status}`)
+        throw new ValidationError(`Cannot update status to ${newJob.status}`)
       }
       if (!ALLOWED_SOURCE_STATUSES.includes(existingJob.status)) {
-        throw new ValidationError(`cannot update status of jobs in status ${newJob.status}`)
+        throw new ValidationError(`Cannot update status of jobs in status ${newJob.status}`)
       }
     }
 
@@ -118,5 +127,6 @@ async function update (id, newJob, options = {}) {
 module.exports = {
   query,
   create,
+  get,
   update
 }
