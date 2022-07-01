@@ -86,7 +86,6 @@ async function create (job, options = {}) {
  */
 async function get (id, options = {}) {
   const existingJob = await ClassifierJob.findByPk(id, {
-    fields: ['createdById'],
     attributes: options && options.attributes ? options.attributes : ClassifierJob.attributes.full,
     transaction: options.transaction
   })
