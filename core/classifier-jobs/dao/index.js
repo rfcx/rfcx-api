@@ -85,14 +85,14 @@ async function create (job, options = {}) {
  * @throws EmptyResultError when job not found
  */
 async function get (id, options = {}) {
-  const existingJob = await ClassifierJob.findByPk(id, {
+  const job = await ClassifierJob.findByPk(id, {
     attributes: options && options.attributes ? options.attributes : ClassifierJob.attributes.full,
     transaction: options.transaction
   })
-  if (!existingJob) {
+  if (!job) {
     throw new EmptyResultError()
   }
-  return existingJob
+  return job
 }
 
 /**
