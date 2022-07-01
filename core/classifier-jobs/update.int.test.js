@@ -142,6 +142,19 @@ describe('PATCH /classifier-jobs/:id', () => {
         expect(new Date(jobUpdated2.completedAt)).toEqual(new Date(JOB_RUNNING.completedAt))
         expect(new Date(jobUpdated3.completedAt)).toEqual(new Date(JOB_DONE.completedAt))
       })
+
+      test('can update minutes_total', async () => {
+        // Arrange
+        const jobUpdate = { minutes_total: 50 }
+
+        // Act
+        const response = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+        const jobUpdated = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
+
+        // Assert
+        expect(response.statusCode).toBe(200)
+        expect(jobUpdated.minutesTotal).toBe(jobUpdate.minutes_total)
+      })
     })
 
     describe('has permission user', () => {
@@ -209,6 +222,28 @@ describe('PATCH /classifier-jobs/:id', () => {
         expect(response2.statusCode).toBe(403)
         expect(jobUpdated1.status).toBe(WAITING)
         expect(jobUpdated2.status).toBe(RUNNING)
+      })
+
+      test('400 if minutes_total is a string', async () => {
+        // Arrange
+        const jobUpdate = { minutes_total: 'xx' }
+
+        // Act
+        const response = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+
+        // Assert
+        expect(response.statusCode).toBe(400)
+      })
+
+      test('400 if minutes_total is a boolean', async () => {
+        // Arrange
+        const jobUpdate = { minutes_total: true }
+
+        // Act
+        const response = await request(superUserApp).patch(`/${JOB_RUNNING.id}`).send(jobUpdate)
+
+        // Assert
+        expect(response.statusCode).toBe(400)
       })
 
       test('404 if classifier-job does not exist', async () => {

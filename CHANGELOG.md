@@ -7,6 +7,7 @@
 * **core**: Access to classifiers can be public (open to all) or private (only the creator)
 * **core**: Dequeue classifier jobs (`POST /internal/classifier-jobs/dequeue`)
 * **core**: `PATCH /classifier-jobs` Restrict to update classifier jobs by the request role
+* **core**: Add `minutes_toal` to `PATCH /classifier-jobs`
 
 ### Bug Fixes
 * **noncore**: Fix sensor values table not support Infineon sensor

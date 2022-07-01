@@ -81,6 +81,7 @@ async function create (job, options = {}) {
  * @param {integer} id
  * @param {ClassifierJob} job
  * @param {integer} job.status
+ * @param {integer} job.minutesTotal
  * @param {*} options
  * @param {number} options.updatableBy Update only if job is updatable by the given user id
  * @throws EmptyResultError when job not found
