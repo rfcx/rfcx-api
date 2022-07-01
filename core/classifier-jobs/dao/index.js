@@ -80,12 +80,14 @@ async function create (job, options = {}) {
  * Search for classifier job with given id
  * @param {integer} id Classifier job id
  * @param {*} options
+ * @param {string[]} options.attributes Custom attributes
  * @param {transaction} options.transaction Sql transaction
  * @throws EmptyResultError when job not found
  */
 async function get (id, options = {}) {
   const existingJob = await ClassifierJob.findByPk(id, {
     fields: ['createdById'],
+    attributes: options && options.attributes ? options.attributes : ClassifierJob.attributes.full,
     transaction: options.transaction
   })
   if (!existingJob) {
@@ -108,7 +110,7 @@ async function update (id, newJob, options = {}) {
   return sequelize.transaction(async transaction => {
     // Check the job is updatable
     const existingJob = await get(id, { transaction })
-    if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
+    if (options.updatableBy && existingJob.created_by_id !== options.updatableBy) {
       throw new ForbiddenError()
     }
     // If is not super user or system user
