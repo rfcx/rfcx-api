@@ -33,18 +33,13 @@ exports.env = {
   ASSET_BUCKET_AI: 'rfcx-ai-staging',
   ASSET_URLBASE: 'http://localhost:8080/v1/assets',
 
-  DB_HOSTNAME: '127.0.0.1',
-  DB_NAME: 'rfcx_api',
-  DB_USERNAME: 'root',
-  DB_PASSWORD: 'test',
-  DB_PORT: 3306,
-
   POSTGRES_PORT: '5432',
   POSTGRES_HOSTNAME: '127.0.0.1',
   POSTGRES_SSL_ENABLED: 'false',
-  POSTGRES_DB: 'postgres',
   POSTGRES_USER: 'postgres',
   POSTGRES_PASSWORD: 'test',
+  CORE_DB_NAME: 'core',
+  NONCORE_DB_NAME: 'noncore',
 
 
   MANDRILL_KEY: '',
