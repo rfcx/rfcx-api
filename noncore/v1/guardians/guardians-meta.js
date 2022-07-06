@@ -5,9 +5,11 @@ const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const passport = require('passport')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
-const hasRole = require('../../../common/middleware/authorization/authorization').hasRole
+const Converter = require('../../../common/converter')
+const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
 
-router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
   const guardianGuid = req.params.guardian_id
   const segmentType = req.query.segment_type || ''
   const startingAfter = req.rfcx.starting_after || ''
@@ -15,7 +17,7 @@ router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt',
   const limit = (req.query.limit == null) ? 1 : Math.min(5000, parseInt(req.query.limit))
 
   const sql = `
-    select DATE_FORMAT(s.created_at, '%Y-%m-%d %H:00') created_at_hour, sum(s.segment_count) segment_count 
+    select DATE_FORMAT(s.created_at, '%Y-%m-%d %H:00') created_at_hour, sum(s.segment_count) segment_count
     from GuardianMetaSegmentsGroupLogs s join Guardians g on g.id = s.guardian_id
     where g.guid = $1 and s.created_at > $2 and s.created_at <= $3 and s.protocol = $4
     group by 1 order by 1
@@ -30,8 +32,63 @@ router.get('/:guardian_id/meta/segments', passport.authenticate(['token', 'jwt',
   })
 })
 
+router.get('/:guardian_id/meta/sensors', passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
+  const guardianGuid = req.params.guardian_id
+  const params = new Converter(req.query, {}, true)
+  params.convert('sensor_components').optional().toArray().default([])
+  params.convert('starting_after').optional().toMomentUtc()
+  params.convert('ending_before').optional().toMomentUtc()
+  params.convert('limit_per_sensor').toInt().default(1000)
+  params.convert('offset_per_sensor').toInt().default(0)
+
+  params.validate()
+    .then(async (params) => {
+      const { sensorComponents, startingAfter, endingBefore, limitPerSensor, offsetPerSensor } = params
+      const guardian = await models.Guardian.findOne({ where: { guid: guardianGuid }, attributes: ['id'] })
+      if (!guardian) {
+        throw new EmptyResultError('Guardian not found')
+      }
+      const sensorsComponents = await models.GuardianMetaSensorComponent.findAll({
+        where: {
+          ...sensorComponents.length ? { shortname: { [models.Sequelize.Op.in]: sensorComponents } } : {}
+        },
+        include: [{ model: models.GuardianMetaSensor, as: 'Sensor', attributes: ['id', 'payload_position', 'name'] }]
+      })
+      if (!sensorsComponents.length) {
+        return {}
+      }
+      const result = {}
+      for (const sensorComponent of sensorsComponents) {
+        result[sensorComponent.shortname] = {}
+        for (const sensor of sensorComponent.Sensor) {
+          const sensorWhere = {
+            sensor_id: sensor.id,
+            guardian_id: guardian.id
+          }
+          if (startingAfter || endingBefore) {
+            sensorWhere.measured_at = {}
+          }
+          if (startingAfter) {
+            sensorWhere.measured_at[models.Sequelize.Op.gt] = startingAfter
+          }
+          if (endingBefore) {
+            sensorWhere.measured_at[models.Sequelize.Op.lt] = endingBefore
+          }
+          result[sensorComponent.shortname][sensor.name] = await models.GuardianMetaSensorValue.findAll({
+            where: sensorWhere,
+            limit: limitPerSensor,
+            offset: offsetPerSensor,
+            attributes: ['measured_at', 'value'],
+            order: [['measured_at', 'DESC']]
+          })
+        }
+      }
+      res.json(result)
+    }).catch(httpErrorHandler(req, res, 'Failed getting sensor data'))
+})
+
 router.route('/:guardian_id/meta/:meta_type')
-  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
+  .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), (req, res) => {
     const metaType = req.params.meta_type
     const modelLookUp = {
       cpu: {

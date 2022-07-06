@@ -99,6 +99,7 @@ function defineRelationships (models) {
   models.GuardianMetaSensorValue.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaSensorValue.belongsTo(models.GuardianMetaSensor, { as: 'Sensor', foreignKey: 'sensor_id' })
   models.GuardianMetaSensor.belongsTo(models.GuardianMetaSensorComponent, { as: 'Component', foreignKey: 'component_id' })
+  models.GuardianMetaSensorComponent.hasMany(models.GuardianMetaSensor, { as: 'Sensor', foreignKey: 'component_id' })
 
   models.GuardianMetaSentinelPower.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   models.GuardianMetaSentinelAccelerometer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
