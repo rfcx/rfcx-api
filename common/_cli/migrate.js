@@ -1,3 +1,10 @@
+const cliArgs = process.argv.slice(2)
+const type = cliArgs[0] || 'core'
+
+if (type !== 'core' && type !== 'noncore') {
+  console.error('Type argument must be "core" or "noncore"')
+  process.exit(1)
+}
 // TODO Avoid writing config files by switching umzug (see bio and device api for examples)
 
 console.info('CLI: Migrate started')
@@ -10,17 +17,17 @@ const path = require('path')
 // 2. Write config.json (which is currently! needed by migration command)
 // 3. Run migrations
 
-if (fs.existsSync(path.join(__dirname, '/../../common/config/env_vars.js'))) {
-  const { env } = require(path.join(__dirname, '/../../common/config/env_vars.js'))
+if (fs.existsSync(path.join(__dirname, '/../config/env_vars.js'))) {
+  const { env } = require(path.join(__dirname, '/../config/env_vars.js'))
   for (const i in env) { process.env[i] = env[i] }
 }
 
-console.info('CLI: Initializing sequelize for CORE')
+console.info(`CLI: Initializing sequelize for ${type}`)
 initializeSequelize()
 
 function initializeSequelize () {
-  const migrationsPath = 'core/_cli/migrations'
-  const modelsPath = 'core/_models'
+  const migrationsPath = `${type}/_cli/migrations`
+  const modelsPath = `${type}/_models`
   const models = require('../../' + modelsPath)
 
   console.info('CLI: Creating config params: started')
@@ -32,7 +39,7 @@ function initializeSequelize () {
     ...models.options,
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB,
+    database: type === 'core' ? process.env.CORE_DB_NAME : process.env.NONCORE_DB_NAME,
     logging: sequelizeVerbose
   }
   const configJsonContent = JSON.stringify({ development: config, test: config, staging: config, production: config })

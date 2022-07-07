@@ -1,3 +1,10 @@
+const cliArgs = process.argv.slice(2)
+const type = cliArgs[0] || 'core'
+
+if (type !== 'core' && type !== 'noncore') {
+  console.error('Type argument must be "core" or "noncore"')
+  process.exit(1)
+}
 console.info('CLI: Reset started')
 
 const fs = require('fs')
@@ -24,7 +31,7 @@ function getSequelize () {
   const options = {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB,
+    database: type === 'core' ? process.env.CORE_DB_NAME : process.env.NONCORE_DB_NAME,
     logging: false,
     dialect: 'postgres',
     dialectModule: pg,
