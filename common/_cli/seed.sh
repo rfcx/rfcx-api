@@ -37,6 +37,7 @@ connection="postgres://$username:$password@$hostname:$port/$dbname"
 if ! psql $connection --command "SELECT 1" 1> /dev/null; then
   exit 1
 fi
+echo "Connected to $connection"
 
 currentdir=$(dirname "$0")
 for filename in $currentdir/../../$folder/_cli/seeds/*.sql; do

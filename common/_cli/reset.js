@@ -62,8 +62,10 @@ async function dropTables (sequelize) {
 
   console.info('Drop if exists:')
   for (const table of tables) {
-    console.info(`- public.${table.tablename}`)
-    await sequelize.query(`DROP TABLE IF EXISTS public.${table.tablename} CASCADE`)
+    if (table.tablename !== 'spatial_ref_sys') {
+      console.info(`- ${table.tablename}`)
+      await sequelize.query(`DROP TABLE IF EXISTS "${table.tablename}" CASCADE`)
+    }
   }
 
   // Drop "sequelize_meta"

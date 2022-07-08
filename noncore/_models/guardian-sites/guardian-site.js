@@ -5,43 +5,31 @@ module.exports = function (sequelize, DataTypes) {
     guid: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
-      validate: {
-      }
+      unique: true
     },
     name: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     description: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     is_active: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      validate: {
-      }
+      defaultValue: false
     },
     cartodb_map_id: {
       type: DataTypes.UUID,
       unique: false,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     flickr_photoset_id: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     timezone_offset: {
       type: DataTypes.INTEGER,
@@ -53,15 +41,11 @@ module.exports = function (sequelize, DataTypes) {
     timezone: {
       type: DataTypes.STRING,
       defaultValue: 'UTC',
-      allowNull: false,
-      validate: {
-      }
+      allowNull: false
     },
     bounds: {
       type: DataTypes.GEOMETRY,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     map_image_url: {
       type: DataTypes.STRING,
@@ -86,7 +70,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     backstory: {
-      type: DataTypes.TEXT('long'),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     is_private: {
@@ -102,9 +86,6 @@ module.exports = function (sequelize, DataTypes) {
       validate: {}
     }
   }, {
-    indexes: [
-      { unique: true, fields: ['guid'] }
-    ],
     tableName: 'GuardianSites'
   })
 
