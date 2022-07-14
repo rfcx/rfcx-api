@@ -201,7 +201,6 @@ const models = {
 //   AnonymousToken: require('./token/anonymous-token')(sequelize, Sequelize),
 //   RegistrationToken: require('./token/registration-token')(sequelize, Sequelize),
 //   UserToken: require('./token/user-token')(sequelize, Sequelize),
-//   User: require('./user/user')(sequelize, Sequelize),
 //   UserGuardianGroupSubscription: require('./user/user-group-subscriptions')(sequelize, Sequelize),
 //   UserSiteRelation: require('./user/user-relations')(sequelize, Sequelize),
 //   AdoptProtectDonation: require('./adopt-protect-donation')(sequelize, Sequelize),
@@ -212,8 +211,9 @@ const models = {
 //   GuardianGroupGuardianAudioEventValueRelation: require('./guardian-group-event-value-relation')(sequelize, Sequelize),
 //   GuardianGroupRelation: require('./guardian-group-relation')(sequelize, Sequelize),
 //   GuardianGroup: require('./guardian-group')(sequelize, Sequelize),
-  GuardianSite: require('./guardian-sites/guardian-site')(sequelize, Sequelize)
-//   Guardian: require('./guardian')(sequelize, Sequelize),
+  GuardianSite: require('./guardian-sites/guardian-site')(sequelize, Sequelize),
+  User: require('./users/user')(sequelize, Sequelize),
+  Guardian: require('./guardians/guardian')(sequelize, Sequelize)
 //   HealthCheck: require('./health-check')(sequelize, Sequelize),
 //   Language: require('./language')(sequelize, Sequelize),
 //   ShortLink: require('./shortlink')(sequelize, Sequelize),
