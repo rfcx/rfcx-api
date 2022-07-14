@@ -39,7 +39,7 @@ module.exports = (req, res) => {
   converter.convert('query_streams').optional().toString()
   converter.convert('query_start').optional().toMomentUtc()
   converter.convert('query_end').optional().toMomentUtc()
-  converter.convert('query_hours').optional().toString().isPassingRegExp(/^((\b(0?[0-9]|1[0-9]|2[0-3])\b(-\b([0-9]|1[0-9]|2[0-3])\b)?)(,)?)+$/g, 'invalid format')
+  converter.convert('query_hours').optional().toString().isPassingRegExp(/^(\b(0?[0-9]|1[0-9]|2[0-3])\b)(((-|,)\b(0?[0-9]|1[0-9]|2[0-3])\b)?)+$/g, 'invalid format')
 
   return converter.validate()
     .then(async (params) => {

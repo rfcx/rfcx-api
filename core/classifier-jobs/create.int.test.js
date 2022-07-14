@@ -192,11 +192,22 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  test('query hours with hyphen', async () => {
+  test('query hours with 1 digit format and hyphen', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
-      query_hours: '01-12'
+      query_hours: '1-9'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
+  })
+
+  test('query hours with 2 digit format and hyphen', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_hours: '01-09'
     }
 
     const response = await request(app).post('/').send(requestBody)
@@ -230,6 +241,17 @@ describe('POST /classifiers-jobs', () => {
       classifier_id: CLASSIFIER_1.id,
       project_id: PROJECT_1.id,
       query_hours: '-1'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(400)
+  })
+
+  test('query hours with invalid time of day (ending with comma)', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_hours: '4-6,8,'
     }
 
     const response = await request(app).post('/').send(requestBody)
