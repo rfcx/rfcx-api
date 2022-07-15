@@ -258,6 +258,17 @@ describe('POST /classifiers-jobs', () => {
     expect(response.statusCode).toBe(400)
   })
 
+  test('query hours with invalid time of day (first number is larger than second number)', async () => {
+    const requestBody = {
+      classifier_id: CLASSIFIER_1.id,
+      project_id: PROJECT_1.id,
+      query_hours: '21-6'
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(400)
+  })
+
   test('missing project id', async () => {
     const requestBody = {
       classifier_id: CLASSIFIER_1.id,

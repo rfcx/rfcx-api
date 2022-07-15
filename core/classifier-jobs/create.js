@@ -2,6 +2,7 @@ const { httpErrorHandler } = require('../../common/error-handling/http')
 const { create } = require('./dao')
 const Converter = require('../../common/converter')
 const { ValidationError } = require('../../common/error-handling/errors')
+const { validateQueryHours } = require('./dao/validate')
 
 /**
  * @swagger
@@ -43,6 +44,11 @@ module.exports = (req, res) => {
 
   return converter.validate()
     .then(async (params) => {
+      const isValidQueryHours = validateQueryHours(params.queryHours)
+      if (!isValidQueryHours) {
+        throw new ValidationError('query_hour with hyphen must given the lesser number first')
+      }
+
       if (params.queryStart && params.queryEnd && params.queryStart.isAfter(params.queryEnd)) {
         throw new ValidationError('query_start must be before query_end')
       }
