@@ -10,9 +10,8 @@ function validateQueryHours (rawQueryHours) {
   const splittedQueryHours = rawQueryHours.split(',')
   return splittedQueryHours.every(hourString => {
     if (hourString.indexOf('-') !== -1) {
-      const [number1, number2] = hourString.split('-')
-      console.log(number1, number2)
-      return Number(number1) < Number(number2)
+      const [stringNumber1, stringNumber2] = hourString.split('-')
+      return Number(stringNumber1) < Number(stringNumber2)
     }
     return true
   })
