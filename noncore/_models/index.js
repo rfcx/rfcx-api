@@ -134,6 +134,11 @@
 const { sequelize, Sequelize, options } = require('./db')
 
 const models = {
+  GuardianSite: require('./guardian-sites/guardian-site')(sequelize, Sequelize),
+  User: require('./users/user')(sequelize, Sequelize),
+  Guardian: require('./guardians/guardian')(sequelize, Sequelize),
+  GuardianCheckIn: require('./guardian-meta/guardian-checkin')(sequelize, Sequelize),
+  GuardianMetaAccelerometer: require('./guardian-meta/guardian-meta-accelerometer')(sequelize, Sequelize)
 //   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
 //   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
 //   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -157,7 +162,6 @@ const models = {
 //   GuardianAudioTag: require('./guardian-audio/guardian-audio-tag')(sequelize, Sequelize),
 //   GuardianAudio: require('./guardian-audio/guardian-audio')(sequelize, Sequelize),
 //   GuardianEvent: require('./guardian-event/guardian-event')(sequelize, Sequelize),
-//   GuardianMetaAccelerometer: require('./guardian-meta/guardian-meta-accelerometer')(sequelize, Sequelize),
 //   GuardianMetaAssetExchangeLog: require('./guardian-meta/guardian-meta-asset-exchange-log')(sequelize, Sequelize),
 //   GuardianMetaBattery: require('./guardian-meta/guardian-meta-battery')(sequelize, Sequelize),
 //   GuardianMetaCheckInStatus: require('./guardian-meta/guardian-meta-checkin-status')(sequelize, Sequelize),
@@ -210,10 +214,6 @@ const models = {
 //   GuardianGroupGuardianAudioEventValueRelation: require('./guardian-group-event-value-relation')(sequelize, Sequelize),
 //   GuardianGroupRelation: require('./guardian-group-relation')(sequelize, Sequelize),
 //   GuardianGroup: require('./guardian-group')(sequelize, Sequelize),
-  GuardianSite: require('./guardian-sites/guardian-site')(sequelize, Sequelize),
-  User: require('./users/user')(sequelize, Sequelize),
-  Guardian: require('./guardians/guardian')(sequelize, Sequelize),
-  GuardianCheckIn: require('./guardian-meta/guardian-checkin')(sequelize, Sequelize)
 //   HealthCheck: require('./health-check')(sequelize, Sequelize),
 //   Language: require('./language')(sequelize, Sequelize),
 //   ShortLink: require('./shortlink')(sequelize, Sequelize),
