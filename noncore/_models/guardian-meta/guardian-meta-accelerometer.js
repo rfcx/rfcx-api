@@ -43,6 +43,5 @@ module.exports = function (sequelize, DataTypes) {
   GuardianMetaAccelerometer.associate = function (models) {
     GuardianMetaAccelerometer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   }
-
   return GuardianMetaAccelerometer
 }

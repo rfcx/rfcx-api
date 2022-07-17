@@ -15,8 +15,7 @@ module.exports = {
         measured_at: {
           type: Sequelize.DATE(3),
           defaultValue: Sequelize.NOW,
-          allowNull: false,
-          primaryKey: true
+          allowNull: false
         },
         queued_at: {
           type: Sequelize.DATE(3),
@@ -85,11 +84,7 @@ module.exports = {
           allowNull: false
         }
       }, { transaction })
-      await queryInterface.sequelize.query("SELECT create_hypertable('\"GuardianCheckIns\"', 'measured_at')", {
-        type: queryInterface.sequelize.QueryTypes.RAW,
-        transaction
-      })
-      await queryInterface.addIndex('GuardianCheckIns', ['guardian_id'], { transaction })
+      await queryInterface.addIndex('GuardianCheckIns', ['guardian_id', 'measured_at'], { transaction })
     })
   },
   down: (queryInterface, Sequelize) => {
