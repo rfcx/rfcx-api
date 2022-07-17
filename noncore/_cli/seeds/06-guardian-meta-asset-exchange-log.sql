@@ -1,0 +1,4 @@
+insert into "GuardianMetaAssetExchangeLogs" ("id", "asset_type", "asset_id", "created_at", "updated_at", "guardian_id") values (1, 'audio', '1655431333039', '2022-06-17 02:03:23', '2022-06-17 02:03:23', '1196');
+insert into "GuardianMetaAssetExchangeLogs" ("id", "asset_type", "asset_id", "created_at", "updated_at", "guardian_id") values (2, 'meta', '1655431393162', '2022-06-17 02:03:23', '2022-06-17 02:03:23', '1196');
+insert into "GuardianMetaAssetExchangeLogs" ("id", "asset_type", "asset_id", "created_at", "updated_at", "guardian_id") values (3, 'meta', '1655431071426', '2022-06-17 02:00:08', '2022-06-17 02:00:08', '1219');
+insert into "GuardianMetaAssetExchangeLogs" ("id", "asset_type", "asset_id", "created_at", "updated_at", "guardian_id") values (4, 'audio', '1655339976329', '2022-06-16 00:44:23', '2022-06-16 00:44:23', '1219');
