@@ -206,14 +206,14 @@ const models = {
 //   AdoptProtectDonation: require('./adopt-protect-donation')(sequelize, Sequelize),
 //   Device: require('./device')(sequelize, Sequelize),
 //   GuardianAudioUpload: require('./guardian-audio-upload')(sequelize, Sequelize),
-//   GuardianCheckIn: require('./guardian-checkin')(sequelize, Sequelize),
 //   GuardianGroupGuardianAudioEventTypeRelation: require('./guardian-group-event-type-relation')(sequelize, Sequelize),
 //   GuardianGroupGuardianAudioEventValueRelation: require('./guardian-group-event-value-relation')(sequelize, Sequelize),
 //   GuardianGroupRelation: require('./guardian-group-relation')(sequelize, Sequelize),
 //   GuardianGroup: require('./guardian-group')(sequelize, Sequelize),
   GuardianSite: require('./guardian-sites/guardian-site')(sequelize, Sequelize),
   User: require('./users/user')(sequelize, Sequelize),
-  Guardian: require('./guardians/guardian')(sequelize, Sequelize)
+  Guardian: require('./guardians/guardian')(sequelize, Sequelize),
+  GuardianCheckIn: require('./guardian-meta/guardian-checkin')(sequelize, Sequelize)
 //   HealthCheck: require('./health-check')(sequelize, Sequelize),
 //   Language: require('./language')(sequelize, Sequelize),
 //   ShortLink: require('./shortlink')(sequelize, Sequelize),

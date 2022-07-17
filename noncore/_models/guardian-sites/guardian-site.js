@@ -88,6 +88,14 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianSites'
   })
-
+  GuardianSite.associate = function (models) {
+    GuardianSite.hasMany(models.Guardian, { as: 'Guardian', foreignKey: 'site_id' })
+    GuardianSite.hasMany(models.GuardianCheckIn, { as: 'CheckIn', foreignKey: 'site_id' })
+    // GuardianSite.hasMany(models.GuardianAudio, { as: 'Audio', foreignKey: 'site_id' })
+    // GuardianSite.hasMany(models.GuardianEvent, { as: 'Event', foreignKey: 'site_id' })
+    // GuardianSite.hasMany(models.GuardianGroup, { as: 'GuardianGroup', foreignKey: 'site' })
+    // GuardianSite.belongsToMany(models.User, { through: 'UserSiteRelation' })
+    GuardianSite.belongsTo(models.User, { as: 'User', foreignKey: 'user_id', constraints: false })
+  }
   return GuardianSite
 }
