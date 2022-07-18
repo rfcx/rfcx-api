@@ -5,16 +5,12 @@ module.exports = function (sequelize, DataTypes) {
     asset_type: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     asset_id: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     }
   }, {
     tableName: 'GuardianMetaAssetExchangeLogs'

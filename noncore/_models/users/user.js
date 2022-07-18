@@ -9,30 +9,22 @@ module.exports = function (sequelize, DataTypes) {
     },
     type: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     username: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
-      validate: {
-      }
+      unique: true
     },
     firstname: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     lastname: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     email: {
       type: DataTypes.STRING,
@@ -52,9 +44,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     is_email_validated: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      validate: {
-      }
+      defaultValue: false
     },
     last_login_at: {
       type: DataTypes.DATE(3),
@@ -66,16 +56,12 @@ module.exports = function (sequelize, DataTypes) {
     auth_password_salt: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
-      validate: {
-      }
+      unique: true
     },
     auth_password_hash: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
-      validate: {
-      }
+      unique: true
     },
     auth_password_updated_at: {
       type: DataTypes.DATE(3),
@@ -87,9 +73,7 @@ module.exports = function (sequelize, DataTypes) {
     rfcx_system: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-      allowNull: false,
-      validate: {
-      }
+      allowNull: false
     },
     picture: {
       type: DataTypes.TEXT,

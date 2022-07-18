@@ -27,16 +27,12 @@ module.exports = function (sequelize, DataTypes) {
     is_charging: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     is_fully_charged: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     }
   }, {
     tableName: 'GuardianMetaBattery'
