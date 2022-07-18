@@ -2,7 +2,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.createTable('GuardianMetaDateTimeOffsets', {
+      await queryInterface.createTable('GuardianMetaDiskUsage', {
         id: {
           type: Sequelize.INTEGER,
           allowNull: false,
@@ -12,29 +12,21 @@ module.exports = {
           type: Sequelize.DATE(3),
           primaryKey: true
         },
-        source: {
-          type: Sequelize.STRING,
-          allowNull: true,
-          unique: false
+        internal_bytes_available: {
+          type: Sequelize.BIGINT,
+          defaultValue: 0
         },
-        system_clock_offset: {
-          type: Sequelize.INTEGER,
-          allowNull: true
+        internal_bytes_used: {
+          type: Sequelize.BIGINT,
+          defaultValue: 0
         },
-        system_clock_timezone: {
-          type: Sequelize.STRING,
-          allowNull: true,
-          unique: false
+        external_bytes_available: {
+          type: Sequelize.BIGINT,
+          defaultValue: 0
         },
-        check_in_id: {
-          type: Sequelize.INTEGER,
-          allowNull: false,
-          references: {
-            model: {
-              tableName: 'GuardianCheckIns'
-            },
-            key: 'id'
-          }
+        external_bytes_used: {
+          type: Sequelize.BIGINT,
+          defaultValue: 0
         },
         guardian_id: {
           type: Sequelize.INTEGER,
@@ -55,14 +47,14 @@ module.exports = {
           allowNull: false
         }
       }, { transaction })
-      await queryInterface.sequelize.query("SELECT create_hypertable('\"GuardianMetaDateTimeOffsets\"', 'measured_at')", {
+      await queryInterface.sequelize.query("SELECT create_hypertable('\"GuardianMetaDiskUsage\"', 'measured_at')", {
         type: queryInterface.sequelize.QueryTypes.RAW,
         transaction
       })
-      await queryInterface.addIndex('GuardianMetaDateTimeOffsets', ['guardian_id'], { transaction })
+      await queryInterface.addIndex('GuardianMetaDiskUsage', ['guardian_id'], { transaction })
     })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('GuardianMetaDateTimeOffsets')
+    return queryInterface.dropTable('GuardianMetaDiskUsage')
   }
 }
