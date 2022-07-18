@@ -155,7 +155,8 @@ const models = {
   GuardianMetaLog: require('./guardian-meta/guardian-meta-log')(sequelize, Sequelize),
   GuardianMetaMemory: require('./guardian-meta/guardian-meta-memory')(sequelize, Sequelize),
   GuardianMetaMessage: require('./guardian-meta/guardian-meta-message')(sequelize, Sequelize),
-  GuardianMetaMqttBrokerConnection: require('./guardian-meta/guardian-meta-mqtt-broker-connection')(sequelize, Sequelize)
+  GuardianMetaMqttBrokerConnection: require('./guardian-meta/guardian-meta-mqtt-broker-connection')(sequelize, Sequelize),
+  GuardianMetaNetwork: require('./guardian-meta/guardian-meta-network')(sequelize, Sequelize)
 //   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
 //   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
 //   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -179,7 +180,6 @@ const models = {
 //   GuardianAudioTag: require('./guardian-audio/guardian-audio-tag')(sequelize, Sequelize),
 //   GuardianAudio: require('./guardian-audio/guardian-audio')(sequelize, Sequelize),
 //   GuardianEvent: require('./guardian-event/guardian-event')(sequelize, Sequelize),
-//   GuardianMetaNetwork: require('./guardian-meta/guardian-meta-network')(sequelize, Sequelize),
 //   GuardianMetaOffline: require('./guardian-meta/guardian-meta-offline')(sequelize, Sequelize),
 //   GuardianMetaPhoto: require('./guardian-meta/guardian-meta-photo')(sequelize, Sequelize),
 //   GuardianMetaPower: require('./guardian-meta/guardian-meta-power')(sequelize, Sequelize),
