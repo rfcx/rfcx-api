@@ -8,12 +8,12 @@ module.exports = {
           allowNull: false,
           primaryKey: true
         },
-        started_at: {
-          type: Sequelize.DATE(3)
-        },
         ended_at: {
           type: Sequelize.DATE(3),
           primaryKey: true
+        },
+        started_at: {
+          type: Sequelize.DATE(3)
         },
         mobile_bytes_received: {
           type: Sequelize.INTEGER,
