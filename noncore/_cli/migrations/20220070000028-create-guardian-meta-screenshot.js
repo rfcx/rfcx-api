@@ -54,6 +54,7 @@ module.exports = {
       })
       await queryInterface.addIndex('GuardianMetaScreenShots', ['guardian_id'], { transaction })
       await queryInterface.addIndex('GuardianMetaScreenShots', ['guid'], { transaction })
+      await queryInterface.addIndex('GuardianMetaScreenShots', ['sha1_checksum'], { transaction })
     })
   },
   down: (queryInterface, Sequelize) => {
