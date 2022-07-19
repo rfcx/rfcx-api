@@ -1,27 +1,27 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
-  const GuardianMetaSentinelAccelerometer = sequelize.define('GuardianMetaSentinelAccelerometer', {
+  const GuardianMetaSentinelCompass = sequelize.define('GuardianMetaSentinelCompass', {
     measured_at: {
       type: DataTypes.DATE(3),
       validate: {
-        isDate: { msg: 'measured_at for GuardianMetaSentinelAccelerometer should have type Date' }
+        isDate: { msg: 'measured_at for GuardianMetaSentinelCompass should have type Date' }
       }
     },
-    x_milli_g_force_accel: {
+    x_mag_field: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
         isInt: true
       }
     },
-    y_milli_g_force_accel: {
+    y_mag_field: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
         isInt: true
       }
     },
-    z_milli_g_force_accel: {
+    z_mag_field: {
       type: DataTypes.INTEGER,
       allowNull: true,
       validate: {
@@ -37,10 +37,10 @@ module.exports = function (sequelize, DataTypes) {
       }
     }
   }, {
-    tableName: 'GuardianMetaSentinelAccelerometer'
+    tableName: 'GuardianMetaSentinelCompass'
   })
-  GuardianMetaSentinelAccelerometer.associate = function (models) {
-    GuardianMetaSentinelAccelerometer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  GuardianMetaSentinelCompass.associate = function (models) {
+    GuardianMetaSentinelCompass.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
   }
-  return GuardianMetaSentinelAccelerometer
+  return GuardianMetaSentinelCompass
 }
