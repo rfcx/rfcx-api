@@ -13,7 +13,7 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'GuardianMetaSensorComponents'
   })
   GuardianMetaSensorComponent.associate = function (models) {
-    GuardianMetaSensorComponent.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+    GuardianMetaSensorComponent.hasMany(models.GuardianMetaSensor, { as: 'Sensor', foreignKey: 'component_id' })
   }
   return GuardianMetaSensorComponent
 }

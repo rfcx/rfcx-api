@@ -166,7 +166,9 @@ const models = {
   GuardianMetaSegmentsGroup: require('./guardian-meta/guardian-meta-segments-group')(sequelize, Sequelize),
   GuardianMetaSegmentsQueue: require('./guardian-meta/guardian-meta-segments-queue')(sequelize, Sequelize),
   GuardianMetaSegmentsReceived: require('./guardian-meta/guardian-meta-segments-received')(sequelize, Sequelize),
-  GuardianMetaSensorComponent: require('./guardian-meta/guardian-meta-sensor-component')(sequelize, Sequelize)
+  GuardianMetaSensorComponent: require('./guardian-meta/guardian-meta-sensor-component')(sequelize, Sequelize),
+  GuardianMetaSensor: require('./guardian-meta/guardian-meta-sensor')(sequelize, Sequelize),
+  GuardianMetaSensorValue: require('./guardian-meta/guardian-meta-sensor-value')(sequelize, Sequelize)
 //   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
 //   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
 //   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -190,8 +192,6 @@ const models = {
 //   GuardianAudioTag: require('./guardian-audio/guardian-audio-tag')(sequelize, Sequelize),
 //   GuardianAudio: require('./guardian-audio/guardian-audio')(sequelize, Sequelize),
 //   GuardianEvent: require('./guardian-event/guardian-event')(sequelize, Sequelize),
-//   GuardianMetaSensor: require('./guardian-meta/guardian-meta-sensor')(sequelize, Sequelize),
-//   GuardianMetaSensorValue: require('./guardian-meta/guardian-meta-sensor-value')(sequelize, Sequelize),
 //   GuardianMetaSentinelAccelerometer: require('./guardian-meta/guardian-meta-sentinel-accelerometer')(sequelize, Sequelize),
 //   GuardianMetaSentinelCompass: require('./guardian-meta/guardian-meta-sentinel-compass')(sequelize, Sequelize),
 //   GuardianMetaSentinelPower: require('./guardian-meta/guardian-meta-sentinel-power')(sequelize, Sequelize),
