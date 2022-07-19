@@ -30,11 +30,7 @@ module.exports = {
         },
         android_id: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-          validate: {
-            isInt: true,
-            min: 0
-          }
+          allowNull: true
         },
         check_in_id: {
           type: Sequelize.INTEGER,

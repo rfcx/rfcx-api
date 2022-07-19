@@ -39,10 +39,7 @@ module.exports = {
         },
         timezone_offset: {
           type: Sequelize.INTEGER,
-          defaultValue: 0,
-          validate: {
-            isInt: true
-          }
+          defaultValue: 0
         },
         timezone: {
           type: Sequelize.STRING,
@@ -55,25 +52,19 @@ module.exports = {
         },
         map_image_url: {
           type: Sequelize.STRING,
-          allowNull: true,
-          validate: { }
+          allowNull: true
         },
         globe_icon_url: {
           type: Sequelize.STRING,
-          allowNull: true,
-          validate: { }
+          allowNull: true
         },
         classy_campaign_id: {
           type: Sequelize.STRING,
-          allowNull: true,
-          validate: { }
+          allowNull: true
         },
         protected_area: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-          validate: {
-            isInt: true
-          }
+          allowNull: true
         },
         backstory: {
           type: Sequelize.TEXT,

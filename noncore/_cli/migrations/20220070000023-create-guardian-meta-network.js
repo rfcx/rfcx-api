@@ -14,10 +14,7 @@ module.exports = {
         },
         signal_strength: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-          validate: {
-            isInt: true
-          }
+          allowNull: true
         },
         network_type: {
           type: Sequelize.STRING,

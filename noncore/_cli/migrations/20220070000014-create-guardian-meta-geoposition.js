@@ -22,17 +22,11 @@ module.exports = {
         },
         accuracy: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-          validate: {
-            isInt: true
-          }
+          allowNull: true
         },
         altitude: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-          validate: {
-            isInt: true
-          }
+          allowNull: true
         },
         check_in_id: {
           type: Sequelize.INTEGER,

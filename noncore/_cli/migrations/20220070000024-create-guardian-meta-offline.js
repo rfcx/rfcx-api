@@ -14,10 +14,7 @@ module.exports = {
         },
         offline_duration: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-          validate: {
-            isInt: true
-          }
+          allowNull: true
         },
         carrier_name: {
           type: Sequelize.STRING,

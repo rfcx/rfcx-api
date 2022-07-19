@@ -70,9 +70,7 @@ module.exports = {
         },
         description: {
           type: Sequelize.STRING,
-          allowNull: true,
-          validate: {
-          }
+          allowNull: true
         },
         guardian_id: {
           type: Sequelize.INTEGER,
