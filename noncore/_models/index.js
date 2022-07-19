@@ -171,11 +171,13 @@ const models = {
   GuardianMetaSensorValue: require('./guardian-meta/guardian-meta-sensor-value')(sequelize, Sequelize),
   GuardianMetaSentinelAccelerometer: require('./guardian-meta/guardian-meta-sentinel-accelerometer')(sequelize, Sequelize),
   GuardianMetaSentinelCompass: require('./guardian-meta/guardian-meta-sentinel-compass')(sequelize, Sequelize),
+  GuardianMetaSentinelPower: require('./guardian-meta/guardian-meta-sentinel-power')(sequelize, Sequelize),
   GuardianSoftwarePrefs: require('./guardian-software/guardian-software-prefs')(sequelize, Sequelize),
   GuardianSoftwareVersion: require('./guardian-software/guardian-software-version')(sequelize, Sequelize),
   GuardianSoftware: require('./guardian-software/guardian-software')(sequelize, Sequelize),
   GuardianMetaSoftwareVersion: require('./guardian-meta/guardian-meta-software-version')(sequelize, Sequelize),
-  GuardianMetaUpdateCheckIn: require('./guardian-meta/guardian-meta-update-checkin')(sequelize, Sequelize)
+  GuardianMetaUpdateCheckIn: require('./guardian-meta/guardian-meta-update-checkin')(sequelize, Sequelize),
+  GuardianMetaVideo: require('./guardian-meta/guardian-meta-video')(sequelize, Sequelize)
 //   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
 //   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
 //   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -199,8 +201,6 @@ const models = {
 //   GuardianAudioTag: require('./guardian-audio/guardian-audio-tag')(sequelize, Sequelize),
 //   GuardianAudio: require('./guardian-audio/guardian-audio')(sequelize, Sequelize),
 //   GuardianEvent: require('./guardian-event/guardian-event')(sequelize, Sequelize),
-//   GuardianMetaSentinelPower: require('./guardian-meta/guardian-meta-sentinel-power')(sequelize, Sequelize),
-//   GuardianMetaVideo: require('./guardian-meta/guardian-meta-video')(sequelize, Sequelize),
 //   Organization: require('./organization/organization')(sequelize, Sequelize),
 //   AnonymousToken: require('./token/anonymous-token')(sequelize, Sequelize),
 //   RegistrationToken: require('./token/registration-token')(sequelize, Sequelize),
