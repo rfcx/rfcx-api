@@ -1,0 +1,2 @@
+insert into "GuardianMetaSegmentsGroups" ("id", "guid", "segment_count", "protocol", "type", "checksum_snippet", "created_at", "updated_at", "guardian_id") values (5567, 'lqIx', '3', 'swm', 'png', '96fdad12be2ff7b1389d', '2022-07-19 08:36:52', '2022-07-19 08:36:52', '1196');
+insert into "GuardianMetaSegmentsGroups" ("id", "guid", "segment_count", "protocol", "type", "checksum_snippet", "created_at", "updated_at", "guardian_id") values (5564, 'ScWl', '2', 'swm', 'png', 'e5cecaa8103805d8b1ac', '2022-07-19 08:28:01', '2022-07-19 08:28:01', '1219');
