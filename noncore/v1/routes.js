@@ -12,7 +12,6 @@ module.exports = {
   sites: [
     require('./sites/sites'),
     require('./sites/sites-audio'),
-    require('./sites/sites-events'),
     require('./sites/sites-images')
   ],
   audio: [
