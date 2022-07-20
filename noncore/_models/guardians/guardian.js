@@ -202,7 +202,6 @@ module.exports = function (sequelize, DataTypes) {
   })
   Guardian.associate = function (models) {
     Guardian.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: 'site_id' })
-    // Guardian.belongsToMany(models.GuardianGroup, { through: models.GuardianGroupRelation })
     Guardian.belongsTo(models.User, { as: 'User', foreignKey: 'creator' })
   }
   return Guardian

@@ -180,7 +180,10 @@ const models = {
   GuardianMetaVideo: require('./guardian-meta/guardian-meta-video')(sequelize, Sequelize),
   ContactMessage: require('./contact-message/contact-message')(sequelize, Sequelize),
   GuardianAudioFormat: require('./guardian-audio/guardian-audio-format')(sequelize, Sequelize),
-  GuardianAudio: require('./guardian-audio/guardian-audio')(sequelize, Sequelize)
+  GuardianAudio: require('./guardian-audio/guardian-audio')(sequelize, Sequelize),
+  AnonymousToken: require('./tokens/anonymous-token')(sequelize, Sequelize),
+  RegistrationToken: require('./tokens/registration-token')(sequelize, Sequelize),
+  UserToken: require('./tokens/user-token')(sequelize, Sequelize)
 //   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
 //   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
 //   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -202,9 +205,6 @@ const models = {
 //   GuardianAudioTag: require('./guardian-audio/guardian-audio-tag')(sequelize, Sequelize),
 //   GuardianEvent: require('./guardian-event/guardian-event')(sequelize, Sequelize),
 //   Organization: require('./organization/organization')(sequelize, Sequelize),
-//   AnonymousToken: require('./token/anonymous-token')(sequelize, Sequelize),
-//   RegistrationToken: require('./token/registration-token')(sequelize, Sequelize),
-//   UserToken: require('./token/user-token')(sequelize, Sequelize),
 //   UserGuardianGroupSubscription: require('./user/user-group-subscriptions')(sequelize, Sequelize),
 //   UserSiteRelation: require('./user/user-relations')(sequelize, Sequelize),
 //   AdoptProtectDonation: require('./adopt-protect-donation')(sequelize, Sequelize),
