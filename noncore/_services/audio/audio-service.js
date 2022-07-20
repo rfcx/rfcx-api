@@ -72,7 +72,6 @@ function prepareOpts (req) {
     dayTimeLocalBefore: req.query.daytime_local_before,
     sites: req.query.sites ? (Array.isArray(req.query.sites) ? req.query.sites : [req.query.sites]) : undefined,
     guardians: req.query.guardians ? (Array.isArray(req.query.guardians) ? req.query.guardians : [req.query.guardians]) : undefined,
-    guardianGroups: req.query.guardian_groups ? (Array.isArray(req.query.guardian_groups) ? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
     excludedGuardians: req.query.excluded_guardians ? (Array.isArray(req.query.excluded_guardians) ? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
     weekdays: req.query.weekdays !== undefined ? (Array.isArray(req.query.weekdays) ? req.query.weekdays : [req.query.weekdays]) : undefined,
     annotated: req.query.annotated !== undefined ? (req.query.annotated === 'true') : undefined,
