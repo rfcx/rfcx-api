@@ -184,7 +184,8 @@ const models = {
   AnonymousToken: require('./tokens/anonymous-token')(sequelize, Sequelize),
   RegistrationToken: require('./tokens/registration-token')(sequelize, Sequelize),
   UserToken: require('./tokens/user-token')(sequelize, Sequelize),
-  AdoptProtectDonation: require('./misc/adopt-protect-donation')(sequelize, Sequelize)
+  AdoptProtectDonation: require('./misc/adopt-protect-donation')(sequelize, Sequelize),
+  ShortLink: require('./misc/shortlink')(sequelize, Sequelize)
 //   AudioAnalysisEntry: require('./audio-analysis/audio-analysis-entry')(sequelize, Sequelize),
 //   AudioAnalysisLog: require('./audio-analysis/audio-analysis-log')(sequelize, Sequelize),
 //   AudioAnalysisModel: require('./audio-analysis/audio-analysis-model')(sequelize, Sequelize),
@@ -216,7 +217,6 @@ const models = {
 //   GuardianGroup: require('./guardian-group')(sequelize, Sequelize),
 //   HealthCheck: require('./health-check')(sequelize, Sequelize),
 //   Language: require('./language')(sequelize, Sequelize),
-//   ShortLink: require('./shortlink')(sequelize, Sequelize),
 //   SourceType: require('./source-type')(sequelize, Sequelize)
 }
 
