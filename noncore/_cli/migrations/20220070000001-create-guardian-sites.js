@@ -46,10 +46,6 @@ module.exports = {
           defaultValue: 'UTC',
           allowNull: false
         },
-        bounds: {
-          type: Sequelize.TEXT,
-          allowNull: true
-        },
         map_image_url: {
           type: Sequelize.STRING,
           allowNull: true
@@ -87,6 +83,10 @@ module.exports = {
         updated_at: {
           type: Sequelize.DATE,
           allowNull: false
+        },
+        bounds: {
+          type: Sequelize.TEXT,
+          allowNull: true
         }
       }, { transaction })
       await queryInterface.addIndex('GuardianSites', ['guid'], { transaction })
