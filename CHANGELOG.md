@@ -3,6 +3,11 @@
 ### Features
 * **noncore**: Use Timescale as noncore database
 
+## 1.1.10 (2022-??-??)
+
+### Features
+* **core**: Update `POST /classifier-jobs` `query_hour` param to accept hyphen and comma for time of day
+
 ## 1.1.9 (2022-06-28)
 
 ### Features
