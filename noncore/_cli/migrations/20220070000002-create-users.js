@@ -9,8 +9,7 @@ module.exports = {
           allowNull: false
         },
         guid: {
-          type: Sequelize.UUID,
-          defaultValue: Sequelize.UUIDV4,
+          type: Sequelize.STRING,
           unique: true
         },
         type: {
