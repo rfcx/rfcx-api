@@ -79,14 +79,14 @@ module.exports = {
         },
         default_site: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-          defaultValue: null,
-          references: {
-            model: {
-              tableName: 'GuardianSites'
-            },
-            key: 'id'
-          }
+          allowNull: true
+          // defaultValue: null,
+          // references: {
+          //   model: {
+          //     tableName: 'GuardianSites'
+          //   },
+          //   key: 'id'
+          // }
         },
         created_at: {
           type: Sequelize.DATE,

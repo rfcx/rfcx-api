@@ -152,7 +152,7 @@ module.exports = {
         },
         site_id: {
           type: Sequelize.INTEGER,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: {
               tableName: 'GuardianSites'
@@ -162,7 +162,7 @@ module.exports = {
         },
         creator: {
           type: Sequelize.INTEGER,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: {
               tableName: 'Users'
