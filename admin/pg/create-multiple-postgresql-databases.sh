@@ -10,8 +10,6 @@ function create_user_and_database() {
       CREATE USER $database;
       CREATE DATABASE $database;
       GRANT ALL PRIVILEGES ON DATABASE $database TO $database;
-      \c $database;
-      CREATE EXTENSION postgis;
 EOSQL
 }
 

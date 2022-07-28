@@ -44,7 +44,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     bounds: {
-      type: DataTypes.GEOMETRY,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     map_image_url: {
