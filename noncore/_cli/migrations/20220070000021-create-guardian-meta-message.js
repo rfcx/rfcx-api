@@ -25,7 +25,7 @@ module.exports = {
           allowNull: true
         },
         body: {
-          type: Sequelize.STRING,
+          type: Sequelize.TEXT,
           allowNull: true
         },
         android_id: {
@@ -34,7 +34,7 @@ module.exports = {
         },
         check_in_id: {
           type: Sequelize.INTEGER,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: {
               tableName: 'GuardianCheckIns'

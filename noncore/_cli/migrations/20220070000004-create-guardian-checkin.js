@@ -57,7 +57,7 @@ module.exports = {
         },
         guardian_id: {
           type: Sequelize.INTEGER,
-          allowNull: true,
+          allowNull: false,
           references: {
             model: {
               tableName: 'Guardians'

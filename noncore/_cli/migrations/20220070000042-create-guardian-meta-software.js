@@ -14,7 +14,7 @@ module.exports = {
         },
         version_id: {
           type: Sequelize.INTEGER,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: {
               tableName: 'GuardianSoftwareVersions'
@@ -24,7 +24,7 @@ module.exports = {
         },
         software_id: {
           type: Sequelize.INTEGER,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: {
               tableName: 'GuardianSoftware'

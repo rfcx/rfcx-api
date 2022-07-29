@@ -65,7 +65,7 @@ module.exports = {
         },
         check_in_id: {
           type: Sequelize.INTEGER,
-          allowNull: false,
+          allowNull: true,
           references: {
             model: {
               tableName: 'GuardianCheckIns'
