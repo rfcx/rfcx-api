@@ -1,0 +1,2 @@
+insert into "GuardianMetaLightMeter" ("id", "measured_at", "luminosity", "created_at", "updated_at", "guardian_id", "check_in_id") values (29536220, '2021-08-11 02:53:32.688', '10', '2021-08-11 08:19:22.000', '2021-08-11 08:19:22.000', '1196', '62624731');
+insert into "GuardianMetaLightMeter" ("id", "measured_at", "luminosity", "created_at", "updated_at", "guardian_id", "check_in_id") values (29536219, '2021-08-11 08:18:45.199', '10', '2021-08-11 08:19:22.000', '2021-08-11 08:19:22.000', '1219', '62607627');

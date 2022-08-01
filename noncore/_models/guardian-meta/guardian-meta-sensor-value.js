@@ -12,6 +12,9 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaSensorValues'
   })
-
+  GuardianMetaSensorValue.associate = function (models) {
+    GuardianMetaSensorValue.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+    GuardianMetaSensorValue.belongsTo(models.GuardianMetaSensor, { as: 'Sensor', foreignKey: 'sensor_id' })
+  }
   return GuardianMetaSensorValue
 }

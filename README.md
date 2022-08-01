@@ -35,7 +35,7 @@ Install dependencies:
 npm i
 ```
 
-We can use docker-compose to setup local MySQL, TimescaleDB.
+We can use docker-compose to setup local TimescaleDB.
 
 Start containers:
 

@@ -18,6 +18,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaPower'
   })
-
+  GuardianMetaPower.associate = function (models) {
+    GuardianMetaPower.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaPower
 }

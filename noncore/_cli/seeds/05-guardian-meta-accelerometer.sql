@@ -1,0 +1,2 @@
+insert into "GuardianMetaAccelerometer" ("id", "measured_at", "x", "y", "z", "sample_count", "created_at", "updated_at", "guardian_id") values (1, '2022-06-17 02:02:16.714', '-4.6434', '8.04168', '-2.03965', '12', '2022-06-17 02:02:24.000', '2022-06-17 02:03:23.000', 1196);
+insert into "GuardianMetaAccelerometer" ("id", "measured_at", "x", "y", "z", "sample_count", "created_at", "updated_at", "guardian_id") values (2, '2022-06-17 02:03:16.905', '-4.63886', '8.05871', '-2.03397', '12', '2022-06-17 02:03:23.000', '2022-06-17 02:03:23.000', 1219);

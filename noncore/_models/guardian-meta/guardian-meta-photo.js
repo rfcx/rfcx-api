@@ -18,9 +18,7 @@ module.exports = function (sequelize, DataTypes) {
     url: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
-      validate: {
-      }
+      unique: true
     },
     size: {
       type: DataTypes.INTEGER,
@@ -48,27 +46,22 @@ module.exports = function (sequelize, DataTypes) {
     },
     format: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     sha1_checksum: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     metadata: {
       type: DataTypes.TEXT('long'),
       allowNull: true
     }
   }, {
-    indexes: [
-      { unique: true, fields: ['guid'] }
-    ],
     tableName: 'GuardianMetaPhotos'
   })
-
+  GuardianMetaPhoto.associate = function (models) {
+    GuardianMetaPhoto.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaPhoto
 }

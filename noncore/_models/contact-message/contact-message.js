@@ -13,12 +13,12 @@ module.exports = function (sequelize, DataTypes) {
       unique: false
     },
     message: {
-      type: DataTypes.TEXT('long'),
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {
     tableName: 'ContactMessages'
   })
-
+  ContactMessage.associate = function (models) {}
   return ContactMessage
 }

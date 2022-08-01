@@ -112,6 +112,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaDataTransfer'
   })
-
+  GuardianMetaDataTransfer.associate = function (models) {
+    GuardianMetaDataTransfer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaDataTransfer
 }

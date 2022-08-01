@@ -18,19 +18,17 @@ module.exports = function (sequelize, DataTypes) {
     },
     network_type: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     carrier_name: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     }
   }, {
     tableName: 'GuardianMetaNetwork'
   })
-
+  GuardianMetaNetwork.associate = function (models) {
+    GuardianMetaNetwork.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaNetwork
 }

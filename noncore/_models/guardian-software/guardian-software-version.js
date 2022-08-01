@@ -4,9 +4,7 @@ module.exports = function (sequelize, DataTypes) {
   const GuardianSoftwareVersion = sequelize.define('GuardianSoftwareVersion', {
     version: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-      }
+      allowNull: false
     },
     release_date: {
       type: DataTypes.DATE(3),
@@ -17,15 +15,11 @@ module.exports = function (sequelize, DataTypes) {
     },
     is_available: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      validate: {
-      }
+      defaultValue: false
     },
     sha1_checksum: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     size: {
       type: DataTypes.INTEGER,
@@ -45,6 +39,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianSoftwareVersions'
   })
-
+  GuardianSoftwareVersion.associate = function (models) {
+    GuardianSoftwareVersion.belongsTo(models.GuardianSoftware, { as: 'SoftwareRole', foreignKey: 'software_role_id' })
+  }
   return GuardianSoftwareVersion
 }

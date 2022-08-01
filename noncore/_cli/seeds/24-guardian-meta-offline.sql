@@ -1,0 +1,2 @@
+insert into "GuardianMetaOffline" ("id", "ended_at", "offline_duration", "carrier_name", "created_at", "updated_at", "guardian_id", "check_in_id") values (718268, '2020-06-05 12:06:04.236', '18587', '', '2020-06-05 12:06:48.000', '2020-06-05 12:06:48.000', '1196', '62624731');
+insert into "GuardianMetaOffline" ("id", "ended_at", "offline_duration", "carrier_name", "created_at", "updated_at", "guardian_id", "check_in_id") values (718267, '2020-06-05 12:03:31.147', '43832912', '', '2020-06-05 12:05:41.000', '2020-06-05 12:05:41.000', '1219', '62607627');

@@ -10,9 +10,7 @@ module.exports = function (sequelize, DataTypes) {
     source: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     system_clock_offset: {
       type: DataTypes.INTEGER,
@@ -24,13 +22,13 @@ module.exports = function (sequelize, DataTypes) {
     system_clock_timezone: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     }
   }, {
     tableName: 'GuardianMetaDateTimeOffsets'
   })
-
+  GuardianMetaDateTimeOffset.associate = function (models) {
+    GuardianMetaDateTimeOffset.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaDateTimeOffset
 }

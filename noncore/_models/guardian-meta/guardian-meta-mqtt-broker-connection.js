@@ -12,9 +12,7 @@ module.exports = function (sequelize, DataTypes) {
     broker_uri: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     connection_latency: {
       type: DataTypes.INTEGER,
@@ -33,6 +31,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaMqttBrokerConnections'
   })
-
+  GuardianMetaMqttBrokerConnection.associate = function (models) {
+    GuardianMetaMqttBrokerConnection.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaMqttBrokerConnection
 }

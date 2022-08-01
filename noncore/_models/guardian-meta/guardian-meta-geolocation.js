@@ -36,6 +36,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaGeoLocations'
   })
-
+  GuardianMetaGeoLocation.associate = function (models) {
+    GuardianMetaGeoLocation.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaGeoLocation
 }

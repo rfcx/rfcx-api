@@ -26,15 +26,11 @@ module.exports = function (sequelize, DataTypes) {
     },
     address: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     body: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     android_id: {
       type: DataTypes.INTEGER,
@@ -45,11 +41,10 @@ module.exports = function (sequelize, DataTypes) {
       }
     }
   }, {
-    indexes: [
-      { unique: true, fields: ['guid'] }
-    ],
     tableName: 'GuardianMetaMessages'
   })
-
+  GuardianMetaMessage.associate = function (models) {
+    GuardianMetaMessage.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaMessage
 }

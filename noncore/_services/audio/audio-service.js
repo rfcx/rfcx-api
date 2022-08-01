@@ -72,7 +72,6 @@ function prepareOpts (req) {
     dayTimeLocalBefore: req.query.daytime_local_before,
     sites: req.query.sites ? (Array.isArray(req.query.sites) ? req.query.sites : [req.query.sites]) : undefined,
     guardians: req.query.guardians ? (Array.isArray(req.query.guardians) ? req.query.guardians : [req.query.guardians]) : undefined,
-    guardianGroups: req.query.guardian_groups ? (Array.isArray(req.query.guardian_groups) ? req.query.guardian_groups : [req.query.guardian_groups]) : undefined,
     excludedGuardians: req.query.excluded_guardians ? (Array.isArray(req.query.excluded_guardians) ? req.query.excluded_guardians : [req.query.excluded_guardians]) : undefined,
     weekdays: req.query.weekdays !== undefined ? (Array.isArray(req.query.weekdays) ? req.query.weekdays : [req.query.weekdays]) : undefined,
     annotated: req.query.annotated !== undefined ? (req.query.annotated === 'true') : undefined,
@@ -103,8 +102,6 @@ function addGetQueryParams (sql, opts) {
   sql = sqlUtils.condAdd(sql, opts.updatedBefore, ' AND GuardianAudio.updated_at < :updatedBefore')
   sql = sqlUtils.condAdd(sql, opts.createdAfter, ' AND GuardianAudio.created_at > :createdAfter')
   sql = sqlUtils.condAdd(sql, opts.createdBefore, ' AND GuardianAudio.created_at < :createdBefore')
-  sql = sqlUtils.condAdd(sql, opts.annotated === true, ' AND GuardianAudioBox.audio_id IN (SELECT GuardianAudio.id FROM GuardianAudio WHERE GuardianAudioBox.audio_id = GuardianAudio.id)')
-  sql = sqlUtils.condAdd(sql, opts.annotated === false, ' AND GuardianAudio.id NOT IN (SELECT GuardianAudioBox.audio_id FROM GuardianAudioBoxes WHERE GuardianAudio.id = GuardianAudioBox.audio_id)')
   return sql
 }
 
@@ -169,36 +166,6 @@ function getAudioByGuid (guid) {
     })
 }
 
-function removeBoxesForAudioFromUser (audio, user_id) { // eslint-disable-line camelcase
-  // remove all previous labels for this file from this user
-  return models.GuardianAudioBox.destroy({ where: { audio_id: audio.id, created_by: user_id } })
-}
-
-function createBoxesForAudio (audio, boxes, user_id) { // eslint-disable-line camelcase
-  const proms = []
-  boxes.forEach((box) => {
-    const prom = models.GuardianAudioEventValue.findOrCreate({
-      where: { [models.Sequelize.Op.or]: { value: box.label, id: box.label } },
-      defaults: { value: box.label }
-    })
-      .spread((eventValue, created) => {
-        return models.GuardianAudioBox.create({
-          confidence: box.confidence || 1,
-          freq_min: box.freq_min,
-          freq_max: box.freq_max,
-          begins_at: box.begins_at,
-          ends_at: box.ends_at,
-          audio_guid: audio.guid,
-          audio_id: audio.id,
-          created_by: user_id,
-          value: eventValue.id
-        })
-      })
-    proms.push(prom)
-  })
-  return Promise.all(proms)
-}
-
 function formatAudioForSNSMessage (audio) {
   return {
     guid: audio.guid,
@@ -221,7 +188,5 @@ module.exports = {
   combineAssetsUrls,
   serveAudioFromS3,
   getAudioByGuid,
-  removeBoxesForAudioFromUser,
-  createBoxesForAudio,
   formatAudioForSNSMessage
 }

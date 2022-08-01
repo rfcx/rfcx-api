@@ -5,21 +5,18 @@ module.exports = function (sequelize, DataTypes) {
     asset_type: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     asset_id: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     }
   }, {
-    indexes: [],
     tableName: 'GuardianMetaAssetExchangeLogs'
   })
-
+  GuardianMetaAssetExchangeLog.associate = function (models) {
+    GuardianMetaAssetExchangeLog.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaAssetExchangeLog
 }

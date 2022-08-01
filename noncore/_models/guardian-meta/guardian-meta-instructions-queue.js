@@ -22,21 +22,15 @@ module.exports = function (sequelize, DataTypes) {
     },
     type: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     command: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     meta_json: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
     dispatch_attempts: {
       type: DataTypes.INTEGER,
@@ -56,10 +50,10 @@ module.exports = function (sequelize, DataTypes) {
       }
     }
   }, {
-    indexes: [
-    ],
     tableName: 'GuardianMetaInstructionsQueue'
   })
-
+  GuardianMetaInstructionsQueue.associate = function (models) {
+    GuardianMetaInstructionsQueue.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaInstructionsQueue
 }

@@ -31,6 +31,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaMemory'
   })
-
+  GuardianMetaMemory.associate = function (models) {
+    GuardianMetaMemory.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaMemory
 }

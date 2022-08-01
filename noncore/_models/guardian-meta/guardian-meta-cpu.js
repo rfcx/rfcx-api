@@ -26,6 +26,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaCPU'
   })
-
+  GuardianMetaCPU.associate = function (models) {
+    GuardianMetaCPU.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaCPU
 }

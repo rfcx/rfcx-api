@@ -1,14 +1,10 @@
 'use strict'
 module.exports = function (sequelize, DataTypes) {
   const GuardianMetaSegmentsReceived = sequelize.define('GuardianMetaSegmentsReceived', {
-
     group_guid: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-      }
+      allowNull: false
     },
-
     segment_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -17,21 +13,14 @@ module.exports = function (sequelize, DataTypes) {
         min: 0
       }
     },
-
     protocol: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
-
     origin_address: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     },
-
     received_at: {
       type: DataTypes.DATE(3),
       allowNull: true,
@@ -41,19 +30,15 @@ module.exports = function (sequelize, DataTypes) {
         }
       }
     },
-
     body: {
       type: DataTypes.TEXT('long'),
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     }
-
   }, {
-    indexes: [
-    ],
     tableName: 'GuardianMetaSegmentsReceived'
   })
-
+  GuardianMetaSegmentsReceived.associate = function (models) {
+    GuardianMetaSegmentsReceived.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaSegmentsReceived
 }

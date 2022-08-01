@@ -18,9 +18,7 @@ module.exports = function (sequelize, DataTypes) {
     url: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
-      validate: {
-      }
+      unique: true
     },
     size: {
       type: DataTypes.INTEGER,
@@ -33,16 +31,13 @@ module.exports = function (sequelize, DataTypes) {
     sha1_checksum: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     }
   }, {
-    indexes: [
-      { unique: true, fields: ['guid'] }
-    ],
     tableName: 'GuardianMetaLogs'
   })
-
+  GuardianMetaLog.associate = function (models) {
+    GuardianMetaLog.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaLog
 }

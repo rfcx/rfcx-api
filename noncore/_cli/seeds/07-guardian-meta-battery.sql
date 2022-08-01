@@ -1,0 +1,1 @@
+insert into "GuardianMetaBattery" ("id", "measured_at", "battery_percent", "battery_temperature", "created_at", "updated_at", "guardian_id", "check_in_id", "is_charging", "is_fully_charged") values (124504796, '2022-06-17 02:01:30.339', '100', '25', '2022-06-17 02:02:24.000', '2022-06-17 02:02:24.000', '1196', '62624731', '0', '1');

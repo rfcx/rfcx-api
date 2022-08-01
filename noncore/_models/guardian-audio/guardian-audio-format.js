@@ -5,23 +5,17 @@ module.exports = function (sequelize, DataTypes) {
     codec: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     mime: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     file_extension: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     sample_rate: {
       type: DataTypes.INTEGER,
@@ -66,13 +60,11 @@ module.exports = function (sequelize, DataTypes) {
     is_vbr: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false,
-      validate: {
-      }
+      defaultValue: false
     }
   }, {
     tableName: 'GuardianAudioFormats'
   })
-
+  GuardianAudioFormat.associate = function (models) {}
   return GuardianAudioFormat
 }

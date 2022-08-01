@@ -60,16 +60,12 @@ module.exports = function (sequelize, DataTypes) {
     sha1_checksum: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
-      validate: {
-      }
+      unique: true
     },
     url: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: false,
-      validate: {
-      }
+      unique: false
     },
     original_filename: {
       type: DataTypes.STRING,
@@ -82,6 +78,11 @@ module.exports = function (sequelize, DataTypes) {
     ],
     tableName: 'GuardianAudio'
   })
-
+  GuardianAudio.associate = function (models) {
+    GuardianAudio.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+    GuardianAudio.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: 'site_id' })
+    GuardianAudio.belongsTo(models.GuardianCheckIn, { as: 'CheckIn', foreignKey: 'check_in_id' })
+    GuardianAudio.belongsTo(models.GuardianAudioFormat, { as: 'Format', foreignKey: 'format_id' })
+  }
   return GuardianAudio
 }

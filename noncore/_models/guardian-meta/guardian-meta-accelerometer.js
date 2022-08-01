@@ -1,4 +1,5 @@
 'use strict'
+
 module.exports = function (sequelize, DataTypes) {
   const GuardianMetaAccelerometer = sequelize.define('GuardianMetaAccelerometer', {
     measured_at: {
@@ -39,6 +40,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaAccelerometer'
   })
-
+  GuardianMetaAccelerometer.associate = function (models) {
+    GuardianMetaAccelerometer.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaAccelerometer
 }

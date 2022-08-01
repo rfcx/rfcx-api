@@ -5,17 +5,13 @@ module.exports = {
     require('./guardians/guardians-software'),
     require('./guardians/guardians-checkins'),
     require('./guardians/guardians-audio'),
-    require('./guardians/guardians-audio-uploads'),
-    require('./guardians/guardians-events'),
     require('./guardians/guardians-meta'),
     require('./guardians/guardians-screenshots'),
     require('./guardians/guardians-status')
   ],
   sites: [
     require('./sites/sites'),
-    require('./sites/sites-audio'),
-    require('./sites/sites-events'),
-    require('./sites/sites-images')
+    require('./sites/sites-audio')
   ],
   audio: [
     require('./audio/audio')

@@ -18,13 +18,13 @@ module.exports = function (sequelize, DataTypes) {
     },
     carrier_name: {
       type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-      }
+      allowNull: true
     }
   }, {
     tableName: 'GuardianMetaOffline'
   })
-
+  GuardianMetaOffline.associate = function (models) {
+    GuardianMetaOffline.belongsTo(models.Guardian, { as: 'Guardian', foreignKey: 'guardian_id' })
+  }
   return GuardianMetaOffline
 }

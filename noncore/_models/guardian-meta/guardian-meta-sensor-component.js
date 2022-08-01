@@ -12,5 +12,8 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     tableName: 'GuardianMetaSensorComponents'
   })
+  GuardianMetaSensorComponent.associate = function (models) {
+    GuardianMetaSensorComponent.hasMany(models.GuardianMetaSensor, { as: 'Sensor', foreignKey: 'component_id' })
+  }
   return GuardianMetaSensorComponent
 }
