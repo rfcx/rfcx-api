@@ -6,6 +6,8 @@
 - Give user which is specified in `POSTGRES_USER` env var permissions to access `NONCORE_DB_NAME`
 - Rename `POSTGRES_DB` env var to `CORE_DB_NAME`
 - Delete `DB_HOSTNAME`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`, `DB_PORT` from config and secrets
+- Export data from MySQL with the following constraints:
+  - Exclude `organization`, `user_id` from `GuardianSites` table
 
 ## 1.1.9
 - Check that guardian software request works fine
