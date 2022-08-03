@@ -13,16 +13,16 @@ router.route('/:guid/software')
   .get(passport.authenticate(['token', 'jwt', 'jwt-custom'], { session: false }), hasRole(['rfcxUser']), (req, res) => {
     const query = `
       SELECT soft.role as role, ver.version as version, metaver.software_id
-      FROM GuardianMetaSoftwareVersions AS metaver
+      FROM "GuardianMetaSoftwareVersions" AS metaver
       INNER JOIN (
-        SELECT MAX(last_checkin_at) as last_checkin, software_id, version_id, guardian_id
-        FROM GuardianMetaSoftwareVersions
+        SELECT MAX(last_checkin_at) as last_checkin, software_id
+        FROM "GuardianMetaSoftwareVersions"
         GROUP BY software_id
       ) metaver_recent ON metaver.software_id = metaver_recent.software_id
-      INNER JOIN GuardianSoftwareVersions AS ver ON metaver.version_id = ver.id
-      INNER JOIN GuardianSoftware AS soft ON soft.id = ver.software_role_id
-      INNER JOIN Guardians AS g ON metaver.guardian_id = g.id
-      WHERE g.guid = "${req.params.guid}";
+      INNER JOIN "GuardianSoftwareVersions" AS ver ON metaver.version_id = ver.id
+      INNER JOIN "GuardianSoftware" AS soft ON soft.id = ver.software_role_id
+      INNER JOIN "Guardians" AS g ON metaver.guardian_id = g.id
+      WHERE g.guid = '${req.params.guid}';
     `
 
     models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
