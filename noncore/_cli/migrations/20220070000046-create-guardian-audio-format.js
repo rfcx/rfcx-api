@@ -6,7 +6,8 @@ module.exports = {
         id: {
           type: Sequelize.INTEGER,
           allowNull: false,
-          primaryKey: true
+          primaryKey: true,
+          autoIncrement: true
         },
         codec: {
           type: Sequelize.STRING,

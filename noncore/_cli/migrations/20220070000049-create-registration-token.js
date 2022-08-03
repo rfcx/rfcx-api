@@ -11,7 +11,8 @@ module.exports = {
         guid: {
           type: Sequelize.STRING,
           allowNull: false,
-          unique: true
+          unique: true,
+          autoIncrement: true
         },
         type: {
           type: Sequelize.STRING,
