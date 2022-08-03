@@ -10,7 +10,7 @@ exports.segmentUtils = {
           group_guid: segObj.group_guid,
           segment_id: segObj.segment_id,
           protocol: segObj.protocol,
-          origin_address: segObj.origin_address,
+          origin_address: `${segObj.origin_address}`,
           body: segObj.segment_body
         },
         defaults: {

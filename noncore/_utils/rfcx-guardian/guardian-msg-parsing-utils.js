@@ -171,7 +171,7 @@ exports.guardianMsgParsingUtils = {
       segment_id: parseInt(slicePayload(segPayload, segProtocol, 'segment_id', sliceAt, true), 16),
       segment_body: slicePayload(segPayload, segProtocol, 'segment_id', sliceAt, false),
       protocol: segProtocol,
-      origin_address: originAddress
+      origin_address: `${originAddress}`
     }
 
     if (segObj.segment_id === 0) {
