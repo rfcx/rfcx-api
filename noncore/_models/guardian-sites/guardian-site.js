@@ -92,7 +92,6 @@ module.exports = function (sequelize, DataTypes) {
     GuardianSite.hasMany(models.Guardian, { as: 'Guardian', foreignKey: 'site_id' })
     GuardianSite.hasMany(models.GuardianCheckIn, { as: 'CheckIn', foreignKey: 'site_id' })
     GuardianSite.hasMany(models.GuardianAudio, { as: 'Audio', foreignKey: 'site_id' })
-    GuardianSite.belongsTo(models.User, { as: 'User', foreignKey: 'user_id', constraints: false })
   }
   return GuardianSite
 }
