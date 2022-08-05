@@ -332,8 +332,18 @@ exports.checkInDatabase = {
     })
   },
 
-  createDbAudio: function (checkInObj) {
-    return models.GuardianAudio.findOrCreate({
+  createDbAudio: async function (checkInObj) {
+    const [dbAudioFormat] = await models.GuardianAudioFormat.findOrCreate({
+      where: {
+        codec: checkInObj.audio.meta.audioCodec,
+        mime: checkInObj.audio.meta.mimeType,
+        file_extension: checkInObj.audio.meta.fileExtension,
+        sample_rate: checkInObj.audio.meta.sampleRate,
+        target_bit_rate: checkInObj.audio.meta.bitRate,
+        is_vbr: checkInObj.audio.meta.isVbr
+      }
+    })
+    const [dbAudio] = await models.GuardianAudio.findOrCreate({
       where: {
         sha1_checksum: checkInObj.audio.meta.sha1CheckSum
       },
@@ -347,45 +357,22 @@ exports.checkInDatabase = {
         measured_at: checkInObj.audio.meta.measuredAt,
         measured_at_local: moment.tz(checkInObj.audio.meta.measuredAt, (checkInObj.db.dbSite.timezone || 'UTC')).format('YYYY-MM-DDTHH:mm:ss.SSS'),
         capture_sample_count: checkInObj.audio.meta.captureSampleCount,
-        size: checkInObj.audio.meta.size
+        size: checkInObj.audio.meta.size,
+        format_id: dbAudioFormat.id
       }
     })
-      .spread(function (dbAudio, wasCreated) {
-        return models.GuardianAudioFormat.findOrCreate({
-          where: {
-            codec: checkInObj.audio.meta.audioCodec,
-            mime: checkInObj.audio.meta.mimeType,
-            file_extension: checkInObj.audio.meta.fileExtension,
-            sample_rate: checkInObj.audio.meta.sampleRate,
-            target_bit_rate: checkInObj.audio.meta.bitRate,
-            is_vbr: checkInObj.audio.meta.isVbr
-          }
-        })
-          .spread(function (dbAudioFormat, wasCreated) {
-            dbAudio.format_id = dbAudioFormat.id
-            return dbAudio.save()
-          })
-          .then(function (dbAudio) {
-            return dbAudio.reload({ include: [{ all: true }] })
-          })
-      })
-      .then(function (dbAudio) {
-        return models.GuardianMetaAssetExchangeLog.findOrCreate({
-          where: {
-            guardian_id: checkInObj.db.dbGuardian.id,
-            asset_type: 'audio',
-            asset_id: checkInObj.audio.metaArr[1]
-          }
-        })
-          .then(() => {
-            return models.Guardian.update({ last_audio_sync: checkInObj.audio.meta.measuredAt }, { where: { id: checkInObj.db.dbGuardian.id } })
-          })
-          .then(() => {
-            checkInObj.db.dbAudio = dbAudio
-            checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] })
-            return checkInObj
-          })
-      })
+    await models.GuardianMetaAssetExchangeLog.findOrCreate({
+      where: {
+        guardian_id: checkInObj.db.dbGuardian.id,
+        asset_type: 'audio',
+        asset_id: checkInObj.audio.metaArr[1]
+      }
+    })
+    await models.Guardian.update({ last_audio_sync: checkInObj.audio.meta.measuredAt }, { where: { id: checkInObj.db.dbGuardian.id } })
+    checkInObj.db.dbAudio = await dbAudio.reload({ include: [{ all: true }] })
+    console.log('\n\n', checkInObj.db.dbAudio, '\n\n')
+    checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] })
+    return checkInObj
   },
 
   createDbScreenShot: function (checkInObj) {
