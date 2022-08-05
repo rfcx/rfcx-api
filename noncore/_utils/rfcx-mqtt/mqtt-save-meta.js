@@ -416,6 +416,9 @@ exports.saveMeta = {
   },
 
   CheckInStatus: function (metaCheckInStatus, guardianId, measuredAt) {
+    if (!metaCheckInStatus || !metaCheckInStatus.length) {
+      return
+    }
     const dbMetaCheckInStatus = []
     const dbMetaCheckInStatusObj = { guardian_id: guardianId, measured_at: parseInt(measuredAt) }
 
@@ -428,7 +431,6 @@ exports.saveMeta = {
       }
     }
     dbMetaCheckInStatus.push(dbMetaCheckInStatusObj)
-    console.log('\n\ndbMetaCheckInStatus', dbMetaCheckInStatus, '\n\n')
 
     return models.GuardianMetaCheckInStatus.bulkCreate(dbMetaCheckInStatus).catch(function (err) {
       console.error('failed to create GuardianMetaCheckInStatus | ' + err)
