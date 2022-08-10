@@ -190,7 +190,7 @@ function updateGuardian (guardian, attrs, options = {}) {
 async function createGuardian (attrs) {
   const guardianAttrs = {
     guid: attrs.guid,
-    creator: (attrs.creator_id != null) ? attrs.creator_id : null
+    creator: (attrs.creator != null) ? attrs.creator : null
   }
   const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs }) // eslint-disable-line no-unused-vars
 

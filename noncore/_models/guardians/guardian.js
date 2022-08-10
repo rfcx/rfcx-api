@@ -159,6 +159,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(12),
       allowNull: true
     },
+    creator: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     timezone: {
       type: DataTypes.STRING(255),
       allowNull: true
@@ -202,7 +206,6 @@ module.exports = function (sequelize, DataTypes) {
   })
   Guardian.associate = function (models) {
     Guardian.belongsTo(models.GuardianSite, { as: 'Site', foreignKey: 'site_id' })
-    Guardian.belongsTo(models.User, { as: 'User', foreignKey: 'creator' })
   }
   return Guardian
 }

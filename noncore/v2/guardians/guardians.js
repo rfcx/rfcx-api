@@ -150,7 +150,7 @@ router.route('/register')
         ...transformedParams,
         token,
         pinCode,
-        creator_id: req.rfcx.auth_token_info.id,
+        creator: req.rfcx.auth_token_info.email,
         is_private: true
       }
 
