@@ -10,27 +10,21 @@ router.route('/')
     if (userGuid !== '7f17c350-8ab7-b667-cfe2-9d69facda55b') { // return only for anonymous-assistant@rfcx.org which is used in Streaming app
       res.json([])
     } else {
-      models.GuardianSite.findAll({
-        attributes: ['id'],
+      const siteIds = [ // ids copies from deleted UserSiteRelations table
+        3, 6, 8, 13, 23, 26, 28, 30, 31, 32, 35, 38, 39, 40, 41, 43, 44,
+        45, 47, 48, 49, 50, 51, 53, 54, 55, 56, 57, 60, 62, 63, 65]
+      models.Guardian.findAll({
+        attributes: ['guid', 'is_visible', 'last_check_in', 'shortname', 'latitude', 'longitude'],
         include: [{
-          attributes: [],
-          model: models.User,
-          where: { guid: userGuid }
-        }]
-      }).then(async (sites) => {
-        const siteIds = sites.map(r => r.id)
-        let guardians = await models.Guardian.findAll({
-          attributes: ['guid', 'is_visible', 'last_check_in', 'shortname', 'latitude', 'longitude'],
-          include: [{
-            model: models.GuardianSite,
-            as: 'Site',
-            where: { id: siteIds },
-            attributes: ['guid', 'name']
-          }],
-          order: [['last_check_in', 'DESC']],
-          limit: req.query.limit ? parseInt(req.query.limit) : req.rfcx.limit,
-          offset: req.query.offset ? parseInt(req.query.offset) : req.rfcx.offset
-        })
+          model: models.GuardianSite,
+          as: 'Site',
+          where: { id: siteIds },
+          attributes: ['guid', 'name']
+        }],
+        order: [['last_check_in', 'DESC']],
+        limit: req.query.limit ? parseInt(req.query.limit) : req.rfcx.limit,
+        offset: req.query.offset ? parseInt(req.query.offset) : req.rfcx.offset
+      }).then((guardians) => {
         guardians = guardians.map((g) => {
           return {
             guid: g.guid,
