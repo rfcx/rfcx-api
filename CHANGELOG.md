@@ -1,4 +1,4 @@
-## 1.2.0 (2022-07-XX)
+## 1.2.0 (2022-08-10)
 
 ### Features
 * **noncore**: Use Timescale as noncore database
