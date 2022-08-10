@@ -22,11 +22,9 @@ router.route('/:shortlink_id')
         }).then(function (dbShortLink) {
           dbShortLink.access_count = 1 + dbShortLink.access_count
           dbShortLink.save()
-
-          console.info("redirecting client to: '" + dbShortLink.url + "'")
           res.redirect(301, dbShortLink.url)
         }).catch(function () {
-          res.status(200).json({ shortlink: req.params.shortlink_id })
+          res.sendStatus(404)
         })
     }
   })
