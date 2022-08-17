@@ -7,6 +7,7 @@ const { sha1 } = require('../misc/sha1')
 const Promise = require('bluebird')
 const moment = require('moment-timezone')
 const { parse: parseSensorValues } = require('./mqtt-sensorvalues-parse')
+const { baseInclude } = require('../../views/v1/models/guardian-audio').models
 
 exports.checkInDatabase = {
 
@@ -369,7 +370,7 @@ exports.checkInDatabase = {
       }
     })
     await models.Guardian.update({ last_audio_sync: checkInObj.audio.meta.measuredAt }, { where: { id: checkInObj.db.dbGuardian.id } })
-    checkInObj.db.dbAudio = await dbAudio.reload({ include: [{ all: true }] })
+    checkInObj.db.dbAudio = await dbAudio.reload({ include: baseInclude })
     checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] })
     return checkInObj
   },

@@ -9,6 +9,7 @@ const exec = util.promisify(require('child_process').exec)
 const audioUtils = require('../rfcx-audio').audioUtils
 const assetUtils = require('../internal-rfcx/asset-utils').assetUtils
 const cachedFiles = require('../internal-rfcx/cached-files').cachedFiles
+const { baseInclude } = require('../../views/v1/models/guardian-audio').models
 
 const moment = require('moment-timezone')
 const urls = require('../misc/urls')
@@ -186,7 +187,7 @@ exports.audio = {
         return dbAudioLocal.save()
       })
       .then(function (dbAudio) {
-        return dbAudio.reload({ include: [{ all: true }] })
+        return dbAudio.reload({ include: baseInclude })
       })
       .then(function (dbAudio) {
         audioInfo.isSaved.db = true
