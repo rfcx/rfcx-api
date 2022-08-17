@@ -186,12 +186,12 @@ router.route('/:audio_id')
       .findOne({
         where: { guid: req.params.audio_id },
         include: [
-          ...baseInclude,
-          {
-            model: models.GuardianCheckIn,
-            as: 'CheckIn',
-            attributes: ['guid']
-          }
+          ...baseInclude
+          // {
+          //   model: models.GuardianCheckIn,
+          //   as: 'CheckIn',
+          //   attributes: ['guid']
+          // }
         ]
       }).then(function (dbAudio) {
         return guardianAudioJson(dbAudio)
