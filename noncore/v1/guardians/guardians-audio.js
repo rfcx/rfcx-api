@@ -28,8 +28,7 @@ router.route('/:guardian_id/audio')
             include: [
               { model: models.Guardian, as: 'Guardian', attributes: ['guid'] },
               { model: models.GuardianSite, as: 'Site', attributes: ['guid', 'timezone', 'timezone_offset'] },
-              { model: models.GuardianAudioFormat, as: 'Format', attributes: ['sample_rate'] },
-              { model: models.GuardianCheckIn, as: 'CheckIn', attributes: ['guid'] }
+              { model: models.GuardianAudioFormat, as: 'Format', attributes: ['sample_rate'] }
             ],
             order: [[dateClmn, dbQueryOrder]],
             limit: req.rfcx.limit,
