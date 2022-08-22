@@ -5,6 +5,7 @@ const views = require('../../views/v1')
 const { httpErrorResponse } = require('../../../common/error-handling/http')
 const takeContentTypeFromFileExtMiddleware = require('../../../common/middleware/legacy/take-content-type-from-file-ext')
 const passport = require('passport')
+const moment = require('moment-timezone')
 passport.use(require('../../../common/middleware/passport-token').TokenStrategy)
 
 router.use(takeContentTypeFromFileExtMiddleware)
@@ -15,11 +16,15 @@ router.route('/:guardian_id/audio')
       .findOne({
         where: { guid: req.params.guardian_id }
       }).then(function (dbGuardian) {
-        const dbQuery = { guardian_id: dbGuardian.id }
-        const dateClmn = 'measured_at'
-        if ((req.rfcx.ending_before != null) || (req.rfcx.starting_after != null)) { dbQuery[dateClmn] = {} }
-        if (req.rfcx.ending_before != null) { dbQuery[dateClmn][models.Sequelize.Op.lt] = req.rfcx.ending_before }
-        if (req.rfcx.starting_after != null) { dbQuery[dateClmn][models.Sequelize.Op.gt] = req.rfcx.starting_after }
+        if (!dbGuardian) {
+          return httpErrorResponse(req, res, 404, 'database')
+        }
+        const dbQuery = {
+          guardian_id: dbGuardian.id,
+          measured_at: {}
+        }
+        if (req.rfcx.ending_before != null) { dbQuery.measured_at[models.Sequelize.Op.lt] = req.rfcx.ending_before }
+        dbQuery.measured_at[models.Sequelize.Op.gt] = req.rfcx.starting_after != null ? req.rfcx.starting_after : moment.utc().subtract('1', 'month').toISOString()
         const dbQueryOrder = (req.rfcx.order != null) ? req.rfcx.order : 'DESC'
 
         return models.GuardianAudio
@@ -30,7 +35,7 @@ router.route('/:guardian_id/audio')
               { model: models.GuardianSite, as: 'Site', attributes: ['guid', 'timezone', 'timezone_offset'] },
               { model: models.GuardianAudioFormat, as: 'Format', attributes: ['sample_rate'] }
             ],
-            order: [[dateClmn, dbQueryOrder]],
+            order: [['measured_at', dbQueryOrder]],
             limit: req.rfcx.limit,
             offset: req.rfcx.offset
           }).then(function (dbAudio) {
@@ -47,7 +52,7 @@ router.route('/:guardian_id/audio')
             if (err) { res.status(500).json({ msg: 'failed to return audio' }) }
           })
       }).catch(function (err) {
-        console.error('failed to find guardian | ' + err)
+        console.error('failed to find guardian', err)
         if (err) { res.status(500).json({ msg: 'failed to find guardian' }) }
       })
   })
