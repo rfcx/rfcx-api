@@ -175,7 +175,6 @@ router.route('/register')
         keystore_passphrase: process.env.GUARDIAN_KEYSTORE_PASSPHRASE
       })
     } catch (e) {
-      console.error('v2/guardians/register error', e)
       if (e instanceof sequelize.ValidationError) {
         let message = 'Validation error'
         try {
@@ -185,6 +184,7 @@ router.route('/register')
       } else if (e instanceof sequelize.EmptyResultError) {
         httpErrorResponse(req, res, 404, null, e.message)
       } else {
+        console.error('v2/guardians/register error', e)
         res.status(500).json({ message: e.message, error: { status: 500 } })
       }
     }
