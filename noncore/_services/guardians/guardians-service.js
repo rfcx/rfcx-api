@@ -188,11 +188,13 @@ function updateGuardian (guardian, attrs, options = {}) {
 }
 
 async function createGuardian (attrs) {
-  const guardianAttrs = {
-    guid: attrs.guid,
+  const where = {
+    guid: attrs.guid
+  }
+  const defaults = {
     creator: (attrs.creator != null) ? attrs.creator : null
   }
-  const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where: guardianAttrs }) // eslint-disable-line no-unused-vars
+  const [dbGuardian, dbGuardianCreated] = await models.Guardian.findOrCreate({ where, defaults }) // eslint-disable-line no-unused-vars
 
   dbGuardian.shortname = attrs.shortname ? attrs.shortname : `X New Device (${attrs.guid.substr(0, 6).toUpperCase()})`
 
