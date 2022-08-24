@@ -42,6 +42,7 @@ module.exports = async (req, res) => {
     const converter = new Converter(req.body, {}, true)
     converter.convert('name').optional().toString()
     converter.convert('version').optional().toInt()
+    converter.convert('parameters').optional().toString()
     converter.convert('external_id').optional().toString()
     converter.convert('status').optional().toInt()
     converter.convert('platform').optional().toString().default('aws')

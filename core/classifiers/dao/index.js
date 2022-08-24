@@ -43,6 +43,7 @@ function get (id, options = {}) {
   return models.Classifier
     .findOne({
       where: { id },
+      // TODO Refactor to use `fields` instead of `joinRelations` and `attributes`
       attributes: options && options.attributes ? options.attributes : models.Classifier.attributes.full,
       include: options && options.joinRelations ? availableIncludes : []
     })
@@ -123,7 +124,8 @@ function create (attrs) {
     externalId: attrs.externalId,
     modelUrl: attrs.modelUrl || '',
     modelRunner: attrs.modelRunner || 'tf2',
-    createdById: attrs.createdById
+    createdById: attrs.createdById,
+    parameters: attrs.parameters
   }
   return models.sequelize.transaction(async (t) => {
     // Create the classifier

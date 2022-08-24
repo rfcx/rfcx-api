@@ -47,6 +47,7 @@ module.exports = async (req, res) => {
     const converter = new Converter(req.body, {}, true)
     converter.convert('name').toString()
     converter.convert('version').toInt()
+    converter.convert('parameters').optional().toString()
     converter.convert('external_id').optional().toString()
     converter.convert('classification_values').toArray()
     converter.convert('active_projects').optional().toArray()
@@ -77,6 +78,7 @@ module.exports = async (req, res) => {
     const classifier = {
       name: params.name,
       version: params.version,
+      parameters: params.parameters,
       externalId: params.externalId,
       modelUrl,
       createdById,

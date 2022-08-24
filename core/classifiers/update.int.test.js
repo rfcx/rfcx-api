@@ -115,6 +115,21 @@ describe('PATCH /classifiers/:id', () => {
     expect(newDeployment).toBeDefined()
   })
 
+  test('update classifier with new parameters', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    const requestBody = { parameters: 'step=0.8' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+    const updatedClassifier = await models.Classifier.findByPk(classifier.id)
+    expect(updatedClassifier.parameters).toBe(requestBody.parameters)
+  })
+
   test('update active streams', async () => {
     console.warn = jest.fn()
     const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
