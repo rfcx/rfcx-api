@@ -159,8 +159,8 @@ async function update (id, createdBy, attrs) {
   }
 
   await models.sequelize.transaction(async (t) => {
-    // Only update if there is a change in status or deployment parameters
-    if (attrs.status || attrs.deploymentParameters) {
+    // Only update if there is a change in status
+    if (attrs.status) {
       const update = {
         ...attrs,
         id: id,

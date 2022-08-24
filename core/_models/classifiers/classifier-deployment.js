@@ -34,9 +34,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(3),
       allowNull: false,
       defaultValue: 'aws'
-    },
-    deploymentParameters: { // prediction service parameters specific to the deployment (e.g. step seconds)
-      type: DataTypes.STRING
     }
   }, {
     timestamps: false,
@@ -47,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
     ClassifierDeployment.belongsTo(models.User, { as: 'created_by', foreignKey: 'created_by_id' })
   }
   ClassifierDeployment.attributes = {
-    full: ['id', 'classifier_id', 'deployed', 'status', 'start', 'end', 'platform', 'deployment_parameters'],
+    full: ['id', 'classifier_id', 'deployed', 'status', 'start', 'end', 'platform'],
     lite: ['id', 'deployed', 'status', 'start', 'end']
   }
   return ClassifierDeployment

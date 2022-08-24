@@ -45,7 +45,6 @@ module.exports = async (req, res) => {
     converter.convert('external_id').optional().toString()
     converter.convert('status').optional().toInt()
     converter.convert('platform').optional().toString().default('aws')
-    converter.convert('deployment_parameters').optional().toString({ emptyStringToNull: true })
     converter.convert('active_projects').optional().toArray()
     converter.convert('active_streams').optional().toArray()
     const params = await converter.validate()

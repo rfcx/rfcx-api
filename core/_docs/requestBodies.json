@@ -81,11 +81,6 @@
         "description": "One of: Draft (10), Staging (20), Production (30) or Retired (90)",
         "example": 10
       },
-      "deployment_parameters": {
-        "type": "string",
-        "description": "Parameters to be passed to the model (e.g. step size)",
-        "example": "step_seconds=0.48"
-      },
       "model_runner": {
         "type": "string",
         "description": "Type of model runner to use (e.g. version of Tensorflow)",
