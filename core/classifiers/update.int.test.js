@@ -71,81 +71,63 @@ describe('PATCH /classifiers/:id', () => {
     expect(deployments[1].status).toBe(30)
   })
 
-  test('update classifier keeps existing deployment parameters', async () => {
+  test('update classifier without new deployment', async () => {
     console.warn = jest.fn()
-    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
-    const deployment = { classifierId: classifier.id, deploymentParameters: 'hello=world', status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
     await models.Classifier.create(classifier)
     await models.ClassifierDeployment.create(deployment)
-    const requestBody = { status: 30 }
+    const requestBody = { modelUrl: 's3://new-test/abc.tar.gz' }
 
     const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(200)
-    const deployments = await models.ClassifierDeployment.findAll({ order: ['status'] })
-    const newDeployment = deployments.find(d => d.status === 30)
-    expect(newDeployment.deploymentParameters).toBe(deployment.deploymentParameters)
-  })
-
-  test('update classifier with empty deployment parameters', async () => {
-    console.warn = jest.fn()
-    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
-    const deployment = { classifierId: classifier.id, deploymentParameters: 'hello=world', status: 20, start: new Date(), createdById: seedValues.otherUserId }
-    await models.Classifier.create(classifier)
-    await models.ClassifierDeployment.create(deployment)
-    const requestBody = { status: 30, deployment_parameters: '' }
-
-    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
-
-    expect(response.statusCode).toBe(200)
-    const deployments = await models.ClassifierDeployment.findAll({ order: ['status'] })
-    const newDeployment = deployments.find(d => d.status === 30)
-    expect(newDeployment.deploymentParameters).toBeNull()
-  })
-
-  test('update classifier keeps existing status', async () => {
-    console.warn = jest.fn()
-    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
-    const deployment = { classifierId: classifier.id, deploymentParameters: 'hello=world', status: 20, start: new Date(), createdById: seedValues.otherUserId }
-    await models.Classifier.create(classifier)
-    await models.ClassifierDeployment.create(deployment)
-    const requestBody = { deployment_parameters: 'foo=bar' }
-
-    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
-
-    expect(response.statusCode).toBe(200)
-    const deployments = await models.ClassifierDeployment.findAll({ order: ['status'] })
-    const newDeployment = deployments.find(d => d.deploymentParameters === 'foo=bar')
-    expect(newDeployment.status).toBe(20)
+    const deployments = await models.ClassifierDeployment.findAll({ where: { classifierId: classifier.id } })
+    expect(deployments).toHaveLength(1)
   })
 
   test('update classifier with empty status', async () => {
     console.warn = jest.fn()
-    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
-    const deployment = { classifierId: classifier.id, deploymentParameters: 'hello=world', status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
     await models.Classifier.create(classifier)
     await models.ClassifierDeployment.create(deployment)
-    const requestBody = { status: '', deployment_parameters: 'foo=bar' }
+    const requestBody = { status: '', modelUrl: 's3://new-test/abc.tar.gz' }
 
     const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(400)
   })
 
-  test('update classifier with new deployment parameters and status', async () => {
+  test('update classifier with new url and status', async () => {
     console.warn = jest.fn()
-    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '' }
-    const deployment = { classifierId: classifier.id, deploymentParameters: 'hello=world', status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
     await models.Classifier.create(classifier)
     await models.ClassifierDeployment.create(deployment)
-    const requestBody = { status: 30, deployment_parameters: 'foo=bar' }
+    const requestBody = { status: 30, modelUrl: 's3://new-test/abc.tar.gz' }
 
     const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(200)
     const deployments = await models.ClassifierDeployment.findAll({ order: ['status'] })
     const newDeployment = deployments.find(d => d.status === 30)
-    expect(newDeployment.deploymentParameters).toBe(requestBody.deployment_parameters)
+    expect(newDeployment).toBeDefined()
+  })
+
+  test('update classifier with new parameters', async () => {
+    console.warn = jest.fn()
+    const classifier = { id: 5, name: 'chainsaw', version: 1, createdById: seedValues.otherUserId, parameters: 'step=0.9', modelRunner: 'tf2', modelUrl: 's3://test/xyz.tar.gz' }
+    const deployment = { classifierId: classifier.id, status: 20, start: new Date(), createdById: seedValues.otherUserId }
+    await models.Classifier.create(classifier)
+    await models.ClassifierDeployment.create(deployment)
+    const requestBody = { parameters: 'step=0.8' }
+
+    const response = await request(app).patch(`/${classifier.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(200)
+    const updatedClassifier = await models.Classifier.findByPk(classifier.id)
+    expect(updatedClassifier.parameters).toBe(requestBody.parameters)
   })
 
   test('update active streams', async () => {

@@ -1,5 +1,8 @@
 # API Deployment Notes
 
+## 1.2.1
+- Run `npm run migrate:core` to apply migrations: `20220823000001-add-parameters-to-classifiers`
+
 ## 1.2.0
 - Create `noncore` database in Timescale
 - Add `NONCORE_DB_NAME` with new database name
