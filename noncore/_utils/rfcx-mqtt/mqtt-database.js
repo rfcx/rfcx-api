@@ -369,7 +369,7 @@ exports.checkInDatabase = {
         asset_id: checkInObj.audio.metaArr[1]
       }
     })
-    await models.Guardian.update({ last_audio_sync: checkInObj.audio.meta.measuredAt }, { where: { id: checkInObj.db.dbGuardian.id } })
+    await models.Guardian.update({ last_audio_sync: dbAudio.created_at }, { where: { id: checkInObj.db.dbGuardian.id } })
     checkInObj.db.dbAudio = await dbAudio.reload({ include: baseInclude })
     checkInObj.rtrn.obj.audio.push({ id: checkInObj.audio.metaArr[1] })
     return checkInObj
