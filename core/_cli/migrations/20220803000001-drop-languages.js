@@ -2,8 +2,11 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async transaction => {
-      await queryInterface.removeConstraint('classification_alternative_names', 'classification_alternative_names_language_id_fkey')
-      await queryInterface.dropTable('languages', { transaction })
+      await queryInterface.sequelize.query('ALTER TABLE public.classification_alternative_names DROP CONSTRAINT classification_alternative_names_language_id_fkey', {
+        type: queryInterface.sequelize.QueryTypes.RAW,
+        transaction
+      })
+      await queryInterface.dropTable('public.languages', { transaction })
       await queryInterface.changeColumn('classification_alternative_names', 'language_id', {
         type: Sequelize.STRING(5),
         allowNull: false

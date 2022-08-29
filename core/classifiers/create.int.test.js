@@ -30,6 +30,7 @@ describe('POST /classifiers/:id', () => {
   const requestBody = {
     name: 'chainsaw',
     version: 1,
+    parameters: 'step=0.9',
     classification_values: 'chainsaw'
   }
 
@@ -56,6 +57,7 @@ describe('POST /classifiers/:id', () => {
       expect(classifiers.length).toBe(1)
       expect(classifiers[0].name).toBe(requestBody.name)
       expect(classifiers[0].version).toBe(requestBody.version)
+      expect(classifiers[0].parameters).toBe(requestBody.parameters)
       expect(classifierOutputs.length).toBe(1)
       expect(classifierOutputs[0].classifierId).toBe(classifiers[0].id)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)

@@ -1,3 +1,8 @@
+## 1.2.1 (2022-08-24)
+
+### Features
+* **core**: Add `parameters` to classifiers (and remove `deployment_parameters`)
+
 ## 1.2.0 (2022-08-10)
 
 ### Features

@@ -1010,10 +1010,6 @@
         "type": "string",
         "example": "aws"
       },
-      "deploymentParameters": {
-        "type": "string",
-        "example": "{AI_MIN_CONFIDENCE:0.8,AI_STEP_SECONDS:0.48,AI_MIN_WINDOWS_COUNT:4}"
-      },
       "modelUrl": {
         "type": "string",
         "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
