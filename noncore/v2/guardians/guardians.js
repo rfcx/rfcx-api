@@ -97,7 +97,8 @@ router.route('/:guid')
           }
         }
 
-        if (params.is_deployed) {
+        // Update the last deployed timestamp whenever stream id changes or is_deployed is set to true
+        if ((!guardian.stream_id && params.stream_id) || (guardian.stream_id !== params.stream_id) || params.is_deployed) {
           params.last_deployed = models.sequelize.literal('CURRENT_TIMESTAMP')
         }
         const updatedGuardian = await guardiansService.updateGuardian(guardian, params, { transaction: mysqlTransaction })
