@@ -43,8 +43,10 @@ function get (id, options = {}) {
   const where = { id }
   // When readableBy is specified, only return public classifiers or classifiers created by the user
   if (options.readableBy) {
-    where.isPublic = true
-    where.createdById = options.readableBy
+    where[models.Sequelize.Op.or] = {
+      isPublic: true,
+      createdById: options.readableBy
+    }
   }
 
   return models.Classifier

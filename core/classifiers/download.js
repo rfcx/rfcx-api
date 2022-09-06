@@ -1,4 +1,3 @@
-const { ForbiddenError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { getSignedUrl } = require('./dao/download')
 const { get } = require('./dao')
