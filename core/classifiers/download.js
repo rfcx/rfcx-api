@@ -1,6 +1,7 @@
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { getSignedUrl } = require('./dao/download')
+const { get } = require('./dao')
 
 /**
  * /classifier/{id}/file
@@ -25,19 +26,17 @@ const { getSignedUrl } = require('./dao/download')
  *       404:
  *         description: Not found
  */
-module.exports = async (req, res) => {
-  try {
-    // Check authorization
-    // TODO: Only the owner can download it?
-    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-      throw new ForbiddenError()
-    }
+module.exports = (req, res) => {
+  const user = req.rfcx.auth_token_info
+  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+  const classifierId = req.params.id
 
-    const id = req.params.id
-    const signedUrl = await getSignedUrl(id)
+  return get(classifierId, { attributes: ['model_url'], readableBy })
+    .then(async (classifier) => {
+      const classifierUrl = classifier.model_url
+      const signedUrl = await getSignedUrl(classifierUrl)
 
-    return res.redirect(signedUrl)
-  } catch (err) {
-    return httpErrorHandler(req, res)(err)
-  }
+      res.redirect(signedUrl)
+    })
+    .catch(httpErrorHandler(req, res))
 }

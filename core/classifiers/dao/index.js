@@ -40,9 +40,16 @@ const availableIncludes = [
  * @throws EmptyResultError when classifier not found
  */
 function get (id, options = {}) {
+  const where = { id }
+  // When readableBy is specified, only return public classifiers or classifiers created by the user
+  if (options.readableBy) {
+    where.isPublic = true
+    where.createdById = options.readableBy
+  }
+
   return models.Classifier
     .findOne({
-      where: { id },
+      where,
       // TODO Refactor to use `fields` instead of `joinRelations` and `attributes`
       attributes: options && options.attributes ? options.attributes : models.Classifier.attributes.full,
       include: options && options.joinRelations ? availableIncludes : []
@@ -54,15 +61,16 @@ function get (id, options = {}) {
       const data = classifier.toJSON()
       // Remove join tables from json
       if (data.activeStreams) {
-        data.activeStreams = data.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj) // eslint-disable-line camelcase
+        data.activeStreams = data.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj)
       }
 
       if (data.activeProjects) {
-        data.activeProjects = data.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj) // eslint-disable-line camelcase
+        data.activeProjects = data.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj)
       }
+
       return data
     })
-    .catch(() => {
+    .catch((e) => {
       throw new EmptyResultError('Classifier with given id not found.')
     })
 }
