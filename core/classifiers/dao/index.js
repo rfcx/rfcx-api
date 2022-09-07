@@ -72,7 +72,7 @@ function get (id, options = {}) {
 
       return data
     })
-    .catch((e) => {
+    .catch(() => {
       throw new EmptyResultError('Classifier with given id not found.')
     })
 }
