@@ -3,7 +3,7 @@ const { getSignedUrl } = require('./dao/download')
 const { get } = require('./dao')
 
 /**
- * /classifier/{id}/file
+ * /classifiers/{id}/file
  *  get:
  *    summary: Downlaod a classifier file
  *    tags:
