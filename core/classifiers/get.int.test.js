@@ -2,7 +2,6 @@ const routes = require('./index')
 const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
-const { getExpectedBodyHash } = require('twilio/lib/webhooks/webhooks')
 
 const app = expressApp()
 
