@@ -2,10 +2,13 @@ const routes = require('./index')
 const models = require('../_models')
 const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
+const { EmptyResultError } = require('../../common/error-handling/errors')
 
 const app = expressApp()
 
 app.use('/', routes)
+
+jest.mock('./dao/download', () => ({ getSignedUrl: jest.fn((url) => Promise.resolve(url + '?123')) }))
 
 beforeAll(async () => {
   await migrate(models.sequelize, models.Sequelize)
@@ -37,6 +40,7 @@ describe('GET /classifier/:id/file', () => {
 
   describe('error', () => {
     test('invalid model url', async () => {
+      require('./dao/download').getSignedUrl.mockImplementation(() => Promise.reject(new EmptyResultError('Storage url not recognised')))
       const regularUserApp = expressApp({ is_super: true })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
