@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
@@ -39,42 +39,32 @@ const availableIncludes = [
  * @returns {*} classifier model item
  * @throws EmptyResultError when classifier not found
  */
-function get (id, options = {}) {
-  const where = { id }
-  // When readableBy is specified, only return public classifiers or classifiers created by the user
-  if (options.readableBy) {
-    where[models.Sequelize.Op.or] = {
-      isPublic: true,
-      createdById: options.readableBy
-    }
+async function get (id, options = {}) {
+  const query = { where: { id }, raw: true }
+
+  if (options.attributes) {
+    query.attributes = options.attributes
   }
 
-  return models.Classifier
-    .findOne({
-      where,
-      // TODO Refactor to use `fields` instead of `joinRelations` and `attributes`
-      attributes: options && options.attributes ? options.attributes : models.Classifier.attributes.full,
-      include: options && options.joinRelations ? availableIncludes : []
-    })
-    .then(classifier => {
-      if (!classifier) {
-        throw new EmptyResultError('Classifier with given id not found.')
-      }
-      const data = classifier.toJSON()
-      // Remove join tables from json
-      if (data.activeStreams) {
-        data.activeStreams = data.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj)
-      }
+  const classifier = await models.Classifier.findOne(query)
+  if (!classifier) {
+    throw new EmptyResultError('Classifier with given id not found.')
+  }
 
-      if (data.activeProjects) {
-        data.activeProjects = data.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj)
-      }
+  // When readableBy is specified, only return public classifiers or classifiers created by the user
+  if (options.readableBy && !classifier.isPublic && !(classifier.createdById === options.readableBy)) {
+    throw new ForbiddenError()
+  }
 
-      return data
-    })
-    .catch(() => {
-      throw new EmptyResultError('Classifier with given id not found.')
-    })
+  if (classifier.activeStreams) {
+    classifier.activeStreams = classifier.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj)
+  }
+
+  if (classifier.activeProjects) {
+    classifier.activeProjects = classifier.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj)
+  }
+
+  return classifier
 }
 
 /**

@@ -132,7 +132,7 @@ describe('GET /classifier/:id', () => {
 
       const response = await request(regularUserApp).get('/2')
 
-      expect(response.statusCode).toBe(404)
+      expect(response.statusCode).toBe(403)
     })
   })
 })
