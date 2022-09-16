@@ -534,10 +534,14 @@ exports.saveMeta = {
       expandedDetections.push(...detections.map(d => ({ streamId: guardianId, ...d })))
     }
 
-    // Force first batch tembe guardians to use `-edge` for classifier name
     for (const d of expandedDetections) {
+      // Force first batch tembe guardians to use `-edge` for classifier name
       if (d.classifier.startsWith('chainsaw-v')) {
         d.classifier = d.classifier.replace('chainsaw', 'chainsaw-edge')
+      }
+      // Expand compressed class names
+      if (d.classification === 'c') {
+        d.classification = 'chainsaw'
       }
     }
 
