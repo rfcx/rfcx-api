@@ -1,3 +1,9 @@
+## 1.2.2 (2022-09-06)
+
+### Features
+* **core**: Update `GET /classifiers/:id` and `GET /classifiers/:id/file` to get data by permission
+
+
 ## 1.2.1 (2022-08-24)
 
 ### Features

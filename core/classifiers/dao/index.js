@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
@@ -39,32 +39,32 @@ const availableIncludes = [
  * @returns {*} classifier model item
  * @throws EmptyResultError when classifier not found
  */
-function get (id, options = {}) {
-  return models.Classifier
-    .findOne({
-      where: { id },
-      // TODO Refactor to use `fields` instead of `joinRelations` and `attributes`
-      attributes: options && options.attributes ? options.attributes : models.Classifier.attributes.full,
-      include: options && options.joinRelations ? availableIncludes : []
-    })
-    .then(classifier => {
-      if (!classifier) {
-        throw new EmptyResultError('Classifier with given id not found.')
-      }
-      const data = classifier.toJSON()
-      // Remove join tables from json
-      if (data.activeStreams) {
-        data.activeStreams = data.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj) // eslint-disable-line camelcase
-      }
+async function get (id, options = {}) {
+  const query = { where: { id }, raw: true }
 
-      if (data.activeProjects) {
-        data.activeProjects = data.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj) // eslint-disable-line camelcase
-      }
-      return data
-    })
-    .catch(() => {
-      throw new EmptyResultError('Classifier with given id not found.')
-    })
+  if (options.attributes) {
+    query.attributes = options.attributes
+  }
+
+  const classifier = await models.Classifier.findOne(query)
+  if (!classifier) {
+    throw new EmptyResultError('Classifier with given id not found.')
+  }
+
+  // When readableBy is specified, only return public classifiers or classifiers created by the user
+  if (options.readableBy && !classifier.isPublic && !(classifier.createdById === options.readableBy)) {
+    throw new ForbiddenError()
+  }
+
+  if (classifier.activeStreams) {
+    classifier.activeStreams = classifier.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj)
+  }
+
+  if (classifier.activeProjects) {
+    classifier.activeProjects = classifier.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj)
+  }
+
+  return classifier
 }
 
 /**
