@@ -30,9 +30,9 @@ module.exports = (req, res) => {
   const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
   const classifierId = req.params.id
 
-  return get(classifierId, { attributes: ['model_url'], readableBy })
+  return get(classifierId, { attributes: ['modelUrl'], readableBy })
     .then(async (classifier) => {
-      const classifierUrl = classifier.model_url
+      const classifierUrl = classifier.modelUrl
       const signedUrl = await getSignedUrl(classifierUrl)
 
       res.redirect(signedUrl)
