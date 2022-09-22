@@ -43,7 +43,7 @@ async function get (id, options = {}) {
   const query = { where: { id }, raw: true }
 
   if (options.attributes) {
-    query.attributes = options.attributes
+    query.attributes = ['isPublic', 'createdById', ...options.attributes]
   }
 
   const classifier = await models.Classifier.findOne(query)
