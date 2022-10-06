@@ -18,26 +18,3 @@ spec:
           - backend:
               serviceName: media-api-service
               servicePort: 80
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "8k"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
-    nginx.ingress.kubernetes.io/limit-rpm: "1000"
-  name: media-api-ingress
-  namespace: production
-  labels:
-    app: "media-api"
-spec:
-  rules:
-    - host: explorer.rfcx.org
-      http:
-        paths:
-          - path: /media-api(/|$)(.*)
-            pathType: Prefix
-            backend:
-              serviceName: media-api-service
-              servicePort: 80
