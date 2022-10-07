@@ -138,17 +138,6 @@ describe('GET /classifier-jobs', () => {
     expect(response.body.length).toEqual(2)
   })
 
-  test('sort option is working well', async () => {
-    const query = {
-      sort: '-updated_at'
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(4)
-    expect(response.body[0].updated_at).toEqual('2022-10-07T08:07:49.158Z')
-  })
-
   test('fields option is working well', async () => {
     const query = {
       fields: ['project_id', 'query_streams']
