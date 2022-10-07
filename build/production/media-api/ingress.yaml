@@ -2,21 +2,10 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    # Docs: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations
-
-    # Maximum request body size
     nginx.ingress.kubernetes.io/proxy-body-size: "8k"
-
-    # Timeout for communicating with service (in seconds)
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
-
-    # Rate limiting
-    # limit-rpm = limit each IP address to X requests per minute
-    # limit-whitelist = do not rate limit clients in the IP range
     nginx.ingress.kubernetes.io/limit-rpm: "1000"
-    # nginx.ingress.kubernetes.io/limit-whitelist: "comma separated list of CIDRs"
-
   name: media-api-ingress
   namespace: production
   labels:
@@ -27,5 +16,26 @@ spec:
       http:
         paths:
           - backend:
+              serviceName: media-api-service
+              servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: 'http'
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: media-api-explorer-ingress
+  namespace: production
+  labels:
+    app: "media-api"
+spec:
+  rules:
+    - host: explorer.rfcx.org
+      http:
+        paths:
+          - path: /media-api(/|$)(.*)
+            pathType: Prefix
+            backend:
               serviceName: media-api-service
               servicePort: 80
