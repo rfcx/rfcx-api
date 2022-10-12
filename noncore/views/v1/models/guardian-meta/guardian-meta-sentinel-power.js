@@ -15,6 +15,7 @@ exports.models = {
         check_in_id: dbRow.check_in_id,
         battery_current: dbRow.battery_current,
         input_current: dbRow.input_current,
+        input_power: dbRow.input_power,
         system_current: dbRow.system_current,
         battery_voltage: dbRow.battery_voltage
       })

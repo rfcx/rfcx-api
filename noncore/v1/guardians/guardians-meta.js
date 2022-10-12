@@ -194,6 +194,7 @@ router.route('/:guardian_id/meta/:meta_type')
           check_in_id: 'check_in_id',
           battery_current: 'battery_current',
           input_current: 'input_current',
+          input_power: 'input_power',
           system_current: 'system_current',
           battery_voltage: 'battery_voltage'
         }
