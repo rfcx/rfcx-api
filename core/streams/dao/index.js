@@ -52,7 +52,7 @@ async function get (idOrWhere, options = {}) {
   if (!stream) {
     throw new EmptyResultError('Stream not found')
   }
-  if (options.readableBy && !(await hasPermission(READ, options.readableBy, stream.id, STREAM))) {
+  if (options.readableBy && !(await hasPermission(READ, options.readableBy, where.id, STREAM))) {
     throw new ForbiddenError()
   }
   return stream.toJSON()
