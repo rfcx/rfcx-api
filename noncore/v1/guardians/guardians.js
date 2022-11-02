@@ -12,7 +12,7 @@ router.route('/')
     } else {
       const siteIds = [ // ids copies from deleted UserSiteRelations table
         3, 6, 8, 13, 23, 26, 28, 30, 31, 32, 35, 38, 39, 40, 41, 43, 44,
-        45, 47, 48, 49, 50, 51, 53, 54, 55, 56, 57, 60, 62, 63, 65]
+        45, 47, 48, 49, 50, 51, 53, 54, 55, 56, 57, 60, 62, 63, 64, 65]
       models.Guardian.findAll({
         attributes: ['guid', 'is_visible', 'last_check_in', 'shortname', 'latitude', 'longitude'],
         include: [{
