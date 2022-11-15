@@ -142,6 +142,14 @@ function remove (streamSourceFile) {
 }
 
 /**
+ * Delete multiple stream source file ids
+ * @param {*} ids stream source file ids
+ */
+async function destroy (ids) {
+  return StreamSourceFile.destroy({ where: { id: { [Sequelize.Op.in]: ids } } })
+}
+
+/**
  * Checks if source file with given sha1 checksum exists in specified stream
  * @param {*} stream_id
  * @param {*} sha1_checksum
@@ -225,6 +233,7 @@ module.exports = {
   create,
   query,
   remove,
+  destroy,
   checkForDuplicates,
   findOrCreateRelationships,
   transformMetaAttr,

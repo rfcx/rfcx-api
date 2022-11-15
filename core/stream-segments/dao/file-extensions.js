@@ -14,4 +14,8 @@ async function findOrCreate (data, options = {}) {
   return item
 }
 
-module.exports = { findOrCreate }
+async function findAll () {
+  return FileExtension.findAll()
+}
+
+module.exports = { findOrCreate, findAll }

@@ -238,10 +238,19 @@ function removeDuplicates (segments) {
   }, [])
 }
 
+/**
+ * Delete segments
+ * @param {*} ids Segment ids
+ */
+async function destroy (ids) {
+  return StreamSegment.destroy({ where: { id: { [Sequelize.Op.in]: ids } } })
+}
+
 module.exports = {
   get,
   query,
   create,
+  destroy,
   notify,
   getStreamCoverage,
   getNextSegmentTimeAfterSegment,

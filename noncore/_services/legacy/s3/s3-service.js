@@ -57,6 +57,25 @@ function deleteObject (bucket, fullPath) {
   })
 }
 
+async function deleteObjects (bucket, keys) {
+  return new Promise((resolve, reject) => {
+    let index = 0
+    const step = 1000
+    while (keys.slice(index * step, index * step + step).length) {
+      const start = index * step
+      const end = index * step + step
+      console.info(`deleting ${start} - ${end} of ${keys.length} files from ${bucket}`)
+      const curKeys = keys.slice(start, end)
+      aws.s3(bucket).deleteMultiple(curKeys, (err, res) => {
+        res.resume()
+        if (err) { return reject(err) }
+        return resolve()
+      })
+      index++
+    }
+  })
+}
+
 function headObject (s3Path, bucket, dontRejectIfEmpty) {
   return new Promise((resolve, reject) => {
     aws.s3(bucket).headFile(s3Path, (err, data) => {
@@ -119,5 +138,6 @@ module.exports = {
   copyObject,
   headObject,
   getObject,
-  deleteObject
+  deleteObject,
+  deleteObjects
 }
