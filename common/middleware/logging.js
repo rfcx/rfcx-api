@@ -17,7 +17,8 @@ module.exports = expressWinston.logger({
       body = body.slice(0, 5)
       body.push(`Other ${totalLength - 5} items were cropped...`)
     }
-    return `${req.method} ${res.statusCode} ${req.url} ${res.responseTime} Authorization: ${req.headers.authorization} ${JSON.stringify(body)}`
+    const userEmail = (req.rfcx && req.rfcx.auth_token_info && req.rfcx.auth_token_info.email) ? req.rfcx.auth_token_info.email : 'none'
+    return `${req.method} ${res.statusCode} ${req.url} Response Time: ${res.responseTime} Authorization: ${req.headers.authorization} Email: ${userEmail} Body: ${JSON.stringify(body)}`
   },
   expressFormat: false,
   statusLevels: true
