@@ -246,6 +246,10 @@ async function destroy (ids) {
   return StreamSegment.destroy({ where: { id: { [Sequelize.Op.in]: ids } } })
 }
 
+async function findSegmentsByStreamSource (id, transaction) {
+  return StreamSegment.findAll({ where: { stream_source_file_id: id }, raw: true }, { transaction })
+}
+
 module.exports = {
   get,
   query,
@@ -254,5 +258,6 @@ module.exports = {
   notify,
   getStreamCoverage,
   getNextSegmentTimeAfterSegment,
-  removeDuplicates
+  removeDuplicates,
+  findSegmentsByStreamSource
 }
