@@ -11,22 +11,14 @@ function getSegmentData (segmentIds, transaction) {
 }
 
 async function checkSegmentPermission (token, segments) {
-  const streamIds = segments.map(s => s.stream_id)
-  const uniqStreamIds = streamIds.reduce((acc, cur) => {
-    const existing = acc.find(i => i === cur)
-    if (!existing) {
-      acc.push(cur)
-    }
-    return acc
-  }, [])
-  let allowed = true
+  const uniqStreamIds = [...new Set(segments.map(s => s.stream_id))]
   for (const stream of uniqStreamIds) {
-    allowed = await rolesService.hasPermission('D', token, stream, rolesService.STREAM)
+    const allowed = await rolesService.hasPermission('D', token, stream, rolesService.STREAM)
     if (!allowed) {
       return false
     }
   }
-  return allowed
+  return true
 }
 
 async function deleteSegmentS3 (segments) {
@@ -39,7 +31,11 @@ async function deleteSegmentCore (segments, transaction) {
   await streamSegmentDao.destroy(segments.map(s => s.id), { transaction })
 }
 
-async function deleteStreamSourceFiles (segments, transaction) {
+/**
+ * Delete stream sourse file if there are not any related segments
+ * @param {any[]} segments - array of segments' objects
+ */
+async function deleteStreamSourceFile (segments, transaction) {
   for (const segment of segments) {
     const allSegments = await streamSegmentDao.findSegmentsByStreamSource(segment.stream_source_file_id, transaction)
     if (allSegments && !allSegments.length) {
@@ -53,5 +49,5 @@ module.exports = {
   checkSegmentPermission,
   deleteSegmentCore,
   deleteSegmentS3,
-  deleteStreamSourceFiles
+  deleteStreamSourceFile
 }

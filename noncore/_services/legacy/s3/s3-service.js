@@ -64,7 +64,6 @@ async function deleteObjects (bucket, keys) {
     while (keys.slice(index * step, index * step + step).length) {
       const start = index * step
       const end = index * step + step
-      console.info(`deleting ${start} - ${end} of ${keys.length} files from ${bucket}`)
       const curKeys = keys.slice(start, end)
       aws.s3(bucket).deleteMultiple(curKeys, (err, res) => {
         res.resume()

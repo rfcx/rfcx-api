@@ -3,7 +3,7 @@ const { httpErrorHandler } = require('../../../common/error-handling/http')
 const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { sequelize } = require('../../_models')
-const { deleteSegmentCore, deleteSegmentS3, deleteStreamSourceFiles, getSegmentData, checkSegmentPermission } = require('../../stream-segments/bl/segment-delete')
+const { deleteSegmentCore, deleteSegmentS3, deleteStreamSourceFile, getSegmentData, checkSegmentPermission } = require('../../stream-segments/bl/segment-delete')
 
 /**
  * @swagger
@@ -47,7 +47,7 @@ router.delete('/segment', (req, res) => {
           }
           await deleteSegmentS3(segments)
           await deleteSegmentCore(segments, transaction)
-          await deleteStreamSourceFiles(segments, transaction)
+          await deleteStreamSourceFile(segments, transaction)
           await transaction.commit()
           return res.sendStatus(204)
         })
