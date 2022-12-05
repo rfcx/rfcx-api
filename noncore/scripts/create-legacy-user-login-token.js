@@ -32,6 +32,7 @@ User.findOne({ where: { guid: userGuid } })
       user_id: user.id
     })
     console.log('Created token', userToken.toJSON())
+    console.log('Token', token)
   })
   .catch((err) => {
     console.log(err)
