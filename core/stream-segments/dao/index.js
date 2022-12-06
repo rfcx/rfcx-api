@@ -68,11 +68,11 @@ async function get (streamId, start, options = {}) {
  * @param {number} options.readableBy Include only segments readable by the given user id
  */
 async function query (filters, options = {}) {
-  if (filters.end < filters.start) {
+  if (filters && (filters.end < filters.start)) {
     throw new ValidationError('"end" attribute cannot be less than "start" attribute')
   }
   // TODO: move this out as it's not related to segments querying and should be done beforehand
-  if (!(await Stream.findByPk(filters.streamId))) {
+  if (filters && !(await Stream.findByPk(filters.streamId))) {
     throw new EmptyResultError('Stream not found')
   }
   // TODO: move this out as it's not related to segments querying and should be done beforehand
@@ -80,9 +80,13 @@ async function query (filters, options = {}) {
     throw new ForbiddenError()
   }
   const where = {
-    stream_id: filters.streamId
+    ...filters && filters.streamId && { stream_id: filters.streamId }
   }
-  if (options.strict === false) {
+  if (options.streamSourceFileId) {
+    where.stream_source_file_id = options.streamSourceFileId
+  } else if (options.ids) {
+    where.id = { [Sequelize.Op.in]: options.ids }
+  } else if (options.strict === false) {
     where[Sequelize.Op.and] = {
       start: {
         // When we use both `start` and `end` attributes in query, TImescaleDB can't use hypertable indexes in a full way,

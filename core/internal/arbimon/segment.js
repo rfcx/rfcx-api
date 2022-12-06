@@ -1,9 +1,8 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const Converter = require('../../../common/converter')
-const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { sequelize } = require('../../_models')
-const { deleteSegmentCore, deleteSegmentS3, deleteStreamSourceFile, getSegmentData, checkSegmentPermission } = require('../../stream-segments/bl/segment-delete')
+const { getSegmentData, deleteSegmentAsync } = require('../../stream-segments/bl/segment-delete')
 
 /**
  * @swagger
@@ -36,18 +35,12 @@ router.delete('/segment', (req, res) => {
     .then((transaction) => {
       return params.validate()
         .then(() => getSegmentData(convertedParams.segments, transaction))
-        .then(async (segments) => {
-          if (!segments.length) {
+        .then(async (data) => {
+          if (!data.results.length) {
             transaction.rollback()
             return res.sendStatus(204)
           }
-          const allowed = await checkSegmentPermission(req.rfcx.auth_token_info, segments)
-          if (!allowed) {
-            throw new ForbiddenError('You do not have permission to delete segments.')
-          }
-          await deleteSegmentS3(segments)
-          await deleteSegmentCore(segments, transaction)
-          await deleteStreamSourceFile(segments, transaction)
+          await deleteSegmentAsync(req.rfcx.auth_token_info, data.results, transaction)
           await transaction.commit()
           return res.sendStatus(204)
         })
