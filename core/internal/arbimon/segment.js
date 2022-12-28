@@ -1,8 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const Converter = require('../../../common/converter')
-const { sequelize } = require('../../_models')
-const { getSegmentData, deleteSegmentAsync } = require('../../stream-segments/bl/segment-delete')
+const { deleteSegments } = require('../../stream-segments/bl/segment-delete')
 
 /**
  * @swagger
@@ -28,26 +27,17 @@ const { getSegmentData, deleteSegmentAsync } = require('../../stream-segments/bl
  *         description: Segment not found
  */
 router.delete('/segment', (req, res) => {
+  const user = req.rfcx.auth_token_info
   const convertedParams = {}
   const params = new Converter(req.body, convertedParams)
   params.convert('segments').toArray()
-  sequelize.transaction()
-    .then((transaction) => {
-      return params.validate()
-        .then(() => getSegmentData(convertedParams.segments, transaction))
-        .then(async (data) => {
-          if (!data.results.length) {
-            transaction.rollback()
-            return res.sendStatus(204)
-          }
-          await deleteSegmentAsync(req.rfcx.auth_token_info, data.results, transaction)
-          await transaction.commit()
-          return res.sendStatus(204)
-        })
-        .catch((err) => {
-          transaction.rollback()
-          httpErrorHandler(req, res, 'Failed deleting segments')(err)
-        })
+  return params.validate()
+    .then(async () => {
+      await deleteSegments(user, convertedParams.segments)
+      return res.sendStatus(204)
+    })
+    .catch((err) => {
+      httpErrorHandler(req, res, 'Failed deleting segments')(err)
     })
 })
 

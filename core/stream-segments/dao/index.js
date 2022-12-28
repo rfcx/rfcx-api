@@ -244,10 +244,12 @@ function removeDuplicates (segments) {
 
 /**
  * Delete segments
- * @param {*} ids Segment ids
+ * @param {*} start Segment start time
+ * @param {*} streamId Stream id
+ * @param {*} id Segment id
  */
-async function destroy (ids) {
-  return StreamSegment.destroy({ where: { id: { [Sequelize.Op.in]: ids } } })
+async function destroy (start, streamId, id, transaction) {
+  return StreamSegment.destroy({ where: { start, stream_id: streamId, id } }, { transaction })
 }
 
 async function findSegmentsByStreamSource (id, transaction) {

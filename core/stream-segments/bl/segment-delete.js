@@ -4,31 +4,36 @@ const streamSegmentDao = require('../dao')
 const streamSourceFilesDao = require('../../stream-source-files/dao')
 const { getSegmentRemotePath } = require('./segment-file-utils')
 const S3Service = require('../../../noncore/_services/legacy/s3/s3-service')
-const { ForbiddenError } = require('../../../common/error-handling/errors')
+const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
+const { sequelize } = require('../../_models')
+
+async function deleteSegments (user, segmentIds) {
+  return await sequelize.transaction(async (transaction) => {
+    const segments = await getSegmentData(segmentIds, transaction)
+    await checkSegmentPermission(user, segments)
+    await deleteSegmentS3(segments)
+    await deleteSegmentCore(segments, transaction)
+    await deleteStreamSourceFile(segments, transaction)
+  })
+}
 
 async function getSegmentData (segmentIds, transaction) {
-  return streamSegmentDao.query(null, {
+  const segments = (await streamSegmentDao.query(null, {
     ids: segmentIds,
     fields: ['id', 'start', 'end', 'file_extension_id', 'stream_id', 'stream_source_file_id']
-  }, transaction)
-}
-
-async function deleteSegmentAsync (token, segments, transaction) {
-  const allowed = await checkSegmentPermission(token, segments)
-  if (!allowed) {
-    throw new ForbiddenError('You do not have permission to delete segments.')
+  }, transaction)).results
+  if (!segments.length) {
+    return new EmptyResultError('No segments found')
   }
-  await deleteSegmentS3(segments)
-  await deleteSegmentCore(segments, transaction)
-  await deleteStreamSourceFile(segments, transaction)
+  return segments
 }
 
-async function checkSegmentPermission (token, segments) {
+async function checkSegmentPermission (user, segments) {
   const uniqStreamIds = [...new Set(segments.map(s => s.stream_id))]
   for (const stream of uniqStreamIds) {
-    const allowed = await rolesService.hasPermission('D', token, stream, rolesService.STREAM)
+    const allowed = await rolesService.hasPermission('D', user, stream, rolesService.STREAM)
     if (!allowed) {
-      return false
+      throw new ForbiddenError('You do not have permission to delete segments.')
     }
   }
   return true
@@ -41,7 +46,9 @@ async function deleteSegmentS3 (segments) {
 }
 
 async function deleteSegmentCore (segments, transaction) {
-  await streamSegmentDao.destroy(segments.map(s => s.id), { transaction })
+  for (const segment of segments) {
+    await streamSegmentDao.destroy(segment.start, segment.stream_id, segment.id, transaction)
+  }
 }
 
 /**
@@ -59,7 +66,7 @@ async function deleteStreamSourceFile (segments, transaction) {
 
 module.exports = {
   getSegmentData,
-  deleteSegmentAsync,
+  deleteSegments,
   checkSegmentPermission,
   deleteSegmentCore,
   deleteSegmentS3,
