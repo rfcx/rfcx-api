@@ -64,7 +64,7 @@ function listen () {
 
   app.on('message', (topic, data) => {
     let messageId = randomGuid()
-    console.info('MQTT: new mqtt message', topic, messageId, '\n', data.toString('utf8'))
+    console.info('MQTT: new mqtt message', topic, messageId, '\n\n\n==========================================\n==========================================\n==========================================', data.toString('utf8'), '\n\n\n==========================================\n==========================================\n==========================================')
 
     if (/grd\/.+\/chk/.test(topic)) {
       const start = Date.now()
