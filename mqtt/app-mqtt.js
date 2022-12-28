@@ -68,7 +68,7 @@ function listen () {
 
     if (/grd\/.+\/chk/.test(topic)) {
       const start = Date.now()
-      return mqttCheckInRouter.onMessageCheckin(data, messageId)
+      return mqttCheckInRouter.onMessageCheckin(data, messageId, '\n', data)
         .then((result) => {
           app.publish(`grd/${result.guardian_guid}/cmd`, result.gzip)
 
