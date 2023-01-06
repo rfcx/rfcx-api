@@ -63,6 +63,7 @@ module.exports = (req, res) => {
           stream.externalId = externalSite.site_id
         } catch (error) {
           console.error(`Error creating site in Arbimon (stream: ${stream.id})`)
+          throw new Error()
         }
       }
 
