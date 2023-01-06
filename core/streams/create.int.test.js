@@ -1,13 +1,22 @@
+const arbimonService = require('../_services/arbimon')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
+
+jest.mock('../_services/arbimon', () => {
+  return {
+    isEnabled: true,
+    createSite: jest.fn(async () => { return await Promise.resolve({ site_id: 123 }) })
+  }
+})
 
 const app = expressApp()
 
 app.use('/', routes)
 
 beforeAll(async () => {
+  muteConsole()
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
 })
@@ -31,6 +40,7 @@ describe('POST /streams', () => {
     const stream = await models.Stream.findByPk(id)
     expect(stream.name).toBe(requestBody.name)
     expect(stream.createdById).toBe(seedValues.primaryUserId)
+    expect(stream.externalId).toBe(123)
   })
 
   test('missing name', async () => {
@@ -43,6 +53,20 @@ describe('POST /streams', () => {
 
     expect(response.statusCode).toBe(400)
     expect(console.warn).toHaveBeenCalled()
+  })
+
+  test('arbimon failed creating a site', async () => {
+    arbimonService.createSite.mockImplementationOnce(() => { throw new Error() })
+    const requestBody = {
+      name: 'Trail 39',
+      latitude: 10.123,
+      longitude: 101.456
+    }
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(500)
+    const streams = await models.Stream.findAll()
+    expect(streams.length).toBe(0)
   })
 
   test('returns 201 when user creates a stream in a project he has a Member role', async () => {
