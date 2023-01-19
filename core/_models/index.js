@@ -15,6 +15,7 @@ const models = {
   ClassifierOutput: require('./classifiers/classifier-output')(sequelize, Sequelize),
   Classifier: require('./classifiers/classifier')(sequelize, Sequelize),
   Detection: require('./detections/detection')(sequelize, Sequelize),
+  DetectionReview: require('./detections/detection-review')(sequelize, Sequelize),
   EventStrategy: require('./events/event-strategy')(sequelize, Sequelize),
   Event: require('./events/event')(sequelize, Sequelize),
   IndexType: require('./indices/index-type')(sequelize, Sequelize),

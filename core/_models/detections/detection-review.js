@@ -1,3 +1,5 @@
+const includeBuilder = require('../../_utils/db/include-builder')
+
 module.exports = (sequelize, DataTypes) => {
   const DetectionReview = sequelize.define('DetectionReview', {
     id: {
@@ -28,5 +30,6 @@ module.exports = (sequelize, DataTypes) => {
     lite: ['id', 'detection_id', 'positive'],
     full: ['id', 'detection_id', 'user_id', 'positive', 'created_at', 'updated_at']
   }
+  DetectionReview.include = includeBuilder(DetectionReview, 'reviews', DetectionReview.attributes.lite)
   return DetectionReview
 }

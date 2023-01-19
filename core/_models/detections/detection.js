@@ -9,7 +9,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     start: {
       // Hypertable key
-      type: DataTypes.DATE(3)
+      type: DataTypes.DATE(3),
+      primaryKey: true
     },
     end: {
       type: DataTypes.DATE(3)
