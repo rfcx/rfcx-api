@@ -82,13 +82,13 @@ brew install postgresql
 If you are using a local dev environment with docker compose then:
 
 ```
-./core/_cli/seed.sh
+./common/_cli/seed.sh
 ```
 
 Otherwise, specify your host/user/pass/etc as arguments:
 
 ```
-./core/_cli/seed.sh USERNAME PASSWORD HOSTNAME PORT DATABASENAME
+./common/_cli/seed.sh USERNAME PASSWORD HOSTNAME PORT DATABASENAME
 ```
 
 ## Running the API locally
