@@ -23,10 +23,10 @@ spec:
             name: noncore-api-configmap
         resources:
           requests:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "200Mi"
+            cpu: "0.1"
           limits:
-            memory: "700Mi"
-            cpu: "600m"
+            memory: "400Mi"
+            cpu: "0.3"
         ports:
         - containerPort: 80
