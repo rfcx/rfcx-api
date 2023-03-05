@@ -87,7 +87,6 @@ const availableIncludes = [
 // }
 
 async function defaultQueryOptions (filters = {}, options = {}) {
-  console.log('\n\nfilters', filters, '\n\n')
   if (!filters.start || !filters.end) {
     throw new ValidationError('"start" and "end" are required to query for detections')
   }
@@ -128,14 +127,13 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     where.classifier_id = { [Sequelize.Op.or]: classifiers }
   }
   if (isReviewed !== undefined) {
-    where.review_status = { [isReviewed ? Sequelize.Op.ne : Sequelize.Op.eq]: 0 }
+    where.review_status = { [isReviewed ? Sequelize.Op.ne : Sequelize.Op.eq]: null }
   }
   if (isPositive !== undefined) {
     where.review_status = isPositive ? 1 : -1
   }
   // TODO: if minConfidence is undefined, get it from event strategy
   where.confidence = { [Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
-  console.log('\n\nwhere', where, '\n\n')
   return { where, include, attributes, offset, limit, order }
 }
 
