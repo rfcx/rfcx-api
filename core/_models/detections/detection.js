@@ -1,12 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
   const Detection = sequelize.define('Detection', {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      allowNull: false,
-      // this is not a primary key actually, but Sequelize returns an error if no primary key is set, but "id" column exists
-      primaryKey: true
-    },
     start: {
       // Hypertable key
       type: DataTypes.DATE(3),
@@ -38,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     timestamps: false
   })
+  Detection.removeAttribute('id') // https://github.com/sequelize/sequelize/issues/1026#issuecomment-54877327
   Detection.associate = function (models) {
     Detection.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
     Detection.belongsTo(models.Classification, { as: 'classification', foreignKey: 'classification_id' })

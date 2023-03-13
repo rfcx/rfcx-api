@@ -1,6 +1,6 @@
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const moment = require('moment')
 
@@ -10,11 +10,14 @@ app.use('/', routes)
 
 beforeAll(async () => {
   muteConsole()
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterEach(async () => {
+  await truncateNonBase(models)
+})
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {

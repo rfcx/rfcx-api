@@ -25,9 +25,11 @@
     "seed:noncore": "./common/_cli/seed.sh -d noncore -f noncore",
     "reset:core": "node common/_cli/reset.js core",
     "reset:noncore": "node common/_cli/reset.js noncore",
-    "test": "eslint \"**/*.js\" && jest",
-    "jest": "jest",
-    "lint": "eslint \"**/*.js\""
+    "jest": "npm run start:timescale-test && ./test/wait-for-it.sh localhost:5433 --strict --timeout=5 -- sleep 5 && jest --runInBand --forceExit && npm run stop:timescale-test",
+    "lint": "eslint \"**/*.js\"",
+    "test": "npm run lint && npm run jest",
+    "start:timescale-test": "docker compose -f test/docker-compose.yaml up -d --quiet-pull",
+    "stop:timescale-test": "docker compose -f test/docker-compose.yaml down"
   },
   "dependencies": {
     "@google-cloud/storage": "^5.2.0",
@@ -92,7 +94,7 @@
     "eslint-plugin-jest": "^24.3.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
-    "jest": "^26.0.1",
+    "jest": "^29.5.0",
     "nodemon": "^2.0.16",
     "s3": "4.4.0",
     "sequelize-cli": "5.5.1",

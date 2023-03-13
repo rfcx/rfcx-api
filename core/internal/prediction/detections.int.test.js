@@ -2,27 +2,25 @@ const request = require('supertest')
 const moment = require('moment')
 const routes = require('./detections')
 const models = require('../../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {
-  const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
+  const stream = { id: 'abced', name: 'my stream', createdById: seedValues.primaryUserId }
   await models.Stream.create(stream)
-  const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }
-  await models.Classification.create(classification)
-  const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
-  await models.Classifier.create(classifier)
+  const classification = await models.Classification.create({ value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 })
+  const classifier = await models.Classifier.create({ externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' })
   const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'chnsw', ignoreThreshold: 0.1 }
   await models.ClassifierOutput.create(classifierOutput)
   return { stream, classification, classifier, classifierOutput }

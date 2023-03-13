@@ -1,18 +1,18 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
-})
-beforeEach(async () => {
-  await truncate(models)
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.Classification.destroy({ where: { value: 'chainsaw' } })
+  await models.Classifier.destroy({ where: { externalId: 'cccddd' } })
+  await models.Stream.destroy({ where: { id: 'abc' } })
+  await models.sequelize.close()
 })
 
 async function commonSetup () {

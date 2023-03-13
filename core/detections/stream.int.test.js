@@ -1,27 +1,24 @@
 const request = require('supertest')
 const routes = require('./stream')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {
-  const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
-  await models.Stream.create(stream)
-  const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }
-  await models.Classification.create(classification)
-  const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
-  await models.Classifier.create(classifier)
+  const stream = (await models.Stream.findOrCreate({ where: { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId } }))[0]
+  const classification = (await models.Classification.findOrCreate({ where: { value: 'chainsaw', title: 'Chainsaw', typeId: 1, source_id: 1 } }))[0]
+  const classifier = await models.Classifier.create({ externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' })
   const classifierOutput = { classifierId: classifier.id, classificationId: classification.id, outputClassName: 'chnsw', ignoreThreshold: 0.1 }
   await models.ClassifierOutput.create(classifierOutput)
   return { stream, classification, classifier, classifierOutput }
@@ -34,7 +31,6 @@ describe('POST /streams/:id/detections', () => {
       { start: '2021-03-15T00:00:00Z', end: '2021-03-15T00:00:05Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold + 0.05 },
       { start: '2021-03-15T00:00:05Z', end: '2021-03-15T00:00:10Z', classifier: classifier.id.toString(), classification: classifierOutput.outputClassName, confidence: classifierOutput.ignoreThreshold + 0.15 }
     ]
-
     const response = await request(app).post(`/${stream.id}/detections`).send(requestBody)
 
     expect(response.statusCode).toBe(201)

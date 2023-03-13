@@ -1,7 +1,7 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed } = require('../../common/testing/sequelize')
+const { expressApp, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp({ has_system_role: true })
 
@@ -14,13 +14,11 @@ async function commonSetup () {
   await models.Classification.bulkCreate([CLASSIFICATION_1, CLASSIFICATION_2])
 }
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
-})
 beforeEach(async () => {
-  await truncate(models)
   await commonSetup()
+})
+afterEach(async () => {
+  await truncateNonBase(models)
 })
 
 describe('POST /classifiers/:id', () => {
@@ -53,8 +51,8 @@ describe('POST /classifiers/:id', () => {
 
       // Assert
       expect(response.statusCode).toBe(201)
-      expect(response.headers.location).toContain('/1')
       expect(classifiers.length).toBe(1)
+      expect(response.headers.location).toContain(`/${classifiers[0].id}`)
       expect(classifiers[0].name).toBe(requestBody.name)
       expect(classifiers[0].version).toBe(requestBody.version)
       expect(classifiers[0].parameters).toBe(requestBody.parameters)

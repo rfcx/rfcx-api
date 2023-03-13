@@ -9,15 +9,14 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
     detectionId: {
-      type: DataTypes.UUID
+      type: DataTypes.BIGINT
     },
     userId: {
       type: DataTypes.INTEGER
     },
     positive: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      default: null
+      type: DataTypes.SMALLINT,
+      allowNull: false
     }
   }, {
     underscored: true
