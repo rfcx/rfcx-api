@@ -66,16 +66,16 @@ jobs:
         run: |
           find test/init.d -type f | sort | PGPASSWORD=test xargs -n1 -I % psql -U postgres -h 127.0.0.1 -p 5433 -f %
 
-      # - name: 'Setup: Load npm dependencies cache'
-      #   # v3 (3.0.1) @ 30 Mar 2022 https://github.com/actions/cache/tags
-      #   uses: actions/cache@136d96b4aee02b1f0de3ba493b1d47135042d9c0
-      #   id: setup-npm-cache
-      #   with:
-      #     path: '**/node_modules'
-      #     key: npm-${{ runner.os }}-${{ inputs.branch-name }}-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: |
-      #       npm-${{ runner.os }}-${{ inputs.branch-name }}-
-      #       npm-${{ runner.os }}-
+      - name: 'Setup: Load npm dependencies cache'
+        # v3 (3.0.1) @ 30 Mar 2022 https://github.com/actions/cache/tags
+        uses: actions/cache@136d96b4aee02b1f0de3ba493b1d47135042d9c0
+        id: setup-npm-cache
+        with:
+          path: '**/node_modules'
+          key: npm-${{ runner.os }}-${{ inputs.branch-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-${{ inputs.branch-name }}-
+            npm-${{ runner.os }}-
 
       - name: 'Setup: Install dependencies'
         if: steps.setup-npm-cache.outputs.cache-hit != 'true'
