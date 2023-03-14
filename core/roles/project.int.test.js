@@ -7,6 +7,10 @@ const app = expressApp()
 
 app.use('/', routes)
 
+beforeAll(async () => {
+  await truncateNonBase(models)
+})
+
 beforeEach(async () => {
   await models.sequelize.query('SELECT setval(\'users_id_seq\', (SELECT MAX(id) FROM users) + 1);')
 })

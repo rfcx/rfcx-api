@@ -1,14 +1,13 @@
 version: "3.2"
+name: core-api-int-test
 services:
-  core-api-timescaledb-int-test:
+  timescaledb-int-test:
+    container_name: timescaledb-int-test
     image: "timescale/timescaledb:latest-pg14"
     ports:
       - "5433:5432"
     volumes:
-      # - core-api-timescaledb-int-test:/var/lib/postgresql/data
       - ./init.d:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test
-# volumes:
-#   core-api-timescaledb-int-test:

@@ -9,6 +9,7 @@ app.use('/', routes)
 
 beforeAll(async () => {
   muteConsole()
+  await truncateNonBase(models)
 })
 afterEach(async () => {
   await truncate({ Stream: models.Stream, UserStreamRole: models.UserStreamRole, Project: models.Project, UserProjectRole: models.UserProjectRole })

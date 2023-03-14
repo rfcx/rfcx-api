@@ -25,11 +25,12 @@
     "seed:noncore": "./common/_cli/seed.sh -d noncore -f noncore",
     "reset:core": "node common/_cli/reset.js core",
     "reset:noncore": "node common/_cli/reset.js noncore",
-    "jest": "npm run start:timescale-test && ./test/wait-for-it.sh localhost:5433 --strict --timeout=5 -- sleep 5 && jest --runInBand --forceExit && npm run stop:timescale-test",
+    "jest": "jest --runInBand --forceExit",
     "lint": "eslint \"**/*.js\"",
-    "test": "npm run lint && npm run jest",
+    "test": "npm run start:timescale-test && npm run check:timescale-test && npm run jest && npm run stop:timescale-test",
     "start:timescale-test": "docker compose -f test/docker-compose.yaml up -d --quiet-pull",
-    "stop:timescale-test": "docker compose -f test/docker-compose.yaml down"
+    "stop:timescale-test": "docker compose -f test/docker-compose.yaml down",
+    "check:timescale-test": "timeout 90s bash -c \"until docker exec timescaledb-int-test pg_isready ; do sleep 3 ; done\""
   },
   "dependencies": {
     "@google-cloud/storage": "^5.2.0",

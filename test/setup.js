@@ -1,5 +1,5 @@
 const coreModels = require('../core/_models')
-const { migrate, seed, truncate, muteConsole } = require('../common/testing/sequelize')
+const { migrate, seed, truncate } = require('../common/testing/sequelize')
 
 module.exports = async () => {
   await migrate(coreModels.sequelize, coreModels.Sequelize)
