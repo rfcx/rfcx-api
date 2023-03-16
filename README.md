@@ -131,7 +131,7 @@ npm run start:mqtt
 
 ## Testing
 
-This project uses [Jest](https://jestjs.io) for testing and [ESLint](https://eslint.org) for linting. To run both:
+This project uses [Jest](https://jestjs.io) for testing and [ESLint](https://eslint.org) for linting. It starts TimescaleDB container using Docker, so make sure you install and start Docker daemon before running tests. To run both:
 
 ```
 npm test

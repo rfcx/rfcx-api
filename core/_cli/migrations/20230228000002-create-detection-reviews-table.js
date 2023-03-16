@@ -23,7 +23,7 @@ module.exports = {
             key: 'id'
           }
         },
-        positive: {
+        status: {
           type: Sequelize.SMALLINT,
           allowNull: false
         },

@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER
     },
-    positive: {
+    status: {
       type: DataTypes.SMALLINT,
       allowNull: false
     }
@@ -22,12 +22,11 @@ module.exports = (sequelize, DataTypes) => {
     underscored: true
   })
   DetectionReview.associate = function (models) {
-    DetectionReview.belongsTo(models.Detection, { as: 'detection', foreignKey: 'detection_id' })
     DetectionReview.belongsTo(models.User, { as: 'user', foreignKey: 'user_id' })
   }
   DetectionReview.attributes = {
-    lite: ['id', 'detection_id', 'positive'],
-    full: ['id', 'detection_id', 'user_id', 'positive', 'created_at', 'updated_at']
+    lite: ['id', 'detection_id', 'status'],
+    full: ['id', 'detection_id', 'user_id', 'status', 'created_at', 'updated_at']
   }
   DetectionReview.include = includeBuilder(DetectionReview, 'reviews', DetectionReview.attributes.lite)
   return DetectionReview

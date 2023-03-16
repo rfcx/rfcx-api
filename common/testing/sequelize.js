@@ -52,6 +52,11 @@ const anotherUserGuid = 'b7cc2c4e-bea3-11ed-afa1-0242ac120003'
 const anotherUserEmail = 'big@bobby.com'
 const anotherUserFirstname = 'Big'
 const anotherUserLastname = 'Bobby'
+const differentUserId = 4
+const differentUserGuid = 'b7cc2c4e-bea3-11ed-afa1-0242ac120004'
+const differentUserEmail = 'slim@shady.com'
+const differentUserFirstname = 'Slim'
+const differentUserLastname = 'Shady'
 const roleAdmin = 1
 const roleMember = 2
 const roleGuest = 3
@@ -67,6 +72,9 @@ const seedValues = {
   anotherUserId,
   anotherUserGuid,
   anotherUserEmail,
+  differentUserId,
+  differentUserGuid,
+  differentUserEmail,
   roleAdmin,
   roleMember,
   roleGuest
@@ -76,6 +84,7 @@ async function seed (models) {
   await models.User.findOrCreate({ where: { id: primaryUserId, guid: primaryUserGuid, username: 'jb', firstname: primaryUserFirstname, lastname: primaryUserLastname, email: primaryUserEmail } })
   await models.User.findOrCreate({ where: { id: otherUserId, guid: otherUserGuid, username: 'em', firstname: otherUserFirstname, lastname: otherUserLastname, email: otherUserEmail } })
   await models.User.findOrCreate({ where: { id: anotherUserId, guid: anotherUserGuid, username: 'st', firstname: anotherUserFirstname, lastname: anotherUserLastname, email: anotherUserEmail } })
+  await models.User.findOrCreate({ where: { id: differentUserId, guid: differentUserGuid, username: 'sl', firstname: differentUserFirstname, lastname: differentUserLastname, email: differentUserEmail } })
   await models.Role.findOrCreate({ where: { id: roleAdmin, name: 'Admin' } })
   await models.Role.findOrCreate({ where: { id: roleMember, name: 'Member' } })
   await models.Role.findOrCreate({ where: { id: roleGuest, name: 'Guest' } })
