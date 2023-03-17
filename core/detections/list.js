@@ -37,6 +37,10 @@ const Converter = require('../../common/converter')
  *         description: List of classifier ids
  *         in: query
  *         type: array|string
+ *       - name: classifier_jobs
+ *         description: List of classifier job ids
+ *         in: query
+ *         type: array|string
  *       - name: min_confidence
  *         description: Return results above a minimum confidence
  *         in: query
@@ -91,6 +95,7 @@ router.get('/', (req, res) => {
   converter.convert('projects').optional().toArray()
   converter.convert('classifications').optional().toArray()
   converter.convert('classifiers').optional().toArray()
+  converter.convert('classifier_jobs').optional().toArray()
   converter.convert('min_confidence').optional().toFloat()
   converter.convert('is_reviewed').optional().toBoolean()
   converter.convert('is_positive').optional().toBoolean()

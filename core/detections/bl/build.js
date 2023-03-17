@@ -58,7 +58,8 @@ async function build (rawDetections) {
     classifierId: detection.classifier.id,
     start: detection.start,
     end: detection.end,
-    confidence: detection.confidence
+    confidence: detection.confidence,
+    classifierJobId: detection.classifier_job_id
   }))
 
   return { detections, classifierIds }

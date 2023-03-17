@@ -7,6 +7,10 @@ const app = expressApp()
 
 app.use('/', routes)
 
+afterEach(async () => {
+  await truncateNonBase(models)
+})
+
 afterAll(async () => {
   await truncateNonBase(models)
   await models.Classification.destroy({ where: { value: 'chainsaw' } })
@@ -16,27 +20,29 @@ afterAll(async () => {
 })
 
 async function commonSetup () {
-  const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
+  const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+  const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId, projectId: project.id }
   await models.Stream.create(stream)
   const classification = { id: 6, value: 'chainsaw', title: 'Chainsaw', typeId: 1, sourceId: 1 }
   await models.Classification.create(classification)
   const classifier = { id: 3, externalId: 'cccddd', name: 'chainsaw model', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: 's3://something' }
   await models.Classifier.create(classifier)
-  return { stream, classification, classifier }
+  const job1 = await models.ClassifierJob.create({ created_at: '2022-01-02 04:10', classifierId: classifier.id, projectId: project.id, createdById: seedValues.primaryUserId })
+  const job2 = await models.ClassifierJob.create({ created_at: '2022-01-02 04:12', classifierId: classifier.id, projectId: project.id, createdById: seedValues.primaryUserId })
+  return { project, stream, classification, classifier, job1, job2 }
 }
 
 describe('GET /detections', () => {
   test('success', async () => {
     const { stream, classifier, classification } = await commonSetup()
-    const detection = {
+    await models.Detection.create({
       stream_id: stream.id,
       classifier_id: classifier.id,
       classification_id: classification.id,
-      start: '2021-05-11T00:05:00Z',
-      end: '2021-05-11T00:05:05Z',
+      start: '2021-05-11T00:05:00.000Z',
+      end: '2021-05-11T00:05:05.000Z',
       confidence: 0.5
-    }
-    await models.Detection.create(detection)
+    })
     const query = {
       start: '2021-05-11T00:00:00.000Z',
       end: '2021-05-11T00:59:59.999Z',
@@ -47,5 +53,86 @@ describe('GET /detections', () => {
 
     expect(response.statusCode).toBe(200)
     expect(response.body.length).toBe(1)
+  })
+  test('get 1 by classifier_jobs', async () => {
+    const { stream, classifier, classification, job1, job2 } = await commonSetup()
+    await models.Detection.create({
+      stream_id: stream.id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: '2021-05-11T00:05:00.000Z',
+      end: '2021-05-11T00:05:05.000Z',
+      confidence: 0.95
+    })
+    await models.Detection.create({
+      stream_id: stream.id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: '2021-05-11T00:15:00.000Z',
+      end: '2021-05-11T00:15:05.000Z',
+      confidence: 0.95,
+      classifier_job_id: job1.id
+    })
+    const detection3 = await models.Detection.create({
+      stream_id: stream.id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: '2021-05-11T00:25:00.000Z',
+      end: '2021-05-11T00:25:05.000Z',
+      confidence: 0.95,
+      classifier_job_id: job2.id
+    })
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      classifier_jobs: [job2.id]
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(1)
+    expect(response.body[0].start).toBe(detection3.start.toISOString())
+  })
+  test('get 2 by classifier_jobs', async () => {
+    const { stream, classifier, classification, job1, job2 } = await commonSetup()
+    await models.Detection.create({
+      stream_id: stream.id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: '2021-05-11T00:05:00.000Z',
+      end: '2021-05-11T00:05:05.000Z',
+      confidence: 0.95
+    })
+    const detection2 = await models.Detection.create({
+      stream_id: stream.id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: '2021-05-11T00:15:00.000Z',
+      end: '2021-05-11T00:15:05.000Z',
+      confidence: 0.95,
+      classifier_job_id: job1.id
+    })
+    const detection3 = await models.Detection.create({
+      stream_id: stream.id,
+      classifier_id: classifier.id,
+      classification_id: classification.id,
+      start: '2021-05-11T00:25:00.000Z',
+      end: '2021-05-11T00:25:05.000Z',
+      confidence: 0.95,
+      classifier_job_id: job2.id
+    })
+    const query = {
+      start: '2021-05-11T00:00:00.000Z',
+      end: '2021-05-11T00:59:59.999Z',
+      classifier_jobs: [job1.id, job2.id]
+    }
+
+    const response = await request(app).get('/').query(query)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.length).toBe(2)
+    expect(response.body[0].start).toBe(detection2.start.toISOString())
+    expect(response.body[1].start).toBe(detection3.start.toISOString())
   })
 })

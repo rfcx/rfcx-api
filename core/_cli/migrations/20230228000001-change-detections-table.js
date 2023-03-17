@@ -32,7 +32,7 @@ module.exports = {
                 ON UPDATE NO ACTION
                 ON DELETE NO ACTION,
             CONSTRAINT detections_classifier_job_id_fkey FOREIGN KEY (classifier_job_id)
-                REFERENCES public.classifiers (id) MATCH SIMPLE
+                REFERENCES public.classifier_jobs (id) MATCH SIMPLE
                 ON UPDATE NO ACTION
                 ON DELETE NO ACTION
         )

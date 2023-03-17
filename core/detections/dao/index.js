@@ -90,7 +90,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   if (!filters.start || !filters.end) {
     throw new ValidationError('"start" and "end" are required to query for detections')
   }
-  const { start, end, streams, projects, classifiers, classifications, minConfidence, isReviewed, isPositive, streamsOnlyPublic } = filters
+  const { start, end, streams, projects, classifiers, classifications, classifierJobs, minConfidence, isReviewed, isPositive, streamsOnlyPublic } = filters
   const { user, offset, limit, descending, fields } = options
 
   const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.full
@@ -125,6 +125,9 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   }
   if (classifiers) {
     where.classifier_id = { [Sequelize.Op.or]: classifiers }
+  }
+  if (classifierJobs) {
+    where.classifier_job_id = { [Sequelize.Op.in]: classifierJobs }
   }
   if (isReviewed !== undefined) {
     where.review_status = { [isReviewed ? Sequelize.Op.ne : Sequelize.Op.eq]: null }
