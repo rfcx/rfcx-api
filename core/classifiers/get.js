@@ -26,7 +26,10 @@ const dao = require('./dao')
  *         description: Not found
  */
 module.exports = (req, res) => {
-  return dao.get(req.params.id, { joinRelations: true })
+  const user = req.rfcx.auth_token_info
+  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+
+  return dao.get(req.params.id, { joinRelations: true, readableBy })
     .then(data => res.json(data))
     .catch(httpErrorHandler(req, res))
 }
