@@ -1,5 +1,6 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
+const Converter = require('../../common/converter')
 
 /**
  * @swagger
@@ -29,7 +30,10 @@ module.exports = (req, res) => {
   const user = req.rfcx.auth_token_info
   const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
 
-  return dao.get(req.params.id, { joinRelations: true, readableBy })
-    .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res))
+  const converter = new Converter(req.params, {}, true)
+  converter.convert('id').toInt()
+  return converter.validate().then(async params => {
+    const data = await dao.get(params.id, { joinRelations: true, readableBy })
+    res.json(data)
+  }).catch(httpErrorHandler(req, res))
 }
