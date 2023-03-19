@@ -69,7 +69,6 @@ async function generateDetectionsAndReviews (models, streamIds) {
       const dbDetections = await models.Detection.bulkCreate(detections, { returning: ['id', 'review_status'] })
       let reviews = []
       dbDetections.forEach((dbDetection) => {
-        console.log('\n\ndbDetection', dbDetection, '\n\n')
         if (dbDetection.review_status !== 0) {
           const detectionReviews = []
           const positive = `${dbDetection.review_status}` === '1'

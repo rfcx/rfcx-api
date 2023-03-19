@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const ClassifierProcessedSegments = sequelize.define('ClassifierProcessedSegments', {
+  const ClassifierProcessedSegment = sequelize.define('ClassifierProcessedSegment', {
     start: {
       // Hypertable key
       type: DataTypes.DATE(3)
@@ -17,14 +17,15 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: false,
     underscored: true
   })
-  ClassifierProcessedSegments.associate = function (models) {
-    ClassifierProcessedSegments.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
-    ClassifierProcessedSegments.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
-    ClassifierProcessedSegments.belongsTo(models.ClassifierJob, { as: 'classifier_job', foreignKey: 'classifier_job_id' })
+  ClassifierProcessedSegment.removeAttribute('id') // https://github.com/sequelize/sequelize/issues/1026#issuecomment-54877327
+  ClassifierProcessedSegment.associate = function (models) {
+    ClassifierProcessedSegment.belongsTo(models.Stream, { as: 'stream', foreignKey: 'stream_id' })
+    ClassifierProcessedSegment.belongsTo(models.Classifier, { as: 'classifier', foreignKey: 'classifier_id' })
+    ClassifierProcessedSegment.belongsTo(models.ClassifierJob, { as: 'classifier_job', foreignKey: 'classifier_job_id' })
   }
-  ClassifierProcessedSegments.attributes = {
+  ClassifierProcessedSegment.attributes = {
     lite: ['stream_id', 'start', 'classifier_id', 'classifier_job_id'],
     full: ['stream_id', 'start', 'classifier_id', 'classifier_job_id']
   }
-  return ClassifierProcessedSegments
+  return ClassifierProcessedSegment
 }

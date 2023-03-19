@@ -24,7 +24,7 @@ const Converter = require('../../common/converter')
  *         required: true
  *         type: string
  *       - name: status
- *         description: Review status (-1: negative, 0 - uncertain, 1 - positive)
+ *         description: Review status (-1 - negative, 0 - uncertain, 1 - positive)
  *         in: query
  *         type: number
  *     responses:

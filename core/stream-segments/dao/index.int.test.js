@@ -35,8 +35,12 @@ async function commonSetup () {
   return { stream, segments }
 }
 
+/*
+/                    \
+_ _ _ _ _ _ _ _ _ _ | | | | | | | | | | _ _ _ _ _ _ _ _ _ _
+                    0 1 2 3 4 5 6 7 8 9
+*/
 test('returns 1 segment', async () => {
-  // const { stream, segments } =
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:00:00.000Z'),
@@ -46,8 +50,12 @@ test('returns 1 segment', async () => {
   expect(data.results[0].id).toBe(segments[0].id)
 })
 
+/*
+                       /   \
+_ _ _ _ _ _ _ _ _ _ | | | | | | | | | | _ _ _ _ _ _ _ _ _ _
+                    0 1 2 3 4 5 6 7 8 9
+*/
 test('returns 2, 3 and 4 segments', async () => {
-  // const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:11:30.000Z'),
@@ -59,8 +67,12 @@ test('returns 2, 3 and 4 segments', async () => {
   expect(data.results[2].id).toBe(segments[3].id)
 })
 
-test('returns 10 segment', async () => {
-  // const { stream, segments } = await commonSetup()
+/*
+                                     /                         \
+_ _ _ _ _ _ _ _ _ _ | | | | | | | | | | _ _ _ _ _ _ _ _ _ _
+                    0 1 2 3 4 5 6 7 8 9
+*/
+test('returns 10th segment', async () => {
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:19:22.000Z'),
@@ -70,8 +82,12 @@ test('returns 10 segment', async () => {
   expect(data.results[0].id).toBe(segments[9].id)
 })
 
-test('returns 9 segment with exact start time', async () => {
-  // const { stream, segments } = await commonSetup()
+/*
+                                    /\
+_ _ _ _ _ _ _ _ _ _ | | | | | | | | | | _ _ _ _ _ _ _ _ _ _
+                    0 1 2 3 4 5 6 7 8 9
+*/
+test('returns 9th segment with exact start time', async () => {
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:18:00.000Z'),
@@ -81,8 +97,12 @@ test('returns 9 segment with exact start time', async () => {
   expect(data.results[0].id).toBe(segments[8].id)
 })
 
-test('returns 9 segment with exact start and end time', async () => {
-  // const { stream, segments } = await commonSetup()
+/*
+                                    / \
+_ _ _ _ _ _ _ _ _ _ | | | | | | | | | | _ _ _ _ _ _ _ _ _ _
+                    0 1 2 3 4 5 6 7 8 9
+*/
+test('returns 9th segment with exact start and end time', async () => {
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:18:00.000Z'),
@@ -92,8 +112,12 @@ test('returns 9 segment with exact start and end time', async () => {
   expect(data.results[0].id).toBe(segments[8].id)
 })
 
+/*
+                                             /\
+_ _ _ _ _ _ _ _ _ _ |  |  |  |  |  |  |  |  |  | _ _ _ _ _ _ _ _ _ _
+                    0  1  2  3  4  5  6  7  8  9
+*/
 test('returns 9 segment with time in the middle of segment', async () => {
-  // const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:18:10.000Z'),
@@ -103,8 +127,12 @@ test('returns 9 segment with time in the middle of segment', async () => {
   expect(data.results[0].id).toBe(segments[8].id)
 })
 
+/*
+                                          /  \
+_ _ _ _ _ _ _ _ _ _ |  |  |  |  |  |  |  |  |  | _ _ _ _ _ _ _ _ _ _
+                    0  1  2  3  4  5  6  7  8  9
+*/
 test('returns 9 segment when strict is true', async () => {
-  // const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:17:45.000Z'),
@@ -114,8 +142,12 @@ test('returns 9 segment when strict is true', async () => {
   expect(data.results[0].id).toBe(segments[8].id)
 })
 
+/*
+                                             /\
+_ _ _ _ _ _ _ _ _ _ |  |  |  |  |  |  |  |  |  | _ _ _ _ _ _ _ _ _ _
+                    0  1  2  3  4  5  6  7  8  9
+*/
 test('does not return 9 segment with time in the middle of segment when strict is true', async () => {
-  // const { stream } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:18:10.000Z'),
@@ -124,8 +156,12 @@ test('does not return 9 segment with time in the middle of segment when strict i
   expect(data.results.length).toBe(0)
 })
 
+/*
+                    /                                        \
+_ _ _ _ _ _ _ _ _ _ | | | | | | | | | | _ _ _ _ _ _ _ _ _ _
+                    0 1 2 3 4 5 6 7 8 9
+*/
 test('returns all segments', async () => {
-  // const { stream, segments } = await commonSetup()
   const data = await service.query({
     streamId: stream.id,
     start: moment('2021-07-26T10:00:00.000Z'),

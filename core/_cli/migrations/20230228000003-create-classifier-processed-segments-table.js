@@ -6,6 +6,7 @@ module.exports = {
         stream_id: {
           type: Sequelize.STRING(12),
           allowNull: false,
+          primaryKey: true,
           references: {
             model: {
               tableName: 'streams'
@@ -22,6 +23,7 @@ module.exports = {
         classifier_id: {
           type: Sequelize.INTEGER,
           allowNull: false,
+          primaryKey: true,
           references: {
             model: {
               tableName: 'classifiers'
@@ -46,7 +48,7 @@ module.exports = {
         type: queryInterface.sequelize.QueryTypes.RAW
       })
     }).then(() => {
-      return queryInterface.sequelize.query('CREATE INDEX classifier_processed_segments_stream_id_start ON classifier_processed_segments USING btree (stream_id, start)', {
+      return queryInterface.sequelize.query('CREATE INDEX classifier_processed_segments_classifier_id_stream_id_start ON classifier_processed_segments USING btree (classifier_id, stream_id, start)', {
         type: queryInterface.sequelize.QueryTypes.RAW
       })
     })
