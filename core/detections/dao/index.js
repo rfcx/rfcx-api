@@ -18,79 +18,11 @@ const availableIncludes = [
   })
 ]
 
-// /**
-//  * Get a list of detections
-//  * @param {string} start
-//  * @param {string} end
-//  * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
-//  * @param {boolean} streamsOnlyPublic
-//  * @param {string | string[]} classifications Classification or list of classifications
-//  * @param {number} minConfidence Minimum confidence to query detections
-//  * @param {boolean} descending
-//  * @param {number} limit Maximum number to get detections
-//  * @param {number} offset Number of resuls to skip
-//  * @param {object} user
-//  * @returns {Detection[]} Detections
-//  */
-// async function defaultQueryOptions (start, end, streamIdOrIds, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user, classifiers) {
-//   const condition = {
-//     start: {
-//       [models.Sequelize.Op.gte]: moment.utc(start).valueOf(),
-//       [models.Sequelize.Op.lt]: moment.utc(end).valueOf()
-//     }
-//   }
-//   if (streamIdOrIds !== undefined) {
-//     condition.stream_id = user.has_system_role || user.has_stream_token ? [streamIdOrIds] : await getAccessibleObjectsIDs(user.id, STREAM, streamIdOrIds)
-//   } else if (!user.has_system_role) {
-//     const streamIds = streamsOnlyPublic
-//       ? await streamDao.getPublicStreamIds()
-//       : await getAccessibleObjectsIDs(user.id, STREAM)
-//     condition.stream_id = {
-//       [models.Sequelize.Op.in]: streamIds
-//     }
-//   }
-
-//   if (classifiers !== undefined) {
-//     condition.classifier_id = {
-//       [models.Sequelize.Op.in]: classifiers
-//     }
-//   }
-
-//   const classificationCondition = classifications === undefined
-//     ? {}
-//     : { value: { [models.Sequelize.Op.or]: classifications } }
-
-//   // TODO: if minConfidence is undefined, get it from event strategy
-//   condition.confidence = { [models.Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
-//   return {
-//     where: condition,
-//     include: [
-//       {
-//         as: 'classification',
-//         model: models.Classification,
-//         where: classificationCondition,
-//         attributes: models.Classification.attributes.lite,
-//         required: true
-//       },
-//       {
-//         as: 'classifier',
-//         model: models.Classifier,
-//         attributes: [],
-//         required: true
-//       }
-//     ],
-//     attributes: models.Detection.attributes.lite,
-//     offset: offset,
-//     limit: limit,
-//     order: [['start', descending ? 'DESC' : 'ASC']]
-//   }
-// }
-
 async function defaultQueryOptions (filters = {}, options = {}) {
   if (!filters.start || !filters.end) {
     throw new ValidationError('"start" and "end" are required to query for detections')
   }
-  const { start, end, streams, projects, classifiers, classifications, classifierJobs, minConfidence, isReviewed, isPositive, streamsOnlyPublic } = filters
+  const { start, end, streams, projects, classifiers, classifications, classifierJobs, minConfidence, reviewStatuses, streamsOnlyPublic } = filters
   const { user, offset, limit, descending, fields } = options
 
   const attributes = fields && fields.length > 0 ? Detection.attributes.full.filter(a => fields.includes(a)) : Detection.attributes.full
@@ -129,35 +61,21 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   if (classifierJobs) {
     where.classifier_job_id = { [Sequelize.Op.in]: classifierJobs }
   }
-  if (isReviewed !== undefined) {
-    where.review_status = { [isReviewed ? Sequelize.Op.ne : Sequelize.Op.eq]: null }
-  }
-  if (isPositive !== undefined) {
-    where.review_status = isPositive ? 1 : -1
+  if (reviewStatuses !== undefined) {
+    if (reviewStatuses.includes('null')) {
+      if (reviewStatuses.length === 1) {
+        where.review_status = { [Sequelize.Op.eq]: null }
+      } else {
+        where.review_status = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: reviewStatuses.filter(s => s !== 'null') } }
+      }
+    } else {
+      where.review_status = { [Sequelize.Op.in]: reviewStatuses }
+    }
   }
   // TODO: if minConfidence is undefined, get it from event strategy
   where.confidence = { [Sequelize.Op.gte]: (minConfidence !== undefined ? minConfidence : 0.95) }
   return { where, include, attributes, offset, limit, order }
 }
-
-// /**
-//  * Get a list of detections
-//  * @param {string} start
-//  * @param {string} end
-//  * @param {string | string[]} streamIdOrIds Stream id or list of stream ids
-//  * @param {string | string[]} classifications Classification or list of classifications
-//  * @param {number} minConfidence Minimum confidence to query detections
-//  * @param {number} limit Maximum number to get detections
-//  * @param {number} offset Number of resuls to skip
-//  * @param {object} user
-//  * @param {string | string[]} classifiers Classifier or list of classifiers
-//  * @returns {Detection[]} Detections
-//  */
-// async function query (start, end, streamIdOrIds, classifications, minConfidence, limit, offset, user, classifiers) {
-//   const opts = await defaultQueryOptions(start, end, streamIdOrIds, false, classifications, minConfidence, false, limit, offset, user, classifiers)
-//   const detections = await Detection.findAll(opts)
-//   return detections.map(d => d.toJSON())
-// }
 
 /**
  * Get a list of detections matching the filters

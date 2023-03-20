@@ -46,16 +46,11 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: float
  *         example: 0.95
- *       - name: is_reviewed
- *         description: Return reviewed/unreviewed detections
+ *       - name: review_statuses
+ *         description: Return rejected/uncertain/confirmed/ detections (-1 - negative, 0 - uncertain, 1 - positive, null - unreviewed)
  *         in: query
- *         type: boolean
- *         example: true
- *       - name: is_positive
- *         description: Return confirmed/rejected detections
- *         in: query
- *         type: boolean
- *         example: true
+ *         type: string[]
+ *         example: ['-1', '0', '1', 'null']
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query
@@ -97,8 +92,8 @@ router.get('/', (req, res) => {
   converter.convert('classifiers').optional().toArray()
   converter.convert('classifier_jobs').optional().toArray()
   converter.convert('min_confidence').optional().toFloat()
-  converter.convert('is_reviewed').optional().toBoolean()
-  converter.convert('is_positive').optional().toBoolean()
+  // TODO: improve validation tool to validate possible values for array items
+  converter.convert('review_statuses').optional().toArray()
   converter.convert('limit').optional().toInt().maximum(1000)
   converter.convert('offset').optional().toInt()
   converter.convert('descending').default(false).toBoolean()
