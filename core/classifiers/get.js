@@ -35,7 +35,7 @@ module.exports = (req, res) => {
   converter.convert('id').toInt()
   return converter.validate()
     .then(async params => {
-      const data = await dao.get(params.id, { joinRelations: true, readableBy })
+      const data = await dao.get(params.id, { readableBy })
       res.json(data)
     })
     .catch((err) => {
