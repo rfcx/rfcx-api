@@ -110,7 +110,7 @@ describe('GET /classifier/:id', () => {
 
       const response = await request(regularUserApp).get('/x')
 
-      expect(response.statusCode).toBe(400)
+      expect(response.statusCode).toBe(404)
     })
 
     test('super user with missing classifier id', async () => {
