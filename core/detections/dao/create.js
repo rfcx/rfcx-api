@@ -22,7 +22,7 @@ function bulkCreate (detections) {
       start: d.start,
       end: d.end,
       confidence: d.confidence,
-      ...(d.classifierJobId ? { classifier_job_id: d.classifierJobId } : {})
+      classifier_job_id: d.classifierJobId ? d.classifierJobId : null
     })))
 }
 
