@@ -6,7 +6,7 @@ const { update } = require('../dao/update')
 const reviewsDao = require('../dao/review')
 
 async function createOrUpdate (options) {
-  const { streamId, start, status, userId } = options
+  let { streamId, start, status, userId } = options
 
   if (userId && !(await hasPermission(UPDATE, userId, streamId, STREAM))) {
     throw new ForbiddenError('You do not have permission to review detections in this stream.')
@@ -15,6 +15,7 @@ async function createOrUpdate (options) {
   const detection = await get({ streamId, start }, { fields: ['id'] })
   const detectionId = detection.toJSON().id // Detection model does not have id column, so we have to make toJSON to actually obtain the value
 
+  status = reviewsDao.REVIEW_STATUS_MAPPING[status]
   let review = (await reviewsDao.query({ detectionIds: [detectionId], userId }, { fields: ['id'] }))[0]
   const exists = !!review
   return sequelize.transaction(async (transaction) => {

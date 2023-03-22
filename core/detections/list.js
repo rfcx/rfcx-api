@@ -47,10 +47,10 @@ const Converter = require('../../common/converter')
  *         type: float
  *         example: 0.95
  *       - name: review_statuses
- *         description: Return rejected/uncertain/confirmed/ detections (-1 - negative, 0 - uncertain, 1 - positive, null - unreviewed)
+ *         description: Return rejected/uncertain/confirmed/unreviewed detections
  *         in: query
  *         type: string[]
- *         example: ['-1', '0', '1', 'null']
+ *         example: ['rejected', 'uncertain', 'confirmed', 'unreviewed']
  *       - name: limit
  *         description: Maximum number of results to return
  *         in: query

@@ -2,6 +2,13 @@ const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { DetectionReview, Sequelize } = require('../../_models')
 const Op = Sequelize.Op
 
+const REVIEW_STATUS_MAPPING = {
+  rejected: -1,
+  uncertain: 0,
+  confirmed: 1,
+  unreviewed: 'null'
+}
+
 async function create (data, options = {}) {
   const transaction = options.transaction || null
   const { detectionId, userId, status } = data
@@ -56,4 +63,4 @@ async function update (id, data, options = {}) {
   return await DetectionReview.update(upd, { where: { id }, transaction })
 }
 
-module.exports = { create, query, update }
+module.exports = { create, query, update, REVIEW_STATUS_MAPPING }

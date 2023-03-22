@@ -24,9 +24,9 @@ const Converter = require('../../common/converter')
  *         required: true
  *         type: string
  *       - name: status
- *         description: Review status (-1 - negative, 0 - uncertain, 1 - positive)
+ *         description: Review status ('rejected', 'uncertain', 'confirmed')
  *         in: query
- *         type: number
+ *         type: string
  *     responses:
  *       201:
  *         description: Created
@@ -47,7 +47,7 @@ const Converter = require('../../common/converter')
  */
 router.post('/:streamId/detections/:start/review', (req, res) => {
   const converter = new Converter(req.body, {}, true)
-  converter.convert('status').toInt().isEqualToAny([-1, 0, 1])
+  converter.convert('status').toString().isEqualToAny(['rejected', 'uncertain', 'confirmed'])
   return converter.validate()
     .then(async (params) => {
       return await createOrUpdate({

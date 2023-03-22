@@ -33,7 +33,7 @@ describe('POST /:streamId/detections/:start/review', () => {
   describe('failed cases', () => {
     test('stream not found', async () => {
       await commonSetup()
-      const response = await request(app).post('/str/detections/2022-01-01T00:00:00.000Z/review').send({ status: 1 })
+      const response = await request(app).post('/str/detections/2022-01-01T00:00:00.000Z/review').send({ status: 'confirmed' })
 
       expect(response.statusCode).toBe(404)
       expect(response.body.message).toBe('stream with given id doesn\'t exist.')
@@ -48,7 +48,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
-      const response = await request(app).post(`/${stream.id}/detections/2022-02-01T00:00:00.000Z/review`).send({ status: 1 })
+      const response = await request(app).post(`/${stream.id}/detections/2022-02-01T00:00:00.000Z/review`).send({ status: 'confirmed' })
 
       expect(response.statusCode).toBe(404)
       expect(response.body.message).toBe('Detection with given parameters not found')
@@ -65,7 +65,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
-      const response = await request(app).post(`/${stream2.id}/detections/${start}/review`).send({ status: 1 })
+      const response = await request(app).post(`/${stream2.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
       expect(response.statusCode).toBe(403)
       expect(response.body.message).toBe('You do not have permission to review detections in this stream.')
@@ -84,7 +84,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+      const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
       expect(response.statusCode).toBe(201)
       expect(response.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
@@ -107,7 +107,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+      const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
       expect(response.statusCode).toBe(201)
       expect(response.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
@@ -130,7 +130,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+      const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
       expect(response.statusCode).toBe(201)
       expect(response.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
@@ -153,7 +153,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
       expect(response1.statusCode).toBe(201)
       expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -162,7 +162,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       expect(detection.review_status).toBeNull()
       expect(detectionUpdated1.review_status).toBe(-1)
 
-      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
       expect(response2.statusCode).toBe(204)
       expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -183,7 +183,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
       expect(response1.statusCode).toBe(201)
       expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -192,7 +192,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       expect(detection.review_status).toBeNull()
       expect(detectionUpdated1.review_status).toBe(-1)
 
-      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
       expect(response2.statusCode).toBe(204)
       expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -214,7 +214,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
       expect(response1.statusCode).toBe(201)
       expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -223,7 +223,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       expect(detection.review_status).toBeNull()
       expect(detectionUpdated1.review_status).toBe(0)
 
-      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
       expect(response2.statusCode).toBe(204)
       expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -245,7 +245,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
       expect(response1.statusCode).toBe(201)
       expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -254,7 +254,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       expect(detection.review_status).toBeNull()
       expect(detectionUpdated1.review_status).toBe(0)
 
-      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
       expect(response2.statusCode).toBe(204)
       expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -276,7 +276,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
       expect(response1.statusCode).toBe(201)
       expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -285,7 +285,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       expect(detection.review_status).toBeNull()
       expect(detectionUpdated1.review_status).toBe(1)
 
-      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
       expect(response2.statusCode).toBe(204)
       expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -307,7 +307,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         confidence: 0.99
       })
 
-      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+      const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
       expect(response1.statusCode).toBe(201)
       expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -316,7 +316,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       expect(detection.review_status).toBeNull()
       expect(detectionUpdated1.review_status).toBe(1)
 
-      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+      const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
       expect(response2.statusCode).toBe(204)
       expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
@@ -345,7 +345,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: -1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -369,7 +369,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: -1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -393,7 +393,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: -1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -417,7 +417,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -441,7 +441,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -465,7 +465,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -489,7 +489,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -513,7 +513,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -537,7 +537,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -567,7 +567,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -596,7 +596,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -625,7 +625,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -654,7 +654,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -683,7 +683,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -712,7 +712,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -741,7 +741,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -770,7 +770,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -799,7 +799,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -834,7 +834,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -868,7 +868,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -902,7 +902,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -932,7 +932,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: -1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -961,7 +961,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: -1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -990,7 +990,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -1019,7 +1019,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -1048,7 +1048,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -1077,7 +1077,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -1112,7 +1112,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -1146,7 +1146,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -1180,7 +1180,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -1214,7 +1214,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(-1)
@@ -1248,7 +1248,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -1282,7 +1282,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 0
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -1316,7 +1316,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -1350,7 +1350,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'confirmed' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(0)
@@ -1384,7 +1384,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -1418,7 +1418,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -1452,7 +1452,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: -1 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'rejected' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)
@@ -1486,7 +1486,7 @@ describe('POST /:streamId/detections/:start/review', () => {
           status: 1
         })
 
-        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 0 })
+        await request(app).post(`/${stream.id}/detections/${start}/review`).send({ status: 'uncertain' })
 
         const detectionUpdated = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
         expect(detection.review_status).toBe(1)

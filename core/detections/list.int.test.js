@@ -178,7 +178,7 @@ describe('GET /detections', () => {
     const query = {
       start: '2021-05-11T00:00:00.000Z',
       end: '2021-05-11T00:59:59.999Z',
-      review_statuses: ['-1', '0', '1']
+      review_statuses: ['rejected', 'uncertain', 'confirmed']
     }
 
     const response = await request(app).get('/').query(query)
@@ -232,7 +232,7 @@ describe('GET /detections', () => {
     const query = {
       start: '2021-05-11T00:00:00.000Z',
       end: '2021-05-11T00:59:59.999Z',
-      review_statuses: ['-1']
+      review_statuses: ['rejected']
     }
 
     const response = await request(app).get('/').query(query)
@@ -284,7 +284,7 @@ describe('GET /detections', () => {
     const query = {
       start: '2021-05-11T00:00:00.000Z',
       end: '2021-05-11T00:59:59.999Z',
-      review_statuses: ['0']
+      review_statuses: ['uncertain']
     }
 
     const response = await request(app).get('/').query(query)
@@ -336,7 +336,7 @@ describe('GET /detections', () => {
     const query = {
       start: '2021-05-11T00:00:00.000Z',
       end: '2021-05-11T00:59:59.999Z',
-      review_statuses: ['1']
+      review_statuses: ['confirmed']
     }
 
     const response = await request(app).get('/').query(query)
@@ -388,7 +388,7 @@ describe('GET /detections', () => {
     const query = {
       start: '2021-05-11T00:00:00.000Z',
       end: '2021-05-11T00:59:59.999Z',
-      review_statuses: ['null']
+      review_statuses: ['unreviewed']
     }
 
     const response = await request(app).get('/').query(query)
@@ -440,7 +440,7 @@ describe('GET /detections', () => {
     const query = {
       start: '2021-05-11T00:00:00.000Z',
       end: '2021-05-11T00:59:59.999Z',
-      review_statuses: ['0', 'null']
+      review_statuses: ['uncertain', 'unreviewed']
     }
 
     const response = await request(app).get('/').query(query)

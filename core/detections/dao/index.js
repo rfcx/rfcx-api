@@ -5,6 +5,7 @@ const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregat
 const streamDao = require('../../streams/dao')
 const { getAccessibleObjectsIDs, STREAM, PROJECT } = require('../../roles/dao')
 const { ValidationError } = require('../../../common/error-handling/errors')
+const { REVIEW_STATUS_MAPPING } = require('./review')
 
 const availableIncludes = [
   Stream.include(),
@@ -62,14 +63,15 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     where.classifier_job_id = { [Sequelize.Op.in]: classifierJobs }
   }
   if (reviewStatuses !== undefined) {
-    if (reviewStatuses.includes('null')) {
-      if (reviewStatuses.length === 1) {
+    const statuses = reviewStatuses.map(s => REVIEW_STATUS_MAPPING[s])
+    if (statuses.includes('null')) {
+      if (statuses.length === 1) {
         where.review_status = { [Sequelize.Op.eq]: null }
       } else {
-        where.review_status = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: reviewStatuses.filter(s => s !== 'null') } }
+        where.review_status = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
       }
     } else {
-      where.review_status = { [Sequelize.Op.in]: reviewStatuses }
+      where.review_status = { [Sequelize.Op.in]: statuses }
     }
   }
   // TODO: if minConfidence is undefined, get it from event strategy
