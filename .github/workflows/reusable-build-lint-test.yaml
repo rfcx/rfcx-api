@@ -100,13 +100,13 @@ jobs:
       - name: 'Verify: Unit Tests'
         if: ${{ inputs.test }}
         id: unit
-        run: npm run test:unit
+        run: npm run jest:unit
         env:
           NODE_ENV: test
 
       - name: 'Verify: Integration Tests'
         if: ${{ inputs.test }}
         id: integration
-        run: npm run test:int
+        run: npm run jest:int
         env:
           NODE_ENV: test
