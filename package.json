@@ -27,7 +27,9 @@
     "reset:noncore": "node common/_cli/reset.js noncore",
     "jest": "jest --runInBand --forceExit",
     "lint": "eslint \"**/*.js\"",
-    "test": "npm run start:timescale-test && npm run check:timescale-test && npm run jest && npm run stop:timescale-test",
+    "test:unit": "jest --config ./test/jest.unit.config.js",
+    "test:int": "npm run start:timescale-test && npm run check:timescale-test && jest --runInBand --forceExit --config ./test/jest.int.config.js && npm run stop:timescale-test",
+    "test": "npm run test:unit && npm run test:int",
     "start:timescale-test": "docker compose -f test/docker-compose.yaml up -d --quiet-pull",
     "stop:timescale-test": "docker compose -f test/docker-compose.yaml down",
     "check:timescale-test": "timeout 90s bash -c \"until docker exec timescaledb-int-test pg_isready ; do sleep 3 ; done\""

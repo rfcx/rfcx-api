@@ -1,3 +1,9 @@
+jest.mock('../../_models', () => { return { sequelize: {} } })
+jest.mock('../../roles/dao', () => { return { } })
+jest.mock('../dao/get', () => { return { } })
+jest.mock('../dao/update', () => { return { } })
+jest.mock('../dao/review', () => { return { } })
+
 const { calculateReviewStatus } = require('./review')
 
 describe('calculateReviewStatus function', () => {

@@ -1,3 +1,14 @@
+jest.mock('../../_models', () => { return {} })
+jest.mock('../../../core/_models', () => {
+  return {
+    ClassifierDeployment: { attributes: {} },
+    ClassifierOutput: { attributes: {} },
+    User: { attributes: {} },
+    Stream: { attributes: {} },
+    Project: { attributes: {} }
+  }
+})
+
 const { saveMeta: { CheckInStatus } } = require('./mqtt-save-meta')
 const models = require('../../_models')
 

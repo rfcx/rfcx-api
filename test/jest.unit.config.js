@@ -1,6 +1,6 @@
 // jest.config.js
 module.exports = {
-  globalSetup: './test/setup.js',
+  rootDir: process.env.PWD,
   bail: 1,
   clearMocks: true,
   resetModules: true,
@@ -9,5 +9,6 @@ module.exports = {
     'core/**/*.js'
   ],
   coverageReporters: ['json', 'html'],
-  coverageDirectory: 'coverage'
+  coverageDirectory: 'coverage',
+  testRegex: '.*.unit.test.js$'
 }
