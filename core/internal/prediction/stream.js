@@ -32,7 +32,7 @@ router.post('/streams/segments/processed', hasRole(['systemUser']), function (re
   converter.convert('stream').toString()
   converter.convert('start').toMomentUtc()
   converter.convert('classifier').toInt()
-  converter.convert('classifier_job_id').optional().toInt()
+  converter.convert('classifier_job').optional().toInt()
 
   converter.validate()
     .then(async (params) => {

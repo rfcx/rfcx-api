@@ -734,7 +734,7 @@
         "description": "Classifier identifier",
         "example": "4"
       },
-      "classifier_job_id": {
+      "classifier_job": {
         "type": "string",
         "description": "Classifier job identifier",
         "example": "10"
