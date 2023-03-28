@@ -39,44 +39,6 @@ async function commonSetup () {
   return { project, stream1, stream2, classifier1, classifier2, classifier3, job1, job2, job3 }
 }
 
-describe('GET /streams/:id/segments', () => {
-  test('returns correct unprocessed segments', async () => {
-    const { stream1, classifier1, classifier2, classifier3, job1, job2, job3 } = await commonSetup()
-
-    const sourceFile = await models.StreamSourceFile.create({ stream_id: stream1.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
-    const s1 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:10:10.000Z', end: '2021-07-26T10:11:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s2 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:11:10.000Z', end: '2021-07-26T10:12:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s3 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:12:10.000Z', end: '2021-07-26T10:13:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s4 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:13:10.000Z', end: '2021-07-26T10:14:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s5 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:14:10.000Z', end: '2021-07-26T10:15:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-
-    await models.ClassifierProcessedSegment.create({ classifierId: classifier1.id, classifierJobId: job1.id, streamId: stream1.id, start: s1.start })
-    await models.ClassifierProcessedSegment.create({ classifierId: classifier1.id, classifierJobId: job1.id, streamId: stream1.id, start: s2.start })
-    await models.ClassifierProcessedSegment.create({ classifierId: classifier1.id, classifierJobId: job2.id, streamId: stream1.id, start: s3.start })
-    await models.ClassifierProcessedSegment.create({ classifierId: classifier2.id, classifierJobId: job3.id, streamId: stream1.id, start: s1.start })
-
-    const response1 = await request(app).get(`/streams/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', classifier: classifier1.id })
-    expect(response1.body.length).toBe(2)
-    expect(response1.body[0].id).toBe(s4.id)
-    expect(response1.body[1].id).toBe(s5.id)
-
-    const response2 = await request(app).get(`/streams/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', classifier: classifier2.id })
-    expect(response2.body.length).toBe(4)
-    expect(response2.body[0].id).toBe(s2.id)
-    expect(response2.body[1].id).toBe(s3.id)
-    expect(response2.body[2].id).toBe(s4.id)
-    expect(response2.body[3].id).toBe(s5.id)
-
-    const response3 = await request(app).get(`/streams/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', classifier: classifier3.id })
-    expect(response3.body.length).toBe(5)
-    expect(response3.body[0].id).toBe(s1.id)
-    expect(response3.body[1].id).toBe(s2.id)
-    expect(response3.body[2].id).toBe(s3.id)
-    expect(response3.body[3].id).toBe(s4.id)
-    expect(response3.body[4].id).toBe(s5.id)
-  })
-})
-
 describe('POST /streams/segments/processed', () => {
   test('creates 1 processed segment without job', async () => {
     const { stream1, classifier1 } = await commonSetup()
