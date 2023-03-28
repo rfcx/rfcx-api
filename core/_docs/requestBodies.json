@@ -716,5 +716,29 @@
         "example": "johndoe@rfcx.org"
       }
     }
+  },
+  "ClassifierProcessedSegment": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "xu82jDgX49"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "classifier": {
+        "type": "string",
+        "description": "Classifier identifier",
+        "example": "4"
+      },
+      "classifier_job_id": {
+        "type": "string",
+        "description": "Classifier job identifier",
+        "example": "10"
+      }
+    }
   }
 }

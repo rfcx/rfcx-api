@@ -3,7 +3,7 @@ const { Op } = require('sequelize')
 
 async function addClassifiers (rawDetections) {
   // Extract all classifier ids
-  const unknownIds = [...new Set(rawDetections.map(d => d.classifier))]
+  const unknownIds = [...new Set(rawDetections.map(d => `${d.classifier}`))]
 
   // Gather the potential classifiers
   const queryOptions = { fields: ['id', 'external_id', 'name', 'version', 'outputs'] }
@@ -58,7 +58,8 @@ async function build (rawDetections) {
     classifierId: detection.classifier.id,
     start: detection.start,
     end: detection.end,
-    confidence: detection.confidence
+    confidence: detection.confidence,
+    classifierJobId: detection.classifier_job_id
   }))
 
   return { detections, classifierIds }

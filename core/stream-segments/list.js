@@ -26,6 +26,10 @@ const Converter = require('../../common/converter')
  *         in: query
  *         required: true
  *         type: string
+ *       - name: classifier
+ *         description: Classifier id
+ *         in: query
+ *         type: number
  *       - name: strict
  *         description: Only return segments that start within the range of the start/end parameters (better performance)
  *         in: query
@@ -71,15 +75,16 @@ module.exports = function (req, res) {
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
+  converter.convert('classifier').optional().toInt()
   converter.convert('limit').optional().toInt()
   converter.convert('offset').optional().toInt()
   converter.convert('strict').default(true).toBoolean()
 
   converter.validate()
     .then(async (params) => {
-      const { start, end, limit, offset, strict } = params
+      const { start, end, classifier, limit, offset, strict } = params
       const options = { readableBy, limit, offset, strict }
-      return streamSegmentDao.query({ start, end, streamId }, options)
+      return streamSegmentDao.query({ start, end, streamId, classifier }, options)
     })
     .then((data) => res.header('Total-Items', data.count).json(data.results))
     .catch(httpErrorHandler(req, res, 'Failed getting stream segments'))

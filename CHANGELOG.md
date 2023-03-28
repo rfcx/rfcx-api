@@ -1,3 +1,15 @@
+## 1.3.0 (2023-XX-XX)
+
+### Features
+* **core**: add `id`, `review_status` and `classifier_job_id` to `detections` table
+* **core**: create new `detection_reviews` table
+* **core**: update detection review logic
+* **core**: add `/streams/{streamId}/detections/{start}/review` endpoint
+* **core**: add `review_statuses` to `/detections` endpoint
+* **core**: create `classifier_processed_segments` table
+* **core**: add `/internal/prediction/streams/segments/processed` endpoint
+* **core**: add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+
 ## 1.2.2 (2022-09-06)
 
 ### Features

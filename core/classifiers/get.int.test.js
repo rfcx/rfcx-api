@@ -1,19 +1,17 @@
 const routes = require('./index')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
-})
 beforeEach(async () => {
-  await truncate(models)
   await commonSetup()
+})
+afterEach(async () => {
+  await truncateNonBase(models)
 })
 
 async function commonSetup () {
@@ -115,7 +113,7 @@ describe('GET /classifier/:id', () => {
       expect(response.statusCode).toBe(404)
     })
 
-    test('super user with not have classifier id', async () => {
+    test('super user with missing classifier id', async () => {
       const regularUserApp = expressApp({ is_super: true })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()

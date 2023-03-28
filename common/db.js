@@ -1,7 +1,21 @@
 const Sequelize = require('sequelize')
 
 function getOptions (type) {
-  const baseOptions = {
+  const t = process.env.NODE_ENV === 'test'
+  const options = {
+    dialect: 'postgres',
+    dialectOptions: {
+      ssl: process.env.POSTGRES_SSL_ENABLED === 'true' && {
+        rejectUnauthorized: false
+      }
+    },
+    host: !t ? process.env.POSTGRES_HOSTNAME : 'localhost',
+    port: !t ? process.env.POSTGRES_PORT : 5433,
+    database: !t ? (type === 'core' ? process.env.CORE_DB_NAME : process.env.NONCORE_DB_NAME) : 'postgres',
+    username: !t ? process.env.POSTGRES_USER : 'postgres',
+    password: !t ? process.env.POSTGRES_PASSWORD : 'test',
+    migrationStorageTableName: 'migrations',
+    migrationStorageTableSchema: 'sequelize',
     logging: false,
     define: {
       underscored: true,
@@ -13,31 +27,6 @@ function getOptions (type) {
       createdAt: 'created_at', // force sequelize to respect snake_case for created_at
       updatedAt: 'updated_at' // force sequelize to respect snake_case for updated_at
     }
-  }
-
-  const dbConfigPostgres = {
-    dialect: 'postgres',
-    dialectOptions: {
-      ssl: process.env.POSTGRES_SSL_ENABLED === 'true' && {
-        rejectUnauthorized: false
-      }
-    },
-    host: process.env.POSTGRES_HOSTNAME,
-    port: process.env.POSTGRES_PORT,
-    database: type === 'core' ? process.env.CORE_DB_NAME : process.env.NONCORE_DB_NAME,
-    username: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    migrationStorageTableName: 'migrations',
-    migrationStorageTableSchema: 'sequelize'
-  }
-
-  const dbConfigSqlite = {
-    dialect: 'sqlite'
-  }
-
-  const options = {
-    ...baseOptions,
-    ...(process.env.NODE_ENV === 'test' ? dbConfigSqlite : dbConfigPostgres)
   }
 
   if (process.env.NODE_ENV === 'development') {
