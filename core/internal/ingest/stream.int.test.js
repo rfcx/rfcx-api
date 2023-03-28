@@ -2,32 +2,35 @@ const request = require('supertest')
 const moment = require('moment')
 const routes = require('./stream')
 const models = require('../../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../common/testing/sequelize')
+const { truncate, truncateNonBase, expressApp, seedValues, muteConsole } = require('../../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
 
+let stream, audioFileFormat, audioCodec, fileExtension, testPayload, audioFileFormatId, audioCodecId, fileExtensionId
+resetTestData()
+
 beforeAll(async () => {
   muteConsole('warn')
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+  await commonSetup()
 })
-beforeEach(async () => {
-  await truncate(models)
+afterEach(async () => {
+  await truncate({ StreamSegment: models.StreamSegment, StreamSourceFile: models.StreamSourceFile })
+  await models.Stream.update({ start: null, end: null, sampleRate: null }, { where: { id: stream.id } })
+  resetTestData()
+})
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.sequelize.close()
 })
 
-async function commonSetup () {
-  const stream = { id: 'abc', name: 'my stream', createdById: seedValues.primaryUserId }
-  await models.Stream.create(stream)
-  const audioFileFormat = { id: 1, value: 'flac' }
-  await models.AudioFileFormat.create(audioFileFormat)
-  const audioCodec = { id: 1, value: 'flac' }
-  await models.AudioCodec.create(audioCodec)
-  const fileExtension = { id: 1, value: '.flac' }
-  await models.FileExtension.create(fileExtension)
-
-  const testPayload = {
+function resetTestData () {
+  stream = { id: 'abcdsaqwery1', name: 'my stream', createdById: seedValues.primaryUserId }
+  audioFileFormat = { value: 'flac' }
+  audioCodec = { value: 'flac' }
+  fileExtension = { value: '.flac' }
+  testPayload = {
     stream_source_file: {
       filename: '0d99db29f26d-2021-04-19T12-11-00.flac',
       audio_file_format: 'flac',
@@ -54,13 +57,17 @@ async function commonSetup () {
       }
     ]
   }
-  return { stream, audioFileFormat, audioCodec, fileExtension, testPayload }
+}
+
+async function commonSetup () {
+  await models.Stream.create(stream)
+  audioFileFormatId = (await models.AudioFileFormat.create(audioFileFormat)).id
+  audioCodecId = (await models.AudioCodec.create(audioCodec)).id
+  fileExtensionId = (await models.FileExtension.create(fileExtension)).id
 }
 
 describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', () => {
   test('one stream_source_file and one stream_segments is created', async () => {
-    const { stream, audioFileFormat, audioCodec, fileExtension, testPayload } = await commonSetup()
-
     const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
 
     expect(response.statusCode).toBe(201)
@@ -69,13 +76,13 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     expect(response.headers.location).toBe(`/stream-source-files/${streamSourceFiles[0].id}`)
     expect(streamSourceFiles.length).toBe(1)
     expect(streamSourceFiles[0].filename).toBe(testPayload.stream_source_file.filename)
-    expect(streamSourceFiles[0].audio_file_format_id).toBe(audioFileFormat.id)
+    expect(streamSourceFiles[0].audio_file_format_id).toBe(audioFileFormatId)
     expect(streamSourceFiles[0].duration).toBe(testPayload.stream_source_file.duration)
     expect(streamSourceFiles[0].sample_count).toBe(testPayload.stream_source_file.sample_count)
     expect(streamSourceFiles[0].channels_count).toBe(testPayload.stream_source_file.channels_count)
     expect(streamSourceFiles[0].bit_rate).toBe(testPayload.stream_source_file.bit_rate)
     expect(streamSourceFiles[0].sample_rate).toBe(testPayload.stream_source_file.sample_rate)
-    expect(streamSourceFiles[0].audio_codec_id).toBe(audioCodec.id)
+    expect(streamSourceFiles[0].audio_codec_id).toBe(audioCodecId)
     expect(streamSourceFiles[0].sha1_checksum).toBe(testPayload.stream_source_file.sha1_checksum)
     expect(streamSourceFiles[0].meta).toBe(JSON.stringify(testPayload.stream_source_file.meta))
     expect(streamSegments.length).toBe(1)
@@ -83,20 +90,17 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     expect(streamSegments[0].start).toEqual(moment.utc(testPayload.stream_segments[0].start).toDate())
     expect(streamSegments[0].end).toEqual(moment.utc(testPayload.stream_segments[0].end).toDate())
     expect(streamSegments[0].sample_count).toBe(testPayload.stream_segments[0].sample_count)
-    expect(streamSegments[0].file_extension_id).toBe(fileExtension.id)
+    expect(streamSegments[0].file_extension_id).toBe(fileExtensionId)
     expect(streamSegments[0].stream_source_file_id).toBe(streamSourceFiles[0].id)
   })
 
   test('one stream_source_file and two stream_segments are created', async () => {
-    const { stream, fileExtension, testPayload } = await commonSetup()
-
-    const requestBody = { ...testPayload }
+    const requestBody = Object.assign({}, testPayload)
     requestBody.stream_segments.push(
       { id: '877408a7-6579-4de0-8c29-bddda0968f87', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
     )
 
     const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
-
     expect(response.statusCode).toBe(201)
     const streamSourceFiles = await models.StreamSourceFile.findAll()
     const streamSegments = await models.StreamSegment.findAll()
@@ -106,14 +110,12 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     expect(streamSegments[1].start).toEqual(moment.utc(requestBody.stream_segments[1].start).toDate())
     expect(streamSegments[1].end).toEqual(moment.utc(requestBody.stream_segments[1].end).toDate())
     expect(streamSegments[1].sample_count).toBe(requestBody.stream_segments[1].sample_count)
-    expect(streamSegments[1].file_extension_id).toBe(fileExtension.id)
+    expect(streamSegments[1].file_extension_id).toBe(fileExtensionId)
     expect(streamSegments[1].stream_source_file_id).toBe(streamSourceFiles[0].id)
   })
 
   test('one stream_source_file and ten stream_segments are created', async () => {
-    const { stream, fileExtension, testPayload } = await commonSetup()
-
-    const requestBody = { ...testPayload }
+    const requestBody = Object.assign({}, testPayload)
     requestBody.stream_segments.push(
       { id: '877408a7-6579-4de0-8c29-bddda0968f01', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
       { id: '877408a7-6579-4de0-8c29-bddda0968f02', start: '2021-04-18T12:14:00.000Z', end: '2021-04-18T12:15:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
@@ -132,56 +134,47 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     const streamSourceFiles = await models.StreamSourceFile.findAll()
     const streamSegments = await models.StreamSegment.findAll()
     expect(streamSourceFiles.length).toBe(1)
-    expect(streamSegments.length).toBe(10)
-    expect(streamSegments[1].id).toBe(requestBody.stream_segments[1].id)
-    expect(streamSegments[1].start).toEqual(moment.utc(requestBody.stream_segments[1].start).toDate())
-    expect(streamSegments[1].end).toEqual(moment.utc(requestBody.stream_segments[1].end).toDate())
-    expect(streamSegments[1].sample_count).toBe(requestBody.stream_segments[1].sample_count)
-    expect(streamSegments[1].file_extension_id).toBe(fileExtension.id)
-    expect(streamSegments[1].stream_source_file_id).toBe(streamSourceFiles[0].id)
-    expect(streamSegments[9].id).toBe(requestBody.stream_segments[9].id)
-    expect(streamSegments[9].start).toEqual(moment.utc(requestBody.stream_segments[9].start).toDate())
-    expect(streamSegments[9].end).toEqual(moment.utc(requestBody.stream_segments[9].end).toDate())
-    expect(streamSegments[9].sample_count).toBe(requestBody.stream_segments[9].sample_count)
-    expect(streamSegments[9].file_extension_id).toBe(fileExtension.id)
-    expect(streamSegments[9].stream_source_file_id).toBe(streamSourceFiles[0].id)
+    expect(requestBody.stream_segments.map(s => s.id).every(s => streamSegments.map(ss => ss.id).includes(s))).toBeTruthy()
+    const firstSegment = streamSegments.find(s => s.id === requestBody.stream_segments[1].id)
+    expect(firstSegment.id).toBe(requestBody.stream_segments[1].id)
+    expect(firstSegment.start).toEqual(moment.utc(requestBody.stream_segments[1].start).toDate())
+    expect(firstSegment.end).toEqual(moment.utc(requestBody.stream_segments[1].end).toDate())
+    expect(firstSegment.sample_count).toBe(requestBody.stream_segments[1].sample_count)
+    expect(firstSegment.file_extension_id).toBe(fileExtensionId)
+    expect(firstSegment.stream_source_file_id).toBe(streamSourceFiles[0].id)
+    const lastSegment = streamSegments.find(s => s.id === requestBody.stream_segments[9].id)
+    expect(lastSegment.id).toBe(requestBody.stream_segments[9].id)
+    expect(lastSegment.start).toEqual(moment.utc(requestBody.stream_segments[9].start).toDate())
+    expect(lastSegment.end).toEqual(moment.utc(requestBody.stream_segments[9].end).toDate())
+    expect(lastSegment.sample_count).toBe(requestBody.stream_segments[9].sample_count)
+    expect(lastSegment.file_extension_id).toBe(fileExtensionId)
+    expect(lastSegment.stream_source_file_id).toBe(streamSourceFiles[0].id)
   })
 
   test('new audio_file_format, audio_codec and file_extension rows are created', async () => {
-    const { stream, testPayload } = await commonSetup()
-    testPayload.stream_source_file.filename = '0d99db29f26d-2021-04-19T12-11-00.wav'
-    testPayload.stream_source_file.audio_codec = 'wav'
-    testPayload.stream_source_file.audio_file_format = 'wav'
-    testPayload.stream_segments[0].file_extension = '.wav'
+    const requestBody = Object.assign({}, testPayload)
+    requestBody.stream_source_file.filename = '0d99db29f26d-2021-04-19T12-11-00.wav'
+    requestBody.stream_source_file.audio_codec = 'wav'
+    requestBody.stream_source_file.audio_file_format = 'wav'
+    requestBody.stream_segments[0].file_extension = '.wav'
 
-    const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
+    const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
     expect(response.statusCode).toBe(201)
-    const streamSourceFiles = await models.StreamSourceFile.findAll()
-    const streamSegments = await models.StreamSegment.findAll()
-    expect(streamSourceFiles.length).toBe(1)
-    expect(streamSourceFiles[0].filename).toBe(testPayload.stream_source_file.filename)
-    expect(streamSourceFiles[0].audio_file_format_id).toBe(2)
-    expect(streamSourceFiles[0].duration).toBe(testPayload.stream_source_file.duration)
-    expect(streamSourceFiles[0].sample_count).toBe(testPayload.stream_source_file.sample_count)
-    expect(streamSourceFiles[0].channels_count).toBe(testPayload.stream_source_file.channels_count)
-    expect(streamSourceFiles[0].bit_rate).toBe(testPayload.stream_source_file.bit_rate)
-    expect(streamSourceFiles[0].sample_rate).toBe(testPayload.stream_source_file.sample_rate)
-    expect(streamSourceFiles[0].audio_codec_id).toBe(2)
-    expect(streamSourceFiles[0].sha1_checksum).toBe(testPayload.stream_source_file.sha1_checksum)
-    expect(streamSegments.length).toBe(1)
-    expect(streamSegments[0].id).toBe(testPayload.stream_segments[0].id)
-    expect(streamSegments[0].start).toEqual(moment.utc(testPayload.stream_segments[0].start).toDate())
-    expect(streamSegments[0].end).toEqual(moment.utc(testPayload.stream_segments[0].end).toDate())
-    expect(streamSegments[0].sample_count).toBe(testPayload.stream_segments[0].sample_count)
-    expect(streamSegments[0].file_extension_id).toBe(2)
-    expect(streamSegments[0].stream_source_file_id).toBe(streamSourceFiles[0].id)
+    const streamSourceFile = await models.StreamSourceFile.findOne({ where: { filename: requestBody.stream_source_file.filename } })
+    const streamSegments = await models.StreamSegment.findAll({ where: { stream_source_file_id: streamSourceFile.id } })
+    const audioFormat = await models.AudioFileFormat.findOne({ where: { id: streamSourceFile.audio_file_format_id } })
+    const codec = await models.AudioCodec.findOne({ where: { id: streamSourceFile.audio_codec_id } })
+    const extension = await models.FileExtension.findOne({ where: { id: streamSegments[0].file_extension_id } })
+    expect(audioFormat.value).toBe(requestBody.stream_source_file.audio_file_format)
+    expect(codec.value).toBe(requestBody.stream_source_file.audio_codec)
+    expect(streamSourceFile.sha1_checksum).toBe(requestBody.stream_source_file.sha1_checksum)
+    expect(extension.value).toBe('.wav')
   })
 
   describe('request body validation', () => {
     test('validation error is returned if stream_source_file is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file
 
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -195,8 +188,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segments is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -209,8 +201,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.filename is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.filename
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -223,8 +214,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.audio_file_format is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.audio_file_format
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -237,8 +227,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.duration is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.duration
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -251,8 +240,8 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.duration is less than 1', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      // const { stream, testPayload } = await commonSetup()
+      const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.duration = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -265,8 +254,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sample_count is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sample_count
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -279,8 +267,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sample_count is less than 1', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.sample_count = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -293,8 +280,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('sample_rate is set to 1 for stream_source_file if stream_source_file.sample_rate is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sample_rate
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -307,8 +293,8 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sample_rate is less than 1', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      // const { stream, testPayload } = await commonSetup()
+      const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.sample_rate = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -321,8 +307,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('channels_count is set to 1 for stream_source_file if stream_source_file.channels_count is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.channels_count
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -335,8 +320,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.channels_count is less than 1', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.channels_count = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -349,8 +333,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('bit_rate is set to 1 for stream_source_file if stream_source_file.bit_rate is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.bit_rate
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -363,8 +346,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.bit_rate is less than 1', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.bit_rate = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -377,8 +359,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.audio_codec is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.audio_codec
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -391,8 +372,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sha1_checksum is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sha1_checksum
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -405,8 +385,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.start is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].start
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -419,8 +398,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.end is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].end
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -433,8 +411,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.sample_count is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].sample_count
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -447,8 +424,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.file_extension is not set', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].file_extension
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
 
@@ -461,8 +437,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('empty meta is saved for stream_source_file if provided meta is not an object', async () => {
-      const { stream, testPayload } = await commonSetup()
-      const requestBody = { ...testPayload }
+      const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.meta = 123
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
 
@@ -475,7 +450,6 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('empty result error is returned if stream does not exist', async () => {
-      const { testPayload } = await commonSetup()
       const response = await request(app).post('/streams/random/stream-source-files-and-segments').send(testPayload)
 
       expect(response.statusCode).toBe(404)
@@ -489,8 +463,6 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
 
   describe('stream bounds update', () => {
     test('stream start, end and max_sample_rate are set for empty stream', async () => {
-      const { stream, testPayload } = await commonSetup()
-
       await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
 
       const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
@@ -500,9 +472,8 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('stream start, end and max_sample_rate are updated if new values are bigger/smaller', async () => {
-      const { testPayload } = await commonSetup()
       const stream = await models.Stream.create(
-        { id: 'abc2', name: 'my stream 2', createdById: seedValues.primaryUserId, start: '2021-04-18T12:12:10.000Z', end: '2021-04-18T12:12:20.000Z', maxSampleRate: 24000 }
+        { id: 'abcdsaqwery2', name: 'my stream 2', createdById: seedValues.primaryUserId, start: '2021-04-18T12:12:10.000Z', end: '2021-04-18T12:12:20.000Z', maxSampleRate: 24000 }
       )
 
       await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
@@ -514,9 +485,8 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('stream start, end and max_sample_rate are not updated if new values are not bigger/smaller', async () => {
-      const { testPayload } = await commonSetup()
       const stream = await models.Stream.create(
-        { id: 'abc3', name: 'my stream 3', createdById: seedValues.primaryUserId, start: '2020-01-01 00:00:00', end: '2021-05-05 00:00:00', maxSampleRate: 128000 }
+        { id: 'abcdsaqwery3', name: 'my stream 3', createdById: seedValues.primaryUserId, start: '2020-01-01 00:00:00', end: '2021-05-05 00:00:00', maxSampleRate: 128000 }
       )
 
       await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)

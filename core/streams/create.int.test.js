@@ -1,7 +1,7 @@
 const arbimonService = require('../_services/arbimon')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { truncate, truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 jest.mock('../_services/arbimon', () => {
@@ -17,32 +17,18 @@ app.use('/', routes)
 
 beforeAll(async () => {
   muteConsole()
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterEach(async () => {
+  await truncate({ Stream: models.Stream, UserStreamRole: models.UserStreamRole, Project: models.Project, UserProjectRole: models.UserProjectRole })
+})
+
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.sequelize.close()
 })
 
 describe('POST /streams', () => {
-  test('required fields only', async () => {
-    const requestBody = {
-      name: 'Trail 39',
-      latitude: 10.123,
-      longitude: 101.456
-    }
-
-    const response = await request(app).post('/').send(requestBody)
-
-    expect(response.statusCode).toBe(201)
-    expect(response.header.location).toMatch(/^\/streams\/[0-9a-z]+$/)
-    const id = response.header.location.replace('/streams/', '')
-    const stream = await models.Stream.findByPk(id)
-    expect(stream.name).toBe(requestBody.name)
-    expect(stream.createdById).toBe(seedValues.primaryUserId)
-    expect(stream.externalId).toBe(123)
-  })
-
   test('missing name', async () => {
     const requestBody = {
       latitude: 10.123
@@ -65,8 +51,26 @@ describe('POST /streams', () => {
     const response = await request(app).post('/').send(requestBody)
 
     expect(response.statusCode).toBe(500)
-    const streams = await models.Stream.findAll()
+    const streams = await models.Stream.findAll({ where: { name: 'Trail 39' } })
     expect(streams.length).toBe(0)
+  })
+
+  test('required fields only', async () => {
+    const requestBody = {
+      name: 'Trail 39',
+      latitude: 10.123,
+      longitude: 101.456
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(201)
+    expect(response.header.location).toMatch(/^\/streams\/[0-9a-z]+$/)
+    const id = response.header.location.replace('/streams/', '')
+    const stream = await models.Stream.findByPk(id)
+    expect(stream.name).toBe(requestBody.name)
+    expect(stream.createdById).toBe(seedValues.primaryUserId)
+    expect(stream.externalId).toBe(123)
   })
 
   test('returns 201 when user creates a stream in a project he has a Member role', async () => {

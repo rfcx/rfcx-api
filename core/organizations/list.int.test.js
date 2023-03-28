@@ -1,18 +1,22 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
 
 beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterEach(async () => {
+  await truncateNonBase(models)
+})
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('GET /organizations', () => {

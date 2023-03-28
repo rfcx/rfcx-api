@@ -1,6 +1,6 @@
 const routes = require('./index')
 const models = require('../../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../../common/testing/sequelize')
 const request = require('supertest')
 const { RUNNING } = require('../../classifier-jobs/classifier-job-status')
 
@@ -9,7 +9,7 @@ const CLASSIFICATION_1 = { id: 100001, value: 'aureus', title: 'Canis aureus', t
 const CLASSIFICATION_2 = { id: 100002, value: 'corrugatus', title: 'Aceros corrugatus', typeId: 1 }
 const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2]
 
-const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
+const CLASSIFIER_1 = { id: 671, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 const CLASSIFIERS = [CLASSIFIER_1]
 
 const CLASSIFIER_OUTPUT_1 = { id: 5551, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_1.id, outputClassName: `el-${CLASSIFICATION_1.value}` }
@@ -37,14 +37,17 @@ async function seedTestData () {
 }
 
 beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
   muteConsole('warn')
 })
 
 beforeEach(async () => {
-  await truncate(models)
+  await truncateNonBase(models)
   await seedTestData()
+})
+
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.sequelize.close()
 })
 
 describe('POST /internal/classifier-jobs/:id/results', () => {

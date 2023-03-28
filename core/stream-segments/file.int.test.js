@@ -1,6 +1,6 @@
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const storageService = require('../_services/storage')
 
@@ -12,13 +12,12 @@ jest.spyOn(storageService, 'getSignedUrl').mockImplementation((bucket, key, cont
   return Promise.resolve(`https://fake-s3/${bucket}/${key}?extra=stuff`)
 })
 
-beforeAll(async () => {
-  muteConsole('warn')
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {

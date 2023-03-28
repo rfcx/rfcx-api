@@ -1,14 +1,14 @@
 const moment = require('moment')
 const { saveMeta: { Detections } } = require('./mqtt-save-meta')
 const models = require('../../../core/_models')
-const { migrate, truncate, seed, seedValues } = require('../../../common/testing/sequelize')
+const { seedValues, truncateNonBase } = require('../../../common/testing/sequelize')
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {

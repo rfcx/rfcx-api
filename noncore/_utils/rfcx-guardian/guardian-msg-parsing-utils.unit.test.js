@@ -1,3 +1,17 @@
+jest.mock('../../_models', () => { return {} })
+jest.mock('../../../core/_models', () => {
+  return {
+    ClassifierDeployment: { attributes: {} },
+    ClassifierOutput: { attributes: {} },
+    User: { attributes: {}, include: jest.fn() },
+    Stream: { attributes: {} },
+    Project: { attributes: {}, include: jest.fn() },
+    Role: { attributes: {} },
+    RolePermission: { attributes: {} },
+    Organization: { attributes: {}, include: jest.fn() }
+  }
+})
+
 console.error = () => undefined
 const { guardianMsgParsingUtils } = require('./guardian-msg-parsing-utils')
 const { pingRouter } = require('./router-ping')
