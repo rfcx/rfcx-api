@@ -60,10 +60,10 @@ function resetTestData () {
 }
 
 async function commonSetup () {
-  await models.Stream.create(stream)
-  audioFileFormatId = (await models.AudioFileFormat.create(audioFileFormat)).id
-  audioCodecId = (await models.AudioCodec.create(audioCodec)).id
-  fileExtensionId = (await models.FileExtension.create(fileExtension)).id
+  await models.Stream.findOrCreate({ where: stream })
+  audioFileFormatId = (await models.AudioFileFormat.findOrCreate({ where: audioFileFormat }))[0].id
+  audioCodecId = (await models.AudioCodec.findOrCreate({ where: audioCodec }))[0].id
+  fileExtensionId = (await models.FileExtension.findOrCreate({ where: fileExtension }))[0].id
 }
 
 describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', () => {
