@@ -3,6 +3,8 @@ const ArrayConverter = require('../../../common/converter/array')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const { createResults } = require('./dao/create-results')
+const { asyncEvery } = require('../../../common/helpers')
+const { hasPermission, STREAM, READ } = require('../../roles/dao')
 
 /**
  * @swagger
@@ -39,11 +41,8 @@ const { createResults } = require('./dao/create-results')
  */
 module.exports = async (req, res) => {
   try {
-    // Check authorization
-    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-      throw new ForbiddenError()
-    }
-
+    const user = req.rfcx.auth_token_info
+    const creatableBy = user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id
     // Validate params
     const converter1 = new Converter(req.body, {}, true)
     converter1.convert('analyzed_minutes').toInt()
@@ -58,6 +57,14 @@ module.exports = async (req, res) => {
     converter2.convert('confidence').toFloat()
     const paramsDetections = await converter2.validate()
       .then(detections => detections.map(d => ({ ...d, streamId: d.stream_id })))
+
+    if (creatableBy) {
+      // check that user has access to all specified streams
+      const streamIds = [...new Set(paramsDetections.map(d => d.streamId))]
+      if (!(await asyncEvery(streamIds, (id) => hasPermission(READ, creatableBy, id, STREAM)))) {
+        throw new ForbiddenError()
+      }
+    }
 
     const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
 

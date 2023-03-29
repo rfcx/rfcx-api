@@ -135,16 +135,6 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       expect(response1.statusCode).toBe(400)
     })
 
-    test('403 if not super-user', async () => {
-      // Act
-      const response1 = await request(app).post(`/${JOB_RUNNING.id}/results`).send(VALID_JOB_RESULT)
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
-
-      // Assert
-      expect(response1.statusCode).toBe(403)
-      expect(jobUpdated1.minutesCompleted).toBe(0)
-    })
-
     test('404 if classifier-job does not exist', async () => {
       // Arrange
       const notJobId = 10000
