@@ -2,7 +2,6 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const classifierProcessedSegmentsService = require('./bl/processed-segments')
 const ArrayConverter = require('../../../common/converter/array')
-const { hasRole } = require('../../../common/middleware/authorization/authorization')
 
 /**
  * @swagger
@@ -27,7 +26,8 @@ const { hasRole } = require('../../../common/middleware/authorization/authorizat
  *       400:
  *         description: Invalid query parameters
  */
-router.post('/streams/segments/processed', hasRole(['systemUser']), function (req, res) {
+router.post('/streams/segments/processed', function (req, res) {
+  const user = req.rfcx.auth_token_info
   const converter = new ArrayConverter(req.body, true)
   converter.convert('stream').toString()
   converter.convert('start').toMomentUtc()
@@ -36,6 +36,7 @@ router.post('/streams/segments/processed', hasRole(['systemUser']), function (re
 
   converter.validate()
     .then(async (params) => {
+      params.creatableBy = user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id
       await classifierProcessedSegmentsService.batchCreate(params)
       res.sendStatus(201)
     })
