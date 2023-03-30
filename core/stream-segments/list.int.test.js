@@ -137,5 +137,8 @@ describe('GET /streams/:id/segments', () => {
     expect(response3.body[2].id).toBe(s3.id)
     expect(response3.body[3].id).toBe(s4.id)
     expect(response3.body[4].id).toBe(s5.id)
+
+    const response4 = await request(app).get(`/${stream1.id}/segments`).query({ start: s1.start, end: s3.start, classifier: classifier1.id })
+    expect(response4.body.length).toBe(0)
   })
 })
