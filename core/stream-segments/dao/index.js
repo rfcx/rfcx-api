@@ -122,9 +122,10 @@ async function query (filters, options = {}) {
       attributes: ['start']
     })
     if (processedSegments.length) {
-      where[Op.and].start = {
-        [Op.notIn]: processedSegments.map(s => s.start)
+      if (!where[Op.and].start) {
+        where[Op.and].start = {}
       }
+      where[Op.and].start[Op.notIn] = processedSegments.map(s => s.start)
     }
   }
 
