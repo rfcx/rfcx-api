@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: noncore-mqtt-configmap
+  namespace: eks-test-ns
+data:
+  NEW_RELIC_APP_NAME: "Staging MQTT API"

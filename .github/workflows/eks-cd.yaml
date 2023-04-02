@@ -48,25 +48,28 @@ jobs:
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'eks-test-ns' }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_EKS }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_EKS }}
 
-  get_kubeconfig:
-    name: 'Get Kubeconf EKS'
-    run: |
-      aws eks update-kubeconfig --region us-east-1 --name eks-cluster-test
-      kubectl config use-context my-cluster-name
-      KUBECONFIG << /.kube/config
+ # get_kubeconfig:
+ #   name: 'Get Kubeconf EKS'
+ #   run: |
+ #     aws eks update-kubeconfig --region us-east-1 --name eks-cluster-test
+ #     kubectl config use-context my-cluster-name
+ #     KUBECONFIG << /.kube/config
 
   deploy:
     name: 'Deploy'
     needs: [build, configure]
-    uses: ./.github/workflows/reusable-k8s-deploy.yaml
+    uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
     secrets:
-      kube-config1: ${{ KUBECONFIG }}
+#      kube-config1: ${{ KUBECONFIG }}
+#    secrets:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_EKS }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_EKS }}
 
 #  notify:
 #    name: 'Notify'

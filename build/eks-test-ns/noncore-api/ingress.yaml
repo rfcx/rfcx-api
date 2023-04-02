@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+
+    nginx.ingress.kubernetes.io/proxy-body-size: "1m"
+    nginx.ingress.kubernetes.io/limit-rpm: "300"
+  name: noncore-api-ingress
+  namespace: eks-test-ns
+  labels:
+    app: noncore-api
+spec:
+  rules:
+    - host: staging-api.rfcx.org
+      http:
+        paths:
+          - path: /(v[12]/.*)
+            pathType: Prefix
+            backend:
+              serviceName: noncore-api-service
+              servicePort: 80

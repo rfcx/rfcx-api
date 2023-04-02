@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: core-api
-  namespace: staging
+  namespace: eks-test-ns
 spec:
   selector:
     matchLabels:

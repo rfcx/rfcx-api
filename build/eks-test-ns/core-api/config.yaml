@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: core-api-configmap
-  namespace: staging
+  namespace: eks-test-ns
 data:
   ARBIMON_BASE_URL: "https://staging-arbimon.rfcx.org/"
   ARBIMON_ENABLED: "true"
@@ -19,7 +19,7 @@ data:
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_PREFIX: 'staging'
   NEW_RELIC_APP_NAME: "Staging Core API"
-  NODE_ENV: "staging"
+  NODE_ENV: "staging" ##
   NODE_LOG_LEVEL: "debug"
   CORE_DB_NAME: "core"
   NONCORE_DB_NAME: "noncore"

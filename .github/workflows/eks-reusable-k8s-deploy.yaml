@@ -1,0 +1,110 @@
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: Platform to execute on
+        type: string
+        default: ubuntu-latest
+        required: false
+      tag: 
+        description: Image tag to deploy
+        type: string
+        required: true
+      namespace:
+        description: Kubernetes namespace
+        type: string
+        required: true
+    secrets:
+#      kube-config:
+#        description: KUBE_CONFIG file
+#        required: true
+      aws-access-key-id:
+        description: AWS Access Key ID
+        required: true
+      aws-secret-access-key:
+        description: AWS Secret Access Key
+        required: true
+jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+
+      - name: 'Setup: Configure AWS credentials'
+        # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
+        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-region: eu-west-1
+
+      - name: 'Get Kubeconf EKS'
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name eks-cluster-test
+          kubectl config get-contexts
+          kubectl config use-context arn:aws:eks:us-east-1:887044485231:cluster/eks-cluster-test
+          export KUBE_CONFIG=$(cat ~/.kube/config | base64)
+          echo $AWS_ACCESS_KEY_ID
+#          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+#          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          export AWS_DEFAULT_REGION=eu-west-1
+
+      - name: 'Setup: Git checkout'
+        # v3 (3.0.0) @ 02 Mar 2022 https://github.com/actions/checkout/tags
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
+
+      - name: 'Deploy: Set image version'
+        run: |
+          find build -name "*.yaml" -exec sed -i s/:latest/:${{ inputs.tag }}/g {} +
+
+      - name: 'Deploy: Kubernetes apply'
+        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+#        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+#        env:
+#          KUBE_CONFIG: ${{ KUBE_CONFIG }} #${{ secrets.kube-config1 }}
+#        with:
+#          args: apply -R -f build/${{ inputs.namespace }}
+        run: |
+          kubectl delete -R -f build/${{ inputs.namespace }} --ignore-not-found=true -n${{ inputs.namespace }} --grace-period=10
+          kubectl apply -R -f build/${{ inputs.namespace }} -n${{ inputs.namespace }}
+          echo "Good 1"
+
+#      - name: 'Deploy: Kubernetes verify core-api'
+#        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+#        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+#        env:
+#          KUBE_CONFIG: ${{ KUBE_CONFIG }} #${{ secrets.kube-config1 }}
+#        with:
+#          args: rollout status deployment/core-api --namespace=${{ inputs.namespace }}
+#
+#      - name: 'Deploy: Kubernetes verify core-tasks'
+#        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+#        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+#        env:
+#          KUBE_CONFIG: ${{ KUBE_CONFIG }} #${{ secrets.kube-config1 }}
+#        with:
+#          args: rollout status deployment/core-tasks --namespace=${{ inputs.namespace }}
+#
+#      - name: 'Deploy: Kubernetes verify media-api'
+#        if: ${{ inputs.namespace == 'production' }}
+#        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+#        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+#        env:
+#          KUBE_CONFIG: ${{ KUBE_CONFIG }} #${{ secrets.kube-config1 }}
+#        with:
+#          args: rollout status deployment/media-api --namespace=${{ inputs.namespace }}
+#
+#      - name: 'Deploy: Kubernetes verify noncore-api'
+#        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+#        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+#        env:
+#          KUBE_CONFIG: ${{ KUBE_CONFIG }} #${{ secrets.kube-config1 }}
+#        with:
+#          args: rollout status deployment/noncore-api --namespace=${{ inputs.namespace }}
+#
+#      - name: 'Deploy: Kubernetes verify noncore-mqtt'
+#        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
+#        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
+#        env:
+#          KUBE_CONFIG: ${{ KUBE_CONFIG }} #${{ secrets.kube-config1 }}
+#        with:
+#          args: rollout status deployment/noncore-mqtt --namespace=${{ inputs.namespace }}

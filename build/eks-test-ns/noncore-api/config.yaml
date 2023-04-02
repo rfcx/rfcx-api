@@ -1,12 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: core-api-configmap
-  namespace: staging
+  name: noncore-api-configmap
+  namespace: eks-test-ns
 data:
-  ARBIMON_BASE_URL: "https://staging-arbimon.rfcx.org/"
-  ARBIMON_ENABLED: "true"
   ASSET_BUCKET_AI: "rfcx-ai-dev"
+  ASSET_BUCKET_AUDIO: "rfcx-guardian-ark-staging"
+  ASSET_BUCKET_META: "rfcx-guardian-meta-staging"
+  ASSET_BUCKET_REPORT: "rfcx-report-staging"
+  ASSET_BUCKET_ZIP: "rfcx-zip"
+  ASSET_URLBASE: "https://staging-api.rfcx.org/v1/assets"
   AUTH0_AUTHZ_AUDIENCE: "urn:auth0-authz-api"
   AUTH0_CLOUD_AUDIENCE: "https://rfcx.org"
   AUTH0_CUSTOM_DOMAIN: "auth.rfcx.org"
@@ -14,11 +17,19 @@ data:
   AUTH0_DOMAIN: "rfcx.eu.auth0.com"
   AUTH0_EXTENSION_URL: "rfcx.eu.webtask.io/adf6e2f2b84784b57522e3b19dfc9201/api"
   AWS_ACCOUNT_ID: "887044485231"
-  AWS_REGION_ID: "us-east-1"  #"eu-west-1"
+  AWS_REGION_ID: "eu-west-1"
+  FIREBASE_ENABLED: "true"
+  GUARDIAN_API_SMS_ADDRESS: "+14154803657"
+  GUARDIAN_BROKER_HOSTNAME: "staging-api-mqtt.rfcx.org"
   INGEST_BUCKET: "rfcx-streams-staging"
+  INGEST_SERVICE_BASE_URL: "http://ingest-service-api-service.staging.svc.cluster.local/"
+  INGEST_SERVICE_ENABLED: "true"
+  MAILCHIMP_API_URL: "https://us9.api.mailchimp.com/3.0/"
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_PREFIX: 'staging'
-  NEW_RELIC_APP_NAME: "Staging Core API"
+  MQTT_BROKER_HOST: "rabbitmq-http.staging.svc.cluster.local"
+  MQTT_BROKER_PORT: "1883"
+  NEW_RELIC_APP_NAME: "Staging Noncore API"
   NODE_ENV: "staging"
   NODE_LOG_LEVEL: "debug"
   CORE_DB_NAME: "core"
@@ -28,5 +39,5 @@ data:
   POSTGRES_SSL_ENABLED: "true"
   REST_PROTOCOL: "https"
   REST_HOST: "staging-api.rfcx.org"
-  STREAMS_CACHE_BUCKET: "rfcx-streams-cache-staging"
-  USERS_BUCKET: "rfcx-users-production"
+  REST_HOST_SHORT: "rf.cx"
+  USERS_BUCKET: "rfcx-users-staging"

@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    # Docs: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations
+
+    # Maximum request body size
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+
+    # Rate limiting
+    # limit-rpm = limit each IP address to X requests per minute
+    # limit-whitelist = do not rate limit clients in the IP range
+    nginx.ingress.kubernetes.io/limit-rpm: "300"
+  name: core-api-ingress
+  namespace: eks-test-ns
+  labels:
+    app: core-api
+spec:
+  rules:
+    - host: staging-api.rfcx.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: core-api-service
+              servicePort: 80
