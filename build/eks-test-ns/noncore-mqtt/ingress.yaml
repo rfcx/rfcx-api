@@ -16,5 +16,7 @@ spec:
           - path: /(internal/rabbitmq/.*)
             pathType: Prefix
             backend:
-              serviceName: noncore-mqtt-service
-              servicePort: 80
+              service:
+                name: noncore-mqtt-service
+                port:
+                  number: 80
