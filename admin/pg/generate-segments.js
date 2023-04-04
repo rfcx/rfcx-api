@@ -1,3 +1,18 @@
+// Add the following code into core/_models/db.js and start core server as usual
+
+// const { generateUsers } = require('../../admin/pg/generate-users')
+// const { generateProjectsWithStreams } = require('../../admin/pg/generate-projects-with-streams')
+// const { generateSegments } = require('../../admin/pg/generate-segments')
+// generateUsers(models)
+//   .then(async (users) => {
+//     const projects = await generateProjectsWithStreams(models, users, 100, 100)
+//     for (const project of projects) {
+//       for (const stream of project.streams) {
+//         await generateSegments(models, stream.id, 20000)
+//       }
+//     }
+//   })
+
 const { randomBetween } = require('../../common/helpers')
 const moment = require('moment-timezone')
 
