@@ -113,11 +113,11 @@ async function query (filters, options = {}) {
       [Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
     }
   }
-  if (filters.classifier !== undefined) {
+  if (filters.unprocessedByClassifier !== undefined) {
     const processedSegments = await ClassifierProcessedSegment.findAll({
       where: {
         ...where,
-        classifierId: filters.classifier
+        classifierId: filters.unprocessedByClassifier
       },
       attributes: ['start']
     })

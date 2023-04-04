@@ -75,16 +75,16 @@ module.exports = function (req, res) {
   const converter = new Converter(req.query, {}, true)
   converter.convert('start').toMomentUtc()
   converter.convert('end').toMomentUtc()
-  converter.convert('classifier').optional().toInt()
+  converter.convert('unprocessed_by_classifier').optional().toInt()
   converter.convert('limit').optional().toInt()
   converter.convert('offset').optional().toInt()
   converter.convert('strict').default(true).toBoolean()
 
   converter.validate()
     .then(async (params) => {
-      const { start, end, classifier, limit, offset, strict } = params
+      const { start, end, unprocessedByClassifier, limit, offset, strict } = params
       const options = { readableBy, limit, offset, strict }
-      return streamSegmentDao.query({ start, end, streamId, classifier }, options)
+      return streamSegmentDao.query({ start, end, streamId, unprocessedByClassifier }, options)
     })
     .then((data) => res.header('Total-Items', data.count).json(data.results))
     .catch(httpErrorHandler(req, res, 'Failed getting stream segments'))

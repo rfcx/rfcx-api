@@ -118,19 +118,19 @@ describe('GET /streams/:id/segments', () => {
     await models.ClassifierProcessedSegment.create({ classifierId: classifier1.id, classifierJobId: job2.id, streamId: stream1.id, start: s3.start })
     await models.ClassifierProcessedSegment.create({ classifierId: classifier2.id, classifierJobId: job3.id, streamId: stream1.id, start: s1.start })
 
-    const response1 = await request(app).get(`/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', classifier: classifier1.id })
+    const response1 = await request(app).get(`/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', unprocessed_by_classifier: classifier1.id })
     expect(response1.body.length).toBe(2)
     expect(response1.body[0].id).toBe(s4.id)
     expect(response1.body[1].id).toBe(s5.id)
 
-    const response2 = await request(app).get(`/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', classifier: classifier2.id })
+    const response2 = await request(app).get(`/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', unprocessed_by_classifier: classifier2.id })
     expect(response2.body.length).toBe(4)
     expect(response2.body[0].id).toBe(s2.id)
     expect(response2.body[1].id).toBe(s3.id)
     expect(response2.body[2].id).toBe(s4.id)
     expect(response2.body[3].id).toBe(s5.id)
 
-    const response3 = await request(app).get(`/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', classifier: classifier3.id })
+    const response3 = await request(app).get(`/${stream1.id}/segments`).query({ start: '2021-07-26T00:00:00.000Z', end: '2021-07-27T00:00:00.000Z', unprocessed_by_classifier: classifier3.id })
     expect(response3.body.length).toBe(5)
     expect(response3.body[0].id).toBe(s1.id)
     expect(response3.body[1].id).toBe(s2.id)
@@ -138,7 +138,7 @@ describe('GET /streams/:id/segments', () => {
     expect(response3.body[3].id).toBe(s4.id)
     expect(response3.body[4].id).toBe(s5.id)
 
-    const response4 = await request(app).get(`/${stream1.id}/segments`).query({ start: s1.start, end: s3.start, classifier: classifier1.id })
+    const response4 = await request(app).get(`/${stream1.id}/segments`).query({ start: s1.start, end: s3.start, unprocessed_by_classifier: classifier1.id })
     expect(response4.body.length).toBe(0)
   })
 })
