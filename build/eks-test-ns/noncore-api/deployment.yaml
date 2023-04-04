@@ -17,8 +17,8 @@ spec:
         image: 887044485231.dkr.ecr.us-east-1.amazonaws.com/noncore-api:latest
         args: ["npm", "run", "start:noncore"]
         envFrom:
-        - secretRef:
-            name: noncore-secrets
+#        - secretRef:
+#            name: noncore-secrets
         - configMapRef:
             name: noncore-api-configmap
         resources:

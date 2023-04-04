@@ -18,8 +18,8 @@ spec:
         image: 887044485231.dkr.ecr.us-east-1.amazonaws.com/core-api:latest
         args: ["npm", "run", "start:core"]
         envFrom:
-        - secretRef:
-            name: core-secrets
+#        - secretRef:
+#            name: core-secrets
         - configMapRef:
             name: core-api-configmap
         resources:
