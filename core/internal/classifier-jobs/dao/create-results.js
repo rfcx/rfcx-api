@@ -1,8 +1,9 @@
 const { EmptyResultError } = require('../../../../common/error-handling/errors')
 const { ClassifierJob, sequelize } = require('../../../_models')
-const { create } = require('../../../detections/dao/create')
+const detectionsDao = require('../../../detections/dao/create')
+const segmentsDao = require('../../../classifiers/dao/processed-segments')
 
-async function createResults (jobId, { analyzedMinutes, detections }) {
+async function createResults (jobId, { analyzedMinutes, detections, segments }) {
   // Check job exists
   const job = await ClassifierJob.findByPk(jobId, { raw: true })
   if (!job) {
@@ -10,7 +11,10 @@ async function createResults (jobId, { analyzedMinutes, detections }) {
   }
 
   // Save detections
-  await create(detections)
+  await detectionsDao.create(detections)
+
+  // Save processed segments
+  await segmentsDao.batchCreate(segments)
 
   // Update job minutes completed
   await sequelize.query(
