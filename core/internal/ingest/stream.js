@@ -89,7 +89,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             stream_source_file_id: streamSourceFile.id,
             file_extension_id: fileExtensionObjects.find(obj => obj.value === segment.file_extension).id
           }))
-          await Promise.all(segments.map(segment => streamSegmentDao.create(segment, { transaction })))
+          await streamSegmentDao.bulkCreate(segments, { transaction })
 
           // Refresh stream max_sample rate, start and end if needed
           const minStart = moment.min(segConverter.transformedArray.map(s => s.start))
