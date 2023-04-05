@@ -23,7 +23,7 @@ const { hasPermission, STREAM, READ } = require('../../roles/dao')
  *         required: true
  *         type: string
  *     requestBody:
- *       description: An incremental result object containing detections & number of minutes that were processed
+ *       description: An incremental result object containing detections, number of minutes and segments that were processed
  *       required: true
  *       content:
  *         application/json:
@@ -58,15 +58,31 @@ module.exports = async (req, res) => {
     const paramsDetections = await converter2.validate()
       .then(detections => detections.map(d => ({ ...d, streamId: d.stream_id })))
 
+    const converter3 = new ArrayConverter(req.body.processed_segments, true)
+    converter3.convert('stream').toString()
+    converter3.convert('start').toMomentUtc()
+    converter3.convert('classifier').toInt()
+    converter3.convert('classifier_job').optional().toInt()
+    const paramsSegments = await converter3.validate()
+      .then(segments => segments.map((d) => {
+        return {
+          streamId: d.stream,
+          start: d.start.toISOString(),
+          classifierId: d.classifier,
+          classifierJobId: d.classifier_job
+        }
+      }))
     if (creatableBy) {
       // check that user has access to all specified streams
-      const streamIds = [...new Set(paramsDetections.map(d => d.streamId))]
+      const detectionsStreams = paramsDetections.map(d => d.streamId)
+      const segmentsStreams = paramsSegments.map(d => d.streamId)
+      const streamIds = [...new Set([...detectionsStreams, ...segmentsStreams])]
       if (!(await asyncEvery(streamIds, (id) => hasPermission(READ, creatableBy, id, STREAM)))) {
         throw new ForbiddenError()
       }
     }
 
-    const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
+    const params = { ...paramsAnalyzedMinutes, detections: paramsDetections, segments: paramsSegments }
 
     // Call DAO & return
     const jobId = req.params.id
