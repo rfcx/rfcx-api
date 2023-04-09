@@ -13,7 +13,7 @@ metadata:
     app: noncore-api
 spec:
   rules:
-    - host: staging-api.rfcx.org
+    - host: brdomain.site #staging-api.rfcx.org
       http:
         paths:
           - path: /(v[12]/.*)

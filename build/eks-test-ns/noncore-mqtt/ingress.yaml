@@ -10,7 +10,7 @@ metadata:
     app: noncore-mqtt
 spec:
   rules:
-    - host: staging-api.rfcx.org
+    - host: brdomain.site  #staging-api.rfcx.org
       http:
         paths:
           - path: /(internal/rabbitmq/.*)
