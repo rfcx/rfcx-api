@@ -2,8 +2,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  #annotations:
-  #  nginx.ingress.kubernetes.io/rewrite-target: /$1
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
   name: noncore-mqtt-ingress
   namespace: eks-test-ns
   labels:
