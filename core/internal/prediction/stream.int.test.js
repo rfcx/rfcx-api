@@ -122,7 +122,7 @@ describe('POST /streams/segments/processed', () => {
     expect(processedSegments[4].classifier_id).toBe(classifier2.id)
     expect(processedSegments[4].classifier_job_id).toBe(job3.id)
   })
-  test('creating a duplicate row throws an error', async () => {
+  test('creating a duplicate row does not create a duplicate', async () => {
     const { stream1, classifier1, job1 } = await commonSetup()
     const requestBody = [
       { stream: stream1.id, start: '2021-07-26T00:00:00.000Z', classifier: classifier1.id, classifier_job: job1.id },
@@ -131,9 +131,12 @@ describe('POST /streams/segments/processed', () => {
       { stream: stream1.id, start: '2021-07-26T00:01:00.000Z', classifier: classifier1.id, classifier_job: job1.id }
     ]
     const response = await request(app).post('/streams/segments/processed').send(requestBody)
-    expect(response.statusCode).toBe(500)
-    const processedSegments = await ClassifierProcessedSegment.findAll()
-    expect(processedSegments.length).toBe(0)
+    expect(response.statusCode).toBe(201)
+    const processedSegments = await ClassifierProcessedSegment.findAll({ sort: [['start', 'ASC']] })
+    expect(processedSegments.length).toBe(3)
+    expect(processedSegments[0].start.toISOString()).toBe(requestBody[0].start)
+    expect(processedSegments[1].start.toISOString()).toBe(requestBody[1].start)
+    expect(processedSegments[2].start.toISOString()).toBe(requestBody[2].start)
   })
   test('returns 403 if user sends data for not accessible streams', async () => {
     const { stream1, classifier1, job1 } = await commonSetup()

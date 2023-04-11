@@ -7,11 +7,14 @@ const app = expressApp({ has_system_role: true })
 
 app.use('/', routes)
 
-const CLASSIFICATION_1 = { id: 1, value: 'chainsaw', title: 'chainsaw', type_id: 1, source_id: null, parent_id: null, source_external_id: null, created_at: '2022-06-29 11:22:37.094935', update_at: '2022-06-29 11:22:37.094935' }
-const CLASSIFICATION_2 = { id: 2, value: 'vehicle', title: 'vehicle', type_id: 1, source_id: null, parent_id: null, source_external_id: null, created_at: '2022-06-29 11:22:37.094935', update_at: '2022-06-29 11:22:37.094935' }
+const CLASSIFICATION_1 = { id: 1, value: 'chainsaw', title: 'chainsaw', typeId: 1, sourceId: null, parent_id: null, source_external_id: null, created_at: '2022-06-29 11:22:37.094935' }
+const CLASSIFICATION_2 = { id: 2, value: 'vehicle', title: 'vehicle', typeId: 1, sourceId: null, parent_id: null, source_external_id: null, created_at: '2022-06-29 11:22:37.094935' }
+const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2]
 
 async function commonSetup () {
-  await models.Classification.bulkCreate([CLASSIFICATION_1, CLASSIFICATION_2])
+  for (const c of CLASSIFICATIONS) {
+    await models.Classification.findOrCreate({ where: c })
+  }
 }
 
 beforeEach(async () => {
@@ -19,6 +22,9 @@ beforeEach(async () => {
 })
 afterEach(async () => {
   await truncateNonBase(models)
+})
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('POST /classifiers/:id', () => {
