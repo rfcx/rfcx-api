@@ -50,6 +50,7 @@ async function seedTestData () {
 
 beforeAll(async () => {
   muteConsole('warn')
+  await truncateNonBase(models)
 })
 
 afterEach(async () => {
@@ -58,6 +59,10 @@ afterEach(async () => {
 
 beforeEach(async () => {
   await seedTestData()
+})
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('POST /internal/classifier-jobs/:id/results', () => {

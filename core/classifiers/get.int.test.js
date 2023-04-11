@@ -13,6 +13,9 @@ beforeEach(async () => {
 afterEach(async () => {
   await truncateNonBase(models)
 })
+afterAll(async () => {
+  await models.sequelize.close()
+})
 
 async function commonSetup () {
   const CLASSIFIER_MODEL = { id: 1, name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true }

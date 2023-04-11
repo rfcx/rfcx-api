@@ -1,7 +1,7 @@
 const arbimonService = require('../_services/arbimon')
 const routes = require('.')
 const models = require('../_models')
-const { truncate, truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 jest.mock('../_services/arbimon', () => {
@@ -20,7 +20,7 @@ beforeAll(async () => {
 })
 
 afterEach(async () => {
-  await truncate({ Stream: models.Stream, UserStreamRole: models.UserStreamRole, Project: models.Project, UserProjectRole: models.UserProjectRole })
+  await truncateNonBase(models)
 })
 
 afterAll(async () => {

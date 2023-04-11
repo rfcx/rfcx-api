@@ -4,27 +4,29 @@ const detectionsDao = require('../../../detections/dao/create')
 const segmentsDao = require('../../../classifiers/dao/processed-segments')
 
 async function createResults (jobId, { analyzedMinutes, detections, segments }) {
-  // Check job exists
-  const job = await ClassifierJob.findByPk(jobId, { raw: true })
-  if (!job) {
-    throw new EmptyResultError()
-  }
+  return sequelize.transaction(async (transaction) => {
+    // Check job exists
+    const job = await ClassifierJob.findByPk(jobId, { raw: true, transaction })
+    if (!job) {
+      throw new EmptyResultError()
+    }
 
-  // Save detections
-  await detectionsDao.create(detections)
+    // Save detections
+    await detectionsDao.create(detections, { transaction })
 
-  // Save processed segments
-  await segmentsDao.batchCreate(segments)
+    // Save processed segments
+    await segmentsDao.batchCreate(segments, { transaction })
 
-  // Update job minutes completed
-  await sequelize.query(
-    `
-    UPDATE classifier_jobs
-    SET minutes_completed = minutes_completed + $analyzedMinutes
-    WHERE id = $jobId
-    `,
-    { bind: { jobId, analyzedMinutes } }
-  )
+    // Update job minutes completed
+    await sequelize.query(
+      `
+      UPDATE classifier_jobs
+      SET minutes_completed = minutes_completed + $analyzedMinutes
+      WHERE id = $jobId
+      `,
+      { bind: { jobId, analyzedMinutes }, transaction }
+    )
+  })
 }
 
 module.exports = {
