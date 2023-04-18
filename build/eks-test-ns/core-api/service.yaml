@@ -3,6 +3,8 @@ apiVersion: v1
 metadata:
   name: core-api-service
   namespace: eks-test-ns
+  labels:
+    app: core-api
 spec:
   selector:
     app: core-api
