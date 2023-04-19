@@ -158,6 +158,21 @@ function create (segment, options = {}) {
 }
 
 /**
+ * Bulk create stream segment
+ * @param {*} segments Array of stream segment attributes
+ * @param {*} options
+ * @param {Transaction} options.transaction Perform within given transaction
+ */
+function bulkCreate (segments, options = {}) {
+  const transaction = options.transaction
+  return StreamSegment.bulkCreate(segments, { transaction })
+    .catch((e) => {
+      console.error('Stream segment service -> bulkCreate -> error', e)
+      throw new ValidationError('Cannot bulkCreate stream segment with provided data')
+    })
+}
+
+/**
  * Notify about new segment
  * @param {*} segment Stream segment object
  */
@@ -257,6 +272,7 @@ function removeDuplicates (segments) {
 module.exports = {
   get,
   query,
+  bulkCreate,
   create,
   notify,
   getStreamCoverage,
