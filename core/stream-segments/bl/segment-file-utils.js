@@ -95,7 +95,7 @@ function downloadSegments (segments) {
   return Promise.all(downloadProms)
 }
 
-function convertAudio (segments, starts, ends, attrs, outputPath) {
+async function convertAudio (segments, starts, ends, attrs, outputPath, extension) {
   let command = `${FFMPEG_PATH} `
   const complexFilter = []
   segments.forEach((segment, ind) => {
@@ -183,14 +183,6 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   if (attrs.gain !== undefined && parseFloat(attrs.gain) !== 1) {
     command += `,volume=${attrs.gain}`
   }
-  if (attrs.fileType !== 'spec' && attrs.clip && attrs.clip !== 'full') {
-    if (parseInt(attrs.clip.bottom)) {
-      command += `,highpass=f=${attrs.clip.bottom}`
-    }
-    if (parseInt(attrs.clip.top)) {
-      command += `,lowpass=f=${attrs.clip.top}`
-    }
-  }
   command += '" ' // closes filter_complex
   command += '-y ' // overwrite output files
   command += '-vn ' // disable video
@@ -198,8 +190,25 @@ function convertAudio (segments, starts, ends, attrs, outputPath) {
   if (attrs.fileType === 'mp3') {
     command += `-b:a ${attrs.maxSampleRate > 38400 ? '96' : '32'}k ` // 38400 === 48000 * 0.8
   }
-  command += outputPath
-  return runExec(command)
+
+  if (attrs.fileType !== 'spec' && attrs.clip && attrs.clip !== 'full') {
+    const tempOutputPath = outputPath.replace(`.${extension}`, `_.${extension}`)
+    command += tempOutputPath
+    await runExec(command)
+
+    let freqCutCommand = `${SOX_PATH} ${tempOutputPath} ${outputPath} sinc `
+    if (parseInt(attrs.clip.bottom)) {
+      freqCutCommand += `${attrs.clip.bottom}`
+    }
+    if (parseInt(attrs.clip.top)) {
+      freqCutCommand += `-${attrs.clip.top}`
+    }
+    await runExec(freqCutCommand)
+    assetUtils.deleteLocalFileFromFileSystem(tempOutputPath)
+  } else {
+    command += outputPath
+    await runExec(command)
+  }
 }
 
 async function makeSpectrogram (sourcePath, outputPath, filename, fileExtension, attrs) {
@@ -299,7 +308,7 @@ async function generateFile (req, res, attrs, fileExtension, segments, additiona
   let spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
 
   await downloadSegments(segments)
-  await convertAudio(segments, start, end, attrs, audioFilePath)
+  await convertAudio(segments, start, end, attrs, audioFilePath, extension)
   if (attrs.fileType === 'spec') {
     spectrogramFilename = await makeSpectrogram(audioFilePath, spectrogramFilePath, spectrogramFilename, fileExtension, attrs)
     spectrogramFilePath = `${tmpDir}${spectrogramFilename}`
