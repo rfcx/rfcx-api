@@ -201,7 +201,7 @@ async function convertAudio (segments, starts, ends, attrs, outputPath, extensio
       freqCutCommand += `${attrs.clip.bottom}`
     }
     if (parseInt(attrs.clip.top)) {
-      freqCutCommand += `-${attrs.clip.top}`
+      freqCutCommand += `-${attrs.clip.top - 1}`
     }
     await runExec(freqCutCommand)
     assetUtils.deleteLocalFileFromFileSystem(tempOutputPath)
