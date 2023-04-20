@@ -7,9 +7,6 @@ const app = expressApp()
 
 app.use('/', routes)
 
-beforeEach(async () => {
-  await commonSetup()
-})
 afterEach(async () => {
   await truncateNonBase(models)
 })
@@ -18,90 +15,97 @@ afterAll(async () => {
 })
 
 async function commonSetup () {
-  const CLASSIFIER_MODEL = { id: 1, name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true }
-  const CLASSIFIER_MODEL_2 = { id: 2, name: 'dogbark', externalId: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false }
-  const CLASSIFIER_MODEL_3 = { id: 3, name: 'pr-parrot', externalId: '843cb81d-03b9-07e1-5184-931c95265215', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true }
-  const CLASSIFIER_MODEL_4 = { id: 4, name: 'vehicle', externalId: '843cb81d-03b9-07e1-5184-931c95265216', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false }
-  await models.Classifier.bulkCreate([CLASSIFIER_MODEL, CLASSIFIER_MODEL_2, CLASSIFIER_MODEL_3, CLASSIFIER_MODEL_4])
+  const classifier1 = (await models.Classifier.findOrCreate({ where: { name: 'chainsaw', externalId: '843cb81d-03b9-07e1-5184-931c95265213', version: 1, createdById: seedValues.otherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true } }))[0]
+  const classifier2 = (await models.Classifier.findOrCreate({ where: { name: 'dogbark', externalId: '843cb81d-03b9-07e1-5184-931c95265214', version: 5, createdById: seedValues.anotherUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false } }))[0]
+  const classifier3 = (await models.Classifier.findOrCreate({ where: { name: 'pr-parrot', externalId: '843cb81d-03b9-07e1-5184-931c95265215', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: true } }))[0]
+  const classifier4 = (await models.Classifier.findOrCreate({ where: { name: 'vehicle', externalId: '843cb81d-03b9-07e1-5184-931c95265216', version: 1, createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '', isPublic: false } }))[0]
+  return { classifier1, classifier2, classifier3, classifier4 }
 }
 
 describe('GET /classifier/:id', () => {
   describe('successful', () => {
     test('super user can get public classifier', async () => {
+      const { classifier1 } = await commonSetup()
       const regularUserApp = expressApp({ is_super: true })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/1')
+      const response = await request(regularUserApp).get(`/${classifier1.id}`)
 
       expect(response.statusCode).toBe(200)
-      expect(response.body.id).toBe(1)
+      expect(response.body.name).toBe(classifier1.name)
     })
 
     test('super user can get private classifier', async () => {
+      const { classifier2 } = await commonSetup()
       const regularUserApp = expressApp({ is_super: true })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/2')
+      const response = await request(regularUserApp).get(`/${classifier2.id}`)
 
       expect(response.statusCode).toBe(200)
-      expect(response.body.id).toBe(2)
+      expect(response.body.name).toBe(classifier2.name)
     })
 
     test('system role can get public classifier', async () => {
+      const { classifier1 } = await commonSetup()
       const regularUserApp = expressApp({ has_system_role: true })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/1')
+      const response = await request(regularUserApp).get(`/${classifier1.id}`)
 
       expect(response.statusCode).toBe(200)
-      expect(response.body.id).toBe(1)
+      expect(response.body.name).toBe(classifier1.name)
     })
 
     test('system role can get private classifier', async () => {
+      const { classifier2 } = await commonSetup()
       const regularUserApp = expressApp({ has_system_role: true })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/2')
+      const response = await request(regularUserApp).get(`/${classifier2.id}`)
 
       expect(response.statusCode).toBe(200)
-      expect(response.body.id).toBe(2)
+      expect(response.body.name).toBe(classifier2.name)
     })
 
     test('owner can get his/her public classifier', async () => {
+      const { classifier3 } = await commonSetup()
       const regularUserApp = expressApp({ user: { id: seedValues.primaryUserId } })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/3')
+      const response = await request(regularUserApp).get(`/${classifier3.id}`)
 
       expect(response.statusCode).toBe(200)
-      expect(response.body.id).toBe(3)
+      expect(response.body.name).toBe(classifier3.name)
     })
 
     test('owner can get his/her private classifier', async () => {
+      const { classifier4 } = await commonSetup()
       const regularUserApp = expressApp({ user: { id: seedValues.primaryUserId } })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/4')
+      const response = await request(regularUserApp).get(`/${classifier4.id}`)
 
       expect(response.statusCode).toBe(200)
-      expect(response.body.id).toBe(4)
+      expect(response.body.name).toBe(classifier4.name)
     })
 
     test('normal user can get public classifier', async () => {
+      const { classifier1 } = await commonSetup()
       const regularUserApp = expressApp({ user: { id: seedValues.primaryUserId } })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/1')
+      const response = await request(regularUserApp).get(`/${classifier1.id}`)
 
       expect(response.statusCode).toBe(200)
-      expect(response.body.id).toBe(1)
+      expect(response.body.name).toBe(classifier1.name)
     })
   })
 
@@ -127,11 +131,12 @@ describe('GET /classifier/:id', () => {
     })
 
     test('normal user can not get private classifier of another owner', async () => {
+      const { classifier2 } = await commonSetup()
       const regularUserApp = expressApp({ user: { id: seedValues.primaryUserId } })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/2')
+      const response = await request(regularUserApp).get(`/${classifier2.id}`)
 
       expect(response.statusCode).toBe(403)
     })
