@@ -38,60 +38,9 @@ jobs:
   get-secrets:
     name: 'Get secrets'
     needs: [configure]
-    uses: rfcx/cicd/.github/workflows/create-secrets.yaml@devops02
-    with:
-      environment: 'staging'
-  
-  build:
-    name: 'Build'
-#    needs: [prepare, configure]
-    needs: [configure]
-#    uses: rfcx/cicd/.github/workflows/ecr-build-push.yaml@master
-    uses: rfcx/rfcx-api/.github/workflows/eks-ecr-build-push.yaml@eks-branch
-    with:
-      dockerfile: build/Dockerfile
-      targets: "[\"core-api\",\"core-tasks\",\"noncore-api\",\"noncore-mqtt\"]"
-      tag-environment: ${{ needs.configure.outputs.namespace }}
-      tag-latest: ${{ needs.configure.outputs.namespace == 'eks-test-ns' }}
-    secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_EKS }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_EKS }}
-
- # get_kubeconfig:
- #   name: 'Get Kubeconf EKS'
- #   run: |
- #     aws eks update-kubeconfig --region us-east-1 --name eks-cluster-test
- #     kubectl config use-context my-cluster-name
- #     KUBECONFIG << /.kube/config
-
-  deploy:
-    name: 'Deploy'
-    needs: [build, configure]
-    uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
-    with:
-      tag: ${{ needs.build.outputs.unique-tag }}
-      namespace: ${{ needs.configure.outputs.namespace }}
-    secrets:
-#      kube-config1: ${{ KUBECONFIG }}
-#    secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_EKS }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_EKS }}
-
-#  notify:
-#    name: 'Notify'
-#    if: ${{ always() }}
-#    needs: [prepare, build, deploy]
-#    uses: rfcx/cicd/.github/workflows/notify-send.yaml@master
-#    with:
-#      repo: rfcx-api
-#      branch-name: ${{ needs.prepare.outputs.branch-name }}
-#      workflow-id: cd.yaml
-#      previous-run-id: ${{ needs.prepare.outputs.previous-run-id }}
-#      status: ${{ needs.deploy.result }}
-#      always: true
-#      notification-title: 'CD: APIs'
-#      notification-footer: "Build: ${{ needs.build.result || 'n/a' }} | Deploy: ${{ needs.deploy.result || 'n/a' }}"
-#      notification-success-statement: '{0} deployed the build!'
-#    secrets:
-#      slack-webhook: ${{ secrets.SLACK_ALERT_COREDT_WEBHOOK }}
-#      github-token: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: getsecrets
+        shell: bash
+        run: echo "$SECRETS_CONTEXT"
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
