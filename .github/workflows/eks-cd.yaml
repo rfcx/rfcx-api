@@ -39,6 +39,8 @@ jobs:
     name: 'Get secrets'
     needs: [configure]
     uses: rfcx/cicd/.github/workflows/create-secrets.yaml@devops02
+      with:
+        environment: 'staging'
   
   build:
     name: 'Build'
