@@ -44,4 +44,5 @@ jobs:
       - name: getsecrets
         run: |
           SECRETS_CONTEXT="${{ toJson(secrets) }}"
-          echo "$SECRETS_CONTEXT"
+          SECRETS_YAML=$(jq -r '. | to_entries | map("  \(.key): \(.value)") | join("\n")' < "$SECRETS_CONTEXT" | yq eval --tojson | jq -c '.')
+          echo "$SECRETS_YAML"
