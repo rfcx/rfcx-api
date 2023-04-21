@@ -44,4 +44,4 @@ jobs:
         shell: bash
         env:
           SECRETS_CONTEXT: ${{ secrets.POSTGRES_USER }}
-        run: echo "$SECRETS_CONTEXT"
+        run: echo 'foo'; echo "$SECRETS_CONTEXT"
