@@ -37,7 +37,7 @@ jobs:
 #          fi
   get-secrets:
     name: 'Get secrets'
-    needs: [configure]
+    needs: [configure] #test
     uses: rfcx/cicd/.github/workflows/create-secrets.yaml@devops02
   
   build:
