@@ -44,5 +44,5 @@ jobs:
       - name: getsecrets
         shell: bash
         env:
-          SECRETS_CONTEXT: ${{ secrets.POSTGRES_USER }}
-        run: echo 'foo'; echo "$SECRETS_CONTEXT"
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+        run: echo "$SECRETS_CONTEXT"
