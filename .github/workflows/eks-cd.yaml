@@ -42,9 +42,6 @@ jobs:
     environment: staging/noncore-api
     steps:
       - name: getsecrets
-        shell: bash
-        env:
-          SECRETS_CONTEXT: ${{ toJson(secrets) }}
-        env:
-          SECRETS_YAML: $(jq -r '. | to_entries | map("  \(.key): \(.value)") | join("\n")' < "$SECRETS_CONTEXT" | yq eval --tojson | jq -c '.')
-        run: echo "$SECRETS_YAML"
+        run: |
+          SECRETS_CONTEXT="${{ toJson(secrets) }}"
+          echo "$SECRETS_CONTEXT"
