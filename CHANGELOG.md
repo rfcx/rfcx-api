@@ -9,6 +9,8 @@
 * **core**: create `classifier_processed_segments` table
 * **core**: add `/internal/prediction/streams/segments/processed` endpoint
 * **core**: add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:id`
+* **noncore**: remove update `last_deployed` from previous logic
 
 ## 1.2.2 (2022-09-06)
 
