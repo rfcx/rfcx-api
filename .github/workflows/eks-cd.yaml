@@ -44,7 +44,7 @@ jobs:
       - name: getsecrets
         run: |
           SECRETS_CONTEXT="${{ toJson(secrets) }}"
-          cat <<EOF >>test.sh
+          cat <<EOF >>test.py
           import os
           import json
           input_json = os.environ.get('SECRETS_CONTEXT')
@@ -56,3 +56,4 @@ jobs:
           else:
               print('JSON_INPUT environment variable not set')
           EOF
+          python test.py
