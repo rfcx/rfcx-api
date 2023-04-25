@@ -44,15 +44,4 @@ jobs:
       - name: getsecrets
         run: |
           SECRETS_CONTEXT="${{ toJson(secrets) }}"
-          echo "$SECRETS_CONTEXT" > "input.json"
-          cat <<EOF >>test.py
-          import json
-          with open('input.json', 'r') as f:
-              input_json = f.read()
-
-          data = json.loads(input_json)
-
-          for key, value in data.items():
-              print(f'key: {key}, value: {value}')
-          EOF
-          python test.py
+          echo $ENVIRONMENT
