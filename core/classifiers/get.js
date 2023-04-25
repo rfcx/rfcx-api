@@ -1,5 +1,7 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
+const Converter = require('../../common/converter')
+const { ValidationError, EmptyResultError } = require('../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -13,8 +15,8 @@ const dao = require('./dao')
  *       - name: id
  *         description: Classifier identifier
  *         in: path
- *         type: string
- *         example: gibbon
+ *         type: number
+ *         example: 2
  *     responses:
  *       200:
  *         description: A classifier
@@ -26,7 +28,20 @@ const dao = require('./dao')
  *         description: Not found
  */
 module.exports = (req, res) => {
-  return dao.get(req.params.id, { joinRelations: true })
-    .then(data => res.json(data))
-    .catch(httpErrorHandler(req, res))
+  const user = req.rfcx.auth_token_info
+  const readableBy = user && (user.is_super || user.has_system_role) ? undefined : user.id
+
+  const converter = new Converter(req.params, {}, true)
+  converter.convert('id').toInt()
+  return converter.validate()
+    .then(async params => {
+      const data = await dao.get(params.id, { readableBy })
+      res.json(data)
+    })
+    .catch((err) => {
+      if (err instanceof ValidationError) {
+        err = new EmptyResultError()
+      }
+      httpErrorHandler(req, res)(err)
+    })
 }

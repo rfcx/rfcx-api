@@ -1,5 +1,11 @@
 # API Deployment Notes
 
+## 1.3.0
+- Run `npm run migrate:core` to apply migrations:
+  - `20230228000001-change-detections-table`
+  - `20230228000002-create-detection-reviews-table`
+  - `20230228000003-create-classifier-processed-segments-table`
+
 ## 1.2.1
 - Run `npm run migrate:core` to apply migrations: `20220823000001-add-parameters-to-classifiers`
 

@@ -82,13 +82,13 @@ brew install postgresql
 If you are using a local dev environment with docker compose then:
 
 ```
-./core/_cli/seed.sh
+./common/_cli/seed.sh
 ```
 
 Otherwise, specify your host/user/pass/etc as arguments:
 
 ```
-./core/_cli/seed.sh USERNAME PASSWORD HOSTNAME PORT DATABASENAME
+./common/_cli/seed.sh USERNAME PASSWORD HOSTNAME PORT DATABASENAME
 ```
 
 ## Running the API locally
@@ -131,7 +131,7 @@ npm run start:mqtt
 
 ## Testing
 
-This project uses [Jest](https://jestjs.io) for testing and [ESLint](https://eslint.org) for linting. To run both:
+This project uses [Jest](https://jestjs.io) for testing and [ESLint](https://eslint.org) for linting. It starts TimescaleDB container using Docker, so make sure you install and start Docker daemon before running tests. To run both:
 
 ```
 npm test

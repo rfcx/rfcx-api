@@ -4,7 +4,7 @@ jest.mock('../../common/auth0', () => ({
 }))
 const mockAuth = require('../../common/auth0')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const router = require('express').Router()
 
@@ -14,16 +14,73 @@ app.use('/', router)
 
 beforeAll(async () => {
   muteConsole(['warn', 'error'])
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+  await truncateNonBase(models)
+  await models.sequelize.query('SELECT setval(\'users_id_seq\', (SELECT MAX(id) FROM users) + 1);')
 })
-beforeEach(async () => {
+
+afterEach(async () => {
+  await truncateNonBase(models)
   mockAuth.createAuth0User.mockClear()
   mockAuth.sendChangePasswordEmail.mockClear()
-  await truncate(models)
+})
+
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.sequelize.close()
 })
 
 describe('POST /users', () => {
+  describe('positive cases', () => {
+    test('user created in Core and created in Auth0', async () => {
+      const requestBody = {
+        firstname: 'John',
+        lastname: 'Doe',
+        email: 'johndoe@rfcx.org'
+      }
+      const userBefore = await models.User.findOne({ where: { email: requestBody.email } })
+      const response = await request(app).post('/').send(requestBody)
+      const userAfter = await models.User.findOne({ where: { email: requestBody.email } })
+      expect(response.statusCode).toBe(201)
+      expect(userBefore).toBe(null)
+      expect(userAfter.email).toBe(requestBody.email)
+      expect(mockAuth.sendChangePasswordEmail).toHaveBeenCalledWith(requestBody.email)
+      const data = mockAuth.createAuth0User.mock.calls[0][0]
+      expect(data.email).toBe(requestBody.email)
+      expect(data.guid).toBe(userAfter.guid)
+      expect(data.invited).toBeTruthy()
+      await userAfter.destroy()
+    })
+    test('user created in Core but exists in Auth0', async () => {
+      mockAuth.createAuth0User.mockImplementationOnce(() => {
+        return Promise.resolve([null, 409])
+      })
+      const requestBody = {
+        firstname: 'John',
+        lastname: 'Doe',
+        email: 'johndoe@rfcx.org'
+      }
+      const userBefore = await models.User.findOne({ where: { email: requestBody.email } })
+      const response = await request(app).post('/').send(requestBody)
+      const userAfter = await models.User.findOne({ where: { email: requestBody.email } })
+      expect(userBefore).toBe(null)
+      expect(userAfter.email).toBe(requestBody.email)
+      expect(mockAuth.sendChangePasswordEmail).toHaveBeenCalledTimes(0)
+      expect(response.statusCode).toBe(201)
+      await userAfter.destroy()
+    })
+    test('user exists in Core but created in Auth0', async () => {
+      const existingUser = await models.User.findByPk(seedValues.primaryUserId)
+      const requestBody = {
+        firstname: seedValues.primaryUserFirstname,
+        lastname: seedValues.primaryUserLastname,
+        email: seedValues.primaryUserEmail
+      }
+      const response = await request(app).post('/').send(requestBody)
+      expect(existingUser).toBeDefined()
+      expect(mockAuth.sendChangePasswordEmail).toHaveBeenCalledWith(seedValues.primaryUserEmail)
+      expect(response.statusCode).toBe(201)
+    })
+  })
   describe('inputs validation', () => {
     test('missing firstname', async () => {
       const requestBody = {
@@ -80,57 +137,6 @@ describe('POST /users', () => {
       const response = await request(app).post('/').send(requestBody)
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Failed creating user')
-    })
-  })
-  describe('positive cases', () => {
-    test('user created in Core and created in Auth0', async () => {
-      const requestBody = {
-        firstname: 'John',
-        lastname: 'Doe',
-        email: 'johndoe@rfcx.org'
-      }
-      const userBefore = await models.User.findOne({ where: { email: requestBody.email } })
-      const response = await request(app).post('/').send(requestBody)
-      const userAfter = await models.User.findOne({ where: { email: requestBody.email } })
-      expect(userBefore).toBe(null)
-      expect(userAfter.email).toBe(requestBody.email)
-      expect(mockAuth.sendChangePasswordEmail).toHaveBeenCalledWith(requestBody.email)
-      expect(response.statusCode).toBe(201)
-      const data = mockAuth.createAuth0User.mock.calls[0][0]
-      expect(data.email).toBe(requestBody.email)
-      expect(data.guid).toBe(userAfter.guid)
-      expect(data.invited).toBeTruthy()
-      await userAfter.destroy()
-    })
-    test('user created in Core but exists in Auth0', async () => {
-      mockAuth.createAuth0User.mockImplementationOnce(() => {
-        return Promise.resolve([null, 409])
-      })
-      const requestBody = {
-        firstname: 'John',
-        lastname: 'Doe',
-        email: 'johndoe@rfcx.org'
-      }
-      const userBefore = await models.User.findOne({ where: { email: requestBody.email } })
-      const response = await request(app).post('/').send(requestBody)
-      const userAfter = await models.User.findOne({ where: { email: requestBody.email } })
-      expect(userBefore).toBe(null)
-      expect(userAfter.email).toBe(requestBody.email)
-      expect(mockAuth.sendChangePasswordEmail).toHaveBeenCalledTimes(0)
-      expect(response.statusCode).toBe(201)
-      await userAfter.destroy()
-    })
-    test('user exists in Core but created in Auth0', async () => {
-      const existingUser = await models.User.findByPk(seedValues.primaryUserId)
-      const requestBody = {
-        firstname: seedValues.primaryUserFirstname,
-        lastname: seedValues.primaryUserLastname,
-        email: seedValues.primaryUserEmail
-      }
-      const response = await request(app).post('/').send(requestBody)
-      expect(existingUser).toBeDefined()
-      expect(mockAuth.sendChangePasswordEmail).toHaveBeenCalledWith(seedValues.primaryUserEmail)
-      expect(response.statusCode).toBe(201)
     })
   })
 })

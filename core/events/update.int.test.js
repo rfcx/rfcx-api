@@ -1,5 +1,5 @@
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const moment = require('moment')
 const { uuidToSlug } = require('../_utils/formatters/uuid')
@@ -10,12 +10,15 @@ router.patch('/:id', require('./update'))
 app.use('/', router)
 
 beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+  muteConsole('warn')
 })
-beforeEach(async () => {
-  await truncate(models)
-  console.warn = jest.fn()
+
+afterEach(async () => {
+  await truncateNonBase(models)
+})
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {

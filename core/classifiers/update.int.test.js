@@ -1,18 +1,17 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp({ has_system_role: true })
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('PATCH /classifiers/:id', () => {
@@ -47,7 +46,7 @@ describe('PATCH /classifiers/:id', () => {
     console.warn = jest.fn()
     const requestBody = { status: 20 }
 
-    const response = await request(app).patch('/not_a_classifier').send(requestBody)
+    const response = await request(app).patch('/9999999').send(requestBody)
 
     expect(response.statusCode).toBe(404)
     expect(console.warn).toHaveBeenCalled()

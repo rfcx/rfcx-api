@@ -22,6 +22,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    sourceId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     description: {
       type: DataTypes.TEXT,
       allowNull: true

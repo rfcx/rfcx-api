@@ -1,3 +1,14 @@
+jest.mock('../../_models', () => { return {} })
+jest.mock('../../../core/_models', () => {
+  return {
+    ClassifierDeployment: { attributes: {} },
+    ClassifierOutput: { attributes: {} },
+    User: { attributes: {} },
+    Stream: { attributes: {} },
+    Project: { attributes: {} }
+  }
+})
+
 const { checkInDatabase: { createDbSaveMeta } } = require('./mqtt-database')
 const { saveMeta } = require('./mqtt-save-meta')
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')

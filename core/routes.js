@@ -36,6 +36,7 @@ module.exports = {
     require('./annotations/stream'),
     require('./classifications/stream'),
     require('./detections/stream'),
+    require('./detections/review'),
     require('./indices/stream'),
     require('./stream-source-files/stream'),
     require('./stream-segments'),
