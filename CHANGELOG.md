@@ -1,3 +1,9 @@
+## 1.2.2 (2023-04-xx)
+
+### Features
+* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: remove update `last_deployed` from previous logic
+
 ## 1.2.1 (2022-08-24)
 
 ### Features
