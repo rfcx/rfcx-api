@@ -39,9 +39,9 @@ jobs:
     name: 'Get secrets'
     runs-on: ubuntu-latest
     needs: [configure]
-    environment: staging/noncore-api
+    environment: staging
     steps:
       - name: getsecrets
         run: |
           SECRETS_CONTEXT="${{ toJson(secrets) }}"
-          echo $ENVIRONMENT
+
