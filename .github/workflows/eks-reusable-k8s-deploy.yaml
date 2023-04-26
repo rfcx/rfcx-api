@@ -56,6 +56,11 @@ jobs:
         run: |
           find build -name "*.yaml" -exec sed -i s/:latest/:${{ inputs.tag }}/g {} +
 
+      - name: 'Deploy: Kubernetes secrets for core-api'
+        uses: rfcx/cicd/.github/workflows/create-secrets.yaml@devops02
+        with:
+          environment: 'staging/core-api'
+
       - name: 'Deploy: Kubernetes apply'
         # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
 #        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
@@ -68,13 +73,7 @@ jobs:
           kubectl apply -R -f build/${{ inputs.namespace }} -n${{ inputs.namespace }}
           echo "Good 1"
 
-#      - name: 'Deploy: Kubernetes verify core-api'
-#        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
-#        uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
-#        env:
-#          KUBE_CONFIG: ${{ KUBE_CONFIG }} #${{ secrets.kube-config1 }}
-#        with:
-#          args: rollout status deployment/core-api --namespace=${{ inputs.namespace }}
+
 #
 #      - name: 'Deploy: Kubernetes verify core-tasks'
 #        # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
