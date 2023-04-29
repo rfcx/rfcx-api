@@ -61,7 +61,7 @@ jobs:
   deploy:
     name: 'Deploy'
     needs: [build, configure]
-    uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@ga-secrets
+    uses: rfcx/rfcx-api/.github/workflows/eks-reusable-k8s-deploy.yaml@eks-branch
     with:
       tag: ${{ needs.build.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
