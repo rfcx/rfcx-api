@@ -57,7 +57,7 @@ jobs:
           find build -name "*.yaml" -exec sed -i s/:latest/:${{ inputs.tag }}/g {} +
 
       - name: 'Deploy: Kubernetes secrets for core-api'
-        uses: rfcx/cicd/.github/workflows/create-secrets.yaml@devops02
+        uses: rfcx/cicd/.github/actions/create-secrets.yaml@devops02
         with:
           environment: 'staging/core-api'
 
