@@ -39,7 +39,7 @@ jobs:
 
       - name: 'Get Kubeconf EKS'
         run: |
-          aws eks update-kubeconfig --region us-east-1 --name eks-cluster-nonprod
+          aws eks update-kubeconfig --region eu-west-1 --name eks-cluster-nonprod
           kubectl config get-contexts
           kubectl config use-context arn:aws:eks:eu-west-1:408859747768:cluster/eks-cluster-nonprod
           export KUBE_CONFIG=$(cat ~/.kube/config | base64)
