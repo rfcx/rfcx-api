@@ -41,7 +41,7 @@ jobs:
         run: |
           aws eks update-kubeconfig --region us-east-1 --name eks-cluster-nonprod
           kubectl config get-contexts
-          kubectl config use-context arn:aws:eks:us-east-1:408859747768:cluster/eks-cluster-nonprod
+          kubectl config use-context arn:aws:eks:eu-west-1:408859747768:cluster/eks-cluster-nonprod
           export KUBE_CONFIG=$(cat ~/.kube/config | base64)
 
 #          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
