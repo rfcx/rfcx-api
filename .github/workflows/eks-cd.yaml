@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - eks-branch-stop
+      - eks-branch
 #      - staging
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
