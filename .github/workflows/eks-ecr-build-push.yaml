@@ -14,7 +14,7 @@ on:
       registry:
         description: AWS ECR registry
         type: string
-        default: '887044485231.dkr.ecr.us-east-1.amazonaws.com'
+        default: '408859747768.dkr.ecr.us-east-1.amazonaws.com'
         required: false
       dockerfile:
         description: Path of dockerfile
