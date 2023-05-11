@@ -1,3 +1,4 @@
+
 ## 1.3.0 (2023-XX-XX)
 
 ### Features
@@ -9,6 +10,8 @@
 * **core**: create `classifier_processed_segments` table
 * **core**: add `/internal/prediction/streams/segments/processed` endpoint
 * **core**: add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: remove update `last_deployed` from previous logic
 
 ## 1.2.3 (2023-04-15)
 
