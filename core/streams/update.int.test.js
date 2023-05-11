@@ -14,9 +14,6 @@ beforeEach(async () => {
 afterAll(async () => {
   await models.sequelize.close()
 })
-afterAll(() => {
-  models.Sequelize.Op.iLike = models.Sequelize.Op.iLikeBk
-})
 
 describe('PATCH /streams/:id', () => {
   test('not found', async () => {
