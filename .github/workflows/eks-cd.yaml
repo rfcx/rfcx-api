@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - eks-branch-stop
+      - eks-branch
 #      - staging
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
@@ -48,8 +48,11 @@ jobs:
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'eks-test-ns' }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_K8S }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_K8S }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEPLOY_EKS_NONPROD }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEPLOY_EKS_NONPROD }}
+
+#      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_K8S }}
+#      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_K8S }}
 
  # get_kubeconfig:
  #   name: 'Get Kubeconf EKS'
@@ -66,10 +69,11 @@ jobs:
       tag: ${{ needs.build.outputs.unique-tag }}
       namespace: ${{ needs.configure.outputs.namespace }}
     secrets:
-#      kube-config1: ${{ KUBECONFIG }}
-#    secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_K8S }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_K8S }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEPLOY_EKS_NONPROD }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEPLOY_EKS_NONPROD }}
+
+#      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_K8S }}
+#      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_K8S }}
 
 #  notify:
 #    name: 'Notify'
