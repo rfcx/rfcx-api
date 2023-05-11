@@ -8,11 +8,16 @@ const app = expressApp()
 app.use('/', routes)
 
 beforeAll(async () => {
+  models.Sequelize.Op.iLikeBk = models.Sequelize.Op.iLike
+  models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
   await migrate(models.sequelize, models.Sequelize)
   await seed(models)
 })
 beforeEach(async () => {
   await truncate(models)
+})
+afterAll(() => {
+  models.Sequelize.Op.iLike = models.Sequelize.Op.iLikeBk
 })
 
 describe('PATCH /streams/:id', () => {
@@ -135,5 +140,16 @@ describe('PATCH /streams/:id', () => {
     const response = await request(app).patch(`/${stream.id}`).send(requestBody)
 
     expect(response.statusCode).toBe(204)
+  })
+
+  test('Returns 400 if user tries to change name to existing stream name in the project', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'pro000000000', name: 'Forest village', createdById: seedValues.primaryUserId } }))[0]
+    const stream1 = (await models.Stream.findOrCreate({ where: { id: 'str000000001', name: 'Big tree', createdById: seedValues.primaryUserId, project_id: project.id } }))[0]
+    const stream2 = (await models.Stream.findOrCreate({ where: { id: 'str000000002', name: 'Small tree', createdById: seedValues.primaryUserId, project_id: project.id } }))[0]
+
+    const requestBody = { name: stream1.name }
+    const response = await request(app).patch(`/${stream2.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(400)
   })
 })
