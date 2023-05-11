@@ -10,11 +10,16 @@
 * **core**: add `/internal/prediction/streams/segments/processed` endpoint
 * **core**: add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
 
+## 1.2.3 (2023-04-15)
+
+### Features
+* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: remove update `last_deployed` from previous logic
+
 ## 1.2.2 (2022-09-06)
 
 ### Features
 * **core**: Update `GET /classifiers/:id` and `GET /classifiers/:id/file` to get data by permission
-
 
 ## 1.2.1 (2022-08-24)
 

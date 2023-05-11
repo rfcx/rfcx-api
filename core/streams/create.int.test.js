@@ -207,7 +207,7 @@ describe('POST /streams', () => {
 
   test('returns 400 when id has uppercase symbols', async () => {
     const requestBody = {
-      id: 'ABcdef1234567',
+      id: 'ABcdef123456',
       name: 'test-stream-with-id'
     }
 
@@ -217,11 +217,44 @@ describe('POST /streams', () => {
 
   test('returns 400 when id has special characters', async () => {
     const requestBody = {
-      id: 'abcd-f1234567',
+      id: 'abcd-f123456',
       name: 'test-stream-with-id'
     }
 
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
+  })
+
+  test('returns 400 when user tries to create a stream with a duplicate name in the project', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream = await models.Stream.create({ id: 'qwertyuiop10', name: 'my stream 1', createdById: seedValues.primaryUserId, project_id: project.id })
+
+    const requestBody = {
+      id: 'qwertyuiop11',
+      name: stream.name,
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('Duplicate stream name in the project')
+  })
+
+  test('creates a stream when user tries to create a stream with a duplicate name in a different project', async () => {
+    const project1 = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    const project2 = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw124', name: 'my project 2', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project1.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project2.id, role_id: seedValues.roleAdmin })
+    const stream = await models.Stream.create({ id: 'qwertyuiop10', name: 'my stream 1', createdById: seedValues.primaryUserId, project_id: project1.id })
+
+    const requestBody = {
+      id: 'qwertyuiop11',
+      name: stream.name,
+      project_id: project2.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
   })
 })

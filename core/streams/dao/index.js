@@ -213,6 +213,15 @@ async function update (id, stream, options = {}) {
   }
   const fullStream = { ...stream, ...computedAdditions(stream) }
   const transaction = options.transaction || null
+  if (fullStream.name) {
+    const existingStream = await get(id, { transaction })
+    if (existingStream && existingStream.project_id) {
+      const duplicateStreamInProject = await query({ name: fullStream.name, projects: [existingStream.project_id] }, { fields: 'id', transaction })
+      if (duplicateStreamInProject.total > 0) {
+        throw new ValidationError('Duplicate stream name in the project')
+      }
+    }
+  }
   return Stream.update(fullStream, {
     where: { id },
     individualHooks: true, // force use afterUpdate hook
