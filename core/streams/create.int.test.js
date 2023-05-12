@@ -257,4 +257,19 @@ describe('POST /streams', () => {
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(201)
   })
+
+  test('creates a stream when user tries to create a stream with a non-duplicate name in the project', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.Stream.create({ id: 'qwertyuiop10', name: 'my stream 1', createdById: seedValues.primaryUserId, project_id: project.id })
+
+    const requestBody = {
+      id: 'qwertyuiop11',
+      name: 'my stream 2',
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
+  })
 })

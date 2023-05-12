@@ -147,4 +147,15 @@ describe('PATCH /streams/:id', () => {
 
     expect(response.statusCode).toBe(400)
   })
+
+  test('Returns 204 if user tries to change name to non-existing stream name in the project', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'pro000000000', name: 'Forest village', createdById: seedValues.primaryUserId } }))[0]
+    await models.Stream.findOrCreate({ where: { id: 'str000000001', name: 'Big tree', createdById: seedValues.primaryUserId, project_id: project.id } })
+    const stream2 = (await models.Stream.findOrCreate({ where: { id: 'str000000002', name: 'Small tree', createdById: seedValues.primaryUserId, project_id: project.id } }))[0]
+
+    const requestBody = { name: 'Medium tree' }
+    const response = await request(app).patch(`/${stream2.id}`).send(requestBody)
+
+    expect(response.statusCode).toBe(204)
+  })
 })
