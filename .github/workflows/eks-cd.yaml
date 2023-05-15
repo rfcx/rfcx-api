@@ -48,8 +48,8 @@ jobs:
       tag-environment: ${{ needs.configure.outputs.namespace }}
       tag-latest: ${{ needs.configure.outputs.namespace == 'eks-test-ns' }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_APP_DEPLOY }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_APP_DEPLOY }}
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEPLOY_EKS_NONPROD }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEPLOY_EKS_NONPROD }}
 
 #      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NONPROD_K8S }}
 #      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NONPROD_K8S }}
