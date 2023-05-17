@@ -17,26 +17,26 @@ jobs:
 #    secrets:
 #      github-token: ${{ secrets.GITHUB_TOKEN }}
 
-configure:
-    name: 'Configure'
-    runs-on: ubuntu-latest
-    env:
-      BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
-    outputs:
-      namespace: ${{ steps.configuration.outputs.namespace }}
-      environment: ${{ steps.configuration.outputs.environment }}
-    steps:
-      - name: 'Conditional environment'
-        id: configuration
-        run: |
-          echo "::set-output name=namespace::eks-test-ns"
-          if [[ "$BRANCH_NAME" == "master" ]]; then
-            echo "::set-output name=environment::production"
-          elif [[ "$BRANCH_NAME" == "eks-branch" ]]; then
-            echo "::set-output name=environment::staging"
-          else
-            echo "::set-output name=environment::testing"
-          fi
+  configure:
+      name: 'Configure'
+      runs-on: ubuntu-latest
+      env:
+       BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+      outputs:
+       namespace: ${{ steps.configuration.outputs.namespace }}
+       environment: ${{ steps.configuration.outputs.environment }}
+      steps:
+       - name: 'Conditional environment'
+         id: configuration
+         run: |
+            echo "::set-output name=namespace::eks-test-ns"
+            if [[ "$BRANCH_NAME" == "master" ]]; then
+              echo "::set-output name=environment::production"
+            elif [[ "$BRANCH_NAME" == "eks-branch" ]]; then
+              echo "::set-output name=environment::staging"
+            else
+             echo "::set-output name=environment::testing"
+            fi
 
   build:
     name: 'Build'
