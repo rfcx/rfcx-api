@@ -1,3 +1,14 @@
+jest.mock('../../_models', () => { return {} })
+jest.mock('../../../core/_models', () => {
+  return {
+    ClassifierDeployment: { attributes: {} },
+    ClassifierOutput: { attributes: {} },
+    User: { attributes: {} },
+    Stream: { attributes: {} },
+    Project: { attributes: {} }
+  }
+})
+
 const { checkInDatabase: { saveDbMessages } } = require('./mqtt-database')
 const smsMessages = require('../rfcx-guardian/guardian-sms-database').messages
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')

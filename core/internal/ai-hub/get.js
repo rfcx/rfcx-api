@@ -1,6 +1,6 @@
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const Converter = require('../../../common/converter')
-const reviewsService = require('../../detections/dao/reviews')
+const reviewsService = require('../../detections/dao/review')
 
 /**
  * @swagger

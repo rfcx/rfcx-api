@@ -1,3 +1,14 @@
+jest.mock('../../_models', () => { return { GuardianMetaAssetExchangeLog: {}, Sequelize: { Op: {} } } })
+jest.mock('../../../core/_models', () => {
+  return {
+    ClassifierDeployment: { attributes: {} },
+    ClassifierOutput: { attributes: {} },
+    User: { attributes: {} },
+    Stream: { attributes: {} },
+    Project: { attributes: {} }
+  }
+})
+
 const { checkInDatabase: { updateDbMetaAssetsExchangeLog } } = require('./mqtt-database')
 const model = require('../../_models')
 const { expandAbbreviatedFieldNames } = require('./expand-abbreviated')

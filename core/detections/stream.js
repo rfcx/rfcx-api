@@ -147,6 +147,7 @@ router.post('/:id/detections', function (req, res) {
   params.convert('classification').toString()
   params.convert('classifier').toString()
   params.convert('confidence').toFloat()
+  params.convert('classifier_job_id').optional().toInt()
 
   params.validate()
     .then(async () => {

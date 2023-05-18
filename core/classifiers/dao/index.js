@@ -1,5 +1,5 @@
 const models = require('../../_models')
-const { EmptyResultError } = require('../../../common/error-handling/errors')
+const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
 
 const availableIncludes = [
@@ -39,32 +39,32 @@ const availableIncludes = [
  * @returns {*} classifier model item
  * @throws EmptyResultError when classifier not found
  */
-function get (id, options = {}) {
-  return models.Classifier
-    .findOne({
-      where: { id },
-      // TODO Refactor to use `fields` instead of `joinRelations` and `attributes`
-      attributes: options && options.attributes ? options.attributes : models.Classifier.attributes.full,
-      include: options && options.joinRelations ? availableIncludes : []
-    })
-    .then(classifier => {
-      if (!classifier) {
-        throw new EmptyResultError('Classifier with given id not found.')
-      }
-      const data = classifier.toJSON()
-      // Remove join tables from json
-      if (data.activeStreams) {
-        data.activeStreams = data.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj) // eslint-disable-line camelcase
-      }
+async function get (id, options = {}) {
+  const query = { where: { id }, raw: true }
 
-      if (data.activeProjects) {
-        data.activeProjects = data.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj) // eslint-disable-line camelcase
-      }
-      return data
-    })
-    .catch(() => {
-      throw new EmptyResultError('Classifier with given id not found.')
-    })
+  if (options.attributes) {
+    query.attributes = ['isPublic', 'createdById', ...options.attributes]
+  }
+
+  const classifier = await models.Classifier.findOne(query)
+  if (!classifier) {
+    throw new EmptyResultError('Classifier with given id not found.')
+  }
+
+  // When readableBy is specified, only return public classifiers or classifiers created by the user
+  if (options.readableBy && !classifier.isPublic && !(classifier.createdById === options.readableBy)) {
+    throw new ForbiddenError()
+  }
+
+  if (classifier.activeStreams) {
+    classifier.activeStreams = classifier.activeStreams.map(({ classifierActiveStreams, ...obj }) => obj)
+  }
+
+  if (classifier.activeProjects) {
+    classifier.activeProjects = classifier.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj)
+  }
+
+  return classifier
 }
 
 /**
@@ -81,6 +81,7 @@ function get (id, options = {}) {
  * @param {number} options.offset Number of results to skip
  */
 async function query (filters, options = {}) {
+  const transaction = options.transaction
   const where = {}
   if (filters.keyword) {
     where.name = {
@@ -113,7 +114,8 @@ async function query (filters, options = {}) {
     attributes,
     include,
     limit: options.limit,
-    offset: options.offset
+    offset: options.offset,
+    transaction
   })
 }
 
@@ -151,16 +153,21 @@ function create (attrs) {
   })
 }
 
-async function update (id, createdBy, attrs) {
-  const classifier = await models.Classifier.findOne({
-    where: { id }
-  })
-
-  if (!classifier) {
-    throw new EmptyResultError('Classifier with given id not found.')
+async function update (id, createdBy, attrs, opts = {}) {
+  const isTransactionLocal = !opts.transaction
+  let transaction = opts.transaction
+  if (!transaction) {
+    transaction = await models.sequelize.transaction()
   }
+  try {
+    const classifier = await models.Classifier.findOne({
+      where: { id },
+      transaction
+    })
 
-  await models.sequelize.transaction(async (t) => {
+    if (!classifier) {
+      throw new EmptyResultError('Classifier with given id not found.')
+    }
     // Only update if there is a change in status
     if (attrs.status) {
       const update = {
@@ -168,7 +175,7 @@ async function update (id, createdBy, attrs) {
         id: id,
         createdBy: createdBy
       }
-      await updateClassifierDeployment(update, t)
+      await updateClassifierDeployment(update, { transaction })
     }
 
     // Only update if there are activeStreams
@@ -177,7 +184,7 @@ async function update (id, createdBy, attrs) {
         id: id,
         activeStreams: attrs.activeStreams
       }
-      await updateActiveStreams(update, t)
+      await updateActiveStreams(update, { transaction })
     }
 
     // Only update if there is activeProjects
@@ -186,14 +193,23 @@ async function update (id, createdBy, attrs) {
         id: id,
         activeProjects: attrs.activeProjects
       }
-      await updateActiveProjects(update, t)
+      await updateActiveProjects(update, { transaction })
     }
 
-    await classifier.update(attrs, t)
-  })
+    await classifier.update(attrs, { transaction })
+    if (isTransactionLocal) {
+      await transaction.commit()
+    }
+  } catch (e) {
+    if (isTransactionLocal) {
+      await transaction.rollback()
+    }
+    throw e
+  }
 }
 
-async function updateClassifierDeployment (update, transaction) {
+async function updateClassifierDeployment (update, opts = {}) {
+  const transaction = opts.transaction
   // Search for current deployment with given platform
   const existingDeployment = await models.ClassifierDeployment.findOne({
     where: {
@@ -202,7 +218,7 @@ async function updateClassifierDeployment (update, transaction) {
       platform: update.platform,
       [models.Sequelize.Op.or]: [{ end: null }, { end: { [models.Sequelize.Op.gt]: new Date() } }]
     }
-  })
+  }, { transaction })
 
   // Status and deployment is the same, do nothing
   const statusHasChanged = existingDeployment === null || (update.status !== undefined && existingDeployment.status !== update.status)
@@ -213,7 +229,7 @@ async function updateClassifierDeployment (update, transaction) {
 
   // Update the existing deployment before creating a new one
   if (existingDeployment) {
-    await existingDeployment.update({ end: Date() }, { transaction: transaction })
+    await existingDeployment.update({ end: Date() }, { transaction })
   }
 
   // Create the new deployment
@@ -227,10 +243,11 @@ async function updateClassifierDeployment (update, transaction) {
     deploymentParameters: deploymentParametersHaveChanged ? update.deploymentParameters : existingDeployment.deploymentParameters,
     deployed: false // Background job will transition this to true on classifier deployment
   }
-  return await models.ClassifierDeployment.create(newDeployment, { transaction: transaction })
+  return await models.ClassifierDeployment.create(newDeployment, { transaction })
 }
 
-async function updateActiveStreams (update, transaction) {
+async function updateActiveStreams (update, opts = {}) {
+  const transaction = opts.transaction
   const existingStreams = await models.ClassifierActiveStream.findAll({
     attributes: ['streamId'],
     where: {
@@ -255,7 +272,8 @@ async function updateActiveStreams (update, transaction) {
   })), { transaction })
 }
 
-async function updateActiveProjects (update, transaction) {
+async function updateActiveProjects (update, opts = {}) {
+  const transaction = opts.transaction
   const existingProjects = await models.ClassifierActiveProject.findAll({
     attributes: ['projectId'],
     where: {

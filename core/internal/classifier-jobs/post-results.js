@@ -3,6 +3,8 @@ const ArrayConverter = require('../../../common/converter/array')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const { createResults } = require('./dao/create-results')
+const { asyncEvery } = require('../../../common/helpers')
+const { hasPermission, STREAM, READ } = require('../../roles/dao')
 
 /**
  * @swagger
@@ -21,7 +23,7 @@ const { createResults } = require('./dao/create-results')
  *         required: true
  *         type: string
  *     requestBody:
- *       description: An incremental result object containing detections & number of minutes that were processed
+ *       description: An incremental result object containing detections, number of minutes and segments that were processed
  *       required: true
  *       content:
  *         application/json:
@@ -39,11 +41,8 @@ const { createResults } = require('./dao/create-results')
  */
 module.exports = async (req, res) => {
   try {
-    // Check authorization
-    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-      throw new ForbiddenError()
-    }
-
+    const user = req.rfcx.auth_token_info
+    const creatableBy = user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id
     // Validate params
     const converter1 = new Converter(req.body, {}, true)
     converter1.convert('analyzed_minutes').toInt()
@@ -59,7 +58,31 @@ module.exports = async (req, res) => {
     const paramsDetections = await converter2.validate()
       .then(detections => detections.map(d => ({ ...d, streamId: d.stream_id })))
 
-    const params = { ...paramsAnalyzedMinutes, detections: paramsDetections }
+    const converter3 = new ArrayConverter(req.body.processed_segments, true)
+    converter3.convert('stream').toString()
+    converter3.convert('start').toMomentUtc()
+    converter3.convert('classifier').toInt()
+    converter3.convert('classifier_job').optional().toInt()
+    const paramsSegments = await converter3.validate()
+      .then(segments => segments.map((d) => {
+        return {
+          streamId: d.stream,
+          start: d.start.toISOString(),
+          classifierId: d.classifier,
+          classifierJobId: d.classifier_job
+        }
+      }))
+    if (creatableBy) {
+      // check that user has access to all specified streams
+      const detectionsStreams = paramsDetections.map(d => d.streamId)
+      const segmentsStreams = paramsSegments.map(d => d.streamId)
+      const streamIds = [...new Set([...detectionsStreams, ...segmentsStreams])]
+      if (!(await asyncEvery(streamIds, (id) => hasPermission(READ, creatableBy, id, STREAM)))) {
+        throw new ForbiddenError()
+      }
+    }
+
+    const params = { ...paramsAnalyzedMinutes, detections: paramsDetections, segments: paramsSegments }
 
     // Call DAO & return
     const jobId = req.params.id

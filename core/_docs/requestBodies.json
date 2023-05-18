@@ -206,6 +206,12 @@
         "items": {
           "$ref": "#/components/requestBodies/ClassifierResultDetection"
         }
+      },
+      "detections": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/requestBodies/ProcessedSegment"
+        }
       }
     },
     "required": ["analyzed_minutes", "detections"]
@@ -249,6 +255,30 @@
       "end",
       "confidence"
     ]
+  },
+  "ProcessedSegment": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "1fas1g4yfs4a1"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "classifier": {
+        "type": "number",
+        "description": "Classifier identifier",
+        "example": 12
+      },
+      "classifier_job": {
+        "type": "number",
+        "description": "Classifier job identifier",
+        "example": 1125
+      }
+    }
   },
   "Detection": {
     "type": "object",
@@ -714,6 +744,30 @@
       "email": {
         "type": "string",
         "example": "johndoe@rfcx.org"
+      }
+    }
+  },
+  "ClassifierProcessedSegment": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "xu82jDgX49"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "classifier": {
+        "type": "string",
+        "description": "Classifier identifier",
+        "example": "4"
+      },
+      "classifier_job": {
+        "type": "string",
+        "description": "Classifier job identifier",
+        "example": "10"
       }
     }
   }
