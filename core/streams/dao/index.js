@@ -215,7 +215,7 @@ async function update (id, stream, options = {}) {
   const transaction = options.transaction || null
   if (fullStream.name) {
     const existingStream = await get(id, { transaction })
-    if (existingStream && existingStream.project_id) {
+    if (existingStream && existingStream.project_id && existingStream.name !== fullStream.name) {
       const duplicateStreamInProject = await query({ name: fullStream.name, projects: [fullStream.project_id || existingStream.project_id] }, { fields: 'id', transaction })
       if (duplicateStreamInProject.total > 0) {
         throw new ValidationError('Duplicate stream name in the project')
