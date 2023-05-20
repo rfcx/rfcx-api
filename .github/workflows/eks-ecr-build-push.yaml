@@ -71,13 +71,24 @@ jobs:
         # v1 (1.6.0) @ 12 Nov 2021 https://github.com/docker/setup-buildx-action/tags
         uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
 
+      - name: 'Get Registry Region'
+        id: get-region
+        run: |
+          URI = ${{ vars.AWS_REGION_NONPROD }}
+          REG=${URI:21}
+          LENGTH=$((${#REG}-14))
+          echo $LENGTH
+          REGION=${REG:0:LENGTH}
+          echo $REG
+          REGISTRY_REGION=REG 
+
       - name: 'Setup: Configure AWS credentials'
         # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
         uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
-          aws-region: ${{ vars.AWS_REGION_NONPROD }}
+          aws-region: ${{ env.REGISTRY_REGION }}
           #aws-region: ${{ inputs.aws-region }}
 
 
