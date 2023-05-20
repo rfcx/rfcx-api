@@ -74,13 +74,13 @@ jobs:
       - name: 'Get Registry Region'
         id: get-region
         run: |
-          URI=${{ vars.AWS_REGION_NONPROD }}
+          URI=${{ vars.EKS_ECR_URI_NONPROD }}
           REG=${URI:21}
           LENGTH=$((${#REG}-14))
           echo $LENGTH
           REGION=${REG:0:LENGTH}
           echo $REG
-          REGISTRY_REGION=REG 
+          REGISTRY_REGION=$REG 
 
       - name: 'Setup: Configure AWS credentials'
         # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
