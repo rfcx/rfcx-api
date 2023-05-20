@@ -74,7 +74,7 @@ jobs:
       - name: 'Get Registry Region'
         id: get-region
         run: |
-          URI = ${{ vars.AWS_REGION_NONPROD }}
+          URI=${{ vars.AWS_REGION_NONPROD }}
           REG=${URI:21}
           LENGTH=$((${#REG}-14))
           echo $LENGTH
