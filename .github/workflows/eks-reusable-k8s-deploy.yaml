@@ -15,9 +15,6 @@ on:
         type: string
         required: true
     secrets:
-#      kube-config:
-#        description: KUBE_CONFIG file
-#        required: true
       aws-access-key-id:
         description: AWS Access Key ID
         required: true
@@ -46,7 +43,7 @@ jobs:
 
       - name: 'Get Kubeconf EKS'
         run: |          
-          aws eks update-kubeconfig --region eu-west-1 --name ${{ vars.EKS_CLUSTER_NAME_NONPROD }}
+          aws eks update-kubeconfig --region ${{ vars.AWS_REGION_NONPROD }} --name ${{ vars.EKS_CLUSTER_NAME_NONPROD }}
 
 #          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
 #          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
