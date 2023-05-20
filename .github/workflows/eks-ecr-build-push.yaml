@@ -55,8 +55,6 @@ on:
 jobs:
   build:
     runs-on: ${{ inputs.runs-on }}
-    env:
-      ECR_REGION: ''
     strategy:
       matrix:
         target: ${{ fromJson(inputs.targets) }}
@@ -82,8 +80,7 @@ jobs:
           REG=${REG:0:LENGTH}
           export REGISTRY_REGION=$REG 
           echo $REGISTRY_REGION
-#          ECR_REGION=$REGISTRY_REGION
-#          echo ${{ env.ECR_REGION }}
+
 
       - name: 'Setup: Configure AWS credentials'
         # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
