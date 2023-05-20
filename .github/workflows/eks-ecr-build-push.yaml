@@ -82,7 +82,7 @@ jobs:
           REG=${REG:0:LENGTH}
           REGISTRY_REGION=$REG 
           echo $REGISTRY_REGION
-          env.ECR_REGION=$REGISTRY_REGION
+          ECR_REGION=$REGISTRY_REGION
           echo ${{ env.ECR_REGION }}
 
       - name: 'Setup: Configure AWS credentials'
