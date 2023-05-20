@@ -78,7 +78,7 @@ jobs:
           REG=${URI:21}
           LENGTH=$((${#REG}-14))
           echo $LENGTH
-          REGION=${REG:0:LENGTH}
+          REG=${REG:0:LENGTH}
           echo $REG
           REGISTRY_REGION=$REG 
 
