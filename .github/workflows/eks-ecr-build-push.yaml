@@ -77,9 +77,10 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
-          aws-region: ${{ vars.AWS_REGION_NONPROD }}
+          aws-region: ${{ inputs.aws-region }}
+          #aws-region: ${{ vars.AWS_REGION_NONPROD }}
 
-        #  aws-region: ${{ inputs.aws-region }}
+
 
       - name: 'Setup: Git checkout'
         # v3 (3.0.0) @ 02 Mar 2022 https://github.com/actions/checkout/tags
