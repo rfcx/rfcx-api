@@ -80,10 +80,10 @@ jobs:
           REG=${URI:21}
           LENGTH=$((${#REG}-14))
           REG=${REG:0:LENGTH}
-          REGISTRY_REGION=$REG 
+          export REGISTRY_REGION=$REG 
           echo $REGISTRY_REGION
-          ECR_REGION=$REGISTRY_REGION
-          echo ${{ env.ECR_REGION }}
+#          ECR_REGION=$REGISTRY_REGION
+#          echo ${{ env.ECR_REGION }}
 
       - name: 'Setup: Configure AWS credentials'
         # v1 (1.6.1) @ 19 Jan 2022 https://github.com/aws-actions/configure-aws-credentials/tags
@@ -91,7 +91,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
-          aws-region: ${{ env.ECR_REGION }}
+          aws-region: ${{ env.REGISTRY_REGION }}
           #aws-region: ${{ inputs.aws-region }}
 
 
