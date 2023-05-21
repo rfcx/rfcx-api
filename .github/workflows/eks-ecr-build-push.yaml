@@ -89,7 +89,7 @@ jobs:
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           aws-region: ${{ steps.get-region.outputs.ecr_region }}
-          #aws-region: ${{ inputs.aws-region }}
+
 
 
 
