@@ -1,6 +1,6 @@
 const routes = require('./project')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
@@ -8,11 +8,21 @@ const app = expressApp()
 app.use('/', routes)
 
 beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+  await truncateNonBase(models)
 })
+
 beforeEach(async () => {
-  await truncate(models)
+  await models.sequelize.query('SELECT setval(\'users_id_seq\', (SELECT MAX(id) FROM users) + 1);')
+})
+
+afterEach(async () => {
+  await truncateNonBase(models)
+  await models.User.destroy({ where: { email: 'jonny@doe.com' } })
+  await models.User.destroy({ where: { email: 'john1@doe.com' } })
+})
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('GET /projects/:id/users', () => {
@@ -57,13 +67,13 @@ describe('GET /projects/:id/users', () => {
 describe('PUT /projects/:id/users', () => {
   test('create success', async () => {
     const requestBody = {
-      email: 'john@doe.com',
+      email: 'jonny@doe.com',
       role: 'Member'
     }
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleMember })
-    await models.User.create({ email: 'john@doe.com', guid: 'test' })
+    await models.User.create({ email: requestBody.email, guid: 'a5e3aa4a-c05e-11ed-afa1-0242ac020302' })
 
     const response = await request(app).put(`/${project.id}/users`).send(requestBody)
 
@@ -89,7 +99,7 @@ describe('PUT /projects/:id/users', () => {
 describe('DELETE /projects/:id/users', () => {
   test('delete success', async () => {
     const requestBody = {
-      email: 'john@doe.com'
+      email: seedValues.otherUserEmail
     }
     const project = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Project Test' }
     await models.Project.create(project)

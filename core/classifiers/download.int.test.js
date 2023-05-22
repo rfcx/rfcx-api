@@ -1,6 +1,6 @@
 const routes = require('./index')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const { EmptyResultError } = require('../../common/error-handling/errors')
 
@@ -10,13 +10,14 @@ app.use('/', routes)
 
 jest.mock('./dao/download', () => ({ getSignedUrl: jest.fn((url) => Promise.resolve(url + '?123')) }))
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
-})
 beforeEach(async () => {
-  await truncate(models)
   await commonSetup()
+})
+afterEach(async () => {
+  await truncateNonBase(models)
+})
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {
@@ -39,13 +40,13 @@ describe('GET /classifier/:id/file', () => {
   })
 
   describe('error', () => {
-    test('invalid model url', async () => {
+    test('missing model url', async () => {
       require('./dao/download').getSignedUrl.mockImplementation(() => Promise.reject(new EmptyResultError('Storage url not recognised')))
       const regularUserApp = expressApp({ is_super: true })
       regularUserApp.use('/', routes)
       console.warn = jest.fn()
 
-      const response = await request(regularUserApp).get('/2/file')
+      const response = await request(regularUserApp).get('/2324/file')
 
       expect(response.statusCode).toBe(404)
     })

@@ -22,7 +22,7 @@ const availableIncludes = [
  */
 async function get (idOrWhere, options = {}) {
   const where = typeof idOrWhere === 'string' ? { id: idOrWhere } : idOrWhere
-  const attributes = options.fields && options.fields.length > 0 ? Project.attributes.full.filter(a => options.fields.includes(a)) : Project.attributes.full
+  const attributes = options.fields && options.fields.length > 0 ? Project.attributes.full.filter(a => options.fields.includes(a) || a === 'id') : Project.attributes.full
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
 
   const project = await Project.findOne({ where, attributes, include })

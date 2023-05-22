@@ -1,17 +1,16 @@
 const routes = require('.')
 const models = require('../../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../../common/testing/sequelize')
 const request = require('supertest')
 const { randomId } = require('../../../common/crypto/random')
 const { RUNNING, DONE } = require('../../classifier-jobs/classifier-job-status')
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
 
-beforeEach(async () => {
-  await truncate(models)
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 function withIds (obj) {

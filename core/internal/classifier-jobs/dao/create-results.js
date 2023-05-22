@@ -1,26 +1,32 @@
 const { EmptyResultError } = require('../../../../common/error-handling/errors')
 const { ClassifierJob, sequelize } = require('../../../_models')
-const { create } = require('../../../detections/dao/create')
+const detectionsDao = require('../../../detections/dao/create')
+const segmentsDao = require('../../../classifiers/dao/processed-segments')
 
-async function createResults (jobId, { analyzedMinutes, detections }) {
-  // Check job exists
-  const job = await ClassifierJob.findByPk(jobId, { raw: true })
-  if (!job) {
-    throw new EmptyResultError()
-  }
+async function createResults (jobId, { analyzedMinutes, detections, segments }) {
+  return sequelize.transaction(async (transaction) => {
+    // Check job exists
+    const job = await ClassifierJob.findByPk(jobId, { raw: true, transaction })
+    if (!job) {
+      throw new EmptyResultError()
+    }
 
-  // Save detections
-  await create(detections)
+    // Save detections
+    await detectionsDao.create(detections, { transaction })
 
-  // Update job minutes completed
-  await sequelize.query(
-    `
-    UPDATE classifier_jobs
-    SET minutes_completed = minutes_completed + $analyzedMinutes
-    WHERE id = $jobId
-    `,
-    { bind: { jobId, analyzedMinutes } }
-  )
+    // Save processed segments
+    await segmentsDao.batchCreate(segments, { transaction })
+
+    // Update job minutes completed
+    await sequelize.query(
+      `
+      UPDATE classifier_jobs
+      SET minutes_completed = minutes_completed + $analyzedMinutes
+      WHERE id = $jobId
+      `,
+      { bind: { jobId, analyzedMinutes }, transaction }
+    )
+  })
 }
 
 module.exports = {

@@ -1,9 +1,10 @@
-const { Stream, StreamSegment, StreamSourceFile, FileExtension, Sequelize } = require('../../_models')
+const { Stream, StreamSegment, StreamSourceFile, FileExtension, ClassifierProcessedSegment, Sequelize } = require('../../_models')
 const { hasPermission, READ, STREAM } = require('../../roles/dao')
 const messageQueue = require('../../../common/message-queue/sqs')
 const { SEGMENT_CREATED } = require('../../../common/message-queue/event-names')
 const { ValidationError, EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
+const Op = Sequelize.Op
 
 const availableIncludes = [
   StreamSourceFile.include(),
@@ -29,8 +30,8 @@ async function get (streamId, start, options = {}) {
   const where = options.strict === false
     ? {
         stream_id: streamId,
-        start: { [Sequelize.Op.lte]: start.valueOf() },
-        end: { [Sequelize.Op.gt]: start.valueOf() }
+        start: { [Op.lte]: start.valueOf() },
+        end: { [Op.gt]: start.valueOf() }
       }
     : {
         stream_id: streamId,
@@ -80,40 +81,51 @@ async function query (filters, options = {}) {
     throw new ForbiddenError()
   }
   const where = {
-    ...filters && filters.streamId && { stream_id: filters.streamId }
+    [Op.and]: {
+      stream_id: filters.streamId
+    }
   }
-  if (options.streamSourceFileId) {
-    where.stream_source_file_id = options.streamSourceFileId
-  } else if (options.ids) {
-    where.id = { [Sequelize.Op.in]: options.ids }
-  } else if (options.strict === false) {
-    where[Sequelize.Op.and] = {
+  if (options.strict === false) {
+    where[Op.and].start = {
+      // When we use both `start` and `end` attributes in query, TImescaleDB can't use hypertable indexes in a full way,
+      // because hypertables are spitted by `stream_id` + `start` only. So database has to check all chunks.
+      // A solution to this is to limit search to exact one-two chunks first and then search by `start` + `end` only inside these chunks.
+      // We have to find a timeframe where segment with its own full duration will be places. We don't know duration of each segment, so we
+      // will add some time to beginning and some time to the end (10 minutes to be safe).
+      [Op.between]: [filters.start.clone().subtract(10, 'minutes').valueOf(), filters.end.clone().add(10, 'minutes').valueOf()]
+    }
+    where[Op.and][Op.or] = {
       start: {
-        // When we use both `start` and `end` attributes in query, TImescaleDB can't use hypertable indexes in a full way,
-        // because hypertables are spitted by `stream_id` + `start` only. So database has to check all chunks.
-        // A solution to this is to limit search to exact one-two chunks first and then search by `start` + `end` only inside these chunks.
-        // We have to find a timeframe where segment with its own full duration will be places. We don't know duration of each segment, so we
-        // will add some time to beginning and some time to the end (10 minutes to be safe).
-        [Sequelize.Op.between]: [filters.start.clone().subtract(10, 'minutes').valueOf(), filters.end.clone().add(10, 'minutes').valueOf()]
+        [Op.gte]: filters.start.valueOf(),
+        [Op.lt]: filters.end.valueOf()
       },
-      [Sequelize.Op.or]: {
-        start: {
-          [Sequelize.Op.gte]: filters.start.valueOf(),
-          [Sequelize.Op.lt]: filters.end.valueOf()
-        },
-        end: {
-          [Sequelize.Op.gt]: filters.start.valueOf(),
-          [Sequelize.Op.lte]: filters.end.valueOf()
-        },
-        [Sequelize.Op.and]: {
-          start: { [Sequelize.Op.lt]: filters.start.valueOf() },
-          end: { [Sequelize.Op.gt]: filters.end.valueOf() }
-        }
+      end: {
+        [Op.gt]: filters.start.valueOf(),
+        [Op.lte]: filters.end.valueOf()
+      },
+      [Op.and]: {
+        start: { [Op.lt]: filters.start.valueOf() },
+        end: { [Op.gt]: filters.end.valueOf() }
       }
     }
   } else {
-    where.start = {
-      [Sequelize.Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+    where[Op.and].start = {
+      [Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+    }
+  }
+  if (filters.unprocessedByClassifier !== undefined) {
+    const processedSegments = await ClassifierProcessedSegment.findAll({
+      where: {
+        ...where,
+        classifierId: filters.unprocessedByClassifier
+      },
+      attributes: ['start']
+    })
+    if (processedSegments.length) {
+      if (!where[Op.and].start) {
+        where[Op.and].start = {}
+      }
+      where[Op.and].start[Op.notIn] = processedSegments.map(s => s.start)
     }
   }
 
@@ -142,6 +154,21 @@ function create (segment, options = {}) {
     .catch((e) => {
       console.error('Stream segment service -> create -> error', e)
       throw new ValidationError('Cannot create stream segment with provided data')
+    })
+}
+
+/**
+ * Bulk create stream segment
+ * @param {*} segments Array of stream segment attributes
+ * @param {*} options
+ * @param {Transaction} options.transaction Perform within given transaction
+ */
+function bulkCreate (segments, options = {}) {
+  const transaction = options.transaction
+  return StreamSegment.bulkCreate(segments, { transaction })
+    .catch((e) => {
+      console.error('Stream segment service -> bulkCreate -> error', e)
+      throw new ValidationError('Cannot bulkCreate stream segment with provided data')
     })
 }
 
@@ -210,7 +237,7 @@ function getNextSegmentTimeAfterSegment (segment, time) {
       .findOne({
         where: {
           stream_id: segment.stream_id,
-          start: { [Sequelize.Op.gte]: time }
+          start: { [Op.gte]: time }
         },
         order: [['start', 'ASC']]
       })
@@ -259,6 +286,7 @@ async function findSegmentsByStreamSource (id, transaction) {
 module.exports = {
   get,
   query,
+  bulkCreate,
   create,
   destroy,
   notify,

@@ -1,21 +1,60 @@
+const arbimonService = require('../_services/arbimon')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
+
+jest.mock('../_services/arbimon', () => {
+  return {
+    isEnabled: true,
+    createSite: jest.fn(async () => { return await Promise.resolve({ site_id: 123 }) })
+  }
+})
 
 const app = expressApp()
 
 app.use('/', routes)
 
 beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+  muteConsole()
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterEach(async () => {
+  await truncateNonBase(models)
+})
+
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.sequelize.close()
 })
 
 describe('POST /streams', () => {
+  test('missing name', async () => {
+    const requestBody = {
+      latitude: 10.123
+    }
+    console.warn = jest.fn()
+
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(400)
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  test('arbimon failed creating a site', async () => {
+    arbimonService.createSite.mockImplementationOnce(() => { throw new Error() })
+    const requestBody = {
+      name: 'Trail 39',
+      latitude: 10.123,
+      longitude: 101.456
+    }
+    const response = await request(app).post('/').send(requestBody)
+
+    expect(response.statusCode).toBe(500)
+    const streams = await models.Stream.findAll({ where: { name: 'Trail 39' } })
+    expect(streams.length).toBe(0)
+  })
+
   test('required fields only', async () => {
     const requestBody = {
       name: 'Trail 39',
@@ -31,18 +70,7 @@ describe('POST /streams', () => {
     const stream = await models.Stream.findByPk(id)
     expect(stream.name).toBe(requestBody.name)
     expect(stream.createdById).toBe(seedValues.primaryUserId)
-  })
-
-  test('missing name', async () => {
-    const requestBody = {
-      latitude: 10.123
-    }
-    console.warn = jest.fn()
-
-    const response = await request(app).post('/').send(requestBody)
-
-    expect(response.statusCode).toBe(400)
-    expect(console.warn).toHaveBeenCalled()
+    expect(stream.externalId).toBe(123)
   })
 
   test('returns 201 when user creates a stream in a project he has a Member role', async () => {
@@ -179,7 +207,7 @@ describe('POST /streams', () => {
 
   test('returns 400 when id has uppercase symbols', async () => {
     const requestBody = {
-      id: 'ABcdef1234567',
+      id: 'ABcdef123456',
       name: 'test-stream-with-id'
     }
 
@@ -189,11 +217,59 @@ describe('POST /streams', () => {
 
   test('returns 400 when id has special characters', async () => {
     const requestBody = {
-      id: 'abcd-f1234567',
+      id: 'abcd-f123456',
       name: 'test-stream-with-id'
     }
 
     const response = await request(app).post('/').send(requestBody)
     expect(response.statusCode).toBe(400)
+  })
+
+  test('returns 400 when user tries to create a stream with a duplicate name in the project', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    const stream = await models.Stream.create({ id: 'qwertyuiop10', name: 'my stream 1', createdById: seedValues.primaryUserId, project_id: project.id })
+
+    const requestBody = {
+      id: 'qwertyuiop11',
+      name: stream.name,
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(400)
+    expect(response.body.message).toBe('Duplicate stream name in the project')
+  })
+
+  test('creates a stream when user tries to create a stream with a duplicate name in a different project', async () => {
+    const project1 = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    const project2 = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw124', name: 'my project 2', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project1.id, role_id: seedValues.roleAdmin })
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project2.id, role_id: seedValues.roleAdmin })
+    const stream = await models.Stream.create({ id: 'qwertyuiop10', name: 'my stream 1', createdById: seedValues.primaryUserId, project_id: project1.id })
+
+    const requestBody = {
+      id: 'qwertyuiop11',
+      name: stream.name,
+      project_id: project2.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
+  })
+
+  test('creates a stream when user tries to create a stream with a non-duplicate name in the project', async () => {
+    const project = (await models.Project.findOrCreate({ where: { id: 'dqweqfwdw123', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+    await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleAdmin })
+    await models.Stream.create({ id: 'qwertyuiop10', name: 'my stream 1', createdById: seedValues.primaryUserId, project_id: project.id })
+
+    const requestBody = {
+      id: 'qwertyuiop11',
+      name: 'my stream 2',
+      project_id: project.id
+    }
+
+    const response = await request(app).post('/').send(requestBody)
+    expect(response.statusCode).toBe(201)
   })
 })

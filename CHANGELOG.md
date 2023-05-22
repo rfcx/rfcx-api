@@ -1,8 +1,28 @@
+
+## 1.3.0 (2023-XX-XX)
+
+### Features
+* **core**: add `id`, `review_status` and `classifier_job_id` to `detections` table
+* **core**: create new `detection_reviews` table
+* **core**: update detection review logic
+* **core**: add `/streams/{streamId}/detections/{start}/review` endpoint
+* **core**: add `review_statuses` to `/detections` endpoint
+* **core**: create `classifier_processed_segments` table
+* **core**: add `/internal/prediction/streams/segments/processed` endpoint
+* **core**: add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: remove update `last_deployed` from previous logic
+
+## 1.2.3 (2023-04-15)
+
+### Features
+* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: remove update `last_deployed` from previous logic
+
 ## 1.2.2 (2022-09-06)
 
 ### Features
 * **core**: Update `GET /classifiers/:id` and `GET /classifiers/:id/file` to get data by permission
-
 
 ## 1.2.1 (2022-08-24)
 

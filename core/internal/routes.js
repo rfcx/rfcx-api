@@ -28,7 +28,8 @@ module.exports = {
   prediction: [
     require('./prediction/classifier-deployments'),
     require('./prediction/detections'),
-    require('./prediction/indices')
+    require('./prediction/indices'),
+    require('./prediction/stream')
   ],
   arbimon: [
     require('./arbimon/stream'),

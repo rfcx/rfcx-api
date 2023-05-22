@@ -1,9 +1,9 @@
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
-const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
+const CLASSIFIER_1 = { id: 912, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 const CLASSIFIERS = [CLASSIFIER_1]
 
 const PROJECT_1 = { id: 'testproject1', name: 'Test project 1', createdById: seedValues.otherUserId }
@@ -16,14 +16,17 @@ async function seedTestData () {
 }
 
 beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
   muteConsole('warn')
 })
 
-beforeEach(async () => {
-  await truncate(models)
+beforeAll(async () => {
   await seedTestData()
+})
+afterEach(async () => {
+  await truncateNonBase()
+})
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('POST /classifiers-jobs', () => {

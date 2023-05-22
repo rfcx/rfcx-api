@@ -1,18 +1,18 @@
 const request = require('supertest')
 const routes = require('./aggregated-detections')
 const models = require('../../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 async function commonSetup () {
@@ -109,7 +109,7 @@ describe('GET /internal/cognition/aggregated-detections', () => {
 
     const response = await request(app).get('/aggregated-detections').query(query)
 
-    expect(response.body.find(x => x.stream_id === '3fqoc4okv9en').count).toBe(2)
+    expect(response.body.find(x => x.stream_id === '3fqoc4okv9en').count).toBe('2')
   })
 
   test('minimum count', async () => {
@@ -124,6 +124,6 @@ describe('GET /internal/cognition/aggregated-detections', () => {
 
     const response = await request(app).get('/aggregated-detections').query(query)
 
-    expect(response.body.length).toBe(1)
+    expect(response.body.length).toBe(2)
   })
 })

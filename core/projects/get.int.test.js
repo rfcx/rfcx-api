@@ -1,18 +1,18 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('GET /projects/:id', () => {
@@ -67,5 +67,16 @@ describe('GET /projects/:id', () => {
     const response = await request(app).get(`/${project.id}`)
 
     expect(response.statusCode).toBe(200)
+  })
+
+  test('can get external_id field only', async () => {
+    const project = { id: 'ft3', name: 'House in the woods', createdById: seedValues.primaryUserId, externalId: 12345 }
+    await models.Project.create(project)
+
+    const response = await request(app).get(`/${project.id}`).query({ fields: 'external_id' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body.external_id).toBe(project.externalId)
+    expect(Object.keys(response.body)).toHaveLength(2) // Includes `id`
   })
 })

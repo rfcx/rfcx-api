@@ -67,6 +67,7 @@ router.route('/:guid')
     converter.convert('project_id').optional().toString()
     converter.convert('is_updatable').optional().toBoolean()
     converter.convert('is_deployed').optional().toBoolean()
+    converter.convert('last_deployed').optional().toMomentUtc()
 
     let mysqlTransaction, timescaleTransaction
     return converter.validate()
@@ -97,10 +98,6 @@ router.route('/:guid')
           }
         }
 
-        // Update the last deployed timestamp whenever stream id changes or is_deployed is set to true
-        if ((!guardian.stream_id && params.stream_id) || (guardian.stream_id !== params.stream_id) || params.is_deployed) {
-          params.last_deployed = models.sequelize.literal('CURRENT_TIMESTAMP')
-        }
         const updatedGuardian = await guardiansService.updateGuardian(guardian, params, { transaction: mysqlTransaction })
         if (arbimonService.isEnabled && guardian.stream_id) {
           await arbimonService.updateSite({

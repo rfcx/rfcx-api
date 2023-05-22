@@ -3,6 +3,7 @@ const dao = require('./dao')
 const { randomId } = require('../../common/crypto/random')
 const Converter = require('../../common/converter')
 const arbimonService = require('../_services/arbimon')
+const { ValidationError } = require('../../common/error-handling/errors')
 
 /**
  * @swagger
@@ -56,6 +57,13 @@ module.exports = (req, res) => {
         stream.id = randomId()
       }
 
+      if (params.projectId) {
+        const duplicateStreamInProject = await dao.query({ name: params.name, projects: [params.projectId] }, { fields: 'id' })
+        if (duplicateStreamInProject.total > 0) {
+          throw new ValidationError('Duplicate stream name in the project')
+        }
+      }
+
       // TODO move - route handler should not contain business logic
       if (arbimonService.isEnabled && req.headers.source !== 'arbimon') {
         try {
@@ -63,6 +71,7 @@ module.exports = (req, res) => {
           stream.externalId = externalSite.site_id
         } catch (error) {
           console.error(`Error creating site in Arbimon (stream: ${stream.id})`)
+          throw new Error()
         }
       }
 
