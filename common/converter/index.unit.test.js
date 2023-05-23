@@ -30,14 +30,11 @@ test('can convert to moment', () => {
   })
 })
 
-test('can convert to moment and camelize', () => {
-  const source = {
-    start: '2020-02-03T04:05:06.700Z'
-  }
+test('can camelize', () => {
+  const source = { my_argument: 'abc' }
   const converter = new Converter(source, {}, true)
-  converter.convert('start').toMomentUtc()
+  converter.convert('my_argument').toString()
   return converter.validate().then(result => {
-    expect(result.start).toBeInstanceOf(moment)
-    expect(result.start.toISOString()).toStrictEqual(source.start)
+    expect(result.myArgument).toBe(source.my_argument)
   })
 })
