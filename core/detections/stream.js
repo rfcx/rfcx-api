@@ -139,18 +139,18 @@ router.get('/:id/detections', function (req, res) {
 router.post('/:id/detections', function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
-  const detections = Array.isArray(req.body) ? req.body : [req.body]
+  const rawDetections = Array.isArray(req.body) ? req.body : [req.body]
 
-  const params = new ArrayConverter(detections)
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('classification').toString()
-  params.convert('classifier').toString()
-  params.convert('confidence').toFloat()
-  params.convert('classifier_job_id').optional().toInt()
+  const converter = new ArrayConverter(rawDetections, true)
+  converter.convert('start').toMomentUtc()
+  converter.convert('end').toMomentUtc()
+  converter.convert('classification').toString()
+  converter.convert('classifier').toString()
+  converter.convert('confidence').toFloat()
+  converter.convert('classifier_job_id').optional().toInt()
 
-  params.validate()
-    .then(async () => {
+  converter.validate()
+    .then(async (detections) => {
       // TODO add creatableBy to dao.create to avoid permission checks and stream existance checks in route handler
       if (user.has_system_role) {
         // Need to check that the stream exists (throws)
@@ -159,8 +159,7 @@ router.post('/:id/detections', function (req, res) {
         throw new ForbiddenError('You do not have permission to update this stream')
       }
 
-      const detections = params.transformedArray.map(d => ({ ...d, streamId }))
-      await create(detections)
+      await create(detections.map(d => ({ ...d, streamId })))
       return res.sendStatus(201)
     })
     .catch(httpErrorHandler(req, res, 'Failed creating detections'))
