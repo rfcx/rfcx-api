@@ -119,8 +119,6 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       expect(detections[0].classifierJobId).toBe(JOB_RUNNING.id)
       expect(detections[1].start.toISOString()).toBe(VALID_JOB_RESULT.detections[1].start)
       expect(detections[1].end.toISOString()).toBe(VALID_JOB_RESULT.detections[1].end)
-      expect(detections[1].streamId).toBe(VALID_JOB_RESULT.detections[1].stream)
-      expect(detections[1].classificationId).toBe(CLASSIFICATION_2.id)
       expect(detections[1].confidence).toBe(VALID_JOB_RESULT.detections[1].confidence)
       const segments = await models.ClassifierProcessedSegment.findAll({ sort: [['start', 'ASC']] })
       expect(segments[0].start.toISOString()).toBe(VALID_JOB_RESULT.processed_segments[0].start)

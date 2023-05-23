@@ -83,7 +83,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         end: '2022-01-01T00:00:01.000Z',
         confidence: 0.99
       })
-
+      expect(detection.reviewStatus).toBeNull()
     })
 
     test('create positive review', async () => {
