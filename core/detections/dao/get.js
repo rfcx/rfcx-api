@@ -1,7 +1,5 @@
-// const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { Detection } = require('../../_models')
-// const { STREAM, hasPermission, READ } = require('../../roles/dao')
 const { availableIncludes } = require('./index')
 const moment = require('moment-timezone')
 

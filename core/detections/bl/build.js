@@ -1,8 +1,8 @@
 const classifierService = require('../../classifiers/dao')
 const { Op } = require('sequelize')
 
-async function addClassifiers (rawDetections, opts = {}) {
-  const transaction = opts.transaction
+async function addClassifiers (rawDetections, options = {}) {
+  const transaction = options.transaction
   // Extract all classifier ids
   const unknownIds = [...new Set(rawDetections.map(d => `${d.classifier}`))]
 
@@ -28,8 +28,8 @@ async function addClassifiers (rawDetections, opts = {}) {
   return rawDetections.map(detection => ({ ...detection, classifier: classifierMapping[detection.classifier] }))
 }
 
-async function build (rawDetections, opts = {}) {
-  const detectionsWithClassifiers = await addClassifiers(rawDetections, opts)
+async function build (rawDetections, options = {}) {
+  const detectionsWithClassifiers = await addClassifiers(rawDetections, options)
 
   // Remove detections without matching classifiers or missing classification ids (classifier outputs)
   const validDetections = detectionsWithClassifiers.filter(detection => {

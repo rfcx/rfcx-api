@@ -2,20 +2,20 @@ const build = require('../bl/build')
 const classifierService = require('../../classifiers/dao')
 const { Detection } = require('../../_models')
 
-async function create (rawDetections, opts = {}) {
+async function create (rawDetections, options = {}) {
   // Find dependent ids, filter rows
-  const { detections, classifierIds } = await build(rawDetections, opts)
+  const { detections, classifierIds } = await build(rawDetections, options)
   // Save the detections
-  await bulkCreate(detections, opts)
+  await bulkCreate(detections, options)
 
   // Mark classifiers as updated
   for (const id of classifierIds) {
-    await classifierService.update(id, null, { last_executed_at: new Date() }, opts)
+    await classifierService.update(id, null, { last_executed_at: new Date() }, options)
   }
 }
 
-function bulkCreate (detections, opts = {}) {
-  const transaction = opts.transaction
+function bulkCreate (detections, options = {}) {
+  const transaction = options.transaction
   return Detection.bulkCreate(
     detections.map(d => ({
       stream_id: d.streamId,
