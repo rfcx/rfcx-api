@@ -60,7 +60,7 @@ async function build (rawDetections, opts = {}) {
     start: detection.start,
     end: detection.end,
     confidence: detection.confidence,
-    classifierJobId: detection.classifier_job_id
+    classifierJobId: detection.classifierJobId
   }))
 
   return { detections, classifierIds }
