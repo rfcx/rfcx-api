@@ -121,6 +121,8 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       expect(detections[0].stream_id).toBe(VALID_JOB_RESULT.detections[0].stream_id)
       expect(detections[0].classification_id).toBe(CLASSIFICATION_1.id)
       expect(detections[0].confidence).toBe(VALID_JOB_RESULT.detections[0].confidence)
+      expect(detections[0].classifier_id).toBe(JOB_RUNNING.classifierId)
+      expect(detections[0].classifier_job_id).toBe(JOB_RUNNING.id)
       expect(detections[1].start.toISOString()).toBe(VALID_JOB_RESULT.detections[1].start)
       expect(detections[1].end.toISOString()).toBe(VALID_JOB_RESULT.detections[1].end)
       expect(detections[1].stream_id).toBe(VALID_JOB_RESULT.detections[1].stream_id)

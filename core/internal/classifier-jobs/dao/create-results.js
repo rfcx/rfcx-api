@@ -12,7 +12,7 @@ async function createResults (jobId, { analyzedMinutes, detections, segments }) 
     }
 
     // Save detections
-    await detectionsDao.create(detections, { transaction })
+    await detectionsDao.create(detections.map(d => ({ ...d, classifierJobId: jobId })), { transaction })
 
     // Save processed segments
     await segmentsDao.batchCreate(segments, { transaction })

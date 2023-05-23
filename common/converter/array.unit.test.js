@@ -73,3 +73,16 @@ test('can detect multiple type errors', () => {
   expect.assertions(1)
   return converter.validate().catch(e => expect(e).toBeInstanceOf(ValidationError))
 })
+
+test('can camelize', () => {
+  const source = [
+    { foo_bar: 'hello' },
+    { foo_bar: 'there' }
+  ]
+  const converter = new ArrayConverter(source, true)
+  converter.convert('foo_bar').toString()
+  return converter.validate()
+    .then(result => {
+      expect(result[0].fooBar).toEqual(source[0].foo_bar)
+    })
+})

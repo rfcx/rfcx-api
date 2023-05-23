@@ -16,7 +16,7 @@ async function batchCreate (data, creatableBy) {
       streamId: d.stream,
       start: d.start.toISOString(),
       classifierId: d.classifier,
-      classifierJobId: d.classifier_job
+      classifierJobId: d.classifierJob
     }
   })
   return await dao.batchCreate(segments)
