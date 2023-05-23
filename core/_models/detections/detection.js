@@ -8,27 +8,28 @@ module.exports = (sequelize, DataTypes) => {
     end: {
       type: DataTypes.DATE(3)
     },
-    stream_id: {
+    streamId: {
       type: DataTypes.STRING(12)
     },
-    classifier_id: {
+    classifierId: {
       type: DataTypes.INTEGER
     },
-    classifier_job_id: {
+    classifierJobId: {
       type: DataTypes.INTEGER
     },
-    classification_id: {
+    classificationId: {
       type: DataTypes.INTEGER
     },
     confidence: {
       type: DataTypes.FLOAT
     },
-    review_status: {
+    reviewStatus: {
       type: DataTypes.SMALLINT,
       allowNull: true,
       default: null
     }
   }, {
+    underscored: true,
     timestamps: false
   })
   Detection.removeAttribute('id') // https://github.com/sequelize/sequelize/issues/1026#issuecomment-54877327

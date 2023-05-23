@@ -9,7 +9,7 @@ async function get (filters, options = {}) {
 
   const detection = await Detection.findOne({
     where: {
-      stream_id: filters.streamId,
+      streamId: filters.streamId,
       start: moment.utc(filters.start).valueOf()
     },
     attributes,

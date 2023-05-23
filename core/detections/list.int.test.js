@@ -36,9 +36,9 @@ describe('GET /detections', () => {
   test('success', async () => {
     const { stream, classifier, classification } = await commonSetup()
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.5
@@ -57,26 +57,26 @@ describe('GET /detections', () => {
   test('get 1 by classifier_jobs', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id
     })
     const detection3 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
@@ -97,26 +97,26 @@ describe('GET /detections', () => {
   test('get 2 by classifier_jobs', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     const detection2 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id
     })
     const detection3 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
@@ -138,42 +138,42 @@ describe('GET /detections', () => {
   test('get all reviewed detections', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     const detection2 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id,
-      review_status: -1
+      reviewStatus: -1
     })
     const detection3 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 0
+      reviewStatus: 0
     })
     const detection4 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:35:00.000Z',
       end: '2021-05-11T00:35:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 1
+      reviewStatus: 1
     })
     const query = {
       start: '2021-05-11T00:00:00.000Z',
@@ -192,42 +192,42 @@ describe('GET /detections', () => {
   test('get detections with negative review', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     const detection2 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id,
-      review_status: -1
+      reviewStatus: -1
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 0
+      reviewStatus: 0
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:35:00.000Z',
       end: '2021-05-11T00:35:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 1
+      reviewStatus: 1
     })
     const query = {
       start: '2021-05-11T00:00:00.000Z',
@@ -244,42 +244,42 @@ describe('GET /detections', () => {
   test('get detections with uncertain review', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id,
-      review_status: -1
+      reviewStatus: -1
     })
     const detection3 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 0
+      reviewStatus: 0
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:35:00.000Z',
       end: '2021-05-11T00:35:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 1
+      reviewStatus: 1
     })
     const query = {
       start: '2021-05-11T00:00:00.000Z',
@@ -296,42 +296,42 @@ describe('GET /detections', () => {
   test('get detections with positive review', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id,
-      review_status: -1
+      reviewStatus: -1
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 0
+      reviewStatus: 0
     })
     const detection4 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:35:00.000Z',
       end: '2021-05-11T00:35:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 1
+      reviewStatus: 1
     })
     const query = {
       start: '2021-05-11T00:00:00.000Z',
@@ -348,42 +348,42 @@ describe('GET /detections', () => {
   test('get unreviewed detections', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     const detection = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id,
-      review_status: -1
+      reviewStatus: -1
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 0
+      reviewStatus: 0
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:35:00.000Z',
       end: '2021-05-11T00:35:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 1
+      reviewStatus: 1
     })
     const query = {
       start: '2021-05-11T00:00:00.000Z',
@@ -400,42 +400,42 @@ describe('GET /detections', () => {
   test('get unreviewed and uncertain detections', async () => {
     const { stream, classifier, classification, job1, job2 } = await commonSetup()
     const detection = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:05:00.000Z',
       end: '2021-05-11T00:05:05.000Z',
       confidence: 0.95
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:15:00.000Z',
       end: '2021-05-11T00:15:05.000Z',
       confidence: 0.95,
       classifier_job_id: job1.id,
-      review_status: -1
+      reviewStatus: -1
     })
     const detection3 = await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:25:00.000Z',
       end: '2021-05-11T00:25:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 0
+      reviewStatus: 0
     })
     await models.Detection.create({
-      stream_id: stream.id,
-      classifier_id: classifier.id,
-      classification_id: classification.id,
+      streamId: stream.id,
+      classifierId: classifier.id,
+      classificationId: classification.id,
       start: '2021-05-11T00:35:00.000Z',
       end: '2021-05-11T00:35:05.000Z',
       confidence: 0.95,
       classifier_job_id: job2.id,
-      review_status: 1
+      reviewStatus: 1
     })
     const query = {
       start: '2021-05-11T00:00:00.000Z',

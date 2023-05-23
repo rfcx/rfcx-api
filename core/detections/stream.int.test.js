@@ -39,10 +39,10 @@ describe('POST /streams/:id/detections', () => {
     expect(detections.length).toBe(requestBody.length)
     expect(detections[0].start.toISOString()).toBe(requestBody[0].start)
     expect(detections[0].end.toISOString()).toBe(requestBody[0].end)
-    expect(detections[0].classifier_id).toBe(classifier.id)
-    expect(detections[0].classification_id).toBe(classification.id)
+    expect(detections[0].classifierId).toBe(classifier.id)
+    expect(detections[0].classificationId).toBe(classification.id)
     expect(detections[0].confidence).toBe(requestBody[0].confidence)
-    expect(detections[0].classifier_job_id).toBeNull()
+    expect(detections[0].classifierJobId).toBeNull()
   })
 
   test('success on classifier job id', async () => {

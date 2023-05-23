@@ -43,12 +43,12 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     }
   }
   if (streams) {
-    where.stream_id = user === undefined ? streams : await getAccessibleObjectsIDs(user.id, STREAM, streams, 'R', true)
+    where.streamId = user === undefined ? streams : await getAccessibleObjectsIDs(user.id, STREAM, streams, 'R', true)
   } else if (!user.has_system_role) {
     const streamIds = streamsOnlyPublic
       ? await streamDao.getPublicStreamIds()
       : await getAccessibleObjectsIDs(user.id, STREAM)
-    where.stream_id = { [Sequelize.Op.in]: streamIds }
+    where.streamId = { [Sequelize.Op.in]: streamIds }
   }
   if (classifications) {
     where['$classification.value$'] = { [Sequelize.Op.or]: classifications }
@@ -57,7 +57,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     }
   }
   if (classifiers) {
-    where.classifier_id = { [Sequelize.Op.or]: classifiers }
+    where.classifierd = { [Sequelize.Op.or]: classifiers }
   }
   if (classifierJobs) {
     where.classifier_job_id = { [Sequelize.Op.in]: classifierJobs }
@@ -66,12 +66,12 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     const statuses = reviewStatuses.map(s => REVIEW_STATUS_MAPPING[s])
     if (statuses.includes('null')) {
       if (statuses.length === 1) {
-        where.review_status = { [Sequelize.Op.eq]: null }
+        where.reviewStatus = { [Sequelize.Op.eq]: null }
       } else {
-        where.review_status = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
+        where.reviewStatus = { [Sequelize.Op.or]: { [Sequelize.Op.eq]: null, [Sequelize.Op.in]: statuses.filter(s => s !== 'null') } }
       }
     } else {
-      where.review_status = { [Sequelize.Op.in]: statuses }
+      where.reviewStatus = { [Sequelize.Op.in]: statuses }
     }
   }
   // TODO: if minConfidence is undefined, get it from event strategy

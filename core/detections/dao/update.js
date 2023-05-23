@@ -13,7 +13,7 @@ const { Detection } = require('../../_models')
  */
 async function update (streamId, start, detection, options = {}) {
   const allowedDetection = {}
-  const allowedUpdates = ['review_status']
+  const allowedUpdates = ['reviewStatus']
   allowedUpdates.forEach(k => {
     if (detection[k] !== undefined) {
       allowedDetection[k] = detection[k]
@@ -22,7 +22,7 @@ async function update (streamId, start, detection, options = {}) {
   const transaction = options.transaction || null
   return await Detection.update(allowedDetection, {
     where: {
-      stream_id: streamId,
+      streamId,
       start: moment.utc(start).valueOf()
     },
     transaction
