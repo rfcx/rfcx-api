@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
     const paramsDetections = await converter2.validate()
       .then(detections => detections.map(d => ({ ...d, streamId: d.stream_id })))
 
-    const converter3 = new ArrayConverter(req.body.processed_segments, true)
+    const converter3 = new ArrayConverter(req.body.processed_segments)
     converter3.convert('stream').toString()
     converter3.convert('start').toMomentUtc()
     converter3.convert('classifier').toInt()
