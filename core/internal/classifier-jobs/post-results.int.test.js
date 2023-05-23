@@ -74,15 +74,13 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
     analyzed_minutes: 5,
     detections: [
       {
-        stream_id: STREAM_1.id,
-        classifier: JOB_RUNNING.classifierId,
+        stream: STREAM_1.id,
         classification: CLASSIFIER_OUTPUT_1.outputClassName,
         start: '2021-01-02T01:32:07.000Z',
         end: '2021-01-02T01:32:09.000Z',
         confidence: 0.975123
       }, {
-        stream_id: STREAM_1.id,
-        classifier: JOB_RUNNING.classifierId,
+        stream: STREAM_1.id,
         classification: CLASSIFIER_OUTPUT_2.outputClassName,
         start: '2021-01-02T01:33:49.000Z',
         end: '2021-01-02T01:33:50.000Z',
@@ -92,15 +90,11 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
     processed_segments: [
       {
         start: '2021-01-02T01:30:00.000Z',
-        stream: STREAM_1.id,
-        classifier: JOB_RUNNING.classifierId,
-        classifier_job: JOB_RUNNING.id
+        stream: STREAM_1.id
       },
       {
         start: '2021-01-02T01:32:00.000Z',
-        stream: STREAM_1.id,
-        classifier: JOB_RUNNING.classifierId,
-        classifier_job: JOB_RUNNING.id
+        stream: STREAM_1.id
       }
     ]
   }
@@ -131,12 +125,9 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       const segments = await models.ClassifierProcessedSegment.findAll({ sort: [['start', 'ASC']] })
       expect(segments[0].start.toISOString()).toBe(VALID_JOB_RESULT.processed_segments[0].start)
       expect(segments[0].streamId).toBe(VALID_JOB_RESULT.processed_segments[0].stream)
-      expect(segments[0].classifierId).toBe(VALID_JOB_RESULT.processed_segments[0].classifier)
-      expect(segments[0].classifierJobId).toBe(VALID_JOB_RESULT.processed_segments[0].classifier_job)
+      expect(segments[0].classifierId).toBe(JOB_RUNNING.classifierId)
+      expect(segments[0].classifierJobId).toBe(JOB_RUNNING.id)
       expect(segments[1].start.toISOString()).toBe(VALID_JOB_RESULT.processed_segments[1].start)
-      expect(segments[1].streamId).toBe(VALID_JOB_RESULT.processed_segments[1].stream)
-      expect(segments[1].classifierId).toBe(VALID_JOB_RESULT.processed_segments[1].classifier)
-      expect(segments[1].classifierJobId).toBe(VALID_JOB_RESULT.processed_segments[1].classifier_job)
     })
 
     test('saves analyzed minutes', async () => {

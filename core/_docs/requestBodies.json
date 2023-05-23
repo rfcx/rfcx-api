@@ -207,10 +207,10 @@
           "$ref": "#/components/requestBodies/ClassifierResultDetection"
         }
       },
-      "detections": {
+      "segments": {
         "type": "array",
         "items": {
-          "$ref": "#/components/requestBodies/ProcessedSegment"
+          "$ref": "#/components/requestBodies/ClassifierResultSegment"
         }
       }
     },
@@ -224,16 +224,6 @@
         "description": "Stream identifier",
         "example": "1"
       },
-      "classifier": {
-        "type": "string",
-        "description": "Classifier identifier",
-        "example": "1"
-      },
-      "classification": {
-        "type": "string",
-        "description": "Classification value",
-        "example": "obscurus"
-      },
       "start": {
         "type": "date",
         "example": "2020-05-12T07:30:21.500Z"
@@ -242,6 +232,11 @@
         "type": "date",
         "example": "2020-05-12T07:30:22.500Z"
       },
+      "classification": {
+        "type": "string",
+        "description": "Classification value",
+        "example": "obscurus"
+      },
       "confidence": {
         "type": "float",
         "example": 0.975123
@@ -249,14 +244,13 @@
     },
     "required": [
       "stream_id",
-      "classifier",
-      "classification",
       "start",
       "end",
+      "classification",
       "confidence"
     ]
   },
-  "ProcessedSegment": {
+  "ClassifierResultSegment": {
     "type": "object",
     "properties": {
       "stream": {
@@ -267,16 +261,6 @@
       "start": {
         "type": "date",
         "example": "2020-05-12T07:30:21.500Z"
-      },
-      "classifier": {
-        "type": "number",
-        "description": "Classifier identifier",
-        "example": 12
-      },
-      "classifier_job": {
-        "type": "number",
-        "description": "Classifier job identifier",
-        "example": 1125
       }
     }
   },

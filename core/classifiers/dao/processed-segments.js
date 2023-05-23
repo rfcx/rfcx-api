@@ -1,7 +1,7 @@
 const { ClassifierProcessedSegment } = require('../../_models')
 
-async function batchCreate (segments, opts = {}) {
-  const transaction = opts.transaction
+async function create (segments, options = {}) {
+  const transaction = options.transaction
   await ClassifierProcessedSegment.bulkCreate(segments, {
     transaction,
     ignoreDuplicates: true
@@ -9,5 +9,5 @@ async function batchCreate (segments, opts = {}) {
 }
 
 module.exports = {
-  batchCreate
+  create
 }
