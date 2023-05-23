@@ -1,6 +1,6 @@
 const models = require('../../_models')
 const { parse: parseDetections } = require('./mqtt-detections-parse')
-const detectionsService = require('../../../core/detections/dao/create')
+const detectionsService = require('../../../core/detections/bl')
 
 const compactKeysSoftwareRole = { g: 'guardian', a: 'admin', c: 'classify', u: 'updater' }
 const compactKeysStorage = { i: 'internal', e: 'external' }

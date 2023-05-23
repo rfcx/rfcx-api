@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
-const detectionsService = require('../../detections/dao/create')
+const detectionsService = require('../../detections/bl')
 const Converter = require('../../../common/converter')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { hasPermission, READ, STREAM } = require('../../roles/dao')

@@ -1,4 +1,5 @@
-const classifierService = require('../../classifiers/dao')
+const classifierDao = require('../../classifiers/dao')
+const detectionDao = require('../dao/create')
 const { Op } = require('sequelize')
 
 async function addClassifiers (rawDetections, options = {}) {
@@ -8,9 +9,9 @@ async function addClassifiers (rawDetections, options = {}) {
 
   // Gather the potential classifiers
   const queryOptions = { fields: ['id', 'external_id', 'name', 'version', 'outputs'], transaction }
-  const classifiersUsingIds = (await classifierService.query({ ids: unknownIds.filter(id => !isNaN(id)) }, queryOptions)).results
-  const classifiersUsingExternalIds = (await classifierService.query({ externalIds: unknownIds }, queryOptions)).results
-  const classifiersUsingNameAndVersions = (await classifierService.query({ [Op.or]: unknownIds.map(x => x.toString().split('-v')).filter(x => x.length === 2).map(([name, version]) => ({ name, version })) }, queryOptions)).results
+  const classifiersUsingIds = (await classifierDao.query({ ids: unknownIds.filter(id => !isNaN(id)) }, queryOptions)).results
+  const classifiersUsingExternalIds = (await classifierDao.query({ externalIds: unknownIds }, queryOptions)).results
+  const classifiersUsingNameAndVersions = (await classifierDao.query({ [Op.or]: unknownIds.map(x => x.toString().split('-v')).filter(x => x.length === 2).map(([name, version]) => ({ name, version })) }, queryOptions)).results
 
   // Create a mapping from unknown id to classifier
   const classifierMapping = {}
@@ -66,4 +67,17 @@ async function build (rawDetections, options = {}) {
   return { detections, classifierIds }
 }
 
-module.exports = build
+async function create (rawDetections, options = {}) {
+  // Find dependent ids, filter rows
+  const { detections, classifierIds } = await build(rawDetections, options)
+
+  // Save the detections
+  await detectionDao.create(detections, options)
+
+  // Mark classifiers as updated
+  for (const id of classifierIds) {
+    await classifierDao.update(id, null, { last_executed_at: new Date() }, options)
+  }
+}
+
+module.exports = { create }
