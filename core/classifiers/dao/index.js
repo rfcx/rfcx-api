@@ -115,6 +115,7 @@ async function query (filters, options = {}) {
     include,
     limit: options.limit,
     offset: options.offset,
+    order: ['id'],
     transaction
   })
 }
