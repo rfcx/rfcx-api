@@ -27,6 +27,14 @@ const Converter = require('../../common/converter')
  *         description: Review status ('rejected', 'uncertain', 'confirmed')
  *         in: query
  *         type: string
+ *       - name: classification
+ *         description: Classification value
+ *         in: query
+ *         type: string
+ *       - name: classifier_id
+ *         description: Classifier id
+ *         in: query
+ *         type: number
  *     responses:
  *       201:
  *         description: Created
@@ -46,16 +54,16 @@ const Converter = require('../../common/converter')
  *         description: Invalid query parameters
  */
 router.post('/:streamId/detections/:start/review', (req, res) => {
+  const userId = req.rfcx.auth_token_info.id
   const converter = new Converter(req.body, {}, true)
   converter.convert('status').toString().isEqualToAny(['rejected', 'uncertain', 'confirmed'])
+  converter.convert('classification').toString()
+  converter.convert('classifier_id').toInt()
   return converter.validate()
     .then(async (params) => {
-      return await createOrUpdate({
-        userId: req.rfcx.auth_token_info.id,
-        streamId: req.params.streamId,
-        start: req.params.start,
-        status: params.status
-      })
+      const { streamId, start } = req.params
+      const { status, classification, classifierId } = params
+      return await createOrUpdate({ userId, streamId, start, status, classification, classifierId })
     })
     .then(({ review, created }) => res.location(`/detections/reviews/${review.id}`).sendStatus(created ? 201 : 204))
     .catch(httpErrorHandler(req, res, 'Failed reviewing the detection'))
