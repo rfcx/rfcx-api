@@ -60,6 +60,7 @@ describe('POST /internal/classifier-jobs/dequeue', () => {
     expect(response.body[0].id).toBe(job.id)
     const updatedJob = await models.ClassifierJob.findByPk(job.id)
     expect(updatedJob.status).toBe(RUNNING)
+    expect(updatedJob.startedAt).toBeTruthy()
     expect(response.body[0].status).toBe(RUNNING)
   })
 
