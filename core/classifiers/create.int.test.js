@@ -39,16 +39,6 @@ describe('POST /classifiers/:id', () => {
   }
 
   describe('valid usage', () => {
-    test('normal user is forbidden', async () => {
-      const regularUserApp = expressApp({ is_super: false })
-      regularUserApp.use('/', routes)
-      console.warn = jest.fn()
-
-      const response = await request(regularUserApp).post('/').send(requestBody)
-
-      expect(response.statusCode).toBe(403)
-      expect(console.warn).toHaveBeenCalled()
-    })
     test('super user can create classifier', async () => {
       // Act
       const response = await request(superUserApp).post('/').send(requestBody)
@@ -66,6 +56,18 @@ describe('POST /classifiers/:id', () => {
       expect(classifierOutputs[0].classifierId).toBe(classifiers[0].id)
       expect(classifierOutputs[0].classificationId).toBe(CLASSIFICATION_1.id)
       expect(classifierOutputs[0].outputClassName).toBe(CLASSIFICATION_1.value)
+    })
+
+    test('normal user can create classifier', async () => {
+      // Arrange
+      const regularUserApp = expressApp({ is_super: false })
+      regularUserApp.use('/', routes)
+
+      // Act
+      const response = await request(regularUserApp).post('/').send(requestBody)
+
+      // Assert
+      expect(response.statusCode).toBe(201)
     })
 
     test('map correct classification value', async () => {
