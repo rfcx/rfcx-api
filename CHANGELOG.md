@@ -2,22 +2,22 @@
 ## 1.3.0 (2023-XX-XX)
 
 ### Features
-* **core**: add `id`, `review_status` and `classifier_job_id` to `detections` table
-* **core**: create new `detection_reviews` table
-* **core**: update detection review logic
-* **core**: add `/streams/{streamId}/detections/{start}/review` endpoint
-* **core**: add `review_statuses` to `/detections` endpoint
-* **core**: create `classifier_processed_segments` table
-* **core**: add `/internal/prediction/streams/segments/processed` endpoint
-* **core**: add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
-* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:guid`
-* **noncore**: remove update `last_deployed` from previous logic
+* **core**: Add `id`, `review_status` and `classifier_job_id` to `detections` table
+* **core**: Create new `detection_reviews` table
+* **core**: Update detection review logic
+* **core**: Add `/streams/{streamId}/detections/{start}/review` endpoint
+* **core**: Add `review_statuses` to `/detections` endpoint
+* **core**: Create `classifier_processed_segments` table
+* **core**: Add `/internal/prediction/streams/segments/processed` endpoint
+* **core**: Add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+* **noncore**: Receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: Remove update `last_deployed` from previous logic
 
 ## 1.2.3 (2023-04-15)
 
 ### Features
-* **noncore**: receive `last_deployed` in `PATCH /v2/guardian/:guid`
-* **noncore**: remove update `last_deployed` from previous logic
+* **noncore**: Receive `last_deployed` in `PATCH /v2/guardian/:guid`
+* **noncore**: Remove update `last_deployed` from previous logic
 
 ## 1.2.2 (2022-09-06)
 

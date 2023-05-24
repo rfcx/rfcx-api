@@ -1,7 +1,5 @@
-// const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const { EmptyResultError } = require('../../../common/error-handling/errors')
 const { Detection } = require('../../_models')
-// const { STREAM, hasPermission, READ } = require('../../roles/dao')
 const { availableIncludes } = require('./index')
 const moment = require('moment-timezone')
 
@@ -11,7 +9,7 @@ async function get (filters, options = {}) {
 
   const detection = await Detection.findOne({
     where: {
-      stream_id: filters.streamId,
+      streamId: filters.streamId,
       start: moment.utc(filters.start).valueOf()
     },
     attributes,

@@ -1,6 +1,6 @@
 const { EmptyResultError } = require('../../../../common/error-handling/errors')
 const { ClassifierJob, sequelize } = require('../../../_models')
-const detectionsDao = require('../../../detections/dao/create')
+const detectionsBl = require('../../../detections/bl')
 const segmentsDao = require('../../../classifiers/dao/processed-segments')
 
 async function createResults (jobId, { analyzedMinutes, detections, segments }) {
@@ -12,10 +12,10 @@ async function createResults (jobId, { analyzedMinutes, detections, segments }) 
     }
 
     // Save detections
-    await detectionsDao.create(detections.map(d => ({ ...d, classifierJobId: jobId })), { transaction })
+    await detectionsBl.create(detections.map(d => ({ ...d, classifier: job.classifierId, classifierJobId: jobId })), { transaction })
 
     // Save processed segments
-    await segmentsDao.batchCreate(segments, { transaction })
+    await segmentsDao.create(segments.map(s => ({ ...s, classifierId: job.classifierId, classifierJobId: jobId })), { transaction })
 
     // Update job minutes completed
     await sequelize.query(

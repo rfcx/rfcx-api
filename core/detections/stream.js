@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const { query } = require('./dao')
-const { create } = require('./dao/create')
+const { create } = require('./bl')
 const streamDao = require('../streams/dao')
 const { hasPermission, READ, UPDATE, STREAM } = require('../roles/dao')
 const Converter = require('../../common/converter')

@@ -11,18 +11,18 @@ const { Detection } = require('../../_models')
  * @param {Transaction} options.transaction Transaction for sql chain
  * @throws EmptyResultError when detection not found
  */
-async function update (streamId, start, data, options = {}) {
-  const upd = {}
-  const allowedUpdates = ['review_status']
+async function update (streamId, start, detection, options = {}) {
+  const allowedDetection = {}
+  const allowedUpdates = ['reviewStatus']
   allowedUpdates.forEach(k => {
-    if (data[k] !== undefined) {
-      upd[k] = data[k]
+    if (detection[k] !== undefined) {
+      allowedDetection[k] = detection[k]
     }
   })
   const transaction = options.transaction || null
-  return await Detection.update(upd, {
+  return await Detection.update(allowedDetection, {
     where: {
-      stream_id: streamId,
+      streamId,
       start: moment.utc(start).valueOf()
     },
     transaction

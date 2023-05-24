@@ -19,7 +19,7 @@ async function batchCreate (data, creatableBy) {
       classifierJobId: d.classifierJob
     }
   })
-  return await dao.batchCreate(segments)
+  return await dao.create(segments)
 }
 
 module.exports = {

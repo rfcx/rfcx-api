@@ -2,7 +2,7 @@ const Converter = require('../../../common/converter')
 const ArrayConverter = require('../../../common/converter/array')
 const { ForbiddenError } = require('../../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
-const { createResults } = require('./dao/create-results')
+const { createResults } = require('./bl/create-results')
 const { asyncEvery } = require('../../../common/helpers')
 const { hasPermission, STREAM, READ } = require('../../roles/dao')
 
@@ -49,29 +49,20 @@ module.exports = async (req, res) => {
     const paramsAnalyzedMinutes = await converter1.validate()
 
     const converter2 = new ArrayConverter(req.body.detections)
-    converter2.convert('stream_id').toString()
-    converter2.convert('classifier').toString()
-    converter2.convert('classification').toString()
+    converter2.convert('stream').toString()
     converter2.convert('start').toMomentUtc()
     converter2.convert('end').toMomentUtc()
+    converter2.convert('classification').toString()
     converter2.convert('confidence').toFloat()
     const paramsDetections = await converter2.validate()
-      .then(detections => detections.map(d => ({ ...d, streamId: d.stream_id })))
+      .then(detections => detections.map(({ stream, ...d }) => ({ ...d, streamId: stream })))
 
     const converter3 = new ArrayConverter(req.body.processed_segments)
     converter3.convert('stream').toString()
     converter3.convert('start').toMomentUtc()
-    converter3.convert('classifier').toInt()
-    converter3.convert('classifier_job').optional().toInt()
     const paramsSegments = await converter3.validate()
-      .then(segments => segments.map((d) => {
-        return {
-          streamId: d.stream,
-          start: d.start.toISOString(),
-          classifierId: d.classifier,
-          classifierJobId: d.classifier_job
-        }
-      }))
+      .then(segments => segments.map(({ stream, ...s }) => ({ ...s, streamId: stream })))
+
     if (creatableBy) {
       // check that user has access to all specified streams
       const detectionsStreams = paramsDetections.map(d => d.streamId)
