@@ -76,12 +76,12 @@ router.get('/:id/detections', function (req, res) {
   converter.convert('offset').optional().toInt()
 
   converter.validate()
-    .then(async (filters) => {
+    .then(async (params) => {
       // TODO add readableBy to dao.query to avoid permission checks in route handler
       if (!user.has_system_role && !user.stream_token && !await hasPermission(READ, user, streamId, STREAM)) {
         throw new ForbiddenError('You do not have permission to read this stream')
       }
-      const { offset, limit, descending, fields } = filters
+      const { offset, limit, descending, fields, ...filters } = params
       const options = {
         offset,
         limit,
