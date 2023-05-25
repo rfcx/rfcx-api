@@ -1,33 +1,38 @@
 const { sequelize } = require('../../_models')
 const { hasPermission, UPDATE, STREAM } = require('../../roles/dao')
-const { ForbiddenError } = require('../../../common/error-handling/errors')
-const { get } = require('../dao/get')
+const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
+const { query } = require('../dao/index')
 const { update } = require('../dao/update')
-const classificationDao = require('../../classifications/dao')
 const reviewsDao = require('../dao/review')
 
 async function createOrUpdate (options) {
-  let { streamId, start, status, userId, classification, classifierId } = options
+  const { streamId, start, userId, classification, classifierId } = options
 
   if (userId && !(await hasPermission(UPDATE, userId, streamId, STREAM))) {
     throw new ForbiddenError('You do not have permission to review detections in this stream.')
   }
-
-  const classificationId = await classificationDao.getId(classification)
-  const detection = await get({ streamId, start, classificationId, classifierId }, { fields: ['id'] })
-  const detectionId = detection.toJSON().id // Detection model does not have id column, so we have to make toJSON to actually obtain the value
-
-  status = reviewsDao.REVIEW_STATUS_MAPPING[status]
-  let review = (await reviewsDao.query({ detectionIds: [detectionId], userId }, { fields: ['id'] }))[0]
-  const exists = !!review
+  const detections = await query({
+    start,
+    end: start,
+    streams: [streamId],
+    classifications: [classification],
+    classifiers: [classifierId]
+  }, { fields: ['id'] })
+  if (!detections.length) {
+    throw new EmptyResultError('Detection with given parameters not found')
+  }
+  const status = reviewsDao.REVIEW_STATUS_MAPPING[options.status]
   return sequelize.transaction(async (transaction) => {
-    if (exists) {
-      await reviewsDao.update(review.id, { status }, { transaction })
-    } else {
-      review = await reviewsDao.create({ detectionId, userId, status }, { transaction })
+    for (const detection of detections) {
+      let review = (await reviewsDao.query({ detectionIds: [detection.id], userId }, { fields: ['id'], transaction }))[0]
+      const exists = !!review
+      if (exists) {
+        await reviewsDao.update(review.id, { status }, { transaction })
+      } else {
+        review = await reviewsDao.create({ detectionId: detection.id, userId, status }, { transaction })
+      }
+      await refreshDetectionReviewStatus(detection.id, streamId, start, transaction)
     }
-    await refreshDetectionReviewStatus(detectionId, streamId, start, transaction)
-    return { review, created: !exists }
   })
 }
 

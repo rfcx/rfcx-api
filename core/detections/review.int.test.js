@@ -186,8 +186,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
-      expect(response.statusCode).toBe(201)
-      expect(response.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response.statusCode).toBe(200)
       const review = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review.status).toBe(1)
       expect(review.userId).toBe(seedValues.primaryUserId)
@@ -212,8 +211,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
-      expect(response.statusCode).toBe(201)
-      expect(response.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response.statusCode).toBe(200)
       const review = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review.status).toBe(-1)
       expect(review.userId).toBe(seedValues.primaryUserId)
@@ -239,8 +237,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
-      expect(response.statusCode).toBe(201)
-      expect(response.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response.statusCode).toBe(200)
       const review = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review.status).toBe(0)
       expect(review.userId).toBe(seedValues.primaryUserId)
@@ -264,8 +261,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
-      expect(response1.statusCode).toBe(201)
-      expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response1.statusCode).toBe(200)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.status).toBe(-1)
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
@@ -277,8 +273,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
-      expect(response2.statusCode).toBe(204)
-      expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response2.statusCode).toBe(200)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.id).toBe(review2.id)
       expect(review2.status).toBe(0)
@@ -303,8 +298,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
-      expect(response1.statusCode).toBe(201)
-      expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response1.statusCode).toBe(200)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.status).toBe(-1)
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
@@ -316,8 +310,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
-      expect(response2.statusCode).toBe(204)
-      expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response2.statusCode).toBe(200)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.id).toBe(review2.id)
       expect(review2.status).toBe(1)
@@ -343,8 +336,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
-      expect(response1.statusCode).toBe(201)
-      expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response1.statusCode).toBe(200)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.status).toBe(0)
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
@@ -356,8 +348,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
-      expect(response2.statusCode).toBe(204)
-      expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response2.statusCode).toBe(200)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.id).toBe(review2.id)
       expect(review2.status).toBe(-1)
@@ -383,8 +374,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
-      expect(response1.statusCode).toBe(201)
-      expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response1.statusCode).toBe(200)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.status).toBe(0)
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
@@ -396,8 +386,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
-      expect(response2.statusCode).toBe(204)
-      expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response2.statusCode).toBe(200)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.id).toBe(review2.id)
       expect(review2.status).toBe(1)
@@ -423,8 +412,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
-      expect(response1.statusCode).toBe(201)
-      expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response1.statusCode).toBe(200)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.status).toBe(1)
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
@@ -436,8 +424,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
-      expect(response2.statusCode).toBe(204)
-      expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response2.statusCode).toBe(200)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.id).toBe(review2.id)
       expect(review2.status).toBe(-1)
@@ -463,8 +450,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
-      expect(response1.statusCode).toBe(201)
-      expect(response1.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response1.statusCode).toBe(200)
       const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.status).toBe(1)
       const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
@@ -476,13 +462,43 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifier_id: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
-      expect(response2.statusCode).toBe(204)
-      expect(response2.header.location).toMatch(/^\/detections\/reviews\/[0-9]+$/)
+      expect(response2.statusCode).toBe(200)
       const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection.toJSON().id } })
       expect(review1.id).toBe(review2.id)
       expect(review2.status).toBe(0)
       const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection.toJSON().id } })
       expect(detectionUpdated2.reviewStatus).toBe(0)
+    })
+
+    test('updates both duplicate detections', async () => {
+      const { stream, classification, classifier } = await commonSetup()
+      const data = {
+        streamId: stream.id,
+        classificationId: classification.id,
+        classifierId: classifier.id,
+        start: '2022-01-01T00:00:00.000Z',
+        end: '2022-01-01T00:00:01.000Z',
+        confidence: 0.99
+      }
+      const detection1 = await models.Detection.create(data)
+      const detection2 = await models.Detection.create(data)
+
+      const body = {
+        status: 'confirmed',
+        classification: classification.value,
+        classifier_id: classifier.id
+      }
+      const response1 = await request(app).post(`/${stream.id}/detections/${data.start}/review`).send(body)
+      expect(response1.statusCode).toBe(200)
+
+      const review1 = await models.DetectionReview.findOne({ where: { detectionId: detection1.toJSON().id } })
+      expect(review1.status).toBe(1)
+      const detectionUpdated1 = await models.Detection.findOne({ where: { id: detection1.toJSON().id } })
+      expect(detectionUpdated1.reviewStatus).toBe(1)
+      const review2 = await models.DetectionReview.findOne({ where: { detectionId: detection2.toJSON().id } })
+      expect(review2.status).toBe(1)
+      const detectionUpdated2 = await models.Detection.findOne({ where: { id: detection2.toJSON().id } })
+      expect(detectionUpdated2.reviewStatus).toBe(1)
     })
 
     describe('detection reviewStatus update with multiple reviews', () => {
