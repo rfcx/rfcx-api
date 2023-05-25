@@ -1,4 +1,4 @@
-const { ValidationError, ForbiddenError } = require('../../common/error-handling/errors')
+const { ValidationError } = require('../../common/error-handling/errors')
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
 const Converter = require('../../common/converter')
@@ -40,10 +40,6 @@ const { upload } = require('./dao/upload')
  */
 module.exports = async (req, res) => {
   try {
-    if (!req.rfcx.auth_token_info.has_system_role && !req.rfcx.auth_token_info.is_super) {
-      throw new ForbiddenError()
-    }
-
     const converter = new Converter(req.body, {}, true)
     converter.convert('name').toString()
     converter.convert('version').toInt()
