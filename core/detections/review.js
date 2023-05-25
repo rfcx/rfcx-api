@@ -31,7 +31,7 @@ const Converter = require('../../common/converter')
  *         description: Classification value
  *         in: query
  *         type: string
- *       - name: classifier_id
+ *       - name: classifier
  *         description: Classifier id
  *         in: query
  *         type: number
@@ -58,12 +58,12 @@ router.post('/:streamId/detections/:start/review', (req, res) => {
   const converter = new Converter(req.body, {}, true)
   converter.convert('status').toString().isEqualToAny(['rejected', 'uncertain', 'confirmed'])
   converter.convert('classification').toString()
-  converter.convert('classifier_id').toInt()
+  converter.convert('classifier').toInt()
   return converter.validate()
     .then(async (params) => {
       const { streamId, start } = req.params
-      const { status, classification, classifierId } = params
-      return await createOrUpdate({ userId, streamId, start, status, classification, classifierId })
+      const { status, classification, classifier } = params
+      return await createOrUpdate({ userId, streamId, start, status, classification, classifier })
     })
     .then(() => res.send(200))
     .catch(httpErrorHandler(req, res, 'Failed reviewing the detection'))

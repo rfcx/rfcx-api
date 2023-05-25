@@ -6,7 +6,7 @@ const { update } = require('../dao/update')
 const reviewsDao = require('../dao/review')
 
 async function createOrUpdate (options) {
-  const { streamId, start, userId, classification, classifierId } = options
+  const { streamId, start, userId, classification, classifier } = options
 
   if (userId && !(await hasPermission(UPDATE, userId, streamId, STREAM))) {
     throw new ForbiddenError('You do not have permission to review detections in this stream.')
@@ -16,7 +16,7 @@ async function createOrUpdate (options) {
     end: start,
     streams: [streamId],
     classifications: [classification],
-    classifiers: [classifierId]
+    classifiers: [classifier]
   }, { fields: ['id'] })
   if (!detections.length) {
     throw new EmptyResultError('Detection with given parameters not found')

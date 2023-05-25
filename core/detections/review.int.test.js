@@ -36,7 +36,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post('/str/detections/2022-01-01T00:00:00.000Z/review').send(body)
 
@@ -56,7 +56,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post(`/${stream.id}/detections/2022-02-01T00:00:00.000Z/review`).send(body)
 
@@ -78,7 +78,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'confirmed',
         classification: classification2.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -100,7 +100,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier2.id
+        classifier: classifier2.id
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -122,7 +122,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post(`/${stream2.id}/detections/${start}/review`).send(body)
 
@@ -144,7 +144,7 @@ describe('POST /:streamId/detections/:start/review', () => {
 
       const body = {
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -182,7 +182,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -207,7 +207,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'rejected',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -233,7 +233,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'uncertain',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -258,7 +258,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body1 = {
         status: 'rejected',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
       expect(response1.statusCode).toBe(200)
@@ -270,7 +270,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body2 = {
         status: 'uncertain',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
       expect(response2.statusCode).toBe(200)
@@ -295,7 +295,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body1 = {
         status: 'rejected',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
       expect(response1.statusCode).toBe(200)
@@ -307,7 +307,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body2 = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
       expect(response2.statusCode).toBe(200)
@@ -333,7 +333,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body1 = {
         status: 'uncertain',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
       expect(response1.statusCode).toBe(200)
@@ -345,7 +345,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body2 = {
         status: 'rejected',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
       expect(response2.statusCode).toBe(200)
@@ -371,7 +371,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body1 = {
         status: 'uncertain',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
       expect(response1.statusCode).toBe(200)
@@ -383,7 +383,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body2 = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
       expect(response2.statusCode).toBe(200)
@@ -409,7 +409,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body1 = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
       expect(response1.statusCode).toBe(200)
@@ -421,7 +421,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body2 = {
         status: 'rejected',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
       expect(response2.statusCode).toBe(200)
@@ -447,7 +447,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body1 = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body1)
       expect(response1.statusCode).toBe(200)
@@ -459,7 +459,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body2 = {
         status: 'uncertain',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response2 = await request(app).post(`/${stream.id}/detections/${start}/review`).send(body2)
       expect(response2.statusCode).toBe(200)
@@ -486,7 +486,7 @@ describe('POST /:streamId/detections/:start/review', () => {
       const body = {
         status: 'confirmed',
         classification: classification.value,
-        classifier_id: classifier.id
+        classifier: classifier.id
       }
       const response1 = await request(app).post(`/${stream.id}/detections/${data.start}/review`).send(body)
       expect(response1.statusCode).toBe(200)
@@ -523,7 +523,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -552,7 +552,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -581,7 +581,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -610,7 +610,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -639,7 +639,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -668,7 +668,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -697,7 +697,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -726,7 +726,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -755,7 +755,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -790,7 +790,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -824,7 +824,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -858,7 +858,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -892,7 +892,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -926,7 +926,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -960,7 +960,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -994,7 +994,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1028,7 +1028,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1062,7 +1062,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1102,7 +1102,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1141,7 +1141,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1180,7 +1180,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1215,7 +1215,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1249,7 +1249,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1283,7 +1283,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1317,7 +1317,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1351,7 +1351,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1385,7 +1385,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1425,7 +1425,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1464,7 +1464,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1503,7 +1503,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1542,7 +1542,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1581,7 +1581,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1620,7 +1620,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1659,7 +1659,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1698,7 +1698,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'confirmed',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1737,7 +1737,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1776,7 +1776,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1815,7 +1815,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'rejected',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
@@ -1854,7 +1854,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         const body = {
           status: 'uncertain',
           classification: classification.value,
-          classifier_id: classifier.id
+          classifier: classifier.id
         }
         await request(app).post(`/${stream.id}/detections/${start}/review`).send(body)
 
