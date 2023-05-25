@@ -14,7 +14,7 @@ data:
   AUTH0_DOMAIN: "rfcx.eu.auth0.com"
   AUTH0_EXTENSION_URL: "rfcx.eu.webtask.io/adf6e2f2b84784b57522e3b19dfc9201/api"
   AWS_ACCOUNT_ID: "887044485231"
-  AWS_REGION_ID: "us-east-1"  #"eu-west-1"
+  AWS_REGION_ID: "eu-west-1"
   INGEST_BUCKET: "rfcx-streams-staging"
   MESSAGE_QUEUE_ENABLED: 'true'
   MESSAGE_QUEUE_PREFIX: 'staging'
