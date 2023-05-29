@@ -67,24 +67,29 @@ router.get('/:id/detections', function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const convertedParams = {}
-  const params = new Converter(req.query, convertedParams)
-  params.convert('start').toMomentUtc()
-  params.convert('end').toMomentUtc()
-  params.convert('classifications').optional().toArray()
-  params.convert('min_confidence').optional().toFloat()
-  params.convert('limit').optional().toInt()
-  params.convert('offset').optional().toInt()
+  const converter = new Converter(req.query, convertedParams, true)
+  converter.convert('start').toMomentUtc()
+  converter.convert('end').toMomentUtc()
+  converter.convert('classifications').optional().toArray()
+  converter.convert('min_confidence').optional().toFloat()
+  converter.convert('limit').optional().toInt()
+  converter.convert('offset').optional().toInt()
 
-  params.validate()
-    .then(async () => {
+  converter.validate()
+    .then(async (params) => {
       // TODO add readableBy to dao.query to avoid permission checks in route handler
       if (!user.has_system_role && !user.stream_token && !await hasPermission(READ, user, streamId, STREAM)) {
         throw new ForbiddenError('You do not have permission to read this stream')
       }
-
-      const { start, end, classifications, limit, offset } = convertedParams
-      const minConfidence = convertedParams.min_confidence
-      const result = await query(start, end, streamId, classifications, minConfidence, limit, offset, user)
+      const { offset, limit, descending, fields, ...filters } = params
+      const options = {
+        offset,
+        limit,
+        descending,
+        fields,
+        user
+      }
+      const result = await query(filters, options)
       return res.json(result)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting detections'))

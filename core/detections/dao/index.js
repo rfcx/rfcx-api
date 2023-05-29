@@ -1,4 +1,3 @@
-const moment = require('moment')
 const { Sequelize, Stream, Classification, Classifier, DetectionReview, User, Detection } = require('../../_models')
 const { propertyToFloat } = require('../../_utils/formatters/object-properties')
 const { timeAggregatedQueryAttributes } = require('../../_utils/db/time-aggregated-query')
@@ -30,10 +29,13 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   const include = fields && fields.length > 0 ? availableIncludes.filter(i => fields.includes(i.as)) : []
 
   const order = [['start', descending ? 'DESC' : 'ASC']]
-  const where = {
-    start: {
-      [Sequelize.Op.gte]: moment.utc(start).valueOf(),
-      [Sequelize.Op.lt]: moment.utc(end).valueOf()
+  const where = {}
+  if (start === end) {
+    where.start = { [Sequelize.Op.eq]: start }
+  } else {
+    where.start = {
+      [Sequelize.Op.gte]: start,
+      [Sequelize.Op.lt]: end
     }
   }
   if (projects) {
@@ -57,7 +59,7 @@ async function defaultQueryOptions (filters = {}, options = {}) {
     }
   }
   if (classifiers) {
-    where.classifierd = { [Sequelize.Op.or]: classifiers }
+    where.classifier_id = { [Sequelize.Op.or]: classifiers }
   }
   if (classifierJobs) {
     where.classifier_job_id = { [Sequelize.Op.in]: classifierJobs }
