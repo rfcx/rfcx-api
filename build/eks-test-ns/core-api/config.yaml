@@ -13,7 +13,7 @@ data:
   AUTH0_DEFAULT_DB_CONNECTION: "Username-Password-Authentication"
   AUTH0_DOMAIN: "rfcx.eu.auth0.com"
   AUTH0_EXTENSION_URL: "rfcx.eu.webtask.io/adf6e2f2b84784b57522e3b19dfc9201/api"
-  AWS_ACCOUNT_ID: "887044485231"
+  AWS_ACCOUNT_ID: "167800075704"
   AWS_REGION_ID: "eu-west-1"
   INGEST_BUCKET: "rfcx-streams-staging"
   MESSAGE_QUEUE_ENABLED: 'true'
