@@ -23,7 +23,7 @@ data:
   NODE_LOG_LEVEL: "debug"
   CORE_DB_NAME: "core"
   NONCORE_DB_NAME: "noncore"
-  POSTGRES_HOSTNAME: "internal-timescale-staging-421882120.eu-west-1.elb.amazonaws.com"
+  POSTGRES_HOSTNAME: "3.249.239.38"
   POSTGRES_PORT: "5432"
   POSTGRES_SSL_ENABLED: "true"
   REST_PROTOCOL: "https"
