@@ -83,9 +83,9 @@ router.get('/streams/:attrs', function (req, res) {
     }
     segments.forEach(segment => {
       /*
-       availability 0 is unavailable
-       availability 1 is available
-       availability 2 is cold storage
+       availability 0 is  unavailable
+       availability 1 is  available
+       availability 2 is  cold storage
        */
       if (segment.availability !== 1) {
         throw new EmptyResultError('Unavailable')
