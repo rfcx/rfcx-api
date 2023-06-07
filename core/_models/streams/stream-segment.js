@@ -41,7 +41,8 @@ module.exports = function (sequelize, DataTypes) {
     },
     availability: {
       type: DataTypes.SMALLINT,
-      allowNull: false
+      allowNull: false,
+      defaultValue: 1
     }
   }, {
     timestamps: true

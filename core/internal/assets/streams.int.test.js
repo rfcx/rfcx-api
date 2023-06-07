@@ -79,6 +79,7 @@ describe('GET /internal/assets/streams/:attributes', () => {
     const response = await request(app).get(`/streams/${stream.id}_t20210726T101200Z.20210726T101230Z_fwav.wav`)
 
     expect(response.statusCode).toBe(404)
+    expect(response.body.message).toBe('Unavailable')
   })
 
   test('some available and some unavailable segments', async () => {
@@ -87,5 +88,6 @@ describe('GET /internal/assets/streams/:attributes', () => {
     const response = await request(app).get(`/streams/${stream.id}_t20210726T101000Z.20210726T101230Z_fwav.wav`)
 
     expect(response.statusCode).toBe(404)
+    expect(response.body.message).toBe('Unavailable')
   })
 })
