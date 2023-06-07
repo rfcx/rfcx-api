@@ -40,7 +40,7 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     availability: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.SMALLINT,
       allowNull: false
     }
   }, {

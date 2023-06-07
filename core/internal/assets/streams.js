@@ -88,7 +88,7 @@ router.get('/streams/:attrs', function (req, res) {
        availability 2 is cold storage
        */
       if (segment.availability !== 1) {
-        throw new EmptyResultError('Some audio segments are not available for selected time range')
+        throw new EmptyResultError('Unavailable')
       }
     })
     segments = streamSegmentDao.removeDuplicates(segments)
