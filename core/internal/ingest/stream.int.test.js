@@ -91,6 +91,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     expect(streamSegments[0].stream_source_file_id).toBe(streamSourceFiles[0].id)
     expect(response.body.stream_segments.length).toBe(1)
     expect(response.body.stream_segments[0].id).toBeDefined()
+    expect(response.body.stream_segments[0].start).toBe(testPayload.stream_segments[0].start)
   })
 
   test('one stream_source_file and two stream_segments are created', async () => {
@@ -112,6 +113,8 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     expect(streamSegments[1].file_extension_id).toBe(fileExtensionId)
     expect(streamSegments[1].stream_source_file_id).toBe(streamSourceFiles[0].id)
     expect(response.body.stream_segments.length).toBe(2)
+    expect(response.body.stream_segments[0].start).toBe(testPayload.stream_segments[0].start)
+    expect(response.body.stream_segments[1].start).toBe(testPayload.stream_segments[1].start)
   })
 
   test('one stream_source_file and ten stream_segments are created', async () => {
@@ -584,6 +587,9 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
       expect(response.body.stream_segments[0].id).toBe(segment1.id)
       expect(response.body.stream_segments[1].id).toBe(segment2.id)
       expect(response.body.stream_segments[2].id).toBe(segment3.id)
+      expect(response.body.stream_segments[0].start).toBe(requestBody.stream_segments[0].start)
+      expect(response.body.stream_segments[1].start).toBe(requestBody.stream_segments[1].start)
+      expect(response.body.stream_segments[2].start).toBe(requestBody.stream_segments[2].start)
     })
     test('returns valudation error for 1 available segment id', async () => {
       await commonSetup()
