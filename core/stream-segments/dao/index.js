@@ -165,6 +165,25 @@ function create (segment, options = {}) {
 }
 
 /**
+ * Find or create stream segment
+ * @param {*} where Stream segment attributes to use for search
+ * @param {*} defaults Stream segment attributes to use for creation
+ * @param {*} options
+ * @param {Transaction} options.transaction Perform within given transaction
+ */
+function findOrCreate (where, defaults, options = {}) {
+  const transaction = options.transaction
+  return StreamSegment.findOrCreate({ where, defaults, transaction })
+    .spread((segment, created) => {
+      return { segment, created }
+    })
+    .catch((e) => {
+      console.error('Stream segment service -> findOrCreate -> error', e)
+      throw new ValidationError('Cannot create stream segment with provided data')
+    })
+}
+
+/**
  * Bulk create stream segment
  * @param {*} segments Array of stream segment attributes
  * @param {*} options
@@ -177,6 +196,21 @@ function bulkCreate (segments, options = {}) {
       console.error('Stream segment service -> bulkCreate -> error', e)
       throw new ValidationError('Cannot bulkCreate stream segment with provided data')
     })
+}
+
+/**
+ * Update a stream segment
+ *
+ * @param {string} streamId
+ * @param {string|number} start
+ * @param {*} options Additional get options
+ * @param {Transaction} options.transaction Perform in the given Sequelize transaction
+ * @returns {StreamSegment}
+ * @throws EmptyResultError when segment not found
+ */
+async function update (streamId, start, data, options = {}) {
+  const transaction = options.transaction
+  return await StreamSegment.update(data, { where: { stream_id: streamId, start: start.valueOf() }, transaction })
 }
 
 /**
@@ -281,6 +315,8 @@ module.exports = {
   query,
   bulkCreate,
   create,
+  findOrCreate,
+  update,
   notify,
   getStreamCoverage,
   getNextSegmentTimeAfterSegment,

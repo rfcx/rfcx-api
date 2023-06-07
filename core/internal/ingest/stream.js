@@ -89,6 +89,17 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             stream_source_file_id: streamSourceFile.id,
             file_extension_id: fileExtensionObjects.find(obj => obj.value === segment.file_extension).id
           }))
+          for (const s of transformedArray) {
+            const fileExtensionId = fileExtensionObjects.find(obj => obj.value === s.file_extension).id
+            const { created } = await streamSegmentDao.findOrCreate(
+              { stream_id: streamId, start: s.start },
+              { ...s, stream_source_file_id: streamSourceFile.id, file_extension_id: fileExtensionId },
+              { transaction }
+            )[0]
+            if (!created) {
+              await streamSegmentDao.update(streamId, s.start, { availability: 1 }, { transaction })
+            }
+          }
           await streamSegmentDao.bulkCreate(segments, { transaction })
 
           // Refresh stream max_sample rate, start and end if needed
