@@ -280,6 +280,10 @@
         "type": "string",
         "example": "xu82jDgX49"
       },
+      "classifier_id": {
+        "type": "number",
+        "example": 89
+      },
       "start": {
         "type": "date",
         "example": "2020-05-12T07:30:21.500Z"

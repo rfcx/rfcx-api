@@ -1,5 +1,5 @@
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const moment = require('moment')
 const { slugToUuid } = require('../_utils/formatters/uuid')
@@ -9,12 +9,12 @@ const app = expressApp({ has_system_role: true })
 router.post('/', require('./create'))
 app.use('/', router)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('POST /events', () => {

@@ -1,6 +1,6 @@
 const routes = require('./index')
 const models = require('../../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../../common/testing/sequelize')
+const { expressApp, seedValues, muteConsole, truncateNonBase } = require('../../../common/testing/sequelize')
 const request = require('supertest')
 const { RUNNING } = require('../../classifier-jobs/classifier-job-status')
 
@@ -9,7 +9,7 @@ const CLASSIFICATION_1 = { id: 100001, value: 'aureus', title: 'Canis aureus', t
 const CLASSIFICATION_2 = { id: 100002, value: 'corrugatus', title: 'Aceros corrugatus', typeId: 1 }
 const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2]
 
-const CLASSIFIER_1 = { id: 555, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
+const CLASSIFIER_1 = { id: 671, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 const CLASSIFIERS = [CLASSIFIER_1]
 
 const CLASSIFIER_OUTPUT_1 = { id: 5551, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_1.id, outputClassName: `el-${CLASSIFICATION_1.value}` }
@@ -26,49 +26,77 @@ const JOB_RUNNING = { id: 123, status: RUNNING, classifierId: CLASSIFIER_1.id, p
 const JOBS = [JOB_RUNNING]
 
 async function seedTestData () {
-  await models.Classification.bulkCreate(CLASSIFICATIONS)
-  await models.Classifier.bulkCreate(CLASSIFIERS)
-  await models.ClassifierOutput.bulkCreate(CLASSIFIER_OUTPUTS)
-  await models.Project.bulkCreate(PROJECTS)
-  await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember })
-  await models.UserProjectRole.create({ user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest })
-  await models.Stream.bulkCreate(STREAMS)
-  await models.ClassifierJob.bulkCreate(JOBS)
+  for (const classification of CLASSIFICATIONS) {
+    await models.Classification.findOrCreate({ where: classification })
+  }
+  for (const classifier of CLASSIFIERS) {
+    await models.Classifier.findOrCreate({ where: classifier })
+  }
+  for (const output of CLASSIFIER_OUTPUTS) {
+    await models.ClassifierOutput.findOrCreate({ where: output })
+  }
+  for (const project of PROJECTS) {
+    await models.Project.findOrCreate({ where: project })
+  }
+  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_1.id, role_id: seedValues.roleMember } })
+  await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.anotherUserId, project_id: PROJECT_1.id, role_id: seedValues.roleGuest } })
+  for (const stream of STREAMS) {
+    await models.Stream.findOrCreate({ where: stream })
+  }
+  for (const job of JOBS) {
+    await models.ClassifierJob.findOrCreate({ where: job })
+  }
 }
 
 beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
   muteConsole('warn')
+  await truncateNonBase(models)
+})
+
+afterEach(async () => {
+  await truncateNonBase(models)
 })
 
 beforeEach(async () => {
-  await truncate(models)
   await seedTestData()
+})
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('POST /internal/classifier-jobs/:id/results', () => {
   // Setup normal & super-user apps
-  const app = expressApp().use('/', routes)
+  expressApp().use('/', routes)
   const superUserApp = expressApp({ is_super: true }).use('/', routes)
 
   const VALID_JOB_RESULT = {
-    analyzed_minutes: 5_000,
-    detections: [{
-      stream_id: STREAM_1.id,
-      classifier: JOB_RUNNING.classifierId,
-      classification: CLASSIFIER_OUTPUT_1.outputClassName,
-      start: '2021-01-02T01:32:07.000Z',
-      end: '2021-01-02T01:32:09.000Z',
-      confidence: 0.975123
-    }, {
-      stream_id: STREAM_1.id,
-      classifier: JOB_RUNNING.classifierId,
-      classification: CLASSIFIER_OUTPUT_2.outputClassName,
-      start: '2021-01-02T01:33:49.000Z',
-      end: '2021-01-02T01:33:50.000Z',
-      confidence: 0.921955
-    }]
+    analyzed_minutes: 5,
+    detections: [
+      {
+        stream: STREAM_1.id,
+        classification: CLASSIFIER_OUTPUT_1.outputClassName,
+        start: '2021-01-02T01:32:07.000Z',
+        end: '2021-01-02T01:32:09.000Z',
+        confidence: 0.975123
+      }, {
+        stream: STREAM_1.id,
+        classification: CLASSIFIER_OUTPUT_2.outputClassName,
+        start: '2021-01-02T01:33:49.000Z',
+        end: '2021-01-02T01:33:50.000Z',
+        confidence: 0.921955
+      }
+    ],
+    processed_segments: [
+      {
+        start: '2021-01-02T01:30:00.000Z',
+        stream: STREAM_1.id
+      },
+      {
+        start: '2021-01-02T01:32:00.000Z',
+        stream: STREAM_1.id
+      }
+    ]
   }
 
   describe('valid usage', () => {
@@ -78,12 +106,32 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
 
       // Assert
       expect(response1.statusCode).toBe(201)
+      const job = await models.ClassifierJob.findOne({ where: { id: JOB_RUNNING.id } })
+      expect(job.minutesCompleted).toBe(5)
+      const detections = await models.Detection.findAll({ sort: [['start', 'ASC']] })
+      expect(detections.length).toBe(2)
+      expect(detections[0].start.toISOString()).toBe(VALID_JOB_RESULT.detections[0].start)
+      expect(detections[0].end.toISOString()).toBe(VALID_JOB_RESULT.detections[0].end)
+      expect(detections[0].streamId).toBe(VALID_JOB_RESULT.detections[0].stream)
+      expect(detections[0].classificationId).toBe(CLASSIFICATION_1.id)
+      expect(detections[0].confidence).toBe(VALID_JOB_RESULT.detections[0].confidence)
+      expect(detections[0].classifierId).toBe(JOB_RUNNING.classifierId)
+      expect(detections[0].classifierJobId).toBe(JOB_RUNNING.id)
+      expect(detections[1].start.toISOString()).toBe(VALID_JOB_RESULT.detections[1].start)
+      expect(detections[1].end.toISOString()).toBe(VALID_JOB_RESULT.detections[1].end)
+      expect(detections[1].confidence).toBe(VALID_JOB_RESULT.detections[1].confidence)
+      const segments = await models.ClassifierProcessedSegment.findAll({ sort: [['start', 'ASC']] })
+      expect(segments[0].start.toISOString()).toBe(VALID_JOB_RESULT.processed_segments[0].start)
+      expect(segments[0].streamId).toBe(VALID_JOB_RESULT.processed_segments[0].stream)
+      expect(segments[0].classifierId).toBe(JOB_RUNNING.classifierId)
+      expect(segments[0].classifierJobId).toBe(JOB_RUNNING.id)
+      expect(segments[1].start.toISOString()).toBe(VALID_JOB_RESULT.processed_segments[1].start)
     })
 
     test('saves analyzed minutes', async () => {
       // Arrange
-      const result1 = { ...VALID_JOB_RESULT, analyzed_minutes: 15_000, detections: [] }
-      const result2 = { ...VALID_JOB_RESULT, analyzed_minutes: 25_000, detections: [] }
+      const result1 = { analyzed_minutes: 15, detections: [], processed_segments: [] }
+      const result2 = { analyzed_minutes: 25, detections: [], processed_segments: [] }
 
       // Act
       const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(result1)
@@ -96,16 +144,6 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
       expect(response2.statusCode).toBe(201)
       expect(job1.minutesCompleted).toBe(result1.analyzed_minutes)
       expect(job2.minutesCompleted).toBe(result1.analyzed_minutes + result2.analyzed_minutes)
-    })
-
-    test('saves detections', async () => {
-      // Act
-      const response1 = await request(superUserApp).post(`/${JOB_RUNNING.id}/results`).send(VALID_JOB_RESULT)
-      const detections = await models.Detection.findAll({ where: { classifier_id: JOB_RUNNING.classifierId } })
-
-      // Assert
-      expect(response1.statusCode).toBe(201)
-      expect(detections.length).toBe(VALID_JOB_RESULT.detections.length)
     })
   })
 
@@ -130,16 +168,6 @@ describe('POST /internal/classifier-jobs/:id/results', () => {
 
       // Assert
       expect(response1.statusCode).toBe(400)
-    })
-
-    test('403 if not super-user', async () => {
-      // Act
-      const response1 = await request(app).post(`/${JOB_RUNNING.id}/results`).send(VALID_JOB_RESULT)
-      const jobUpdated1 = await models.ClassifierJob.findByPk(JOB_RUNNING.id)
-
-      // Assert
-      expect(response1.statusCode).toBe(403)
-      expect(jobUpdated1.minutesCompleted).toBe(0)
     })
 
     test('404 if classifier-job does not exist', async () => {

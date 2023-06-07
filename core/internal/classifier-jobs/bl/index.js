@@ -25,7 +25,7 @@ async function dequeue (maxConcurrency, maxRows) {
 
     if (ids.length === 0) { return [] }
 
-    await ClassifierJob.update({ status: RUNNING }, { where: { id: ids }, transaction })
+    await ClassifierJob.update({ status: RUNNING, startedAt: sequelize.literal('CURRENT_TIMESTAMP') }, { where: { id: ids }, transaction })
     return ids
   })
 

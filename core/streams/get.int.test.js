@@ -1,18 +1,15 @@
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
 
 app.use('/', routes)
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
-})
-beforeEach(async () => {
-  await truncate(models)
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.sequelize.close()
 })
 
 describe('GET /streams/:id', () => {
@@ -26,7 +23,7 @@ describe('GET /streams/:id', () => {
   })
 
   test('readable by creator', async () => {
-    const stream = { id: 'j123s', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
+    const stream = { id: 'jagu1', createdById: seedValues.primaryUserId, name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, altitude: 200 }
     await models.Stream.create(stream)
 
     const response = await request(app).get(`/${stream.id}`)
@@ -40,7 +37,7 @@ describe('GET /streams/:id', () => {
   })
 
   test('forbidden', async () => {
-    const stream = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
+    const stream = { id: 'jagu2', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
     await models.Stream.create(stream)
     console.warn = jest.fn()
 
@@ -51,7 +48,7 @@ describe('GET /streams/:id', () => {
   })
 
   test('readable by stream guest', async () => {
-    const stream = { id: 'x456y', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
+    const stream = { id: 'jagu3', createdById: seedValues.otherUserId, name: 'Jaguar Station' }
     await models.Stream.create(stream)
     await models.UserStreamRole.create({ user_id: seedValues.primaryUserId, stream_id: stream.id, role_id: seedValues.roleGuest })
 
@@ -61,8 +58,8 @@ describe('GET /streams/:id', () => {
   })
 
   test('readable by project guest', async () => {
-    const project = { id: 'p123p', createdById: seedValues.otherUserId, name: 'Other Project' }
-    const stream = { id: 'x456y', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
+    const project = { id: 'othe1', createdById: seedValues.otherUserId, name: 'Other Project' }
+    const stream = { id: 'jagu4', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
     await models.Project.create(project)
     await models.Stream.create(stream)
     await models.UserProjectRole.create({ user_id: seedValues.primaryUserId, project_id: project.id, role_id: seedValues.roleGuest })
@@ -73,9 +70,9 @@ describe('GET /streams/:id', () => {
   })
 
   test('readable by organization guest', async () => {
-    const organization = { id: 'o789o', createdById: seedValues.otherUserId, name: 'Other Org' }
-    const project = { id: 'p123p', createdById: seedValues.otherUserId, organization_id: organization.id, name: 'Other Project' }
-    const stream = { id: 'x456y', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
+    const organization = { id: 'orga1', createdById: seedValues.otherUserId, name: 'Other Org' }
+    const project = { id: 'othe2', createdById: seedValues.otherUserId, organization_id: organization.id, name: 'Other Project' }
+    const stream = { id: 'jagu5', createdById: seedValues.otherUserId, project_id: project.id, name: 'Jaguar Station' }
     await models.Organization.create(organization)
     await models.Project.create(project)
     await models.Stream.create(stream)

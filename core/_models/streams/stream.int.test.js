@@ -1,12 +1,8 @@
 const models = require('..')
-const { migrate, truncate, seed, seedValues } = require('../../../common/testing/sequelize')
+const { seedValues, truncateNonBase } = require('../../../common/testing/sequelize')
 
-beforeAll(async () => {
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
-})
-beforeEach(async () => {
-  await truncate(models)
+afterEach(async () => {
+  await truncateNonBase(models)
 })
 
 test('no streams', async () => {

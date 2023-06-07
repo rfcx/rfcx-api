@@ -70,7 +70,7 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
       return converter.validate()
         .then(async () => {
           const sfParams = await sfConverter.validate() // validate stream_source_file attributes
-          await segConverter.validate() // validate stream_segment[] attributes
+          const transformedArray = await segConverter.validate() // validate stream_segment[] attributes
 
           const stream = await streamDao.get(streamId, { transaction })
           // Set missing stream_source_file attributes and create a db row
@@ -79,11 +79,11 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           const streamSourceFile = await streamSourceFileDao.create(sfParams, { transaction })
 
           // Get file format ids
-          const fileExtensions = [...new Set(segConverter.transformedArray.map(segment => segment.file_extension))]
+          const fileExtensions = [...new Set(transformedArray.map(segment => segment.file_extension))]
           const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatDao.findOrCreate({ value: ext }, { transaction })))
 
           // Set required stream_segment attributes and create a db row
-          const segments = segConverter.transformedArray.map(segment => ({
+          const segments = transformedArray.map(segment => ({
             ...segment,
             stream_id: streamId,
             stream_source_file_id: streamSourceFile.id,
@@ -92,8 +92,8 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           await streamSegmentDao.bulkCreate(segments, { transaction })
 
           // Refresh stream max_sample rate, start and end if needed
-          const minStart = moment.min(segConverter.transformedArray.map(s => s.start))
-          const maxEnd = moment.max(segConverter.transformedArray.map(s => s.end))
+          const minStart = moment.min(transformedArray.map(s => s.start))
+          const maxEnd = moment.max(transformedArray.map(s => s.end))
           await streamDao.refreshStreamBoundVars(stream, {
             start: minStart.toDate(),
             end: maxEnd.toDate(),

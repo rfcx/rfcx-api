@@ -1,8 +1,9 @@
 const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
-const detectionsService = require('../../detections/dao/create')
+const detectionsService = require('../../detections/bl')
 const Converter = require('../../../common/converter')
-const { hasRole } = require('../../../common/middleware/authorization/authorization')
+const { ForbiddenError } = require('../../../common/error-handling/errors')
+const { hasPermission, READ, STREAM } = require('../../roles/dao')
 
 /**
  * @swagger
@@ -28,7 +29,9 @@ const { hasRole } = require('../../../common/middleware/authorization/authorizat
  *       404:
  *         description: Stream not found
  */
-router.post('/detections', hasRole(['systemUser']), function (req, res) {
+router.post('/detections', function (req, res) {
+  const user = req.rfcx.auth_token_info
+  const creatableBy = user.is_super || user.has_system_role || user.has_stream_token ? undefined : user.id
   const converter = new Converter(req.body, {}, true)
   converter.convert('stream_id').toString()
   converter.convert('classifier_id').toInt()
@@ -41,6 +44,10 @@ router.post('/detections', hasRole(['systemUser']), function (req, res) {
   converter.validate()
     .then(async (params) => {
       const { streamId, classifierId, classification, start, end, confidences, step } = params
+
+      if (creatableBy && !(await hasPermission(READ, creatableBy, streamId, STREAM))) {
+        throw new ForbiddenError()
+      }
 
       const expandedDetections = confidences.map((confidence, i) => {
         // Detections are spaced by "step" seconds

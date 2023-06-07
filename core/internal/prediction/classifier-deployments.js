@@ -4,8 +4,6 @@ const { hasRole } = require('../../../common/middleware/authorization/authorizat
 const classifierDeploymentsService = require('../../classifiers/dao/deployments')
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 
-router.use(hasRole(['systemUser']))
-
 /**
  * @swagger
  *
@@ -32,7 +30,7 @@ router.use(hasRole(['systemUser']))
  *             schema:
  *               $ref: '#/components/schemas/ClassifierDeployment'
  */
-router.get('/classifier-deployments/:id', (req, res) => {
+router.get('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) => {
   const id = req.params.id
   const converter = new Converter(req.query, {}, true)
   converter.convert('fields').optional().toArray()
@@ -98,7 +96,7 @@ router.get('/classifier-deployments/:id', (req, res) => {
  *       200:
  *         description: Success
  */
-router.get('/classifier-deployments', (req, res) => {
+router.get('/classifier-deployments', hasRole(['systemUser']), (req, res) => {
   const converter = new Converter(req.query, {}, true)
   converter.convert('platform').optional().toString()
   converter.convert('deployed').optional().toBoolean()
@@ -149,7 +147,7 @@ router.get('/classifier-deployments', (req, res) => {
  *       400:
  *         description: Invalid body parameters
  */
-router.patch('/classifier-deployments/:id', (req, res) => {
+router.patch('/classifier-deployments/:id', hasRole(['systemUser']), (req, res) => {
   const id = req.params.id
   const converter = new Converter(req.body, {}, true)
   converter.convert('deployed').toBoolean()

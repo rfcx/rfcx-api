@@ -1,4 +1,4 @@
-const { ValidationError } = require('../../../common/error-handling/errors')
+const { ValidationError } = require('../../error-handling/errors')
 jest.mock('../../../core/streams/dao')
 const { getStreamRangeToken } = require('../../../core/streams/dao')
 

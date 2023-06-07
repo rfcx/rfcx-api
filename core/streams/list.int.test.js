@@ -1,6 +1,7 @@
 const routes = require('.')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const Sequelize = require('sequelize')
+const { expressApp, seedValues, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 
 const app = expressApp()
@@ -9,17 +10,31 @@ app.use('/', routes)
 
 beforeAll(async () => {
   muteConsole()
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+
+afterEach(async () => {
+  await models.UserStreamRole.destroy({ where: {}, force: true })
+  await models.Stream.destroy({
+    where: {
+      id: {
+        [Sequelize.Op.in]: ['j123s', 'guard1', 'guard2', 'guard3', 'x456y', 'public1', 'public2', 'private2', 'p123p', 'o789o', 'AB01', 'AB02', 'AB03', 'pq1', 'pq2', 'ab1', 'ab2', 'ab3', 's1', 's2', 's3', 's4', 'o123o']
+      }
+    },
+    force: true
+  })
+  await models.UserProjectRole.destroy({ where: {}, force: true })
+  await models.Project.destroy({ where: {}, force: true })
+  await models.UserOrganizationRole.destroy({ where: {}, force: true })
+  await models.Organization.destroy({ where: {}, force: true })
+})
+
+afterAll(async () => {
+  await models.sequelize.close()
 })
 
 describe('GET /streams', () => {
   test('no results', async () => {
     const response = await request(app).get('/')
-
     expect(response.statusCode).toBe(200)
     expect(response.body).toEqual([])
   })
@@ -177,7 +192,6 @@ describe('GET /streams', () => {
   })
 
   test('filter by name without *', async () => {
-    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
     await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
     await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
     await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
@@ -190,7 +204,6 @@ describe('GET /streams', () => {
   })
 
   test('filter by name with * at the beginning', async () => {
-    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
     await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
     await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
     await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
@@ -204,7 +217,6 @@ describe('GET /streams', () => {
   })
 
   test('filter by name with * at the end', async () => {
-    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
     await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
     await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
     await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
@@ -218,7 +230,6 @@ describe('GET /streams', () => {
   })
 
   test('filter by name with * in between', async () => {
-    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
     await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
     await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
     await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })
@@ -231,7 +242,6 @@ describe('GET /streams', () => {
   })
 
   test('filter by keyword', async () => {
-    models.Sequelize.Op.iLike = models.Sequelize.Op.like // Sqlite doesn't support ilike
     await models.Stream.create({ name: 'cherry creek', createdById: seedValues.primaryUserId, id: 'AB01', latitude: 10.1, longitude: 101.1 })
     await models.Stream.create({ name: 'jacobs creek', createdById: seedValues.primaryUserId, id: 'AB02', latitude: 10.2, longitude: 101.2 })
     await models.Stream.create({ name: 'cherry orchard', createdById: seedValues.primaryUserId, id: 'AB03', latitude: 10.3, longitude: 101.3 })

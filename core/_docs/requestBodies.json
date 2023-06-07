@@ -206,6 +206,12 @@
         "items": {
           "$ref": "#/components/requestBodies/ClassifierResultDetection"
         }
+      },
+      "segments": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/requestBodies/ClassifierResultSegment"
+        }
       }
     },
     "required": ["analyzed_minutes", "detections"]
@@ -218,16 +224,6 @@
         "description": "Stream identifier",
         "example": "1"
       },
-      "classifier": {
-        "type": "string",
-        "description": "Classifier identifier",
-        "example": "1"
-      },
-      "classification": {
-        "type": "string",
-        "description": "Classification value",
-        "example": "obscurus"
-      },
       "start": {
         "type": "date",
         "example": "2020-05-12T07:30:21.500Z"
@@ -236,6 +232,11 @@
         "type": "date",
         "example": "2020-05-12T07:30:22.500Z"
       },
+      "classification": {
+        "type": "string",
+        "description": "Classification value",
+        "example": "obscurus"
+      },
       "confidence": {
         "type": "float",
         "example": 0.975123
@@ -243,12 +244,25 @@
     },
     "required": [
       "stream_id",
-      "classifier",
-      "classification",
       "start",
       "end",
+      "classification",
       "confidence"
     ]
+  },
+  "ClassifierResultSegment": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "1fas1g4yfs4a1"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      }
+    }
   },
   "Detection": {
     "type": "object",
@@ -714,6 +728,30 @@
       "email": {
         "type": "string",
         "example": "johndoe@rfcx.org"
+      }
+    }
+  },
+  "ClassifierProcessedSegment": {
+    "type": "object",
+    "properties": {
+      "stream": {
+        "type": "string",
+        "description": "Stream identifier",
+        "example": "xu82jDgX49"
+      },
+      "start": {
+        "type": "date",
+        "example": "2020-05-12T07:30:21.500Z"
+      },
+      "classifier": {
+        "type": "string",
+        "description": "Classifier identifier",
+        "example": "4"
+      },
+      "classifier_job": {
+        "type": "string",
+        "description": "Classifier job identifier",
+        "example": "10"
       }
     }
   }

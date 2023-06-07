@@ -1,7 +1,7 @@
 const request = require('supertest')
 const routes = require('./stream')
 const models = require('../_models')
-const { migrate, truncate, expressApp, seed, seedValues, muteConsole } = require('../../common/testing/sequelize')
+const { truncate, expressApp, seedValues, muteConsole, truncateNonBase } = require('../../common/testing/sequelize')
 
 const app = expressApp()
 
@@ -9,11 +9,14 @@ app.use('/', routes)
 
 beforeAll(async () => {
   muteConsole()
-  await migrate(models.sequelize, models.Sequelize)
-  await seed(models)
+  await truncateNonBase(models)
 })
-beforeEach(async () => {
-  await truncate(models)
+afterEach(async () => {
+  await truncate({ Stream: models.Stream, UserStreamRole: models.UserStreamRole, Project: models.Project, UserProjectRole: models.UserProjectRole })
+})
+afterAll(async () => {
+  await truncateNonBase(models)
+  await models.sequelize.close()
 })
 
 async function commonSetup () {

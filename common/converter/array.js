@@ -1,11 +1,13 @@
 const Conversion = require('./conversion')
 const { ValidationError } = require('../error-handling/errors')
+const { toCamelObject } = require('../../core/_utils/formatters/string-cases')
 
 module.exports = class ArrayConverter {
-  constructor (sourceArray) {
+  constructor (sourceArray, camelize) {
     this.sourceArray = sourceArray
     this.transformedArray = []
     this.conversions = []
+    this.camelize = camelize || false
   }
 
   convert (property) {
@@ -33,7 +35,7 @@ module.exports = class ArrayConverter {
         this.transformedArray.push(target)
       }
       if (exceptions.length === 0) {
-        resolve(this.transformedArray)
+        resolve(this.camelize ? toCamelObject(this.transformedArray, 1) : this.transformedArray)
       } else {
         reject(new ValidationError(`Validation errors: ${exceptions.join('; ')}.`))
       }
