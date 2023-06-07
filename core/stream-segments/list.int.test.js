@@ -67,8 +67,8 @@ describe('GET /streams/:id/segments', () => {
     await commonSetup()
     const stream = await models.Stream.create({ id: 'j123s', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
     const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
-    const segment = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10.000Z', end: '2021-07-26T10:11:09.999Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:11:10.000Z', end: '2021-07-26T10:12:09.999Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
+    const segment = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10.000Z', end: '2021-07-26T10:11:09.999Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
+    await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:11:10.000Z', end: '2021-07-26T10:12:09.999Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
 
     const response = await request(app).get(`/${stream.id}/segments`).query({ start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:09.999Z' })
 
@@ -84,7 +84,7 @@ describe('GET /streams/:id/segments', () => {
     await commonSetup()
     const stream = await models.Stream.create({ id: 'j123s', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
     const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
-    await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
+    await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
 
     const response = await request(app).get(`/${stream.id}/segments`).query({ strict: 'false', start: '2021-07-26T10:10:20Z', end: '2021-07-26T10:10:50Z' })
 
@@ -96,7 +96,7 @@ describe('GET /streams/:id/segments', () => {
     await commonSetup()
     const stream = await models.Stream.create({ id: 'j123s', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId })
     const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
-    await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
+    await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
 
     const response = await request(app).get(`/${stream.id}/segments`).query({ start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:10:10Z' })
 
@@ -107,11 +107,11 @@ describe('GET /streams/:id/segments', () => {
     const { stream1, classifier1, classifier2, classifier3, job1, job2, job3 } = await commonSetup()
 
     const sourceFile = await models.StreamSourceFile.create({ stream_id: stream1.id, filename: '20210726_101010.wav', duration: 60, sample_count: 720000, sample_rate: 12000, channels_count: 1, bit_rate: 1, audio_codec_id: 1, audio_file_format_id: 1 })
-    const s1 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:10:10.000Z', end: '2021-07-26T10:11:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s2 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:11:10.000Z', end: '2021-07-26T10:12:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s3 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:12:10.000Z', end: '2021-07-26T10:13:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s4 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:13:10.000Z', end: '2021-07-26T10:14:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
-    const s5 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:14:10.000Z', end: '2021-07-26T10:15:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1 })
+    const s1 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:10:10.000Z', end: '2021-07-26T10:11:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
+    const s2 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:11:10.000Z', end: '2021-07-26T10:12:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
+    const s3 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:12:10.000Z', end: '2021-07-26T10:13:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
+    const s4 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:13:10.000Z', end: '2021-07-26T10:14:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
+    const s5 = await models.StreamSegment.create({ stream_id: stream1.id, start: '2021-07-26T10:14:10.000Z', end: '2021-07-26T10:15:10.000Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: 1, availability: 1 })
 
     await models.ClassifierProcessedSegment.create({ classifierId: classifier1.id, classifierJobId: job1.id, streamId: stream1.id, start: s1.start })
     await models.ClassifierProcessedSegment.create({ classifierId: classifier1.id, classifierJobId: job1.id, streamId: stream1.id, start: s2.start })

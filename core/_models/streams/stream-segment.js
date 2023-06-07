@@ -38,6 +38,11 @@ module.exports = function (sequelize, DataTypes) {
     file_extension_id: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    availability: {
+      type: DataTypes.SMALLINT,
+      allowNull: false,
+      defaultValue: 1
     }
   }, {
     timestamps: true
@@ -48,7 +53,7 @@ module.exports = function (sequelize, DataTypes) {
     StreamSegment.belongsTo(models.FileExtension, { as: 'file_extension', foreignKey: 'file_extension_id' })
   }
   StreamSegment.attributes = {
-    full: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'file_extension_id', 'created_at', 'updated_at'],
+    full: ['id', 'start', 'end', 'sample_count', 'stream_id', 'stream_source_file_id', 'file_extension_id', 'availability', 'created_at', 'updated_at'],
     lite: ['id', 'start', 'end']
   }
   return StreamSegment
