@@ -2,6 +2,7 @@ const { EmptyResultError, ValidationError } = require('../../../common/error-han
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../_models')
 const { getAccessibleObjectsIDs, STREAM } = require('../../roles/dao')
 const pagedQuery = require('../../_utils/db/paged-query')
+const streamSegmentDao = require('../../stream-segments/dao/index')
 
 const streamSourceFileBaseInclude = [
   Stream.include(),
@@ -151,10 +152,15 @@ function checkForDuplicates (stream_id, sha1_checksum, filename, opts = {}) { //
   // check for duplicate source file files in this stream
   const transaction = opts.transaction || null
   return StreamSourceFile
-    .findAll({ where: { stream_id, sha1_checksum }, transaction }) // eslint-disable-line camelcase
-    .then((existingStreamSourceFiles) => {
-      if (existingStreamSourceFiles && existingStreamSourceFiles.length) {
-        const sameFile = existingStreamSourceFiles.find(x => x.filename === filename)
+    .findOne({ where: { stream_id, sha1_checksum }, transaction }) // eslint-disable-line camelcase
+    .then(async (existingStreamSourceFile) => {
+      if (existingStreamSourceFile) {
+        const segments = await streamSegmentDao.query({ streamId: stream_id, streamSourceFileId: existingStreamSourceFile.id }, { fields: ['availability'], transaction })
+        const hasUnavailable = segments.length && !!segments.filter(s => s.availability === 0).length
+        if (hasUnavailable) {
+          return false
+        }
+        const sameFile = existingStreamSourceFile.filename === filename
         const message = sameFile ? 'This file was already ingested.' : 'Duplicate file. Matching sha1 signature already ingested.'
         throw new ValidationError(message)
       }

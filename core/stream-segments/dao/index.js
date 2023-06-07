@@ -69,11 +69,12 @@ async function get (streamId, start, options = {}) {
  * @param {number} options.readableBy Include only segments readable by the given user id
  */
 async function query (filters, options = {}) {
-  if (filters.end < filters.start) {
+  const transaction = options.transaction
+  if (filters.start && filters.end && filters.end < filters.start) {
     throw new ValidationError('"end" attribute cannot be less than "start" attribute')
   }
   // TODO: move this out as it's not related to segments querying and should be done beforehand
-  if (!(await Stream.findByPk(filters.streamId))) {
+  if (!(await Stream.findByPk(filters.streamId, { transaction }))) {
     throw new EmptyResultError('Stream not found')
   }
   // TODO: move this out as it's not related to segments querying and should be done beforehand
@@ -113,6 +114,11 @@ async function query (filters, options = {}) {
       [Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
     }
   }
+  if (filters.streamSourceFileId !== undefined) {
+    where[Op.and].stream_source_file_id = {
+      [Op.eq]: filters.streamSourceFileId
+    }
+  }
   if (filters.unprocessedByClassifier !== undefined) {
     const processedSegments = await ClassifierProcessedSegment.findAll({
       where: {
@@ -138,7 +144,8 @@ async function query (filters, options = {}) {
     offset: options.offset,
     attributes,
     include,
-    order: [['start', 'ASC']]
+    order: [['start', 'ASC']],
+    transaction
   }).then(({ results, count }) => ({ results: results.map(segment => format(segment)), count }))
 }
 
