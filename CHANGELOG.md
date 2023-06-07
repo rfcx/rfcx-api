@@ -10,8 +10,10 @@
 * **core**: Create `classifier_processed_segments` table
 * **core**: Add `/internal/prediction/streams/segments/processed` endpoint
 * **core**: Add `/internal/prediction/streams/{id}/segments` endpoint to get unprocessed segments
+* **core**: Add `availability` to `stream-segments` table
 * **noncore**: Receive `last_deployed` in `PATCH /v2/guardian/:guid`
 * **noncore**: Remove update `last_deployed` from previous logic
+* **media**: Won't generate audio file if `stream-segments` `availability` is not `1`
 
 ## 1.2.3 (2023-04-15)
 
