@@ -29,6 +29,10 @@ const arbimonService = require('../../_services/arbimon')
  *     responses:
  *       201:
  *         description: Created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/IngestionResponse'
  *         headers:
  *           Location:
  *             description: Path of the created resource (e.g. `/stream-source-files/xyz123`)
@@ -58,7 +62,6 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
   sfConverter.convert('meta').optional()
 
   const segConverter = new ArrayConverter(req.body.stream_segments)
-  segConverter.convert('id').optional().toString()
   segConverter.convert('start').toMomentUtc()
   segConverter.convert('end').toMomentUtc()
   segConverter.convert('sample_count').toInt().minimum(1)
@@ -82,25 +85,19 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
           const fileExtensions = [...new Set(transformedArray.map(segment => segment.file_extension))]
           const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatDao.findOrCreate({ value: ext }, { transaction })))
 
-          // Set required stream_segment attributes and create a db row
-          const segments = transformedArray.map(segment => ({
-            ...segment,
-            stream_id: streamId,
-            stream_source_file_id: streamSourceFile.id,
-            file_extension_id: fileExtensionObjects.find(obj => obj.value === segment.file_extension).id
-          }))
+          const segments = []
           for (const s of transformedArray) {
             const fileExtensionId = fileExtensionObjects.find(obj => obj.value === s.file_extension).id
-            const { created } = await streamSegmentDao.findOrCreate(
+            const { segment, created } = await streamSegmentDao.findOrCreate(
               { stream_id: streamId, start: s.start },
               { ...s, stream_source_file_id: streamSourceFile.id, file_extension_id: fileExtensionId },
               { transaction }
-            )[0]
+            )
             if (!created) {
               await streamSegmentDao.update(streamId, s.start, { availability: 1 }, { transaction })
             }
+            segments.push(segment)
           }
-          await streamSegmentDao.bulkCreate(segments, { transaction })
 
           // Refresh stream max_sample rate, start and end if needed
           const minStart = moment.min(transformedArray.map(s => s.start))
@@ -117,7 +114,11 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
 
           await Promise.all(segments.map(segment => streamSegmentDao.notify(segment)))
           await transaction.commit()
-          return res.location(`/stream-source-files/${streamSourceFile.id}`).sendStatus(201)
+          const responseBody = segments.map(s => { return { id: s.id } })
+          return res
+            .location(`/stream-source-files/${streamSourceFile.id}`)
+            .status(201)
+            .json({ stream_segments: responseBody })
         })
         .catch((err) => {
           transaction.rollback()

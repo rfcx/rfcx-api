@@ -86,32 +86,34 @@ async function query (filters, options = {}) {
       stream_id: filters.streamId
     }
   }
-  if (options.strict === false) {
-    where[Op.and].start = {
-      // When we use both `start` and `end` attributes in query, TImescaleDB can't use hypertable indexes in a full way,
-      // because hypertables are spitted by `stream_id` + `start` only. So database has to check all chunks.
-      // A solution to this is to limit search to exact one-two chunks first and then search by `start` + `end` only inside these chunks.
-      // We have to find a timeframe where segment with its own full duration will be places. We don't know duration of each segment, so we
-      // will add some time to beginning and some time to the end (10 minutes to be safe).
-      [Op.between]: [filters.start.clone().subtract(10, 'minutes').valueOf(), filters.end.clone().add(10, 'minutes').valueOf()]
-    }
-    where[Op.and][Op.or] = {
-      start: {
-        [Op.gte]: filters.start.valueOf(),
-        [Op.lt]: filters.end.valueOf()
-      },
-      end: {
-        [Op.gt]: filters.start.valueOf(),
-        [Op.lte]: filters.end.valueOf()
-      },
-      [Op.and]: {
-        start: { [Op.lt]: filters.start.valueOf() },
-        end: { [Op.gt]: filters.end.valueOf() }
+  if (filters.start && filters.end) {
+    if (options.strict === false) {
+      where[Op.and].start = {
+        // When we use both `start` and `end` attributes in query, TImescaleDB can't use hypertable indexes in a full way,
+        // because hypertables are spitted by `stream_id` + `start` only. So database has to check all chunks.
+        // A solution to this is to limit search to exact one-two chunks first and then search by `start` + `end` only inside these chunks.
+        // We have to find a timeframe where segment with its own full duration will be places. We don't know duration of each segment, so we
+        // will add some time to beginning and some time to the end (10 minutes to be safe).
+        [Op.between]: [filters.start.clone().subtract(10, 'minutes').valueOf(), filters.end.clone().add(10, 'minutes').valueOf()]
       }
-    }
-  } else {
-    where[Op.and].start = {
-      [Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+      where[Op.and][Op.or] = {
+        start: {
+          [Op.gte]: filters.start.valueOf(),
+          [Op.lt]: filters.end.valueOf()
+        },
+        end: {
+          [Op.gt]: filters.start.valueOf(),
+          [Op.lte]: filters.end.valueOf()
+        },
+        [Op.and]: {
+          start: { [Op.lt]: filters.start.valueOf() },
+          end: { [Op.gt]: filters.end.valueOf() }
+        }
+      }
+    } else {
+      where[Op.and].start = {
+        [Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+      }
     }
   }
   if (filters.streamSourceFileId !== undefined) {

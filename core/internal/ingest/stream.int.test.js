@@ -2,7 +2,7 @@ const request = require('supertest')
 const moment = require('moment')
 const routes = require('./stream')
 const models = require('../../_models')
-const { truncate, truncateNonBase, expressApp, seedValues, muteConsole } = require('../../../common/testing/sequelize')
+const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../../common/testing/sequelize')
 
 const app = expressApp()
 
@@ -13,11 +13,9 @@ resetTestData()
 
 beforeAll(async () => {
   muteConsole('warn')
-  await commonSetup()
 })
 afterEach(async () => {
-  await truncate({ StreamSegment: models.StreamSegment, StreamSourceFile: models.StreamSourceFile })
-  await models.Stream.update({ start: null, end: null, sampleRate: null }, { where: { id: stream.id } })
+  await truncateNonBase(models)
   resetTestData()
 })
 afterAll(async () => {
@@ -48,7 +46,6 @@ function resetTestData () {
     },
     stream_segments: [
       {
-        id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd',
         start: '2021-04-18T12:12:00.000Z',
         end: '2021-04-18T12:13:00.000Z',
         sample_count: 3840000,
@@ -68,6 +65,7 @@ async function commonSetup () {
 
 describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', () => {
   test('one stream_source_file and one stream_segments is created', async () => {
+    await commonSetup()
     const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
 
     expect(response.statusCode).toBe(201)
@@ -86,18 +84,20 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     expect(streamSourceFiles[0].sha1_checksum).toBe(testPayload.stream_source_file.sha1_checksum)
     expect(streamSourceFiles[0].meta).toBe(JSON.stringify(testPayload.stream_source_file.meta))
     expect(streamSegments.length).toBe(1)
-    expect(streamSegments[0].id).toBe(testPayload.stream_segments[0].id)
     expect(streamSegments[0].start).toEqual(moment.utc(testPayload.stream_segments[0].start).toDate())
     expect(streamSegments[0].end).toEqual(moment.utc(testPayload.stream_segments[0].end).toDate())
     expect(streamSegments[0].sample_count).toBe(testPayload.stream_segments[0].sample_count)
     expect(streamSegments[0].file_extension_id).toBe(fileExtensionId)
     expect(streamSegments[0].stream_source_file_id).toBe(streamSourceFiles[0].id)
+    expect(response.body.stream_segments.length).toBe(1)
+    expect(response.body.stream_segments[0].id).toBeDefined()
   })
 
   test('one stream_source_file and two stream_segments are created', async () => {
+    await commonSetup()
     const requestBody = Object.assign({}, testPayload)
     requestBody.stream_segments.push(
-      { id: '877408a7-6579-4de0-8c29-bddda0968f87', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
+      { start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
     )
 
     const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -106,26 +106,27 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     const streamSegments = await models.StreamSegment.findAll()
     expect(streamSourceFiles.length).toBe(1)
     expect(streamSegments.length).toBe(2)
-    expect(streamSegments[1].id).toBe(requestBody.stream_segments[1].id)
     expect(streamSegments[1].start).toEqual(moment.utc(requestBody.stream_segments[1].start).toDate())
     expect(streamSegments[1].end).toEqual(moment.utc(requestBody.stream_segments[1].end).toDate())
     expect(streamSegments[1].sample_count).toBe(requestBody.stream_segments[1].sample_count)
     expect(streamSegments[1].file_extension_id).toBe(fileExtensionId)
     expect(streamSegments[1].stream_source_file_id).toBe(streamSourceFiles[0].id)
+    expect(response.body.stream_segments.length).toBe(2)
   })
 
   test('one stream_source_file and ten stream_segments are created', async () => {
+    await commonSetup()
     const requestBody = Object.assign({}, testPayload)
     requestBody.stream_segments.push(
-      { id: '877408a7-6579-4de0-8c29-bddda0968f01', start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f02', start: '2021-04-18T12:14:00.000Z', end: '2021-04-18T12:15:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f03', start: '2021-04-18T12:15:00.000Z', end: '2021-04-18T12:16:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f04', start: '2021-04-18T12:16:00.000Z', end: '2021-04-18T12:17:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f05', start: '2021-04-18T12:17:00.000Z', end: '2021-04-18T12:18:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f06', start: '2021-04-18T12:18:00.000Z', end: '2021-04-18T12:19:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f07', start: '2021-04-18T12:19:00.000Z', end: '2021-04-18T12:20:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f08', start: '2021-04-18T12:20:00.000Z', end: '2021-04-18T12:21:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
-      { id: '877408a7-6579-4de0-8c29-bddda0968f09', start: '2021-04-18T12:21:00.000Z', end: '2021-04-18T12:22:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
+      { start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:14:00.000Z', end: '2021-04-18T12:15:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:15:00.000Z', end: '2021-04-18T12:16:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:16:00.000Z', end: '2021-04-18T12:17:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:17:00.000Z', end: '2021-04-18T12:18:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:18:00.000Z', end: '2021-04-18T12:19:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:19:00.000Z', end: '2021-04-18T12:20:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:20:00.000Z', end: '2021-04-18T12:21:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 },
+      { start: '2021-04-18T12:21:00.000Z', end: '2021-04-18T12:22:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
     )
 
     const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -134,16 +135,14 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     const streamSourceFiles = await models.StreamSourceFile.findAll()
     const streamSegments = await models.StreamSegment.findAll()
     expect(streamSourceFiles.length).toBe(1)
-    expect(requestBody.stream_segments.map(s => s.id).every(s => streamSegments.map(ss => ss.id).includes(s))).toBeTruthy()
-    const firstSegment = streamSegments.find(s => s.id === requestBody.stream_segments[1].id)
-    expect(firstSegment.id).toBe(requestBody.stream_segments[1].id)
+    expect(response.body.stream_segments.length).toBe(requestBody.stream_segments.length)
+    const firstSegment = streamSegments.find(s => s.id === response.body.stream_segments[1].id)
     expect(firstSegment.start).toEqual(moment.utc(requestBody.stream_segments[1].start).toDate())
     expect(firstSegment.end).toEqual(moment.utc(requestBody.stream_segments[1].end).toDate())
     expect(firstSegment.sample_count).toBe(requestBody.stream_segments[1].sample_count)
     expect(firstSegment.file_extension_id).toBe(fileExtensionId)
     expect(firstSegment.stream_source_file_id).toBe(streamSourceFiles[0].id)
-    const lastSegment = streamSegments.find(s => s.id === requestBody.stream_segments[9].id)
-    expect(lastSegment.id).toBe(requestBody.stream_segments[9].id)
+    const lastSegment = streamSegments.find(s => s.id === response.body.stream_segments[9].id)
     expect(lastSegment.start).toEqual(moment.utc(requestBody.stream_segments[9].start).toDate())
     expect(lastSegment.end).toEqual(moment.utc(requestBody.stream_segments[9].end).toDate())
     expect(lastSegment.sample_count).toBe(requestBody.stream_segments[9].sample_count)
@@ -152,6 +151,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
   })
 
   test('new audio_file_format, audio_codec and file_extension rows are created', async () => {
+    await commonSetup()
     const requestBody = Object.assign({}, testPayload)
     requestBody.stream_source_file.filename = '0d99db29f26d-2021-04-19T12-11-00.wav'
     requestBody.stream_source_file.audio_codec = 'wav'
@@ -174,6 +174,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
 
   describe('request body validation', () => {
     test('validation error is returned if stream_source_file is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file
 
@@ -188,6 +189,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segments is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -201,6 +203,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.filename is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.filename
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -214,6 +217,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.audio_file_format is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.audio_file_format
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -227,6 +231,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.duration is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.duration
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -240,7 +245,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.duration is less than 1', async () => {
-      // const { stream, testPayload } = await commonSetup()
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.duration = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -254,6 +259,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sample_count is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sample_count
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -267,6 +273,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sample_count is less than 1', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.sample_count = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -280,6 +287,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('sample_rate is set to 1 for stream_source_file if stream_source_file.sample_rate is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sample_rate
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -293,6 +301,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sample_rate is less than 1', async () => {
+      await commonSetup()
       // const { stream, testPayload } = await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.sample_rate = 0
@@ -307,6 +316,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('channels_count is set to 1 for stream_source_file if stream_source_file.channels_count is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.channels_count
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -320,6 +330,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.channels_count is less than 1', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.channels_count = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -333,6 +344,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('bit_rate is set to 1 for stream_source_file if stream_source_file.bit_rate is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.bit_rate
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -346,6 +358,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.bit_rate is less than 1', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.bit_rate = 0
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -359,6 +372,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.audio_codec is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.audio_codec
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -372,6 +386,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_source_file.sha1_checksum is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sha1_checksum
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -385,6 +400,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.start is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].start
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -398,6 +414,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.end is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].end
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -411,6 +428,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.sample_count is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].sample_count
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -424,6 +442,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('validation error is returned if stream_segment.file_extension is not set', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].file_extension
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(requestBody)
@@ -437,6 +456,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('empty meta is saved for stream_source_file if provided meta is not an object', async () => {
+      await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.meta = 123
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
@@ -450,6 +470,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('empty result error is returned if stream does not exist', async () => {
+      await commonSetup()
       const response = await request(app).post('/streams/random/stream-source-files-and-segments').send(testPayload)
 
       expect(response.statusCode).toBe(404)
@@ -463,6 +484,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
 
   describe('stream bounds update', () => {
     test('stream start, end and max_sample_rate are set for empty stream', async () => {
+      await commonSetup()
       await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
 
       const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
@@ -472,6 +494,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('stream start, end and max_sample_rate are updated if new values are bigger/smaller', async () => {
+      await commonSetup()
       const stream = await models.Stream.create(
         { id: 'abcdsaqwery2', name: 'my stream 2', createdById: seedValues.primaryUserId, start: '2021-04-18T12:12:10.000Z', end: '2021-04-18T12:12:20.000Z', maxSampleRate: 24000 }
       )
@@ -485,6 +508,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
     })
 
     test('stream start, end and max_sample_rate are not updated if new values are not bigger/smaller', async () => {
+      await commonSetup()
       const stream = await models.Stream.create(
         { id: 'abcdsaqwery3', name: 'my stream 3', createdById: seedValues.primaryUserId, start: '2020-01-01 00:00:00', end: '2021-05-05 00:00:00', maxSampleRate: 128000 }
       )
@@ -495,6 +519,81 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
       expect(streamFromDb.maxSampleRate).toBe(stream.maxSampleRate)
       expect(streamFromDb.start).toEqual(moment.utc(stream.start).toDate())
       expect(streamFromDb.end).toEqual(moment.utc(stream.end).toDate())
+    })
+  })
+
+  describe('unavailable segments', () => {
+    test('returns 1 unavailable segment id', async () => {
+      await commonSetup()
+      const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+      const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      const segment1 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
+      expect(response.statusCode).toBe(201)
+      expect(response.body.stream_segments[0].id).toBe(segment1.id)
+    })
+    test('returns 2 unavailable segment ids', async () => {
+      const requestBody = Object.assign({}, testPayload)
+      requestBody.stream_segments.push({
+        start: '2021-04-18T12:13:00.000Z',
+        end: '2021-04-18T12:14:00.000Z',
+        sample_count: 3840000,
+        file_extension: '.flac',
+        file_size: 200000
+      })
+      await commonSetup()
+      const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+      const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      const segment1 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      const segment2 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
+      expect(response.statusCode).toBe(201)
+      expect(response.body.stream_segments[0].id).toBe(segment1.id)
+      expect(response.body.stream_segments[1].id).toBe(segment2.id)
+    })
+    test('returns 2 unavailable and 1 available segment ids', async () => {
+      const requestBody = Object.assign({}, testPayload)
+      requestBody.stream_segments.push({
+        start: '2021-04-18T12:13:00.000Z',
+        end: '2021-04-18T12:14:00.000Z',
+        sample_count: 3840000,
+        file_extension: '.flac',
+        file_size: 200000
+      })
+      requestBody.stream_segments.push({
+        start: '2021-04-18T12:14:00.000Z',
+        end: '2021-04-18T12:15:00.000Z',
+        sample_count: 3840000,
+        file_extension: '.flac',
+        file_size: 200000
+      })
+      await commonSetup()
+      const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+      const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      const segment1 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      const segment2 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+      const segment3 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196ff', stream_id: stream.id, start: requestBody.stream_segments[2].start, end: requestBody.stream_segments[2].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[2].sample_count, file_extension_id: fileExtensionId, availability: 1 })
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
+      expect(response.statusCode).toBe(201)
+      expect(response.body.stream_segments[0].id).toBe(segment1.id)
+      expect(response.body.stream_segments[1].id).toBe(segment2.id)
+      expect(response.body.stream_segments[2].id).toBe(segment3.id)
+    })
+    test('returns valudation error for 1 available segment id', async () => {
+      await commonSetup()
+      const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+      const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 1 })
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
+      expect(response.statusCode).toBe(400)
     })
   })
 })

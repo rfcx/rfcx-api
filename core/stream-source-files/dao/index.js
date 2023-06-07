@@ -156,7 +156,7 @@ async function checkForDuplicates (stream_id, sha1_checksum, filename, opts = {}
     .then(async (existingStreamSourceFile) => {
       if (existingStreamSourceFile) {
         const segments = await streamSegmentDao.query({ streamId: stream_id, streamSourceFileId: existingStreamSourceFile.id }, { fields: ['availability'], transaction })
-        const hasUnavailable = segments.length && !!segments.filter(s => s.availability === 0).length
+        const hasUnavailable = segments.results.length && !!segments.results.filter(s => s.availability === 0).length
         if (hasUnavailable) {
           return { isDuplicate: true, hasUnavailable: true }
         }
