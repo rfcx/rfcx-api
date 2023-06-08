@@ -505,6 +505,21 @@
       }
     }
   },
+  "StreamSourceFileLiteWithAvailability": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/StreamSourceFileLite"
+      },
+      {
+        "properties": {
+          "availability": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      }
+    ]
+  },
   "StreamSourceFile": {
     "allOf": [
       {

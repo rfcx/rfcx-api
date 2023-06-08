@@ -226,6 +226,16 @@ function format (streamSourceFile) {
   }
 }
 
+function calcAvailability (segments) {
+  if (!segments.length || segments.some(s => s.availability === 0)) {
+    return 0
+  }
+  if (segments.some(s => s.availability === 2)) {
+    return 2
+  }
+  return 1
+}
+
 module.exports = {
   get,
   create,
@@ -234,5 +244,6 @@ module.exports = {
   checkForDuplicates,
   findOrCreateRelationships,
   transformMetaAttr,
-  format
+  format,
+  calcAvailability
 }
