@@ -69,11 +69,12 @@ async function get (streamId, start, options = {}) {
  * @param {number} options.readableBy Include only segments readable by the given user id
  */
 async function query (filters, options = {}) {
-  if (filters.end < filters.start) {
+  const transaction = options.transaction
+  if (filters.start && filters.end && filters.end < filters.start) {
     throw new ValidationError('"end" attribute cannot be less than "start" attribute')
   }
   // TODO: move this out as it's not related to segments querying and should be done beforehand
-  if (!(await Stream.findByPk(filters.streamId))) {
+  if (!(await Stream.findByPk(filters.streamId, { transaction }))) {
     throw new EmptyResultError('Stream not found')
   }
   // TODO: move this out as it's not related to segments querying and should be done beforehand
@@ -85,32 +86,39 @@ async function query (filters, options = {}) {
       stream_id: filters.streamId
     }
   }
-  if (options.strict === false) {
-    where[Op.and].start = {
-      // When we use both `start` and `end` attributes in query, TImescaleDB can't use hypertable indexes in a full way,
-      // because hypertables are spitted by `stream_id` + `start` only. So database has to check all chunks.
-      // A solution to this is to limit search to exact one-two chunks first and then search by `start` + `end` only inside these chunks.
-      // We have to find a timeframe where segment with its own full duration will be places. We don't know duration of each segment, so we
-      // will add some time to beginning and some time to the end (10 minutes to be safe).
-      [Op.between]: [filters.start.clone().subtract(10, 'minutes').valueOf(), filters.end.clone().add(10, 'minutes').valueOf()]
-    }
-    where[Op.and][Op.or] = {
-      start: {
-        [Op.gte]: filters.start.valueOf(),
-        [Op.lt]: filters.end.valueOf()
-      },
-      end: {
-        [Op.gt]: filters.start.valueOf(),
-        [Op.lte]: filters.end.valueOf()
-      },
-      [Op.and]: {
-        start: { [Op.lt]: filters.start.valueOf() },
-        end: { [Op.gt]: filters.end.valueOf() }
+  if (filters.start && filters.end) {
+    if (options.strict === false) {
+      where[Op.and].start = {
+        // When we use both `start` and `end` attributes in query, TImescaleDB can't use hypertable indexes in a full way,
+        // because hypertables are spitted by `stream_id` + `start` only. So database has to check all chunks.
+        // A solution to this is to limit search to exact one-two chunks first and then search by `start` + `end` only inside these chunks.
+        // We have to find a timeframe where segment with its own full duration will be places. We don't know duration of each segment, so we
+        // will add some time to beginning and some time to the end (10 minutes to be safe).
+        [Op.between]: [filters.start.clone().subtract(10, 'minutes').valueOf(), filters.end.clone().add(10, 'minutes').valueOf()]
+      }
+      where[Op.and][Op.or] = {
+        start: {
+          [Op.gte]: filters.start.valueOf(),
+          [Op.lt]: filters.end.valueOf()
+        },
+        end: {
+          [Op.gt]: filters.start.valueOf(),
+          [Op.lte]: filters.end.valueOf()
+        },
+        [Op.and]: {
+          start: { [Op.lt]: filters.start.valueOf() },
+          end: { [Op.gt]: filters.end.valueOf() }
+        }
+      }
+    } else {
+      where[Op.and].start = {
+        [Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
       }
     }
-  } else {
-    where[Op.and].start = {
-      [Op.between]: [filters.start.valueOf(), filters.end.valueOf()]
+  }
+  if (filters.streamSourceFileId !== undefined) {
+    where[Op.and].stream_source_file_id = {
+      [Op.eq]: filters.streamSourceFileId
     }
   }
   if (filters.unprocessedByClassifier !== undefined) {
@@ -138,7 +146,8 @@ async function query (filters, options = {}) {
     offset: options.offset,
     attributes,
     include,
-    order: [['start', 'ASC']]
+    order: [['start', 'ASC']],
+    transaction
   }).then(({ results, count }) => ({ results: results.map(segment => format(segment)), count }))
 }
 
@@ -158,6 +167,25 @@ function create (segment, options = {}) {
 }
 
 /**
+ * Find or create stream segment
+ * @param {*} where Stream segment attributes to use for search
+ * @param {*} defaults Stream segment attributes to use for creation
+ * @param {*} options
+ * @param {Transaction} options.transaction Perform within given transaction
+ */
+function findOrCreate (where, defaults, options = {}) {
+  const transaction = options.transaction
+  return StreamSegment.findOrCreate({ where, defaults, transaction })
+    .spread((segment, created) => {
+      return { segment, created }
+    })
+    .catch((e) => {
+      console.error('Stream segment service -> findOrCreate -> error', e)
+      throw new ValidationError('Cannot create stream segment with provided data')
+    })
+}
+
+/**
  * Bulk create stream segment
  * @param {*} segments Array of stream segment attributes
  * @param {*} options
@@ -170,6 +198,21 @@ function bulkCreate (segments, options = {}) {
       console.error('Stream segment service -> bulkCreate -> error', e)
       throw new ValidationError('Cannot bulkCreate stream segment with provided data')
     })
+}
+
+/**
+ * Update a stream segment
+ *
+ * @param {string} streamId
+ * @param {string|number} start
+ * @param {*} options Additional get options
+ * @param {Transaction} options.transaction Perform in the given Sequelize transaction
+ * @returns {StreamSegment}
+ * @throws EmptyResultError when segment not found
+ */
+async function update (streamId, start, data, options = {}) {
+  const transaction = options.transaction
+  return await StreamSegment.update(data, { where: { stream_id: streamId, start: start.valueOf() }, transaction })
 }
 
 /**
@@ -274,6 +317,8 @@ module.exports = {
   query,
   bulkCreate,
   create,
+  findOrCreate,
+  update,
   notify,
   getStreamCoverage,
   getNextSegmentTimeAfterSegment,

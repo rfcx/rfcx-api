@@ -609,14 +609,9 @@
       "sha1_checksum"
     ]
   },
-  "StreamSegment": {
+  "StreamSegmentWithoutId": {
     "type": "object",
     "properties": {
-      "id": {
-        "type": "uuid",
-        "description": "Stream Segment id",
-        "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
-      },
       "start": {
         "type": "date",
         "example": "2020-05-12T07:30:21.500Z"
@@ -643,6 +638,23 @@
       "file_extension"
     ]
   },
+  "StreamSegment": {
+    "type": "object",
+    "allOf": [
+      {
+        "$ref": "#/components/requestBodies/StreamSegmentWithoutId"
+      },
+      {
+        "properties": {
+          "id": {
+            "type": "uuid",
+            "description": "Stream Segment id",
+            "example": "c0686679-6c06-4f5d-84b5-2b4934aad33e"
+          }
+        }
+      }
+    ]
+  },
   "Ingestion": {
     "type": "object",
     "properties": {
@@ -653,7 +665,7 @@
       "stream_segments": {
         "type": "array",
         "items": {
-          "$ref": "#/components/requestBodies/StreamSegment"
+          "$ref": "#/components/requestBodies/StreamSegmentWithoutId"
         }
       }
     }

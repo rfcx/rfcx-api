@@ -1,7 +1,7 @@
 const request = require('supertest')
 const routes = require('.')
 const models = require('../_models')
-const { expressApp, truncateNonBase } = require('../../common/testing/sequelize')
+const { expressApp, truncateNonBase, muteConsole } = require('../../common/testing/sequelize')
 
 const app = expressApp({ has_system_role: true })
 
@@ -17,6 +17,10 @@ async function commonSetup () {
   }
 }
 
+beforeAll(async () => {
+  await truncateNonBase(models)
+  muteConsole('warn')
+})
 beforeEach(async () => {
   await commonSetup()
 })

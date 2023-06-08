@@ -2,6 +2,7 @@ const { EmptyResultError, ValidationError } = require('../../../common/error-han
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../_models')
 const { getAccessibleObjectsIDs, STREAM } = require('../../roles/dao')
 const pagedQuery = require('../../_utils/db/paged-query')
+const streamSegmentDao = require('../../stream-segments/dao/index')
 
 const streamSourceFileBaseInclude = [
   Stream.include(),
@@ -49,14 +50,14 @@ async function create (data, opts = {}) {
     throw new ValidationError('Cannot create source file with empty object.')
   }
   const { stream_id, filename, duration, sample_count, sample_rate, channels_count, bit_rate, sha1_checksum, meta } = data // eslint-disable-line camelcase
-  await checkForDuplicates(stream_id, sha1_checksum, filename, opts)
+  const { hasUnavailable } = await checkForDuplicates(stream_id, sha1_checksum, filename, opts)
   const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data, opts) // eslint-disable-line camelcase
   const where = { stream_id, sha1_checksum }
   const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
   const transaction = opts.transaction || null
   return StreamSourceFile.findOrCreate({ where, defaults, transaction })
     .spread((item, created) => {
-      if (!created) {
+      if (!created && !hasUnavailable) {
         throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
       }
       return item
@@ -147,18 +148,23 @@ function remove (streamSourceFile) {
  * @param {*} sha1_checksum
  * @returns {boolean} returns false if no duplicates, throws ValidationError if exists
  */
-function checkForDuplicates (stream_id, sha1_checksum, filename, opts = {}) { // eslint-disable-line camelcase
+async function checkForDuplicates (stream_id, sha1_checksum, filename, opts = {}) { // eslint-disable-line camelcase
   // check for duplicate source file files in this stream
   const transaction = opts.transaction || null
-  return StreamSourceFile
-    .findAll({ where: { stream_id, sha1_checksum }, transaction }) // eslint-disable-line camelcase
-    .then((existingStreamSourceFiles) => {
-      if (existingStreamSourceFiles && existingStreamSourceFiles.length) {
-        const sameFile = existingStreamSourceFiles.find(x => x.filename === filename)
+  return await StreamSourceFile
+    .findOne({ where: { stream_id, sha1_checksum }, transaction }) // eslint-disable-line camelcase
+    .then(async (existingStreamSourceFile) => {
+      if (existingStreamSourceFile) {
+        const segments = await streamSegmentDao.query({ streamId: stream_id, streamSourceFileId: existingStreamSourceFile.id }, { fields: ['availability'], transaction })
+        const hasUnavailable = segments.results.length && !!segments.results.filter(s => s.availability === 0).length
+        if (hasUnavailable) {
+          return { isDuplicate: true, hasUnavailable: true }
+        }
+        const sameFile = existingStreamSourceFile.filename === filename
         const message = sameFile ? 'This file was already ingested.' : 'Duplicate file. Matching sha1 signature already ingested.'
         throw new ValidationError(message)
       }
-      return false
+      return { isDuplicate: false }
     })
 }
 
