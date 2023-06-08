@@ -94,9 +94,10 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             if (!created) {
               await streamSegmentDao.update(streamId, s.start, { availability: 1 }, { transaction })
             }
-            segments.push({ ...s, ...segment.toJSON() })
+            segments.push({ ...s, ...segment.toJSON(), created })
           }
 
+          const createdSegments = segments.filter(s => s.created)
           // Refresh stream max_sample rate, start and end if needed
           const minStart = moment.min(transformedArray.map(s => s.start))
           const maxEnd = moment.max(transformedArray.map(s => s.end))
@@ -106,17 +107,16 @@ router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['sys
             sampleRate: streamSourceFile.sample_rate
           }, { transaction })
 
-          if (arbimonService.isEnabled) {
-            await arbimonService.createRecordingsFromSegments(sfParams, segments, { transaction })
+          if (arbimonService.isEnabled && createdSegments.length) {
+            await arbimonService.createRecordingsFromSegments(sfParams, createdSegments, { transaction })
           }
 
-          await Promise.all(segments.map(segment => streamSegmentDao.notify(segment)))
+          await Promise.all(createdSegments.map(segment => streamSegmentDao.notify(segment)))
           await transaction.commit()
-          const responseBody = segments.map(s => { return { id: s.id, start: s.start } })
           return res
             .location(`/stream-source-files/${streamSourceFile.id}`)
             .status(201)
-            .json({ stream_segments: responseBody })
+            .json({ stream_segments: segments.map(s => { return { id: s.id, start: s.start } }) })
         })
         .catch((err) => {
           transaction.rollback()
