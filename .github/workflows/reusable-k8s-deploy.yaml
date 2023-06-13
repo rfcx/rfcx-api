@@ -4,9 +4,9 @@ on:
       runs-on:
         description: Platform to execute on
         type: string
-        default: ubuntu-latest
+        default: deployment-runner
         required: false
-      tag: 
+      tag:
         description: Image tag to deploy
         type: string
         required: true
@@ -45,7 +45,7 @@ jobs:
           KUBE_CONFIG: ${{ secrets.kube-config }}
         with:
           args: rollout status deployment/core-api --namespace=${{ inputs.namespace }}
-      
+
       - name: 'Deploy: Kubernetes verify core-tasks'
         # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
         uses: actions-hub/kubectl@365773786ebd92c7b36b6ab80e17d4a213ab0cd1
@@ -53,7 +53,7 @@ jobs:
           KUBE_CONFIG: ${{ secrets.kube-config }}
         with:
           args: rollout status deployment/core-tasks --namespace=${{ inputs.namespace }}
-        
+
       - name: 'Deploy: Kubernetes verify media-api'
         if: ${{ inputs.namespace == 'production' }}
         # v1 (1.21.2) @ 03 Nov 2021 https://github.com/actions-hub/kubectl/tags
