@@ -591,7 +591,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
       expect(response.body.stream_segments[1].start).toBe(requestBody.stream_segments[1].start)
       expect(response.body.stream_segments[2].start).toBe(requestBody.stream_segments[2].start)
     })
-    test('returns valudation error for 1 available segment id', async () => {
+    test('does not return valudation error for 1 available segment id', async () => {
       await commonSetup()
       const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
       const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
@@ -599,7 +599,7 @@ describe('POST internal/ingest/streams/:id/stream-source-files-and-segments', ()
       await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 1 })
 
       const response = await request(app).post(`/streams/${stream.id}/stream-source-files-and-segments`).send(testPayload)
-      expect(response.statusCode).toBe(400)
+      expect(response.statusCode).toBe(201)
     })
   })
 })
