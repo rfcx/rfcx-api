@@ -152,6 +152,7 @@ exports.audio = {
     return models.GuardianAudio
       .findOrCreate({
         where: {
+          measured_at: audioInfo.measured_at,
           sha1_checksum: audioInfo.sha1Hash
         },
         defaults: {
