@@ -4,7 +4,7 @@ const dao = require('./dao')
 const Converter = require('../../common/converter')
 const { ForbiddenError } = require('../../common/error-handling/errors')
 const rolesService = require('../roles/dao')
-const streamSegmentDao = require('../stream-segments/dao/index')
+// const streamSegmentDao = require('../stream-segments/dao/index')
 
 /**
  * @swagger
@@ -87,10 +87,10 @@ router.get('/:id/stream-source-files', function (req, res) {
       return dao.query(filters, options)
     })
     .then(async (data) => {
-      for (const item of data.results) {
-        const segmentsData = await streamSegmentDao.query({ streamId: req.params.id, streamSourceFileId: item.id }, { fields: ['availability'] })
-        item.availability = dao.calcAvailability(segmentsData.results)
-      }
+      // for (const item of data.results) {
+      //   const segmentsData = await streamSegmentDao.query({ streamId: req.params.id, streamSourceFileId: item.id }, { fields: ['availability'] })
+      //   item.availability = dao.calcAvailability(segmentsData.results)
+      // }
       return data
     })
     .then(data => {
