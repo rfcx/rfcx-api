@@ -159,13 +159,15 @@ async function checkForDuplicates (stream_id, sha1_checksum, filename, opts = {}
         const sameFile = existingStreamSourceFile.filename === filename
         if (!sameFile) {
           throw new ValidationError('This file was already ingested.')
-        } else {
-          // TODO: once we are ready to prevent duplicate uploads again, we can use the following message to return the error
-          // 'Duplicate file. Matching sha1 signature already ingested.'
-          const segments = await streamSegmentDao.query({ streamId: stream_id, streamSourceFileId: existingStreamSourceFile.id }, { fields: ['availability'], transaction })
-          const hasUnavailable = segments.results.length && !!segments.results.filter(s => s.availability === 0).length
-          return { isDuplicate: true, hasUnavailable }
         }
+        return { isDuplicate: true }
+        // TODO: once we are ready to prevent duplicate uploads again, we can use the following message to return the error
+        // 'Duplicate file. Matching sha1 signature already ingested.'
+        // } else {
+        //   const segments = await streamSegmentDao.query({ streamId: stream_id, streamSourceFileId: existingStreamSourceFile.id }, { fields: ['availability'], transaction })
+        //   const hasUnavailable = segments.results.length && !!segments.results.filter(s => s.availability === 0).length
+        //   return { isDuplicate: true, hasUnavailable }
+        // }
       }
       return { isDuplicate: false }
     })
