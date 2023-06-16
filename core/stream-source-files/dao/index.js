@@ -2,7 +2,6 @@ const { EmptyResultError, ValidationError } = require('../../../common/error-han
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../_models')
 const { getAccessibleObjectsIDs, STREAM } = require('../../roles/dao')
 const pagedQuery = require('../../_utils/db/paged-query')
-const streamSegmentDao = require('../../stream-segments/dao/index')
 
 const streamSourceFileBaseInclude = [
   Stream.include(),
