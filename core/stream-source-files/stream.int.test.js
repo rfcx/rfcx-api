@@ -37,7 +37,7 @@ describe('GET stream-source-file/:id', () => {
     const segment1 = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
 
-    const response = await request(app).get('/abc/stream-source-files').query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get('/abc/stream-source-file').query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(404)
     expect(response.body.message).toBe('stream with given id doesn\'t exist.')
@@ -48,7 +48,7 @@ describe('GET stream-source-file/:id', () => {
     const segment1 = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: 'b37530881c7ffd9edfd8f7feb131ae4563e3759d', start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: 'b37530881c7ffd9edfd8f7feb131ae4563e3759d', start: segment1.start })
 
     expect(response.statusCode).toBe(404)
     expect(response.body.message).toBe('Stream source file not found')
@@ -59,7 +59,7 @@ describe('GET stream-source-file/:id', () => {
     const segment1 = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
@@ -74,7 +74,7 @@ describe('GET stream-source-file/:id', () => {
     const segment1 = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 0 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 0 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
@@ -90,7 +90,7 @@ describe('GET stream-source-file/:id', () => {
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 0 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:11:10Z', end: '2021-07-26T10:12:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
@@ -107,7 +107,7 @@ describe('GET stream-source-file/:id', () => {
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:11:10Z', end: '2021-07-26T10:12:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:12:10Z', end: '2021-07-26T10:13:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
@@ -124,7 +124,7 @@ describe('GET stream-source-file/:id', () => {
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:11:10Z', end: '2021-07-26T10:12:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:12:10Z', end: '2021-07-26T10:13:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 2 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
@@ -140,7 +140,7 @@ describe('GET stream-source-file/:id', () => {
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:10:10Z', end: '2021-07-26T10:11:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 0 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:12:10Z', end: '2021-07-26T10:13:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 2 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
@@ -156,7 +156,7 @@ describe('GET stream-source-file/:id', () => {
     const segment2 = await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:12:10Z', end: '2021-07-26T10:13:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 2 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:12:10Z', end: '2021-07-26T10:13:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 2 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
@@ -172,7 +172,7 @@ describe('GET stream-source-file/:id', () => {
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:11:10Z', end: '2021-07-26T10:12:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
     await models.StreamSegment.create({ stream_id: stream.id, start: '2021-07-26T10:12:10Z', end: '2021-07-26T10:13:10Z', stream_source_file_id: sourceFile.id, sample_count: 720000, file_extension_id: fileExtension.id, availability: 1 })
 
-    const response = await request(app).get(`/${stream.id}/stream-source-files`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
+    const response = await request(app).get(`/${stream.id}/stream-source-file`).query({ sha1_checksum: sourceFile.sha1_checksum, start: segment1.start })
 
     expect(response.statusCode).toBe(200)
     expect(response.body.id).toBe(sourceFile.id)
