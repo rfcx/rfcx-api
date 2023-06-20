@@ -2,101 +2,88 @@ const router = require('express').Router()
 const { httpErrorHandler } = require('../../common/error-handling/http')
 const dao = require('./dao')
 const Converter = require('../../common/converter')
-const { ForbiddenError } = require('../../common/error-handling/errors')
+const { ForbiddenError, EmptyResultError } = require('../../common/error-handling/errors')
 const rolesService = require('../roles/dao')
-// const streamSegmentDao = require('../stream-segments/dao/index')
+const streamSegmentDao = require('../stream-segments/dao/index')
 
 /**
  * @swagger
  *
- * /streams/{id}/stream-source-files:
+ * /streams/{id}/stream-source-file:
  *   get:
- *     summary: Get list of stream source files belonging to a stream
+ *     summary: Get a stream source file belonging to a stream
  *     tags:
  *       - stream-source-files
  *     parameters:
  *       - name: filename
- *         description: List of filenames
+ *         description: Filename
  *         in: query
- *         type: array|string
+ *         type: string
  *       - name: sha1_checksum
  *         description: List of sha1 checksums
  *         in: query
- *         type: array|string
- *       - name: limit
- *         description: Maximum number of results to return
+ *         type: string
+ *       - name: sha1_checksum
+ *         description: List of sha1 checksums
  *         in: query
- *         type: int
- *         default: 100
- *       - name: offset
- *         description: Number of results to skip
+ *         type: string
+ *       - name: start
+ *         description: File timestamp
  *         in: query
- *         type: int
- *         default: 0
+ *         type: string
  *       - name: fields
  *         description: Customize included fields and relations
  *         in: query
  *         type: array
  *     responses:
  *       200:
- *         description: List of stream source files (lite) objects
- *         headers:
- *           Total-Items:
- *             schema:
- *               type: integer
- *             description: Total number of items without limit and offset.
+ *         description: Stream source file (lite) object
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/StreamSourceFileLiteWithAvailability'
+*                $ref: '#/components/schemas/StreamSourceFileLiteWithAvailability'
  *       400:
  *         description: Invalid query parameters
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/stream-source-files', function (req, res) {
+router.get('/:id/stream-source-file', function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const converter = new Converter(req.query, {}, true)
-  converter.convert('filename').optional().toArray()
-  converter.convert('sha1_checksum').optional().toArray()
-  converter.convert('limit').optional().toInt().default(100)
-  converter.convert('offset').optional().toInt().default(0)
+  converter.convert('sha1_checksum').toString()
+  converter.convert('start').toMomentUtc()
+  converter.convert('filename').optional().toString()
   converter.convert('fields').optional().toArray()
 
   return converter.validate()
     .then(async (params) => {
-      if (user.has_system_role || await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)) {
-        return params
+      if (!user.has_system_role && !await rolesService.hasPermission(rolesService.READ, user, streamId, rolesService.STREAM)) {
+        throw new ForbiddenError('You do not have permission to access this stream.')
       }
-      throw new ForbiddenError('You do not have permission to access this stream.')
-    })
-    .then(params => {
       const filters = {
-        filenames: params.filename,
         streamIds: [req.params.id],
-        sha1Checksums: params.sha1Checksum
+        sha1Checksums: [params.sha1Checksum]
       }
+      if (params.filename) { filters.filename = [params.filename] }
       const options = {
-        limit: params.limit,
-        offset: params.offset,
         fields: params.fields
       }
-      return dao.query(filters, options)
+      const data = await dao.query(filters, options)
+      if (!data.results.length) {
+        throw new EmptyResultError('Stream source file not found')
+      }
+      const streamSourceFile = data.results[0]
+      const segmentsData = await streamSegmentDao.query({
+        streamId: req.params.id,
+        start: params.start.clone().subtract('1', 'minute'),
+        end: params.start.clone().add('1', 'day'),
+        streamSourceFileId: streamSourceFile.id
+      }, { fields: ['availability'] })
+      streamSourceFile.availability = dao.calcAvailability(segmentsData.results)
+      return res.json(streamSourceFile)
     })
-    .then(async (data) => {
-      // for (const item of data.results) {
-      //   const segmentsData = await streamSegmentDao.query({ streamId: req.params.id, streamSourceFileId: item.id }, { fields: ['availability'] })
-      //   item.availability = dao.calcAvailability(segmentsData.results)
-      // }
-      return data
-    })
-    .then(data => {
-      return res.header('Total-Items', data.total).json(data.results)
-    })
-    .catch(httpErrorHandler(req, res, 'Failed getting stream source files'))
+    .catch(httpErrorHandler(req, res, 'Failed getting stream source file'))
 })
 
 module.exports = router
