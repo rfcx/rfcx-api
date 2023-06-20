@@ -54,10 +54,10 @@ async function defaultQueryOptions (filters = {}, options = {}) {
   }
   if (classifications) {
     where['$classification.value$'] = { [Sequelize.Op.or]: classifications }
-    if (!include.find(i => i.as === 'classification')) {
-      include.push(availableIncludes.find(a => a.as === 'classification'))
-    }
   }
+  // Always include classification so the query can group it by id
+  include.push(availableIncludes.find(a => a.as === 'classification'))
+
   if (classifiers) {
     where.classifier_id = { [Sequelize.Op.or]: classifiers }
   }
@@ -126,7 +126,7 @@ async function timeAggregatedQuery (start, end, streams, streamsOnlyPublic, clas
   const timeBucketAttribute = 'time_bucket'
   const aggregatedValueAttribute = 'aggregated_value'
   const queryOptions = {
-    ...(await defaultQueryOptions(start, end, streams, streamsOnlyPublic, classifications, minConfidence, descending, limit, offset, user)),
+    ...(await defaultQueryOptions({ start, end, streams, streamsOnlyPublic, classifications, minConfidence }, { descending, limit, offset, user })),
     attributes: timeAggregatedQueryAttributes(timeInterval, aggregateFunction, aggregateField, 'Detection', 'start', timeBucketAttribute, aggregatedValueAttribute),
     order: [Sequelize.literal(timeBucketAttribute + (descending ? ' DESC' : ''))],
     group: [timeBucketAttribute].concat(Sequelize.col('classification.id')),
