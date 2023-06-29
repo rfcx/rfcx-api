@@ -14,7 +14,7 @@ const arbimonService = require('../../_services/arbimon')
 /**
  * @swagger
  *
- * /streams/{id}/stream-source-files-and-segments:
+ * /streams/{id}/stream-source-file-and-segments:
  *   post:
  *     summary: Create a stream source file and related segments
  *     tags:
@@ -42,7 +42,7 @@ const arbimonService = require('../../_services/arbimon')
  *         description: Invalid query parameters
  */
 
-router.post('/streams/:streamId/stream-source-files-and-segments', hasRole(['systemUser']), function (req, res) {
+router.post('/streams/:streamId/stream-source-file-and-segments', hasRole(['systemUser']), function (req, res) {
   const streamId = req.params.streamId
 
   const converter = new Converter(req.body, {})
