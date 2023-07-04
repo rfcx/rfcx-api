@@ -172,7 +172,7 @@
         "type": "string",
         "description": "One of 'draft' (default), 'staging', 'active', 'retired'"
       },
-      "external_id": {
+      "externalId": {
         "type": "string",
         "description": "Identifier in AI Hub or other service"
       }
@@ -183,6 +183,22 @@
       "version"
     ]
   },
+  "OutputLite": {
+    "properties": {
+      "classificationId": {
+        "type": "number",
+        "example": 80
+      },
+      "outputClassName": {
+        "type": "string",
+        "example": "chainsaw"
+      },
+      "ignoreThreshold": {
+        "type": "float",
+        "example": 0.5
+      }
+    }
+  },
   "Classifier": {
     "allOf": [
       {
@@ -190,20 +206,26 @@
       },
       {
         "properties": {
-          "supported_classifications": {
+          "deployments": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ClassificationLite"
+              "$ref": "#/components/schemas/ClassifierDeploymentLite"
             }
           },
-          "enabled_projects": {
+          "outputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutputLite"
+            }
+          },
+          "activeProjects": {
             "type": "array",
             "description": "Projects that are enabled for this classifier",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ProjectLite"
             }
           },
-          "enabled_streams": {
+          "activeStreams": {
             "type": "array",
             "description": "Individual streams that are enabled for this classifier",
             "items": {
@@ -218,9 +240,6 @@
           },
           "updated_at": {
             "type": "date"
-          },
-          "updated_by": {
-            "$ref": "#/components/schemas/UserLite"
           }
         }
       }
@@ -1017,7 +1036,7 @@
       }
     }
   },
-  "ClassifierDeployment": {
+  "ClassifierDeploymentLite": {
     "properties": {
       "id": {
         "type": "integer",
@@ -1038,52 +1057,63 @@
       "end": {
         "type": "string",
         "example": "2022-05-12T07:33:27.000Z"
+      }
+    }
+  },
+  "ClassifierDeployment": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassifierDeploymentLite"
       },
-      "createdById": {
-        "type": "integer",
-        "example": 3
-      },
-      "platform": {
-        "type": "string",
-        "example": "aws"
-      },
-      "modelUrl": {
-        "type": "string",
-        "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
-      },
-      "classifier": {
-        "type": "object",
+      {
         "properties": {
-          "id": {
+          "createdById": {
             "type": "integer",
-            "example": 1
+            "example": 3
           },
-          "name": {
+          "platform": {
             "type": "string",
-            "example": "gunshot"
-          },
-          "version": {
-            "type": "integer",
-            "example": 4
-          },
-          "externalId": {
-            "type": "string",
-            "example": "a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d"
-          },
-          "modelRunner": {
-            "type": "string",
-            "example": "tf2"
+            "example": "aws"
           },
           "modelUrl": {
             "type": "string",
             "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
           },
-          "lastExecutedAt": {
-            "type": "string",
-            "example": "2020-10-22 21:30:14.376000"
+          "classifier": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 1
+              },
+              "name": {
+                "type": "string",
+                "example": "gunshot"
+              },
+              "version": {
+                "type": "integer",
+                "example": 4
+              },
+              "externalId": {
+                "type": "string",
+                "example": "a7e9b5e6-7e6b-2237-0bf0-b6a274ef781d"
+              },
+              "modelRunner": {
+                "type": "string",
+                "example": "tf2"
+              },
+              "modelUrl": {
+                "type": "string",
+                "example": "s3://rfcx-ai-dev/classifiers/7v3ag23b.tar.gz"
+              },
+              "lastExecutedAt": {
+                "type": "string",
+                "example": "2020-10-22 21:30:14.376000"
+              }
+            }
           }
         }
       }
-    }
+    ]
   }
 }
