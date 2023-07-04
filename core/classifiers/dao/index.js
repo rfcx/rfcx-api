@@ -1,6 +1,7 @@
 const models = require('../../_models')
 const { EmptyResultError, ForbiddenError } = require('../../../common/error-handling/errors')
 const pagedQuery = require('../../_utils/db/paged-query')
+const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
   {
@@ -40,19 +41,24 @@ const availableIncludes = [
  * @throws EmptyResultError when classifier not found
  */
 async function get (id, options = {}) {
-  const query = { where: { id }, raw: true }
+  const transaction = options.transaction
+  const where = { id }
 
-  if (options.attributes) {
-    query.attributes = ['isPublic', 'createdById', ...options.attributes]
-  }
+  const attributes = options.fields && options.fields.length > 0 ? models.Classifier.attributes.full.filter(a => options.fields.includes(a)) : models.Classifier.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : []
 
-  const classifier = await models.Classifier.findOne(query)
+  let classifier = await models.Classifier.findOne({
+    where,
+    attributes: ['is_public', 'created_by_id', ...attributes],
+    include,
+    transaction
+  })
   if (!classifier) {
     throw new EmptyResultError('Classifier with given id not found.')
   }
-
+  classifier = classifier.toJSON()
   // When readableBy is specified, only return public classifiers or classifiers created by the user
-  if (options.readableBy && !classifier.isPublic && !(classifier.createdById === options.readableBy)) {
+  if (options.readableBy && !classifier.is_public && classifier.created_by_id !== options.readableBy) {
     throw new ForbiddenError()
   }
 
@@ -64,7 +70,7 @@ async function get (id, options = {}) {
     classifier.activeProjects = classifier.activeProjects.map(({ classifierActiveProjects, ...obj }) => obj)
   }
 
-  return classifier
+  return toCamelObject(classifier, 3)
 }
 
 /**
