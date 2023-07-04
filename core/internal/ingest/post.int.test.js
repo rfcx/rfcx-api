@@ -1,6 +1,6 @@
 const request = require('supertest')
 const moment = require('moment')
-const routes = require('./stream')
+const routes = require('./post')
 const models = require('../../_models')
 const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../../common/testing/sequelize')
 
@@ -40,7 +40,7 @@ function resetTestData () {
       audio_codec: 'flac',
       sha1_checksum: 'e427f7bf6c589b4856d5f51691d159366d74266',
       meta: {
-        Artist: 'Topher White',
+        Artist: 'John Doe',
         Album: 'Rainforest Connection'
       }
     },

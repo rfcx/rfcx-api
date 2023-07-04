@@ -1,18 +1,19 @@
 const router = require('express').Router()
-const { httpErrorHandler } = require('../../common/error-handling/http')
-const dao = require('./dao')
-const Converter = require('../../common/converter')
-const { ForbiddenError, EmptyResultError } = require('../../common/error-handling/errors')
-const rolesService = require('../roles/dao')
+const { httpErrorHandler } = require('../../../common/error-handling/http')
+const streamSourceFileDao = require('../../stream-source-files/dao')
+const streamSegmentDao = require('../../stream-segments/dao')
+const Converter = require('../../../common/converter')
+const rolesService = require('../../roles/dao')
+const { ForbiddenError, EmptyResultError } = require('../../../common/error-handling/errors')
 
 /**
  * @swagger
  *
  * /streams/{id}/stream-source-file:
  *   get:
- *     summary: Get a stream source file belonging to a stream
+ *     summary: Get a stream source file belonging to a stream with segments
  *     tags:
- *       - stream-source-files
+ *       - internal
  *     parameters:
  *       - name: filename
  *         description: Filename
@@ -40,7 +41,7 @@ const rolesService = require('../roles/dao')
  *         content:
  *           application/json:
  *             schema:
-*                $ref: '#/components/schemas/StreamSourceFileLite'
+*                $ref: '#/components/schemas/StreamSourceFileLiteWithAvailability'
  *       400:
  *         description: Invalid query parameters
  *       404:
@@ -68,11 +69,19 @@ router.get('/:id/stream-source-file', function (req, res) {
       const options = {
         fields: params.fields
       }
-      const data = await dao.query(filters, options)
+      const data = await streamSourceFileDao.query(filters, options)
       if (!data.results.length) {
         throw new EmptyResultError('Stream source file not found')
       }
       const streamSourceFile = data.results[0]
+      const segmentsData = await streamSegmentDao.query({
+        streamId: req.params.id,
+        start: params.start.clone().subtract('1', 'minute'),
+        end: params.start.clone().add('1', 'day'),
+        streamSourceFileId: streamSourceFile.id
+      }, { fields: ['start', 'availability'] })
+      streamSourceFile.availability = streamSourceFileDao.calcAvailability(segmentsData.results)
+      streamSourceFile.segments = segmentsData.results
       return res.json(streamSourceFile)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream source file'))
