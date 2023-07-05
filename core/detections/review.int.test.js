@@ -176,7 +176,7 @@ describe('POST /:streamId/detections/:start/review', () => {
         classifierId: classifier.id,
         start: start,
         end: '2022-01-01T00:00:01.000Z',
-        confidence: 0.99
+        confidence: 0.45
       })
 
       const body = {
