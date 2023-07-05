@@ -9,7 +9,7 @@ const Converter = require('../../common/converter')
  * /streams/{streamId}/detections/{start}/review:
  *   post:
  *     summary: Review a detection
- *     description:
+ *     description: Creates or updates reviews for any detections matching stream and start
  *     tags:
  *       - detections
  *     parameters:
@@ -36,20 +36,8 @@ const Converter = require('../../common/converter')
  *         in: query
  *         type: number
  *     responses:
- *       201:
- *         description: Created
- *         headers:
- *           Location:
- *             description: Path of the created resource (e.g. `/detections/reviews/xyz123`)
- *             schema:
- *               type: string
- *       204:
- *         description: Updated
- *         headers:
- *           Location:
- *             description: Path of the updated resource (e.g. `/detections/reviews/xyz123`)
- *             schema:
- *               type: string
+ *       200:
+ *         description: Success
  *       400:
  *         description: Invalid query parameters
  */
