@@ -16,7 +16,8 @@ async function createOrUpdate (options) {
     end: start,
     streams: [streamId],
     classifications: [classification],
-    classifiers: [classifier]
+    classifiers: [classifier],
+    minConfidence: 0
   }, { fields: ['id'] })
   if (!detections.length) {
     throw new EmptyResultError('Detection with given parameters not found')
