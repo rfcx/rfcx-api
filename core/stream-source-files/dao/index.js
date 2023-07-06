@@ -1,6 +1,8 @@
+const moment = require('moment-timezone')
 const { EmptyResultError, ValidationError } = require('../../../common/error-handling/errors')
 const { StreamSourceFile, Sequelize, Stream, AudioCodec, AudioFileFormat } = require('../../_models')
 const { getAccessibleObjectsIDs, STREAM } = require('../../roles/dao')
+const streamSegmentDao = require('../../stream-segments/dao')
 const pagedQuery = require('../../_utils/db/paged-query')
 
 const streamSourceFileBaseInclude = [
@@ -41,25 +43,25 @@ function get (id, opts = {}) {
 /**
  * Creates source file item
  * @param {*} data source file attributes
+ * @param {*} minStart momentjs object of the first segment start
  * @param {*} opts additional function params
  * @returns {*} source file model item
  */
-async function create (data, opts = {}) {
+async function create (data, minStart, opts = {}) {
   if (!data) {
     throw new ValidationError('Cannot create source file with empty object.')
   }
   const { stream_id, filename, duration, sample_count, sample_rate, channels_count, bit_rate, sha1_checksum, meta } = data // eslint-disable-line camelcase
-  // const { hasUnavailable } = await checkForDuplicates(stream_id, sha1_checksum, filename, opts)
-  await checkForDuplicates(stream_id, sha1_checksum, filename, opts)
+  const { hasUnavailable } = await checkForDuplicates(stream_id, sha1_checksum, minStart, opts)
   const { audio_codec_id, audio_file_format_id } = await findOrCreateRelationships(data, opts) // eslint-disable-line camelcase
   const where = { stream_id, sha1_checksum }
   const defaults = { stream_id, filename, audio_file_format_id, duration, sample_count, sample_rate, channels_count, bit_rate, audio_codec_id, sha1_checksum, meta }
   const transaction = opts.transaction || null
   return StreamSourceFile.findOrCreate({ where, defaults, transaction })
     .spread((item, created) => {
-      // if (!created && !hasUnavailable) {
-      //   throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
-      // }
+      if (!created && !hasUnavailable) {
+        throw new ValidationError('Duplicate file. Matching sha1 signature already ingested.')
+      }
       return item
     })
     .catch((e) => {
@@ -145,28 +147,29 @@ function remove (streamSourceFile) {
 /**
  * Checks if source file with given sha1 checksum exists in specified stream
  * @param {*} stream_id
- * @param {*} sha1_checksum
+ * @param {*} sha1Checksum
+ * @param {*} minStart
  * @returns {boolean} returns false if no duplicates, throws ValidationError if exists
  */
-async function checkForDuplicates (stream_id, sha1_checksum, filename, opts = {}) { // eslint-disable-line camelcase
+async function checkForDuplicates (streamId, sha1Checksum, minStart, opts = {}) { // eslint-disable-line camelcase
   // check for duplicate source file files in this stream
   const transaction = opts.transaction || null
   return await StreamSourceFile
-    .findOne({ where: { stream_id, sha1_checksum }, transaction }) // eslint-disable-line camelcase
+    .findOne({ where: { stream_id: streamId, sha1_checksum: sha1Checksum }, transaction }) // eslint-disable-line camelcase
     .then(async (existingStreamSourceFile) => {
       if (existingStreamSourceFile) {
-        const sameFile = existingStreamSourceFile.filename === filename
+        const segments = (await streamSegmentDao.query({
+          streamId,
+          start: minStart.clone().subtract('1', 'minute'),
+          end: minStart.clone().add('1', 'day'),
+          streamSourceFileId: existingStreamSourceFile.id
+        }, { fields: ['start', 'availability'], transaction })).results
+        const sameFile = segments.length && moment.utc(segments[0].start).valueOf() === minStart.valueOf()
+        const hasUnavailable = segments.length && !!segments.filter(s => s.availability === 0).length
         if (!sameFile) {
           throw new ValidationError('This file was already ingested.')
         }
-        return { isDuplicate: true }
-        // TODO: once we are ready to prevent duplicate uploads again, we can use the following message to return the error
-        // 'Duplicate file. Matching sha1 signature already ingested.'
-        // } else {
-        //   const segments = await streamSegmentDao.query({ streamId: stream_id, streamSourceFileId: existingStreamSourceFile.id }, { fields: ['availability'], transaction })
-        //   const hasUnavailable = segments.results.length && !!segments.results.filter(s => s.availability === 0).length
-        //   return { isDuplicate: true, hasUnavailable }
-        // }
+        return { isDuplicate: true, hasUnavailable }
       }
       return { isDuplicate: false }
     })

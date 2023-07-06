@@ -78,7 +78,8 @@ module.exports = function (req, res) {
           // Set missing stream_source_file attributes and create a db row
           sfParams.stream_id = streamId
           streamSourceFileDao.transformMetaAttr(sfParams)
-          const streamSourceFile = await streamSourceFileDao.create(sfParams, { transaction })
+          const minStart = moment.min(transformedArray.map(s => s.start))
+          const streamSourceFile = await streamSourceFileDao.create(sfParams, minStart, { transaction })
 
           // Get file format ids
           const fileExtensions = [...new Set(transformedArray.map(segment => segment.file_extension))]
@@ -98,7 +99,6 @@ module.exports = function (req, res) {
 
           const createdSegments = segments.filter(s => s.created)
           // Refresh stream max_sample rate, start and end if needed
-          const minStart = moment.min(transformedArray.map(s => s.start))
           const maxEnd = moment.max(transformedArray.map(s => s.end))
           await streamDao.refreshStreamBoundVars(stream, {
             start: minStart.toDate(),

@@ -591,7 +591,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       expect(response.body.stream_segments[1].start).toBe(requestBody.stream_segments[1].start)
       expect(response.body.stream_segments[2].start).toBe(requestBody.stream_segments[2].start)
     })
-    test('does not return valudation error for 1 available segment id', async () => {
+    test('return valudation error for 1 available segment id', async () => {
       await commonSetup()
       const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
       const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
@@ -599,7 +599,48 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 1 })
 
       const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      expect(response.statusCode).toBe(400)
+    })
+    test('does not return valudation error for 1 unavailable segment id and same source file', async () => {
+      await commonSetup()
+      const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+      const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
       expect(response.statusCode).toBe(201)
+    })
+    test('does not return valudation error for 1 unavailable segment id and renamed source file', async () => {
+      await commonSetup()
+      const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+      const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send({ ...testPayload, filename: `copy-${testPayload.filename}` })
+      expect(response.statusCode).toBe(201)
+    })
+    test('return valudation error for 1 unavailable segment id and file with a different timestamp', async () => {
+      await commonSetup()
+      const project = (await models.Project.findOrCreate({ where: { id: 'foo', name: 'my project', createdById: seedValues.primaryUserId } }))[0]
+      const stream = await models.Stream.create({ id: 'j123k', name: 'Jaguar Station', latitude: 10.1, longitude: 101.1, createdById: seedValues.primaryUserId, projectId: project.id })
+      const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
+      await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
+
+      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send({
+        ...testPayload,
+        stream_segments: [
+          {
+            start: '2021-04-18T10:12:00.000Z',
+            end: '2021-04-18T10:13:00.000Z',
+            sample_count: 3840000,
+            file_extension: '.flac',
+            file_size: 200000
+          }
+        ]
+      })
+      expect(response.statusCode).toBe(400)
     })
   })
 })
