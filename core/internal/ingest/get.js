@@ -1,4 +1,3 @@
-const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const streamSourceFileDao = require('../../stream-source-files/dao')
 const streamSegmentDao = require('../../stream-segments/dao')
@@ -47,7 +46,7 @@ const { ForbiddenError, EmptyResultError } = require('../../../common/error-hand
  *       404:
  *         description: Stream not found
  */
-router.get('/:id/stream-source-file', function (req, res) {
+module.exports = function (req, res) {
   const user = req.rfcx.auth_token_info
   const streamId = req.params.id
   const converter = new Converter(req.query, {}, true)
@@ -85,6 +84,4 @@ router.get('/:id/stream-source-file', function (req, res) {
       return res.json(streamSourceFile)
     })
     .catch(httpErrorHandler(req, res, 'Failed getting stream source file'))
-})
-
-module.exports = router
+}

@@ -1,6 +1,6 @@
 const request = require('supertest')
 const moment = require('moment')
-const routes = require('./post')
+const routes = require('./stream')
 const models = require('../../_models')
 const { truncateNonBase, expressApp, seedValues, muteConsole } = require('../../../common/testing/sequelize')
 
@@ -63,10 +63,10 @@ async function commonSetup () {
   fileExtensionId = (await models.FileExtension.findOrCreate({ where: fileExtension }))[0].id
 }
 
-describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () => {
+describe('POST internal/ingest/:id/stream-source-file-and-segments', () => {
   test('one stream_source_file and one stream_segments is created', async () => {
     await commonSetup()
-    const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+    const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
 
     expect(response.statusCode).toBe(201)
     const streamSourceFiles = await models.StreamSourceFile.findAll()
@@ -101,7 +101,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       { start: '2021-04-18T12:13:00.000Z', end: '2021-04-18T12:14:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
     )
 
-    const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+    const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
     expect(response.statusCode).toBe(201)
     const streamSourceFiles = await models.StreamSourceFile.findAll()
     const streamSegments = await models.StreamSegment.findAll()
@@ -132,7 +132,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       { start: '2021-04-18T12:21:00.000Z', end: '2021-04-18T12:22:00.000Z', sample_count: 3840000, file_extension: '.flac', file_size: 200000 }
     )
 
-    const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+    const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
     expect(response.statusCode).toBe(201)
     const streamSourceFiles = await models.StreamSourceFile.findAll()
@@ -161,7 +161,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
     requestBody.stream_source_file.audio_file_format = 'wav'
     requestBody.stream_segments[0].file_extension = '.wav'
 
-    const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+    const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
     expect(response.statusCode).toBe(201)
     const streamSourceFile = await models.StreamSourceFile.findOne({ where: { filename: requestBody.stream_source_file.filename } })
@@ -181,7 +181,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file
 
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'stream_source_file\' the parameter is required but was not provided.')
@@ -195,7 +195,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'stream_segments\' the parameter is required but was not provided.')
@@ -209,7 +209,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.filename
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'filename\' the parameter is required but was not provided.')
@@ -223,7 +223,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.audio_file_format
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'audio_file_format\' the parameter is required but was not provided.')
@@ -237,7 +237,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.duration
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'duration\' the parameter is required but was not provided.')
@@ -251,7 +251,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.duration = 0
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'duration\' is smaller than the minimum 1.')
@@ -265,7 +265,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sample_count
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'sample_count\' the parameter is required but was not provided.')
@@ -279,7 +279,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.sample_count = 0
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'sample_count\' is smaller than the minimum 1.')
@@ -293,7 +293,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sample_rate
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(201)
       const streamSourceFiles = await models.StreamSourceFile.findAll()
@@ -308,7 +308,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       // const { stream, testPayload } = await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.sample_rate = 0
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'sample_rate\' is smaller than the minimum 1.')
@@ -322,7 +322,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.channels_count
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(201)
       const streamSourceFiles = await models.StreamSourceFile.findAll()
@@ -336,7 +336,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.channels_count = 0
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'channels_count\' is smaller than the minimum 1.')
@@ -350,7 +350,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.bit_rate
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(201)
       const streamSourceFiles = await models.StreamSourceFile.findAll()
@@ -364,7 +364,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.bit_rate = 0
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'bit_rate\' is smaller than the minimum 1.')
@@ -378,7 +378,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.audio_codec
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'audio_codec\' the parameter is required but was not provided.')
@@ -392,7 +392,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_source_file.sha1_checksum
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'sha1_checksum\' the parameter is required but was not provided.')
@@ -406,7 +406,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].start
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'start\' the parameter is required but was not provided.')
@@ -420,7 +420,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].end
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'end\' the parameter is required but was not provided.')
@@ -434,7 +434,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].sample_count
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'sample_count\' the parameter is required but was not provided.')
@@ -448,7 +448,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       delete requestBody.stream_segments[0].file_extension
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(requestBody)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(requestBody)
 
       expect(response.statusCode).toBe(400)
       expect(response.body.message).toBe('Validation errors: Parameter \'file_extension\' the parameter is required but was not provided.')
@@ -462,7 +462,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       await commonSetup()
       const requestBody = Object.assign({}, testPayload)
       requestBody.stream_source_file.meta = 123
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
 
       expect(response.statusCode).toBe(201)
       const streamSourceFiles = await models.StreamSourceFile.findAll()
@@ -474,7 +474,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
 
     test('empty result error is returned if stream does not exist', async () => {
       await commonSetup()
-      const response = await request(app).post('/streams/random/stream-source-file-and-segments').send(testPayload)
+      const response = await request(app).post('/random/stream-source-file-and-segments').send(testPayload)
 
       expect(response.statusCode).toBe(404)
       expect(response.body.message).toBe('Stream not found')
@@ -488,7 +488,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
   describe('stream bounds update', () => {
     test('stream start, end and max_sample_rate are set for empty stream', async () => {
       await commonSetup()
-      await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
 
       const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
       expect(streamFromDb.maxSampleRate).toBe(testPayload.stream_source_file.sample_rate)
@@ -502,7 +502,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
         { id: 'abcdsaqwery2', name: 'my stream 2', createdById: seedValues.primaryUserId, start: '2021-04-18T12:12:10.000Z', end: '2021-04-18T12:12:20.000Z', maxSampleRate: 24000 }
       )
 
-      await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
 
       const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
       expect(streamFromDb.maxSampleRate).toBe(testPayload.stream_source_file.sample_rate)
@@ -516,7 +516,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
         { id: 'abcdsaqwery3', name: 'my stream 3', createdById: seedValues.primaryUserId, start: '2020-01-01 00:00:00', end: '2021-05-05 00:00:00', maxSampleRate: 128000 }
       )
 
-      await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
 
       const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
       expect(streamFromDb.maxSampleRate).toBe(stream.maxSampleRate)
@@ -533,7 +533,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
       const segment1 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
 
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
       expect(response.statusCode).toBe(201)
       expect(response.body.stream_segments[0].id).toBe(segment1.id)
     })
@@ -553,7 +553,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const segment1 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 0 })
       const segment2 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
 
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
       expect(response.statusCode).toBe(201)
       expect(response.body.stream_segments[0].id).toBe(segment1.id)
       expect(response.body.stream_segments[1].id).toBe(segment2.id)
@@ -582,7 +582,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const segment2 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fd', stream_id: stream.id, start: requestBody.stream_segments[1].start, end: requestBody.stream_segments[1].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[1].sample_count, file_extension_id: fileExtensionId, availability: 0 })
       const segment3 = await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196ff', stream_id: stream.id, start: requestBody.stream_segments[2].start, end: requestBody.stream_segments[2].end, stream_source_file_id: sourceFile.id, sample_count: requestBody.stream_segments[2].sample_count, file_extension_id: fileExtensionId, availability: 1 })
 
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
       expect(response.statusCode).toBe(201)
       expect(response.body.stream_segments[0].id).toBe(segment1.id)
       expect(response.body.stream_segments[1].id).toBe(segment2.id)
@@ -598,7 +598,7 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
       const sourceFile = await models.StreamSourceFile.create({ stream_id: stream.id, sha1_checksum: testPayload.stream_source_file.sha1_checksum, filename: testPayload.stream_source_file.filename, duration: testPayload.stream_source_file.duration, sample_count: testPayload.stream_source_file.sample_count, sample_rate: testPayload.stream_source_file.sample_rate, channels_count: testPayload.stream_source_file.channels_count, bit_rate: testPayload.stream_source_file.bit_rate, audio_codec_id: audioCodecId, audio_file_format_id: audioFileFormatId })
       await models.StreamSegment.create({ id: '1dfa13bd-2855-43ae-a5e5-a345d78196fe', stream_id: stream.id, start: testPayload.stream_segments[0].start, end: testPayload.stream_segments[0].end, stream_source_file_id: sourceFile.id, sample_count: testPayload.stream_segments[0].sample_count, file_extension_id: fileExtensionId, availability: 1 })
 
-      const response = await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
+      const response = await request(app).post(`/${stream.id}/stream-source-file-and-segments`).send(testPayload)
       expect(response.statusCode).toBe(201)
     })
   })

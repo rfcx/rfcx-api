@@ -1,11 +1,10 @@
-const router = require('express').Router()
 const { httpErrorHandler } = require('../../../common/error-handling/http')
 const streamDao = require('../../streams/dao')
 const streamSourceFileDao = require('../../stream-source-files/dao')
 const streamSegmentDao = require('../../stream-segments/dao')
 const fileFormatDao = require('../../stream-segments/dao/file-extensions')
 const { sequelize } = require('../../_models')
-const { hasRole } = require('../../../common/middleware/authorization/authorization')
+
 const Converter = require('../../../common/converter')
 const ArrayConverter = require('../../../common/converter/array')
 const moment = require('moment')
@@ -42,7 +41,7 @@ const arbimonService = require('../../_services/arbimon')
  *         description: Invalid query parameters
  */
 
-router.post('/streams/:streamId/stream-source-file-and-segments', hasRole(['systemUser']), function (req, res) {
+module.exports = function (req, res) {
   const streamId = req.params.streamId
 
   const converter = new Converter(req.body, {})
@@ -123,6 +122,4 @@ router.post('/streams/:streamId/stream-source-file-and-segments', hasRole(['syst
           httpErrorHandler(req, res, 'Failed creating stream source file and segments')(err)
         })
     })
-})
-
-module.exports = router
+}
