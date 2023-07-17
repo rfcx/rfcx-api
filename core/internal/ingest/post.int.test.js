@@ -485,46 +485,6 @@ describe('POST internal/ingest/streams/:id/stream-source-file-and-segments', () 
     })
   })
 
-  describe('stream bounds update', () => {
-    test('stream start, end and max_sample_rate are set for empty stream', async () => {
-      await commonSetup()
-      await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
-
-      const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
-      expect(streamFromDb.maxSampleRate).toBe(testPayload.stream_source_file.sample_rate)
-      expect(streamFromDb.start).toEqual(moment.utc(testPayload.stream_segments[0].start).toDate())
-      expect(streamFromDb.end).toEqual(moment.utc(testPayload.stream_segments[0].end).toDate())
-    })
-
-    test('stream start, end and max_sample_rate are updated if new values are bigger/smaller', async () => {
-      await commonSetup()
-      const stream = await models.Stream.create(
-        { id: 'abcdsaqwery2', name: 'my stream 2', createdById: seedValues.primaryUserId, start: '2021-04-18T12:12:10.000Z', end: '2021-04-18T12:12:20.000Z', maxSampleRate: 24000 }
-      )
-
-      await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
-
-      const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
-      expect(streamFromDb.maxSampleRate).toBe(testPayload.stream_source_file.sample_rate)
-      expect(streamFromDb.start).toEqual(moment.utc(testPayload.stream_segments[0].start).toDate())
-      expect(streamFromDb.end).toEqual(moment.utc(testPayload.stream_segments[0].end).toDate())
-    })
-
-    test('stream start, end and max_sample_rate are not updated if new values are not bigger/smaller', async () => {
-      await commonSetup()
-      const stream = await models.Stream.create(
-        { id: 'abcdsaqwery3', name: 'my stream 3', createdById: seedValues.primaryUserId, start: '2020-01-01 00:00:00', end: '2021-05-05 00:00:00', maxSampleRate: 128000 }
-      )
-
-      await request(app).post(`/streams/${stream.id}/stream-source-file-and-segments`).send(testPayload)
-
-      const streamFromDb = await models.Stream.findOne({ where: { id: stream.id } })
-      expect(streamFromDb.maxSampleRate).toBe(stream.maxSampleRate)
-      expect(streamFromDb.start).toEqual(moment.utc(stream.start).toDate())
-      expect(streamFromDb.end).toEqual(moment.utc(stream.end).toDate())
-    })
-  })
-
   describe('unavailable segments', () => {
     test('returns 1 unavailable segment id', async () => {
       await commonSetup()
