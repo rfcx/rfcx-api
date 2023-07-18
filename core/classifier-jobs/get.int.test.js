@@ -1,6 +1,6 @@
 const routes = require('./index')
 const models = require('../_models')
-const { expressApp, seedValues, truncateNonBase } = require('../../common/testing/sequelize')
+const { expressApp, seedValues, truncateNonBase, muteConsole } = require('../../common/testing/sequelize')
 const request = require('supertest')
 const { WAITING, DONE } = require('./classifier-job-status')
 
@@ -17,11 +17,13 @@ const JOB_2 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, status: 
 const JOB_3 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_2.id, status: DONE, queryStreams: 'Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_4 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_3.id, status: DONE, queryStreams: 'Test stream 3', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.primaryUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
 const JOB_5 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_4.id, status: DONE, queryStreams: 'Not accessible project', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.anotherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOBS = [JOB_1, JOB_2, JOB_3, JOB_4, JOB_5]
+
+beforeAll(() => {
+  muteConsole('warn')
+})
 
 beforeEach(async () => {
   await truncateNonBase(models)
-  await seedTestData()
 })
 
 afterAll(async () => {
@@ -38,130 +40,63 @@ async function seedTestData () {
   await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_2.id, role_id: seedValues.roleGuest } })
   await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_3.id, role_id: seedValues.roleAdmin } })
   await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.anotherUserId, project_id: PROJECT_4.id, role_id: seedValues.roleAdmin } })
-  for (const job of JOBS) {
-    await models.ClassifierJob.findOrCreate({ where: job })
-  }
+
+  const job1 = (await models.ClassifierJob.findOrCreate({ where: JOB_1 }))[0]
+  const job2 = (await models.ClassifierJob.findOrCreate({ where: JOB_2 }))[0]
+  const job3 = (await models.ClassifierJob.findOrCreate({ where: JOB_3 }))[0]
+  const job4 = (await models.ClassifierJob.findOrCreate({ where: JOB_4 }))[0]
+  const job5 = (await models.ClassifierJob.findOrCreate({ where: JOB_5 }))[0]
+
+  return { job1, job2, job3, job4, job5 }
 }
 
-describe('GET /classifier-jobs', () => {
+describe('GET /classifier-jobs/{id}', () => {
   const app = expressApp()
   app.use('/', routes)
 
+  test('returns forbidden error', async () => {
+    const { job5 } = await seedTestData()
+    const response = await request(app).get(`/${job5.id}`)
+
+    expect(response.statusCode).toBe(403)
+  })
+
+  test('returns empty error', async () => {
+    const response = await request(app).get('/230000123')
+
+    expect(response.statusCode).toBe(404)
+  })
+
   test('returns successfully', async () => {
-    const response = await request(app).get('/')
+    const { job1 } = await seedTestData()
+    const response = await request(app).get(`/${job1.id}`)
 
     const result = response.body
     expect(response.statusCode).toBe(200)
-    expect(result).toBeDefined()
-    expect(Array.isArray(result)).toBe(true)
+    expect(result.id).toBe(job1.id)
+    expect(result.id).toBe(job1.id)
+    expect(result.projectId).toBe(job1.projectId)
+    expect(result.minutesCompleted).toBe(job1.minutesCompleted)
+    expect(result.minutesTotal).toBe(job1.minutesTotal)
+    expect(result.createdAt).toBe(job1.createdAt.toISOString())
+    expect(result.completedAt).toBe(job1.completedAt)
+    expect(result.classifier.id).toBe(CLASSIFIER_1.id)
+    expect(result.classifier.name).toBe(CLASSIFIER_1.name)
   })
 
-  test('can set all fields', async () => {
-    const query = {
-      projects: [PROJECT_1.id],
-      status: 0,
-      created_by: 'me',
-      limit: 2,
-      offset: 0,
-      sort: '-updated_at',
-      fields: ['projectId', 'queryStreams']
-    }
+  test('customizable fields', async () => {
+    const { job1 } = await seedTestData()
+    const response = await request(app).get(`/${job1.id}`).query({ fields: ['minutes_completed', 'minutes_total', 'query_streams'] })
 
-    const response = await request(app).get('/').query(query)
+    const result = response.body
     expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual([])
-  })
-
-  test('not exist project', async () => {
-    const query = {
-      projects: ['testproject11']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toEqual([])
-  })
-
-  test('get correct classifiers jobs for one project', async () => {
-    const query = {
-      projects: [PROJECT_1.id]
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('get correct classifiers jobs for several projects', async () => {
-    const query = {
-      projects: [PROJECT_1.id, PROJECT_2.id]
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(3)
-  })
-
-  test('get correct classifiers jobs for exist and not exist projects', async () => {
-    const query = {
-      projects: [PROJECT_1.id, 'testproject22']
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('if project ids set, but empty (no accessible projects)', async () => {
-    const query = {
-      projects: [PROJECT_4.id]
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(0)
-  })
-
-  test('get correct classifiers jobs filtered by WAITING (0) status', async () => {
-    const query = {
-      status: WAITING
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('get correct classifiers jobs filtered by DONE (30) status', async () => {
-    const query = {
-      status: DONE
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(2)
-  })
-
-  test('fields option is working well', async () => {
-    const query = {
-      fields: ['project_id', 'query_streams']
-    }
-    const expectedFields = ['projectId', 'queryStreams']
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(4)
-    expectedFields.forEach(actualProperty => expect(Object.keys(response.body[0])).toContain(actualProperty))
-  })
-
-  test('created_by filter is working well', async () => {
-    const query = {
-      created_by: 'me'
-    }
-
-    const response = await request(app).get('/').query(query)
-    expect(response.statusCode).toBe(200)
-    expect(response.body.length).toEqual(1)
-    expect(response.body[0].projectId).toEqual(PROJECT_3.id)
+    expect(result.id).toBeUndefined()
+    expect(result.projectId).toBe(job1.projectId)
+    expect(result.minutesCompleted).toBe(job1.minutesCompleted)
+    expect(result.minutesTotal).toBe(job1.minutesTotal)
+    expect(result.queryStreams).toBe(job1.queryStreams)
+    expect(result.createdAt).toBeUndefined()
+    expect(result.completedAt).toBeUndefined()
+    expect(result.classifier).toBeUndefined()
   })
 })

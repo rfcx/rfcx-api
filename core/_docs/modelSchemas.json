@@ -1115,5 +1115,48 @@
         }
       }
     ]
+  },
+  "ClassifierJob": {
+    "properties": {
+      "classifierId": {
+        "type": "integer",
+        "description": "A classifier id",
+        "example": "123"
+      },
+      "projectId": {
+        "type": "string",
+        "description": "A project id",
+        "example": "qwe2jDgX49"
+      },
+      "minutesCompleted": {
+        "type": "integer",
+        "example": "10"
+      },
+      "minutesTotal": {
+        "type": "integer",
+        "example": "100"
+      },
+      "createdAt": {
+        "type": "date",
+        "example": "2020-07-24T00:00:18.000Z"
+      },
+      "completedAt": {
+        "type": "date",
+        "example": "2020-07-25T00:00:18.000Z"
+      },
+      "classifier": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "gunshot"
+          }
+        }
+      }
+    }
   }
 }

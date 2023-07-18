@@ -57,6 +57,12 @@ module.exports = (sequelize, DataTypes) => {
     completedAt: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    createdAt: {
+      type: DataTypes.DATE
+    },
+    updatedAt: {
+      type: DataTypes.DATE
     }
   }, {
     underscored: true
@@ -84,7 +90,7 @@ module.exports = (sequelize, DataTypes) => {
       'started_at',
       'completed_at'
     ],
-    lite: ['id', 'classifier_id', 'project_id', 'minutes_completed', 'minutes_total', 'created_by_id', 'created_at', 'completed_at']
+    lite: ['id', 'classifier_id', 'project_id', 'minutes_completed', 'minutes_total', 'created_by_id', 'created_at', 'completed_at', 'status']
   }
   ClassifierJob.include = includeBuilder(ClassifierJob, 'classifier_job', ClassifierJob.attributes.lite)
   return ClassifierJob

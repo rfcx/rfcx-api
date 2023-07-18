@@ -38,6 +38,10 @@ const Converter = require('../../common/converter')
  *         type: string
  *         example: -created_at
  *         default: -created_at
+ *       - name: fields
+ *         description: Customize included fields and relations
+ *         in: query
+ *         type: array
  *     responses:
  *       200:
  *         description: List of classifier jobs objects

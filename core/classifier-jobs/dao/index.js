@@ -4,6 +4,7 @@ const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../
 const { getSortFields } = require('../../_utils/db/sort')
 const pagedQuery = require('../../_utils/db/paged-query')
 const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
+const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
   Classifier.include({ attributes: ['id', 'name'] })
@@ -32,20 +33,19 @@ async function query (filters, options = {}) {
     : accessibleProjects ?? filterProjects
 
   // Early return if projectIds set, but empty (no accessible projects)
-  if (projectIds && projectIds.length === 0) { return [] }
+  if (projectIds && projectIds.length === 0) { return { total: 0, results: [] } }
 
   const where = {
-    projectId: { [Sequelize.Op.in]: projectIds },
+    ...projectIds && { projectId: { [Sequelize.Op.in]: projectIds } },
     ...filters.status !== undefined && { status: filters.status },
     ...filters.createdBy !== undefined && { createdById: filters.createdBy }
   }
 
-  const classifierAttributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
-  const attributes = { ...classifierAttributes, exclude: ['created_by_id', 'project_id'] }
+  const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const order = getSortFields(options.sort || '-created_at')
 
-  const result = await pagedQuery(ClassifierJob, {
+  const data = await pagedQuery(ClassifierJob, {
     where,
     attributes,
     include,
@@ -54,7 +54,9 @@ async function query (filters, options = {}) {
     offset: options.offset
   })
 
-  return result
+  data.results = data.results.map(i => toCamelObject(i, 2))
+
+  return data
 }
 
 /**
@@ -85,14 +87,14 @@ async function create (job, options = {}) {
  * @throws EmptyResultError when job not found
  */
 async function get (id, options = {}) {
-  const job = await ClassifierJob.findByPk(id, {
-    attributes: options && options.attributes ? options.attributes : ClassifierJob.attributes.full,
-    transaction: options.transaction
-  })
+  const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
+  const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
+  const transaction = options.transaction || null
+  const job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
   if (!job) {
     throw new EmptyResultError()
   }
-  return job
+  return toCamelObject(job.toJSON(), 2)
 }
 
 /**
@@ -110,7 +112,7 @@ async function update (id, newJob, options = {}) {
   return sequelize.transaction(async transaction => {
     // Check the job is updatable
     const existingJob = await get(id, { transaction })
-    if (options.updatableBy && existingJob.created_by_id !== options.updatableBy) {
+    if (options.updatableBy && existingJob.createdById !== options.updatableBy) {
       throw new ForbiddenError()
     }
     // If is not super user or system user
