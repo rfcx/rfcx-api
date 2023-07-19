@@ -340,9 +340,15 @@ module.exports = class Conversion {
 
   isEqualToAny (arr) {
     this.conversions.push(() => {
-      if (!arr.includes(this.value)) {
-        this.throwError(`should be one of these values: ${arr.join(', ')}`)
+      let value = this.value
+      if (!Array.isArray(this.value)) {
+        value = [this.value]
       }
+      value.forEach(v => {
+        if (!arr.includes(v)) {
+          this.throwError(`should be one of these values: ${arr.join(', ')}`)
+        }
+      })
     })
 
     return this

@@ -1158,5 +1158,53 @@
         }
       }
     }
+  },
+  "ClassifierJobReviewStatus": {
+    "properties": {
+      "total": {
+        "type": "integer",
+        "example": 1
+      },
+      "rejected": {
+        "type": "integer",
+        "example": 2
+      },
+      "uncertain": {
+        "type": "integer",
+        "example": 0
+      },
+      "confirmed": {
+        "type": "integer",
+        "example": 1
+      }
+    }
+  },
+  "ClassificationSummary": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/ClassificationLite"
+      },
+      {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 2
+          }
+        }
+      }
+    ]
+  },
+  "ClassifierJobResults": {
+    "properties": {
+      "reviewStatus": {
+        "$ref": "#/components/schemas/ClassifierJobReviewStatus"
+      },
+      "classificationsSummary": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ClassificationSummary"
+        }
+      }
+    }
   }
 }
