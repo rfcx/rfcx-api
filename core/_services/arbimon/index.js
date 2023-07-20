@@ -142,6 +142,37 @@ async function createRecordingsFromSegments (sfParams, segments, opts) {
   return createRecordings(recordings)
 }
 
+async function deleteRecordingsFromSegments (streamId, segments) {
+  const body = segments.map(s => {
+    return {
+      site_external_id: streamId,
+      uri: s.path
+    }
+  })
+  const options = {
+    method: 'POST',
+    url: `${arbimonBaseUrl}api/ingest/recordings/delete`,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body,
+    json: true,
+    timeout: 20000
+  }
+
+  return getClientToken()
+    .then((token) => {
+      options.headers.authorization = `Bearer ${token}`
+      return rp(options).catch(rpErrorHandler)
+    })
+    .then((response) => {
+      if (response) {
+        console.error(`arbimon deleteRecordings: req: ${JSON.stringify(body)} res: ${JSON.stringify(response)}`)
+        throw Error('Unable to delete recordings in Arbimon')
+      }
+    })
+}
+
 function createUser (user, idToken) {
   const body = {};
   ['firstname', 'lastname', 'email', 'guid', 'user_id', 'picture'].forEach((attr) => { body[attr] = user[attr] })
@@ -169,5 +200,6 @@ module.exports = {
   updateSite,
   deleteSite,
   createRecordingsFromSegments,
+  deleteRecordingsFromSegments,
   createUser
 }

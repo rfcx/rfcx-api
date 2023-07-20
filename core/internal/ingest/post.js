@@ -108,7 +108,10 @@ module.exports = function (req, res) {
           return res
             .location(`/stream-source-files/${streamSourceFile.id}`)
             .status(201)
-            .json({ stream_segments: segments.map(s => { return { id: s.id, start: s.start } }) })
+            .json({
+              stream_source_file: streamSourceFile.toJSON(),
+              stream_segments: segments.map(s => { return { id: s.id, start: s.start } })
+            })
         })
         .catch((err) => {
           transaction.rollback()
