@@ -119,7 +119,7 @@ function createRecordings (body) {
     },
     body,
     json: true,
-    timeout: 20000
+    timeout: 59000
   }
 
   return getClientToken()
@@ -157,7 +157,7 @@ async function deleteRecordingsFromSegments (streamId, segments) {
     },
     body,
     json: true,
-    timeout: 20000
+    timeout: 59000
   }
 
   return getClientToken()
