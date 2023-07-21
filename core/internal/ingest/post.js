@@ -85,10 +85,10 @@ module.exports = function (req, res) {
           const fileExtensions = [...new Set(transformedArray.map(segment => segment.file_extension))]
           const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatDao.findOrCreate({ value: ext }, { transaction })))
 
-          const existingSegments = await streamSegmentDao.findByStreamAndStarts(streamId, transformedArray.map(s => s.start), {
+          const existingSegments = (await streamSegmentDao.findByStreamAndStarts(streamId, transformedArray.map(s => s.start), {
             transaction,
             fields: ['id', 'stream_id', 'start', 'sample_count']
-          })
+          })).map(s => s.toJSON())
           if (existingSegments.length) {
             await streamSegmentDao.updateByStreamAndStarts(streamId, existingSegments, { availability: 1 }, { transaction })
           }
@@ -105,14 +105,14 @@ module.exports = function (req, res) {
             })
           let createdSegments = []
           if (dataToCreate.length) {
-            createdSegments = await streamSegmentDao.bulkCreate(dataToCreate, {
+            createdSegments = (await streamSegmentDao.bulkCreate(dataToCreate, {
               transaction,
               returning: ['id', 'stream_id', 'start', 'sample_count']
-            })
+            })).map(s => s.toJSON())
           }
           const segments = [
-            ...existingSegments.map(s => s.toJSON()),
-            ...createdSegments.map(s => s.toJSON())
+            ...existingSegments,
+            ...createdSegments
           ].sort((a, b) => {
             return a < b
           })
