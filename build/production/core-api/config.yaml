@@ -4,7 +4,7 @@ metadata:
   name: core-api-configmap
   namespace: production
 data:
-  ARBIMON_BASE_URL: "https://arbimon.rfcx.org/"
+  ARBIMON_BASE_URL: "http://arbimon-ingest-consumer-service.production.svc.cluster.local/"
   ARBIMON_ENABLED: "true"
   ASSET_BUCKET_AI: "rfcx-ai-dev"
   AUTH0_AUTHZ_AUDIENCE: "urn:auth0-authz-api"
