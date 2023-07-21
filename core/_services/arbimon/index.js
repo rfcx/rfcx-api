@@ -97,11 +97,14 @@ function parseStreamSourceFileMeta (sfParams) {
 function matchSegmentToRecording (sfParams, segment) {
   return {
     site_external_id: segment.stream_id,
-    uri: getSegmentRemotePath(segment),
+    uri: getSegmentRemotePath({
+      ...segment,
+      stream_source_file: sfParams
+    }),
     datetime: moment.utc(segment.start).format('YYYY-MM-DD HH:mm:ss.SSS'),
     duration: (segment.end - segment.start) / 1000,
     samples: segment.sample_count,
-    file_size: segment.file_size,
+    file_size: 0,
     bit_rate: sfParams.bit_rate,
     sample_rate: sfParams.sample_rate,
     sample_encoding: sfParams.audio_codec,
