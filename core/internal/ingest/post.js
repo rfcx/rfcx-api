@@ -108,7 +108,13 @@ module.exports = function (req, res) {
             createdSegments = (await streamSegmentDao.bulkCreate(dataToCreate, {
               transaction,
               returning: ['id', 'stream_id', 'start', 'sample_count']
-            })).map(s => s.toJSON())
+            })).map(s => {
+              const fileExtension = fileExtensionObjects.find(e => e.id === s.file_extension_id)
+              return {
+                ...s.toJSON(),
+                file_extension: fileExtension.value
+              }
+            })
           }
           const segments = [
             ...existingSegments,

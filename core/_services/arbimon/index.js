@@ -97,10 +97,7 @@ function parseStreamSourceFileMeta (sfParams) {
 function matchSegmentToRecording (sfParams, segment) {
   return {
     site_external_id: segment.stream_id,
-    uri: getSegmentRemotePath({
-      ...segment,
-      stream_source_file: sfParams
-    }),
+    uri: getSegmentRemotePath(segment),
     datetime: moment.utc(segment.start).format('YYYY-MM-DD HH:mm:ss.SSS'),
     duration: (segment.end - segment.start) / 1000,
     samples: segment.sample_count,
@@ -202,7 +199,9 @@ module.exports = {
   createSite,
   updateSite,
   deleteSite,
+  matchSegmentToRecording,
   createRecordingsFromSegments,
   deleteRecordingsFromSegments,
+  createRecordings,
   createUser
 }
