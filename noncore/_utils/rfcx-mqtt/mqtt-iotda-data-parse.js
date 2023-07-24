@@ -34,7 +34,7 @@ function forward (pingObj) {
     const hour = (now.hours() < 10) ? `0${now.hours()}` : now.hours()
     const key = `${now.year()}${month}${day}${hour}`
     const clientId = `${guid}_0_0_${key}`
-    const password = crypto.createHmac('sha256', key).update(`rfcxrfcx`).digest('hex');
+    const password = crypto.createHmac('sha256', key).update('rfcxrfcx').digest('hex')
 
     const device = {
       clientId: clientId,
