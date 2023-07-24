@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const iotdaApp = require('../../../mqtt/iotda')
 const moment = require('moment')
 
-const availableProject = ['xxxxx']
+const availableProject = ['3dvrocmagfiw']
 function parse (pingObj) {
   const time = new Date(parseInt(pingObj.json.battery[0][0]))
   const percentage = parseInt(pingObj.json.battery[0][1])

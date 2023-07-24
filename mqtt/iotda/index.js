@@ -2,7 +2,8 @@ const mqtt = require('mqtt')
 
 const connectionOptions = {
   clientId: '',
-  host: process.env.IOTDA_MQTT_HOSTNAME,
+  // This is test instance
+  host: '7b0410cad2.st1.iotda-device.ap-southeast-2.myhuaweicloud.com',
   port: '1883',
   protocol: 'tcp',
   username: '',
