@@ -2,7 +2,7 @@ const mqttPingProcess = require('../rfcx-mqtt/mqtt-ping-process').mqttPingProces
 const checkInDatabase = require('../rfcx-mqtt/mqtt-database').checkInDatabase
 const mqttInstructions = require('../rfcx-mqtt/mqtt-instructions').mqttInstructions
 const guardianCommand = require('../rfcx-guardian/guardian-command-publish').guardianCommand
-const iotdaProcess = require('../rfcx-mqtt/mqtt-iotda-data-parse')
+const iotdaProcess = require('../rfcx-mqtt/mqtt-iotda-data-process')
 const { expandAbbreviatedFieldNames } = require('../rfcx-mqtt/expand-abbreviated')
 
 function onMessagePing (pingObj, messageId) {
