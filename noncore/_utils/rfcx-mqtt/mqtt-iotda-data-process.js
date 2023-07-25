@@ -6,7 +6,6 @@ const availableProject = ['3dvrocmagfiw']
 function parse (pingObj) {
   const battery = strArrToJSArr(pingObj.json.battery, '|', '*')
   const lastIndex = battery.length - 1
-  
   const time = moment(parseInt(battery[lastIndex][0])).utc()
   const month = (time.month() < 10) ? `0${time.month() + 1}` : time.month() + 1
   const day = (time.date() < 10) ? `0${time.date()}` : time.date()
