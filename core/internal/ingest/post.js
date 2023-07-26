@@ -85,19 +85,43 @@ module.exports = function (req, res) {
           const fileExtensions = [...new Set(transformedArray.map(segment => segment.file_extension))]
           const fileExtensionObjects = await Promise.all(fileExtensions.map(ext => fileFormatDao.findOrCreate({ value: ext }, { transaction })))
 
-          const segments = []
-          for (const s of transformedArray) {
-            const fileExtensionId = fileExtensionObjects.find(obj => obj.value === s.file_extension).id
-            const where = { stream_id: streamId, start: s.start }
-            const defaults = { ...s, stream_source_file_id: streamSourceFile.id, file_extension_id: fileExtensionId }
-            const { segment, created } = await streamSegmentDao.findOrCreate(where, defaults, { transaction })
-            if (!created) {
-              await streamSegmentDao.update(streamId, s.start, { availability: 1 }, { transaction })
-            }
-            segments.push({ ...s, ...segment.toJSON(), created })
+          const existingSegments = (await streamSegmentDao.findByStreamAndStarts(streamId, transformedArray.map(s => s.start), {
+            transaction,
+            fields: ['id', 'stream_id', 'start', 'sample_count']
+          })).map(s => s.toJSON())
+          if (existingSegments.length) {
+            await streamSegmentDao.updateByStreamAndStarts(streamId, existingSegments, { availability: 1 }, { transaction })
           }
-
-          const createdSegments = segments.filter(s => s.created)
+          const dataToCreate = transformedArray
+            .filter((s) => { return !existingSegments.map(e => e.start).includes(s.start) })
+            .map((s) => {
+              const fileExtensionId = fileExtensionObjects.find(obj => obj.value === s.file_extension).id
+              return {
+                ...s,
+                stream_id: streamId,
+                stream_source_file_id: streamSourceFile.id,
+                file_extension_id: fileExtensionId
+              }
+            })
+          let createdSegments = []
+          if (dataToCreate.length) {
+            createdSegments = (await streamSegmentDao.bulkCreate(dataToCreate, {
+              transaction,
+              returning: ['id', 'stream_id', 'start', 'sample_count']
+            })).map(s => {
+              const fileExtension = fileExtensionObjects.find(e => e.id === s.file_extension_id)
+              return {
+                ...s.toJSON(),
+                file_extension: fileExtension.value
+              }
+            })
+          }
+          const segments = [
+            ...existingSegments,
+            ...createdSegments
+          ].sort((a, b) => {
+            return a < b
+          })
 
           if (arbimonService.isEnabled && createdSegments.length) {
             await arbimonService.createRecordingsFromSegments(sfParams, createdSegments, { transaction })

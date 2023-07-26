@@ -47,7 +47,13 @@ async function get (idOrWhere, options = {}) {
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const transaction = options.transaction || null
 
-  const stream = await Stream.findOne({ where, attributes, include, paranoid: false, transaction })
+  const stream = await Stream.findOne({
+    where,
+    attributes,
+    include,
+    paranoid: options.onlyDeleted !== true,
+    transaction
+  })
 
   if (!stream) {
     throw new EmptyResultError('Stream not found')

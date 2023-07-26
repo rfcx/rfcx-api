@@ -101,7 +101,7 @@ function matchSegmentToRecording (sfParams, segment) {
     datetime: moment.utc(segment.start).format('YYYY-MM-DD HH:mm:ss.SSS'),
     duration: (segment.end - segment.start) / 1000,
     samples: segment.sample_count,
-    file_size: segment.file_size,
+    file_size: 0,
     bit_rate: sfParams.bit_rate,
     sample_rate: sfParams.sample_rate,
     sample_encoding: sfParams.audio_codec,
@@ -199,7 +199,9 @@ module.exports = {
   createSite,
   updateSite,
   deleteSite,
+  matchSegmentToRecording,
   createRecordingsFromSegments,
   deleteRecordingsFromSegments,
+  createRecordings,
   createUser
 }

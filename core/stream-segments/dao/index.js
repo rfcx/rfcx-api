@@ -186,6 +186,47 @@ function findOrCreate (where, defaults, options = {}) {
 }
 
 /**
+ * Find all segments belonging to a stream within specified start array
+ * @param {string} streamId Stream id
+ * @param {string[]} starts Stream segment attributes to use for creation
+ * @param {*} options
+ * @param {Transaction} options.transaction Perform within given transaction
+ */
+function findByStreamAndStarts (streamId, starts, options = {}) {
+  const transaction = options.transaction
+  const where = {
+    stream_id: streamId,
+    start: {
+      [Sequelize.Op.in]: starts
+    }
+  }
+  const attributes = options.fields && options.fields.length > 0 ? StreamSegment.attributes.full.filter(a => options.fields.includes(a)) : StreamSegment.attributes.lite
+  return StreamSegment.findAll({ where, attributes, transaction })
+    .catch((e) => {
+      console.error('Stream segment service -> findByStreamAndStarts -> error', e)
+      throw e
+    })
+}
+
+/**
+ * Update all segments belonging to a stream within specified start array
+ * @param {string} streamId Stream id
+ * @param {string[]} starts Stream segment attributes to use for creation
+ * @param {*} options
+ * @param {Transaction} options.transaction Perform within given transaction
+ */
+function updateByStreamAndStarts (streamId, starts, data, options = {}) {
+  const transaction = options.transaction
+  const where = {
+    stream_id: streamId,
+    start: {
+      [Sequelize.Op.in]: starts
+    }
+  }
+  return StreamSegment.update(data, { where, transaction })
+}
+
+/**
  * Bulk create stream segment
  * @param {*} segments Array of stream segment attributes
  * @param {*} options
@@ -193,7 +234,8 @@ function findOrCreate (where, defaults, options = {}) {
  */
 function bulkCreate (segments, options = {}) {
   const transaction = options.transaction
-  return StreamSegment.bulkCreate(segments, { transaction })
+  const returning = options.returning
+  return StreamSegment.bulkCreate(segments, { transaction, returning })
     .catch((e) => {
       console.error('Stream segment service -> bulkCreate -> error', e)
       throw new ValidationError('Cannot bulkCreate stream segment with provided data')
@@ -318,6 +360,8 @@ module.exports = {
   bulkCreate,
   create,
   findOrCreate,
+  findByStreamAndStarts,
+  updateByStreamAndStarts,
   update,
   notify,
   getStreamCoverage,
