@@ -59,13 +59,18 @@ async function dropTables (sequelize) {
 
   // Drop all tables under `public`
   const tables = await sequelize.query('SELECT tablename FROM pg_tables WHERE schemaname = \'public\'', { type: QueryTypes.SELECT })
+  const sequences = await sequelize.query('SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = \'public\'', { type: QueryTypes.SELECT })
 
-  console.info('Drop if exists:')
+  console.info('Drop table if exists:')
   for (const table of tables) {
-    if (table.tablename !== 'spatial_ref_sys') {
-      console.info(`- ${table.tablename}`)
-      await sequelize.query(`DROP TABLE IF EXISTS "${table.tablename}" CASCADE`)
-    }
+    console.info(`- ${table.tablename}`)
+    await sequelize.query(`DROP TABLE IF EXISTS "${table.tablename}" CASCADE`)
+  }
+
+  console.info('Drop sequence if exists:')
+  for (const sequence of sequences) {
+    console.info(`- ${sequence.sequence_name}`)
+    await sequelize.query(`DROP SEQUENCE IF EXISTS "${sequence.sequence_name}" CASCADE`)
   }
 
   // Drop "sequelize_meta"

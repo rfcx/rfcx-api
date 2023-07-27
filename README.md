@@ -67,6 +67,7 @@ Or for noncore:
 npm run serve:noncore
 ```
 
+For some users that have a local database driver installed on port 5432, the command up top might not work because it's trying to access your local database. Please change your local database port before trying to run the command again.
 
 ### Create the database tables
 
@@ -98,6 +99,12 @@ Otherwise, specify your host/user/pass/etc as arguments:
 
 ```
 ./common/_cli/seed.sh USERNAME PASSWORD HOSTNAME PORT DATABASENAME
+```
+
+For some users that are on Windows, your seed command might fail because of Windows's line endings (`CRLF`). So you have to convert the line endings from `CRLF` to `LF` first to be able to run the command. You can fire up WSL and use `tr`
+
+```
+tr -d "\r" < file
 ```
 
 ## Running the API locally
