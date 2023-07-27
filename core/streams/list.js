@@ -131,7 +131,9 @@ module.exports = (req, res) => {
       } else if (createdBy) {
         createdBy = (await usersService.getIdByGuid(createdBy)) || -1 // user doesn't exist
       }
-      const filters = { name, keyword, organizations, projects, start, end, createdBy, updatedAfter }
+      const filters = { organizations, projects, start, end, createdBy, updatedAfter }
+      if (name) { filters.names = [name] }
+      if (keyword) { filters.keywords = [keyword] }
       const options = {
         permissableBy,
         onlyPublic,

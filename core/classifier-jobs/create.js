@@ -1,5 +1,5 @@
 const { httpErrorHandler } = require('../../common/error-handling/http')
-const { create } = require('./dao')
+const { create } = require('./bl')
 const Converter = require('../../common/converter')
 const { ValidationError } = require('../../common/error-handling/errors')
 

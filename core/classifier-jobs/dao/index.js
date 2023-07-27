@@ -1,4 +1,4 @@
-const { sequelize, ClassifierJob, Classifier, Sequelize } = require('../../_models')
+const { sequelize, ClassifierJob, ClassifierJobStream, Classifier, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -78,6 +78,24 @@ async function create (job, options = {}) {
     })
 }
 
+async function createJobStreams (classifierJobId, streamIds, options = {}) {
+  const transaction = options.transaction
+  return await ClassifierJobStream.bulkCreate(streamIds.map(streamId => ({
+    classifierJobId, streamId
+  })), { transaction })
+}
+
+async function deleteJobStreams (classifierJobId, streamIds, options = {}) {
+  const transaction = options.transaction
+  const where = { classifierJobId }
+  if (streamIds && streamIds.length) {
+    where.streamId = {
+      [Sequelize.Op.in]: streamIds
+    }
+  }
+  return await ClassifierJobStream.destroy({ where }, { transaction })
+}
+
 /**
  * Search for classifier job with given id
  * @param {integer} id Classifier job id
@@ -137,6 +155,8 @@ async function update (id, newJob, options = {}) {
 module.exports = {
   query,
   create,
+  createJobStreams,
+  deleteJobStreams,
   get,
   update
 }
