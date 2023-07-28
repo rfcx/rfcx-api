@@ -8,6 +8,7 @@ const CLASSIFICATION_1 = { id: 232, value: 'chainsaw', title: 'Chainsaw', typeId
 const CLASSIFICATION_2 = { id: 233, value: 'vehicle', title: 'Vehicle', typeId: 1, source_id: 1 }
 const CLASSIFICATION_3 = { id: 234, value: 'gunshot', title: 'Gunshot', typeId: 1, source_id: 1 }
 const CLASSIFICATIONS = [CLASSIFICATION_1, CLASSIFICATION_2, CLASSIFICATION_3]
+
 const CLASSIFIER_1 = { id: 151, name: 'sounds of the underground', version: 1, externalId: '555666', createdById: seedValues.primaryUserId, modelRunner: 'tf2', modelUrl: '???', lastExecutedAt: null, isPublic: true }
 const CLASSIFIER_OUTPUT_1 = { id: 100, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_1.id, outputClassName: 'chainsaw_custom', ignoreThreshold: 0.5 }
 const CLASSIFIER_OUTPUT_2 = { id: 101, classifierId: CLASSIFIER_1.id, classificationId: CLASSIFICATION_2.id, outputClassName: 'chainsaw_custom', ignoreThreshold: 0.5 }
@@ -20,14 +21,27 @@ const PROJECT_3 = { id: 'testprojec03', name: 'Test project 3', createdById: see
 const PROJECT_4 = { id: 'testprojec04', name: 'Test project 4', createdById: seedValues.anotherUserId }
 const PROJECTS = [PROJECT_1, PROJECT_2, PROJECT_3, PROJECT_4]
 
-const STREAM_1 = { id: 'stream000001', name: 'Test stream', createdById: seedValues.otherUserId, projectId: PROJECT_1.id }
-const STREAMS = [STREAM_1]
+const STREAM_1 = { id: 'rrr0stream01', name: 'Test stream', projectId: PROJECT_1.id, createdById: PROJECT_1.createdById }
+const STREAM_2 = { id: 'rrr0stream02', name: 'Test stream 2', projectId: PROJECT_1.id, createdById: PROJECT_1.createdById }
+const STREAM_3 = { id: 'rrr0stream03', name: 'Test stream 3', projectId: PROJECT_2.id, createdById: PROJECT_1.createdById }
+const STREAM_4 = { id: 'rrr0stream04', name: 'Test stream 4', projectId: PROJECT_3.id, createdById: PROJECT_1.createdById }
+const STREAM_5 = { id: 'rrr0stream05', name: 'Test stream 5', projectId: PROJECT_4.id, createdById: PROJECT_1.createdById }
+const STREAMS = [STREAM_1, STREAM_2, STREAM_3, STREAM_4, STREAM_5]
 
-const JOB_1 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, status: WAITING, queryStreams: 'Test stream, Test stream 2', queryStart: '2021-01-01', queryEnd: '2021-02-01', queryHours: '0,1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_2 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_1.id, status: WAITING, queryStreams: 'Test stream', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '11,13', minutesTotal: 4, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-10-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_3 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_2.id, status: DONE, queryStreams: 'Test stream 2', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_4 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_3.id, status: DONE, queryStreams: 'Test stream 3', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.primaryUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
-const JOB_5 = { classifierId: CLASSIFIER_1.id, projectId: PROJECT_4.id, status: DONE, queryStreams: 'Not accessible project', queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.anotherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_1 = { id: 9001, classifierId: CLASSIFIER_1.id, projectId: STREAM_1.projectId, status: WAITING, queryStreams: `${STREAM_1.name}, ${STREAM_2.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-09-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_2 = { id: 9002, classifierId: CLASSIFIER_1.id, projectId: STREAM_1.projectId, status: WAITING, queryStreams: `${STREAM_1.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '11,13', minutesTotal: 4, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-10-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_3 = { id: 9003, classifierId: CLASSIFIER_1.id, projectId: STREAM_3.projectId, status: DONE, queryStreams: `${STREAM_3.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.otherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_4 = { id: 9004, classifierId: CLASSIFIER_1.id, projectId: STREAM_4.projectId, status: DONE, queryStreams: `${STREAM_4.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.primaryUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOB_5 = { id: 9005, classifierId: CLASSIFIER_1.id, projectId: STREAM_5.projectId, status: DONE, queryStreams: `${STREAM_5.name}`, queryStart: '2021-03-13', queryEnd: '2022-04-01', queryHours: '1,2', minutesTotal: 2, minutesCompleted: 0, createdById: seedValues.anotherUserId, created_at: '2022-06-08T08:07:49.158Z', updated_at: '2022-07-07T08:07:49.158Z', startedAt: null, completedAt: null }
+const JOBS = [JOB_1, JOB_2, JOB_3, JOB_4, JOB_5]
+
+const CLASSIFIER_JOB_1_STREAM_1 = { classifierJobId: JOB_1.id, streamId: STREAM_1.id }
+const CLASSIFIER_JOB_1_STREAM_2 = { classifierJobId: JOB_1.id, streamId: STREAM_2.id }
+const CLASSIFIER_JOB_2_STREAM_1 = { classifierJobId: JOB_2.id, streamId: STREAM_1.id }
+const CLASSIFIER_JOB_3_STREAM_1 = { classifierJobId: JOB_3.id, streamId: STREAM_3.id }
+const CLASSIFIER_JOB_4_STREAM_1 = { classifierJobId: JOB_4.id, streamId: STREAM_4.id }
+const CLASSIFIER_JOB_5_STREAM_1 = { classifierJobId: JOB_5.id, streamId: STREAM_5.id }
+const CLASSIFIER_JOB_STREAMS = [CLASSIFIER_JOB_1_STREAM_1, CLASSIFIER_JOB_1_STREAM_2, CLASSIFIER_JOB_2_STREAM_1, CLASSIFIER_JOB_3_STREAM_1, CLASSIFIER_JOB_4_STREAM_1, CLASSIFIER_JOB_5_STREAM_1]
 
 beforeAll(() => {
   muteConsole('warn')
@@ -35,6 +49,7 @@ beforeAll(() => {
 
 beforeEach(async () => {
   await truncateNonBase(models)
+  await seedTestData()
 })
 
 afterAll(async () => {
@@ -61,13 +76,12 @@ async function seedTestData () {
   await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.primaryUserId, project_id: PROJECT_3.id, role_id: seedValues.roleAdmin } })
   await models.UserProjectRole.findOrCreate({ where: { user_id: seedValues.anotherUserId, project_id: PROJECT_4.id, role_id: seedValues.roleAdmin } })
 
-  const job1 = (await models.ClassifierJob.findOrCreate({ where: JOB_1 }))[0]
-  const job2 = (await models.ClassifierJob.findOrCreate({ where: JOB_2 }))[0]
-  const job3 = (await models.ClassifierJob.findOrCreate({ where: JOB_3 }))[0]
-  const job4 = (await models.ClassifierJob.findOrCreate({ where: JOB_4 }))[0]
-  const job5 = (await models.ClassifierJob.findOrCreate({ where: JOB_5 }))[0]
-
-  return { job1, job2, job3, job4, job5 }
+  for (const job of JOBS) {
+    await models.ClassifierJob.findOrCreate({ where: job })
+  }
+  for (const classifierJobStream of CLASSIFIER_JOB_STREAMS) {
+    await models.ClassifierJobStream.findOrCreate({ where: classifierJobStream })
+  }
 }
 
 describe('GET /classifier-jobs/{id}/results', () => {
@@ -75,22 +89,19 @@ describe('GET /classifier-jobs/{id}/results', () => {
   app.use('/', routes)
 
   test('returns forbidden error', async () => {
-    const { job5 } = await seedTestData()
-    const response = await request(app).get(`/${job5.id}/results`)
+    const response = await request(app).get(`/${JOB_5.id}/results`)
 
     expect(response.statusCode).toBe(403)
   })
 
   test('returns validation error if fields is not correct', async () => {
-    const { job1 } = await seedTestData()
-    const response = await request(app).get(`/${job1.id}/results`).query({ fields: ['some'] })
+    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['some'] })
 
     expect(response.statusCode).toBe(400)
   })
 
   test('returns validation error if fields includes not correct value', async () => {
-    const { job1 } = await seedTestData()
-    const response = await request(app).get(`/${job1.id}/results`).query({ fields: ['review_status', 'some'] })
+    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['review_status', 'some'] })
 
     expect(response.statusCode).toBe(400)
   })
@@ -102,13 +113,12 @@ describe('GET /classifier-jobs/{id}/results', () => {
   })
 
   test('returns only review status by default', async () => {
-    const { job1 } = await seedTestData()
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: 1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: -1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: null } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: 0 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: -1 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: null } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 0 } })
 
-    const response = await request(app).get(`/${job1.id}/results`)
+    const response = await request(app).get(`/${JOB_1.id}/results`)
 
     const result = response.body
     expect(response.statusCode).toBe(200)
@@ -119,13 +129,12 @@ describe('GET /classifier-jobs/{id}/results', () => {
   })
 
   test('returns full data', async () => {
-    const { job1 } = await seedTestData()
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: 1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: -1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: null } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: 0 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: -1 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: null } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 0 } })
 
-    const response = await request(app).get(`/${job1.id}/results`).query({ fields: ['review_status', 'classifications_summary'] })
+    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['review_status', 'classifications_summary'] })
 
     const result = response.body
     expect(response.statusCode).toBe(200)
@@ -148,15 +157,14 @@ describe('GET /classifier-jobs/{id}/results', () => {
   })
 
   test('does not return data from deleted streams', async () => {
-    const { job1 } = await seedTestData()
     const STREAM_2 = (await models.Stream.findOrCreate({ where: { id: 'stream000002', name: 'Test stream 2', createdById: seedValues.otherUserId, projectId: PROJECT_1.id, deletedAt: '2022-01-01 00:00:00' } }))[0]
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: 1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: -1 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: null } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: 0 } })
-    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_2.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: job1.id, confidence: 0.99, reviewStatus: 1 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:00.000Z`, end: `${JOB_1.queryStart}T00:00:01.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:01.000Z`, end: `${JOB_1.queryStart}T00:00:02.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_1.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: -1 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:02.000Z`, end: `${JOB_1.queryStart}T00:00:03.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: null } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_1.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 0 } })
+    await models.Detection.findOrCreate({ where: { start: `${JOB_1.queryStart}T00:00:03.000Z`, end: `${JOB_1.queryStart}T00:00:04.000Z`, streamId: STREAM_2.id, classificationId: CLASSIFICATION_2.id, classifierId: CLASSIFIER_1.id, classifierJobId: JOB_1.id, confidence: 0.99, reviewStatus: 1 } })
 
-    const response = await request(app).get(`/${job1.id}/results`).query({ fields: ['review_status', 'classifications_summary'] })
+    const response = await request(app).get(`/${JOB_1.id}/results`).query({ fields: ['review_status', 'classifications_summary'] })
 
     const result = response.body
     expect(response.statusCode).toBe(200)
