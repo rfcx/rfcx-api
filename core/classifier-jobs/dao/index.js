@@ -1,4 +1,4 @@
-const { sequelize, ClassifierJob, ClassifierJobStream, Classifier, Sequelize } = require('../../_models')
+const { sequelize, ClassifierJob, ClassifierJobStream, Classifier, Stream, Sequelize } = require('../../_models')
 const { ForbiddenError, ValidationError, EmptyResultError } = require('../../../common/error-handling/errors')
 const { getAccessibleObjectsIDs, hasPermission, PROJECT, CREATE } = require('../../roles/dao')
 const { getSortFields } = require('../../_utils/db/sort')
@@ -7,7 +7,8 @@ const { CANCELLED, DONE, ERROR, WAITING } = require('../classifier-job-status')
 const { toCamelObject } = require('../../_utils/formatters/string-cases')
 
 const availableIncludes = [
-  Classifier.include({ attributes: ['id', 'name'] })
+  Classifier.include({ attributes: ['id', 'name'] }),
+  Stream.include({ as: 'streams', attributes: ['id', 'name'], required: false })
 ]
 
 const ALLOWED_TARGET_STATUSES = [CANCELLED, WAITING]
@@ -54,7 +55,15 @@ async function query (filters, options = {}) {
     offset: options.offset
   })
 
-  data.results = data.results.map(i => toCamelObject(i, 2))
+  data.results = data.results.map((job) => {
+    if (job.streams) {
+      job.streams = job.streams.map(s => {
+        delete s.classifier_job_streams
+        return s
+      })
+    }
+    return toCamelObject(job, 2)
+  })
 
   return data
 }
@@ -108,11 +117,18 @@ async function get (id, options = {}) {
   const attributes = options.fields && options.fields.length > 0 ? ClassifierJob.attributes.full.filter(a => options.fields.includes(a)) : ClassifierJob.attributes.lite
   const include = options.fields && options.fields.length > 0 ? availableIncludes.filter(i => options.fields.includes(i.as)) : availableIncludes
   const transaction = options.transaction || null
-  const job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
+  let job = await ClassifierJob.findOne({ where: { id }, attributes, include, transaction })
   if (!job) {
     throw new EmptyResultError()
   }
-  return toCamelObject(job.toJSON(), 2)
+  job = job.toJSON()
+  if (job.streams) {
+    job.streams = job.streams.map(s => {
+      delete s.classifier_job_streams
+      return s
+    })
+  }
+  return toCamelObject(job, 2)
 }
 
 /**
