@@ -1,5 +1,13 @@
 
-## 1.3.0 (2023-XX-XX)
+## 1.3.1 (2023-07-31)
+
+### Features
+* **core**: Add `classifier_job_streams` table
+* **core**: Add GET `/classifier-jobs` endpoint
+* **core**: Add GET `/classifier-jobs/:id` endpoint
+* **core**: Add GET `/classifier-jobs/:id/results` endpoint
+
+## 1.3.0 (2023-03-01)
 
 ### Features
 * **core**: Add `id`, `review_status` and `classifier_job_id` to `detections` table

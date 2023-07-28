@@ -337,7 +337,7 @@
       }
     ]
   },
-  "StreamLite": {
+  "StreamIdAndName": {
     "properties": {
       "id": {
         "type": "string",
@@ -346,22 +346,30 @@
       "name": {
         "type": "string",
         "example": "My Stream 1"
-      },
-      "start": {
-        "type": "date",
-        "example": "2020-05-12T07:30:21.500Z"
-      },
-      "end": {
-        "type": "date",
-        "example": "2020-05-12T07:30:22.500Z"
-      },
-      "is_public": {
-        "type": "boolean",
-        "example": false
       }
-    },
-    "required": [
-      "name"
+    }
+  },
+  "StreamLite": {
+    "allOf": [
+      {
+        "$ref": "#/components/schemas/StreamIdAndName"
+      },
+      {
+        "properties": {
+          "start": {
+            "type": "date",
+            "example": "2020-05-12T07:30:21.500Z"
+          },
+          "end": {
+            "type": "date",
+            "example": "2020-05-12T07:30:22.500Z"
+          },
+          "is_public": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      }
     ]
   },
   "Stream": {
@@ -1155,6 +1163,12 @@
             "type": "string",
             "example": "gunshot"
           }
+        }
+      },
+      "streams": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/StreamIdAndName"
         }
       }
     }
