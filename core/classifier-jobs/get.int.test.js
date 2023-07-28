@@ -91,7 +91,6 @@ describe('GET /classifier-jobs/{id}', () => {
     const result = response.body
     expect(response.statusCode).toBe(200)
     expect(result.id).toBe(JOB_1.id)
-    expect(result.id).toBe(JOB_1.id)
     expect(result.projectId).toBe(JOB_1.projectId)
     expect(result.minutesCompleted).toBe(JOB_1.minutesCompleted)
     expect(result.minutesTotal).toBe(JOB_1.minutesTotal)
