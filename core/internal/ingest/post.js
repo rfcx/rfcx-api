@@ -90,7 +90,7 @@ module.exports = function (req, res) {
             fields: ['id', 'stream_id', 'start', 'sample_count']
           })).map(s => s.toJSON())
           if (existingSegments.length) {
-            await streamSegmentDao.updateByStreamAndStarts(streamId, existingSegments, { availability: 1 }, { transaction })
+            await streamSegmentDao.updateByStreamAndStarts(streamId, existingSegments.map(s => s.start.toISOString()), { availability: 1 }, { transaction })
           }
           const dataToCreate = transformedArray
             .filter((s) => { return !existingSegments.map(e => e.start.toISOString()).includes(s.start.toISOString()) })
